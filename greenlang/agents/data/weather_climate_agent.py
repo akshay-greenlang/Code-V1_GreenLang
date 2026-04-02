@@ -40,6 +40,12 @@ from pydantic import Field
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
 from greenlang.schemas import GreenLangBase
 
+from greenlang.agents.data._climate_shared import (
+    ClimateScenario,
+    GeoCoordinate,
+    TimeHorizon,
+)
+
 logger = logging.getLogger(__name__)
 
 
@@ -57,18 +63,6 @@ class WeatherProvider(str, Enum):
     VISUAL_CROSSING = "visual_crossing"
     COPERNICUS_CDS = "copernicus_cds"
     SIMULATED = "simulated"
-
-
-class ClimateScenario(str, Enum):
-    """Climate projection scenarios."""
-    SSP1_19 = "ssp1_1.9"  # Very low emissions
-    SSP1_26 = "ssp1_2.6"  # Low emissions
-    SSP2_45 = "ssp2_4.5"  # Intermediate
-    SSP3_70 = "ssp3_7.0"  # High emissions
-    SSP5_85 = "ssp5_8.5"  # Very high emissions
-    RCP26 = "rcp2.6"
-    RCP45 = "rcp4.5"
-    RCP85 = "rcp8.5"
 
 
 class WeatherVariable(str, Enum):
@@ -99,13 +93,14 @@ class WeatherConnectionConfig(GreenLangBase):
     timeout_seconds: int = Field(default=30)
 
 
-class Location(GreenLangBase):
-    """Geographic location."""
+class Location(GeoCoordinate):
+    """Geographic location for weather data queries.
+
+    Extends ``GeoCoordinate`` with weather-specific fields (location_id,
+    timezone, country, region).
+    """
     location_id: str = Field(...)
     name: str = Field(...)
-    latitude: float = Field(..., ge=-90, le=90)
-    longitude: float = Field(..., ge=-180, le=180)
-    elevation_m: Optional[float] = Field(None)
     timezone: str = Field(default="UTC")
     country: Optional[str] = Field(None)
     region: Optional[str] = Field(None)

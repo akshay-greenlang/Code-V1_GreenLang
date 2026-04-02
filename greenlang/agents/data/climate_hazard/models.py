@@ -47,6 +47,12 @@ from pydantic import Field, field_validator
 from greenlang.schemas import GreenLangBase, utcnow
 from greenlang.schemas.enums import ReportFormat
 
+# Shared climate-domain types (single source of truth for cross-agent models)
+from greenlang.agents.data._climate_shared import (  # noqa: F401
+    GeoCoordinate,
+    TimeHorizon,
+)
+
 # ---------------------------------------------------------------------------
 # Layer 1 Re-exports (best-effort with stubs on ImportError)
 # ---------------------------------------------------------------------------
@@ -255,25 +261,9 @@ class Scenario(str, Enum):
     RCP4_5 = "rcp4_5"
     RCP8_5 = "rcp8_5"
 
-class TimeHorizon(str, Enum):
-    """Climate projection time horizons aligned with IPCC AR6 conventions.
-
-    Defines the temporal windows used for climate hazard projections
-    and scenario analysis. Each horizon maps to a specific year range
-    used for data aggregation and risk scoring.
-
-    BASELINE: 1995-2014; IPCC AR6 reference period for historical data.
-    NEAR_TERM: 2021-2040; short-range projection window.
-    MID_TERM: 2041-2060; medium-range projection window.
-    LONG_TERM: 2061-2080; long-range projection window.
-    END_CENTURY: 2081-2100; end-of-century projection window.
-    """
-
-    BASELINE = "baseline"
-    NEAR_TERM = "near_term"
-    MID_TERM = "mid_term"
-    LONG_TERM = "long_term"
-    END_CENTURY = "end_century"
+# TimeHorizon is now imported from greenlang.agents.data._climate_shared
+# (see import block at the top of this file). The enum is identical:
+# BASELINE, NEAR_TERM, MID_TERM, LONG_TERM, END_CENTURY.
 
 class AssetType(str, Enum):
     """Classification of physical and operational assets subject to risk.
@@ -430,13 +420,13 @@ class VulnerabilityLevel(str, Enum):
 # SDK Data Models (14)
 # =============================================================================
 
-class Location(GreenLangBase):
+class Location(GeoCoordinate):
     """A geographic point location with optional metadata.
 
-    Represents a WGS84 coordinate pair used to pin hazard data,
-    assets, and risk indices to specific points on the Earth's
-    surface. Coordinates follow the GeoJSON convention (longitude
-    is X, latitude is Y).
+    Extends ``GeoCoordinate`` with climate-hazard-specific fields (name,
+    country_code). Represents a WGS84 coordinate pair used to pin hazard
+    data, assets, and risk indices to specific points on the Earth's
+    surface.
 
     Attributes:
         latitude: WGS84 latitude in decimal degrees (-90 to 90).
@@ -446,22 +436,6 @@ class Location(GreenLangBase):
         country_code: ISO 3166-1 alpha-2 country code (e.g., 'US', 'DE').
     """
 
-    latitude: float = Field(
-        ...,
-        ge=-90.0,
-        le=90.0,
-        description="WGS84 latitude in decimal degrees (-90 to 90)",
-    )
-    longitude: float = Field(
-        ...,
-        ge=-180.0,
-        le=180.0,
-        description="WGS84 longitude in decimal degrees (-180 to 180)",
-    )
-    elevation_m: Optional[float] = Field(
-        None,
-        description="Elevation above mean sea level in metres",
-    )
     name: str = Field(
         default="",
         description="Human-readable place name or label",
@@ -472,22 +446,6 @@ class Location(GreenLangBase):
     )
 
     model_config = {"extra": "forbid"}
-
-    @field_validator("latitude")
-    @classmethod
-    def validate_latitude(cls, v: float) -> float:
-        """Validate latitude is within WGS84 bounds."""
-        if not (-90.0 <= v <= 90.0):
-            raise ValueError(f"latitude must be between -90 and 90, got {v}")
-        return v
-
-    @field_validator("longitude")
-    @classmethod
-    def validate_longitude(cls, v: float) -> float:
-        """Validate longitude is within WGS84 bounds."""
-        if not (-180.0 <= v <= 180.0):
-            raise ValueError(f"longitude must be between -180 and 180, got {v}")
-        return v
 
     @field_validator("country_code")
     @classmethod
@@ -2868,12 +2826,16 @@ __all__ = [
     "SUPPORTED_FRAMEWORKS",
     "TIME_HORIZON_RANGES",
     # -------------------------------------------------------------------------
+    # Shared climate types (re-exported from _climate_shared)
+    # -------------------------------------------------------------------------
+    "GeoCoordinate",
+    "TimeHorizon",
+    # -------------------------------------------------------------------------
     # Enumerations (12)
     # -------------------------------------------------------------------------
     "HazardType",
     "RiskLevel",
     "Scenario",
-    "TimeHorizon",
     "AssetType",
     "ReportType",
     "ReportFormat",
