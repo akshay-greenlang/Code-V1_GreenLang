@@ -67,14 +67,14 @@ from greenlang.agents.data.pdf_extractor.config import (
 )
 
 # ---------------------------------------------------------------------------
-# Models (enums, Layer 1, SDK)
+# Models (enums, core models, SDK)
 # ---------------------------------------------------------------------------
 from greenlang.agents.data.pdf_extractor.models import (
-    # Layer 1 enumerations
+    # Core enumerations (canonical definitions)
     DocumentType,
     ExtractionStatus,
     OCREngine,
-    # Layer 1 models
+    # Core models (canonical definitions)
     BoundingBox,
     ExtractedField,
     LineItem,
@@ -83,7 +83,7 @@ from greenlang.agents.data.pdf_extractor.models import (
     UtilityBillData,
     DocumentIngestionInput,
     DocumentIngestionOutput,
-    # New enumerations
+    # Additional enumerations
     DocumentFormat,
     TemplateType,
     JobStatus,
@@ -105,6 +105,13 @@ from greenlang.agents.data.pdf_extractor.models import (
     ClassifyDocumentRequest,
     ExtractInvoiceRequest,
     CreateTemplateRequest,
+)
+
+# ---------------------------------------------------------------------------
+# Document Ingestion Agent
+# ---------------------------------------------------------------------------
+from greenlang.agents.data.pdf_extractor.document_ingestion import (
+    DocumentIngestionAgent,
 )
 
 # ---------------------------------------------------------------------------
@@ -173,11 +180,11 @@ __all__ = [
     "get_config",
     "set_config",
     "reset_config",
-    # Layer 1 enumerations
+    # Core enumerations (canonical definitions)
     "DocumentType",
     "ExtractionStatus",
     "OCREngine",
-    # Layer 1 models
+    # Core models (canonical definitions)
     "BoundingBox",
     "ExtractedField",
     "LineItem",
@@ -186,7 +193,9 @@ __all__ = [
     "UtilityBillData",
     "DocumentIngestionInput",
     "DocumentIngestionOutput",
-    # New enumerations
+    # Document Ingestion Agent
+    "DocumentIngestionAgent",
+    # Additional enumerations
     "DocumentFormat",
     "TemplateType",
     "JobStatus",

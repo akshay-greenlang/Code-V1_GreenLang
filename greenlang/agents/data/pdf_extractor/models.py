@@ -2,15 +2,13 @@
 """
 PDF & Invoice Extractor Service Data Models - AGENT-DATA-001: PDF Extractor
 
-Pydantic v2 data models for the PDF & Invoice Extractor SDK. Re-exports the
-Layer 1 enumerations and models from the foundation agent, and defines
-additional SDK models for document records, page content, extraction jobs,
-invoice/manifest/utility bill extractions, templates, validation results,
-batch jobs, statistics, and request wrappers.
+Pydantic v2 data models for the PDF & Invoice Extractor SDK. This module is
+the **canonical** location for document ingestion enumerations and models.
+The parent ``document_ingestion_agent.py`` re-exports from here.
 
 Models:
-    - Re-exported enums: DocumentType, ExtractionStatus, OCREngine
-    - Re-exported Layer 1: BoundingBox, ExtractedField, LineItem, InvoiceData,
+    - Core enums: DocumentType, ExtractionStatus, OCREngine
+    - Core models: BoundingBox, ExtractedField, LineItem, InvoiceData,
         ManifestData, UtilityBillData, DocumentIngestionInput,
         DocumentIngestionOutput
     - New enums: DocumentFormat, TemplateType, JobStatus, ValidationSeverity
@@ -29,7 +27,7 @@ Status: Production Ready
 from __future__ import annotations
 
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, date, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
@@ -46,30 +44,161 @@ from greenlang.schemas import (
 )
 
 # ---------------------------------------------------------------------------
-# Re-export Layer 1 enumerations
+# Core Enumerations (canonical definitions)
 # ---------------------------------------------------------------------------
 
-from greenlang.agents.data.document_ingestion_agent import (
-    DocumentType,
-    ExtractionStatus,
-    OCREngine,
-)
+class DocumentType(str, Enum):
+    """Supported document types."""
+    PDF = "pdf"
+    INVOICE = "invoice"
+    MANIFEST = "manifest"
+    BILL_OF_LADING = "bill_of_lading"
+    WEIGHT_TICKET = "weight_ticket"
+    UTILITY_BILL = "utility_bill"
+    RECEIPT = "receipt"
+    PURCHASE_ORDER = "purchase_order"
+    UNKNOWN = "unknown"
+
+
+class ExtractionStatus(str, Enum):
+    """Status of field extraction."""
+    SUCCESS = "success"
+    PARTIAL = "partial"
+    FAILED = "failed"
+    LOW_CONFIDENCE = "low_confidence"
+
+
+class OCREngine(str, Enum):
+    """Supported OCR engines."""
+    TESSERACT = "tesseract"
+    AZURE_VISION = "azure_vision"
+    AWS_TEXTRACT = "aws_textract"
+    GOOGLE_VISION = "google_vision"
+    SIMULATED = "simulated"
+
 
 # ---------------------------------------------------------------------------
-# Re-export Layer 1 models
+# Core Models (canonical definitions)
+# ---------------------------------------------------------------------------
+
+class BoundingBox(GreenLangBase):
+    """Bounding box for extracted text region."""
+    x: float = Field(..., description="X coordinate (left)")
+    y: float = Field(..., description="Y coordinate (top)")
+    width: float = Field(..., description="Box width")
+    height: float = Field(..., description="Box height")
+    page: int = Field(default=1, ge=1, description="Page number")
+
+
+class ExtractedField(GreenLangBase):
+    """A single extracted field with confidence score."""
+    field_name: str = Field(..., description="Name of the field")
+    value: Any = Field(..., description="Extracted value")
+    raw_text: str = Field(..., description="Raw OCR text")
+    confidence: float = Field(..., ge=0.0, le=1.0, description="Extraction confidence")
+    bounding_box: Optional[BoundingBox] = Field(None, description="Location in document")
+    extraction_method: str = Field(default="pattern", description="Method used for extraction")
+    validated: bool = Field(default=False, description="Whether value passed validation")
+
+
+class LineItem(GreenLangBase):
+    """A line item from an invoice or manifest."""
+    line_number: int = Field(..., ge=1, description="Line number")
+    description: str = Field(..., description="Item description")
+    quantity: Optional[float] = Field(None, description="Quantity")
+    unit: Optional[str] = Field(None, description="Unit of measure")
+    unit_price: Optional[float] = Field(None, description="Unit price")
+    total_price: Optional[float] = Field(None, description="Line total")
+    confidence: float = Field(default=0.0, ge=0.0, le=1.0)
+
+
+class InvoiceData(GreenLangBase):
+    """Structured data extracted from an invoice."""
+    invoice_number: Optional[str] = Field(None, description="Invoice number")
+    invoice_date: Optional[date] = Field(None, description="Invoice date")
+    due_date: Optional[date] = Field(None, description="Payment due date")
+    vendor_name: Optional[str] = Field(None, description="Vendor/supplier name")
+    vendor_address: Optional[str] = Field(None, description="Vendor address")
+    vendor_tax_id: Optional[str] = Field(None, description="Vendor tax ID")
+    buyer_name: Optional[str] = Field(None, description="Buyer/customer name")
+    buyer_address: Optional[str] = Field(None, description="Buyer address")
+    subtotal: Optional[float] = Field(None, description="Subtotal before tax")
+    tax_amount: Optional[float] = Field(None, description="Tax amount")
+    total_amount: Optional[float] = Field(None, description="Total invoice amount")
+    currency: str = Field(default="USD", description="Currency code")
+    line_items: List[LineItem] = Field(default_factory=list, description="Line items")
+    payment_terms: Optional[str] = Field(None, description="Payment terms")
+
+
+class ManifestData(GreenLangBase):
+    """Structured data extracted from a shipping manifest."""
+    manifest_number: Optional[str] = Field(None, description="Manifest/BOL number")
+    shipment_date: Optional[date] = Field(None, description="Shipment date")
+    carrier_name: Optional[str] = Field(None, description="Carrier name")
+    origin: Optional[str] = Field(None, description="Origin location")
+    destination: Optional[str] = Field(None, description="Destination location")
+    shipper_name: Optional[str] = Field(None, description="Shipper name")
+    consignee_name: Optional[str] = Field(None, description="Consignee name")
+    total_weight: Optional[float] = Field(None, description="Total weight")
+    weight_unit: str = Field(default="kg", description="Weight unit")
+    total_pieces: Optional[int] = Field(None, description="Total pieces/packages")
+    line_items: List[LineItem] = Field(default_factory=list, description="Line items")
+    vehicle_id: Optional[str] = Field(None, description="Vehicle/trailer ID")
+    seal_numbers: List[str] = Field(default_factory=list, description="Seal numbers")
+
+
+class UtilityBillData(GreenLangBase):
+    """Structured data extracted from a utility bill."""
+    account_number: Optional[str] = Field(None, description="Account number")
+    billing_period_start: Optional[date] = Field(None, description="Billing period start")
+    billing_period_end: Optional[date] = Field(None, description="Billing period end")
+    utility_type: Optional[str] = Field(None, description="Type: electricity, gas, water")
+    meter_number: Optional[str] = Field(None, description="Meter number")
+    previous_reading: Optional[float] = Field(None, description="Previous meter reading")
+    current_reading: Optional[float] = Field(None, description="Current meter reading")
+    consumption: Optional[float] = Field(None, description="Total consumption")
+    consumption_unit: Optional[str] = Field(None, description="Consumption unit")
+    rate: Optional[float] = Field(None, description="Rate per unit")
+    total_amount: Optional[float] = Field(None, description="Total amount due")
+    currency: str = Field(default="USD", description="Currency code")
+
+
+class DocumentIngestionInput(GreenLangBase):
+    """Input for document ingestion."""
+    document_id: str = Field(..., description="Unique document identifier")
+    file_path: Optional[str] = Field(None, description="Path to document file")
+    file_content: Optional[bytes] = Field(None, description="Document content as bytes")
+    file_base64: Optional[str] = Field(None, description="Document content as base64")
+    document_type: DocumentType = Field(default=DocumentType.UNKNOWN)
+    ocr_engine: OCREngine = Field(default=OCREngine.SIMULATED)
+    confidence_threshold: float = Field(default=0.7, ge=0.0, le=1.0)
+    extract_line_items: bool = Field(default=True)
+    validate_totals: bool = Field(default=True)
+    tenant_id: Optional[str] = Field(None, description="Tenant identifier")
+
+
+class DocumentIngestionOutput(GreenLangBase):
+    """Output from document ingestion."""
+    document_id: str = Field(..., description="Document identifier")
+    document_type: DocumentType = Field(..., description="Detected/specified document type")
+    page_count: int = Field(..., ge=1, description="Number of pages")
+    extraction_status: ExtractionStatus = Field(..., description="Overall extraction status")
+    overall_confidence: float = Field(..., ge=0.0, le=1.0)
+    extracted_fields: List[ExtractedField] = Field(default_factory=list)
+    structured_data: Dict[str, Any] = Field(default_factory=dict)
+    raw_text: str = Field(default="", description="Full raw text")
+    ocr_engine_used: OCREngine = Field(..., description="OCR engine used")
+    processing_time_ms: float = Field(..., description="Processing duration")
+    provenance_hash: str = Field(..., description="SHA-256 hash for audit")
+    validation_errors: List[str] = Field(default_factory=list)
+    timestamp: datetime = Field(default_factory=datetime.utcnow)
+
+
+# ---------------------------------------------------------------------------
+# Shared schema enums
 # ---------------------------------------------------------------------------
 
 from greenlang.schemas.enums import JobStatus, ValidationSeverity
-from greenlang.agents.data.document_ingestion_agent import (
-    BoundingBox,
-    ExtractedField,
-    LineItem,
-    InvoiceData,
-    ManifestData,
-    UtilityBillData,
-    DocumentIngestionInput,
-    DocumentIngestionOutput,
-)
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -837,11 +966,11 @@ class CreateTemplateRequest(GreenLangRequest, TenantMixin):
         return v
 
 __all__ = [
-    # Re-exported enums
+    # Core enums (canonical definitions)
     "DocumentType",
     "ExtractionStatus",
     "OCREngine",
-    # Re-exported Layer 1 models
+    # Core models (canonical definitions)
     "BoundingBox",
     "ExtractedField",
     "LineItem",
@@ -850,7 +979,7 @@ __all__ = [
     "UtilityBillData",
     "DocumentIngestionInput",
     "DocumentIngestionOutput",
-    # New enums
+    # Additional enums
     "DocumentFormat",
     "TemplateType",
     "JobStatus",
