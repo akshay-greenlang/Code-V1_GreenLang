@@ -39,6 +39,16 @@ from pydantic import Field, field_validator
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
 from greenlang.schemas import GreenLangBase
 
+from greenlang.agents.data._supplier_shared import (
+    DataQualityRating,
+    SubmissionStatus,
+    SupplierIdentity,
+    SupplierValidationOutcome,
+)
+
+# Backward-compatible alias: existing code references ``ValidationResult``
+ValidationResult = SupplierValidationOutcome
+
 logger = logging.getLogger(__name__)
 
 
@@ -56,44 +66,19 @@ class PCFStandard(str, Enum):
     CUSTOM = "custom"
 
 
-class SubmissionStatus(str, Enum):
-    """Submission status."""
-    PENDING = "pending"
-    VALIDATED = "validated"
-    REJECTED = "rejected"
-    NEEDS_REVISION = "needs_revision"
-    ACCEPTED = "accepted"
-    EXPIRED = "expired"
-
-
-class DataQualityRating(str, Enum):
-    """Data quality rating."""
-    PRIMARY = "primary"  # Supplier-specific measured data
-    SECONDARY = "secondary"  # Industry average data
-    TERTIARY = "tertiary"  # Default/proxy data
-    UNKNOWN = "unknown"
-
-
-class ValidationResult(str, Enum):
-    """Validation result."""
-    PASS = "pass"
-    FAIL = "fail"
-    WARNING = "warning"
-
-
 # =============================================================================
 # PYDANTIC MODELS
 # =============================================================================
 
-class SupplierInfo(GreenLangBase):
-    """Supplier information."""
-    supplier_id: str = Field(...)
-    supplier_name: str = Field(...)
+class SupplierInfo(SupplierIdentity):
+    """Supplier information for PCF data exchange.
+
+    Extends SupplierIdentity with PCF-specific fields (DUNS, VAT, country,
+    verification status).
+    """
     duns_number: Optional[str] = Field(None)
     vat_number: Optional[str] = Field(None)
     country: str = Field(...)
-    industry_sector: Optional[str] = Field(None)
-    contact_email: Optional[str] = Field(None)
     verified: bool = Field(default=False)
 
 

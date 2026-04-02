@@ -37,6 +37,14 @@ from pydantic import Field, field_validator
 from greenlang.schemas import GreenLangBase, utcnow
 from greenlang.schemas.enums import ReportFormat, ValidationSeverity
 
+# Shared supplier-domain types (single source of truth for cross-agent enums)
+from greenlang.agents.data._supplier_shared import (  # noqa: F401
+    DataQualityRating,
+    SubmissionStatus,
+    SupplierIdentity,
+    SupplierValidationOutcome,
+)
+
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
@@ -992,6 +1000,11 @@ class SubmitResponseRequest(GreenLangBase):
         return v
 
 __all__ = [
+    # Shared supplier-domain types (re-exported from _supplier_shared)
+    "DataQualityRating",
+    "SubmissionStatus",
+    "SupplierIdentity",
+    "SupplierValidationOutcome",
     # Enumerations
     "Framework",
     "QuestionType",

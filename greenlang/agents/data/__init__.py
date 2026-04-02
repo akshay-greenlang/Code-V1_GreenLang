@@ -30,9 +30,11 @@ from greenlang.agents.data._iot_shared import (
     SensorDataQuality,
 )
 
-# Shared supplier-domain enums (used by GL-DATA-X-012, AGENT-DATA-008)
+# Shared supplier-domain enums and models (used by GL-DATA-X-012, AGENT-DATA-008)
 from greenlang.agents.data._supplier_shared import (
     DataQualityRating as SharedDataQualityRating,
+    SubmissionStatus as SharedSubmissionStatus,
+    SupplierIdentity,
     SupplierValidationOutcome,
 )
 
@@ -284,8 +286,10 @@ __all__ = [
     "SensorAggregation",
     "SensorConnectionBase",
     "SensorDataPointBase",
-    # Shared supplier-domain enums (_supplier_shared)
+    # Shared supplier-domain enums and models (_supplier_shared)
     "SharedDataQualityRating",
+    "SharedSubmissionStatus",
+    "SupplierIdentity",
     "SupplierValidationOutcome",
     # Shared climate-domain types (_climate_shared)
     "GeoCoordinate",
