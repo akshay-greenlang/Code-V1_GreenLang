@@ -37,6 +37,13 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 from pydantic import Field
 
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
+from greenlang.agents.data._geo_shared import (
+    ChangeType,
+    GeoBoundingBox,
+    LandCoverClass,
+    SatelliteProvider,
+    VegetationIndex,
+)
 from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
@@ -45,43 +52,6 @@ logger = logging.getLogger(__name__)
 # =============================================================================
 # ENUMS AND CONSTANTS
 # =============================================================================
-
-class SatelliteProvider(str, Enum):
-    """Satellite data providers."""
-    SENTINEL_2 = "sentinel_2"
-    SENTINEL_1 = "sentinel_1"
-    LANDSAT_8 = "landsat_8"
-    LANDSAT_9 = "landsat_9"
-    PLANET = "planet"
-    MAXAR = "maxar"
-    COPERNICUS = "copernicus"
-    NASA_MODIS = "nasa_modis"
-    SIMULATED = "simulated"
-
-
-class VegetationIndex(str, Enum):
-    """Vegetation indices."""
-    NDVI = "ndvi"  # Normalized Difference Vegetation Index
-    EVI = "evi"  # Enhanced Vegetation Index
-    SAVI = "savi"  # Soil Adjusted Vegetation Index
-    LAI = "lai"  # Leaf Area Index
-    NDWI = "ndwi"  # Normalized Difference Water Index
-    NBR = "nbr"  # Normalized Burn Ratio
-    NDMI = "ndmi"  # Normalized Difference Moisture Index
-
-
-class LandCoverClass(str, Enum):
-    """Land cover classification."""
-    FOREST = "forest"
-    GRASSLAND = "grassland"
-    CROPLAND = "cropland"
-    WETLAND = "wetland"
-    URBAN = "urban"
-    BARREN = "barren"
-    WATER = "water"
-    SHRUBLAND = "shrubland"
-    SNOW_ICE = "snow_ice"
-
 
 class ForestType(str, Enum):
     """Forest types for carbon calculations."""
@@ -94,15 +64,8 @@ class ForestType(str, Enum):
     PLANTATION = "plantation"
 
 
-class ChangeType(str, Enum):
-    """Land use change types."""
-    DEFORESTATION = "deforestation"
-    AFFORESTATION = "afforestation"
-    REFORESTATION = "reforestation"
-    DEGRADATION = "degradation"
-    URBANIZATION = "urbanization"
-    AGRICULTURAL_EXPANSION = "agricultural_expansion"
-    NO_CHANGE = "no_change"
+# Backward-compatible alias: BoundingBox -> GeoBoundingBox from _geo_shared
+BoundingBox = GeoBoundingBox
 
 
 # =============================================================================
@@ -116,14 +79,6 @@ class SatelliteConnectionConfig(GreenLangBase):
     api_key: str = Field(...)
     collection_id: Optional[str] = Field(None)
     cloud_cover_max_pct: float = Field(default=20.0)
-
-
-class BoundingBox(GreenLangBase):
-    """Geographic bounding box."""
-    min_lat: float = Field(..., ge=-90, le=90)
-    max_lat: float = Field(..., ge=-90, le=90)
-    min_lon: float = Field(..., ge=-180, le=180)
-    max_lon: float = Field(..., ge=-180, le=180)
 
 
 class AreaOfInterest(GreenLangBase):

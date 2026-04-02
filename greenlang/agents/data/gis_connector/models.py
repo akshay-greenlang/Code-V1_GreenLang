@@ -35,6 +35,7 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import ConfigDict, Field, field_validator
 
+from greenlang.agents.data._geo_shared import LandCoverType
 from greenlang.schemas import GreenLangBase, utcnow
 
 # ---------------------------------------------------------------------------
@@ -104,24 +105,6 @@ class SpatialOperation(str, Enum):
     CENTROID = "centroid"
     ENVELOPE = "envelope"
     VORONOI = "voronoi"
-
-class LandCoverType(str, Enum):
-    """CORINE-derived land cover classification types.
-
-    Used by the LandCoverEngine for deterministic land cover
-    classification and IPCC carbon stock estimation.
-    """
-
-    URBAN = "urban"
-    FOREST = "forest"
-    CROPLAND = "cropland"
-    GRASSLAND = "grassland"
-    WETLAND = "wetland"
-    WATER = "water"
-    BARREN = "barren"
-    SNOW_ICE = "snow_ice"
-    SHRUBLAND = "shrubland"
-    MANGROVE = "mangrove"
 
 class BoundaryType(str, Enum):
     """Administrative boundary resolution levels.

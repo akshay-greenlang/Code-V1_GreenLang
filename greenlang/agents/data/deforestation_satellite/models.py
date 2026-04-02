@@ -46,6 +46,12 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import ConfigDict, Field
 
+from greenlang.agents.data._geo_shared import (
+    ChangeType,
+    LandCoverClass,
+    SatelliteSource,
+    VegetationIndex,
+)
 from greenlang.schemas import GreenLangBase, utcnow
 from greenlang.schemas.enums import AlertSeverity
 
@@ -60,66 +66,6 @@ def _new_id(prefix: str) -> str:
 # =============================================================================
 # Enumerations
 # =============================================================================
-
-class SatelliteSource(str, Enum):
-    """Satellite data sources supported for image acquisition.
-
-    Covers the primary open-access Earth observation satellites used
-    for deforestation monitoring at various spatial and temporal
-    resolutions.
-    """
-
-    SENTINEL2 = "sentinel2"
-    LANDSAT8 = "landsat8"
-    LANDSAT9 = "landsat9"
-    MODIS = "modis"
-    HARMONIZED = "harmonized"
-
-class VegetationIndex(str, Enum):
-    """Spectral vegetation indices computable from satellite imagery.
-
-    Each index measures a different aspect of vegetation health,
-    moisture content, or burn severity.
-    """
-
-    NDVI = "ndvi"
-    EVI = "evi"
-    NDWI = "ndwi"
-    NBR = "nbr"
-    SAVI = "savi"
-    MSAVI = "msavi"
-    NDMI = "ndmi"
-
-class ChangeType(str, Enum):
-    """Types of land cover change detected between temporal windows.
-
-    Categorises the nature and severity of detected vegetation
-    change from satellite imagery comparison.
-    """
-
-    NO_CHANGE = "no_change"
-    CLEAR_CUT = "clear_cut"
-    DEGRADATION = "degradation"
-    PARTIAL_LOSS = "partial_loss"
-    REGROWTH = "regrowth"
-
-class LandCoverClass(str, Enum):
-    """Land cover classification types for pixel-level labelling.
-
-    Based on commonly used land cover taxonomies including FAO
-    and Copernicus Global Land Cover schemes.
-    """
-
-    DENSE_FOREST = "dense_forest"
-    OPEN_FOREST = "open_forest"
-    SHRUBLAND = "shrubland"
-    GRASSLAND = "grassland"
-    CROPLAND = "cropland"
-    BARE_SOIL = "bare_soil"
-    WATER = "water"
-    URBAN = "urban"
-    WETLAND = "wetland"
-    UNKNOWN = "unknown"
 
 class ForestStatus(str, Enum):
     """Forest status classification for EUDR compliance assessment.

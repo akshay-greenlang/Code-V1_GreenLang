@@ -22,6 +22,27 @@ Agents:
     GL-DATA-X-013: IoT Meter Management - Meter inventory and trust
 """
 
+# Shared IoT/Sensor base classes and enums
+from greenlang.agents.data._iot_shared import (
+    SensorAggregation,
+    SensorConnectionBase,
+    SensorDataPointBase,
+    SensorDataQuality,
+)
+
+# Shared supplier-domain enums (used by GL-DATA-X-012, AGENT-DATA-008)
+from greenlang.agents.data._supplier_shared import (
+    DataQualityRating as SharedDataQualityRating,
+    SupplierValidationOutcome,
+)
+
+# Shared climate-domain base models and enums (used by GL-DATA-X-008, AGENT-DATA-020)
+from greenlang.agents.data._climate_shared import (
+    GeoCoordinate,
+    ClimateScenario as SharedClimateScenario,
+    TimeHorizon as SharedTimeHorizon,
+)
+
 # GL-DATA-X-001: Document Ingestion & OCR Agent
 from greenlang.agents.data.document_ingestion_agent import (
     DocumentIngestionAgent,
@@ -125,6 +146,13 @@ from greenlang.agents.data.ag_sensors_agent import (
     SensorType,
     CropType,
     FertilizerType,
+)
+
+# Shared geospatial enums and models (used by GL-DATA-X-007, GL-DATA-GEO-003, GL-DATA-006)
+from greenlang.agents.data._geo_shared import (
+    GeoBoundingBox,
+    LandCoverType,
+    SatelliteSource,
 )
 
 # GL-DATA-X-007: Satellite & Remote Sensing
@@ -251,6 +279,22 @@ from greenlang.agents.data.iot_meter_management_agent import (
 )
 
 __all__ = [
+    # Shared IoT/Sensor base classes and enums
+    "SensorDataQuality",
+    "SensorAggregation",
+    "SensorConnectionBase",
+    "SensorDataPointBase",
+    # Shared supplier-domain enums (_supplier_shared)
+    "SharedDataQualityRating",
+    "SupplierValidationOutcome",
+    # Shared climate-domain types (_climate_shared)
+    "GeoCoordinate",
+    "SharedClimateScenario",
+    "SharedTimeHorizon",
+    # Shared geospatial enums (_geo_shared)
+    "GeoBoundingBox",
+    "LandCoverType",
+    "SatelliteSource",
     # Document Ingestion Agent (GL-DATA-X-001)
     "DocumentIngestionAgent",
     "DocumentIngestionInput",
@@ -338,6 +382,8 @@ __all__ = [
     "SensorType",
     "CropType",
     "FertilizerType",
+    # Shared geospatial (GL-DATA-X-007, GL-DATA-GEO-003)
+    "GeoBoundingBox",
     # Satellite Remote Sensing Agent (GL-DATA-X-007)
     "SatelliteRemoteSensingAgent",
     "SatelliteConnectionConfig",
