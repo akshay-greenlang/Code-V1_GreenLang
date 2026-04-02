@@ -38,6 +38,7 @@ from typing import Any, Dict, List, Optional
 from greenlang.schemas import GreenLangBase, utcnow
 
 from pydantic import (
+    ConfigDict,
     Field,
     field_validator,
     model_validator,

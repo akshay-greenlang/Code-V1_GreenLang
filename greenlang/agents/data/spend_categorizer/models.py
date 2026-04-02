@@ -59,31 +59,11 @@ from greenlang.schemas.enums import ReportFormat
 # Re-export Layer 1 enumerations from scope3_category_mapper
 # ---------------------------------------------------------------------------
 
-from greenlang.agents.mrv.scope3_category_mapper import (
+from greenlang.agents.mrv.scope3_category_mapper.models import (
     Scope3Category,
     DataSourceType,
     CalculationApproach,
-)
-
-# ---------------------------------------------------------------------------
-# Re-export Layer 1 models from scope3_category_mapper (aliased to avoid
-# collision with this module's own SpendRecord / PurchaseOrder)
-# ---------------------------------------------------------------------------
-
-from greenlang.agents.mrv.scope3_category_mapper import (
     SpendRecord as L1SpendRecord,
-    PurchaseOrder as L1PurchaseOrder,
-    BOMItem,
-    CategoryMappingResult,
-)
-
-# ---------------------------------------------------------------------------
-# Re-export Layer 1 constants from scope3_category_mapper
-# ---------------------------------------------------------------------------
-
-from greenlang.agents.mrv.scope3_category_mapper import (
-    NAICS_TO_CATEGORY,
-    SPEND_KEYWORDS_TO_CATEGORY,
 )
 
 # ---------------------------------------------------------------------------
@@ -1920,14 +1900,6 @@ __all__ = [
     # Re-exported Layer 1 models (scope3_category_mapper, aliased)
     # -------------------------------------------------------------------------
     "L1SpendRecord",
-    "L1PurchaseOrder",
-    "BOMItem",
-    "CategoryMappingResult",
-    # -------------------------------------------------------------------------
-    # Re-exported Layer 1 constants (scope3_category_mapper)
-    # -------------------------------------------------------------------------
-    "NAICS_TO_CATEGORY",
-    "SPEND_KEYWORDS_TO_CATEGORY",
     # -------------------------------------------------------------------------
     # Re-exported Layer 1 enumerations (erp_connector.models)
     # -------------------------------------------------------------------------

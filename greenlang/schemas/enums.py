@@ -433,6 +433,7 @@ class AlertStatus(str, Enum):
     monitoring, and EUDR agent modules.
     """
 
+    PENDING = "pending"
     FIRING = "firing"
     ACKNOWLEDGED = "acknowledged"
     INVESTIGATING = "investigating"
@@ -467,6 +468,7 @@ class FileFormat(str, Enum):
     ingestion, parsing, and export modules.
     """
 
+    AUTO = "auto"
     CSV = "csv"
     JSON = "json"
     XML = "xml"

@@ -50,7 +50,7 @@ from greenlang.agents.data.erp_connector.metrics import (
     record_batch_sync,
     update_active_connections,
     update_sync_queue_size,
-    erp_sync_duration_seconds,
+    m as erp_metrics,
 )
 from greenlang.schemas import GreenLangBase
 
@@ -990,8 +990,8 @@ class ERPConnectorService:
             duration = time.time() - start_time
 
             # Observe sync duration
-            if PROMETHEUS_AVAILABLE and erp_sync_duration_seconds is not None:
-                erp_sync_duration_seconds.observe(duration)
+            if PROMETHEUS_AVAILABLE:
+                erp_metrics.record_operation(duration)
 
             sync_result = SyncResult(
                 connection_id=connection_id,
@@ -1204,8 +1204,8 @@ class ERPConnectorService:
 
             duration = time.time() - start_time
 
-            if PROMETHEUS_AVAILABLE and erp_sync_duration_seconds is not None:
-                erp_sync_duration_seconds.observe(duration)
+            if PROMETHEUS_AVAILABLE:
+                erp_metrics.record_operation(duration)
 
             sync_result = SyncResult(
                 connection_id=connection_id,
@@ -1360,8 +1360,8 @@ class ERPConnectorService:
 
             duration = time.time() - start_time
 
-            if PROMETHEUS_AVAILABLE and erp_sync_duration_seconds is not None:
-                erp_sync_duration_seconds.observe(duration)
+            if PROMETHEUS_AVAILABLE:
+                erp_metrics.record_operation(duration)
 
             sync_result = SyncResult(
                 connection_id=connection_id,

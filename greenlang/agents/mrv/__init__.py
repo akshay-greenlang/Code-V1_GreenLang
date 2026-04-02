@@ -68,16 +68,9 @@ from greenlang.agents.mrv.scope1_combustion import (
 )
 
 from greenlang.agents.mrv.refrigerants_fgas import (
-    RefrigerantsFGasAgent,
     RefrigerantType,
     EquipmentType,
     CalculationMethod,
-    RefrigerantInventory,
-    MassBalanceInput,
-    FGasEmissionResult,
-    RefrigerantsFGasInput,
-    RefrigerantsFGasOutput,
-    GWP_REFRIGERANTS,
 )
 
 # Scope 2 Agents
@@ -105,158 +98,182 @@ from greenlang.agents.mrv.scope2_market_based import (
 
 # Scope 3 Category Mapper
 from greenlang.agents.mrv.scope3_category_mapper import (
-    Scope3CategoryMapperAgent,
-    Scope3Category,
-    DataSourceType,
-    CalculationApproach,
-    SpendRecord,
-    PurchaseOrder,
-    BOMItem,
-    CategoryMappingResult,
-    Scope3CategoryMapperInput,
-    Scope3CategoryMapperOutput,
+    AGENT_ID as SCOPE3_CATEGORY_MAPPER_AGENT_ID,
 )
 
 # Cross-Cutting Agents
-from greenlang.agents.mrv.uncertainty_data_quality import (
-    UncertaintyDataQualityAgent,
-    DataQualityIndicator,
-    UncertaintyType,
-    DistributionType,
-    UncertaintyInput,
-    DataQualityAssessment,
-    UncertaintyResult,
-    DataQualityResult,
-    UncertaintyDataQualityInput,
-    UncertaintyDataQualityOutput,
-)
+try:
+    from greenlang.agents.mrv.uncertainty_data_quality import (
+        UncertaintyDataQualityAgent,
+        DataQualityIndicator,
+        UncertaintyType,
+        DistributionType,
+        UncertaintyInput,
+        DataQualityAssessment,
+        UncertaintyResult,
+        DataQualityResult,
+        UncertaintyDataQualityInput,
+        UncertaintyDataQualityOutput,
+    )
+except ImportError:
+    pass
 
-from greenlang.agents.mrv.audit_trail_lineage import (
-    AuditTrailLineageAgent,
-    LineageEventType,
-    DataSource as LineageDataSource,
-    LineageNode,
-    LineageEdge,
-    AuditEntry,
-    LineageGraph,
-    AuditTrailLineageInput,
-    AuditTrailLineageOutput,
-)
+try:
+    from greenlang.agents.mrv.audit_trail_lineage import (
+        AuditTrailLineageAgent,
+        LineageEventType,
+        DataSource as LineageDataSource,
+        LineageNode,
+        LineageEdge,
+        AuditEntry,
+        LineageGraph,
+        AuditTrailLineageInput,
+        AuditTrailLineageOutput,
+    )
+except ImportError:
+    pass
 
-from greenlang.agents.mrv.consolidation_rollup import (
-    ConsolidationRollupAgent,
-    ConsolidationApproach,
-    EntityType,
-    EntityEmissions,
-    ConsolidatedResult,
-    ConsolidationInput,
-    ConsolidationOutput,
-)
+try:
+    from greenlang.agents.mrv.consolidation_rollup import (
+        ConsolidationRollupAgent,
+        ConsolidationApproach,
+        EntityType,
+        EntityEmissions,
+        ConsolidatedResult,
+        ConsolidationInput,
+        ConsolidationOutput,
+    )
+except ImportError:
+    pass
 
-from greenlang.agents.mrv.baseline_target_tracker import (
-    BaselineTargetTrackerAgent,
-    TargetType,
-    TargetScope,
-    TargetStatus,
-    BaselineData,
-    EmissionsTarget,
-    AnnualEmissions,
-    TargetProgress,
-    BaselineTargetInput,
-    BaselineTargetOutput,
-)
+try:
+    from greenlang.agents.mrv.baseline_target_tracker import (
+        BaselineTargetTrackerAgent,
+        TargetType,
+        TargetScope,
+        TargetStatus,
+        BaselineData,
+        EmissionsTarget,
+        AnnualEmissions,
+        TargetProgress,
+        BaselineTargetInput,
+        BaselineTargetOutput,
+    )
+except ImportError:
+    pass
 
-from greenlang.agents.mrv.inventory_boundary import (
-    InventoryBoundaryAgent,
-    BoundaryApproach,
-    FacilityType,
-    ExclusionReason,
-    Facility,
-    BoundaryScope,
-    BoundaryAssessment,
-    InventoryBoundaryInput,
-    InventoryBoundaryOutput,
-)
+try:
+    from greenlang.agents.mrv.inventory_boundary import (
+        InventoryBoundaryAgent,
+        BoundaryApproach,
+        FacilityType,
+        ExclusionReason,
+        Facility,
+        BoundaryScope,
+        BoundaryAssessment,
+        InventoryBoundaryInput,
+        InventoryBoundaryOutput,
+    )
+except ImportError:
+    pass
 
-from greenlang.agents.mrv.temporal_alignment import (
-    TemporalAlignmentAgent,
-    AlignmentMethod,
-    TimeGranularity,
-    TimePeriod,
-    DataPoint,
-    AlignedDataPoint,
-    TemporalAlignmentInput,
-    TemporalAlignmentOutput,
-)
+try:
+    from greenlang.agents.mrv.temporal_alignment import (
+        TemporalAlignmentAgent,
+        AlignmentMethod,
+        TimeGranularity,
+        TimePeriod,
+        DataPoint,
+        AlignedDataPoint,
+        TemporalAlignmentInput,
+        TemporalAlignmentOutput,
+    )
+except ImportError:
+    pass
 
-from greenlang.agents.mrv.activity_data_validation import (
-    ActivityDataValidationAgent,
-    ValidationSeverity,
-    ValidationCategory,
-    ActivityDataRecord,
-    ValidationRule,
-    ValidationIssue,
-    ValidationResult,
-    ActivityDataValidationInput,
-    ActivityDataValidationOutput,
-)
+try:
+    from greenlang.agents.mrv.activity_data_validation import (
+        ActivityDataValidationAgent,
+        ValidationSeverity,
+        ValidationCategory,
+        ActivityDataRecord,
+        ValidationRule,
+        ValidationIssue,
+        ValidationResult,
+        ActivityDataValidationInput,
+        ActivityDataValidationOutput,
+    )
+except ImportError:
+    pass
 
-from greenlang.agents.mrv.emission_factor_selection import (
-    EmissionFactorSelectionAgent,
-    EFTier,
-    EFSource,
-    ActivityType,
-    EmissionFactor,
-    EFSelectionCriteria,
-    EFSelectionResult,
-    EmissionFactorSelectionInput,
-    EmissionFactorSelectionOutput,
-)
+try:
+    from greenlang.agents.mrv.emission_factor_selection import (
+        EmissionFactorSelectionAgent,
+        EFTier,
+        EFSource,
+        ActivityType,
+        EmissionFactor,
+        EFSelectionCriteria,
+        EFSelectionResult,
+        EmissionFactorSelectionInput,
+        EmissionFactorSelectionOutput,
+    )
+except ImportError:
+    pass
 
-from greenlang.agents.mrv.gwp_application import (
-    GWPApplicationAgent,
-    GWPSource,
-    GWPHorizon,
-    GHGType,
-    GHGQuantity,
-    GWPConversionResult,
-    GWPApplicationInput,
-    GWPApplicationOutput,
-    GWP_VALUES,
-)
+try:
+    from greenlang.agents.mrv.gwp_application import (
+        GWPApplicationAgent,
+        GWPSource,
+        GWPHorizon,
+        GHGType,
+        GHGQuantity,
+        GWPConversionResult,
+        GWPApplicationInput,
+        GWPApplicationOutput,
+        GWP_VALUES,
+    )
+except ImportError:
+    pass
 
-from greenlang.agents.mrv.process_emissions import (
-    ProcessEmissionsAgent,
-    ProcessType,
-    ProcessActivity,
-    ProcessEmissionResult,
-    ProcessEmissionsInput,
-    ProcessEmissionsOutput,
-    PROCESS_EMISSION_FACTORS,
-)
+try:
+    from greenlang.agents.mrv.process_emissions import (
+        ProcessEmissionsAgent,
+        ProcessType,
+        ProcessActivity,
+        ProcessEmissionResult,
+        ProcessEmissionsInput,
+        ProcessEmissionsOutput,
+        PROCESS_EMISSION_FACTORS,
+    )
+except ImportError:
+    pass
 
 # Additional MRV Agents (GL-MRV-X-016 to GL-MRV-X-030)
-from greenlang.agents.mrv.additional_mrv_agents import (
-    BusinessTravelAgent,
-    EmployeeCommutingAgent,
-    WasteEmissionsAgent,
-    UpstreamTransportAgent,
-    CapitalGoodsAgent,
-    FuelEnergyRelatedAgent,
-    PurchasedGoodsAgent,
-    DownstreamTransportAgent,
-    ProductUsePhaseAgent,
-    EndOfLifeAgent,
-    LeasedAssetsAgent,
-    FranchisesAgent,
-    InvestmentsAgent,
-    BiogenicCarbonAgent,
-    RemovalsOffsetsAgent,
-    TravelMode,
-    CommuteMode,
-    WasteType,
-    TransportMode,
-)
+try:
+    from greenlang.agents.mrv.additional_mrv_agents import (
+        BusinessTravelAgent,
+        EmployeeCommutingAgent,
+        WasteEmissionsAgent,
+        UpstreamTransportAgent,
+        CapitalGoodsAgent,
+        FuelEnergyRelatedAgent,
+        PurchasedGoodsAgent,
+        DownstreamTransportAgent,
+        ProductUsePhaseAgent,
+        EndOfLifeAgent,
+        LeasedAssetsAgent,
+        FranchisesAgent,
+        InvestmentsAgent,
+        BiogenicCarbonAgent,
+        RemovalsOffsetsAgent,
+        TravelMode,
+        CommuteMode,
+        WasteType,
+        TransportMode,
+    )
+except ImportError:
+    pass
 
 # =============================================================================
 # Industrial Sector MRV Agents
@@ -314,7 +331,6 @@ except ImportError:
 __all__: List[str] = [
     # Core MRV Agents - Scope 1
     "Scope1CombustionAgent",
-    "RefrigerantsFGasAgent",
     "ProcessEmissionsAgent",
 
     # Core MRV Agents - Scope 2
@@ -322,7 +338,6 @@ __all__: List[str] = [
     "Scope2MarketBasedAgent",
 
     # Core MRV Agents - Scope 3
-    "Scope3CategoryMapperAgent",
     "BusinessTravelAgent",
     "EmployeeCommutingAgent",
     "WasteEmissionsAgent",
@@ -400,18 +415,11 @@ __all__: List[str] = [
     # Data Models
     "FuelConsumption",
     "CombustionCalculationResult",
-    "RefrigerantInventory",
-    "MassBalanceInput",
-    "FGasEmissionResult",
     "EnergyConsumption",
     "LocationBasedResult",
     "ContractualInstrument",
     "EnergyPurchase",
     "MarketBasedResult",
-    "SpendRecord",
-    "PurchaseOrder",
-    "BOMItem",
-    "CategoryMappingResult",
     "UncertaintyInput",
     "DataQualityAssessment",
     "UncertaintyResult",
@@ -448,14 +456,10 @@ __all__: List[str] = [
     # Input/Output Models
     "Scope1CombustionInput",
     "Scope1CombustionOutput",
-    "RefrigerantsFGasInput",
-    "RefrigerantsFGasOutput",
     "Scope2LocationBasedInput",
     "Scope2LocationBasedOutput",
     "Scope2MarketBasedInput",
     "Scope2MarketBasedOutput",
-    "Scope3CategoryMapperInput",
-    "Scope3CategoryMapperOutput",
     "UncertaintyDataQualityInput",
     "UncertaintyDataQualityOutput",
     "AuditTrailLineageInput",
@@ -480,7 +484,6 @@ __all__: List[str] = [
     # Reference Data
     "STATIONARY_EMISSION_FACTORS",
     "MOBILE_EMISSION_FACTORS",
-    "GWP_REFRIGERANTS",
     "GRID_EMISSION_FACTORS",
     "RESIDUAL_MIX_FACTORS",
     "GWP_VALUES",

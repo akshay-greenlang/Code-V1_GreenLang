@@ -40,7 +40,7 @@ from decimal import Decimal, ROUND_HALF_UP
 from typing import Dict, List, Optional, Any
 from datetime import datetime, date
 from enum import Enum
-from pydantic import Field, validator
+from pydantic import ConfigDict, Field, validator
 from greenlang.schemas import GreenLangBase, utcnow, new_uuid
 
 import hashlib

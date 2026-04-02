@@ -128,19 +128,14 @@ from greenlang.agents.data.erp_connector.provenance import ProvenanceTracker
 # ---------------------------------------------------------------------------
 from greenlang.agents.data.erp_connector.metrics import (
     PROMETHEUS_AVAILABLE,
+    m,
     # Metric objects
-    erp_connections_total,
-    erp_sync_duration_seconds,
     erp_spend_records_total,
     erp_purchase_orders_total,
     erp_scope3_mappings_total,
     erp_emissions_calculated_total,
-    erp_sync_errors_total,
     erp_currency_conversions_total,
     erp_inventory_items_total,
-    erp_batch_syncs_total,
-    erp_active_connections,
-    erp_sync_queue_size,
     # Helper functions
     record_connection,
     record_spend_record,
@@ -225,18 +220,13 @@ __all__ = [
     "ProvenanceTracker",
     # Metric objects
     "PROMETHEUS_AVAILABLE",
-    "erp_connections_total",
-    "erp_sync_duration_seconds",
+    "m",
     "erp_spend_records_total",
     "erp_purchase_orders_total",
     "erp_scope3_mappings_total",
     "erp_emissions_calculated_total",
-    "erp_sync_errors_total",
     "erp_currency_conversions_total",
     "erp_inventory_items_total",
-    "erp_batch_syncs_total",
-    "erp_active_connections",
-    "erp_sync_queue_size",
     # Metric helper functions
     "record_connection",
     "record_spend_record",

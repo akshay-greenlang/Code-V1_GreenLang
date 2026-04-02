@@ -131,19 +131,14 @@ from greenlang.agents.data.pdf_extractor.provenance import ProvenanceTracker
 # ---------------------------------------------------------------------------
 from greenlang.agents.data.pdf_extractor.metrics import (
     PROMETHEUS_AVAILABLE,
-    # Metric objects
-    pdf_documents_processed_total,
-    pdf_processing_duration_seconds,
+    m as pdf_metrics,
+    # Agent-specific metric objects
     pdf_pages_extracted_total,
     pdf_fields_extracted_total,
     pdf_extraction_confidence,
     pdf_ocr_operations_total,
-    pdf_validation_errors_total,
     pdf_classification_total,
     pdf_line_items_extracted_total,
-    pdf_batch_jobs_total,
-    pdf_active_jobs,
-    pdf_queue_size,
     # Helper functions
     record_document_processed,
     record_pages_extracted,
@@ -228,18 +223,13 @@ __all__ = [
     "ProvenanceTracker",
     # Metric objects
     "PROMETHEUS_AVAILABLE",
-    "pdf_documents_processed_total",
-    "pdf_processing_duration_seconds",
+    "pdf_metrics",
     "pdf_pages_extracted_total",
     "pdf_fields_extracted_total",
     "pdf_extraction_confidence",
     "pdf_ocr_operations_total",
-    "pdf_validation_errors_total",
     "pdf_classification_total",
     "pdf_line_items_extracted_total",
-    "pdf_batch_jobs_total",
-    "pdf_active_jobs",
-    "pdf_queue_size",
     # Metric helper functions
     "record_document_processed",
     "record_pages_extracted",

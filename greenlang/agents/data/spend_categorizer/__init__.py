@@ -121,22 +121,21 @@ from greenlang.agents.data.spend_categorizer.models import (
     # Enumerations
     TaxonomySystem,
     Scope3Category,
-    ConfidenceLevel,
+    ClassificationConfidence,
     RecordStatus,
-    ClassificationMethod,
     EmissionFactorSource,
     ReportFormat,
-    RuleConditionType,
+    RuleMatchType,
     # Core models
     SpendRecord,
     TaxonomyCode,
-    ClassificationResult,
+    TaxonomyClassification,
     Scope3Assignment,
     EmissionFactor,
-    EmissionResult,
+    EmissionCalculationResult,
     CategoryRule,
     # Request models
-    IngestRecordsRequest,
+    IngestSpendRequest,
     ClassifyRequest,
     CalculateEmissionsRequest,
 )
@@ -146,7 +145,6 @@ from greenlang.agents.data.spend_categorizer.models import (
 # ---------------------------------------------------------------------------
 from greenlang.agents.data.spend_categorizer.setup import (
     SpendCategorizerService,
-    configure_spend_categorizer,
     get_spend_categorizer,
     get_router,
     # Models
@@ -212,27 +210,25 @@ __all__ = [
     # Layer 2 Enumerations
     "TaxonomySystem",
     "Scope3Category",
-    "ConfidenceLevel",
+    "ClassificationConfidence",
     "RecordStatus",
-    "ClassificationMethod",
     "EmissionFactorSource",
     "ReportFormat",
-    "RuleConditionType",
+    "RuleMatchType",
     # Layer 2 Core models
     "SpendRecord",
     "TaxonomyCode",
-    "ClassificationResult",
+    "TaxonomyClassification",
     "Scope3Assignment",
     "EmissionFactor",
-    "EmissionResult",
+    "EmissionCalculationResult",
     "CategoryRule",
     # Layer 2 Request models
-    "IngestRecordsRequest",
+    "IngestSpendRequest",
     "ClassifyRequest",
     "CalculateEmissionsRequest",
     # Service setup facade
     "SpendCategorizerService",
-    "configure_spend_categorizer",
     "get_spend_categorizer",
     "get_router",
     # Response models

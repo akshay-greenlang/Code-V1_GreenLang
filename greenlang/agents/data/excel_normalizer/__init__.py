@@ -114,19 +114,14 @@ from greenlang.agents.data.excel_normalizer.provenance import ProvenanceTracker
 # ---------------------------------------------------------------------------
 from greenlang.agents.data.excel_normalizer.metrics import (
     PROMETHEUS_AVAILABLE,
+    m,
     # Metric objects
-    excel_files_processed_total,
-    excel_processing_duration_seconds,
     excel_rows_normalized_total,
     excel_columns_mapped_total,
     excel_mapping_confidence,
     excel_quality_score,
-    excel_validation_findings_total,
     excel_transforms_total,
     excel_type_detections_total,
-    excel_batch_jobs_total,
-    excel_active_jobs,
-    excel_queue_size,
     # Helper functions
     record_file_processed,
     record_rows_normalized,
@@ -200,18 +195,13 @@ __all__ = [
     "ProvenanceTracker",
     # Metric objects
     "PROMETHEUS_AVAILABLE",
-    "excel_files_processed_total",
-    "excel_processing_duration_seconds",
+    "m",
     "excel_rows_normalized_total",
     "excel_columns_mapped_total",
     "excel_mapping_confidence",
     "excel_quality_score",
-    "excel_validation_findings_total",
     "excel_transforms_total",
     "excel_type_detections_total",
-    "excel_batch_jobs_total",
-    "excel_active_jobs",
-    "excel_queue_size",
     # Metric helper functions
     "record_file_processed",
     "record_rows_normalized",

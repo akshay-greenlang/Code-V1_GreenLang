@@ -38,6 +38,9 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import ConfigDict, Field, field_validator
 
+from greenlang.schemas import GreenLangBase, utcnow
+from greenlang.schemas.enums import SortOrder
+
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
@@ -363,9 +366,6 @@ class QueryFilter(GreenLangBase):
 
     Defines a single predicate that is applied to filter query results
     from one or more data sources.
-
-from greenlang.schemas import GreenLangBase, utcnow
-from greenlang.schemas.enums import SortOrder
 
     Attributes:
         field: Field name to filter on.

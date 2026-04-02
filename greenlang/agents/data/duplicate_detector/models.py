@@ -41,6 +41,9 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import Field, field_validator
 
+from greenlang.schemas import GreenLangBase, utcnow
+from greenlang.schemas.enums import ReportFormat
+
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
@@ -268,9 +271,6 @@ class JobStatus(str, Enum):
 
     Tracks the current execution state of a dedup pipeline
     from submission through completion, failure, or cancellation.
-
-from greenlang.schemas import GreenLangBase, utcnow
-from greenlang.schemas.enums import ReportFormat
     """
 
     PENDING = "pending"

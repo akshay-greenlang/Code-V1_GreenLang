@@ -47,6 +47,7 @@ class SatelliteProvider(str, Enum):
     # From deforestation_satellite (additional values)
     SENTINEL2 = "sentinel2"
     LANDSAT8 = "landsat8"
+    LANDSAT9 = "landsat9"
     MODIS = "modis"
     HARMONIZED = "harmonized"
 
