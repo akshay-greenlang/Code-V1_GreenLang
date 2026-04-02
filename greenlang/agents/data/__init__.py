@@ -95,7 +95,7 @@ from greenlang.agents.data.bms_connector_agent import (
 )
 
 # GL-DATA-X-004: ERP/Finance Connector
-from greenlang.agents.data.erp_connector_agent import (
+from greenlang.agents.data.erp_connector import (
     ERPConnectorAgent,
     ERPConnectionConfig,
     ERPQueryInput,

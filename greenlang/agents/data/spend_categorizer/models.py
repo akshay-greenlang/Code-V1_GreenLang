@@ -14,7 +14,7 @@ Re-exported Layer 1 sources:
         DataSourceType, CalculationApproach, SpendRecord (as L1SpendRecord),
         PurchaseOrder (as L1PurchaseOrder), BOMItem, CategoryMappingResult,
         NAICS_TO_CATEGORY, SPEND_KEYWORDS_TO_CATEGORY
-    - greenlang.agents.data.erp_connector_agent: ERPSystem,
+    - greenlang.agents.data.erp_connector.models: ERPSystem,
         SpendCategory (as ERPSpendCategory), TransactionType,
         SPEND_TO_SCOPE3_MAPPING, DEFAULT_EMISSION_FACTORS
     - greenlang.agents.procurement.procurement_carbon_footprint:
@@ -87,25 +87,25 @@ from greenlang.agents.mrv.scope3_category_mapper import (
 )
 
 # ---------------------------------------------------------------------------
-# Re-export Layer 1 enumerations from erp_connector_agent
+# Re-export Layer 1 enumerations from erp_connector.models
 # ---------------------------------------------------------------------------
 
-from greenlang.agents.data.erp_connector_agent import (
+from greenlang.agents.data.erp_connector.models import (
     ERPSystem,
     TransactionType,
 )
 
 # Re-export SpendCategory from ERP connector aliased to avoid collision with
 # procurement_carbon_footprint.SpendCategory
-from greenlang.agents.data.erp_connector_agent import (
+from greenlang.agents.data.erp_connector.models import (
     SpendCategory as ERPSpendCategory,
 )
 
 # ---------------------------------------------------------------------------
-# Re-export Layer 1 constants from erp_connector_agent
+# Re-export Layer 1 constants from erp_connector.models
 # ---------------------------------------------------------------------------
 
-from greenlang.agents.data.erp_connector_agent import (
+from greenlang.agents.data.erp_connector.models import (
     SPEND_TO_SCOPE3_MAPPING,
     DEFAULT_EMISSION_FACTORS,
 )
@@ -1929,13 +1929,13 @@ __all__ = [
     "NAICS_TO_CATEGORY",
     "SPEND_KEYWORDS_TO_CATEGORY",
     # -------------------------------------------------------------------------
-    # Re-exported Layer 1 enumerations (erp_connector_agent)
+    # Re-exported Layer 1 enumerations (erp_connector.models)
     # -------------------------------------------------------------------------
     "ERPSystem",
     "ERPSpendCategory",
     "TransactionType",
     # -------------------------------------------------------------------------
-    # Re-exported Layer 1 constants (erp_connector_agent)
+    # Re-exported Layer 1 constants (erp_connector.models)
     # -------------------------------------------------------------------------
     "SPEND_TO_SCOPE3_MAPPING",
     "DEFAULT_EMISSION_FACTORS",

@@ -107,6 +107,11 @@ from greenlang.agents.data.erp_connector.models import (
 )
 
 # ---------------------------------------------------------------------------
+# Agent class
+# ---------------------------------------------------------------------------
+from greenlang.agents.data.erp_connector.agent import ERPConnectorAgent
+
+# ---------------------------------------------------------------------------
 # Core engines
 # ---------------------------------------------------------------------------
 from greenlang.agents.data.erp_connector.connection_manager import ConnectionManager
@@ -207,6 +212,8 @@ __all__ = [
     "SyncSpendRequest",
     "MapVendorRequest",
     "CalculateEmissionsRequest",
+    # Agent class
+    "ERPConnectorAgent",
     # Core engines
     "ConnectionManager",
     "SpendExtractor",

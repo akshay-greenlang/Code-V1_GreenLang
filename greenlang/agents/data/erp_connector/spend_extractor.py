@@ -56,8 +56,8 @@ from typing import Any, Dict, List, Optional, Tuple
 from pydantic import Field
 from greenlang.schemas import GreenLangBase, utcnow
 
-# Layer 1 imports
-from greenlang.agents.data.erp_connector_agent import (
+# Layer 1 imports (canonical source: erp_connector.models)
+from greenlang.agents.data.erp_connector.models import (
     SpendCategory,
     SpendRecord,
     TransactionType,

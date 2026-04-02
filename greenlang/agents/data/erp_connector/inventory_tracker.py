@@ -50,8 +50,8 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import Field
 
-# Layer 1 imports
-from greenlang.agents.data.erp_connector_agent import InventoryItem
+# Layer 1 imports (canonical source: erp_connector.models)
+from greenlang.agents.data.erp_connector.models import InventoryItem
 from greenlang.schemas import GreenLangBase, utcnow
 
 logger = logging.getLogger(__name__)

@@ -1,22 +1,22 @@
 # -*- coding: utf-8 -*-
 """
-ERP/Finance Connector Service Data Models - AGENT-DATA-003: ERP Connector
+ERP/Finance Connector Data Models - AGENT-DATA-003: ERP Connector
+==================================================================
 
-Pydantic v2 data models for the ERP/Finance Connector SDK. Re-exports the
-Layer 1 enumerations and models from the foundation agent, and defines
-additional SDK models for connection records, sync jobs, spend summaries,
-Scope 3 summaries, emission results, currency rates, statistics, and
-request wrappers.
+Canonical data models for the ERP/Finance Connector.  This module is the
+single source of truth for all core enumerations, Pydantic models, and
+mapping constants used by the ERP Connector agent and its SDK engines.
 
-Models:
-    - Re-exported enums: ERPSystem, Scope3Category, TransactionType,
-        SpendCategory
-    - Re-exported Layer 1: ERPConnectionConfig, VendorMapping,
-        MaterialMapping, PurchaseOrderLine, PurchaseOrder, SpendRecord,
-        InventoryItem, ERPQueryInput, ERPQueryOutput
-    - Re-exported constants: SPEND_TO_SCOPE3_MAPPING, DEFAULT_EMISSION_FACTORS
-    - New enums: ConnectionStatus, SyncMode, EmissionMethodology
-    - SDK models: ConnectionRecord, SyncJob, SpendSummary, Scope3Summary,
+Layer 1 (core):
+    - Enums: ERPSystem, Scope3Category, TransactionType, SpendCategory
+    - Models: ERPConnectionConfig, VendorMapping, MaterialMapping,
+        PurchaseOrderLine, PurchaseOrder, SpendRecord, InventoryItem,
+        ERPQueryInput, ERPQueryOutput
+    - Constants: SPEND_TO_SCOPE3_MAPPING, DEFAULT_EMISSION_FACTORS
+
+SDK extensions:
+    - Enums: ConnectionStatus, SyncMode, EmissionMethodology
+    - Models: ConnectionRecord, SyncJob, SpendSummary, Scope3Summary,
         EmissionResult, CurrencyRate, ERPStatistics
     - Request models: RegisterConnectionRequest, SyncSpendRequest,
         MapVendorRequest, CalculateEmissionsRequest
@@ -37,48 +37,246 @@ from typing import Dict, List, Optional
 from pydantic import Field, field_validator
 from greenlang.schemas import GreenLangBase, utcnow
 
-# ---------------------------------------------------------------------------
-# Re-export Layer 1 enumerations
-# ---------------------------------------------------------------------------
-
-from greenlang.agents.data.erp_connector_agent import (
-    ERPSystem,
-    Scope3Category,
-    TransactionType,
-    SpendCategory,
-)
-
-# ---------------------------------------------------------------------------
-# Re-export Layer 1 models
-# ---------------------------------------------------------------------------
-
-from greenlang.agents.data.erp_connector_agent import (
-    ERPConnectionConfig,
-    VendorMapping,
-    MaterialMapping,
-    PurchaseOrderLine,
-    PurchaseOrder,
-    SpendRecord,
-    InventoryItem,
-    ERPQueryInput,
-    ERPQueryOutput,
-)
-
-# ---------------------------------------------------------------------------
-# Re-export Layer 1 constants
-# ---------------------------------------------------------------------------
-
-from greenlang.agents.data.erp_connector_agent import (
-    SPEND_TO_SCOPE3_MAPPING,
-    DEFAULT_EMISSION_FACTORS,
-)
-
-# ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
 
 # =============================================================================
-# New Enumerations
+# Core Enumerations (Layer 1)
+# =============================================================================
+
+class ERPSystem(str, Enum):
+    """Supported ERP systems."""
+    SAP_S4HANA = "sap_s4hana"
+    SAP_ECC = "sap_ecc"
+    ORACLE_CLOUD = "oracle_cloud"
+    ORACLE_EBS = "oracle_ebs"
+    NETSUITE = "netsuite"
+    DYNAMICS_365 = "dynamics_365"
+    WORKDAY = "workday"
+    SAGE = "sage"
+    QUICKBOOKS = "quickbooks"
+    SIMULATED = "simulated"
+
+
+class Scope3Category(str, Enum):
+    """GHG Protocol Scope 3 categories."""
+    CAT_1_PURCHASED_GOODS = "cat_1_purchased_goods_services"
+    CAT_2_CAPITAL_GOODS = "cat_2_capital_goods"
+    CAT_3_FUEL_ENERGY = "cat_3_fuel_energy_activities"
+    CAT_4_UPSTREAM_TRANSPORT = "cat_4_upstream_transport"
+    CAT_5_WASTE = "cat_5_waste"
+    CAT_6_BUSINESS_TRAVEL = "cat_6_business_travel"
+    CAT_7_COMMUTING = "cat_7_employee_commuting"
+    CAT_8_UPSTREAM_LEASED = "cat_8_upstream_leased"
+    CAT_9_DOWNSTREAM_TRANSPORT = "cat_9_downstream_transport"
+    CAT_10_PROCESSING = "cat_10_processing_sold_products"
+    CAT_11_USE_OF_SOLD = "cat_11_use_of_sold_products"
+    CAT_12_END_OF_LIFE = "cat_12_end_of_life"
+    CAT_13_DOWNSTREAM_LEASED = "cat_13_downstream_leased"
+    CAT_14_FRANCHISES = "cat_14_franchises"
+    CAT_15_INVESTMENTS = "cat_15_investments"
+    UNCLASSIFIED = "unclassified"
+
+
+class TransactionType(str, Enum):
+    """Transaction types."""
+    PURCHASE_ORDER = "purchase_order"
+    INVOICE = "invoice"
+    GOODS_RECEIPT = "goods_receipt"
+    PAYMENT = "payment"
+    CREDIT_MEMO = "credit_memo"
+    JOURNAL_ENTRY = "journal_entry"
+
+
+class SpendCategory(str, Enum):
+    """High-level spend categories."""
+    DIRECT_MATERIALS = "direct_materials"
+    INDIRECT_MATERIALS = "indirect_materials"
+    SERVICES = "services"
+    ENERGY = "energy"
+    TRANSPORT = "transport"
+    TRAVEL = "travel"
+    CAPITAL_EQUIPMENT = "capital_equipment"
+    IT_SERVICES = "it_services"
+    PROFESSIONAL_SERVICES = "professional_services"
+    FACILITIES = "facilities"
+    OTHER = "other"
+
+
+# =============================================================================
+# Core Pydantic Models (Layer 1)
+# =============================================================================
+
+class ERPConnectionConfig(GreenLangBase):
+    """ERP connection configuration."""
+    connection_id: str = Field(..., description="Unique connection identifier")
+    erp_system: ERPSystem = Field(..., description="ERP system type")
+    host: str = Field(..., description="ERP server hostname")
+    port: int = Field(default=443)
+    client_id: Optional[str] = Field(None, description="Client/company code")
+    username: str = Field(..., description="API username")
+    password: Optional[str] = Field(None, description="API password or key")
+    api_key: Optional[str] = Field(None)
+    base_url: Optional[str] = Field(None, description="API base URL")
+    timeout_seconds: int = Field(default=60)
+    company_code: Optional[str] = Field(None)
+
+
+class VendorMapping(GreenLangBase):
+    """Vendor to Scope 3 category mapping."""
+    vendor_id: str = Field(..., description="Vendor identifier")
+    vendor_name: str = Field(..., description="Vendor name")
+    primary_category: Scope3Category = Field(..., description="Primary Scope 3 category")
+    secondary_category: Optional[Scope3Category] = Field(None)
+    spend_category: SpendCategory = Field(...)
+    emission_factor_kgco2e_per_dollar: Optional[float] = Field(None)
+    emission_factor_source: Optional[str] = Field(None)
+
+
+class MaterialMapping(GreenLangBase):
+    """Material to Scope 3 category mapping."""
+    material_id: str = Field(..., description="Material identifier")
+    material_name: str = Field(..., description="Material name")
+    material_group: Optional[str] = Field(None)
+    category: Scope3Category = Field(...)
+    spend_category: SpendCategory = Field(...)
+    unit: str = Field(default="each")
+    emission_factor_kgco2e_per_unit: Optional[float] = Field(None)
+
+
+class PurchaseOrderLine(GreenLangBase):
+    """Purchase order line item."""
+    line_number: int = Field(...)
+    material_id: Optional[str] = Field(None)
+    description: str = Field(...)
+    quantity: float = Field(...)
+    unit: str = Field(...)
+    unit_price: float = Field(...)
+    total_price: float = Field(...)
+    currency: str = Field(default="USD")
+    delivery_date: Optional[date] = Field(None)
+    cost_center: Optional[str] = Field(None)
+    gl_account: Optional[str] = Field(None)
+
+
+class PurchaseOrder(GreenLangBase):
+    """Purchase order."""
+    po_number: str = Field(..., description="PO number")
+    vendor_id: str = Field(..., description="Vendor ID")
+    vendor_name: str = Field(..., description="Vendor name")
+    order_date: date = Field(..., description="Order date")
+    delivery_date: Optional[date] = Field(None)
+    total_amount: float = Field(..., description="Total PO amount")
+    currency: str = Field(default="USD")
+    status: str = Field(default="open")
+    company_code: Optional[str] = Field(None)
+    lines: List[PurchaseOrderLine] = Field(default_factory=list)
+    scope3_category: Optional[Scope3Category] = Field(None)
+    spend_category: Optional[SpendCategory] = Field(None)
+
+
+class SpendRecord(GreenLangBase):
+    """Spend record for analysis."""
+    record_id: str = Field(..., description="Record identifier")
+    transaction_type: TransactionType = Field(...)
+    transaction_date: date = Field(...)
+    vendor_id: str = Field(...)
+    vendor_name: str = Field(...)
+    amount: float = Field(..., description="Spend amount")
+    currency: str = Field(default="USD")
+    amount_usd: Optional[float] = Field(None, description="Amount in USD")
+    description: Optional[str] = Field(None)
+    material_group: Optional[str] = Field(None)
+    cost_center: Optional[str] = Field(None)
+    gl_account: Optional[str] = Field(None)
+    scope3_category: Optional[Scope3Category] = Field(None)
+    spend_category: Optional[SpendCategory] = Field(None)
+    estimated_emissions_kgco2e: Optional[float] = Field(None)
+
+
+class InventoryItem(GreenLangBase):
+    """Inventory item."""
+    material_id: str = Field(...)
+    material_name: str = Field(...)
+    material_group: Optional[str] = Field(None)
+    quantity_on_hand: float = Field(...)
+    unit: str = Field(...)
+    unit_cost: Optional[float] = Field(None)
+    total_value: Optional[float] = Field(None)
+    warehouse_id: Optional[str] = Field(None)
+    last_receipt_date: Optional[date] = Field(None)
+
+
+class ERPQueryInput(GreenLangBase):
+    """Input for ERP data query."""
+    connection_id: str = Field(..., description="ERP connection to use")
+    query_type: str = Field(..., description="Query type: spend, po, inventory, vendor")
+    start_date: date = Field(..., description="Query start date")
+    end_date: date = Field(..., description="Query end date")
+    vendor_ids: Optional[List[str]] = Field(None)
+    material_groups: Optional[List[str]] = Field(None)
+    cost_centers: Optional[List[str]] = Field(None)
+    company_codes: Optional[List[str]] = Field(None)
+    apply_scope3_mapping: bool = Field(default=True)
+    calculate_emissions: bool = Field(default=True)
+    currency: str = Field(default="USD")
+    tenant_id: Optional[str] = Field(None)
+
+
+class ERPQueryOutput(GreenLangBase):
+    """Output from ERP data query."""
+    connection_id: str = Field(...)
+    query_type: str = Field(...)
+    period_start: date = Field(...)
+    period_end: date = Field(...)
+    record_count: int = Field(...)
+    total_spend_usd: float = Field(...)
+    spend_records: List[SpendRecord] = Field(default_factory=list)
+    purchase_orders: List[PurchaseOrder] = Field(default_factory=list)
+    inventory_items: List[InventoryItem] = Field(default_factory=list)
+    scope3_summary: Dict[str, float] = Field(default_factory=dict)
+    emissions_summary: Dict[str, float] = Field(default_factory=dict)
+    processing_time_ms: float = Field(...)
+    provenance_hash: str = Field(...)
+    warnings: List[str] = Field(default_factory=list)
+
+
+# =============================================================================
+# Scope 3 Category Mapping Rules (Layer 1 Constants)
+# =============================================================================
+
+# Default spend category to Scope 3 category mapping
+SPEND_TO_SCOPE3_MAPPING: Dict[SpendCategory, Scope3Category] = {
+    SpendCategory.DIRECT_MATERIALS: Scope3Category.CAT_1_PURCHASED_GOODS,
+    SpendCategory.INDIRECT_MATERIALS: Scope3Category.CAT_1_PURCHASED_GOODS,
+    SpendCategory.SERVICES: Scope3Category.CAT_1_PURCHASED_GOODS,
+    SpendCategory.ENERGY: Scope3Category.CAT_3_FUEL_ENERGY,
+    SpendCategory.TRANSPORT: Scope3Category.CAT_4_UPSTREAM_TRANSPORT,
+    SpendCategory.TRAVEL: Scope3Category.CAT_6_BUSINESS_TRAVEL,
+    SpendCategory.CAPITAL_EQUIPMENT: Scope3Category.CAT_2_CAPITAL_GOODS,
+    SpendCategory.IT_SERVICES: Scope3Category.CAT_1_PURCHASED_GOODS,
+    SpendCategory.PROFESSIONAL_SERVICES: Scope3Category.CAT_1_PURCHASED_GOODS,
+    SpendCategory.FACILITIES: Scope3Category.CAT_1_PURCHASED_GOODS,
+    SpendCategory.OTHER: Scope3Category.UNCLASSIFIED,
+}
+
+# Default emission factors by spend category (kgCO2e per USD)
+# Source: EPA EEIO model / EXIOBASE
+DEFAULT_EMISSION_FACTORS: Dict[SpendCategory, float] = {
+    SpendCategory.DIRECT_MATERIALS: 0.45,
+    SpendCategory.INDIRECT_MATERIALS: 0.35,
+    SpendCategory.SERVICES: 0.15,
+    SpendCategory.ENERGY: 0.80,
+    SpendCategory.TRANSPORT: 0.55,
+    SpendCategory.TRAVEL: 0.40,
+    SpendCategory.CAPITAL_EQUIPMENT: 0.50,
+    SpendCategory.IT_SERVICES: 0.20,
+    SpendCategory.PROFESSIONAL_SERVICES: 0.10,
+    SpendCategory.FACILITIES: 0.30,
+    SpendCategory.OTHER: 0.25,
+}
+
+
+# =============================================================================
+# SDK Enumerations
 # =============================================================================
 
 class ConnectionStatus(str, Enum):
@@ -725,12 +923,12 @@ class CalculateEmissionsRequest(GreenLangBase):
         return v
 
 __all__ = [
-    # Re-exported enums
+    # Core enums
     "ERPSystem",
     "Scope3Category",
     "TransactionType",
     "SpendCategory",
-    # Re-exported Layer 1 models
+    # Core models
     "ERPConnectionConfig",
     "VendorMapping",
     "MaterialMapping",
@@ -740,10 +938,10 @@ __all__ = [
     "InventoryItem",
     "ERPQueryInput",
     "ERPQueryOutput",
-    # Re-exported constants
+    # Core constants
     "SPEND_TO_SCOPE3_MAPPING",
     "DEFAULT_EMISSION_FACTORS",
-    # New enums
+    # SDK enums
     "ConnectionStatus",
     "SyncMode",
     "EmissionMethodology",
