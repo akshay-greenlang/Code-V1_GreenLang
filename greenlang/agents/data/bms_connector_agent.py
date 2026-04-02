@@ -38,6 +38,11 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 from pydantic import Field, field_validator
 
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
+from greenlang.agents.data._iot_shared import (
+    SensorConnectionBase,
+    SensorDataPointBase,
+    SensorDataQuality,
+)
 from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
@@ -98,29 +103,25 @@ class OccupancyState(str, Enum):
     UNKNOWN = "unknown"
 
 
-class DataQuality(str, Enum):
-    """Data quality indicators."""
-    GOOD = "good"
-    UNCERTAIN = "uncertain"
-    BAD = "bad"
-    MISSING = "missing"
+# Backward-compatible alias -- the local DataQuality enum is replaced by
+# the shared SensorDataQuality which is a strict superset.
+DataQuality = SensorDataQuality
 
 
 # =============================================================================
 # PYDANTIC MODELS
 # =============================================================================
 
-class BMSConnectionConfig(GreenLangBase):
-    """BMS connection configuration."""
-    connection_id: str = Field(..., description="Unique connection identifier")
+class BMSConnectionConfig(SensorConnectionBase):
+    """BMS connection configuration.
+
+    Inherits common connection fields (host, port, timeout, retry, ssl) from
+    SensorConnectionBase and adds BMS-specific fields.
+    """
     building_id: str = Field(..., description="Building identifier")
     building_name: str = Field(..., description="Building name")
     protocol: BMSProtocol = Field(..., description="Communication protocol")
-    host: str = Field(..., description="BMS server hostname or IP")
-    port: int = Field(..., description="Server port")
     device_id: Optional[int] = Field(None, description="BACnet device ID")
-    username: Optional[str] = Field(None)
-    password: Optional[str] = Field(None)
     timezone: str = Field(default="UTC", description="Building timezone")
     floor_area_sqm: Optional[float] = Field(None, description="Total floor area")
 
@@ -169,13 +170,13 @@ class OccupancyData(GreenLangBase):
     confidence: float = Field(default=1.0, ge=0.0, le=1.0)
 
 
-class BMSDataPoint(GreenLangBase):
-    """A single BMS data point."""
-    timestamp: datetime = Field(..., description="Point timestamp")
+class BMSDataPoint(SensorDataPointBase):
+    """A single BMS data point.
+
+    Inherits timestamp, value, quality, and unit from SensorDataPointBase.
+    Adds BMS-specific point_id and equipment_id fields.
+    """
     point_id: str = Field(..., description="BMS point identifier")
-    value: Union[float, int, bool, str] = Field(..., description="Point value")
-    unit: Optional[str] = Field(None, description="Engineering unit")
-    quality: DataQuality = Field(default=DataQuality.GOOD)
     equipment_id: Optional[str] = Field(None)
 
 

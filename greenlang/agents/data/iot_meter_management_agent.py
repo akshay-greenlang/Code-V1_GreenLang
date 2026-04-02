@@ -38,6 +38,9 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 from pydantic import Field
 
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
+from greenlang.agents.data._iot_shared import (
+    SensorDataQuality,
+)
 from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
@@ -162,7 +165,7 @@ class MeterReading(GreenLangBase):
     value: float = Field(...)
     unit: str = Field(...)
     reading_type: str = Field(default="automatic")  # automatic, manual, estimated
-    quality_flag: str = Field(default="good")
+    quality_flag: SensorDataQuality = Field(default=SensorDataQuality.GOOD)
     anomaly_detected: bool = Field(default=False)
 
 

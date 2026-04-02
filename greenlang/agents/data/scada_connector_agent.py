@@ -38,6 +38,12 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 from pydantic import Field, field_validator
 
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
+from greenlang.agents.data._iot_shared import (
+    SensorAggregation,
+    SensorConnectionBase,
+    SensorDataPointBase,
+    SensorDataQuality,
+)
 from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
@@ -61,27 +67,11 @@ class ProtocolType(str, Enum):
     SIMULATED = "simulated"
 
 
-class DataQuality(str, Enum):
-    """Data quality indicators."""
-    GOOD = "good"
-    BAD = "bad"
-    UNCERTAIN = "uncertain"
-    STALE = "stale"
-    SUBSTITUTED = "substituted"
-
-
-class AggregationType(str, Enum):
-    """Aggregation types for time-series data."""
-    RAW = "raw"
-    AVERAGE = "average"
-    MINIMUM = "minimum"
-    MAXIMUM = "maximum"
-    SUM = "sum"
-    COUNT = "count"
-    RANGE = "range"
-    DELTA = "delta"
-    TIME_WEIGHTED = "time_weighted"
-    INTERPOLATED = "interpolated"
+# Backward-compatible aliases -- these previously lived here as local enums.
+# Existing imports (e.g. ``from scada_connector_agent import DataQuality``)
+# continue to work transparently.
+DataQuality = SensorDataQuality
+AggregationType = SensorAggregation
 
 
 class TagDataType(str, Enum):
@@ -114,20 +104,15 @@ class GreenLangDataCategory(str, Enum):
 # PYDANTIC MODELS
 # =============================================================================
 
-class ConnectionConfig(GreenLangBase):
-    """SCADA/historian connection configuration."""
-    connection_id: str = Field(..., description="Unique connection identifier")
+class ConnectionConfig(SensorConnectionBase):
+    """SCADA/historian connection configuration.
+
+    Inherits common connection fields (host, port, timeout, retry, ssl) from
+    SensorConnectionBase and adds SCADA-specific fields.
+    """
     protocol: ProtocolType = Field(..., description="Communication protocol")
-    host: str = Field(..., description="Server hostname or IP")
-    port: int = Field(..., description="Server port")
-    username: Optional[str] = Field(None, description="Authentication username")
-    password: Optional[str] = Field(None, description="Authentication password")
     namespace: Optional[str] = Field(None, description="OPC namespace")
     database: Optional[str] = Field(None, description="Historian database name")
-    timeout_seconds: int = Field(default=30, ge=1, le=300)
-    retry_count: int = Field(default=3, ge=0, le=10)
-    ssl_enabled: bool = Field(default=True)
-    certificate_path: Optional[str] = Field(None)
 
 
 class TagMapping(GreenLangBase):
@@ -146,13 +131,13 @@ class TagMapping(GreenLangBase):
     facility_id: Optional[str] = Field(None, description="Facility identifier")
 
 
-class DataPoint(GreenLangBase):
-    """A single time-series data point."""
-    timestamp: datetime = Field(..., description="Point timestamp")
-    value: Union[float, int, bool, str] = Field(..., description="Point value")
-    quality: DataQuality = Field(default=DataQuality.GOOD)
+class DataPoint(SensorDataPointBase):
+    """A single time-series data point.
+
+    Inherits timestamp, value, quality, and unit from SensorDataPointBase.
+    Adds the SCADA-specific tag_id field.
+    """
     tag_id: str = Field(..., description="Source tag ID")
-    unit: Optional[str] = Field(None)
 
 
 class TimeSeriesData(GreenLangBase):
