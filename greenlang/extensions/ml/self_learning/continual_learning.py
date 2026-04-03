@@ -512,7 +512,7 @@ class ContinualLearner:
         """
         task_id = self._current_task_id or f"task_{len(self._tasks)}"
 
-        logger.info(f"Consolidating knowledge for task {task_id}")
+        logger.info("Consolidating knowledge for task %s", task_id)
 
         if self.config.method == ContinualMethod.EWC:
             # Compute Fisher information
@@ -532,7 +532,7 @@ class ContinualLearner:
             # Add samples to memory
             self._add_to_memory(X, y)
 
-        logger.info(f"Consolidation complete for {task_id}")
+        logger.info("Consolidation complete for %s", task_id)
 
     def learn_task(
         self,
@@ -562,7 +562,7 @@ class ContinualLearner:
         task_id = f"task_{len(self._tasks)}_{task_name}"
         self._current_task_id = task_id
 
-        logger.info(f"Learning task: {task_name} ({len(X)} samples)")
+        logger.info("Learning task: %s (%s samples)", task_name, len(X))
 
         try:
             import torch
@@ -642,7 +642,7 @@ class ContinualLearner:
                 "loss": avg_loss
             })
 
-            logger.debug(f"Epoch {epoch+1}/{self.config.n_epochs}, Loss: {avg_loss:.4f}")
+            logger.debug("Epoch %s/%s, Loss: %.4f", epoch+1, self.config.n_epochs, avg_loss)
 
         # Consolidate after learning
         self.consolidate(X, y)
@@ -857,7 +857,7 @@ class ContinualLearner:
         indices = np.random.choice(len(X), n_samples, replace=False)
         self._gem_memories[task_id] = (X[indices], y[indices])
 
-        logger.debug(f"Stored {n_samples} memories for GEM task {task_id}")
+        logger.debug("Stored %s memories for GEM task %s", n_samples, task_id)
 
     def _compute_gem_gradients(self) -> Dict[str, Dict[str, np.ndarray]]:
         """
@@ -1306,7 +1306,7 @@ class ContinualLearner:
                 param.requires_grad = False
 
         self._pnn_columns.append(column)
-        logger.info(f"Created PNN column {len(self._pnn_columns)} for task {task_id}")
+        logger.info("Created PNN column %s for task %s", len(self._pnn_columns), task_id)
 
         return column
 

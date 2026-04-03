@@ -226,7 +226,7 @@ async def create_dds(request: CreateDDSRequest) -> Dict[str, Any]:
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e))
     except Exception as e:
-        logger.error(f"create_dds failed: {e}", exc_info=True)
+        logger.error("create_dds failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -262,7 +262,7 @@ async def assemble_dds(request: AssembleDDSRequest) -> Dict[str, Any]:
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e))
     except Exception as e:
-        logger.error(f"assemble_dds failed: {e}", exc_info=True)
+        logger.error("assemble_dds failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -280,7 +280,7 @@ async def list_dds(
         )
         return [r.model_dump(mode="json") if hasattr(r, "model_dump") else r for r in results]
     except Exception as e:
-        logger.error(f"list_dds failed: {e}", exc_info=True)
+        logger.error("list_dds failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -296,7 +296,7 @@ async def get_dds(statement_id: str) -> Dict[str, Any]:
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"get_dds failed: {e}", exc_info=True)
+        logger.error("get_dds failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -312,7 +312,7 @@ async def get_dds_summary(statement_id: str) -> Dict[str, Any]:
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"get_dds_summary failed: {e}", exc_info=True)
+        logger.error("get_dds_summary failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -326,7 +326,7 @@ async def update_dds_status(statement_id: str, request: UpdateStatusRequest) -> 
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e))
     except Exception as e:
-        logger.error(f"update_dds_status failed: {e}", exc_info=True)
+        logger.error("update_dds_status failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -343,7 +343,7 @@ async def withdraw_dds(
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
-        logger.error(f"withdraw_dds failed: {e}", exc_info=True)
+        logger.error("withdraw_dds failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -371,7 +371,7 @@ async def format_geolocation(statement_id: str, request: FormatGeolocationReques
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e))
     except Exception as e:
-        logger.error(f"format_geolocation failed: {e}", exc_info=True)
+        logger.error("format_geolocation failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -393,7 +393,7 @@ async def batch_format_geolocations(
         )
         return [r.model_dump(mode="json") if hasattr(r, "model_dump") else r for r in results]
     except Exception as e:
-        logger.error(f"batch_format_geolocations failed: {e}", exc_info=True)
+        logger.error("batch_format_geolocations failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -410,7 +410,7 @@ async def export_geojson(statement_id: str) -> Dict[str, Any]:
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
-        logger.error(f"export_geojson failed: {e}", exc_info=True)
+        logger.error("export_geojson failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -443,7 +443,7 @@ async def integrate_risk(statement_id: str, request: IntegrateRiskRequest) -> Di
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e))
     except Exception as e:
-        logger.error(f"integrate_risk failed: {e}", exc_info=True)
+        logger.error("integrate_risk failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -465,7 +465,7 @@ async def batch_integrate_risk(
         )
         return [r.model_dump(mode="json") if hasattr(r, "model_dump") else r for r in results]
     except Exception as e:
-        logger.error(f"batch_integrate_risk failed: {e}", exc_info=True)
+        logger.error("batch_integrate_risk failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -482,7 +482,7 @@ async def get_overall_risk(statement_id: str) -> Dict[str, Any]:
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
-        logger.error(f"get_overall_risk failed: {e}", exc_info=True)
+        logger.error("get_overall_risk failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -515,7 +515,7 @@ async def compile_supply_chain(
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e))
     except Exception as e:
-        logger.error(f"compile_supply_chain failed: {e}", exc_info=True)
+        logger.error("compile_supply_chain failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -532,7 +532,7 @@ async def validate_supply_chain(statement_id: str) -> Dict[str, Any]:
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
-        logger.error(f"validate_supply_chain failed: {e}", exc_info=True)
+        logger.error("validate_supply_chain failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -549,7 +549,7 @@ async def get_countries_summary(statement_id: str) -> Dict[str, int]:
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
-        logger.error(f"get_countries_summary failed: {e}", exc_info=True)
+        logger.error("get_countries_summary failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -572,7 +572,7 @@ async def validate_dds(statement_id: str) -> Dict[str, Any]:
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
-        logger.error(f"validate_dds failed: {e}", exc_info=True)
+        logger.error("validate_dds failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -595,7 +595,7 @@ async def get_compliance_report(statement_id: str) -> Dict[str, Any]:
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"get_compliance_report failed: {e}", exc_info=True)
+        logger.error("get_compliance_report failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -628,7 +628,7 @@ async def add_document(statement_id: str, request: AddDocumentRequest) -> Dict[s
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e))
     except Exception as e:
-        logger.error(f"add_document failed: {e}", exc_info=True)
+        logger.error("add_document failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -646,7 +646,7 @@ async def create_package(statement_id: str) -> Dict[str, Any]:
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
-        logger.error(f"create_package failed: {e}", exc_info=True)
+        logger.error("create_package failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -663,7 +663,7 @@ async def validate_package(statement_id: str) -> Dict[str, Any]:
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
-        logger.error(f"validate_package failed: {e}", exc_info=True)
+        logger.error("validate_package failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -680,7 +680,7 @@ async def get_manifest(statement_id: str) -> Dict[str, Any]:
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
-        logger.error(f"get_manifest failed: {e}", exc_info=True)
+        logger.error("get_manifest failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -712,7 +712,7 @@ async def apply_signature(
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e))
     except Exception as e:
-        logger.error(f"apply_signature failed: {e}", exc_info=True)
+        logger.error("apply_signature failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -729,7 +729,7 @@ async def validate_signature(statement_id: str) -> Dict[str, Any]:
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
-        logger.error(f"validate_signature failed: {e}", exc_info=True)
+        logger.error("validate_signature failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -762,7 +762,7 @@ async def create_amendment(
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e))
     except Exception as e:
-        logger.error(f"create_amendment failed: {e}", exc_info=True)
+        logger.error("create_amendment failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -781,7 +781,7 @@ async def get_versions(statement_id: str) -> List[Dict[str, Any]]:
             for r in results
         ]
     except Exception as e:
-        logger.error(f"get_versions failed: {e}", exc_info=True)
+        logger.error("get_versions failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -804,7 +804,7 @@ async def get_latest_version(statement_id: str) -> Dict[str, Any]:
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"get_latest_version failed: {e}", exc_info=True)
+        logger.error("get_latest_version failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -823,7 +823,7 @@ async def get_amendments(statement_id: str) -> List[Dict[str, Any]]:
             for r in results
         ]
     except Exception as e:
-        logger.error(f"get_amendments failed: {e}", exc_info=True)
+        logger.error("get_amendments failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -853,7 +853,7 @@ async def submit_dds(
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e))
     except Exception as e:
-        logger.error(f"submit_dds failed: {e}", exc_info=True)
+        logger.error("submit_dds failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -869,7 +869,7 @@ async def health_check() -> Dict[str, Any]:
         service = get_service()
         return await service.health_check()
     except Exception as e:
-        logger.error(f"health_check failed: {e}", exc_info=True)
+        logger.error("health_check failed: %s", e, exc_info=True)
         return {
             "agent_id": "GL-EUDR-DDSC-037",
             "status": "error",

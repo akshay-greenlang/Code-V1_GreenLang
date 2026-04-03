@@ -411,7 +411,7 @@ class HealthChecker:
             check: Health check instance
         """
         self.checks[check.name] = check
-        logger.info(f"Registered health check: {check.name}")
+        logger.info("Registered health check: %s", check.name)
 
     def unregister_check(self, name: str):
         """
@@ -422,7 +422,7 @@ class HealthChecker:
         """
         if name in self.checks:
             del self.checks[name]
-            logger.info(f"Unregistered health check: {name}")
+            logger.info("Unregistered health check: %s", name)
 
     async def check_health_async(
         self, check_type: Optional[CheckType] = None
@@ -511,7 +511,7 @@ class HealthChecker:
             try:
                 self.check_health()
             except Exception as e:
-                logger.error(f"Error in health check loop: {e}")
+                logger.error("Error in health check loop: %s", e)
 
             self._stop_checking.wait(self.check_interval)
 

@@ -446,7 +446,7 @@ class WandBCacheManager:
         self._lock = threading.RLock()
         self._memory_cache: Dict[str, Tuple[Any, datetime]] = {}
 
-        logger.info(f"WandBCacheManager initialized: dir={cache_dir}, ttl={ttl_hours}h")
+        logger.info("WandBCacheManager initialized: dir=%s, ttl=%sh", cache_dir, ttl_hours)
 
     def _compute_key(self, data: Any) -> str:
         """Compute cache key from data."""
@@ -476,7 +476,7 @@ class WandBCacheManager:
             if key in self._memory_cache:
                 value, timestamp = self._memory_cache[key]
                 if not self._is_expired(timestamp):
-                    logger.debug(f"Cache hit (memory): {key[:8]}...")
+                    logger.debug("Cache hit (memory): %s...", key[)
                     return value
                 else:
                     del self._memory_cache[key]
@@ -489,14 +489,14 @@ class WandBCacheManager:
                         data = json.load(f)
                     timestamp = datetime.fromisoformat(data["timestamp"])
                     if not self._is_expired(timestamp):
-                        logger.debug(f"Cache hit (disk): {key[:8]}...")
+                        logger.debug("Cache hit (disk): %s...", key[)
                         # Load into memory cache
                         self._memory_cache[key] = (data["value"], timestamp)
                         return data["value"]
                     else:
                         cache_file.unlink()
                 except Exception as e:
-                    logger.warning(f"Cache read error: {e}")
+                    logger.warning("Cache read error: %s", e)
 
         return None
 
@@ -522,9 +522,9 @@ class WandBCacheManager:
                         "value": value,
                         "timestamp": timestamp.isoformat()
                     }, f, default=str)
-                logger.debug(f"Cache set: {key[:8]}...")
+                logger.debug("Cache set: %s...", key[)
             except Exception as e:
-                logger.warning(f"Cache write error: {e}")
+                logger.warning("Cache write error: %s", e)
 
     def get_or_compute(
         self,
@@ -581,7 +581,7 @@ class WandBCacheManager:
                 except Exception:
                     pass
 
-        logger.info(f"Cleared {cleared} expired cache entries")
+        logger.info("Cleared %s expired cache entries", cleared)
         return cleared
 
     def get_stats(self) -> Dict[str, Any]:
@@ -687,7 +687,7 @@ class WandBExperimentTracker:
             )
             return False
         except Exception as e:
-            logger.error(f"Failed to initialize W&B: {e}")
+            logger.error("Failed to initialize W&B: %s", e)
             return False
 
     def _compute_sha256(self, data: Any) -> str:
@@ -849,7 +849,7 @@ class WandBExperimentTracker:
                 f"Run initialized: {full_run_name}"
             )
 
-            logger.info(f"Started W&B run: {full_run_name} ({run.id})")
+            logger.info("Started W&B run: %s (%s)", full_run_name, run.id)
 
             yield run_info
 
@@ -867,7 +867,7 @@ class WandBExperimentTracker:
                 self._log_provenance_artifact()
 
         except Exception as e:
-            logger.error(f"Run failed: {e}")
+            logger.error("Run failed: %s", e)
             if self._current_run_info:
                 self._current_run_info.status = RunStatus.FAILED
                 self._current_run_info.end_time = datetime.now(timezone.utc)
@@ -914,7 +914,7 @@ class WandBExperimentTracker:
             os.unlink(provenance_path)
 
         except Exception as e:
-            logger.warning(f"Failed to log provenance artifact: {e}")
+            logger.warning("Failed to log provenance artifact: %s", e)
 
     def log_metrics(
         self,
@@ -957,7 +957,7 @@ class WandBExperimentTracker:
                     self._current_run_info.metrics[key] = []
                 self._current_run_info.metrics[key].append(value)
 
-        logger.debug(f"Logged metrics: {list(metrics.keys())}")
+        logger.debug("Logged metrics: %s", list(metrics.keys()))
 
     def log_hyperparameters(self, params: Dict[str, Any]) -> None:
         """
@@ -991,7 +991,7 @@ class WandBExperimentTracker:
         if self._current_run_info:
             self._current_run_info.config.update(params)
 
-        logger.debug(f"Logged hyperparameters: {list(params.keys())}")
+        logger.debug("Logged hyperparameters: %s", list(params.keys()))
 
     def log_model(
         self,
@@ -1054,11 +1054,11 @@ class WandBExperimentTracker:
                     f"Logged model: {name}"
                 )
 
-                logger.info(f"Logged model: {name} (hash: {model_hash[:16]}...)")
+                logger.info("Logged model: %s (hash: %s...)", name, model_hash[)
                 return name
 
         except Exception as e:
-            logger.error(f"Failed to log model: {e}")
+            logger.error("Failed to log model: %s", e)
             return ""
 
     def _save_model(self, model: Any, path: Path) -> None:
@@ -1173,11 +1173,11 @@ class WandBExperimentTracker:
                 f"Logged artifact: {name}"
             )
 
-            logger.info(f"Logged artifact: {name}")
+            logger.info("Logged artifact: %s", name)
             return name
 
         except Exception as e:
-            logger.error(f"Failed to log artifact: {e}")
+            logger.error("Failed to log artifact: %s", e)
             return ""
 
     def log_table(
@@ -1241,10 +1241,10 @@ class WandBExperimentTracker:
                 f"Logged table: {name}"
             )
 
-            logger.debug(f"Logged table: {name} ({len(table_data)} rows)")
+            logger.debug("Logged table: %s (%s rows)", name, len(table_data))
 
         except Exception as e:
-            logger.error(f"Failed to log table: {e}")
+            logger.error("Failed to log table: %s", e)
 
     def finish_run(self, exit_code: int = 0, quiet: bool = False) -> None:
         """
@@ -1322,7 +1322,7 @@ class WandBSweepManager:
             logger.warning("wandb not installed")
             return False
         except Exception as e:
-            logger.error(f"Failed to initialize W&B: {e}")
+            logger.error("Failed to initialize W&B: %s", e)
             return False
 
     def create_sweep(
@@ -1402,11 +1402,11 @@ class WandBSweepManager:
             with self._lock:
                 self._sweeps[sweep_id] = sweep_info
 
-            logger.info(f"Created sweep: {sweep_id} ({sweep_name})")
+            logger.info("Created sweep: %s (%s)", sweep_id, sweep_name)
             return sweep_id
 
         except Exception as e:
-            logger.error(f"Failed to create sweep: {e}")
+            logger.error("Failed to create sweep: %s", e)
             return ""
 
     def run_sweep(
@@ -1443,10 +1443,10 @@ class WandBSweepManager:
                 entity=self.config.entity
             )
 
-            logger.info(f"Completed sweep: {sweep_id} ({count} runs)")
+            logger.info("Completed sweep: %s (%s runs)", sweep_id, count)
 
         except Exception as e:
-            logger.error(f"Sweep failed: {e}")
+            logger.error("Sweep failed: %s", e)
 
     def get_best_run(self, sweep_id: str) -> Optional[Dict[str, Any]]:
         """
@@ -1478,7 +1478,7 @@ class WandBSweepManager:
             }
 
         except Exception as e:
-            logger.error(f"Failed to get best run: {e}")
+            logger.error("Failed to get best run: %s", e)
             return None
 
     def stop_sweep(self, sweep_id: str) -> bool:
@@ -1501,11 +1501,11 @@ class WandBSweepManager:
             )
             sweep.stop()
 
-            logger.info(f"Stopped sweep: {sweep_id}")
+            logger.info("Stopped sweep: %s", sweep_id)
             return True
 
         except Exception as e:
-            logger.error(f"Failed to stop sweep: {e}")
+            logger.error("Failed to stop sweep: %s", e)
             return False
 
     def get_sweep_status(self, sweep_id: str) -> Dict[str, Any]:
@@ -1528,7 +1528,7 @@ class WandBSweepManager:
             }
 
         except Exception as e:
-            logger.error(f"Failed to get sweep status: {e}")
+            logger.error("Failed to get sweep status: %s", e)
             return {}
 
 
@@ -1613,7 +1613,7 @@ class WandBAlerting:
         with self._lock:
             self._alerts[name] = alert
 
-        logger.info(f"Added alert: {name} ({metric} {condition} {threshold})")
+        logger.info("Added alert: %s (%s %s %s)", name, metric, condition, threshold)
 
     def check_alerts(
         self,
@@ -1690,7 +1690,7 @@ class WandBAlerting:
         for email in alert.email_recipients:
             self._send_email(email, f"W&B Alert: {alert.name}", message)
 
-        logger.warning(f"Alert triggered: {alert.name}")
+        logger.warning("Alert triggered: %s", alert.name)
 
     def _send_slack(self, webhook: str, message: str) -> None:
         """Send Slack notification."""
@@ -1704,18 +1704,18 @@ class WandBAlerting:
             )
             urllib.request.urlopen(req, timeout=10)
         except Exception as e:
-            logger.error(f"Failed to send Slack notification: {e}")
+            logger.error("Failed to send Slack notification: %s", e)
 
     def _send_email(self, recipient: str, subject: str, body: str) -> None:
         """Send email notification (placeholder)."""
-        logger.info(f"Would send email to {recipient}: {subject}")
+        logger.info("Would send email to %s: %s", recipient, subject)
 
     def remove_alert(self, name: str) -> bool:
         """Remove an alert configuration."""
         with self._lock:
             if name in self._alerts:
                 del self._alerts[name]
-                logger.info(f"Removed alert: {name}")
+                logger.info("Removed alert: %s", name)
                 return True
         return False
 
@@ -1807,7 +1807,7 @@ class WandBReportGenerator:
             return comparison
 
         except Exception as e:
-            logger.error(f"Failed to compare runs: {e}")
+            logger.error("Failed to compare runs: %s", e)
             return {}
 
     def select_best_model(
@@ -1916,7 +1916,7 @@ class WandBReportGenerator:
         if output_path:
             with open(output_path, "w") as f:
                 f.write(report_content)
-            logger.info(f"Report saved to: {output_path}")
+            logger.info("Report saved to: %s", output_path)
 
         return report_content
 
@@ -1960,11 +1960,11 @@ class WandBReportGenerator:
             # Note: Full report customization requires the W&B SDK
             # This is a simplified version
 
-            logger.info(f"Created W&B report: {title}")
+            logger.info("Created W&B report: %s", title)
             return report.url if hasattr(report, 'url') else None
 
         except Exception as e:
-            logger.error(f"Failed to create report: {e}")
+            logger.error("Failed to create report: %s", e)
             return None
 
 
@@ -2119,7 +2119,7 @@ class WandBMLflowBridge:
                         python_model=model
                     ).model_uri
             except Exception as e:
-                logger.warning(f"Failed to log model to MLflow: {e}")
+                logger.warning("Failed to log model to MLflow: %s", e)
 
         return wandb_artifact, mlflow_uri
 

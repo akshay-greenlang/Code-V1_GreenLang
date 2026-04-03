@@ -154,7 +154,7 @@ class FileCheckpointStorage(CheckpointStorage):
         """Initialize file storage."""
         self.base_path = Path(base_path)
         self.base_path.mkdir(parents=True, exist_ok=True)
-        logger.info(f"Initialized file checkpoint storage at {self.base_path}")
+        logger.info("Initialized file checkpoint storage at %s", self.base_path)
 
     def _get_checkpoint_path(self, checkpoint_id: str) -> Path:
         """Get path for checkpoint file."""
@@ -183,11 +183,11 @@ class FileCheckpointStorage(CheckpointStorage):
             # Move to final location
             temp_path.replace(checkpoint_path)
 
-            logger.info(f"Saved checkpoint {checkpoint_id} to {checkpoint_path}")
+            logger.info("Saved checkpoint %s to %s", checkpoint_id, checkpoint_path)
             return True
 
         except Exception as e:
-            logger.error(f"Failed to save checkpoint {checkpoint_id}: {str(e)}")
+            logger.error("Failed to save checkpoint %s: %s", checkpoint_id, e)
             return False
 
     def load(self, checkpoint_id: str) -> Optional[PipelineCheckpoint]:
@@ -215,12 +215,12 @@ class FileCheckpointStorage(CheckpointStorage):
             # Verify checksum
             expected_checksum = checkpoint.calculate_checksum()
             if metadata.checksum != expected_checksum:
-                logger.warning(f"Checksum mismatch for checkpoint {checkpoint_id}")
+                logger.warning("Checksum mismatch for checkpoint %s", checkpoint_id)
 
             return checkpoint
 
         except Exception as e:
-            logger.error(f"Failed to load checkpoint {checkpoint_id}: {str(e)}")
+            logger.error("Failed to load checkpoint %s: %s", checkpoint_id, e)
             return None
 
     def exists(self, checkpoint_id: str) -> bool:
@@ -236,7 +236,7 @@ class FileCheckpointStorage(CheckpointStorage):
                 return True
             return False
         except Exception as e:
-            logger.error(f"Failed to delete checkpoint {checkpoint_id}: {str(e)}")
+            logger.error("Failed to delete checkpoint %s: %s", checkpoint_id, e)
             return False
 
     def list_checkpoints(self, pipeline_id: Optional[str] = None) -> List[CheckpointMetadata]:
@@ -250,7 +250,7 @@ class FileCheckpointStorage(CheckpointStorage):
                 if checkpoint:
                     checkpoints.append(checkpoint.metadata)
             except Exception as e:
-                logger.warning(f"Failed to load checkpoint metadata from {checkpoint_file}: {e}")
+                logger.warning("Failed to load checkpoint metadata from %s: %s", checkpoint_file, e)
 
         return sorted(checkpoints, key=lambda x: x.timestamp, reverse=True)
 
@@ -266,9 +266,9 @@ class FileCheckpointStorage(CheckpointStorage):
                 if mtime < cutoff_date:
                     checkpoint_file.unlink()
                     deleted_count += 1
-                    logger.info(f"Deleted old checkpoint: {checkpoint_file}")
+                    logger.info("Deleted old checkpoint: %s", checkpoint_file)
             except Exception as e:
-                logger.error(f"Failed to delete {checkpoint_file}: {e}")
+                logger.error("Failed to delete %s: %s", checkpoint_file, e)
 
         return deleted_count
 
@@ -367,11 +367,11 @@ class DatabaseCheckpointStorage(CheckpointStorage):
                         Json(checkpoint.provenance_hashes)
                     ))
 
-            logger.info(f"Saved checkpoint {checkpoint_id} to database")
+            logger.info("Saved checkpoint %s to database", checkpoint_id)
             return True
 
         except Exception as e:
-            logger.error(f"Failed to save checkpoint {checkpoint_id} to database: {str(e)}")
+            logger.error("Failed to save checkpoint %s to database: %s", checkpoint_id, e)
             return False
 
     def load(self, checkpoint_id: str) -> Optional[PipelineCheckpoint]:
@@ -414,7 +414,7 @@ class DatabaseCheckpointStorage(CheckpointStorage):
                     return checkpoint
 
         except Exception as e:
-            logger.error(f"Failed to load checkpoint {checkpoint_id} from database: {str(e)}")
+            logger.error("Failed to load checkpoint %s from database: %s", checkpoint_id, e)
             return None
 
     def exists(self, checkpoint_id: str) -> bool:
@@ -441,7 +441,7 @@ class DatabaseCheckpointStorage(CheckpointStorage):
                     """, (checkpoint_id,))
                     return cur.rowcount > 0
         except Exception as e:
-            logger.error(f"Failed to delete checkpoint {checkpoint_id}: {str(e)}")
+            logger.error("Failed to delete checkpoint %s: %s", checkpoint_id, e)
             return False
 
     def list_checkpoints(self, pipeline_id: Optional[str] = None) -> List[CheckpointMetadata]:
@@ -486,7 +486,7 @@ class DatabaseCheckpointStorage(CheckpointStorage):
                     return checkpoints
 
         except Exception as e:
-            logger.error(f"Failed to list checkpoints: {str(e)}")
+            logger.error("Failed to list checkpoints: %s", e)
             return []
 
     def cleanup_old(self, retention_days: int) -> int:
@@ -501,7 +501,7 @@ class DatabaseCheckpointStorage(CheckpointStorage):
                     """, (cutoff_date,))
                     return cur.rowcount
         except Exception as e:
-            logger.error(f"Failed to cleanup old checkpoints: {str(e)}")
+            logger.error("Failed to cleanup old checkpoints: %s", e)
             return 0
 
 
@@ -525,7 +525,7 @@ class RedisCheckpointStorage(CheckpointStorage):
             decode_responses=False  # Use binary for pickle
         )
         self.ttl_seconds = ttl_seconds
-        logger.info(f"Initialized Redis checkpoint storage at {host}:{port}")
+        logger.info("Initialized Redis checkpoint storage at %s:%s", host, port)
 
     def _get_checkpoint_key(self, checkpoint_id: str) -> str:
         """Get Redis key for checkpoint."""
@@ -556,11 +556,11 @@ class RedisCheckpointStorage(CheckpointStorage):
 
             pipe.execute()
 
-            logger.info(f"Saved checkpoint {checkpoint_id} to Redis with TTL {self.ttl_seconds}s")
+            logger.info("Saved checkpoint %s to Redis with TTL %ss", checkpoint_id, self.ttl_seconds)
             return True
 
         except Exception as e:
-            logger.error(f"Failed to save checkpoint {checkpoint_id} to Redis: {str(e)}")
+            logger.error("Failed to save checkpoint %s to Redis: %s", checkpoint_id, e)
             return False
 
     def load(self, checkpoint_id: str) -> Optional[PipelineCheckpoint]:
@@ -580,7 +580,7 @@ class RedisCheckpointStorage(CheckpointStorage):
             return checkpoint
 
         except Exception as e:
-            logger.error(f"Failed to load checkpoint {checkpoint_id} from Redis: {str(e)}")
+            logger.error("Failed to load checkpoint %s from Redis: %s", checkpoint_id, e)
             return None
 
     def exists(self, checkpoint_id: str) -> bool:
@@ -608,7 +608,7 @@ class RedisCheckpointStorage(CheckpointStorage):
             return any(results)
 
         except Exception as e:
-            logger.error(f"Failed to delete checkpoint {checkpoint_id}: {str(e)}")
+            logger.error("Failed to delete checkpoint %s: %s", checkpoint_id, e)
             return False
 
     def list_checkpoints(self, pipeline_id: Optional[str] = None) -> List[CheckpointMetadata]:
@@ -638,7 +638,7 @@ class RedisCheckpointStorage(CheckpointStorage):
             return sorted(checkpoints, key=lambda x: x.timestamp, reverse=True)
 
         except Exception as e:
-            logger.error(f"Failed to list checkpoints: {str(e)}")
+            logger.error("Failed to list checkpoints: %s", e)
             return []
 
     def cleanup_old(self, retention_days: int) -> int:
@@ -661,10 +661,10 @@ class MemoryCheckpointStorage(CheckpointStorage):
         """Save checkpoint to memory."""
         try:
             self.checkpoints[checkpoint_id] = checkpoint
-            logger.info(f"Saved checkpoint {checkpoint_id} to memory")
+            logger.info("Saved checkpoint %s to memory", checkpoint_id)
             return True
         except Exception as e:
-            logger.error(f"Failed to save checkpoint {checkpoint_id}: {str(e)}")
+            logger.error("Failed to save checkpoint %s: %s", checkpoint_id, e)
             return False
 
     def load(self, checkpoint_id: str) -> Optional[PipelineCheckpoint]:
@@ -725,7 +725,7 @@ class CheckpointManager:
         self.strategy = CheckpointStrategy(strategy) if isinstance(strategy, str) else strategy
         self.storage = self._create_storage(**storage_kwargs)
         self.active_checkpoints: Dict[str, str] = {}  # pipeline_id -> checkpoint_id
-        logger.info(f"Initialized CheckpointManager with {self.strategy.value} strategy")
+        logger.info("Initialized CheckpointManager with %s strategy", self.strategy.value)
 
     def _create_storage(self, **kwargs) -> CheckpointStorage:
         """Create storage backend based on strategy."""
@@ -819,7 +819,7 @@ class CheckpointManager:
         # Save checkpoint
         if self.storage.save(checkpoint_id, checkpoint):
             self.active_checkpoints[pipeline_id] = checkpoint_id
-            logger.info(f"Created checkpoint {checkpoint_id} for pipeline {pipeline_id} at stage {stage_name}")
+            logger.info("Created checkpoint %s for pipeline %s at stage %s", checkpoint_id, pipeline_id, stage_name)
             return checkpoint_id
         else:
             raise RuntimeError(f"Failed to create checkpoint for pipeline {pipeline_id}")
@@ -865,7 +865,7 @@ class CheckpointManager:
                 checkpoint_id = f"{metadata.pipeline_id}_{metadata.stage_name}_{metadata.timestamp.strftime('%Y%m%d_%H%M%S')}"
                 checkpoint = self.storage.load(checkpoint_id)
                 if checkpoint:
-                    logger.info(f"Loaded checkpoint {checkpoint_id} for pipeline {pipeline_id}")
+                    logger.info("Loaded checkpoint %s for pipeline %s", checkpoint_id, pipeline_id)
                     return checkpoint
 
         return None
@@ -883,7 +883,7 @@ class CheckpointManager:
         checkpoint = self.load_latest_checkpoint(pipeline_id)
 
         if not checkpoint:
-            logger.warning(f"No checkpoint found for pipeline {pipeline_id}")
+            logger.warning("No checkpoint found for pipeline %s", pipeline_id)
             return None
 
         # Update resume count
@@ -908,7 +908,7 @@ class CheckpointManager:
             'resume_count': checkpoint.metadata.resume_count
         }
 
-        logger.info(f"Resuming pipeline {pipeline_id} from stage {checkpoint.metadata.stage_name} (attempt #{checkpoint.metadata.resume_count})")
+        logger.info("Resuming pipeline %s from stage %s (attempt #%s)", pipeline_id, checkpoint.metadata.stage_name, checkpoint.metadata.resume_count)
 
         return resume_context
 
@@ -988,7 +988,7 @@ class CheckpointManager:
             # Remove from active checkpoints
             self.active_checkpoints.pop(pipeline_id, None)
 
-        logger.info(f"Cleaned up {deleted_count} checkpoints for {len(pipeline_ids)} pipelines")
+        logger.info("Cleaned up %s checkpoints for %s pipelines", deleted_count, len(pipeline_ids))
         return deleted_count
 
     def auto_cleanup(self, retention_days: int = 7) -> int:
@@ -1002,7 +1002,7 @@ class CheckpointManager:
             Number of checkpoints cleaned up
         """
         count = self.storage.cleanup_old(retention_days)
-        logger.info(f"Auto-cleanup removed {count} checkpoints older than {retention_days} days")
+        logger.info("Auto-cleanup removed %s checkpoints older than %s days", count, retention_days)
         return count
 
     def export_checkpoint(self, checkpoint_id: str, export_path: Path) -> bool:
@@ -1038,11 +1038,11 @@ class CheckpointManager:
             with open(export_path, 'w') as f:
                 json.dump(export_data, f, indent=2, default=str)
 
-            logger.info(f"Exported checkpoint {checkpoint_id} to {export_path}")
+            logger.info("Exported checkpoint %s to %s", checkpoint_id, export_path)
             return True
 
         except Exception as e:
-            logger.error(f"Failed to export checkpoint: {str(e)}")
+            logger.error("Failed to export checkpoint: %s", e)
             return False
 
     def import_checkpoint(self, import_path: Path) -> Optional[str]:
@@ -1074,13 +1074,13 @@ class CheckpointManager:
 
             checkpoint_id = import_data['checkpoint_id']
             if self.storage.save(checkpoint_id, checkpoint):
-                logger.info(f"Imported checkpoint {checkpoint_id} from {import_path}")
+                logger.info("Imported checkpoint %s from %s", checkpoint_id, import_path)
                 return checkpoint_id
 
             return None
 
         except Exception as e:
-            logger.error(f"Failed to import checkpoint: {str(e)}")
+            logger.error("Failed to import checkpoint: %s", e)
             return None
 
     def get_statistics(self) -> Dict[str, Any]:

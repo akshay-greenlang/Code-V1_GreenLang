@@ -29,10 +29,13 @@ Status: Production Ready
 from __future__ import annotations
 
 import logging
-import os
-import threading
 from dataclasses import dataclass
-from typing import Any, Optional
+
+from greenlang.data_commons.config_base import (
+    BaseDataConfig,
+    EnvReader,
+    create_config_singleton,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -49,20 +52,16 @@ _ENV_PREFIX = "GL_ERP_CONNECTOR_"
 
 
 @dataclass
-class ERPConnectorConfig:
-    """Complete configuration for the GreenLang ERP/Finance Connector SDK.
+class ERPConnectorConfig(BaseDataConfig):
+    """Configuration for the GreenLang ERP/Finance Connector SDK.
 
-    Attributes are grouped by concern: connections, ERP defaults,
-    sync settings, Scope 3 mapping, emissions calculation, currency
-    conversion, batch processing, pool sizing, and logging.
+    Inherits shared connection, pool, batch, and logging fields from
+    ``BaseDataConfig``.  Only ERP-specific fields are declared here.
 
     All attributes can be overridden via environment variables using the
     ``GL_ERP_CONNECTOR_`` prefix.
 
     Attributes:
-        database_url: PostgreSQL connection URL for persistent storage.
-        redis_url: Redis connection URL for caching layer.
-        s3_bucket_url: S3 bucket URL for document storage.
         default_erp_system: Default ERP system type for new connections.
         connection_timeout_seconds: Default timeout for ERP connections.
         max_connections: Maximum concurrent ERP connections allowed.
@@ -78,16 +77,7 @@ class ERPConnectorConfig:
         base_currency: Base currency for conversion operations.
         enable_currency_conversion: Whether to enable currency conversion.
         batch_max_connections: Maximum connections in batch processing mode.
-        batch_worker_count: Number of parallel workers for batch processing.
-        pool_min_size: Minimum connection pool size.
-        pool_max_size: Maximum connection pool size.
-        log_level: Logging level for the ERP connector service.
     """
-
-    # -- Connections ---------------------------------------------------------
-    database_url: str = ""
-    redis_url: str = ""
-    s3_bucket_url: str = ""
 
     # -- ERP defaults --------------------------------------------------------
     default_erp_system: str = "simulated"
@@ -113,19 +103,11 @@ class ERPConnectorConfig:
     base_currency: str = "USD"
     enable_currency_conversion: bool = True
 
-    # -- Batch processing ----------------------------------------------------
+    # -- Batch processing (ERP-specific) --------------------------------------
     batch_max_connections: int = 50
-    batch_worker_count: int = 4
-
-    # -- Pool sizing ---------------------------------------------------------
-    pool_min_size: int = 2
-    pool_max_size: int = 10
-
-    # -- Logging -------------------------------------------------------------
-    log_level: str = "INFO"
 
     # ------------------------------------------------------------------
-    # Factory helpers
+    # Factory
     # ------------------------------------------------------------------
 
     @classmethod
@@ -134,103 +116,73 @@ class ERPConnectorConfig:
 
         Every field can be overridden via ``GL_ERP_CONNECTOR_<FIELD_UPPER>``.
         Boolean values accept ``true/1/yes`` (case-insensitive).
-        Integer values are parsed via ``int()``.
 
         Returns:
             Populated ERPConnectorConfig instance.
         """
-        prefix = _ENV_PREFIX
-
-        def _env(name: str, default: Any = None) -> Optional[str]:
-            return os.environ.get(f"{prefix}{name}", default)
-
-        def _bool(name: str, default: bool) -> bool:
-            val = _env(name)
-            if val is None:
-                return default
-            return val.lower() in ("true", "1", "yes")
-
-        def _int(name: str, default: int) -> int:
-            val = _env(name)
-            if val is None:
-                return default
-            try:
-                return int(val)
-            except ValueError:
-                logger.warning(
-                    "Invalid integer for %s%s=%s, using default %d",
-                    prefix, name, val, default,
-                )
-                return default
-
-        def _str(name: str, default: str) -> str:
-            val = _env(name)
-            if val is None:
-                return default
-            return val
+        env = EnvReader(_ENV_PREFIX)
+        base_kwargs = cls._base_kwargs_from_env(env)
 
         config = cls(
-            database_url=_str("DATABASE_URL", cls.database_url),
-            redis_url=_str("REDIS_URL", cls.redis_url),
-            s3_bucket_url=_str("S3_BUCKET_URL", cls.s3_bucket_url),
-            default_erp_system=_str(
+            **base_kwargs,
+            # ERP defaults
+            default_erp_system=env.str(
                 "DEFAULT_ERP_SYSTEM", cls.default_erp_system,
             ),
-            connection_timeout_seconds=_int(
+            connection_timeout_seconds=env.int(
                 "CONNECTION_TIMEOUT_SECONDS",
                 cls.connection_timeout_seconds,
             ),
-            max_connections=_int(
+            max_connections=env.int(
                 "MAX_CONNECTIONS", cls.max_connections,
             ),
-            sync_batch_size=_int(
+            # Sync settings
+            sync_batch_size=env.int(
                 "SYNC_BATCH_SIZE", cls.sync_batch_size,
             ),
-            sync_max_records=_int(
+            sync_max_records=env.int(
                 "SYNC_MAX_RECORDS", cls.sync_max_records,
             ),
-            sync_timeout_seconds=_int(
+            sync_timeout_seconds=env.int(
                 "SYNC_TIMEOUT_SECONDS", cls.sync_timeout_seconds,
             ),
-            enable_incremental_sync=_bool(
+            enable_incremental_sync=env.bool(
                 "ENABLE_INCREMENTAL_SYNC",
                 cls.enable_incremental_sync,
             ),
-            default_mapping_strategy=_str(
+            # Scope 3 mapping
+            default_mapping_strategy=env.str(
                 "DEFAULT_MAPPING_STRATEGY",
                 cls.default_mapping_strategy,
             ),
-            enable_auto_classification=_bool(
+            enable_auto_classification=env.bool(
                 "ENABLE_AUTO_CLASSIFICATION",
                 cls.enable_auto_classification,
             ),
-            default_emission_methodology=_str(
+            # Emissions calculation
+            default_emission_methodology=env.str(
                 "DEFAULT_EMISSION_METHODOLOGY",
                 cls.default_emission_methodology,
             ),
-            default_currency=_str(
+            default_currency=env.str(
                 "DEFAULT_CURRENCY", cls.default_currency,
             ),
-            enable_emissions_calculation=_bool(
+            enable_emissions_calculation=env.bool(
                 "ENABLE_EMISSIONS_CALCULATION",
                 cls.enable_emissions_calculation,
             ),
-            base_currency=_str(
+            # Currency conversion
+            base_currency=env.str(
                 "BASE_CURRENCY", cls.base_currency,
             ),
-            enable_currency_conversion=_bool(
+            enable_currency_conversion=env.bool(
                 "ENABLE_CURRENCY_CONVERSION",
                 cls.enable_currency_conversion,
             ),
-            batch_max_connections=_int(
+            # Batch (ERP-specific)
+            batch_max_connections=env.int(
                 "BATCH_MAX_CONNECTIONS", cls.batch_max_connections,
             ),
-            batch_worker_count=_int(
-                "BATCH_WORKER_COUNT", cls.batch_worker_count,
-            ),
-            pool_min_size=_int("POOL_MIN_SIZE", cls.pool_min_size),
-            pool_max_size=_int("POOL_MAX_SIZE", cls.pool_max_size),
-            log_level=_str("LOG_LEVEL", cls.log_level),
         )
 
         logger.info(
@@ -257,42 +209,9 @@ class ERPConnectorConfig:
 # Thread-safe singleton accessor
 # ---------------------------------------------------------------------------
 
-_config_instance: Optional[ERPConnectorConfig] = None
-_config_lock = threading.Lock()
-
-
-def get_config() -> ERPConnectorConfig:
-    """Return the singleton ERPConnectorConfig, creating from env if needed.
-
-    Returns:
-        ERPConnectorConfig singleton instance.
-    """
-    global _config_instance
-    if _config_instance is None:
-        with _config_lock:
-            if _config_instance is None:
-                _config_instance = ERPConnectorConfig.from_env()
-    return _config_instance
-
-
-def set_config(config: ERPConnectorConfig) -> None:
-    """Replace the singleton ERPConnectorConfig (useful for testing).
-
-    Args:
-        config: New configuration to install.
-    """
-    global _config_instance
-    with _config_lock:
-        _config_instance = config
-    logger.info("ERPConnectorConfig replaced programmatically")
-
-
-def reset_config() -> None:
-    """Reset the singleton (primarily for test teardown)."""
-    global _config_instance
-    with _config_lock:
-        _config_instance = None
-
+get_config, set_config, reset_config = create_config_singleton(
+    ERPConnectorConfig, _ENV_PREFIX,
+)
 
 __all__ = [
     "ERPConnectorConfig",

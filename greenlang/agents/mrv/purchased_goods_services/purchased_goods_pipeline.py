@@ -225,13 +225,13 @@ class PurchasedGoodsPipelineEngine:
             with self.metrics.timer("pipeline.stage.ingest"):
                 ingested_items = self._stage_ingest(items, ctx)
                 ctx.current_stage = PipelineStage.CLASSIFY
-                logger.info(f"Stage 1 INGEST: {len(ingested_items)} items validated")
+                logger.info("Stage 1 INGEST: %s items validated", len(ingested_items))
 
             # Stage 2: CLASSIFY
             with self.metrics.timer("pipeline.stage.classify"):
                 classified_items = self._stage_classify(ingested_items, ctx)
                 ctx.current_stage = PipelineStage.BOUNDARY_CHECK
-                logger.info(f"Stage 2 CLASSIFY: {len(classified_items)} items classified")
+                logger.info("Stage 2 CLASSIFY: %s items classified", len(classified_items))
 
             # Stage 3: BOUNDARY_CHECK
             with self.metrics.timer("pipeline.stage.boundary_check"):
@@ -336,7 +336,7 @@ class PurchasedGoodsPipelineEngine:
             # Stage 10: EXPORT
             with self.metrics.timer("pipeline.stage.export"):
                 export_data = self._stage_export(hybrid_result, export_format, ctx)
-                logger.info(f"Stage 10 EXPORT: Format = {export_format.value}")
+                logger.info("Stage 10 EXPORT: Format = %s", export_format.value)
 
             # Build final result
             end_time = datetime.now(timezone.utc)
@@ -390,7 +390,7 @@ class PurchasedGoodsPipelineEngine:
             return result
 
         except Exception as e:
-            logger.error(f"Pipeline failed at stage {ctx.current_stage.value}: {e}", exc_info=True)
+            logger.error("Pipeline failed at stage %s: %s", ctx.current_stage.value, e, exc_info=True)
             self.metrics.record_counter("pipeline.failed", 1)
             raise RuntimeError(f"Pipeline failed at {ctx.current_stage.value}: {e}") from e
 
@@ -670,7 +670,7 @@ class PurchasedGoodsPipelineEngine:
                 results.append(result)
 
             except Exception as e:
-                logger.warning(f"Supplier-specific calc failed for record: {e}")
+                logger.warning("Supplier-specific calc failed for record: %s", e)
                 # Continue with other records
 
         return results
@@ -837,7 +837,7 @@ class PurchasedGoodsPipelineEngine:
                 results.append(result)
 
             except Exception as e:
-                logger.error(f"Compliance check failed for {framework.value}: {e}")
+                logger.error("Compliance check failed for %s: %s", framework.value, e)
                 # Continue with other frameworks
 
         return results
@@ -925,7 +925,7 @@ class PurchasedGoodsPipelineEngine:
             )
 
         except Exception as e:
-            logger.error(f"Batch processing failed: {e}", exc_info=True)
+            logger.error("Batch processing failed: %s", e, exc_info=True)
             return BatchResult(
                 batch_id=batch.batch_id,
                 status=BatchStatus.FAILED,
@@ -965,7 +965,7 @@ class PurchasedGoodsPipelineEngine:
 
         for period_config in periods:
             period_label = period_config.get("period_label", "Unknown")
-            logger.info(f"Processing period: {period_label}")
+            logger.info("Processing period: %s", period_label)
 
             try:
                 result = self.run_pipeline(
@@ -989,7 +989,7 @@ class PurchasedGoodsPipelineEngine:
                 results.append(result)
 
             except Exception as e:
-                logger.error(f"Period {period_label} failed: {e}")
+                logger.error("Period %s failed: %s", period_label, e)
                 results.append(
                     {
                         "period_label": period_label,

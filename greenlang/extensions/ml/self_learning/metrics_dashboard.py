@@ -663,7 +663,7 @@ class MetricsDashboard:
         if len(self._alerts) > 100:
             self._alerts = self._alerts[-100:]
 
-        logger.warning(f"Alert raised: {message}")
+        logger.warning("Alert raised: %s", message)
         return alert
 
     def get_learning_curve(
@@ -1004,7 +1004,7 @@ class MetricsDashboard:
                 values = [p.value for p in history[-self.config.drift_window:]]
                 self._baselines[metric_name] = np.mean(values)
                 self._baseline_stds[metric_name] = np.std(values) + 1e-8
-                logger.info(f"Reset baseline for {metric_name}")
+                logger.info("Reset baseline for %s", metric_name)
 
     def export_metrics(self, format: str = "json") -> str:
         """

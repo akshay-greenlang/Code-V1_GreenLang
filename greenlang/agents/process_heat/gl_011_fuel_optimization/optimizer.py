@@ -455,14 +455,14 @@ class FuelOptimizationAgent(IntelligenceMixin, BaseProcessHeatAgent[FuelOptimiza
                 logger.info(
                     f"Fuel optimization completed in {processing_time:.1f}ms"
                 )
-                logger.debug(f"Generated explanation and {len(recommendations)} recommendations")
+                logger.debug("Generated explanation and %s recommendations", len(recommendations))
 
                 return output
 
         except ValidationError:
             raise
         except Exception as e:
-            logger.error(f"Fuel optimization failed: {e}", exc_info=True)
+            logger.error("Fuel optimization failed: %s", e, exc_info=True)
             raise ProcessingError(f"Fuel optimization failed: {str(e)}") from e
 
     def validate_input(self, input_data: FuelOptimizationInput) -> bool:
@@ -534,7 +534,7 @@ class FuelOptimizationAgent(IntelligenceMixin, BaseProcessHeatAgent[FuelOptimiza
             try:
                 prices[fuel] = self.pricing_service.get_current_price(fuel)
             except Exception as e:
-                logger.warning(f"Could not get price for {fuel}: {e}")
+                logger.warning("Could not get price for %s: %s", fuel, e)
 
         return prices
 
@@ -587,7 +587,7 @@ class FuelOptimizationAgent(IntelligenceMixin, BaseProcessHeatAgent[FuelOptimiza
             )
 
         except Exception as e:
-            logger.warning(f"Blending evaluation failed: {e}")
+            logger.warning("Blending evaluation failed: %s", e)
             return None
 
     def _evaluate_switching(
@@ -645,7 +645,7 @@ class FuelOptimizationAgent(IntelligenceMixin, BaseProcessHeatAgent[FuelOptimiza
             return None
 
         except Exception as e:
-            logger.warning(f"Switching evaluation failed: {e}")
+            logger.warning("Switching evaluation failed: %s", e)
             return None
 
     def _optimize_cost(
@@ -679,7 +679,7 @@ class FuelOptimizationAgent(IntelligenceMixin, BaseProcessHeatAgent[FuelOptimiza
             return self.cost_optimizer.create_cost_analysis(cost_output, cost_input)
 
         except Exception as e:
-            logger.warning(f"Cost optimization failed: {e}")
+            logger.warning("Cost optimization failed: %s", e)
             return None
 
     def _check_inventory(

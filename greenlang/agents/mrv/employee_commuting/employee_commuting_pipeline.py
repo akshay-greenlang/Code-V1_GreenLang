@@ -339,7 +339,7 @@ class EmployeeCommutingPipelineEngine:
                 chain_id, ProvenanceStage.CLASSIFY,
                 validated, {"classified_count": len(classified["employees"])}
             )
-            logger.info(f"[{chain_id}] Stage CLASSIFY completed in {duration_ms:.2f}ms")
+            logger.info("[%s] Stage CLASSIFY completed in %.2fms", chain_id, duration_ms)
 
             # ------------------------------------------------------------------
             # Stage 3: NORMALIZE
@@ -352,7 +352,7 @@ class EmployeeCommutingPipelineEngine:
                 chain_id, ProvenanceStage.NORMALIZE,
                 classified, {"normalized_count": len(normalized["employees"])}
             )
-            logger.info(f"[{chain_id}] Stage NORMALIZE completed in {duration_ms:.2f}ms")
+            logger.info("[%s] Stage NORMALIZE completed in %.2fms", chain_id, duration_ms)
 
             # ------------------------------------------------------------------
             # Stage 4: RESOLVE_EFS
@@ -365,7 +365,7 @@ class EmployeeCommutingPipelineEngine:
                 chain_id, ProvenanceStage.RESOLVE_EFS,
                 normalized, {"ef_resolved_count": len(resolved["employees"])}
             )
-            logger.info(f"[{chain_id}] Stage RESOLVE_EFS completed in {duration_ms:.2f}ms")
+            logger.info("[%s] Stage RESOLVE_EFS completed in %.2fms", chain_id, duration_ms)
 
             # ------------------------------------------------------------------
             # Stage 5: CALCULATE_COMMUTE
@@ -445,7 +445,7 @@ class EmployeeCommutingPipelineEngine:
                 chain_id, ProvenanceStage.AGGREGATE,
                 compliance_result, {"aggregation_keys": list(aggregated.get("by_mode", {}).keys())}
             )
-            logger.info(f"[{chain_id}] Stage AGGREGATE completed in {duration_ms:.2f}ms")
+            logger.info("[%s] Stage AGGREGATE completed in %.2fms", chain_id, duration_ms)
 
             # ------------------------------------------------------------------
             # Stage 10: SEAL
@@ -454,7 +454,7 @@ class EmployeeCommutingPipelineEngine:
             sealed = self._stage_seal(chain_id, aggregated)
             duration_ms = self._elapsed_ms(start)
             stage_durations["SEAL"] = duration_ms
-            logger.info(f"[{chain_id}] Stage SEAL completed in {duration_ms:.2f}ms")
+            logger.info("[%s] Stage SEAL completed in %.2fms", chain_id, duration_ms)
 
             # Attach final metadata
             sealed["chain_id"] = chain_id
@@ -472,7 +472,7 @@ class EmployeeCommutingPipelineEngine:
         except ValueError:
             raise
         except Exception as e:
-            logger.error(f"[{chain_id}] Pipeline execution failed: {e}", exc_info=True)
+            logger.error("[%s] Pipeline execution failed: %s", chain_id, e, exc_info=True)
             raise RuntimeError(f"Pipeline execution failed: {e}") from e
         finally:
             self._provenance_chains.pop(chain_id, None)
@@ -495,14 +495,14 @@ class EmployeeCommutingPipelineEngine:
         results: List[dict] = []
         errors: List[dict] = []
 
-        logger.info(f"Starting batch calculation ({len(inputs)} inputs)")
+        logger.info("Starting batch calculation (%s inputs)", len(inputs))
 
         for idx, inp in enumerate(inputs):
             try:
                 result = self.calculate(inp)
                 results.append(result)
             except Exception as e:
-                logger.error(f"Batch input {idx} failed: {e}")
+                logger.error("Batch input %s failed: %s", idx, e)
                 errors.append({
                     "index": idx,
                     "error": str(e),
@@ -801,7 +801,7 @@ class EmployeeCommutingPipelineEngine:
         except ValueError:
             raise
         except Exception as e:
-            logger.error(f"[{chain_id}] Average-data pipeline failed: {e}", exc_info=True)
+            logger.error("[%s] Average-data pipeline failed: %s", chain_id, e, exc_info=True)
             raise RuntimeError(f"Average-data pipeline failed: {e}") from e
         finally:
             self._provenance_chains.pop(chain_id, None)
@@ -970,7 +970,7 @@ class EmployeeCommutingPipelineEngine:
         except ValueError:
             raise
         except Exception as e:
-            logger.error(f"[{chain_id}] Spend-based pipeline failed: {e}", exc_info=True)
+            logger.error("[%s] Spend-based pipeline failed: %s", chain_id, e, exc_info=True)
             raise RuntimeError(f"Spend-based pipeline failed: {e}") from e
         finally:
             self._provenance_chains.pop(chain_id, None)
@@ -1672,7 +1672,7 @@ class EmployeeCommutingPipelineEngine:
                 result["compliance"] = compliance
                 return result
             except Exception as e:
-                logger.warning(f"ComplianceCheckerEngine failed, using inline: {e}")
+                logger.warning("ComplianceCheckerEngine failed, using inline: %s", e)
 
         # Inline compliance checks
         method_str = extrapolated.get(

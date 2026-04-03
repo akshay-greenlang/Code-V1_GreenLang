@@ -201,7 +201,7 @@ class GoldenTestExecutor:
         # Run determinism checks if requested
         determinism_results = None
         if check_determinism:
-            logger.info(f"Running determinism checks ({determinism_runs} runs per test)")
+            logger.info("Running determinism checks (%s runs per test)", determinism_runs)
             determinism_results = await self._check_determinism(
                 model_id,
                 tests,
@@ -309,7 +309,7 @@ class GoldenTestExecutor:
             )
 
         except Exception as e:
-            logger.error(f"Test {test.id} failed: {str(e)}", exc_info=True)
+            logger.error("Test %s failed: %s", test.id, e, exc_info=True)
             return GoldenTestResult(
                 test_id=test.id,
                 test_name=test.name,
@@ -511,7 +511,7 @@ class DeterminismValidator:
         responses = []
         hashes = []
 
-        logger.info(f"Running determinism check: {runs} runs")
+        logger.info("Running determinism check: %s runs", runs)
 
         for i in range(runs):
             # Invoke model
@@ -526,7 +526,7 @@ class DeterminismValidator:
             hash_value = hashlib.sha256(response.encode()).hexdigest()
             hashes.append(hash_value)
 
-            logger.debug(f"Run {i+1}/{runs}: hash={hash_value[:16]}...")
+            logger.debug("Run %s/%s: hash=%s...", i+1, runs, hash_value[)
 
         # Check if all identical
         unique_responses = len(set(responses))
@@ -620,7 +620,7 @@ class MetricsCollector:
         with open(output_file, 'w') as f:
             json.dump(self.metrics, f, indent=2, default=str)
 
-        logger.info(f"Metrics exported to {output_file}")
+        logger.info("Metrics exported to %s", output_file)
 
 
 # ============================================================================

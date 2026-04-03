@@ -110,15 +110,15 @@ class ViolationScanner:
 
     async def scan_codebase(self) -> List[Violation]:
         """Scan entire codebase for violations"""
-        logger.info(f"Scanning codebase: {self.codebase_path}")
+        logger.info("Scanning codebase: %s", self.codebase_path)
 
         python_files = list(self.codebase_path.rglob("*.py"))
-        logger.info(f"Found {len(python_files)} Python files to scan")
+        logger.info("Found %s Python files to scan", len(python_files))
 
         tasks = [self._scan_file(file_path) for file_path in python_files]
         await asyncio.gather(*tasks)
 
-        logger.info(f"Scan completed. Found {len(self.violations)} violations")
+        logger.info("Scan completed. Found %s violations", len(self.violations))
         return self.violations
 
     async def _scan_file(self, file_path: Path) -> None:
@@ -155,7 +155,7 @@ class ViolationScanner:
             await self._check_test_coverage(file_path, content, app_info)
 
         except Exception as e:
-            logger.error(f"Error scanning {file_path}: {e}")
+            logger.error("Error scanning %s: %s", file_path, e)
 
     def _get_app_info(self, file_path: Path) -> Dict[str, str]:
         """Extract application and team info from file path"""
@@ -245,7 +245,7 @@ class ViolationScanner:
                     )
                     self.violations.append(violation)
             except Exception as e:
-                logger.debug(f"Failed to parse AST for test coverage check in {file_path}: {e}")
+                logger.debug("Failed to parse AST for test coverage check in %s: %s", file_path, e)
 
     def generate_report(self) -> str:
         """Generate violation report"""
@@ -297,7 +297,7 @@ Auto-fixable: {v.auto_fixable}
     async def export_to_database(self, db_connection: Any) -> None:
         """Export violations to database for tracking"""
         # In production: save to PostgreSQL, MongoDB, etc.
-        logger.info(f"Exporting {len(self.violations)} violations to database")
+        logger.info("Exporting %s violations to database", len(self.violations))
 
         for violation in self.violations:
             # INSERT INTO violations ...
@@ -328,7 +328,7 @@ async def main():
     report_path.parent.mkdir(parents=True, exist_ok=True)
     report_path.write_text(report)
 
-    logger.info(f"Report saved to: {report_path}")
+    logger.info("Report saved to: %s", report_path)
 
 
 if __name__ == "__main__":

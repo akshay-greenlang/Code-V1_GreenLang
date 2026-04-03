@@ -29,10 +29,13 @@ Status: Production Ready
 from __future__ import annotations
 
 import logging
-import os
-import threading
 from dataclasses import dataclass
-from typing import Any, Optional
+
+from greenlang.data_commons.config_base import (
+    BaseDataConfig,
+    EnvReader,
+    create_config_singleton,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -49,109 +52,39 @@ _ENV_PREFIX = "GL_CSR_"
 
 
 @dataclass
-class CrossSourceReconciliationConfig:
-    """Complete configuration for the GreenLang Cross-Source Reconciliation SDK.
+class CrossSourceReconciliationConfig(BaseDataConfig):
+    """Configuration for the GreenLang Cross-Source Reconciliation SDK.
 
-    Attributes are grouped by concern: connections, logging, record
-    processing, matching thresholds, tolerance settings, resolution
-    strategy, source credibility, feature toggles, match candidates,
-    golden records, worker pool, cache, rate limiting, provenance,
-    manual review, and discrepancy severity classification.
+    Inherits shared connection, pool, batch, and logging fields from
+    ``BaseDataConfig``.  Only reconciliation-specific fields are declared here.
 
     All attributes can be overridden via environment variables using the
     ``GL_CSR_`` prefix.
 
     Attributes:
-        database_url: PostgreSQL connection URL for persistent storage.
-            Holds reconciliation records, match results, discrepancy
-            metadata, golden records, and provenance chains.
-        redis_url: Redis connection URL for caching layer.
-            Used for match result caching, rate limiting counters,
-            and source registry caches.
-        log_level: Logging level for the cross-source reconciliation service.
-            Accepts standard Python logging levels: DEBUG, INFO,
-            WARNING, ERROR, CRITICAL.
         batch_size: Default batch size for record processing.
-            Controls how many records are processed in a single
-            chunk during batch reconciliation operations.
         max_records: Maximum records allowed in a single reconciliation job.
-            Prevents runaway processing on excessively large datasets.
-        max_sources: Maximum number of data sources that can participate
-            in a single reconciliation job. Limits combinatorial
-            complexity of cross-source matching.
-        default_match_threshold: Minimum similarity score (0.0 to 1.0)
-            required for two records from different sources to be
-            considered a match. Records below this threshold are
-            treated as unmatched.
-        default_tolerance_pct: Default percentage tolerance for numeric
-            field comparisons. Two numeric values are considered
-            equivalent if they differ by no more than this percentage.
-        default_tolerance_abs: Default absolute tolerance for numeric
-            field comparisons. Two numeric values are considered
-            equivalent if their absolute difference does not exceed
-            this value. Applied in conjunction with percentage tolerance.
-        default_resolution_strategy: Strategy for resolving discrepancies
-            when matched records disagree. Supported strategies:
-            ``priority_wins``, ``most_recent_wins``, ``average``,
-            ``median``, ``manual_review``, ``consensus``.
-        source_credibility_weight: Weight (0.0 to 1.0) applied to source
-            credibility scores during resolution. Higher values give
-            more influence to source reliability ratings when
-            resolving conflicting values.
-        temporal_alignment_enabled: Whether temporal alignment is enabled
-            for matching records across sources with different
-            reporting periods or timestamps.
-        fuzzy_matching_enabled: Whether fuzzy string matching is enabled
-            for entity name resolution across sources. Uses
-            Levenshtein distance and token-based similarity.
-        max_match_candidates: Maximum number of candidate records
-            evaluated per source record during the matching phase.
-            Limits computational cost of pairwise comparisons.
-        enable_golden_records: Whether golden record generation is
-            enabled. When True, the resolution engine produces a
-            single authoritative record from matched source records.
+        max_sources: Maximum number of data sources per reconciliation job.
+        default_match_threshold: Minimum similarity score for a match.
+        default_tolerance_pct: Default percentage tolerance for numeric comparisons.
+        default_tolerance_abs: Default absolute tolerance for numeric comparisons.
+        default_resolution_strategy: Strategy for resolving discrepancies.
+        source_credibility_weight: Weight applied to source credibility scores.
+        temporal_alignment_enabled: Whether temporal alignment is enabled.
+        fuzzy_matching_enabled: Whether fuzzy string matching is enabled.
+        max_match_candidates: Maximum candidate records per source record.
+        enable_golden_records: Whether golden record generation is enabled.
         max_workers: Number of parallel workers for batch processing.
-            Controls concurrency for multi-source reconciliation jobs.
         pool_size: Connection pool size for database connections.
-            Controls the number of concurrent database connections
-            available for reconciliation operations.
-        cache_ttl: Cache time-to-live in seconds for reconciliation
-            results. Prevents redundant re-computation when the same
-            source combination is queried within the TTL window.
-        rate_limit: Rate limit in requests per minute for the
-            reconciliation API. Protects backend resources from
-            excessive concurrent reconciliation requests.
-        enable_provenance: Whether SHA-256 provenance tracking is
-            enabled. When True, every reconciliation operation records
-            a provenance chain including input hashes, match scores,
-            resolution decisions, and output hashes for full
-            auditability.
-        manual_review_threshold: Confidence score (0.0 to 1.0) below
-            which a matched record pair is routed to manual review
-            instead of automatic resolution. Must be less than or
-            equal to default_match_threshold.
-        critical_discrepancy_pct: Percentage difference threshold above
-            which a numeric discrepancy is classified as critical
-            severity. Triggers immediate alerts and blocks automatic
-            resolution.
-        high_discrepancy_pct: Percentage difference threshold above
-            which a numeric discrepancy is classified as high
-            severity. May trigger escalation depending on resolution
-            strategy.
-        medium_discrepancy_pct: Percentage difference threshold above
-            which a numeric discrepancy is classified as medium
-            severity. Discrepancies below this are classified as low.
-        genesis_hash: Seed string used to initialize the SHA-256
-            provenance chain for this agent. Provides a deterministic
-            starting point for the audit trail.
+        cache_ttl: Cache time-to-live in seconds.
+        rate_limit: Rate limit in requests per minute.
+        enable_provenance: Whether SHA-256 provenance tracking is enabled.
+        manual_review_threshold: Confidence score below which manual review is triggered.
+        critical_discrepancy_pct: Percentage threshold for critical discrepancies.
+        high_discrepancy_pct: Percentage threshold for high discrepancies.
+        medium_discrepancy_pct: Percentage threshold for medium discrepancies.
+        genesis_hash: Seed string for the SHA-256 provenance chain.
     """
-
-    # -- Connections ---------------------------------------------------------
-    database_url: str = "postgresql://localhost:5432/greenlang"
-    redis_url: str = "redis://localhost:6379/0"
-
-    # -- Logging -------------------------------------------------------------
-    log_level: str = "INFO"
 
     # -- Record processing ---------------------------------------------------
     batch_size: int = 1000
@@ -204,7 +137,7 @@ class CrossSourceReconciliationConfig:
     genesis_hash: str = "greenlang-cross-source-reconciliation-genesis"
 
     # ------------------------------------------------------------------
-    # Factory helpers
+    # Factory
     # ------------------------------------------------------------------
 
     @classmethod
@@ -213,135 +146,89 @@ class CrossSourceReconciliationConfig:
 
         Every field can be overridden via ``GL_CSR_<FIELD_UPPER>``.
         Boolean values accept ``true/1/yes`` (case-insensitive).
-        Integer values are parsed via ``int()``.
-        Float values are parsed via ``float()``.
 
         Returns:
             Populated CrossSourceReconciliationConfig instance.
         """
-        prefix = _ENV_PREFIX
-
-        def _env(name: str, default: Any = None) -> Optional[str]:
-            return os.environ.get(f"{prefix}{name}", default)
-
-        def _bool(name: str, default: bool) -> bool:
-            val = _env(name)
-            if val is None:
-                return default
-            return val.lower() in ("true", "1", "yes")
-
-        def _int(name: str, default: int) -> int:
-            val = _env(name)
-            if val is None:
-                return default
-            try:
-                return int(val)
-            except ValueError:
-                logger.warning(
-                    "Invalid integer for %s%s=%s, using default %d",
-                    prefix, name, val, default,
-                )
-                return default
-
-        def _float(name: str, default: float) -> float:
-            val = _env(name)
-            if val is None:
-                return default
-            try:
-                return float(val)
-            except ValueError:
-                logger.warning(
-                    "Invalid float for %s%s=%s, using default %f",
-                    prefix, name, val, default,
-                )
-                return default
-
-        def _str(name: str, default: str) -> str:
-            val = _env(name)
-            if val is None:
-                return default
-            return val
+        env = EnvReader(_ENV_PREFIX)
+        base_kwargs = cls._base_kwargs_from_env(env)
 
         config = cls(
-            # Connections
-            database_url=_str("DATABASE_URL", cls.database_url),
-            redis_url=_str("REDIS_URL", cls.redis_url),
-            # Logging
-            log_level=_str("LOG_LEVEL", cls.log_level),
+            **base_kwargs,
             # Record processing
-            batch_size=_int("BATCH_SIZE", cls.batch_size),
-            max_records=_int("MAX_RECORDS", cls.max_records),
-            max_sources=_int("MAX_SOURCES", cls.max_sources),
+            batch_size=env.int("BATCH_SIZE", cls.batch_size),
+            max_records=env.int("MAX_RECORDS", cls.max_records),
+            max_sources=env.int("MAX_SOURCES", cls.max_sources),
             # Matching thresholds
-            default_match_threshold=_float(
+            default_match_threshold=env.float(
                 "DEFAULT_MATCH_THRESHOLD", cls.default_match_threshold,
             ),
-            default_tolerance_pct=_float(
+            default_tolerance_pct=env.float(
                 "DEFAULT_TOLERANCE_PCT", cls.default_tolerance_pct,
             ),
-            default_tolerance_abs=_float(
+            default_tolerance_abs=env.float(
                 "DEFAULT_TOLERANCE_ABS", cls.default_tolerance_abs,
             ),
             # Resolution strategy
-            default_resolution_strategy=_str(
+            default_resolution_strategy=env.str(
                 "DEFAULT_RESOLUTION_STRATEGY",
                 cls.default_resolution_strategy,
             ),
             # Source credibility
-            source_credibility_weight=_float(
+            source_credibility_weight=env.float(
                 "SOURCE_CREDIBILITY_WEIGHT",
                 cls.source_credibility_weight,
             ),
             # Feature toggles
-            temporal_alignment_enabled=_bool(
+            temporal_alignment_enabled=env.bool(
                 "TEMPORAL_ALIGNMENT_ENABLED",
                 cls.temporal_alignment_enabled,
             ),
-            fuzzy_matching_enabled=_bool(
+            fuzzy_matching_enabled=env.bool(
                 "FUZZY_MATCHING_ENABLED",
                 cls.fuzzy_matching_enabled,
             ),
             # Match candidates
-            max_match_candidates=_int(
+            max_match_candidates=env.int(
                 "MAX_MATCH_CANDIDATES",
                 cls.max_match_candidates,
             ),
             # Golden records
-            enable_golden_records=_bool(
+            enable_golden_records=env.bool(
                 "ENABLE_GOLDEN_RECORDS",
                 cls.enable_golden_records,
             ),
             # Worker pool
-            max_workers=_int("MAX_WORKERS", cls.max_workers),
-            pool_size=_int("POOL_SIZE", cls.pool_size),
+            max_workers=env.int("MAX_WORKERS", cls.max_workers),
+            pool_size=env.int("POOL_SIZE", cls.pool_size),
             # Cache
-            cache_ttl=_int("CACHE_TTL", cls.cache_ttl),
+            cache_ttl=env.int("CACHE_TTL", cls.cache_ttl),
             # Rate limiting
-            rate_limit=_int("RATE_LIMIT", cls.rate_limit),
+            rate_limit=env.int("RATE_LIMIT", cls.rate_limit),
             # Provenance
-            enable_provenance=_bool(
+            enable_provenance=env.bool(
                 "ENABLE_PROVENANCE", cls.enable_provenance,
             ),
             # Manual review
-            manual_review_threshold=_float(
+            manual_review_threshold=env.float(
                 "MANUAL_REVIEW_THRESHOLD",
                 cls.manual_review_threshold,
             ),
             # Discrepancy severity thresholds
-            critical_discrepancy_pct=_float(
+            critical_discrepancy_pct=env.float(
                 "CRITICAL_DISCREPANCY_PCT",
                 cls.critical_discrepancy_pct,
             ),
-            high_discrepancy_pct=_float(
+            high_discrepancy_pct=env.float(
                 "HIGH_DISCREPANCY_PCT",
                 cls.high_discrepancy_pct,
             ),
-            medium_discrepancy_pct=_float(
+            medium_discrepancy_pct=env.float(
                 "MEDIUM_DISCREPANCY_PCT",
                 cls.medium_discrepancy_pct,
             ),
             # Genesis hash
-            genesis_hash=_str("GENESIS_HASH", cls.genesis_hash),
+            genesis_hash=env.str("GENESIS_HASH", cls.genesis_hash),
         )
 
         logger.info(
@@ -503,45 +390,9 @@ class CrossSourceReconciliationConfig:
 # Thread-safe singleton accessor
 # ---------------------------------------------------------------------------
 
-_config_instance: Optional[CrossSourceReconciliationConfig] = None
-_config_lock = threading.Lock()
-
-
-def get_config() -> CrossSourceReconciliationConfig:
-    """Return the singleton CrossSourceReconciliationConfig, creating from env if needed.
-
-    Uses double-checked locking for thread safety with minimal
-    contention on the hot path.
-
-    Returns:
-        CrossSourceReconciliationConfig singleton instance.
-    """
-    global _config_instance
-    if _config_instance is None:
-        with _config_lock:
-            if _config_instance is None:
-                _config_instance = CrossSourceReconciliationConfig.from_env()
-    return _config_instance
-
-
-def set_config(config: CrossSourceReconciliationConfig) -> None:
-    """Replace the singleton CrossSourceReconciliationConfig (useful for testing).
-
-    Args:
-        config: New configuration to install.
-    """
-    global _config_instance
-    with _config_lock:
-        _config_instance = config
-    logger.info("CrossSourceReconciliationConfig replaced programmatically")
-
-
-def reset_config() -> None:
-    """Reset the singleton (primarily for test teardown)."""
-    global _config_instance
-    with _config_lock:
-        _config_instance = None
-
+get_config, set_config, reset_config = create_config_singleton(
+    CrossSourceReconciliationConfig, _ENV_PREFIX,
+)
 
 __all__ = [
     "CrossSourceReconciliationConfig",

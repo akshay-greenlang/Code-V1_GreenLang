@@ -64,10 +64,14 @@ Status: Production Ready
 from __future__ import annotations
 
 import logging
-import os
-import threading
 from dataclasses import dataclass
-from typing import Any, Dict, Optional
+from typing import Any, Dict
+
+from greenlang.data_commons.config_base import (
+    BaseDataConfig,
+    EnvReader,
+    create_config_singleton,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -92,68 +96,36 @@ _VALID_LOG_LEVELS = frozenset(
 
 
 @dataclass
-class ValidationRuleEngineConfig:
-    """Complete configuration for the GreenLang Validation Rule Engine Agent SDK.
+class ValidationRuleEngineConfig(BaseDataConfig):
+    """Configuration for the GreenLang Validation Rule Engine Agent SDK.
 
-    Attributes are grouped by concern: connections, logging, rule/rule-set
-    capacity, compound rule nesting, evaluation thresholds, evaluation
-    timeout, batch processing, provenance tracking, metrics export,
-    performance tuning, conflict detection, short-circuit evaluation,
-    processing limits, and report retention.
+    Inherits shared connection, pool, batch, and logging fields from
+    ``BaseDataConfig``.  Only rule-engine-specific fields are declared here.
 
     All attributes can be overridden via environment variables using the
     ``GL_VRE_`` prefix (e.g. ``GL_VRE_MAX_RULES=200000``).
 
     Attributes:
-        database_url: PostgreSQL connection URL for persistent rule storage
-            and evaluation result persistence.
-        redis_url: Redis connection URL for caching compiled rule sets,
-            evaluation results, and distributed locks.
-        log_level: Logging verbosity level. Accepts DEBUG, INFO, WARNING,
-            ERROR, or CRITICAL.
         max_rules: Maximum individual validation rules in the registry.
-            Each rule is an atomic check (range, regex, cross-field).
-        max_rule_sets: Maximum rule sets (named rule collections) in the
-            registry (e.g. "CSRD-E1-completeness").
+        max_rule_sets: Maximum rule sets in the registry.
         max_rules_per_set: Maximum rules within a single rule set.
-        max_compound_depth: Maximum nesting depth for compound rules
-            (AND/OR/NOT). Prevents stack overflow during evaluation.
-        default_pass_threshold: Pass threshold (0.0-1.0) for evaluation
-            scoring. Individual rule sets may override this value.
-        default_warn_threshold: Warning threshold (0.0-1.0). Must be
-            strictly less than default_pass_threshold.
-        evaluation_timeout: Maximum seconds per evaluation run before
-            forcible termination.
-        batch_size: Maximum records per batch evaluation chunk. Controls
-            memory consumption and checkpoint granularity.
+        max_compound_depth: Maximum nesting depth for compound rules.
+        default_pass_threshold: Pass threshold (0.0-1.0) for evaluation scoring.
+        default_warn_threshold: Warning threshold (0.0-1.0).
+        evaluation_timeout: Maximum seconds per evaluation run.
+        batch_size: Maximum records per batch evaluation chunk.
         max_batch_datasets: Maximum datasets per batch evaluation request.
-        enable_provenance: Compute and store SHA-256 provenance hashes for
-            rule changes, evaluation runs, and result records.
-        genesis_hash: Anchor string used as the root of every provenance
-            chain.
-        enable_metrics: When True, Prometheus metrics are exported under
-            the ``gl_vre_`` prefix.
-        pool_size: PostgreSQL connection pool size for the rule engine.
-        cache_ttl: TTL (seconds) for cached compiled rule sets and recent
-            evaluation results in Redis.
+        enable_provenance: Whether SHA-256 provenance tracking is enabled.
+        genesis_hash: Anchor string for every provenance chain.
+        enable_metrics: Whether Prometheus metrics are exported.
+        pool_size: PostgreSQL connection pool size.
+        cache_ttl: TTL (seconds) for cached compiled rule sets.
         rate_limit: Maximum inbound API requests per minute.
-        enable_conflict_detection: When True, detects contradictory or
-            overlapping rules within a rule set and surfaces conflicts
-            in the rule set health report.
-        enable_short_circuit: When True, evaluation terminates early when
-            remaining rules cannot change the pass/fail outcome.
+        enable_conflict_detection: Whether rule conflict detection is enabled.
+        enable_short_circuit: Whether short-circuit evaluation is enabled.
         max_evaluation_rows: Maximum data rows per evaluation run.
-            Datasets exceeding this limit must be split.
-        report_retention_days: Days to retain completed validation reports
-            before automatic purging.
+        report_retention_days: Days to retain completed validation reports.
     """
-
-    # -- Connections ---------------------------------------------------------
-    database_url: str = ""
-    redis_url: str = ""
-
-    # -- Logging -------------------------------------------------------------
-    log_level: str = "INFO"
 
     # -- Rule / rule-set capacity --------------------------------------------
     max_rules: int = 100_000
@@ -205,22 +177,13 @@ class ValidationRuleEngineConfig:
     def __post_init__(self) -> None:
         """Validate configuration constraints after initialisation.
 
-        Performs range checks on all numeric fields, relational checks
-        between interdependent fields (e.g. warn threshold must be less
-        than pass threshold), and normalisation of enumerated values
-        (e.g. log_level to uppercase).
-
         Raises:
             ValueError: If any configuration value is outside its valid
-                range or violates a relational constraint. The exception
-                message lists all detected errors, not just the first one.
+                range or violates a relational constraint.
         """
         errors: list[str] = []
 
         # -- Connections -----------------------------------------------------
-        # database_url and redis_url are allowed to be empty at construction
-        # time (they may be injected at runtime by the service mesh), so we
-        # only emit a WARNING rather than raising.
         if not self.database_url:
             logger.warning(
                 "ValidationRuleEngineConfig: database_url is empty; "
@@ -395,7 +358,7 @@ class ValidationRuleEngineConfig:
         )
 
     # ------------------------------------------------------------------
-    # Factory helpers
+    # Factory
     # ------------------------------------------------------------------
 
     @classmethod
@@ -404,10 +367,6 @@ class ValidationRuleEngineConfig:
 
         Every field can be overridden via ``GL_VRE_<FIELD_UPPER>``.
         Boolean values accept ``true/1/yes`` (case-insensitive).
-        Integer values are parsed via ``int()``.
-        Float values are parsed via ``float()``.
-        Unknown or malformed values fall back to the class-level default
-        and emit a WARNING log so the issue is visible in deployment logs.
 
         Returns:
             Populated ValidationRuleEngineConfig instance, validated via
@@ -420,122 +379,72 @@ class ValidationRuleEngineConfig:
             >>> cfg.max_rules
             200000
         """
-        prefix = _ENV_PREFIX
-
-        def _env(name: str, default: Any = None) -> Optional[str]:
-            return os.environ.get(f"{prefix}{name}", default)
-
-        def _bool(name: str, default: bool) -> bool:
-            val = _env(name)
-            if val is None:
-                return default
-            return val.strip().lower() in ("true", "1", "yes")
-
-        def _int(name: str, default: int) -> int:
-            val = _env(name)
-            if val is None:
-                return default
-            try:
-                return int(val.strip())
-            except ValueError:
-                logger.warning(
-                    "Invalid integer for %s%s=%r, using default %d",
-                    prefix,
-                    name,
-                    val,
-                    default,
-                )
-                return default
-
-        def _float(name: str, default: float) -> float:
-            val = _env(name)
-            if val is None:
-                return default
-            try:
-                return float(val.strip())
-            except ValueError:
-                logger.warning(
-                    "Invalid float for %s%s=%r, using default %f",
-                    prefix,
-                    name,
-                    val,
-                    default,
-                )
-                return default
-
-        def _str(name: str, default: str) -> str:
-            val = _env(name)
-            if val is None:
-                return default
-            return val.strip()
+        env = EnvReader(_ENV_PREFIX)
+        base_kwargs = cls._base_kwargs_from_env(env)
 
         config = cls(
-            # Connections
-            database_url=_str("DATABASE_URL", cls.database_url),
-            redis_url=_str("REDIS_URL", cls.redis_url),
-            # Logging
-            log_level=_str("LOG_LEVEL", cls.log_level),
+            **base_kwargs,
             # Rule / rule-set capacity
-            max_rules=_int("MAX_RULES", cls.max_rules),
-            max_rule_sets=_int("MAX_RULE_SETS", cls.max_rule_sets),
-            max_rules_per_set=_int(
+            max_rules=env.int("MAX_RULES", cls.max_rules),
+            max_rule_sets=env.int("MAX_RULE_SETS", cls.max_rule_sets),
+            max_rules_per_set=env.int(
                 "MAX_RULES_PER_SET",
                 cls.max_rules_per_set,
             ),
             # Compound rule nesting
-            max_compound_depth=_int(
+            max_compound_depth=env.int(
                 "MAX_COMPOUND_DEPTH",
                 cls.max_compound_depth,
             ),
             # Evaluation thresholds
-            default_pass_threshold=_float(
+            default_pass_threshold=env.float(
                 "DEFAULT_PASS_THRESHOLD",
                 cls.default_pass_threshold,
             ),
-            default_warn_threshold=_float(
+            default_warn_threshold=env.float(
                 "DEFAULT_WARN_THRESHOLD",
                 cls.default_warn_threshold,
             ),
             # Evaluation timeout
-            evaluation_timeout=_int(
+            evaluation_timeout=env.int(
                 "EVALUATION_TIMEOUT",
                 cls.evaluation_timeout,
             ),
             # Batch processing
-            batch_size=_int("BATCH_SIZE", cls.batch_size),
-            max_batch_datasets=_int(
+            batch_size=env.int("BATCH_SIZE", cls.batch_size),
+            max_batch_datasets=env.int(
                 "MAX_BATCH_DATASETS",
                 cls.max_batch_datasets,
             ),
             # Provenance tracking
-            enable_provenance=_bool(
+            enable_provenance=env.bool(
                 "ENABLE_PROVENANCE",
                 cls.enable_provenance,
             ),
-            genesis_hash=_str("GENESIS_HASH", cls.genesis_hash),
+            genesis_hash=env.str("GENESIS_HASH", cls.genesis_hash),
             # Metrics export
-            enable_metrics=_bool("ENABLE_METRICS", cls.enable_metrics),
+            enable_metrics=env.bool("ENABLE_METRICS", cls.enable_metrics),
             # Performance tuning
-            pool_size=_int("POOL_SIZE", cls.pool_size),
-            cache_ttl=_int("CACHE_TTL", cls.cache_ttl),
-            rate_limit=_int("RATE_LIMIT", cls.rate_limit),
+            pool_size=env.int("POOL_SIZE", cls.pool_size),
+            cache_ttl=env.int("CACHE_TTL", cls.cache_ttl),
+            rate_limit=env.int("RATE_LIMIT", cls.rate_limit),
             # Conflict detection
-            enable_conflict_detection=_bool(
+            enable_conflict_detection=env.bool(
                 "ENABLE_CONFLICT_DETECTION",
                 cls.enable_conflict_detection,
             ),
             # Short-circuit evaluation
-            enable_short_circuit=_bool(
+            enable_short_circuit=env.bool(
                 "ENABLE_SHORT_CIRCUIT",
                 cls.enable_short_circuit,
             ),
             # Processing limits
-            max_evaluation_rows=_int(
+            max_evaluation_rows=env.int(
                 "MAX_EVALUATION_ROWS",
                 cls.max_evaluation_rows,
             ),
             # Report retention
-            report_retention_days=_int(
+            report_retention_days=env.int(
                 "REPORT_RETENTION_DAYS",
                 cls.report_retention_days,
             ),
@@ -581,13 +490,8 @@ class ValidationRuleEngineConfig:
     def to_dict(self) -> Dict[str, Any]:
         """Serialise the configuration to a plain Python dictionary.
 
-        The returned dictionary is safe to pass to ``json.dumps``,
-        ``yaml.dump``, or any structured logging framework.  All values
-        are JSON-serialisable primitives (str, int, float, bool).
-
         Sensitive connection strings (``database_url``, ``redis_url``) are
-        redacted to prevent accidental credential leakage in logs,
-        exception tracebacks, and monitoring dashboards.
+        redacted to prevent accidental credential leakage in logs.
 
         Returns:
             Dictionary representation of the configuration with sensitive
@@ -659,81 +563,9 @@ class ValidationRuleEngineConfig:
 # Thread-safe singleton accessor
 # ---------------------------------------------------------------------------
 
-_config_instance: Optional[ValidationRuleEngineConfig] = None
-_config_lock = threading.Lock()
-
-
-def get_config() -> ValidationRuleEngineConfig:
-    """Return the singleton ValidationRuleEngineConfig, creating from env if needed.
-
-    Uses double-checked locking for thread safety with minimal
-    contention on the hot path.  The instance is created on first call
-    by reading all ``GL_VRE_*`` environment variables via
-    :meth:`ValidationRuleEngineConfig.from_env`.
-
-    Returns:
-        ValidationRuleEngineConfig singleton instance.
-
-    Example:
-        >>> cfg = get_config()
-        >>> cfg.max_rules
-        100000
-    """
-    global _config_instance
-    if _config_instance is None:
-        with _config_lock:
-            if _config_instance is None:
-                _config_instance = ValidationRuleEngineConfig.from_env()
-    return _config_instance
-
-
-def set_config(config: ValidationRuleEngineConfig) -> None:
-    """Replace the singleton ValidationRuleEngineConfig.
-
-    Primarily intended for testing and dependency injection scenarios
-    where a custom configuration must be supplied without relying on
-    environment variables.
-
-    Args:
-        config: New :class:`ValidationRuleEngineConfig` to install as the
-            singleton.
-
-    Example:
-        >>> cfg = ValidationRuleEngineConfig(max_rules=500, enable_short_circuit=False)
-        >>> set_config(cfg)
-        >>> assert get_config().max_rules == 500
-    """
-    global _config_instance
-    with _config_lock:
-        _config_instance = config
-    logger.info(
-        "ValidationRuleEngineConfig replaced programmatically: "
-        "max_rules=%d, max_rule_sets=%d, max_compound_depth=%d, "
-        "pass_threshold=%.2f, warn_threshold=%.2f",
-        config.max_rules,
-        config.max_rule_sets,
-        config.max_compound_depth,
-        config.default_pass_threshold,
-        config.default_warn_threshold,
-    )
-
-
-def reset_config() -> None:
-    """Reset the singleton ValidationRuleEngineConfig to ``None``.
-
-    The next call to :func:`get_config` will re-read environment variables
-    and construct a fresh instance.  Intended for test teardown to prevent
-    state leakage between test cases.
-
-    Example:
-        >>> reset_config()
-        >>> cfg = get_config()  # re-reads GL_VRE_* env vars
-    """
-    global _config_instance
-    with _config_lock:
-        _config_instance = None
-    logger.debug("ValidationRuleEngineConfig singleton reset")
-
+get_config, set_config, reset_config = create_config_singleton(
+    ValidationRuleEngineConfig, _ENV_PREFIX,
+)
 
 # ---------------------------------------------------------------------------
 # Public surface

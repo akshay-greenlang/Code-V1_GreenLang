@@ -253,7 +253,7 @@ class ComplianceCheckerEngine:
             >>> results = engine.check_all(hybrid_result)
             >>> results = engine.check_all(hybrid_result, ["GHG_PROTOCOL", "CSRD"])
         """
-        logger.info(f"Starting compliance checks for {len(frameworks or self.frameworks_config)} frameworks")
+        logger.info("Starting compliance checks for %s frameworks", len(frameworks or self.frameworks_config))
 
         frameworks_to_check = frameworks or list(self.frameworks_config.keys())
         results = {}
@@ -277,10 +277,10 @@ class ComplianceCheckerEngine:
                 elif framework == ComplianceFramework.ISO14064:
                     results[framework_name] = self.check_iso14064(result)
 
-                logger.info(f"{framework_name} check complete: {results[framework_name].status}")
+                logger.info("%s check complete: %s", framework_name, results[framework_name].status)
 
             except Exception as e:
-                logger.error(f"Error checking {framework_name}: {str(e)}", exc_info=True)
+                logger.error("Error checking %s: %s", framework_name, e, exc_info=True)
                 results[framework_name] = ComplianceCheckResult(
                     framework=ComplianceFramework(framework_name),
                     status=ComplianceStatus.NON_COMPLIANT,

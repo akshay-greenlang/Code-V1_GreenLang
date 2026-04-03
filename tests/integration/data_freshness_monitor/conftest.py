@@ -3,7 +3,6 @@
 Shared pytest fixtures for AGENT-DATA-016 Data Freshness Monitor integration tests.
 
 Provides reusable test fixtures for:
-- Override of parent conftest autouse fixtures (mock_agents, block_network)
 - Configuration reset between tests (fresh_config)
 - Sample dataset definitions, SLA definitions, and refresh timestamps
 - DataFreshnessMonitorService fixture
@@ -22,33 +21,6 @@ from typing import Any, Dict, List, Optional
 import pytest
 
 from greenlang.agents.data.data_freshness_monitor.config import reset_config
-
-
-# ---------------------------------------------------------------------------
-# Override parent conftest autouse fixtures
-# ---------------------------------------------------------------------------
-
-
-@pytest.fixture(autouse=True)
-def mock_agents():
-    """Override parent conftest mock_agents fixture.
-
-    The parent tests/integration/conftest.py defines an autouse fixture
-    that patches greenlang.agents.registry.get_agent, which does not
-    apply to DFM integration tests.
-    """
-    return {}
-
-
-@pytest.fixture(scope="session", autouse=True)
-def block_network():
-    """Override parent conftest block_network fixture.
-
-    The parent tests/integration/conftest.py blocks all socket access,
-    which can interfere with asyncio event loop creation. We disable it
-    for DFM integration tests since our tests are fully self-contained.
-    """
-    pass
 
 
 # ---------------------------------------------------------------------------

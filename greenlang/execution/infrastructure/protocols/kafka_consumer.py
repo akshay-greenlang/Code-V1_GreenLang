@@ -260,7 +260,7 @@ class KafkaExactlyOnceConsumer:
             logger.info("Kafka consumer started successfully")
 
         except Exception as e:
-            logger.error(f"Failed to start consumer: {e}", exc_info=True)
+            logger.error("Failed to start consumer: %s", e, exc_info=True)
             raise ConnectionError(f"Failed to connect to Kafka: {e}") from e
 
     async def stop(self) -> None:
@@ -294,7 +294,7 @@ class KafkaExactlyOnceConsumer:
             logger.info("Kafka consumer stopped")
 
         except Exception as e:
-            logger.error(f"Error stopping consumer: {e}")
+            logger.error("Error stopping consumer: %s", e)
 
     def _create_ssl_context(self) -> Optional[Any]:
         """Create SSL context if configured."""
@@ -333,7 +333,7 @@ class KafkaExactlyOnceConsumer:
         for topic in topics:
             self._handlers[topic] = handler
 
-        logger.info(f"Subscribed to topics: {topics}")
+        logger.info("Subscribed to topics: %s", topics)
 
     async def unsubscribe(self) -> None:
         """Unsubscribe from all topics."""
@@ -377,7 +377,7 @@ class KafkaExactlyOnceConsumer:
         except asyncio.CancelledError:
             logger.info("Consume cancelled")
         except Exception as e:
-            logger.error(f"Consume error: {e}", exc_info=True)
+            logger.error("Consume error: %s", e, exc_info=True)
             raise
         finally:
             self._consuming = False
@@ -415,7 +415,7 @@ class KafkaExactlyOnceConsumer:
 
         handler = self._handlers.get(message.topic)
         if not handler:
-            logger.warning(f"No handler for topic {message.topic}")
+            logger.warning("No handler for topic %s", message.topic)
             self.offset_manager.mark_complete(tp, message.offset)
             return ProcessingResult(
                 record=record,
@@ -465,7 +465,7 @@ class KafkaExactlyOnceConsumer:
 
             except Exception as e:
                 last_error = str(e)
-                logger.error(f"Handler error (retry {retry_count}): {e}")
+                logger.error("Handler error (retry %s): %s", retry_count, e)
                 retry_count += 1
 
                 if retry_count <= self.config.max_retries:
@@ -541,9 +541,9 @@ class KafkaExactlyOnceConsumer:
         try:
             await self._consumer.commit(pending)
             self.offset_manager.clear_pending()
-            logger.debug(f"Committed offsets: {pending}")
+            logger.debug("Committed offsets: %s", pending)
         except Exception as e:
-            logger.error(f"Failed to commit offsets: {e}")
+            logger.error("Failed to commit offsets: %s", e)
 
     async def seek(
         self,
@@ -562,7 +562,7 @@ class KafkaExactlyOnceConsumer:
         self._ensure_started()
         tp = TopicPartition(topic, partition)
         self._consumer.seek(tp, offset)
-        logger.info(f"Seeked to {topic}[{partition}]@{offset}")
+        logger.info("Seeked to %s[%s]@%s", topic, partition, offset)
 
     async def pause(self, topics: Optional[List[str]] = None) -> None:
         """
@@ -583,7 +583,7 @@ class KafkaExactlyOnceConsumer:
             partitions = self._consumer.assignment()
 
         self._consumer.pause(*partitions)
-        logger.info(f"Paused consumption for {len(partitions)} partitions")
+        logger.info("Paused consumption for %s partitions", len(partitions))
 
     async def resume(self, topics: Optional[List[str]] = None) -> None:
         """
@@ -604,7 +604,7 @@ class KafkaExactlyOnceConsumer:
             partitions = self._consumer.paused()
 
         self._consumer.resume(*partitions)
-        logger.info(f"Resumed consumption for {len(partitions)} partitions")
+        logger.info("Resumed consumption for %s partitions", len(partitions))
 
     def _ensure_started(self) -> None:
         """Ensure consumer is started."""

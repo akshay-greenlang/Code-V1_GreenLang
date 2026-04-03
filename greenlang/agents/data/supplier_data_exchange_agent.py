@@ -235,7 +235,7 @@ class SupplierDataExchangeAgent(BaseAgent):
         self._mappings: Dict[str, SupplierMapping] = {}
         self._pcf_by_product: Dict[str, List[PCFDataPoint]] = {}
 
-        self.logger.info(f"Initialized {self.AGENT_NAME}")
+        logger.info("Initialized %s", self.AGENT_NAME)
 
     def execute(self, input_data: Dict[str, Any]) -> AgentResult:
         """Execute supplier data operation."""
@@ -258,7 +258,7 @@ class SupplierDataExchangeAgent(BaseAgent):
                 return AgentResult(success=False, error=f"Unknown operation: {query_input.operation}")
 
         except Exception as e:
-            self.logger.error(f"Supplier operation failed: {str(e)}", exc_info=True)
+            logger.error("Supplier operation failed: %s", e, exc_info=True)
             return AgentResult(success=False, error=str(e))
 
     def _handle_submit(self, query_input: SupplierQueryInput, start_time: datetime) -> AgentResult:

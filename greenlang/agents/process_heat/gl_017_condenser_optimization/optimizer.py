@@ -270,7 +270,7 @@ class CondenserOptimizerAgent(IntelligenceMixin, BaseProcessHeatAgent[CondenserI
         Returns:
             CondenserOutput with complete analysis results
         """
-        logger.info(f"Processing condenser data: {input_data.condenser_id}")
+        logger.info("Processing condenser data: %s", input_data.condenser_id)
         start_time = datetime.now(timezone.utc)
 
         # Auto-start if not ready (for simpler usage patterns)
@@ -443,7 +443,7 @@ class CondenserOptimizerAgent(IntelligenceMixin, BaseProcessHeatAgent[CondenserI
             return True
 
         except Exception as e:
-            logger.error(f"Input validation error: {e}")
+            logger.error("Input validation error: %s", e)
             return False
 
     def validate_output(self, output_data: CondenserOutput) -> bool:
@@ -460,17 +460,17 @@ class CondenserOptimizerAgent(IntelligenceMixin, BaseProcessHeatAgent[CondenserI
             # Check cleanliness factor range
             cf = output_data.cleanliness.cleanliness_factor
             if cf < 0 or cf > 1.2:
-                logger.warning(f"Cleanliness factor {cf} outside expected range")
+                logger.warning("Cleanliness factor %s outside expected range", cf)
 
             # Check backpressure deviation
             bp_dev = output_data.performance.backpressure_deviation_pct
             if abs(bp_dev) > 50:
-                logger.warning(f"Large backpressure deviation: {bp_dev}%")
+                logger.warning("Large backpressure deviation: %s%", bp_dev)
 
             return True
 
         except Exception as e:
-            logger.error(f"Output validation error: {e}")
+            logger.error("Output validation error: %s", e)
             return False
 
     def _analyze_cleanliness(

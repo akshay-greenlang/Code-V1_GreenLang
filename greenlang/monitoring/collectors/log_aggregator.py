@@ -37,7 +37,7 @@ class LogAggregator:
         tasks = [self._process_log_source(source) for source in self.log_sources]
         await asyncio.gather(*tasks)
 
-        logger.info(f"Aggregated logs from {len(self.log_sources)} sources")
+        logger.info("Aggregated logs from %s sources", len(self.log_sources))
 
     async def _process_log_source(self, source: str) -> None:
         """Process logs from a single source"""
@@ -50,9 +50,9 @@ class LogAggregator:
                     category = log_entry.get('category', 'general')
                     self.aggregated_data[category].append(log_entry)
 
-            logger.info(f"Processed {len(logs)} log entries from {source}")
+            logger.info("Processed %s log entries from %s", len(logs), source)
         except Exception as e:
-            logger.error(f"Error processing log source {source}: {e}")
+            logger.error("Error processing log source %s: %s", source, e)
 
     async def _read_logs(self, source: str) -> List[str]:
         """Read logs from source (file, API, stream)"""
@@ -176,7 +176,7 @@ class LogAggregator:
 
     async def export_to_elasticsearch(self, es_url: str, index: str) -> None:
         """Export aggregated logs to Elasticsearch"""
-        logger.info(f"Exporting to Elasticsearch: {es_url}/{index}")
+        logger.info("Exporting to Elasticsearch: %s/%s", es_url, index)
 
         # In production: use elasticsearch-py client
         import requests
@@ -197,7 +197,7 @@ class LogAggregator:
                     )
                     response.raise_for_status()
                 except Exception as e:
-                    logger.error(f"Failed to index log: {e}")
+                    logger.error("Failed to index log: %s", e)
 
         logger.info("Export to Elasticsearch completed")
 

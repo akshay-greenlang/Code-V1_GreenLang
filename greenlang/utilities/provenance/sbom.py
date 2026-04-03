@@ -320,7 +320,7 @@ def _generate_spdx_sbom(pack_path: Path, output_path: Path) -> str:
     with open(output_path, "w", encoding="utf-8") as f:
         json.dump(sbom, f, indent=2, ensure_ascii=False)
 
-    logger.info(f"Generated SPDX SBOM: {output_path}")
+    logger.info("Generated SPDX SBOM: %s", output_path)
     return str(output_path)
 
 
@@ -403,10 +403,10 @@ def _generate_with_cyclonedx(pack_path: Path, output_path: Path) -> str:
         )
 
         if result.returncode != 0:
-            logger.error(f"CycloneDX failed: {result.stderr}")
+            logger.error("CycloneDX failed: %s", result.stderr)
             raise RuntimeError(f"CycloneDX generation failed: {result.stderr}")
 
-        logger.info(f"Generated SBOM with CycloneDX: {output_path}")
+        logger.info("Generated SBOM with CycloneDX: %s", output_path)
 
         # Enhance with additional metadata
         _enhance_sbom(output_path, pack_path)

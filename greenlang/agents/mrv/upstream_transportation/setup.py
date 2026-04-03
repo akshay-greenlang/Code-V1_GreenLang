@@ -551,7 +551,7 @@ class UpstreamTransportationService:
         try:
             # Load configuration
             self.config = self._load_config()
-            logger.debug(f"Loaded config: {self.config}")
+            logger.debug("Loaded config: %s", self.config)
 
             # Initialize metrics tracker
             self.metrics = self._initialize_metrics()
@@ -566,7 +566,7 @@ class UpstreamTransportationService:
             logger.info("UpstreamTransportationService initialized successfully")
 
         except Exception as e:
-            logger.error(f"Failed to initialize UpstreamTransportationService: {e}", exc_info=True)
+            logger.error("Failed to initialize UpstreamTransportationService: %s", e, exc_info=True)
             raise
 
     def _load_config(self) -> Dict[str, Any]:
@@ -664,10 +664,10 @@ class UpstreamTransportationService:
             logger.info("TransportPipelineEngine initialized")
 
         except ImportError as e:
-            logger.error(f"Failed to import engine: {e}", exc_info=True)
+            logger.error("Failed to import engine: %s", e, exc_info=True)
             raise
         except Exception as e:
-            logger.error(f"Failed to initialize engines: {e}", exc_info=True)
+            logger.error("Failed to initialize engines: %s", e, exc_info=True)
             raise
 
     # ========================================================================
@@ -703,7 +703,7 @@ class UpstreamTransportationService:
             >>> assert response.success
         """
         start_time = datetime.now()
-        logger.info(f"Calculating emissions for shipment {request.shipment_id}")
+        logger.info("Calculating emissions for shipment %s", request.shipment_id)
 
         try:
             # Track metrics
@@ -742,7 +742,7 @@ class UpstreamTransportationService:
                 self.metrics.increment('upstream_transportation.calculations.success')
                 self.metrics.histogram('upstream_transportation.processing_time_ms', processing_time_ms)
 
-            logger.info(f"Calculation {result['calculation_id']} completed in {processing_time_ms:.2f}ms")
+            logger.info("Calculation %s completed in %.2fms", result['calculation_id'], processing_time_ms)
 
             return CalculateResponse(
                 success=True,
@@ -753,7 +753,7 @@ class UpstreamTransportationService:
 
         except Exception as e:
             processing_time_ms = (datetime.now() - start_time).total_seconds() * 1000
-            logger.error(f"Calculation failed: {e}", exc_info=True)
+            logger.error("Calculation failed: %s", e, exc_info=True)
 
             if self.metrics:
                 self.metrics.increment('upstream_transportation.calculations.error')
@@ -786,7 +786,7 @@ class UpstreamTransportationService:
             >>> assert response.successful_calculations == 3
         """
         start_time = datetime.now()
-        logger.info(f"Batch calculation: {len(request.calculations)} shipments, parallel={request.parallel}")
+        logger.info("Batch calculation: %s shipments, parallel=%s", len(request.calculations), request.parallel)
 
         try:
             if self.metrics:
@@ -810,7 +810,7 @@ class UpstreamTransportationService:
                             result = future.result()
                             results.append(result)
                         except Exception as e:
-                            logger.error(f"Batch calculation item failed: {e}")
+                            logger.error("Batch calculation item failed: %s", e)
                             results.append(CalculateResponse(
                                 success=False,
                                 calculation_id=str(uuid4()),
@@ -827,7 +827,7 @@ class UpstreamTransportationService:
             failed = len(results) - successful
             processing_time_ms = (datetime.now() - start_time).total_seconds() * 1000
 
-            logger.info(f"Batch calculation completed: {successful} succeeded, {failed} failed")
+            logger.info("Batch calculation completed: %s succeeded, %s failed", successful, failed)
 
             if self.metrics:
                 self.metrics.increment('upstream_transportation.batch_calculations.success')
@@ -844,7 +844,7 @@ class UpstreamTransportationService:
 
         except Exception as e:
             processing_time_ms = (datetime.now() - start_time).total_seconds() * 1000
-            logger.error(f"Batch calculation failed: {e}", exc_info=True)
+            logger.error("Batch calculation failed: %s", e, exc_info=True)
 
             if self.metrics:
                 self.metrics.increment('upstream_transportation.batch_calculations.error')
@@ -886,7 +886,7 @@ class UpstreamTransportationService:
             ... )
             >>> assert len(response.calculations) <= 50
         """
-        logger.info(f"Listing calculations for tenant {tenant_id}, page={page}, filters={filters}")
+        logger.info("Listing calculations for tenant %s, page=%s, filters=%s", tenant_id, page, filters)
 
         try:
             results = self.transport_db_engine.list_calculations(
@@ -909,7 +909,7 @@ class UpstreamTransportationService:
             )
 
         except Exception as e:
-            logger.error(f"List calculations failed: {e}", exc_info=True)
+            logger.error("List calculations failed: %s", e, exc_info=True)
             return CalculationListResponse(
                 success=False,
                 total_count=0,
@@ -933,7 +933,7 @@ class UpstreamTransportationService:
             >>> assert response.success
             >>> print(response.calculation.total_co2e_kg)
         """
-        logger.info(f"Retrieving calculation {calculation_id}")
+        logger.info("Retrieving calculation %s", calculation_id)
 
         try:
             calc = self.transport_db_engine.get_calculation(calculation_id)
@@ -950,7 +950,7 @@ class UpstreamTransportationService:
                 )
 
         except Exception as e:
-            logger.error(f"Get calculation failed: {e}", exc_info=True)
+            logger.error("Get calculation failed: %s", e, exc_info=True)
             return CalculationDetailResponse(
                 success=False,
                 error=str(e)
@@ -970,7 +970,7 @@ class UpstreamTransportationService:
             >>> response = service.delete_calculation("calc-001")
             >>> assert response.success
         """
-        logger.info(f"Deleting calculation {calculation_id}")
+        logger.info("Deleting calculation %s", calculation_id)
 
         try:
             # Track provenance
@@ -992,7 +992,7 @@ class UpstreamTransportationService:
             )
 
         except Exception as e:
-            logger.error(f"Delete calculation failed: {e}", exc_info=True)
+            logger.error("Delete calculation failed: %s", e, exc_info=True)
             return DeleteResponse(
                 success=False,
                 deleted_id=calculation_id,
@@ -1021,7 +1021,7 @@ class UpstreamTransportationService:
             >>> assert response.chain.total_legs == 3
         """
         start_time = datetime.now()
-        logger.info(f"Creating transport chain {chain_data.chain_id} with {len(chain_data.legs)} legs")
+        logger.info("Creating transport chain %s with %s legs", chain_data.chain_id, len(chain_data.legs))
 
         try:
             if self.metrics:
@@ -1055,7 +1055,7 @@ class UpstreamTransportationService:
             if self.metrics:
                 self.metrics.increment('upstream_transportation.transport_chains.success')
 
-            logger.info(f"Transport chain {result['chain_id']} created in {processing_time_ms:.2f}ms")
+            logger.info("Transport chain %s created in %.2fms", result['chain_id'], processing_time_ms)
 
             return TransportChainResponse(
                 success=True,
@@ -1065,7 +1065,7 @@ class UpstreamTransportationService:
 
         except Exception as e:
             processing_time_ms = (datetime.now() - start_time).total_seconds() * 1000
-            logger.error(f"Create transport chain failed: {e}", exc_info=True)
+            logger.error("Create transport chain failed: %s", e, exc_info=True)
 
             if self.metrics:
                 self.metrics.increment('upstream_transportation.transport_chains.error')
@@ -1097,7 +1097,7 @@ class UpstreamTransportationService:
             >>> response = service.list_transport_chains("acme-corp", page=1, page_size=50)
             >>> assert len(response.chains) <= 50
         """
-        logger.info(f"Listing transport chains for tenant {tenant_id}, page={page}")
+        logger.info("Listing transport chains for tenant %s, page=%s", tenant_id, page)
 
         try:
             results = self.transport_db_engine.list_transport_chains(
@@ -1119,7 +1119,7 @@ class UpstreamTransportationService:
             )
 
         except Exception as e:
-            logger.error(f"List transport chains failed: {e}", exc_info=True)
+            logger.error("List transport chains failed: %s", e, exc_info=True)
             return TransportChainListResponse(
                 success=False,
                 total_count=0,
@@ -1142,7 +1142,7 @@ class UpstreamTransportationService:
             >>> response = service.get_transport_chain("CHAIN-001")
             >>> assert response.success
         """
-        logger.info(f"Retrieving transport chain {chain_id}")
+        logger.info("Retrieving transport chain %s", chain_id)
 
         try:
             chain = self.transport_db_engine.get_transport_chain(chain_id)
@@ -1159,7 +1159,7 @@ class UpstreamTransportationService:
                 )
 
         except Exception as e:
-            logger.error(f"Get transport chain failed: {e}", exc_info=True)
+            logger.error("Get transport chain failed: %s", e, exc_info=True)
             return TransportChainDetailResponse(
                 success=False,
                 error=str(e)
@@ -1188,7 +1188,7 @@ class UpstreamTransportationService:
             >>> response = service.get_emission_factors(mode='ROAD', page=1, page_size=50)
             >>> assert all(f.mode == 'ROAD' for f in response.factors)
         """
-        logger.info(f"Listing emission factors: mode={mode}, vehicle_type={vehicle_type}")
+        logger.info("Listing emission factors: mode=%s, vehicle_type=%s", mode, vehicle_type)
 
         try:
             filters = {}
@@ -1216,7 +1216,7 @@ class UpstreamTransportationService:
             )
 
         except Exception as e:
-            logger.error(f"List emission factors failed: {e}", exc_info=True)
+            logger.error("List emission factors failed: %s", e, exc_info=True)
             return EmissionFactorListResponse(
                 success=False,
                 total_count=0,
@@ -1239,7 +1239,7 @@ class UpstreamTransportationService:
             >>> response = service.get_emission_factor("EF-001")
             >>> assert response.success
         """
-        logger.info(f"Retrieving emission factor {factor_id}")
+        logger.info("Retrieving emission factor %s", factor_id)
 
         try:
             factor = self.transport_db_engine.get_emission_factor(factor_id)
@@ -1256,7 +1256,7 @@ class UpstreamTransportationService:
                 )
 
         except Exception as e:
-            logger.error(f"Get emission factor failed: {e}", exc_info=True)
+            logger.error("Get emission factor failed: %s", e, exc_info=True)
             return EmissionFactorDetailResponse(
                 success=False,
                 error=str(e)
@@ -1292,7 +1292,7 @@ class UpstreamTransportationService:
             ... )
             >>> assert response.success
         """
-        logger.info(f"Creating custom emission factor for {ef_data.tenant_id}")
+        logger.info("Creating custom emission factor for %s", ef_data.tenant_id)
 
         try:
             factor_id = str(uuid4())
@@ -1335,7 +1335,7 @@ class UpstreamTransportationService:
             if self.metrics:
                 self.metrics.increment('upstream_transportation.custom_factors.created')
 
-            logger.info(f"Custom emission factor {factor_id} created")
+            logger.info("Custom emission factor %s created", factor_id)
 
             return EmissionFactorResponse(
                 success=True,
@@ -1344,7 +1344,7 @@ class UpstreamTransportationService:
             )
 
         except Exception as e:
-            logger.error(f"Create custom emission factor failed: {e}", exc_info=True)
+            logger.error("Create custom emission factor failed: %s", e, exc_info=True)
 
             if self.metrics:
                 self.metrics.increment('upstream_transportation.custom_factors.error')
@@ -1380,7 +1380,7 @@ class UpstreamTransportationService:
             >>> assert response.classification.recommended_mode in ['SEA', 'AIR']
         """
         start_time = datetime.now()
-        logger.info(f"Classifying shipment for tenant {shipment_data.tenant_id}")
+        logger.info("Classifying shipment for tenant %s", shipment_data.tenant_id)
 
         try:
             if self.metrics:
@@ -1402,7 +1402,7 @@ class UpstreamTransportationService:
             if self.metrics:
                 self.metrics.increment('upstream_transportation.classifications.success')
 
-            logger.info(f"Classification completed: {result['recommended_mode']} / {result['recommended_vehicle_type']}")
+            logger.info("Classification completed: %s / %s", result['recommended_mode'], result['recommended_vehicle_type'])
 
             return ClassificationResponse(
                 success=True,
@@ -1412,7 +1412,7 @@ class UpstreamTransportationService:
 
         except Exception as e:
             processing_time_ms = (datetime.now() - start_time).total_seconds() * 1000
-            logger.error(f"Classification failed: {e}", exc_info=True)
+            logger.error("Classification failed: %s", e, exc_info=True)
 
             if self.metrics:
                 self.metrics.increment('upstream_transportation.classifications.error')
@@ -1455,7 +1455,7 @@ class UpstreamTransportationService:
             >>> assert response.overall_compliant
         """
         start_time = datetime.now()
-        logger.info(f"Checking compliance for {calculation_id} against {frameworks}")
+        logger.info("Checking compliance for %s against %s", calculation_id, frameworks)
 
         try:
             if self.metrics:
@@ -1490,7 +1490,7 @@ class UpstreamTransportationService:
                 else:
                     self.metrics.increment('upstream_transportation.compliance_checks.non_compliant')
 
-            logger.info(f"Compliance check {check_id} completed: overall_compliant={overall_compliant}")
+            logger.info("Compliance check %s completed: overall_compliant=%s", check_id, overall_compliant)
 
             return ComplianceCheckResponse(
                 success=True,
@@ -1504,7 +1504,7 @@ class UpstreamTransportationService:
 
         except Exception as e:
             processing_time_ms = (datetime.now() - start_time).total_seconds() * 1000
-            logger.error(f"Compliance check failed: {e}", exc_info=True)
+            logger.error("Compliance check failed: %s", e, exc_info=True)
 
             if self.metrics:
                 self.metrics.increment('upstream_transportation.compliance_checks.error')
@@ -1534,7 +1534,7 @@ class UpstreamTransportationService:
             >>> response = service.get_compliance_result("check-001")
             >>> assert response.success
         """
-        logger.info(f"Retrieving compliance result {check_id}")
+        logger.info("Retrieving compliance result %s", check_id)
 
         try:
             result = self.transport_db_engine.get_compliance_result(check_id)
@@ -1551,7 +1551,7 @@ class UpstreamTransportationService:
                 )
 
         except Exception as e:
-            logger.error(f"Get compliance result failed: {e}", exc_info=True)
+            logger.error("Get compliance result failed: %s", e, exc_info=True)
             return ComplianceDetailResponse(
                 success=False,
                 error=str(e)
@@ -1580,7 +1580,7 @@ class UpstreamTransportationService:
             >>> assert response.uncertainty.uncertainty_percentage > 0
         """
         start_time = datetime.now()
-        logger.info(f"Calculating uncertainty for {calculation_id}")
+        logger.info("Calculating uncertainty for %s", calculation_id)
 
         try:
             if self.metrics:
@@ -1612,7 +1612,7 @@ class UpstreamTransportationService:
             if self.metrics:
                 self.metrics.increment('upstream_transportation.uncertainty.success')
 
-            logger.info(f"Uncertainty calculation completed: {result['uncertainty_percentage']:.2f}%")
+            logger.info("Uncertainty calculation completed: %.2f%", result['uncertainty_percentage'])
 
             return UncertaintyResponse(
                 success=True,
@@ -1622,7 +1622,7 @@ class UpstreamTransportationService:
 
         except Exception as e:
             processing_time_ms = (datetime.now() - start_time).total_seconds() * 1000
-            logger.error(f"Uncertainty calculation failed: {e}", exc_info=True)
+            logger.error("Uncertainty calculation failed: %s", e, exc_info=True)
 
             if self.metrics:
                 self.metrics.increment('upstream_transportation.uncertainty.error')
@@ -1667,7 +1667,7 @@ class UpstreamTransportationService:
             >>> assert 'ROAD' in response.aggregation.groups
         """
         start_time = datetime.now()
-        logger.info(f"Getting aggregations for {tenant_id}, group_by={group_by}")
+        logger.info("Getting aggregations for %s, group_by=%s", tenant_id, group_by)
 
         try:
             if self.metrics:
@@ -1699,7 +1699,7 @@ class UpstreamTransportationService:
 
         except Exception as e:
             processing_time_ms = (datetime.now() - start_time).total_seconds() * 1000
-            logger.error(f"Aggregation failed: {e}", exc_info=True)
+            logger.error("Aggregation failed: %s", e, exc_info=True)
 
             if self.metrics:
                 self.metrics.increment('upstream_transportation.aggregations.error')
@@ -1733,7 +1733,7 @@ class UpstreamTransportationService:
             >>> assert len(response.hot_spots.top_contributors) > 0
         """
         start_time = datetime.now()
-        logger.info(f"Analyzing hot spots for {tenant_id}")
+        logger.info("Analyzing hot spots for %s", tenant_id)
 
         try:
             if self.metrics:
@@ -1756,7 +1756,7 @@ class UpstreamTransportationService:
             if self.metrics:
                 self.metrics.increment('upstream_transportation.hot_spots.success')
 
-            logger.info(f"Hot spot analysis completed: {len(result['top_contributors'])} top contributors")
+            logger.info("Hot spot analysis completed: %s top contributors", len(result['top_contributors']))
 
             return HotSpotResponse(
                 success=True,
@@ -1766,7 +1766,7 @@ class UpstreamTransportationService:
 
         except Exception as e:
             processing_time_ms = (datetime.now() - start_time).total_seconds() * 1000
-            logger.error(f"Hot spot analysis failed: {e}", exc_info=True)
+            logger.error("Hot spot analysis failed: %s", e, exc_info=True)
 
             if self.metrics:
                 self.metrics.increment('upstream_transportation.hot_spots.error')
@@ -1806,7 +1806,7 @@ class UpstreamTransportationService:
             >>> assert response.success
         """
         start_time = datetime.now()
-        logger.info(f"Exporting {len(calculation_ids)} calculations as {export_format}")
+        logger.info("Exporting %s calculations as %s", len(calculation_ids), export_format)
 
         try:
             if self.metrics:
@@ -1838,7 +1838,7 @@ class UpstreamTransportationService:
 
         except Exception as e:
             processing_time_ms = (datetime.now() - start_time).total_seconds() * 1000
-            logger.error(f"Export failed: {e}", exc_info=True)
+            logger.error("Export failed: %s", e, exc_info=True)
 
             if self.metrics:
                 self.metrics.increment('upstream_transportation.exports.error')
@@ -1897,7 +1897,7 @@ class UpstreamTransportationService:
             )
 
         except Exception as e:
-            logger.error(f"Health check failed: {e}", exc_info=True)
+            logger.error("Health check failed: %s", e, exc_info=True)
             return HealthResponse(
                 status='unhealthy',
                 version='1.0.0',
@@ -1920,7 +1920,7 @@ class UpstreamTransportationService:
             >>> response = service.get_stats(tenant_id="acme-corp")
             >>> print(f"Total calculations: {response.total_calculations}")
         """
-        logger.debug(f"Getting stats for tenant {tenant_id}")
+        logger.debug("Getting stats for tenant %s", tenant_id)
 
         try:
             stats = self.transport_db_engine.get_stats(tenant_id)
@@ -1936,7 +1936,7 @@ class UpstreamTransportationService:
             )
 
         except Exception as e:
-            logger.error(f"Get stats failed: {e}", exc_info=True)
+            logger.error("Get stats failed: %s", e, exc_info=True)
             return StatsResponse(
                 total_calculations=0,
                 total_transport_chains=0,
@@ -2017,7 +2017,7 @@ def get_router():
         from greenlang.agents.mrv.upstream_transportation.api.router import router
         return router
     except ImportError as e:
-        logger.error(f"Failed to import router: {e}")
+        logger.error("Failed to import router: %s", e)
         raise
 
 
@@ -2052,10 +2052,10 @@ def configure_upstream_transportation(app) -> None:
         # Initialize service (singleton)
         service = get_service()
 
-        logger.info(f"Upstream transportation service configured: {service._initialized}")
+        logger.info("Upstream transportation service configured: %s", service._initialized)
 
     except Exception as e:
-        logger.error(f"Failed to configure upstream transportation service: {e}", exc_info=True)
+        logger.error("Failed to configure upstream transportation service: %s", e, exc_info=True)
         raise
 
 

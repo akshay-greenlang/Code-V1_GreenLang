@@ -149,7 +149,7 @@ class ReforestationPlannerAgent(BaseAgent):
             return AgentResult(success=True, data=output.model_dump())
 
         except Exception as e:
-            logger.error(f"Reforestation planning failed: {str(e)}", exc_info=True)
+            logger.error("Reforestation planning failed: %s", e, exc_info=True)
             return AgentResult(success=False, error=str(e))
 
     def _create_site_plan(self, site: ReforestationSite, duration: int) -> ReforestationPlan:

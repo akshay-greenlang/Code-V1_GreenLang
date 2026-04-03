@@ -32,10 +32,13 @@ Status: Production Ready
 from __future__ import annotations
 
 import logging
-import os
-import threading
 from dataclasses import dataclass
-from typing import Any, Optional
+
+from greenlang.data_commons.config_base import (
+    BaseDataConfig,
+    EnvReader,
+    create_config_singleton,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -52,52 +55,32 @@ _ENV_PREFIX = "GL_GIS_CONNECTOR_"
 
 
 @dataclass
-class GISConnectorConfig:
-    """Complete configuration for the GreenLang GIS/Mapping Connector Agent SDK.
+class GISConnectorConfig(BaseDataConfig):
+    """Configuration for the GreenLang GIS/Mapping Connector Agent SDK.
 
-    Attributes are grouped by concern: connections, coordinate reference,
-    feature constraints, spatial analysis defaults, geocoding, batch
-    processing, connection pool, data retention, feature toggles,
-    earth geometry constants, and logging.
+    Inherits shared connection, pool, batch, and logging fields from
+    ``BaseDataConfig``.  Only GIS-specific fields are declared here.
 
     All attributes can be overridden via environment variables using the
     ``GL_GIS_CONNECTOR_`` prefix.
 
     Attributes:
-        database_url: PostgreSQL/PostGIS connection URL for persistent storage.
-        redis_url: Redis connection URL for caching layer.
-        s3_bucket_url: S3 bucket URL for geospatial file storage.
-        log_level: Logging level for the GIS connector service.
         default_crs: Default coordinate reference system (EPSG code).
         max_features: Maximum number of features per layer or query result.
         max_file_size_mb: Maximum geospatial file size in megabytes.
         coordinate_precision: Decimal places for coordinate rounding.
-        buffer_distance_default: Default buffer distance in meters for
-            spatial buffer operations.
-        geocoding_cache_ttl: TTL in seconds for geocoding result cache
-            entries (default 24 hours).
-        simplification_tolerance: Default geometry simplification tolerance
-            in CRS units (degrees for WGS-84).
+        buffer_distance_default: Default buffer distance in meters.
+        simplification_tolerance: Default geometry simplification tolerance.
+        geocoding_cache_ttl: TTL in seconds for geocoding result cache entries.
         batch_size: Number of features to process per batch.
         worker_count: Number of parallel workers for batch processing.
-        pool_min_size: Minimum connection pool size.
-        pool_max_size: Maximum connection pool size.
         retention_days: Number of days to retain operation logs and layers.
-        enable_raster: Whether to enable raster data support (GeoTIFF, etc.).
-        enable_3d: Whether to enable 3D coordinate support (altitude/Z).
-        earth_radius_meters: Mean Earth radius in meters used for
-            Haversine and spherical calculations.
+        enable_raster: Whether to enable raster data support.
+        enable_3d: Whether to enable 3D coordinate support.
+        earth_radius_meters: Mean Earth radius in meters.
         max_polygon_vertices: Maximum allowed vertices per polygon geometry.
         min_area_sq_meters: Minimum area in square meters for valid polygons.
     """
-
-    # -- Connections ---------------------------------------------------------
-    database_url: str = ""
-    redis_url: str = ""
-    s3_bucket_url: str = ""
-
-    # -- Logging -------------------------------------------------------------
-    log_level: str = "INFO"
 
     # -- Coordinate reference system -----------------------------------------
     default_crs: str = "EPSG:4326"
@@ -116,13 +99,9 @@ class GISConnectorConfig:
     # -- Geocoding -----------------------------------------------------------
     geocoding_cache_ttl: int = 86400
 
-    # -- Batch processing ----------------------------------------------------
+    # -- Batch processing (GIS-specific) -------------------------------------
     batch_size: int = 1000
     worker_count: int = 4
-
-    # -- Pool sizing ---------------------------------------------------------
-    pool_min_size: int = 2
-    pool_max_size: int = 10
 
     # -- Data retention ------------------------------------------------------
     retention_days: int = 365
@@ -137,7 +116,7 @@ class GISConnectorConfig:
     min_area_sq_meters: float = 1.0
 
     # ------------------------------------------------------------------
-    # Factory helpers
+    # Factory
     # ------------------------------------------------------------------
 
     @classmethod
@@ -146,104 +125,57 @@ class GISConnectorConfig:
 
         Every field can be overridden via ``GL_GIS_CONNECTOR_<FIELD_UPPER>``.
         Boolean values accept ``true/1/yes`` (case-insensitive).
-        Integer values are parsed via ``int()``.
-        Float values are parsed via ``float()``.
 
         Returns:
             Populated GISConnectorConfig instance.
         """
-        prefix = _ENV_PREFIX
-
-        def _env(name: str, default: Any = None) -> Optional[str]:
-            return os.environ.get(f"{prefix}{name}", default)
-
-        def _bool(name: str, default: bool) -> bool:
-            val = _env(name)
-            if val is None:
-                return default
-            return val.lower() in ("true", "1", "yes")
-
-        def _int(name: str, default: int) -> int:
-            val = _env(name)
-            if val is None:
-                return default
-            try:
-                return int(val)
-            except ValueError:
-                logger.warning(
-                    "Invalid integer for %s%s=%s, using default %d",
-                    prefix, name, val, default,
-                )
-                return default
-
-        def _float(name: str, default: float) -> float:
-            val = _env(name)
-            if val is None:
-                return default
-            try:
-                return float(val)
-            except ValueError:
-                logger.warning(
-                    "Invalid float for %s%s=%s, using default %s",
-                    prefix, name, val, default,
-                )
-                return default
-
-        def _str(name: str, default: str) -> str:
-            val = _env(name)
-            if val is None:
-                return default
-            return val
+        env = EnvReader(_ENV_PREFIX)
+        base_kwargs = cls._base_kwargs_from_env(env)
 
         config = cls(
-            database_url=_str("DATABASE_URL", cls.database_url),
-            redis_url=_str("REDIS_URL", cls.redis_url),
-            s3_bucket_url=_str("S3_BUCKET_URL", cls.s3_bucket_url),
-            log_level=_str("LOG_LEVEL", cls.log_level),
-            default_crs=_str("DEFAULT_CRS", cls.default_crs),
-            max_features=_int(
+            **base_kwargs,
+            default_crs=env.str("DEFAULT_CRS", cls.default_crs),
+            max_features=env.int(
                 "MAX_FEATURES", cls.max_features,
             ),
-            max_file_size_mb=_int(
+            max_file_size_mb=env.int(
                 "MAX_FILE_SIZE_MB", cls.max_file_size_mb,
             ),
-            coordinate_precision=_int(
+            coordinate_precision=env.int(
                 "COORDINATE_PRECISION", cls.coordinate_precision,
             ),
-            buffer_distance_default=_float(
+            buffer_distance_default=env.float(
                 "BUFFER_DISTANCE_DEFAULT", cls.buffer_distance_default,
             ),
-            geocoding_cache_ttl=_int(
+            geocoding_cache_ttl=env.int(
                 "GEOCODING_CACHE_TTL", cls.geocoding_cache_ttl,
             ),
-            simplification_tolerance=_float(
+            simplification_tolerance=env.float(
                 "SIMPLIFICATION_TOLERANCE",
                 cls.simplification_tolerance,
             ),
-            batch_size=_int(
+            batch_size=env.int(
                 "BATCH_SIZE", cls.batch_size,
             ),
-            worker_count=_int(
+            worker_count=env.int(
                 "WORKER_COUNT", cls.worker_count,
             ),
-            pool_min_size=_int("POOL_MIN_SIZE", cls.pool_min_size),
-            pool_max_size=_int("POOL_MAX_SIZE", cls.pool_max_size),
-            retention_days=_int(
+            retention_days=env.int(
                 "RETENTION_DAYS", cls.retention_days,
             ),
-            enable_raster=_bool(
+            enable_raster=env.bool(
                 "ENABLE_RASTER", cls.enable_raster,
             ),
-            enable_3d=_bool(
+            enable_3d=env.bool(
                 "ENABLE_3D", cls.enable_3d,
             ),
-            earth_radius_meters=_float(
+            earth_radius_meters=env.float(
                 "EARTH_RADIUS_METERS", cls.earth_radius_meters,
             ),
-            max_polygon_vertices=_int(
+            max_polygon_vertices=env.int(
                 "MAX_POLYGON_VERTICES", cls.max_polygon_vertices,
             ),
-            min_area_sq_meters=_float(
+            min_area_sq_meters=env.float(
                 "MIN_AREA_SQ_METERS", cls.min_area_sq_meters,
             ),
         )
@@ -279,42 +211,9 @@ class GISConnectorConfig:
 # Thread-safe singleton accessor
 # ---------------------------------------------------------------------------
 
-_config_instance: Optional[GISConnectorConfig] = None
-_config_lock = threading.Lock()
-
-
-def get_config() -> GISConnectorConfig:
-    """Return the singleton GISConnectorConfig, creating from env if needed.
-
-    Returns:
-        GISConnectorConfig singleton instance.
-    """
-    global _config_instance
-    if _config_instance is None:
-        with _config_lock:
-            if _config_instance is None:
-                _config_instance = GISConnectorConfig.from_env()
-    return _config_instance
-
-
-def set_config(config: GISConnectorConfig) -> None:
-    """Replace the singleton GISConnectorConfig (useful for testing).
-
-    Args:
-        config: New configuration to install.
-    """
-    global _config_instance
-    with _config_lock:
-        _config_instance = config
-    logger.info("GISConnectorConfig replaced programmatically")
-
-
-def reset_config() -> None:
-    """Reset the singleton (primarily for test teardown)."""
-    global _config_instance
-    with _config_lock:
-        _config_instance = None
-
+get_config, set_config, reset_config = create_config_singleton(
+    GISConnectorConfig, _ENV_PREFIX,
+)
 
 __all__ = [
     "GISConnectorConfig",

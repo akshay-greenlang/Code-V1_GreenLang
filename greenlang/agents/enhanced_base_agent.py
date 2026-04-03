@@ -1260,7 +1260,7 @@ class FailSafeHandler:
                     handler(action)
                 return True
             except Exception as e:
-                logger.error(f"Fail-safe handler error: {e}")
+                logger.error("Fail-safe handler error: %s", e)
                 return False
         return False
 
@@ -1361,7 +1361,7 @@ class EventBus:
                         handler(data)
                     handlers_notified += 1
                 except Exception as e:
-                    logger.error(f"Event handler error: {e}")
+                    logger.error("Event handler error: %s", e)
 
         return handlers_notified
 
@@ -1836,7 +1836,7 @@ class EnhancedBaseAgent(ABC, Generic[T_Input, T_Output]):
             # Validate safety function meets SIL requirements
             is_valid, violations = self.sil_validator.validate(sf)
             if not is_valid:
-                self.logger.warning(
+                logger.warning(
                     f"Safety function {sf.name} validation warnings",
                     violations=violations,
                 )
@@ -1845,7 +1845,7 @@ class EnhancedBaseAgent(ABC, Generic[T_Input, T_Output]):
         for route in self._get_api_routes():
             self.api_router.add_route(route)
 
-        self.logger.info(
+        logger.info(
             "Agent initialized",
             agent_id=config.agent_id,
             agent_name=config.agent_name,
@@ -1864,14 +1864,14 @@ class EnhancedBaseAgent(ABC, Generic[T_Input, T_Output]):
         Override to add custom initialization logic.
         """
         self._state = AgentState.INITIALIZING
-        self.logger.info("Starting initialization")
+        logger.info("Starting initialization")
 
         try:
             # Custom initialization hook
             await self._on_initialize()
 
             self._state = AgentState.READY
-            self.logger.info("Initialization complete")
+            logger.info("Initialization complete")
 
             # Publish initialization event
             await self.event_bus.publish(
@@ -1885,7 +1885,7 @@ class EnhancedBaseAgent(ABC, Generic[T_Input, T_Output]):
 
         except Exception as e:
             self._state = AgentState.ERROR
-            self.logger.error("Initialization failed", error=str(e))
+            logger.error("Initialization failed", error=str(e))
             raise
 
     async def _on_initialize(self) -> None:
@@ -1902,14 +1902,14 @@ class EnhancedBaseAgent(ABC, Generic[T_Input, T_Output]):
 
         Performs cleanup and releases resources.
         """
-        self.logger.info("Starting shutdown")
+        logger.info("Starting shutdown")
 
         try:
             # Custom shutdown hook
             await self._on_shutdown()
 
             self._state = AgentState.SHUTDOWN
-            self.logger.info("Shutdown complete")
+            logger.info("Shutdown complete")
 
             # Publish shutdown event
             await self.event_bus.publish(
@@ -1922,7 +1922,7 @@ class EnhancedBaseAgent(ABC, Generic[T_Input, T_Output]):
             )
 
         except Exception as e:
-            self.logger.error("Shutdown error", error=str(e))
+            logger.error("Shutdown error", error=str(e))
 
     async def _on_shutdown(self) -> None:
         """
@@ -1995,7 +1995,7 @@ class EnhancedBaseAgent(ABC, Generic[T_Input, T_Output]):
 
         except Exception as e:
             self._error_count += 1
-            self.logger.error(
+            logger.error(
                 "Execution failed",
                 request_id=context.request_id,
                 error=str(e),
@@ -2136,7 +2136,7 @@ class EnhancedBaseAgent(ABC, Generic[T_Input, T_Output]):
             if numeric_inputs:
                 drift_metrics = self.drift_detector.detect(numeric_inputs)
                 if drift_metrics.drift_detected:
-                    self.logger.warning(
+                    logger.warning(
                         "Drift detected",
                         drift_score=drift_metrics.drift_score,
                         features=drift_metrics.features_affected,
@@ -2361,7 +2361,7 @@ class EnhancedBaseAgent(ABC, Generic[T_Input, T_Output]):
         Returns:
             Response payload
         """
-        self.logger.info(
+        logger.info(
             "Received coordination message",
             message_type=message_type,
         )
@@ -2484,7 +2484,7 @@ class AgentFactory:
             agent_class: Agent class to register
         """
         cls._agent_types[agent_type] = agent_class
-        logger.info(f"Registered agent type: {agent_type}")
+        logger.info("Registered agent type: %s", agent_type)
 
     @classmethod
     def create_agent(

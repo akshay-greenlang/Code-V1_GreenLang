@@ -5,19 +5,21 @@ Prometheus Metrics - AGENT-DATA-011: Duplicate Detection Agent
 12 Prometheus metrics for duplicate detection service monitoring with
 graceful fallback when prometheus_client is not installed.
 
-Metrics:
-    1.  gl_dd_jobs_processed_total (Counter, labels: status)
-    2.  gl_dd_records_fingerprinted_total (Counter, labels: algorithm)
-    3.  gl_dd_blocks_created_total (Counter, labels: strategy)
-    4.  gl_dd_comparisons_performed_total (Counter, labels: algorithm)
-    5.  gl_dd_matches_found_total (Counter, labels: classification)
-    6.  gl_dd_clusters_formed_total (Counter, labels: algorithm)
-    7.  gl_dd_merges_completed_total (Counter, labels: strategy)
-    8.  gl_dd_merge_conflicts_total (Counter, labels: resolution)
-    9.  gl_dd_processing_duration_seconds (Histogram, labels: operation)
-    10. gl_dd_similarity_score (Histogram, labels: algorithm)
-    11. gl_dd_active_jobs (Gauge)
-    12. gl_dd_processing_errors_total (Counter, labels: error_type)
+Standard metrics (via MetricsFactory):
+    1.  gl_dd_operations_total (Counter, labels: type, tenant_id)
+    2.  gl_dd_processing_duration_seconds (Histogram, 12 buckets)
+    3.  gl_dd_validation_errors_total (Counter, labels: severity, type)
+    4.  gl_dd_batch_jobs_total (Counter, labels: status)
+    5.  gl_dd_active_jobs (Gauge)
+    6.  gl_dd_queue_size (Gauge)
+
+Agent-specific metrics:
+    7.  gl_dd_jobs_processed_total (Counter, labels: status)
+    8.  gl_dd_records_fingerprinted_total (Counter, labels: algorithm)
+    9.  gl_dd_blocks_created_total (Counter, labels: strategy)
+    10. gl_dd_comparisons_performed_total (Counter, labels: algorithm)
+    11. gl_dd_matches_found_total (Counter, labels: classification)
+    12. gl_dd_similarity_score (Histogram, labels: algorithm)
 
 Author: GreenLang Platform Team
 Date: February 2026
@@ -27,134 +29,102 @@ Status: Production Ready
 
 from __future__ import annotations
 
-import logging
-
-logger = logging.getLogger(__name__)
-
-# ---------------------------------------------------------------------------
-# Graceful prometheus_client import
-# ---------------------------------------------------------------------------
-
-try:
-    from prometheus_client import Counter, Gauge, Histogram
-    PROMETHEUS_AVAILABLE = True
-except ImportError:
-    PROMETHEUS_AVAILABLE = False
-    logger.info(
-        "prometheus_client not installed; duplicate detection metrics disabled"
-    )
-
+from greenlang.data_commons.metrics import (
+    CONFIDENCE_BUCKETS,
+    PROMETHEUS_AVAILABLE,
+    MetricsFactory,
+)
 
 # ---------------------------------------------------------------------------
-# Metric definitions
+# Standard metrics (6 of 12) via factory
 # ---------------------------------------------------------------------------
 
-if PROMETHEUS_AVAILABLE:
-    # 1. Dedup jobs processed by status
-    dd_jobs_processed_total = Counter(
-        "gl_dd_jobs_processed_total",
-        "Total deduplication jobs processed",
-        labelnames=["status"],
-    )
+m = MetricsFactory(
+    "gl_dd",
+    "Duplicate Detector",
+    duration_buckets=(
+        0.05, 0.1, 0.25, 0.5, 1.0, 2.5,
+        5.0, 10.0, 30.0, 60.0, 120.0, 300.0,
+    ),
+)
 
-    # 2. Records fingerprinted by algorithm
-    dd_records_fingerprinted_total = Counter(
-        "gl_dd_records_fingerprinted_total",
-        "Total records fingerprinted",
-        labelnames=["algorithm"],
-    )
+# Backward-compat alias
+dd_active_jobs = m.active_jobs
 
-    # 3. Blocks created by strategy
-    dd_blocks_created_total = Counter(
-        "gl_dd_blocks_created_total",
-        "Total blocking partitions created",
-        labelnames=["strategy"],
-    )
+# ---------------------------------------------------------------------------
+# Agent-specific metrics (6 of 12)
+# ---------------------------------------------------------------------------
 
-    # 4. Comparisons performed by algorithm
-    dd_comparisons_performed_total = Counter(
-        "gl_dd_comparisons_performed_total",
-        "Total pairwise comparisons performed",
-        labelnames=["algorithm"],
-    )
+dd_jobs_processed_total = m.create_custom_counter(
+    "jobs_processed_total",
+    "Total deduplication jobs processed",
+    labelnames=["status"],
+)
 
-    # 5. Matches found by classification
-    dd_matches_found_total = Counter(
-        "gl_dd_matches_found_total",
-        "Total duplicate matches found",
-        labelnames=["classification"],
-    )
+dd_records_fingerprinted_total = m.create_custom_counter(
+    "records_fingerprinted_total",
+    "Total records fingerprinted",
+    labelnames=["algorithm"],
+)
 
-    # 6. Clusters formed by algorithm
-    dd_clusters_formed_total = Counter(
-        "gl_dd_clusters_formed_total",
-        "Total duplicate clusters formed",
-        labelnames=["algorithm"],
-    )
+dd_blocks_created_total = m.create_custom_counter(
+    "blocks_created_total",
+    "Total blocking partitions created",
+    labelnames=["strategy"],
+)
 
-    # 7. Merges completed by strategy
-    dd_merges_completed_total = Counter(
-        "gl_dd_merges_completed_total",
-        "Total record merges completed",
-        labelnames=["strategy"],
-    )
+dd_comparisons_performed_total = m.create_custom_counter(
+    "comparisons_performed_total",
+    "Total pairwise comparisons performed",
+    labelnames=["algorithm"],
+)
 
-    # 8. Merge conflicts by resolution method
-    dd_merge_conflicts_total = Counter(
-        "gl_dd_merge_conflicts_total",
-        "Total merge conflicts encountered",
-        labelnames=["resolution"],
-    )
+dd_matches_found_total = m.create_custom_counter(
+    "matches_found_total",
+    "Total duplicate matches found",
+    labelnames=["classification"],
+)
 
-    # 9. Processing duration histogram by operation type
-    dd_processing_duration_seconds = Histogram(
-        "gl_dd_processing_duration_seconds",
-        "Duplicate detection processing duration in seconds",
-        labelnames=["operation"],
-        buckets=(
-            0.05, 0.1, 0.25, 0.5, 1.0, 2.5,
-            5.0, 10.0, 30.0, 60.0, 120.0, 300.0,
-        ),
-    )
+dd_clusters_formed_total = m.create_custom_counter(
+    "clusters_formed_total",
+    "Total duplicate clusters formed",
+    labelnames=["algorithm"],
+)
 
-    # 10. Similarity score distribution by algorithm
-    dd_similarity_score = Histogram(
-        "gl_dd_similarity_score",
-        "Similarity score distribution",
-        labelnames=["algorithm"],
-        buckets=(
-            0.0, 0.1, 0.2, 0.3, 0.4, 0.5,
-            0.6, 0.7, 0.8, 0.9, 1.0,
-        ),
-    )
+dd_merges_completed_total = m.create_custom_counter(
+    "merges_completed_total",
+    "Total record merges completed",
+    labelnames=["strategy"],
+)
 
-    # 11. Currently active dedup jobs gauge
-    dd_active_jobs = Gauge(
-        "gl_dd_active_jobs",
-        "Number of currently active deduplication jobs",
-    )
+dd_merge_conflicts_total = m.create_custom_counter(
+    "merge_conflicts_total",
+    "Total merge conflicts encountered",
+    labelnames=["resolution"],
+)
 
-    # 12. Processing errors by error type
-    dd_processing_errors_total = Counter(
-        "gl_dd_processing_errors_total",
-        "Total processing errors encountered",
-        labelnames=["error_type"],
-    )
+dd_processing_duration_seconds = m.create_custom_histogram(
+    "processing_duration_seconds_detail",
+    "Duplicate detection processing duration in seconds",
+    buckets=(
+        0.05, 0.1, 0.25, 0.5, 1.0, 2.5,
+        5.0, 10.0, 30.0, 60.0, 120.0, 300.0,
+    ),
+    labelnames=["operation"],
+)
 
-else:
-    # No-op placeholders
-    dd_jobs_processed_total = None  # type: ignore[assignment]
-    dd_records_fingerprinted_total = None  # type: ignore[assignment]
-    dd_blocks_created_total = None  # type: ignore[assignment]
-    dd_comparisons_performed_total = None  # type: ignore[assignment]
-    dd_matches_found_total = None  # type: ignore[assignment]
-    dd_clusters_formed_total = None  # type: ignore[assignment]
-    dd_merges_completed_total = None  # type: ignore[assignment]
-    dd_merge_conflicts_total = None  # type: ignore[assignment]
-    dd_processing_duration_seconds = None  # type: ignore[assignment]
-    dd_similarity_score = None  # type: ignore[assignment]
-    dd_active_jobs = None  # type: ignore[assignment]
-    dd_processing_errors_total = None  # type: ignore[assignment]
+dd_similarity_score = m.create_custom_histogram(
+    "similarity_score",
+    "Similarity score distribution",
+    buckets=(0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0),
+    labelnames=["algorithm"],
+)
+
+dd_processing_errors_total = m.create_custom_counter(
+    "processing_errors_total",
+    "Total processing errors encountered",
+    labelnames=["error_type"],
+)
 
 
 # ---------------------------------------------------------------------------
@@ -168,11 +138,7 @@ def inc_jobs(status: str) -> None:
     Args:
         status: Job status (completed, failed, cancelled, timeout).
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    dd_jobs_processed_total.labels(
-        status=status,
-    ).inc()
+    m.safe_inc(dd_jobs_processed_total, 1, status=status)
 
 
 def inc_fingerprints(algorithm: str, count: int = 1) -> None:
@@ -182,11 +148,7 @@ def inc_fingerprints(algorithm: str, count: int = 1) -> None:
         algorithm: Fingerprinting algorithm (sha256, simhash, minhash).
         count: Number of records fingerprinted.
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    dd_records_fingerprinted_total.labels(
-        algorithm=algorithm,
-    ).inc(count)
+    m.safe_inc(dd_records_fingerprinted_total, count, algorithm=algorithm)
 
 
 def inc_blocks(strategy: str, count: int = 1) -> None:
@@ -196,11 +158,7 @@ def inc_blocks(strategy: str, count: int = 1) -> None:
         strategy: Blocking strategy (sorted_neighborhood, standard, canopy, none).
         count: Number of blocks created.
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    dd_blocks_created_total.labels(
-        strategy=strategy,
-    ).inc(count)
+    m.safe_inc(dd_blocks_created_total, count, strategy=strategy)
 
 
 def inc_comparisons(algorithm: str, count: int = 1) -> None:
@@ -211,11 +169,7 @@ def inc_comparisons(algorithm: str, count: int = 1) -> None:
             soundex, ngram, tfidf_cosine, numeric, date).
         count: Number of comparisons performed.
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    dd_comparisons_performed_total.labels(
-        algorithm=algorithm,
-    ).inc(count)
+    m.safe_inc(dd_comparisons_performed_total, count, algorithm=algorithm)
 
 
 def inc_matches(classification: str, count: int = 1) -> None:
@@ -225,11 +179,7 @@ def inc_matches(classification: str, count: int = 1) -> None:
         classification: Match classification (match, possible, non_match).
         count: Number of matches found.
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    dd_matches_found_total.labels(
-        classification=classification,
-    ).inc(count)
+    m.safe_inc(dd_matches_found_total, count, classification=classification)
 
 
 def inc_clusters(algorithm: str, count: int = 1) -> None:
@@ -239,11 +189,7 @@ def inc_clusters(algorithm: str, count: int = 1) -> None:
         algorithm: Clustering algorithm (union_find, connected_components).
         count: Number of clusters formed.
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    dd_clusters_formed_total.labels(
-        algorithm=algorithm,
-    ).inc(count)
+    m.safe_inc(dd_clusters_formed_total, count, algorithm=algorithm)
 
 
 def inc_merges(strategy: str, count: int = 1) -> None:
@@ -254,11 +200,7 @@ def inc_merges(strategy: str, count: int = 1) -> None:
             merge_fields, golden_record, custom).
         count: Number of merges completed.
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    dd_merges_completed_total.labels(
-        strategy=strategy,
-    ).inc(count)
+    m.safe_inc(dd_merges_completed_total, count, strategy=strategy)
 
 
 def inc_conflicts(resolution: str, count: int = 1) -> None:
@@ -269,11 +211,7 @@ def inc_conflicts(resolution: str, count: int = 1) -> None:
             longest, shortest).
         count: Number of conflicts encountered.
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    dd_merge_conflicts_total.labels(
-        resolution=resolution,
-    ).inc(count)
+    m.safe_inc(dd_merge_conflicts_total, count, resolution=resolution)
 
 
 def observe_duration(operation: str, duration: float) -> None:
@@ -284,11 +222,7 @@ def observe_duration(operation: str, duration: float) -> None:
             cluster, merge, pipeline, job).
         duration: Duration in seconds.
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    dd_processing_duration_seconds.labels(
-        operation=operation,
-    ).observe(duration)
+    m.safe_observe(dd_processing_duration_seconds, duration, operation=operation)
 
 
 def observe_similarity(algorithm: str, score: float) -> None:
@@ -298,11 +232,7 @@ def observe_similarity(algorithm: str, score: float) -> None:
         algorithm: Similarity algorithm used.
         score: Similarity score (0.0 - 1.0).
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    dd_similarity_score.labels(
-        algorithm=algorithm,
-    ).observe(score)
+    m.safe_observe(dd_similarity_score, score, algorithm=algorithm)
 
 
 def set_active_jobs(count: int) -> None:
@@ -311,9 +241,7 @@ def set_active_jobs(count: int) -> None:
     Args:
         count: Number of currently active jobs.
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    dd_active_jobs.set(count)
+    m.safe_set(dd_active_jobs, count)
 
 
 def inc_errors(error_type: str) -> None:
@@ -323,15 +251,12 @@ def inc_errors(error_type: str) -> None:
         error_type: Error classification (validation, timeout, data,
             integration, comparison, merge, unknown).
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    dd_processing_errors_total.labels(
-        error_type=error_type,
-    ).inc()
+    m.safe_inc(dd_processing_errors_total, 1, error_type=error_type)
 
 
 __all__ = [
     "PROMETHEUS_AVAILABLE",
+    "m",
     # Metric objects
     "dd_jobs_processed_total",
     "dd_records_fingerprinted_total",

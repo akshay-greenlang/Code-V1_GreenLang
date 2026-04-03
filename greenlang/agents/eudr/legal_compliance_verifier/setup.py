@@ -284,13 +284,13 @@ class LegalComplianceVerifierSetup:
             try:
                 await self._db_pool.close()
             except Exception as exc:
-                logger.warning(f"Database pool close failed: {exc}")
+                logger.warning("Database pool close failed: %s", exc)
 
         if self._redis is not None:
             try:
                 await self._redis.close()
             except Exception as exc:
-                logger.warning(f"Redis close failed: {exc}")
+                logger.warning("Redis close failed: %s", exc)
 
         self._started = False
         logger.info("LegalComplianceVerifierSetup shutdown completed")
@@ -595,7 +595,7 @@ class LegalComplianceVerifierSetup:
                 country_code, commodity=commodity,
             )
         except Exception as exc:
-            logger.error(f"Framework query failed: {exc}")
+            logger.error("Framework query failed: %s", exc)
             results["frameworks"] = {"error": str(exc)}
 
         # Step 2: Red flag scan
@@ -608,7 +608,7 @@ class LegalComplianceVerifierSetup:
                 )
                 results["red_flags"] = red_flag_data
             except Exception as exc:
-                logger.error(f"Red flag scan failed: {exc}")
+                logger.error("Red flag scan failed: %s", exc)
                 results["red_flags"] = {"error": str(exc)}
 
         # Step 3: Compliance assessment
@@ -622,7 +622,7 @@ class LegalComplianceVerifierSetup:
                 supplier_id=supplier_id,
             )
         except Exception as exc:
-            logger.error(f"Compliance assessment failed: {exc}")
+            logger.error("Compliance assessment failed: %s", exc)
             results["assessment"] = {"error": str(exc)}
 
         elapsed = time.monotonic() - start_time
@@ -746,7 +746,7 @@ class LegalComplianceVerifierSetup:
             await self._db_pool.open()
             logger.info("Database pool initialized")
         except Exception as exc:
-            logger.warning(f"Database pool init failed: {exc}")
+            logger.warning("Database pool init failed: %s", exc)
             self._db_pool = None
 
     async def _init_redis(self) -> None:
@@ -763,7 +763,7 @@ class LegalComplianceVerifierSetup:
             await self._redis.ping()
             logger.info("Redis connection initialized")
         except Exception as exc:
-            logger.warning(f"Redis init failed: {exc}")
+            logger.warning("Redis init failed: %s", exc)
             self._redis = None
 
     # -------------------------------------------------------------------

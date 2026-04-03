@@ -212,7 +212,7 @@ class MQTTClient:
 
         except Exception as e:
             self.state = ConnectionState.ERROR
-            logger.error(f"Connection failed: {e}", exc_info=True)
+            logger.error("Connection failed: %s", e, exc_info=True)
             raise ConnectionError(
                 f"Failed to connect to MQTT broker: {e}"
             ) from e
@@ -246,7 +246,7 @@ class MQTTClient:
             try:
                 await self._client.__aexit__(None, None, None)
             except Exception as e:
-                logger.warning(f"Error during disconnect: {e}")
+                logger.warning("Error during disconnect: %s", e)
 
         self.state = ConnectionState.DISCONNECTED
         logger.info("Disconnected from MQTT broker")
@@ -277,12 +277,12 @@ class MQTTClient:
                     try:
                         await self._process_message(message)
                     except Exception as e:
-                        logger.error(f"Error processing message: {e}")
+                        logger.error("Error processing message: %s", e)
 
         except asyncio.CancelledError:
             pass
         except Exception as e:
-            logger.error(f"Message handler loop error: {e}")
+            logger.error("Message handler loop error: %s", e)
             if not self._shutdown:
                 await self._handle_connection_loss()
 
@@ -303,7 +303,7 @@ class MQTTClient:
             retain=message.retain,
         )
 
-        logger.debug(f"Received message on {topic}")
+        logger.debug("Received message on %s", topic)
 
         # Find matching subscriptions
         for pattern, subscription in self.subscriptions.items():
@@ -314,7 +314,7 @@ class MQTTClient:
                     else:
                         subscription.callback(mqtt_message)
                 except Exception as e:
-                    logger.error(f"Subscription callback error: {e}")
+                    logger.error("Subscription callback error: %s", e)
 
     def _topic_matches(self, pattern: str, topic: str) -> bool:
         """Check if topic matches subscription pattern."""
@@ -358,11 +358,11 @@ class MQTTClient:
                 # Resubscribe
                 await self._resubscribe_all()
 
-                logger.info(f"Reconnected after {attempt + 1} attempts")
+                logger.info("Reconnected after %s attempts", attempt + 1)
                 return
 
             except Exception as e:
-                logger.warning(f"Reconnection attempt {attempt + 1} failed: {e}")
+                logger.warning("Reconnection attempt %s failed: %s", attempt + 1, e)
 
         self.state = ConnectionState.ERROR
         logger.error("Max reconnection attempts reached")
@@ -372,9 +372,9 @@ class MQTTClient:
         for topic, subscription in self.subscriptions.items():
             try:
                 await self._client.subscribe(topic, qos=subscription.qos)
-                logger.debug(f"Resubscribed to {topic}")
+                logger.debug("Resubscribed to %s", topic)
             except Exception as e:
-                logger.error(f"Failed to resubscribe to {topic}: {e}")
+                logger.error("Failed to resubscribe to %s: %s", topic, e)
 
     async def publish(
         self,
@@ -434,7 +434,7 @@ class MQTTClient:
             return provenance_hash
 
         except Exception as e:
-            logger.error(f"Publish failed: {e}")
+            logger.error("Publish failed: %s", e)
             raise
 
     async def subscribe(
@@ -468,11 +468,11 @@ class MQTTClient:
             )
             self.subscriptions[topic] = subscription
 
-            logger.info(f"Subscribed to {topic} (QoS {qos_level})")
+            logger.info("Subscribed to %s (QoS %s)", topic, qos_level)
             return topic
 
         except Exception as e:
-            logger.error(f"Subscribe failed: {e}")
+            logger.error("Subscribe failed: %s", e)
             raise
 
     async def unsubscribe(self, topic: str) -> None:
@@ -487,10 +487,10 @@ class MQTTClient:
         try:
             await self._client.unsubscribe(topic)
             self.subscriptions.pop(topic, None)
-            logger.info(f"Unsubscribed from {topic}")
+            logger.info("Unsubscribed from %s", topic)
 
         except Exception as e:
-            logger.error(f"Unsubscribe failed: {e}")
+            logger.error("Unsubscribe failed: %s", e)
             raise
 
     async def publish_batch(
@@ -518,7 +518,7 @@ class MQTTClient:
             )
             hashes.append(hash_val)
 
-        logger.info(f"Published batch of {len(messages)} messages")
+        logger.info("Published batch of %s messages", len(messages))
         return hashes
 
     def _ensure_connected(self) -> None:

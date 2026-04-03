@@ -418,7 +418,7 @@ class HardwiredInterlockManager:
         self._trip_times: Dict[str, datetime] = {}
         self._trip_counts: Dict[str, int] = {}
 
-        logger.info(f"HardwiredInterlockManager initialized: {system_id}")
+        logger.info("HardwiredInterlockManager initialized: %s", system_id)
 
     def register_interlock(
         self,
@@ -458,7 +458,7 @@ class HardwiredInterlockManager:
             Trip event if interlock tripped, None otherwise
         """
         if interlock_id not in self.interlocks:
-            logger.warning(f"Unknown interlock: {interlock_id}")
+            logger.warning("Unknown interlock: %s", interlock_id)
             return None
 
         definition = self.interlocks[interlock_id]
@@ -471,7 +471,7 @@ class HardwiredInterlockManager:
                 break
 
         if not signal_def:
-            logger.warning(f"Unknown signal {signal_id} for {interlock_id}")
+            logger.warning("Unknown signal %s for %s", signal_id, interlock_id)
             return None
 
         # Store previous value

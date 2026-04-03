@@ -525,7 +525,7 @@ if FASTAPI_AVAILABLE:
         Returns:
             Paginated list of jobs with optional statistics
         """
-        logger.info(f"Listing jobs: page={page}, page_size={page_size}")
+        logger.info("Listing jobs: page=%s, page_size=%s", page, page_size)
 
         # Filter jobs
         jobs = list(_jobs.values())
@@ -615,12 +615,12 @@ if FASTAPI_AVAILABLE:
         Raises:
             HTTPException: If job not found
         """
-        logger.info(f"Getting job details: {job_id}")
+        logger.info("Getting job details: %s", job_id)
 
         job = _jobs.get(job_id)
 
         if not job:
-            logger.warning(f"Job not found: {job_id}")
+            logger.warning("Job not found: %s", job_id)
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail={
@@ -667,12 +667,12 @@ if FASTAPI_AVAILABLE:
         Raises:
             HTTPException: If job not found or cannot be cancelled
         """
-        logger.info(f"Cancelling job: {job_id}")
+        logger.info("Cancelling job: %s", job_id)
 
         job = _jobs.get(job_id)
 
         if not job:
-            logger.warning(f"Job not found: {job_id}")
+            logger.warning("Job not found: %s", job_id)
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail={
@@ -708,7 +708,7 @@ if FASTAPI_AVAILABLE:
                 recoverable=False
             )
 
-        logger.info(f"Job cancelled: {job_id}, previous_status={previous_status.value}")
+        logger.info("Job cancelled: %s, previous_status=%s", job_id, previous_status.value)
 
         return JobCancelResponse(
             job_id=job_id,

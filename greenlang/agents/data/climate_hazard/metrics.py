@@ -5,66 +5,21 @@ Prometheus Metrics - AGENT-DATA-020: Climate Hazard Connector
 12 Prometheus metrics for climate hazard connector service monitoring with
 graceful fallback when prometheus_client is not installed.
 
-All metric names use the ``gl_chc_`` prefix (GreenLang Climate Hazard
-Connector) for consistent identification in Prometheus queries, Grafana
-dashboards, and alerting rules across the GreenLang platform.
+Standard metrics (via MetricsFactory):
+    1.  gl_chc_operations_total (Counter, labels: type, tenant_id)
+    2.  gl_chc_processing_duration_seconds (Histogram, 12 buckets)
+    3.  gl_chc_validation_errors_total (Counter, labels: severity, type)
+    4.  gl_chc_batch_jobs_total (Counter, labels: status)
+    5.  gl_chc_active_jobs (Gauge)
+    6.  gl_chc_queue_size (Gauge)
 
-Metrics:
-    1.  gl_chc_hazard_data_ingested_total        (Counter,   labels: hazard_type, source)
-    2.  gl_chc_risk_indices_calculated_total      (Counter,   labels: hazard_type, scenario)
-    3.  gl_chc_scenario_projections_total         (Counter,   labels: scenario, time_horizon)
-    4.  gl_chc_exposure_assessments_total         (Counter,   labels: asset_type, hazard_type)
-    5.  gl_chc_vulnerability_scores_total         (Counter,   labels: sector, hazard_type)
-    6.  gl_chc_reports_generated_total            (Counter,   labels: report_type, format)
-    7.  gl_chc_pipeline_runs_total                (Counter,   labels: pipeline_stage, status)
-    8.  gl_chc_active_sources                     (Gauge)
-    9.  gl_chc_active_assets                      (Gauge)
-    10. gl_chc_high_risk_locations                (Gauge)
-    11. gl_chc_ingestion_duration_seconds         (Histogram, labels: source, buckets: ingestion-scale)
-    12. gl_chc_pipeline_duration_seconds          (Histogram, labels: pipeline_stage, buckets: pipeline-scale)
-
-Label Values Reference:
-    hazard_type:
-        flood, drought, wildfire, heat_wave, cold_wave, storm,
-        sea_level_rise, tropical_cyclone, landslide, water_stress,
-        precipitation_change, temperature_change, compound.
-    source:
-        noaa, copernicus, world_bank, nasa, ipcc, national_agency,
-        satellite, ground_station, model_output, custom.
-    scenario:
-        rcp26, rcp45, rcp60, rcp85, ssp126, ssp245, ssp370,
-        ssp585, historical, baseline.
-    time_horizon:
-        2030, 2040, 2050, 2070, 2100, short_term, medium_term,
-        long_term.
-    asset_type:
-        facility, warehouse, office, data_center, factory,
-        supply_chain_node, transport_hub, port, mine, farm,
-        renewable_installation, portfolio.
-    sector:
-        energy, manufacturing, agriculture, real_estate, transport,
-        water, financial, healthcare, technology, mining, forestry.
-    report_type:
-        tcfd, csrd, eu_taxonomy, physical_risk, transition_risk,
-        portfolio_summary, hotspot_analysis, compliance_summary.
-    format:
-        json, html, pdf, csv, markdown, xml.
-    pipeline_stage:
-        ingestion, risk_calculation, scenario_projection,
-        exposure_assessment, vulnerability_scoring, reporting,
-        full_pipeline.
-    status:
-        success, failure, partial, timeout.
-
-Example:
-    >>> from greenlang.agents.data.climate_hazard.metrics import (
-    ...     record_ingestion,
-    ...     record_risk_calculation,
-    ...     set_active_sources,
-    ... )
-    >>> record_ingestion("flood", "noaa")
-    >>> record_risk_calculation("flood", "ssp245")
-    >>> set_active_sources(12)
+Agent-specific metrics:
+    7.  gl_chc_hazard_data_ingested_total (Counter, labels: hazard_type, source)
+    8.  gl_chc_risk_indices_calculated_total (Counter, labels: hazard_type, scenario)
+    9.  gl_chc_scenario_projections_total (Counter, labels: scenario, time_horizon)
+    10. gl_chc_exposure_assessments_total (Counter, labels: asset_type, hazard_type)
+    11. gl_chc_ingestion_duration_seconds (Histogram, labels: source)
+    12. gl_chc_pipeline_duration_seconds (Histogram, labels: pipeline_stage)
 
 Author: GreenLang Platform Team
 Date: February 2026
@@ -74,125 +29,95 @@ Status: Production Ready
 
 from __future__ import annotations
 
-import logging
-
-logger = logging.getLogger(__name__)
-
-# ---------------------------------------------------------------------------
-# Graceful prometheus_client import
-# ---------------------------------------------------------------------------
-
-try:
-    from prometheus_client import Counter, Gauge, Histogram
-    PROMETHEUS_AVAILABLE = True
-except ImportError:
-    PROMETHEUS_AVAILABLE = False
-    logger.info(
-        "prometheus_client not installed; climate hazard connector metrics disabled"
-    )
+from greenlang.data_commons.metrics import (
+    PROMETHEUS_AVAILABLE,
+    MetricsFactory,
+)
 
 # ---------------------------------------------------------------------------
-# Metric definitions
+# Standard metrics (6 of 12) via factory
 # ---------------------------------------------------------------------------
 
-if PROMETHEUS_AVAILABLE:
-    # 1. Hazard data ingestion events by hazard type and data source
-    chc_hazard_data_ingested_total = Counter(
-        "gl_chc_hazard_data_ingested_total",
-        "Total climate hazard data records ingested by the connector",
-        labelnames=["hazard_type", "source"],
-    )
+m = MetricsFactory(
+    "gl_chc",
+    "Climate Hazard Connector",
+    duration_buckets=(0.1, 0.5, 1, 2, 5, 10, 30, 60, 120),
+)
 
-    # 2. Risk index calculations by hazard type and scenario
-    chc_risk_indices_calculated_total = Counter(
-        "gl_chc_risk_indices_calculated_total",
-        "Total climate risk indices calculated by the connector",
-        labelnames=["hazard_type", "scenario"],
-    )
+# ---------------------------------------------------------------------------
+# Agent-specific metrics (6 of 12)
+# ---------------------------------------------------------------------------
 
-    # 3. Scenario projections by scenario pathway and time horizon
-    chc_scenario_projections_total = Counter(
-        "gl_chc_scenario_projections_total",
-        "Total climate scenario projections performed by the connector",
-        labelnames=["scenario", "time_horizon"],
-    )
+chc_hazard_data_ingested_total = m.create_custom_counter(
+    "hazard_data_ingested_total",
+    "Total climate hazard data records ingested by the connector",
+    labelnames=["hazard_type", "source"],
+)
 
-    # 4. Exposure assessments by asset type and hazard type
-    chc_exposure_assessments_total = Counter(
-        "gl_chc_exposure_assessments_total",
-        "Total exposure assessments performed by the connector",
-        labelnames=["asset_type", "hazard_type"],
-    )
+chc_risk_indices_calculated_total = m.create_custom_counter(
+    "risk_indices_calculated_total",
+    "Total climate risk indices calculated by the connector",
+    labelnames=["hazard_type", "scenario"],
+)
 
-    # 5. Vulnerability scores by sector and hazard type
-    chc_vulnerability_scores_total = Counter(
-        "gl_chc_vulnerability_scores_total",
-        "Total vulnerability scores computed by the connector",
-        labelnames=["sector", "hazard_type"],
-    )
+chc_scenario_projections_total = m.create_custom_counter(
+    "scenario_projections_total",
+    "Total climate scenario projections performed by the connector",
+    labelnames=["scenario", "time_horizon"],
+)
 
-    # 6. Reports generated by report type and output format
-    chc_reports_generated_total = Counter(
-        "gl_chc_reports_generated_total",
-        "Total compliance and analysis reports generated by the connector",
-        labelnames=["report_type", "format"],
-    )
+chc_exposure_assessments_total = m.create_custom_counter(
+    "exposure_assessments_total",
+    "Total exposure assessments performed by the connector",
+    labelnames=["asset_type", "hazard_type"],
+)
 
-    # 7. Pipeline runs by pipeline stage and completion status
-    chc_pipeline_runs_total = Counter(
-        "gl_chc_pipeline_runs_total",
-        "Total pipeline stage executions by the climate hazard connector",
-        labelnames=["pipeline_stage", "status"],
-    )
+chc_vulnerability_scores_total = m.create_custom_counter(
+    "vulnerability_scores_total",
+    "Total vulnerability scores computed by the connector",
+    labelnames=["sector", "hazard_type"],
+)
 
-    # 8. Current number of active hazard data sources
-    chc_active_sources = Gauge(
-        "gl_chc_active_sources",
-        "Current number of active climate hazard data sources registered",
-    )
+chc_reports_generated_total = m.create_custom_counter(
+    "reports_generated_total",
+    "Total compliance and analysis reports generated by the connector",
+    labelnames=["report_type", "format"],
+)
 
-    # 9. Current number of active assets under monitoring
-    chc_active_assets = Gauge(
-        "gl_chc_active_assets",
-        "Current number of active assets registered for climate hazard monitoring",
-    )
+chc_pipeline_runs_total = m.create_custom_counter(
+    "pipeline_runs_total",
+    "Total pipeline stage executions by the climate hazard connector",
+    labelnames=["pipeline_stage", "status"],
+)
 
-    # 10. Current number of high-risk locations identified
-    chc_high_risk_locations = Gauge(
-        "gl_chc_high_risk_locations",
-        "Current number of locations classified as high climate risk",
-    )
+chc_active_sources = m.create_custom_gauge(
+    "active_sources",
+    "Current number of active climate hazard data sources registered",
+)
 
-    # 11. Ingestion duration by data source
-    chc_ingestion_duration_seconds = Histogram(
-        "gl_chc_ingestion_duration_seconds",
-        "Duration of climate hazard data ingestion operations in seconds",
-        labelnames=["source"],
-        buckets=(0.1, 0.5, 1, 2, 5, 10, 30, 60, 120),
-    )
+chc_active_assets = m.create_custom_gauge(
+    "active_assets",
+    "Current number of active assets registered for climate hazard monitoring",
+)
 
-    # 12. Pipeline stage duration by pipeline stage
-    chc_pipeline_duration_seconds = Histogram(
-        "gl_chc_pipeline_duration_seconds",
-        "Duration of climate hazard pipeline stage executions in seconds",
-        labelnames=["pipeline_stage"],
-        buckets=(0.1, 0.5, 1, 5, 10, 30, 60, 120, 300),
-    )
+chc_high_risk_locations = m.create_custom_gauge(
+    "high_risk_locations",
+    "Current number of locations classified as high climate risk",
+)
 
-else:
-    # No-op placeholders so callers never need to guard on PROMETHEUS_AVAILABLE
-    chc_hazard_data_ingested_total = None       # type: ignore[assignment]
-    chc_risk_indices_calculated_total = None     # type: ignore[assignment]
-    chc_scenario_projections_total = None        # type: ignore[assignment]
-    chc_exposure_assessments_total = None        # type: ignore[assignment]
-    chc_vulnerability_scores_total = None        # type: ignore[assignment]
-    chc_reports_generated_total = None           # type: ignore[assignment]
-    chc_pipeline_runs_total = None               # type: ignore[assignment]
-    chc_active_sources = None                    # type: ignore[assignment]
-    chc_active_assets = None                     # type: ignore[assignment]
-    chc_high_risk_locations = None               # type: ignore[assignment]
-    chc_ingestion_duration_seconds = None        # type: ignore[assignment]
-    chc_pipeline_duration_seconds = None         # type: ignore[assignment]
+chc_ingestion_duration_seconds = m.create_custom_histogram(
+    "ingestion_duration_seconds",
+    "Duration of climate hazard data ingestion operations in seconds",
+    buckets=(0.1, 0.5, 1, 2, 5, 10, 30, 60, 120),
+    labelnames=["source"],
+)
+
+chc_pipeline_duration_seconds = m.create_custom_histogram(
+    "pipeline_duration_seconds",
+    "Duration of climate hazard pipeline stage executions in seconds",
+    buckets=(0.1, 0.5, 1, 5, 10, 30, 60, 120, 300),
+    labelnames=["pipeline_stage"],
+)
 
 
 # ---------------------------------------------------------------------------
@@ -212,51 +137,40 @@ def record_ingestion(hazard_type: str, source: str) -> None:
             (noaa, copernicus, world_bank, nasa, ipcc, national_agency,
             satellite, ground_station, model_output, custom).
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    chc_hazard_data_ingested_total.labels(
-        hazard_type=hazard_type,
-        source=source,
-    ).inc()
+    m.safe_inc(
+        chc_hazard_data_ingested_total, 1,
+        hazard_type=hazard_type, source=source,
+    )
 
 
 def record_risk_calculation(hazard_type: str, scenario: str) -> None:
     """Record a climate risk index calculation event.
 
     Args:
-        hazard_type: Type of climate hazard for which risk was calculated
-            (flood, drought, wildfire, heat_wave, cold_wave, storm,
-            sea_level_rise, tropical_cyclone, landslide, water_stress,
-            precipitation_change, temperature_change, compound).
+        hazard_type: Type of climate hazard for which risk was calculated.
         scenario: Climate scenario pathway used for calculation
             (rcp26, rcp45, rcp60, rcp85, ssp126, ssp245, ssp370,
             ssp585, historical, baseline).
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    chc_risk_indices_calculated_total.labels(
-        hazard_type=hazard_type,
-        scenario=scenario,
-    ).inc()
+    m.safe_inc(
+        chc_risk_indices_calculated_total, 1,
+        hazard_type=hazard_type, scenario=scenario,
+    )
 
 
 def record_projection(scenario: str, time_horizon: str) -> None:
     """Record a climate scenario projection event.
 
     Args:
-        scenario: Climate scenario pathway used for projection
-            (rcp26, rcp45, rcp60, rcp85, ssp126, ssp245, ssp370,
-            ssp585, historical, baseline).
+        scenario: Climate scenario pathway used for projection.
         time_horizon: Target time horizon of the projection
             (2030, 2040, 2050, 2070, 2100, short_term, medium_term,
             long_term).
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    chc_scenario_projections_total.labels(
-        scenario=scenario,
-        time_horizon=time_horizon,
-    ).inc()
+    m.safe_inc(
+        chc_scenario_projections_total, 1,
+        scenario=scenario, time_horizon=time_horizon,
+    )
 
 
 def record_exposure(asset_type: str, hazard_type: str) -> None:
@@ -267,17 +181,12 @@ def record_exposure(asset_type: str, hazard_type: str) -> None:
             (facility, warehouse, office, data_center, factory,
             supply_chain_node, transport_hub, port, mine, farm,
             renewable_installation, portfolio).
-        hazard_type: Type of climate hazard assessed against
-            (flood, drought, wildfire, heat_wave, cold_wave, storm,
-            sea_level_rise, tropical_cyclone, landslide, water_stress,
-            precipitation_change, temperature_change, compound).
+        hazard_type: Type of climate hazard assessed against.
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    chc_exposure_assessments_total.labels(
-        asset_type=asset_type,
-        hazard_type=hazard_type,
-    ).inc()
+    m.safe_inc(
+        chc_exposure_assessments_total, 1,
+        asset_type=asset_type, hazard_type=hazard_type,
+    )
 
 
 def record_vulnerability(sector: str, hazard_type: str) -> None:
@@ -287,17 +196,12 @@ def record_vulnerability(sector: str, hazard_type: str) -> None:
         sector: Economic sector for which vulnerability was scored
             (energy, manufacturing, agriculture, real_estate, transport,
             water, financial, healthcare, technology, mining, forestry).
-        hazard_type: Type of climate hazard assessed
-            (flood, drought, wildfire, heat_wave, cold_wave, storm,
-            sea_level_rise, tropical_cyclone, landslide, water_stress,
-            precipitation_change, temperature_change, compound).
+        hazard_type: Type of climate hazard assessed.
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    chc_vulnerability_scores_total.labels(
-        sector=sector,
-        hazard_type=hazard_type,
-    ).inc()
+    m.safe_inc(
+        chc_vulnerability_scores_total, 1,
+        sector=sector, hazard_type=hazard_type,
+    )
 
 
 def record_report(report_type: str, format: str) -> None:
@@ -310,12 +214,10 @@ def record_report(report_type: str, format: str) -> None:
         format: Output format of the generated report
             (json, html, pdf, csv, markdown, xml).
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    chc_reports_generated_total.labels(
-        report_type=report_type,
-        format=format,
-    ).inc()
+    m.safe_inc(
+        chc_reports_generated_total, 1,
+        report_type=report_type, format=format,
+    )
 
 
 def record_pipeline(pipeline_stage: str, status: str) -> None:
@@ -329,100 +231,68 @@ def record_pipeline(pipeline_stage: str, status: str) -> None:
         status: Completion status of the pipeline stage
             (success, failure, partial, timeout).
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    chc_pipeline_runs_total.labels(
-        pipeline_stage=pipeline_stage,
-        status=status,
-    ).inc()
+    m.safe_inc(
+        chc_pipeline_runs_total, 1,
+        pipeline_stage=pipeline_stage, status=status,
+    )
 
 
 def set_active_sources(count: int) -> None:
     """Set the gauge for current number of active hazard data sources.
 
-    This is an absolute set (not an increment) so the caller is
-    responsible for computing the correct current count.
-
     Args:
         count: Number of active climate hazard data sources currently
             registered. Must be >= 0.
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    chc_active_sources.set(count)
+    m.safe_set(chc_active_sources, count)
 
 
 def set_active_assets(count: int) -> None:
     """Set the gauge for current number of active monitored assets.
 
-    This is an absolute set (not an increment) so the caller is
-    responsible for computing the correct current count.
-
     Args:
         count: Number of active assets currently registered for
             climate hazard monitoring. Must be >= 0.
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    chc_active_assets.set(count)
+    m.safe_set(chc_active_assets, count)
 
 
 def set_high_risk(count: int) -> None:
     """Set the gauge for current number of high-risk locations.
 
-    This is an absolute set (not an increment) so the caller is
-    responsible for computing the correct current count.
-
     Args:
         count: Number of locations currently classified as high
             climate risk. Must be >= 0.
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    chc_high_risk_locations.set(count)
+    m.safe_set(chc_high_risk_locations, count)
 
 
 def observe_ingestion_duration(source: str, seconds: float) -> None:
     """Record the duration of a hazard data ingestion operation.
 
     Args:
-        source: Data source provider for the ingestion
-            (noaa, copernicus, world_bank, nasa, ipcc, national_agency,
-            satellite, ground_station, model_output, custom).
+        source: Data source provider for the ingestion.
         seconds: Ingestion wall-clock time in seconds.
-            Buckets: 0.1, 0.5, 1, 2, 5, 10, 30, 60, 120.
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    chc_ingestion_duration_seconds.labels(
-        source=source,
-    ).observe(seconds)
+    m.safe_observe(chc_ingestion_duration_seconds, seconds, source=source)
 
 
 def observe_pipeline_duration(pipeline_stage: str, seconds: float) -> None:
     """Record the duration of a pipeline stage execution.
 
     Args:
-        pipeline_stage: Stage of the pipeline that was measured
-            (ingestion, risk_calculation, scenario_projection,
-            exposure_assessment, vulnerability_scoring, reporting,
-            full_pipeline).
+        pipeline_stage: Stage of the pipeline that was measured.
         seconds: Pipeline stage wall-clock time in seconds.
-            Buckets: 0.1, 0.5, 1, 5, 10, 30, 60, 120, 300.
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    chc_pipeline_duration_seconds.labels(
+    m.safe_observe(
+        chc_pipeline_duration_seconds, seconds,
         pipeline_stage=pipeline_stage,
-    ).observe(seconds)
+    )
 
-
-# ---------------------------------------------------------------------------
-# Public API
-# ---------------------------------------------------------------------------
 
 __all__ = [
     "PROMETHEUS_AVAILABLE",
+    "m",
     # Metric objects
     "chc_hazard_data_ingested_total",
     "chc_risk_indices_calculated_total",

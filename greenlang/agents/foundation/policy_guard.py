@@ -585,7 +585,7 @@ class PolicyEngine:
                 self._policy_hierarchy[policy.policy_id] = []
             self._policy_hierarchy[policy.policy_id].append(policy.parent_policy_id)
 
-        logger.info(f"Added policy: {policy.policy_id} (hash: {policy.provenance_hash[:16]})")
+        logger.info("Added policy: %s (hash: %s)", policy.policy_id, policy.provenance_hash[)
         return policy.provenance_hash
 
     def remove_policy(self, policy_id: str) -> bool:
@@ -594,7 +594,7 @@ class PolicyEngine:
             del self._policies[policy_id]
             if policy_id in self._policy_hierarchy:
                 del self._policy_hierarchy[policy_id]
-            logger.info(f"Removed policy: {policy_id}")
+            logger.info("Removed policy: %s", policy_id)
             return True
         return False
 
@@ -831,7 +831,7 @@ class PolicyEngine:
         """
         self._rego_policies[policy_id] = rego_source
         policy_hash = hashlib.sha256(rego_source.encode()).hexdigest()
-        logger.info(f"Added Rego policy: {policy_id} (hash: {policy_hash[:16]})")
+        logger.info("Added Rego policy: %s (hash: %s)", policy_id, policy_hash[)
         return policy_hash
 
     def evaluate_rego(self, request: AccessRequest, policy_id: str) -> Optional[AccessDecisionResult]:
@@ -852,12 +852,12 @@ class PolicyEngine:
 
         rego_source = self._rego_policies.get(policy_id)
         if not rego_source:
-            logger.error(f"Rego policy not found: {policy_id}")
+            logger.error("Rego policy not found: %s", policy_id)
             return None
 
         # In a real implementation, this would call the OPA server
         # For now, we return a placeholder indicating OPA would be used
-        logger.info(f"Would evaluate Rego policy: {policy_id}")
+        logger.info("Would evaluate Rego policy: %s", policy_id)
         return None
 
 
@@ -928,7 +928,7 @@ class PolicyGuardAgent(BaseAgent):
         # Now call super().__init__() which will call initialize()
         super().__init__(config)
 
-        logger.info(f"Initialized {self.AGENT_NAME} v{self.VERSION}")
+        logger.info("Initialized %s v%s", self.AGENT_NAME, self.VERSION)
 
     def initialize(self):
         """Custom initialization for the Policy Guard Agent."""
@@ -1078,7 +1078,7 @@ class PolicyGuardAgent(BaseAgent):
                 )
 
         except Exception as e:
-            logger.error(f"Policy Guard execution failed: {e}", exc_info=True)
+            logger.error("Policy Guard execution failed: %s", e, exc_info=True)
             return AgentResult(
                 success=False,
                 error=str(e)
@@ -1291,7 +1291,7 @@ class PolicyGuardAgent(BaseAgent):
         if len(self._audit_log) > self._audit_log_max_size:
             self._audit_log = self._audit_log[-self._audit_log_max_size // 2:]
 
-        logger.debug(f"Audit event: {event_type.value} - {request.request_id}")
+        logger.debug("Audit event: %s - %s", event_type.value, request.request_id)
 
     def add_policy(self, policy: Policy) -> str:
         """

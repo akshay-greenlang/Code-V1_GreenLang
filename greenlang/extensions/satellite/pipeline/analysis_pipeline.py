@@ -63,6 +63,7 @@ from greenlang.satellite.alerts.deforestation_alert import (
     GeoPolygon,
     create_polygon_from_bbox,
 )
+from greenlang.utilities.exceptions.base import GreenLangException
 
 logger = logging.getLogger(__name__)
 
@@ -185,7 +186,7 @@ class AnalysisResult:
         }
 
 
-class PipelineError(Exception):
+class PipelineError(GreenLangException):
     """Base exception for pipeline errors."""
     pass
 
@@ -272,7 +273,7 @@ class DeforestationAnalysisPipeline:
             self._progress[polygon_id].progress_percent = progress
             self._progress[polygon_id].message = message
 
-            logger.debug(f"[{polygon_id}] {stage.value}: {progress:.1f}% - {message}")
+            logger.debug("[%s] %s: %.1f% - %s", polygon_id, stage.value, progress, message)
 
     def get_progress(self, polygon_id: str) -> Optional[PipelineProgress]:
         """Get current progress for a polygon analysis."""
@@ -315,7 +316,7 @@ class DeforestationAnalysisPipeline:
             with open(cache_file, "w") as f:
                 json.dump(data, f, default=str)
         except IOError as e:
-            logger.warning(f"Failed to save cache: {e}")
+            logger.warning("Failed to save cache: %s", e)
 
     def _acquire_image(
         self,
@@ -343,7 +344,7 @@ class DeforestationAnalysisPipeline:
                     image = self.sentinel2_client.download_image(results[0])
                     return image, "sentinel2", results[0].acquisition_date
             except Exception as e:
-                logger.warning(f"Sentinel-2 acquisition failed: {e}")
+                logger.warning("Sentinel-2 acquisition failed: %s", e)
 
         # Try Landsat if fallback enabled
         if self.config.fallback_enabled:
@@ -359,7 +360,7 @@ class DeforestationAnalysisPipeline:
                     image = self.landsat_client.download_image(results[0])
                     return image, "landsat", results[0].acquisition_date
             except Exception as e:
-                logger.warning(f"Landsat acquisition failed: {e}")
+                logger.warning("Landsat acquisition failed: %s", e)
 
         raise ImageAcquisitionError(
             f"No suitable imagery found for {target_date.date()} within {date_tolerance_days} days"
@@ -397,7 +398,7 @@ class DeforestationAnalysisPipeline:
         Returns:
             AnalysisResult with complete analysis data
         """
-        logger.info(f"Starting analysis for polygon {polygon_id}")
+        logger.info("Starting analysis for polygon %s", polygon_id)
         self._update_progress(polygon_id, PipelineStage.INITIALIZATION, 0, "Initializing analysis")
 
         result = AnalysisResult(
@@ -516,14 +517,14 @@ class DeforestationAnalysisPipeline:
             self._update_progress(polygon_id, PipelineStage.FAILED, 0, str(e))
             with self._progress_lock:
                 self._progress[polygon_id].error = str(e)
-            logger.error(f"Analysis failed for {polygon_id}: {e}")
+            logger.error("Analysis failed for %s: %s", polygon_id, e)
 
         except Exception as e:
             result.errors.append(f"Analysis error: {str(e)}")
             self._update_progress(polygon_id, PipelineStage.FAILED, 0, str(e))
             with self._progress_lock:
                 self._progress[polygon_id].error = str(e)
-            logger.exception(f"Unexpected error for {polygon_id}")
+            logger.exception("Unexpected error for %s", polygon_id)
 
         # Call progress callback if provided
         if progress_callback:
@@ -552,7 +553,7 @@ class DeforestationAnalysisPipeline:
         Returns:
             Dict mapping polygon_id to AnalysisResult
         """
-        logger.info(f"Starting parallel analysis for {len(polygons)} polygons")
+        logger.info("Starting parallel analysis for %s polygons", len(polygons))
 
         results = {}
 
@@ -580,7 +581,7 @@ class DeforestationAnalysisPipeline:
                     pid, result = future.result()
                     results[pid] = result
                 except Exception as e:
-                    logger.error(f"Failed to process {polygon_id}: {e}")
+                    logger.error("Failed to process %s: %s", polygon_id, e)
                     results[polygon_id] = AnalysisResult(
                         polygon_id=polygon_id,
                         bbox=dict(polygons)[polygon_id],

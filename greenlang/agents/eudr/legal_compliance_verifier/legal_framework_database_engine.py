@@ -782,7 +782,7 @@ class LegalFrameworkDatabaseEngine:
                     metadata={"provenance_hash": provenance_hash},
                 )
             except Exception as exc:
-                logger.warning(f"Provenance recording failed: {exc}")
+                logger.warning("Provenance recording failed: %s", exc)
 
     def _record_metrics(
         self,
@@ -802,9 +802,9 @@ class LegalFrameworkDatabaseEngine:
             try:
                 record_framework_query(country_code, category)
             except Exception as exc:
-                logger.warning(f"Metrics recording failed: {exc}")
+                logger.warning("Metrics recording failed: %s", exc)
         if observe_compliance_check_duration is not None:
             try:
                 observe_compliance_check_duration(elapsed)
             except Exception as exc:
-                logger.warning(f"Duration metrics failed: {exc}")
+                logger.warning("Duration metrics failed: %s", exc)

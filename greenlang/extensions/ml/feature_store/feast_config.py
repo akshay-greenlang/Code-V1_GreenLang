@@ -469,7 +469,7 @@ class ProcessHeatFeatureStore:
                 view = view_config
             self._feature_views[view.name] = view
 
-        logger.debug(f"Initialized {len(self._feature_views)} feature views")
+        logger.debug("Initialized %s feature views", len(self._feature_views))
 
     def _initialize_feature_services(self) -> None:
         """Initialize feature service configurations."""
@@ -487,7 +487,7 @@ class ProcessHeatFeatureStore:
                     service = service_config
                 self._feature_services[service.name] = service
 
-        logger.debug(f"Initialized {len(self._feature_services)} feature services")
+        logger.debug("Initialized %s feature services", len(self._feature_services))
 
     def _get_default_feature_services(self) -> List[Dict[str, Any]]:
         """Get default feature services."""
@@ -542,7 +542,7 @@ class ProcessHeatFeatureStore:
             self._connect_offline_store()
             logger.info("Successfully connected to feature stores")
         except Exception as e:
-            logger.warning(f"Failed to connect to stores: {e}. Running in offline mode.")
+            logger.warning("Failed to connect to stores: %s. Running in offline mode.", e)
 
     def _connect_online_store(self) -> None:
         """Connect to Redis online store."""
@@ -565,13 +565,13 @@ class ProcessHeatFeatureStore:
 
             # Test connection
             self._online_store.ping()
-            logger.info(f"Connected to Redis online store at {config.host}:{config.port}")
+            logger.info("Connected to Redis online store at %s:%s", config.host, config.port)
 
         except ImportError:
             logger.warning("Redis not installed. Online store not available.")
             self._online_store = None
         except Exception as e:
-            logger.warning(f"Failed to connect to Redis: {e}")
+            logger.warning("Failed to connect to Redis: %s", e)
             self._online_store = None
 
     def _connect_offline_store(self) -> None:
@@ -596,13 +596,13 @@ class ProcessHeatFeatureStore:
                 sslmode=config.ssl_mode
             )
 
-            logger.info(f"Connected to PostgreSQL offline store at {config.host}:{config.port}")
+            logger.info("Connected to PostgreSQL offline store at %s:%s", config.host, config.port)
 
         except ImportError:
             logger.warning("psycopg2 not installed. Offline store not available.")
             self._offline_store = None
         except Exception as e:
-            logger.warning(f"Failed to connect to PostgreSQL: {e}")
+            logger.warning("Failed to connect to PostgreSQL: %s", e)
             self._offline_store = None
 
     def _calculate_provenance_hash(self, data: Dict[str, Any]) -> str:
@@ -623,7 +623,7 @@ class ProcessHeatFeatureStore:
             json_str = json.dumps(data, sort_keys=True, default=str)
             return hashlib.sha256(json_str.encode('utf-8')).hexdigest()
         except Exception as e:
-            logger.warning(f"Failed to calculate provenance hash: {e}")
+            logger.warning("Failed to calculate provenance hash: %s", e)
             return ""
 
     def get_online_features(
@@ -668,7 +668,7 @@ class ProcessHeatFeatureStore:
                 features = self._get_features_fallback(entity_ids, feature_refs)
 
         except Exception as e:
-            logger.error(f"Error retrieving online features: {e}")
+            logger.error("Error retrieving online features: %s", e)
             features = self._get_features_fallback(entity_ids, feature_refs)
 
         # Calculate retrieval time
@@ -807,7 +807,7 @@ class ProcessHeatFeatureStore:
                 logger.warning("Offline store not available for historical features")
 
         except Exception as e:
-            logger.error(f"Error retrieving historical features: {e}")
+            logger.error("Error retrieving historical features: %s", e)
             features = {}
 
         end_ts = datetime.now(timezone.utc)
@@ -890,7 +890,7 @@ class ProcessHeatFeatureStore:
                 results["views_materialized"].append(view_name)
                 results["rows_written"] += rows
             except Exception as e:
-                logger.error(f"Failed to materialize {view_name}: {e}")
+                logger.error("Failed to materialize %s: %s", view_name, e)
                 results["errors"].append({"view": view_name, "error": str(e)})
 
         # Calculate provenance for materialization
@@ -907,7 +907,7 @@ class ProcessHeatFeatureStore:
     ) -> int:
         """Materialize a single feature view."""
         if self._online_store is None or self._offline_store is None:
-            logger.warning(f"Stores not available for materializing {view_name}")
+            logger.warning("Stores not available for materializing %s", view_name)
             return 0
 
         # In production, this would:
@@ -915,7 +915,7 @@ class ProcessHeatFeatureStore:
         # 2. Write features to Redis with TTL
         # 3. Return number of rows written
 
-        logger.info(f"Materialized feature view: {view_name}")
+        logger.info("Materialized feature view: %s", view_name)
         return 0
 
     def get_feature_service(
@@ -1059,14 +1059,14 @@ class ProcessHeatFeatureStore:
                 self._online_store.close()
                 logger.info("Closed Redis connection")
             except Exception as e:
-                logger.warning(f"Error closing Redis connection: {e}")
+                logger.warning("Error closing Redis connection: %s", e)
 
         if self._offline_store is not None:
             try:
                 self._offline_store.closeall()
                 logger.info("Closed PostgreSQL connection pool")
             except Exception as e:
-                logger.warning(f"Error closing PostgreSQL connections: {e}")
+                logger.warning("Error closing PostgreSQL connections: %s", e)
 
     def __enter__(self):
         """Context manager entry."""

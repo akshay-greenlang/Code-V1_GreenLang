@@ -287,7 +287,7 @@ class ProductionOrderScheduler:
             ProductionScheduleResult with scheduled orders
         """
         start_time = datetime.now(timezone.utc)
-        logger.info(f"Scheduling {len(orders)} production orders")
+        logger.info("Scheduling %s production orders", len(orders))
 
         scheduled_orders: List[ProductionOrder] = []
         rescheduled_orders: List[ProductionOrder] = []
@@ -350,7 +350,7 @@ class ProductionOrderScheduler:
                     # Could not reschedule - keep original (may exceed limit)
                     scheduled_orders.append(order)
                     self._add_order_to_profile(order, load_profile)
-                    logger.warning(f"Could not reschedule order {order.order_id}")
+                    logger.warning("Could not reschedule order %s", order.order_id)
             else:
                 # Non-flexible order - keep original
                 scheduled_orders.append(order)
@@ -519,7 +519,7 @@ class ERPConnector:
         self._token = auth_token
         self._connected = False
 
-        logger.info(f"ERPConnector initialized for {erp_type}")
+        logger.info("ERPConnector initialized for %s", erp_type)
 
     async def connect(self) -> bool:
         """
@@ -529,7 +529,7 @@ class ERPConnector:
             True if connection successful
         """
         # Placeholder - would implement actual connection
-        logger.info(f"Connecting to {self._erp_type} ERP...")
+        logger.info("Connecting to %s ERP...", self._erp_type)
         self._connected = True
         return True
 
@@ -584,7 +584,7 @@ class ERPConnector:
             return False
 
         # Placeholder - would implement actual ERP update
-        logger.info(f"Updating order {order_id} in ERP")
+        logger.info("Updating order %s in ERP", order_id)
         return True
 
     async def disconnect(self) -> None:
@@ -707,7 +707,7 @@ class ProductionPlanner:
         self._cached_orders = orders
         self._cache_timestamp = datetime.now(timezone.utc)
 
-        logger.info(f"Synced {len(orders)} orders from ERP")
+        logger.info("Synced %s orders from ERP", len(orders))
         return len(orders)
 
     def add_manual_order(self, order: ProductionOrder) -> None:

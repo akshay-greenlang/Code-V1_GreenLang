@@ -345,7 +345,7 @@ class InMemoryWebhookStore(BaseWebhookStore):
                 "hash": _calculate_provenance_hash(webhook.dict())
             })
 
-            logger.debug(f"Saved webhook {webhook_id} to memory")
+            logger.debug("Saved webhook %s to memory", webhook_id)
             return webhook_id
 
     async def get_webhook(self, webhook_id: str) -> Optional[WebhookModel]:
@@ -361,7 +361,7 @@ class InMemoryWebhookStore(BaseWebhookStore):
         async with self._lock:
             webhook = self._webhooks.get(webhook_id)
             if webhook:
-                logger.debug(f"Retrieved webhook {webhook_id} from memory")
+                logger.debug("Retrieved webhook %s from memory", webhook_id)
             return webhook
 
     async def list_webhooks(self) -> List[WebhookModel]:
@@ -373,7 +373,7 @@ class InMemoryWebhookStore(BaseWebhookStore):
         """
         async with self._lock:
             webhooks = list(self._webhooks.values())
-            logger.debug(f"Listed {len(webhooks)} webhooks from memory")
+            logger.debug("Listed %s webhooks from memory", len(webhooks))
             return webhooks
 
     async def delete_webhook(self, webhook_id: str) -> bool:
@@ -405,7 +405,7 @@ class InMemoryWebhookStore(BaseWebhookStore):
                     "timestamp": datetime.utcnow().isoformat()
                 })
 
-                logger.debug(f"Deleted webhook {webhook_id} from memory")
+                logger.debug("Deleted webhook %s from memory", webhook_id)
                 return True
             return False
 
@@ -423,7 +423,7 @@ class InMemoryWebhookStore(BaseWebhookStore):
             delivery_id = delivery.delivery_id
             self._deliveries[delivery_id] = delivery
 
-            logger.debug(f"Saved delivery {delivery_id} to memory")
+            logger.debug("Saved delivery %s to memory", delivery_id)
             return delivery_id
 
     async def get_deliveries(
@@ -514,7 +514,7 @@ class SQLiteWebhookStore(BaseWebhookStore):
         self._lock = asyncio.Lock()
         self._initialized = False
 
-        logger.info(f"SQLiteWebhookStore initialized with path: {db_path}")
+        logger.info("SQLiteWebhookStore initialized with path: %s", db_path)
 
     async def initialize(self) -> None:
         """
@@ -653,7 +653,7 @@ class SQLiteWebhookStore(BaseWebhookStore):
                 None, _save
             )
 
-            logger.debug(f"Saved webhook {webhook_id} to SQLite")
+            logger.debug("Saved webhook %s to SQLite", webhook_id)
             return webhook_id
 
     async def get_webhook(self, webhook_id: str) -> Optional[WebhookModel]:
@@ -698,7 +698,7 @@ class SQLiteWebhookStore(BaseWebhookStore):
             )
 
             if webhook:
-                logger.debug(f"Retrieved webhook {webhook_id} from SQLite")
+                logger.debug("Retrieved webhook %s from SQLite", webhook_id)
             return webhook
 
     async def list_webhooks(self) -> List[WebhookModel]:
@@ -737,7 +737,7 @@ class SQLiteWebhookStore(BaseWebhookStore):
                 None, _list
             )
 
-            logger.debug(f"Listed {len(webhooks)} webhooks from SQLite")
+            logger.debug("Listed %s webhooks from SQLite", len(webhooks))
             return webhooks
 
     async def delete_webhook(self, webhook_id: str) -> bool:
@@ -786,7 +786,7 @@ class SQLiteWebhookStore(BaseWebhookStore):
             )
 
             if deleted:
-                logger.debug(f"Deleted webhook {webhook_id} from SQLite")
+                logger.debug("Deleted webhook %s from SQLite", webhook_id)
             return deleted
 
     async def save_delivery(self, delivery: WebhookDelivery) -> str:
@@ -832,7 +832,7 @@ class SQLiteWebhookStore(BaseWebhookStore):
                 None, _save
             )
 
-            logger.debug(f"Saved delivery {delivery_id} to SQLite")
+            logger.debug("Saved delivery %s to SQLite", delivery_id)
             return delivery_id
 
     async def get_deliveries(
@@ -956,7 +956,7 @@ class PostgresWebhookStore(BaseWebhookStore):
         self._initialized = False
         self._lock = asyncio.Lock()
 
-        logger.info(f"PostgresWebhookStore initialized (pool_size={pool_size})")
+        logger.info("PostgresWebhookStore initialized (pool_size=%s)", pool_size)
 
     async def initialize(self) -> None:
         """
@@ -1092,7 +1092,7 @@ class PostgresWebhookStore(BaseWebhookStore):
                 provenance_hash
             )
 
-        logger.debug(f"Saved webhook {webhook.webhook_id} to PostgreSQL")
+        logger.debug("Saved webhook %s to PostgreSQL", webhook.webhook_id)
         return webhook.webhook_id
 
     async def get_webhook(self, webhook_id: str) -> Optional[WebhookModel]:
@@ -1129,7 +1129,7 @@ class PostgresWebhookStore(BaseWebhookStore):
                 metadata=json.loads(row["metadata"]) if isinstance(row["metadata"], str) else row["metadata"]
             )
 
-        logger.debug(f"Retrieved webhook {webhook_id} from PostgreSQL")
+        logger.debug("Retrieved webhook %s from PostgreSQL", webhook_id)
         return webhook
 
     async def list_webhooks(self) -> List[WebhookModel]:
@@ -1161,7 +1161,7 @@ class PostgresWebhookStore(BaseWebhookStore):
                     metadata=json.loads(row["metadata"]) if isinstance(row["metadata"], str) else row["metadata"]
                 ))
 
-        logger.debug(f"Listed {len(webhooks)} webhooks from PostgreSQL")
+        logger.debug("Listed %s webhooks from PostgreSQL", len(webhooks))
         return webhooks
 
     async def delete_webhook(self, webhook_id: str) -> bool:
@@ -1186,7 +1186,7 @@ class PostgresWebhookStore(BaseWebhookStore):
             deleted = result.split()[-1] != "0"
 
         if deleted:
-            logger.debug(f"Deleted webhook {webhook_id} from PostgreSQL")
+            logger.debug("Deleted webhook %s from PostgreSQL", webhook_id)
         return deleted
 
     async def save_delivery(self, delivery: WebhookDelivery) -> str:
@@ -1229,7 +1229,7 @@ class PostgresWebhookStore(BaseWebhookStore):
                 delivery.provenance_hash
             )
 
-        logger.debug(f"Saved delivery {delivery.delivery_id} to PostgreSQL")
+        logger.debug("Saved delivery %s to PostgreSQL", delivery.delivery_id)
         return delivery.delivery_id
 
     async def get_deliveries(

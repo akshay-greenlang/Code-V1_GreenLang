@@ -112,7 +112,7 @@ class PackInstaller:
                 if manifest.capabilities:
                     issues = self._validate_capabilities(manifest.capabilities)
                     if issues:
-                        logger.warning(f"Capability validation issues: {issues}")
+                        logger.warning("Capability validation issues: %s", issues)
                         if not allow_unsigned:  # Strict mode
                             # Uninstall the pack
                             self.uninstall(installed.name)
@@ -223,7 +223,7 @@ class PackInstaller:
         # Check if already installed
         existing = self.registry.get(self._extract_pack_name(source))
         if existing and not force:
-            logger.info(f"Pack already installed: {existing.name} v{existing.version}")
+            logger.info("Pack already installed: %s v%s", existing.name, existing.version)
             return existing
 
         # Determine source type and install
@@ -278,7 +278,7 @@ class PackInstaller:
         else:
             install_spec = package
 
-        logger.info(f"Installing from PyPI: {install_spec}")
+        logger.info("Installing from PyPI: %s", install_spec)
 
         # Run pip install
         try:
@@ -302,7 +302,7 @@ class PackInstaller:
         if not installed:
             raise RuntimeError(f"Pack not found after installation: {pack_name}")
 
-        logger.info(f"Successfully installed: {installed.name} v{installed.version}")
+        logger.info("Successfully installed: %s v%s", installed.name, installed.version)
         return installed
 
     def _install_from_local(self, path: Path, verify: bool = True) -> InstalledPack:
@@ -327,7 +327,7 @@ class PackInstaller:
         # Enforce V2 tier lifecycle gates where applicable.
         self._enforce_v2_tier_lifecycle(manifest_path)
 
-        logger.info(f"Installing from local directory: {path}")
+        logger.info("Installing from local directory: %s", path)
 
         # Load and validate manifest
         manifest = PackManifest.from_yaml(path)
@@ -337,7 +337,7 @@ class PackInstaller:
         dest_dir.parent.mkdir(parents=True, exist_ok=True)
 
         if dest_dir.exists():
-            logger.warning(f"Removing existing pack at {dest_dir}")
+            logger.warning("Removing existing pack at %s", dest_dir)
             shutil.rmtree(dest_dir)
 
         shutil.copytree(path, dest_dir)
@@ -345,7 +345,7 @@ class PackInstaller:
         # Register with registry
         installed = self.registry.register(dest_dir, verify=verify)
 
-        logger.info(f"Successfully installed: {installed.name} v{installed.version}")
+        logger.info("Successfully installed: %s v%s", installed.name, installed.version)
         return installed
 
     def _enforce_v2_tier_lifecycle(self, manifest_path: Path) -> None:
@@ -407,7 +407,7 @@ class PackInstaller:
         # Validate Git URL
         validate_git_url(url)
 
-        logger.info(f"Downloading from GitHub: {url}")
+        logger.info("Downloading from GitHub: %s", url)
 
         # Download to temp directory
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -469,7 +469,7 @@ class PackInstaller:
         # Validate Hub URL
         validate_url(metadata_url)
 
-        logger.info(f"Fetching metadata from Hub: {metadata_url}")
+        logger.info("Fetching metadata from Hub: %s", metadata_url)
 
         try:
             response = self.session.get(metadata_url)
@@ -486,7 +486,7 @@ class PackInstaller:
         # Validate download URL
         validate_url(download_url)
 
-        logger.info(f"Downloading pack: {download_url}")
+        logger.info("Downloading pack: %s", download_url)
 
         with tempfile.TemporaryDirectory() as tmpdir:
             archive_path = Path(tmpdir) / f"{pack_name}.glpack"
@@ -511,7 +511,7 @@ class PackInstaller:
         # Validate URL
         validate_url(url)
 
-        logger.info(f"Downloading from URL: {url}")
+        logger.info("Downloading from URL: %s", url)
 
         with tempfile.TemporaryDirectory() as tmpdir:
             # Determine filename from URL
@@ -543,9 +543,9 @@ class PackInstaller:
             try:
                 verified, metadata = self.verifier.verify_pack(archive_path)
                 if not verified:
-                    logger.warning(f"Pack signature not verified: {archive_path.name}")
+                    logger.warning("Pack signature not verified: %s", archive_path.name)
             except SignatureVerificationError as e:
-                logger.error(f"Signature verification failed: {e}")
+                logger.error("Signature verification failed: %s", e)
                 raise
 
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -580,7 +580,7 @@ class PackInstaller:
         """
         pack = self.registry.get(pack_name)
         if not pack:
-            logger.warning(f"Pack not found: {pack_name}")
+            logger.warning("Pack not found: %s", pack_name)
             return False
 
         # If installed via pip, use pip uninstall
@@ -591,19 +591,19 @@ class PackInstaller:
                 subprocess.check_call(
                     [sys.executable, "-m", "pip", "uninstall", "-y", package_name]
                 )
-                logger.info(f"Uninstalled via pip: {package_name}")
+                logger.info("Uninstalled via pip: %s", package_name)
             except subprocess.CalledProcessError:
-                logger.warning(f"Failed to uninstall via pip: {package_name}")
+                logger.warning("Failed to uninstall via pip: %s", package_name)
 
         # Remove from local directory if exists
         if Path(pack.location).exists() and "site-packages" not in pack.location:
             shutil.rmtree(pack.location)
-            logger.info(f"Removed local files: {pack.location}")
+            logger.info("Removed local files: %s", pack.location)
 
         # Unregister from registry
         self.registry.unregister(pack_name)
 
-        logger.info(f"Successfully uninstalled: {pack_name}")
+        logger.info("Successfully uninstalled: %s", pack_name)
         return True
 
     def update(self, pack_name: str, version: Optional[str] = None) -> InstalledPack:
@@ -621,7 +621,7 @@ class PackInstaller:
         if not pack:
             raise ValueError(f"Pack not found: {pack_name}")
 
-        logger.info(f"Updating {pack_name} from v{pack.version}")
+        logger.info("Updating %s from v%s", pack_name, pack.version)
 
         # Determine source for update
         if pack.location.startswith("entry_point:") or "site-packages" in pack.location:
@@ -674,7 +674,7 @@ class PackInstaller:
 
             return results
         except Exception as e:
-            logger.error(f"Failed to search PyPI: {e}")
+            logger.error("Failed to search PyPI: %s", e)
             return []
 
     def _list_hub_packs(self) -> List[Dict[str, Any]]:
@@ -689,5 +689,5 @@ class PackInstaller:
             response.raise_for_status()
             return response.json()
         except requests.exceptions.RequestException as e:
-            logger.error(f"Failed to fetch from Hub: {e}")
+            logger.error("Failed to fetch from Hub: %s", e)
             return []

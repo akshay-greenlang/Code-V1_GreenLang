@@ -451,7 +451,7 @@ def _apply_fallback_strategy(
     elif config.strategy == FallbackStrategy.CACHED:
         cache_key = _generate_cache_key(func, args, kwargs, config.cache_key_func)
         if _global_cached_fallback.has(cache_key):
-            logger.info(f"Using cached value for {func.__name__}")
+            logger.info("Using cached value for %s", func.__name__)
             return _global_cached_fallback.get(cache_key)
         else:
             logger.warning(
@@ -478,7 +478,7 @@ def _apply_fallback_strategy(
         raise error
 
     else:
-        logger.error(f"Unknown fallback strategy: {config.strategy}")
+        logger.error("Unknown fallback strategy: %s", config.strategy)
         return config.default_value
 
 
@@ -507,7 +507,7 @@ async def _apply_async_fallback_strategy(
     elif config.strategy == FallbackStrategy.CACHED:
         cache_key = _generate_cache_key(func, args, kwargs, config.cache_key_func)
         if _global_cached_fallback.has(cache_key):
-            logger.info(f"Using cached value for {func.__name__}")
+            logger.info("Using cached value for %s", func.__name__)
             return _global_cached_fallback.get(cache_key)
         else:
             logger.warning(
@@ -539,7 +539,7 @@ async def _apply_async_fallback_strategy(
         raise error
 
     else:
-        logger.error(f"Unknown fallback strategy: {config.strategy}")
+        logger.error("Unknown fallback strategy: %s", config.strategy)
         return config.default_value
 
 

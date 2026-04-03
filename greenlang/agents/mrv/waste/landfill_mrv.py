@@ -214,7 +214,7 @@ class LandfillMRVAgent(BaseWasteMRVAgent[LandfillInput, LandfillOutput]):
     def __init__(self):
         """Initialize Landfill MRV Agent."""
         super().__init__()
-        self.logger.info(f"Initialized {self.AGENT_ID}: {self.AGENT_NAME}")
+        logger.info("Initialized %s: %s", self.AGENT_ID, self.AGENT_NAME)
 
     def calculate(self, input_data: LandfillInput) -> LandfillOutput:
         """

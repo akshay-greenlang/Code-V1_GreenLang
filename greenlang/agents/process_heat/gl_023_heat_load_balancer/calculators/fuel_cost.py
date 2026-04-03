@@ -409,7 +409,7 @@ class FuelCostCalculator:
         elif unit == "ton/hr" or unit == "ton":
             return fuel_flow * self.hhv / 1_000_000
         else:
-            logger.warning(f"Unknown fuel flow unit: {unit}, assuming MMBTU/hr")
+            logger.warning("Unknown fuel flow unit: %s, assuming MMBTU/hr", unit)
             return fuel_flow
 
     def _convert_from_mmbtu(self, energy_mmbtu: float) -> float:
@@ -595,7 +595,7 @@ class EmissionsCostCalculator:
     def set_carbon_price(self, price_per_ton: float) -> None:
         """Update carbon price."""
         self.carbon_price_per_ton = price_per_ton
-        logger.info(f"Carbon price updated to ${price_per_ton}/ton")
+        logger.info("Carbon price updated to $%s/ton", price_per_ton)
 
     def _calculate_hash(
         self,
@@ -859,7 +859,7 @@ class MultiFuelCostOptimizer:
 
         self._optimization_count = 0
 
-        logger.info(f"MultiFuelCostOptimizer initialized for {unit_id}")
+        logger.info("MultiFuelCostOptimizer initialized for %s", unit_id)
 
     def optimize(
         self,

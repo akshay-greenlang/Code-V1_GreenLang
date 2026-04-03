@@ -10,7 +10,10 @@ This is where domain logic lives, not in the core framework.
 from typing import Dict, Any
 from greenlang.sdk.base import Agent, Result, Metadata
 import json
+import logging
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 
 class FuelAgent(Agent[Dict[str, Any], Dict[str, Any]]):
@@ -65,17 +68,17 @@ class FuelAgent(Agent[Dict[str, Any], Dict[str, Any]]):
         # Check required fields
         for field in required:
             if field not in input_data:
-                self.logger.error(f"Missing required field: {field}")
+                logger.error("Missing required field: %s", field)
                 return False
         
         # Check fuel type is supported
         if input_data["fuel_type"] not in self.emission_factors:
-            self.logger.error(f"Unsupported fuel type: {input_data['fuel_type']}")
+            logger.error("Unsupported fuel type: %s", input_data['fuel_type'])
             return False
         
         # Check amount is positive
         if input_data["amount"] <= 0:
-            self.logger.error("Amount must be positive")
+            logger.error("Amount must be positive")
             return False
         
         return True

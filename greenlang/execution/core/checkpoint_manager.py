@@ -232,7 +232,7 @@ class InMemoryCheckpointStore:
             self._checkpoints[checkpoint.run_id] = checkpoint
             return True
         except Exception as e:
-            logger.error(f"Failed to save checkpoint: {e}")
+            logger.error("Failed to save checkpoint: %s", e)
             return False
 
     async def load(self, run_id: str):
@@ -281,20 +281,20 @@ class CheckpointManager:
         self._event_store = event_store
         self._retention_days = retention_days
         self._max_retry_count = max_retry_count
-        logger.info(f"Initialized CheckpointManager: retention_days={retention_days}, max_retry_count={max_retry_count}")
+        logger.info("Initialized CheckpointManager: retention_days=%s, max_retry_count=%s", retention_days, max_retry_count)
 
     async def create_run_checkpoint(self, run_id: str, plan_id: str, plan_hash: str, pipeline_id: str = "", metadata=None) -> RunCheckpoint:
         checkpoint = RunCheckpoint(run_id=run_id, plan_id=plan_id, plan_hash=plan_hash, pipeline_id=pipeline_id, metadata=metadata or {})
         checkpoint.set_expiration(self._retention_days)
         await self._store.save(checkpoint)
         await self._emit_checkpoint_event(run_id=run_id, event_type="CHECKPOINT_CREATED", payload={"plan_id": plan_id, "plan_hash": plan_hash, "pipeline_id": pipeline_id})
-        logger.info(f"Created run checkpoint for {run_id}")
+        logger.info("Created run checkpoint for %s", run_id)
         return checkpoint
 
     async def save_checkpoint(self, run_id: str, step_id: str, state: CheckpointState) -> bool:
         checkpoint = await self._store.load(run_id)
         if checkpoint is None:
-            logger.warning(f"No run checkpoint found for {run_id}, creating new one")
+            logger.warning("No run checkpoint found for %s, creating new one", run_id)
             checkpoint = RunCheckpoint(run_id=run_id, plan_id="unknown", plan_hash="unknown")
             checkpoint.set_expiration(self._retention_days)
         checkpoint.set_step_checkpoint(step_id, state)
@@ -323,7 +323,7 @@ class CheckpointManager:
             return True
         expected_key = CheckpointState.generate_idempotency_key(plan_hash, step_id, attempt)
         if step_state.idempotency_key == expected_key and step_state.status == CheckpointStatus.COMPLETED:
-            logger.info(f"Skipping duplicate execution for {run_id}/{step_id}")
+            logger.info("Skipping duplicate execution for %s/%s", run_id, step_id)
             return False
         return True
 
@@ -331,16 +331,16 @@ class CheckpointManager:
         success = await self._store.delete(run_id)
         if success:
             await self._emit_checkpoint_event(run_id=run_id, event_type="CHECKPOINT_CLEARED", payload={})
-            logger.info(f"Cleared checkpoint for {run_id}")
+            logger.info("Cleared checkpoint for %s", run_id)
         return success
 
     async def prepare_retry(self, original_run_id: str, new_run_id: str, skip_succeeded: bool = True, force_rerun_steps=None):
         original = await self._store.load(original_run_id)
         if original is None:
-            logger.warning(f"No checkpoint found for original run {original_run_id}")
+            logger.warning("No checkpoint found for original run %s", original_run_id)
             return None
         if original.retry_count >= self._max_retry_count:
-            logger.warning(f"Max retry count ({self._max_retry_count}) reached for {original_run_id}")
+            logger.warning("Max retry count (%s) reached for %s", self._max_retry_count, original_run_id)
             return None
         new_checkpoint = RunCheckpoint(run_id=new_run_id, plan_id=original.plan_id, plan_hash=original.plan_hash,
             pipeline_id=original.pipeline_id, parent_run_id=original.run_id, retry_count=original.retry_count + 1,
@@ -354,7 +354,7 @@ class CheckpointManager:
         await self._emit_checkpoint_event(run_id=new_run_id, event_type="CHECKPOINT_RETRY_PREPARED",
             payload={"original_run_id": original_run_id, "retry_count": new_checkpoint.retry_count, "skip_succeeded": skip_succeeded,
                      "force_rerun_steps": force_rerun_steps or [], "skipped_steps": list(new_checkpoint.step_checkpoints.keys())})
-        logger.info(f"Prepared retry checkpoint: {new_run_id} from {original_run_id} (retry #{new_checkpoint.retry_count})")
+        logger.info("Prepared retry checkpoint: %s from %s (retry #%s)", new_run_id, original_run_id, new_checkpoint.retry_count)
         return new_checkpoint
 
     async def validate_schema_compatibility(self, original_run_id: str, new_plan_hash: str) -> bool:
@@ -362,7 +362,7 @@ class CheckpointManager:
         if original is None:
             return True
         if original.plan_hash != new_plan_hash:
-            logger.warning(f"Plan hash mismatch for {original_run_id}")
+            logger.warning("Plan hash mismatch for %s", original_run_id)
             return False
         return True
 
@@ -382,7 +382,7 @@ class CheckpointManager:
     async def cleanup_expired_checkpoints(self) -> int:
         count = await self._store.cleanup_expired()
         if count > 0:
-            logger.info(f"Cleaned up {count} expired checkpoints")
+            logger.info("Cleaned up %s expired checkpoints", count)
         return count
 
     async def _emit_checkpoint_event(self, run_id: str, event_type: str, payload, step_id=None) -> None:
@@ -397,7 +397,7 @@ class CheckpointManager:
         except ImportError:
             pass
         except Exception as e:
-            logger.warning(f"Failed to emit checkpoint audit event: {e}")
+            logger.warning("Failed to emit checkpoint audit event: %s", e)
 
 
 class CheckpointExecutionContract(BaseModel):

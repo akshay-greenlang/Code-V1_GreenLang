@@ -491,7 +491,7 @@ class CarbonTaxCalculator(BaseAgent):
         self._audit_trail: List[Dict[str, Any]] = []
 
         super().__init__(config)
-        logger.info(f"Initialized {self.AGENT_NAME} v{self.VERSION}")
+        logger.info("Initialized %s v%s", self.AGENT_NAME, self.VERSION)
 
     def execute(self, input_data: Dict[str, Any]) -> AgentResult:
         """Execute carbon tax calculation."""
@@ -512,7 +512,7 @@ class CarbonTaxCalculator(BaseAgent):
             )
 
         except Exception as e:
-            logger.error(f"Carbon tax calculation failed: {str(e)}", exc_info=True)
+            logger.error("Carbon tax calculation failed: %s", e, exc_info=True)
             return AgentResult(success=False, error=str(e))
 
     def _calculate_tax_liability(

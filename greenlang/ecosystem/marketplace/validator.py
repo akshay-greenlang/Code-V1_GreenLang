@@ -172,7 +172,7 @@ class CodeValidator:
 
         except Exception as e:
             result.errors.append(f"Validation error: {e}")
-            logger.error(f"Validation error: {e}", exc_info=True)
+            logger.error("Validation error: %s", e, exc_info=True)
 
         return result
 

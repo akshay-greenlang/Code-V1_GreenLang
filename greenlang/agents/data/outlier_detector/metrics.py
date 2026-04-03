@@ -5,18 +5,20 @@ Prometheus Metrics - AGENT-DATA-013: Outlier Detection Agent
 12 Prometheus metrics for outlier detection service monitoring with
 graceful fallback when prometheus_client is not installed.
 
-Metrics:
-    1.  gl_od_jobs_processed_total (Counter, labels: status)
-    2.  gl_od_outliers_detected_total (Counter, labels: method)
-    3.  gl_od_outliers_classified_total (Counter, labels: outlier_class)
-    4.  gl_od_treatments_applied_total (Counter, labels: strategy)
-    5.  gl_od_thresholds_evaluated_total (Counter, labels: source)
-    6.  gl_od_feedback_received_total (Counter, labels: feedback_type)
-    7.  gl_od_processing_errors_total (Counter, labels: error_type)
-    8.  gl_od_ensemble_score (Histogram, labels: method)
-    9.  gl_od_processing_duration_seconds (Histogram, labels: operation)
-    10. gl_od_detection_confidence (Histogram, labels: method)
-    11. gl_od_active_jobs (Gauge)
+Standard metrics (via MetricsFactory):
+    1.  gl_od_operations_total (Counter, labels: type, tenant_id)
+    2.  gl_od_processing_duration_seconds (Histogram, 12 buckets)
+    3.  gl_od_validation_errors_total (Counter, labels: severity, type)
+    4.  gl_od_batch_jobs_total (Counter, labels: status)
+    5.  gl_od_active_jobs (Gauge)
+    6.  gl_od_queue_size (Gauge)
+
+Agent-specific metrics:
+    7.  gl_od_jobs_processed_total (Counter, labels: status)
+    8.  gl_od_outliers_detected_total (Counter, labels: method)
+    9.  gl_od_outliers_classified_total (Counter, labels: outlier_class)
+    10. gl_od_ensemble_score (Histogram, labels: method)
+    11. gl_od_detection_confidence (Histogram, labels: method)
     12. gl_od_total_outliers_flagged (Gauge)
 
 Author: GreenLang Platform Team
@@ -27,137 +29,102 @@ Status: Production Ready
 
 from __future__ import annotations
 
-import logging
-
-logger = logging.getLogger(__name__)
-
-# ---------------------------------------------------------------------------
-# Graceful prometheus_client import
-# ---------------------------------------------------------------------------
-
-try:
-    from prometheus_client import Counter, Gauge, Histogram
-    PROMETHEUS_AVAILABLE = True
-except ImportError:
-    PROMETHEUS_AVAILABLE = False
-    logger.info(
-        "prometheus_client not installed; outlier detector metrics disabled"
-    )
-
+from greenlang.data_commons.metrics import (
+    CONFIDENCE_BUCKETS,
+    PROMETHEUS_AVAILABLE,
+    MetricsFactory,
+)
 
 # ---------------------------------------------------------------------------
-# Metric definitions
+# Standard metrics (6 of 12) via factory
 # ---------------------------------------------------------------------------
 
-if PROMETHEUS_AVAILABLE:
-    # 1. Detection jobs processed by status
-    od_jobs_processed_total = Counter(
-        "gl_od_jobs_processed_total",
-        "Total outlier detection jobs processed",
-        labelnames=["status"],
-    )
+m = MetricsFactory(
+    "gl_od",
+    "Outlier Detector",
+    duration_buckets=(
+        0.05, 0.1, 0.25, 0.5, 1.0, 2.5,
+        5.0, 10.0, 30.0, 60.0, 120.0, 300.0,
+    ),
+)
 
-    # 2. Outliers detected by detection method
-    od_outliers_detected_total = Counter(
-        "gl_od_outliers_detected_total",
-        "Total outliers detected",
-        labelnames=["method"],
-    )
+# Backward-compat alias
+od_active_jobs = m.active_jobs
 
-    # 3. Outliers classified by class
-    od_outliers_classified_total = Counter(
-        "gl_od_outliers_classified_total",
-        "Total outliers classified",
-        labelnames=["outlier_class"],
-    )
+# ---------------------------------------------------------------------------
+# Agent-specific metrics (6 of 12)
+# ---------------------------------------------------------------------------
 
-    # 4. Treatments applied by strategy
-    od_treatments_applied_total = Counter(
-        "gl_od_treatments_applied_total",
-        "Total outlier treatments applied",
-        labelnames=["strategy"],
-    )
+od_jobs_processed_total = m.create_custom_counter(
+    "jobs_processed_total",
+    "Total outlier detection jobs processed",
+    labelnames=["status"],
+)
 
-    # 5. Thresholds evaluated by source
-    od_thresholds_evaluated_total = Counter(
-        "gl_od_thresholds_evaluated_total",
-        "Total threshold evaluations performed",
-        labelnames=["source"],
-    )
+od_outliers_detected_total = m.create_custom_counter(
+    "outliers_detected_total",
+    "Total outliers detected",
+    labelnames=["method"],
+)
 
-    # 6. Feedback received by type
-    od_feedback_received_total = Counter(
-        "gl_od_feedback_received_total",
-        "Total outlier feedback entries received",
-        labelnames=["feedback_type"],
-    )
+od_outliers_classified_total = m.create_custom_counter(
+    "outliers_classified_total",
+    "Total outliers classified",
+    labelnames=["outlier_class"],
+)
 
-    # 7. Processing errors by error type
-    od_processing_errors_total = Counter(
-        "gl_od_processing_errors_total",
-        "Total processing errors encountered",
-        labelnames=["error_type"],
-    )
+od_treatments_applied_total = m.create_custom_counter(
+    "treatments_applied_total",
+    "Total outlier treatments applied",
+    labelnames=["strategy"],
+)
 
-    # 8. Ensemble score distribution by method
-    od_ensemble_score = Histogram(
-        "gl_od_ensemble_score",
-        "Ensemble outlier score distribution",
-        labelnames=["method"],
-        buckets=(
-            0.0, 0.1, 0.2, 0.3, 0.4, 0.5,
-            0.6, 0.7, 0.8, 0.9, 1.0,
-        ),
-    )
+od_thresholds_evaluated_total = m.create_custom_counter(
+    "thresholds_evaluated_total",
+    "Total threshold evaluations performed",
+    labelnames=["source"],
+)
 
-    # 9. Processing duration histogram by operation type
-    od_processing_duration_seconds = Histogram(
-        "gl_od_processing_duration_seconds",
-        "Outlier detection processing duration in seconds",
-        labelnames=["operation"],
-        buckets=(
-            0.05, 0.1, 0.25, 0.5, 1.0, 2.5,
-            5.0, 10.0, 30.0, 60.0, 120.0, 300.0,
-        ),
-    )
+od_feedback_received_total = m.create_custom_counter(
+    "feedback_received_total",
+    "Total outlier feedback entries received",
+    labelnames=["feedback_type"],
+)
 
-    # 10. Detection confidence histogram by method
-    od_detection_confidence = Histogram(
-        "gl_od_detection_confidence",
-        "Detection confidence score distribution",
-        labelnames=["method"],
-        buckets=(
-            0.0, 0.1, 0.2, 0.3, 0.4, 0.5,
-            0.6, 0.7, 0.8, 0.9, 1.0,
-        ),
-    )
+od_processing_errors_total = m.create_custom_counter(
+    "processing_errors_total",
+    "Total processing errors encountered",
+    labelnames=["error_type"],
+)
 
-    # 11. Currently active detection jobs gauge
-    od_active_jobs = Gauge(
-        "gl_od_active_jobs",
-        "Number of currently active outlier detection jobs",
-    )
+od_ensemble_score = m.create_custom_histogram(
+    "ensemble_score",
+    "Ensemble outlier score distribution",
+    buckets=(0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0),
+    labelnames=["method"],
+)
 
-    # 12. Total outliers flagged gauge
-    od_total_outliers_flagged = Gauge(
-        "gl_od_total_outliers_flagged",
-        "Total outliers currently flagged across active datasets",
-    )
+od_processing_duration_seconds = m.create_custom_histogram(
+    "processing_duration_seconds_detail",
+    "Outlier detection processing duration in seconds",
+    buckets=(
+        0.05, 0.1, 0.25, 0.5, 1.0, 2.5,
+        5.0, 10.0, 30.0, 60.0, 120.0, 300.0,
+    ),
+    labelnames=["operation"],
+)
 
-else:
-    # No-op placeholders
-    od_jobs_processed_total = None  # type: ignore[assignment]
-    od_outliers_detected_total = None  # type: ignore[assignment]
-    od_outliers_classified_total = None  # type: ignore[assignment]
-    od_treatments_applied_total = None  # type: ignore[assignment]
-    od_thresholds_evaluated_total = None  # type: ignore[assignment]
-    od_feedback_received_total = None  # type: ignore[assignment]
-    od_processing_errors_total = None  # type: ignore[assignment]
-    od_ensemble_score = None  # type: ignore[assignment]
-    od_processing_duration_seconds = None  # type: ignore[assignment]
-    od_detection_confidence = None  # type: ignore[assignment]
-    od_active_jobs = None  # type: ignore[assignment]
-    od_total_outliers_flagged = None  # type: ignore[assignment]
+od_detection_confidence = m.create_custom_histogram(
+    "detection_confidence",
+    "Detection confidence score distribution",
+    buckets=(0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0),
+    labelnames=["method"],
+)
+
+od_total_outliers_flagged = m.create_custom_gauge(
+    "total_outliers_flagged",
+    "Total outliers currently flagged across active datasets",
+)
 
 
 # ---------------------------------------------------------------------------
@@ -171,11 +138,7 @@ def inc_jobs(status: str) -> None:
     Args:
         status: Job status (completed, failed, cancelled, timeout).
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    od_jobs_processed_total.labels(
-        status=status,
-    ).inc()
+    m.safe_inc(od_jobs_processed_total, 1, status=status)
 
 
 def inc_outliers_detected(method: str, count: int = 1) -> None:
@@ -187,11 +150,7 @@ def inc_outliers_detected(method: str, count: int = 1) -> None:
             mahalanobis, dbscan, contextual, temporal, ensemble).
         count: Number of outliers detected.
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    od_outliers_detected_total.labels(
-        method=method,
-    ).inc(count)
+    m.safe_inc(od_outliers_detected_total, count, method=method)
 
 
 def inc_outliers_classified(outlier_class: str, count: int = 1) -> None:
@@ -202,11 +161,7 @@ def inc_outliers_classified(outlier_class: str, count: int = 1) -> None:
             data_entry, regime_change, sensor_fault).
         count: Number of outliers classified.
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    od_outliers_classified_total.labels(
-        outlier_class=outlier_class,
-    ).inc(count)
+    m.safe_inc(od_outliers_classified_total, count, outlier_class=outlier_class)
 
 
 def inc_treatments(strategy: str, count: int = 1) -> None:
@@ -217,11 +172,7 @@ def inc_treatments(strategy: str, count: int = 1) -> None:
             replace, investigate).
         count: Number of treatments applied.
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    od_treatments_applied_total.labels(
-        strategy=strategy,
-    ).inc(count)
+    m.safe_inc(od_treatments_applied_total, count, strategy=strategy)
 
 
 def inc_thresholds(source: str, count: int = 1) -> None:
@@ -232,11 +183,7 @@ def inc_thresholds(source: str, count: int = 1) -> None:
             custom, learned).
         count: Number of evaluations.
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    od_thresholds_evaluated_total.labels(
-        source=source,
-    ).inc(count)
+    m.safe_inc(od_thresholds_evaluated_total, count, source=source)
 
 
 def inc_feedback(feedback_type: str) -> None:
@@ -246,11 +193,7 @@ def inc_feedback(feedback_type: str) -> None:
         feedback_type: Feedback type (confirmed_outlier, false_positive,
             reclassified, unknown).
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    od_feedback_received_total.labels(
-        feedback_type=feedback_type,
-    ).inc()
+    m.safe_inc(od_feedback_received_total, 1, feedback_type=feedback_type)
 
 
 def inc_errors(error_type: str) -> None:
@@ -260,11 +203,7 @@ def inc_errors(error_type: str) -> None:
         error_type: Error classification (validation, timeout, data,
             integration, detection, classification, treatment, unknown).
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    od_processing_errors_total.labels(
-        error_type=error_type,
-    ).inc()
+    m.safe_inc(od_processing_errors_total, 1, error_type=error_type)
 
 
 def observe_ensemble_score(method: str, score: float) -> None:
@@ -274,11 +213,7 @@ def observe_ensemble_score(method: str, score: float) -> None:
         method: Ensemble method used.
         score: Ensemble score (0.0 - 1.0).
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    od_ensemble_score.labels(
-        method=method,
-    ).observe(score)
+    m.safe_observe(od_ensemble_score, score, method=method)
 
 
 def observe_duration(operation: str, duration: float) -> None:
@@ -289,11 +224,7 @@ def observe_duration(operation: str, duration: float) -> None:
             document, pipeline, ensemble, contextual, temporal).
         duration: Duration in seconds.
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    od_processing_duration_seconds.labels(
-        operation=operation,
-    ).observe(duration)
+    m.safe_observe(od_processing_duration_seconds, duration, operation=operation)
 
 
 def observe_confidence(method: str, confidence: float) -> None:
@@ -303,11 +234,7 @@ def observe_confidence(method: str, confidence: float) -> None:
         method: Detection method used.
         confidence: Confidence score (0.0 - 1.0).
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    od_detection_confidence.labels(
-        method=method,
-    ).observe(confidence)
+    m.safe_observe(od_detection_confidence, confidence, method=method)
 
 
 def set_active_jobs(count: int) -> None:
@@ -316,9 +243,7 @@ def set_active_jobs(count: int) -> None:
     Args:
         count: Number of currently active detection jobs.
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    od_active_jobs.set(count)
+    m.safe_set(od_active_jobs, count)
 
 
 def set_total_outliers_flagged(count: int) -> None:
@@ -327,13 +252,12 @@ def set_total_outliers_flagged(count: int) -> None:
     Args:
         count: Total number of outliers currently flagged.
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    od_total_outliers_flagged.set(count)
+    m.safe_set(od_total_outliers_flagged, count)
 
 
 __all__ = [
     "PROMETHEUS_AVAILABLE",
+    "m",
     # Metric objects
     "od_jobs_processed_total",
     "od_outliers_detected_total",

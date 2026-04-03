@@ -256,7 +256,7 @@ class ParetoOptimizer:
         Returns:
             OptimizationResult with minimum cost solution
         """
-        self.logger.info("Optimizing for minimum cost only")
+        logger.info("Optimizing for minimum cost only")
 
         if not self.equipment_fleet or not self.constraints:
             raise ValueError("Equipment fleet and constraints must be set")
@@ -279,7 +279,7 @@ class ParetoOptimizer:
         result = self.solver.solve()
         self._cost_only_result = result
 
-        self.logger.info(
+        logger.info(
             f"Cost-only optimization: cost=${result.total_cost:.2f}, "
             f"emissions={result.total_emissions:.2f} kg"
         )
@@ -296,7 +296,7 @@ class ParetoOptimizer:
         Returns:
             OptimizationResult with minimum emissions solution
         """
-        self.logger.info("Optimizing for minimum emissions only")
+        logger.info("Optimizing for minimum emissions only")
 
         if not self.equipment_fleet or not self.constraints:
             raise ValueError("Equipment fleet and constraints must be set")
@@ -319,7 +319,7 @@ class ParetoOptimizer:
         result = self.solver.solve()
         self._emissions_only_result = result
 
-        self.logger.info(
+        logger.info(
             f"Emissions-only optimization: cost=${result.total_cost:.2f}, "
             f"emissions={result.total_emissions:.2f} kg"
         )
@@ -347,7 +347,7 @@ class ParetoOptimizer:
             ParetoFrontier with non-dominated solutions
         """
         start_time = time.perf_counter()
-        self.logger.info(
+        logger.info(
             f"Generating Pareto frontier: {n_points} points using {method.value}"
         )
 
@@ -365,7 +365,7 @@ class ParetoOptimizer:
         emissions_min = self._emissions_only_result.total_emissions
         emissions_max = self._cost_only_result.total_emissions
 
-        self.logger.info(
+        logger.info(
             f"Anchor points: cost=[{cost_min:.2f}, {cost_max:.2f}], "
             f"emissions=[{emissions_min:.2f}, {emissions_max:.2f}]"
         )
@@ -412,7 +412,7 @@ class ParetoOptimizer:
 
         self.frontier = frontier
 
-        self.logger.info(
+        logger.info(
             f"Pareto frontier generated: {len(non_dominated)} non-dominated points "
             f"in {total_time:.2f}s"
         )
@@ -450,7 +450,7 @@ class ParetoOptimizer:
             epsilons = np.linspace(emissions_min, emissions_max, n_points)
 
         for i, epsilon in enumerate(epsilons):
-            self.logger.debug(
+            logger.debug(
                 f"Epsilon-constraint iteration {i+1}/{n_points}: epsilon={epsilon:.2f}"
             )
 
@@ -495,17 +495,17 @@ class ParetoOptimizer:
                             )
                         )
                     else:
-                        self.logger.debug(
+                        logger.debug(
                             f"Emissions {result.total_emissions:.2f} exceeds "
                             f"epsilon {epsilon:.2f}, skipping"
                         )
                 else:
-                    self.logger.warning(
+                    logger.warning(
                         f"Solver failed at epsilon={epsilon:.2f}: {result.status.value}"
                     )
 
             except Exception as e:
-                self.logger.error(
+                logger.error(
                     f"Error at epsilon={epsilon:.2f}: {str(e)}", exc_info=True
                 )
 
@@ -536,7 +536,7 @@ class ParetoOptimizer:
         weights = [(i / (n_points - 1), 1 - i / (n_points - 1)) for i in range(n_points)]
 
         for i, (cost_w, emis_w) in enumerate(weights):
-            self.logger.debug(
+            logger.debug(
                 f"Weighted-sum iteration {i+1}/{n_points}: "
                 f"cost_weight={cost_w:.2f}, emissions_weight={emis_w:.2f}"
             )
@@ -560,7 +560,7 @@ class ParetoOptimizer:
                     )
 
             except Exception as e:
-                self.logger.error(
+                logger.error(
                     f"Error at weights ({cost_w:.2f}, {emis_w:.2f}): {str(e)}",
                     exc_info=True,
                 )
@@ -596,7 +596,7 @@ class ParetoOptimizer:
         cost_w = cost_weight / total_weight
         emis_w = emissions_weight / total_weight
 
-        self.logger.debug(
+        logger.debug(
             f"Weighted-sum optimization: cost_w={cost_w:.3f}, emis_w={emis_w:.3f}"
         )
 
@@ -674,7 +674,7 @@ class ParetoOptimizer:
                 "Must generate Pareto frontier with at least 3 points first"
             )
 
-        self.logger.info(f"Finding knee point using {method.value}")
+        logger.info("Finding knee point using %s", method.value)
 
         if method == KneePointMethod.MAXIMUM_CURVATURE:
             return self._find_knee_by_curvature()
@@ -977,4 +977,4 @@ class ParetoOptimizer:
         self._emissions_only_result = None
         self.frontier = None
 
-        self.logger.info("Optimizer configuration updated, cache cleared")
+        logger.info("Optimizer configuration updated, cache cleared")

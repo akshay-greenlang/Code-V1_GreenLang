@@ -351,7 +351,7 @@ class WebhookManager:
             formatter: Function that formats AlertPayload for the provider
         """
         self._providers[provider_name.lower()] = formatter
-        logger.info(f"Registered provider formatter: {provider_name}")
+        logger.info("Registered provider formatter: %s", provider_name)
 
     def register_webhook(
         self, namespace: str, config: WebhookConfig
@@ -389,7 +389,7 @@ class WebhookManager:
         """
         if namespace in self._webhooks and webhook_id in self._webhooks[namespace]:
             del self._webhooks[namespace][webhook_id]
-            logger.info(f"Unregistered webhook '{webhook_id}' from namespace '{namespace}'")
+            logger.info("Unregistered webhook '%s' from namespace '%s'", webhook_id, namespace)
             return True
         return False
 
@@ -703,7 +703,7 @@ class AlertManager:
     def enabled(self, value: bool) -> None:
         """Enable or disable alerting."""
         self._enabled = value
-        logger.info(f"Alerting {'enabled' if value else 'disabled'}")
+        logger.info("Alerting %s", 'enabled' if value else 'disabled')
 
     async def load_config(self, config_path: str) -> None:
         """
@@ -755,15 +755,15 @@ class AlertManager:
                     self._webhook_manager.register_webhook(namespace, webhook)
 
             self._config_loaded = True
-            logger.info(f"Loaded alerting configuration from {config_path}")
+            logger.info("Loaded alerting configuration from %s", config_path)
 
         except FileNotFoundError:
-            logger.warning(f"Alerting config file not found: {config_path}")
+            logger.warning("Alerting config file not found: %s", config_path)
         except yaml.YAMLError as e:
-            logger.error(f"Failed to parse alerting config: {e}")
+            logger.error("Failed to parse alerting config: %s", e)
             raise
         except Exception as e:
-            logger.error(f"Failed to load alerting config: {e}", exc_info=True)
+            logger.error("Failed to load alerting config: %s", e, exc_info=True)
             raise
 
     async def emit_alert(

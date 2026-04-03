@@ -94,7 +94,7 @@ class AlertRule:
             else:
                 return False
         except Exception as e:
-            logger.error(f"Error evaluating alert rule {self.name}: {e}")
+            logger.error("Error evaluating alert rule %s: %s", self.name, e)
             return False
 
 
@@ -125,7 +125,7 @@ class AlertManager:
             rule: Alert rule
         """
         self.rules[rule.name] = rule
-        logger.info(f"Added alert rule: {rule.name}")
+        logger.info("Added alert rule: %s", rule.name)
 
     def remove_rule(self, name: str):
         """
@@ -136,7 +136,7 @@ class AlertManager:
         """
         if name in self.rules:
             del self.rules[name]
-            logger.info(f"Removed alert rule: {name}")
+            logger.info("Removed alert rule: %s", name)
 
     def add_handler(self, handler: Callable[[Alert], None]):
         """
@@ -176,9 +176,9 @@ class AlertManager:
                 try:
                     handler(alert)
                 except Exception as e:
-                    logger.error(f"Error in alert handler: {e}")
+                    logger.error("Error in alert handler: %s", e)
 
-            logger.warning(f"Alert fired: {rule.name} - {message}")
+            logger.warning("Alert fired: %s - %s", rule.name, message)
 
     def resolve_alert(self, alert_id: str):
         """
@@ -195,7 +195,7 @@ class AlertManager:
 
                 del self.active_alerts[alert_id]
 
-                logger.info(f"Alert resolved: {alert.name}")
+                logger.info("Alert resolved: %s", alert.name)
 
     def acknowledge_alert(self, alert_id: str, user: str):
         """
@@ -212,7 +212,7 @@ class AlertManager:
                 alert.acknowledged_at = DeterministicClock.utcnow()
                 alert.acknowledged_by = user
 
-                logger.info(f"Alert acknowledged: {alert.name} by {user}")
+                logger.info("Alert acknowledged: %s by %s", alert.name, user)
 
     def get_active_alerts(self) -> List[Alert]:
         """Get active alerts"""
@@ -247,7 +247,7 @@ class AlertManager:
             try:
                 self._evaluate_rules()
             except Exception as e:
-                logger.error(f"Error in alert evaluation: {e}")
+                logger.error("Error in alert evaluation: %s", e)
 
             self._stop_evaluation.wait(self.evaluation_interval)
 
@@ -287,7 +287,7 @@ class AlertManager:
                             self.resolve_alert(alert_id)
 
             except Exception as e:
-                logger.error(f"Error evaluating rule {rule.name}: {e}")
+                logger.error("Error evaluating rule %s: %s", rule.name, e)
 
     def _get_metric_value(self, expression: str) -> Optional[float]:
         """Get metric value for expression"""
@@ -528,7 +528,7 @@ class MonitoringService:
         # Start alert evaluation
         self.alert_manager.start_evaluation()
 
-        logger.info(f"Monitoring service started (metrics port: {metrics_port})")
+        logger.info("Monitoring service started (metrics port: %s)", metrics_port)
 
     def stop(self):
         """Stop monitoring service"""
@@ -582,7 +582,7 @@ class MonitoringService:
         """
         dashboard = Dashboard(**config)
         self.dashboards[dashboard.name] = dashboard
-        logger.info(f"Imported dashboard: {dashboard.name}")
+        logger.info("Imported dashboard: %s", dashboard.name)
 
 
 # Global monitoring service

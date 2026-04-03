@@ -70,7 +70,7 @@ class DockerBackend(Backend):
         self.containers = {}
         self.container_logs = {}
 
-        logger.info(f"DockerBackend initialized with network: {self.network}")
+        logger.info("DockerBackend initialized with network: %s", self.network)
 
     def execute(self, pipeline: Pipeline, context: ExecutionContext) -> ExecutionResult:
         """
@@ -121,7 +121,7 @@ class DockerBackend(Backend):
             )
 
         except Exception as e:
-            logger.error(f"Failed to execute pipeline: {e}")
+            logger.error("Failed to execute pipeline: %s", e)
             return ExecutionResult(
                 run_id=context.run_id,
                 pipeline_name=pipeline.name,
@@ -158,7 +158,7 @@ class DockerBackend(Backend):
         try:
             self.client.images.get(image)
         except ImageNotFound:
-            logger.info(f"Pulling image: {image}")
+            logger.info("Pulling image: %s", image)
             self.client.images.pull(image, auth_config=self.auth_config)
 
         # Prepare command
@@ -166,7 +166,7 @@ class DockerBackend(Backend):
 
         try:
             # Run container with security settings
-            logger.info(f"Starting container: {container_name} with network: {network_mode}")
+            logger.info("Starting container: %s with network: %s", container_name, network_mode)
 
             # Build container kwargs with security settings
             container_kwargs = {
@@ -234,7 +234,7 @@ class DockerBackend(Backend):
             }
 
         except ContainerError as e:
-            logger.error(f"Container error: {e}")
+            logger.error("Container error: %s", e)
             return {
                 "status": ExecutionStatus.FAILED,
                 "logs": [e.stderr.decode("utf-8")] if e.stderr else [],
@@ -243,7 +243,7 @@ class DockerBackend(Backend):
                 "containers": [container_name],
             }
         except Exception as e:
-            logger.error(f"Failed to run container: {e}")
+            logger.error("Failed to run container: %s", e)
             return {
                 "status": ExecutionStatus.FAILED,
                 "logs": [],
@@ -333,7 +333,7 @@ class DockerBackend(Backend):
             time.sleep(1)
 
         # Timeout - kill container
-        logger.warning(f"Container {container.name} timed out after {timeout}s")
+        logger.warning("Container %s timed out after %ss", container.name, timeout)
         container.kill()
         container.reload()
 
@@ -386,7 +386,7 @@ class DockerBackend(Backend):
                 return ExecutionStatus.UNKNOWN
 
         except Exception as e:
-            logger.error(f"Failed to get container status: {e}")
+            logger.error("Failed to get container status: %s", e)
             return ExecutionStatus.UNKNOWN
 
     def get_logs(self, run_id: str, step_name: Optional[str] = None) -> List[str]:
@@ -403,7 +403,7 @@ class DockerBackend(Backend):
                 logs = container.logs(timestamps=False).decode("utf-8").split("\n")
                 return logs
             except Exception as e:
-                logger.error(f"Failed to get container logs: {e}")
+                logger.error("Failed to get container logs: %s", e)
                 return []
 
         return []
@@ -420,10 +420,10 @@ class DockerBackend(Backend):
         try:
             container.stop(timeout=10)
             container.remove(force=True)
-            logger.info(f"Cancelled container: {container_info['name']}")
+            logger.info("Cancelled container: %s", container_info['name'])
             return True
         except Exception as e:
-            logger.error(f"Failed to cancel container: {e}")
+            logger.error("Failed to cancel container: %s", e)
             return False
 
     def cleanup(self, run_id: str) -> bool:
@@ -442,10 +442,10 @@ class DockerBackend(Backend):
             if run_id in self.container_logs:
                 del self.container_logs[run_id]
 
-            logger.info(f"Cleaned up container: {container_info['name']}")
+            logger.info("Cleaned up container: %s", container_info['name'])
             return True
         except Exception as e:
-            logger.error(f"Failed to cleanup container: {e}")
+            logger.error("Failed to cleanup container: %s", e)
             return False
 
     def _get_network_mode(self, capabilities: Dict[str, Any]) -> str:
@@ -521,7 +521,7 @@ class DockerBackend(Backend):
                 elif mode == "rw" and source in write_paths:
                     volumes[source] = {"bind": target, "mode": mode}
                 else:
-                    logger.warning(f"Volume {source} not in capability allowlist - skipping")
+                    logger.warning("Volume %s not in capability allowlist - skipping", source)
 
         # Always add temp directory for outputs
         temp_dir = tempfile.mkdtemp(prefix="greenlang-")

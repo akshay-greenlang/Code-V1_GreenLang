@@ -94,9 +94,9 @@ class PrometheusExporter:
                 addr=self.host,
                 registry=self.registry,
             )
-            logger.info(f"Prometheus metrics server started on {self.host}:{self.port}")
+            logger.info("Prometheus metrics server started on %s:%s", self.host, self.port)
         except Exception as e:
-            logger.error(f"Failed to start metrics server: {e}")
+            logger.error("Failed to start metrics server: %s", e)
             raise
 
     def stop(self) -> None:
@@ -300,6 +300,6 @@ def cleanup_multiprocess_registry(prometheus_multiproc_dir: str) -> None:
     import shutil
     try:
         shutil.rmtree(prometheus_multiproc_dir, ignore_errors=True)
-        logger.info(f"Cleaned up multiprocess registry: {prometheus_multiproc_dir}")
+        logger.info("Cleaned up multiprocess registry: %s", prometheus_multiproc_dir)
     except Exception as e:
-        logger.warning(f"Failed to cleanup multiprocess registry: {e}")
+        logger.warning("Failed to cleanup multiprocess registry: %s", e)

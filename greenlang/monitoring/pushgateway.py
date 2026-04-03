@@ -77,6 +77,8 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any, Dict, Generator, Literal, Optional
 
+from greenlang.utilities.exceptions.infrastructure import InfrastructureException
+
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
@@ -163,7 +165,7 @@ STATUS_VALUES: Dict[str, int] = {
 # ---------------------------------------------------------------------------
 
 
-class PushGatewayError(Exception):
+class PushGatewayError(InfrastructureException):
     """Raised when push to PushGateway fails after all retries."""
 
     def __init__(self, message: str, attempts: int, last_error: Optional[Exception] = None):

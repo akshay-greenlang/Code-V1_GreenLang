@@ -257,7 +257,7 @@ class AirPreheaterAgent:
         except Exception as e:
             self.state = AgentState.ERROR
             self._update_metrics(0, success=False)
-            logger.error(f"Optimization failed for {input_data.equipment_tag}: {e}")
+            logger.error("Optimization failed for %s: %s", input_data.equipment_tag, e)
             raise
 
     def analyze_heat_transfer_only(
@@ -344,7 +344,7 @@ class AirPreheaterAgent:
         if input_data.o2_inlet_pct < 0 or input_data.o2_inlet_pct > 21:
             raise ValueError(f"O2 inlet ({input_data.o2_inlet_pct}%) out of range 0-21%")
 
-        logger.debug(f"Input validation passed for {input_data.equipment_tag}")
+        logger.debug("Input validation passed for %s", input_data.equipment_tag)
 
     def _analyze_heat_transfer(
         self,

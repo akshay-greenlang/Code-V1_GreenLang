@@ -129,7 +129,7 @@ class DependencyGraph:
 
         # Check for circular dependency
         if agent_id in visited:
-            logger.warning(f"Circular dependency detected for agent {agent_id}")
+            logger.warning("Circular dependency detected for agent %s", agent_id)
             return DependencyNode(
                 agent_id=agent_id,
                 agent_name=agent.name,
@@ -471,7 +471,7 @@ class DependencyResolver:
             result.success = True
 
         except Exception as e:
-            logger.error(f"Error resolving dependencies: {e}", exc_info=True)
+            logger.error("Error resolving dependencies: %s", e, exc_info=True)
             result.errors.append(f"Resolution failed: {str(e)}")
 
         return result

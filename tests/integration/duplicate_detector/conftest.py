@@ -25,34 +25,6 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 
 # ---------------------------------------------------------------------------
-# Override parent conftest autouse fixtures that do not apply to DD tests
-# ---------------------------------------------------------------------------
-
-
-@pytest.fixture(autouse=True)
-def mock_agents():
-    """Override parent conftest mock_agents fixture.
-
-    The parent tests/integration/conftest.py defines an autouse fixture
-    that patches greenlang.agents.registry.get_agent, which does not
-    exist. We override it here to make it a no-op for DD integration tests.
-    """
-    yield {}
-
-
-@pytest.fixture(scope="session", autouse=True)
-def block_network():
-    """Override parent conftest block_network fixture.
-
-    The parent tests/integration/conftest.py blocks all socket access,
-    which prevents asyncio event loop creation needed by some mock DB
-    tests. We disable it for DD integration tests since our tests are
-    fully self-contained with mocks.
-    """
-    yield
-
-
-# ---------------------------------------------------------------------------
 # Autouse fixture: clean GL_DD_ environment variables before each test
 # ---------------------------------------------------------------------------
 

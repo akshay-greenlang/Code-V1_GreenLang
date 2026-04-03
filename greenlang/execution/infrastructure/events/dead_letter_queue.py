@@ -323,7 +323,7 @@ class DeadLetterQueue:
             logger.info("Dead letter queue started")
 
         except Exception as e:
-            logger.error(f"Failed to start DLQ: {e}", exc_info=True)
+            logger.error("Failed to start DLQ: %s", e, exc_info=True)
             raise
 
     async def stop(self) -> None:
@@ -480,11 +480,11 @@ class DeadLetterQueue:
 
         entry = await self._storage.get(entry_id)
         if not entry:
-            logger.warning(f"DLQ entry not found: {entry_id}")
+            logger.warning("DLQ entry not found: %s", entry_id)
             return False
 
         if entry.status != DLQStatus.PENDING:
-            logger.warning(f"Entry not pending: {entry_id} status: {entry.status}")
+            logger.warning("Entry not pending: %s status: %s", entry_id, entry.status)
             return False
 
         entry.status = DLQStatus.RETRYING
@@ -521,7 +521,7 @@ class DeadLetterQueue:
             else:
                 return self._retry_handler(entry)
         except Exception as e:
-            logger.error(f"Retry handler failed: {e}")
+            logger.error("Retry handler failed: %s", e)
             entry.error_message = str(e)
             return False
 
@@ -554,7 +554,7 @@ class DeadLetterQueue:
         entry.resolution_notes = notes
 
         await self._storage.update(entry)
-        logger.info(f"DLQ entry resolved: {entry_id} by {resolved_by}")
+        logger.info("DLQ entry resolved: %s by %s", entry_id, resolved_by)
         return True
 
     async def discard_entry(
@@ -586,7 +586,7 @@ class DeadLetterQueue:
         entry.resolution_notes = notes
 
         await self._storage.update(entry)
-        logger.info(f"DLQ entry discarded: {entry_id} by {discarded_by}")
+        logger.info("DLQ entry discarded: %s by %s", entry_id, discarded_by)
         return True
 
     async def get_stats(self) -> DLQStats:
@@ -612,7 +612,7 @@ class DeadLetterQueue:
             except asyncio.CancelledError:
                 break
             except Exception as e:
-                logger.error(f"Auto-retry loop error: {e}")
+                logger.error("Auto-retry loop error: %s", e)
 
     async def _cleanup_loop(self) -> None:
         """Background loop for cleanup."""
@@ -624,12 +624,12 @@ class DeadLetterQueue:
                 count = await self._storage.cleanup_old_entries(
                     self.config.retention_days
                 )
-                logger.info(f"Cleaned up {count} old DLQ entries")
+                logger.info("Cleaned up %s old DLQ entries", count)
 
             except asyncio.CancelledError:
                 break
             except Exception as e:
-                logger.error(f"Cleanup loop error: {e}")
+                logger.error("Cleanup loop error: %s", e)
 
     async def _check_alerts(self) -> None:
         """Check if alert threshold is reached."""
@@ -647,7 +647,7 @@ class DeadLetterQueue:
                     else:
                         callback(stats)
                 except Exception as e:
-                    logger.error(f"Alert callback error: {e}")
+                    logger.error("Alert callback error: %s", e)
 
     def _ensure_started(self) -> None:
         """Ensure DLQ is started."""

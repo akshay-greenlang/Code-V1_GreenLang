@@ -65,7 +65,7 @@ class FormulaMigrator:
         Returns:
             Migration statistics
         """
-        logger.info(f"Starting YAML migration from {yaml_path}")
+        logger.info("Starting YAML migration from %s", yaml_path)
 
         try:
             # Load YAML file
@@ -118,7 +118,7 @@ class FormulaMigrator:
             return self.migration_stats
 
         except Exception as e:
-            logger.error(f"YAML migration failed: {e}")
+            logger.error("YAML migration failed: %s", e)
             raise ExecutionError(f"YAML migration failed: {e}") from e
 
     def _import_yaml_formula(
@@ -142,7 +142,7 @@ class FormulaMigrator:
         existing = self.manager.get_formula(metric_code)
 
         if existing:
-            logger.info(f"Formula {metric_code} already exists, skipping")
+            logger.info("Formula %s already exists, skipping", metric_code)
             self.migration_stats['skipped'] += 1
             return
 
@@ -214,7 +214,7 @@ class FormulaMigrator:
         Returns:
             Migration statistics
         """
-        logger.info(f"Starting Python migration from {python_path}")
+        logger.info("Starting Python migration from %s", python_path)
 
         try:
             # Import Python module dynamically
@@ -261,7 +261,7 @@ class FormulaMigrator:
             return self.migration_stats
 
         except Exception as e:
-            logger.error(f"Python migration failed: {e}")
+            logger.error("Python migration failed: %s", e)
             raise ExecutionError(f"Python migration failed: {e}") from e
 
     def _import_emission_factor(
@@ -279,7 +279,7 @@ class FormulaMigrator:
         existing = self.manager.get_formula(formula_code)
 
         if existing:
-            logger.info(f"Formula {formula_code} already exists, skipping")
+            logger.info("Formula %s already exists, skipping", formula_code)
             self.migration_stats['skipped'] += 1
             return
 
@@ -347,7 +347,7 @@ class FormulaMigrator:
             >>> ]
             >>> migrator.migrate_custom_formulas(formulas)
         """
-        logger.info(f"Starting custom formula migration ({len(formulas)} formulas)")
+        logger.info("Starting custom formula migration (%s formulas)", len(formulas))
 
         # Reset statistics
         self.migration_stats = {

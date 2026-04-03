@@ -116,7 +116,7 @@ class ISA182:
         self.system_id = system_id
         self.alarm_database: Dict[str, AlarmRationalization] = {}
         self.alarm_events: List[Dict[str, Any]] = []
-        logger.info(f"ISA182 alarm manager initialized: {system_id}")
+        logger.info("ISA182 alarm manager initialized: %s", system_id)
 
     def add_rationalized_alarm(
         self,
@@ -124,7 +124,7 @@ class ISA182:
     ) -> None:
         """Add alarm to Master Alarm Database."""
         self.alarm_database[alarm.alarm_id] = alarm
-        logger.debug(f"Added alarm {alarm.alarm_id} to database")
+        logger.debug("Added alarm %s to database", alarm.alarm_id)
 
     def record_alarm_event(
         self,

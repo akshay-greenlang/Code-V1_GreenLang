@@ -281,7 +281,7 @@ class AgSensorsAgent(BaseAgent):
         self._fields: Dict[str, FieldConfig] = {}
         self._sensors: Dict[str, SensorConfig] = {}
 
-        self.logger.info(f"Initialized {self.AGENT_NAME} v{self.VERSION}")
+        logger.info("Initialized %s v%s", self.AGENT_NAME, self.VERSION)
 
     def execute(self, input_data: Dict[str, Any]) -> AgentResult:
         """Execute agricultural data operation."""
@@ -308,7 +308,7 @@ class AgSensorsAgent(BaseAgent):
                 return AgentResult(success=False, error=f"Unknown operation: {operation}")
 
         except Exception as e:
-            self.logger.error(f"Ag operation failed: {str(e)}", exc_info=True)
+            logger.error("Ag operation failed: %s", e, exc_info=True)
             return AgentResult(success=False, error=str(e))
 
     def _handle_query(self, input_data: Dict[str, Any], start_time: datetime) -> AgentResult:

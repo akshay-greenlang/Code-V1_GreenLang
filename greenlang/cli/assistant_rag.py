@@ -108,7 +108,7 @@ class RAGAssistant:
                 self.llm_available = True
                 logger.info("OpenAI client initialized successfully")
             except Exception as e:
-                logger.error(f"Could not initialize OpenAI client: {e}")
+                logger.error("Could not initialize OpenAI client: %s", e)
 
         # Setup RAG if available
         self.rag_available = False
@@ -134,7 +134,7 @@ class RAGAssistant:
         """Setup RAG components"""
         try:
             # Initialize embeddings
-            logger.info(f"Loading embedding model: {self.embedding_model_name}")
+            logger.info("Loading embedding model: %s", self.embedding_model_name)
             self.embeddings = HuggingFaceEmbeddings(
                 model_name=self.embedding_model_name,
                 model_kwargs={"device": "cpu"},
@@ -153,7 +153,7 @@ class RAGAssistant:
                 logger.warning("Could not load vector store")
 
         except Exception as e:
-            logger.error(f"Error setting up RAG: {e}")
+            logger.error("Error setting up RAG: %s", e)
             self.rag_available = False
 
     def _load_vector_store(self) -> bool:
@@ -183,7 +183,7 @@ class RAGAssistant:
             return False
 
         except Exception as e:
-            logger.error(f"Error loading vector store: {e}")
+            logger.error("Error loading vector store: %s", e)
             return False
 
     def _setup_qa_chain(self) -> None:
@@ -222,7 +222,7 @@ Answer:"""
             logger.info("QA chain initialized successfully")
 
         except Exception as e:
-            logger.error(f"Error setting up QA chain: {e}")
+            logger.error("Error setting up QA chain: %s", e)
 
     def search_knowledge_base(self, query: str, k: int = 5) -> List[Document]:
         """
@@ -242,7 +242,7 @@ Answer:"""
             docs = self.vector_store.similarity_search(query, k=k)
             return docs
         except Exception as e:
-            logger.error(f"Error searching knowledge base: {e}")
+            logger.error("Error searching knowledge base: %s", e)
             return []
 
     def get_rag_response(self, query: str, k: int = 5) -> Tuple[str, List[str]]:
@@ -283,7 +283,7 @@ Answer:"""
             return answer, sources
 
         except Exception as e:
-            logger.error(f"Error getting RAG response: {e}")
+            logger.error("Error getting RAG response: %s", e)
             return f"Error processing query: {str(e)}", []
 
     def process_query(

@@ -383,7 +383,7 @@ class ColumnLineageTracker:
         # Initialize storage backend
         self._init_storage()
 
-        logger.info(f"ColumnLineageTracker initialized with {storage_backend} backend")
+        logger.info("ColumnLineageTracker initialized with %s backend", storage_backend)
 
     def _init_storage(self):
         """Initialize storage backend."""
@@ -479,7 +479,7 @@ class ColumnLineageTracker:
         self.storage_path.mkdir(parents=True, exist_ok=True)
         self.nodes_file = self.storage_path / "nodes.parquet"
         self.transformations_file = self.storage_path / "transformations.parquet"
-        logger.info(f"File storage initialized at {self.storage_path}")
+        logger.info("File storage initialized at %s", self.storage_path)
 
     def add_column(self,
                    system: str,
@@ -514,7 +514,7 @@ class ColumnLineageTracker:
         self.graph.add_node(node)
         self._persist_node(node)
 
-        logger.debug(f"Added column: {node_id}")
+        logger.debug("Added column: %s", node_id)
         return node
 
     def _persist_node(self, node: LineageNode):
@@ -609,7 +609,7 @@ class ColumnLineageTracker:
                 self.graph.add_transformation(transformation)
                 self._persist_transformation(transformation)
 
-                logger.debug(f"Tracked transformation: {transformation.id}")
+                logger.debug("Tracked transformation: %s", transformation.id)
 
             self.current_transformation = None
 

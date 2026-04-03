@@ -365,7 +365,7 @@ class TransferLearningPipeline:
             ...     domain=ProcessHeatDomain.GENERIC
             ... )
         """
-        logger.info(f"Loading pretrained model: {model_id}")
+        logger.info("Loading pretrained model: %s", model_id)
 
         try:
             import torch
@@ -454,9 +454,9 @@ class TransferLearningPipeline:
                     for param in module.parameters():
                         param.requires_grad = False
                     self._frozen_layers.add(layer_name)
-                    logger.debug(f"Frozen layer: {layer_name}")
+                    logger.debug("Frozen layer: %s", layer_name)
         except Exception as e:
-            logger.error(f"Failed to freeze layer {layer_name}: {e}")
+            logger.error("Failed to freeze layer %s: %s", layer_name, e)
 
     def unfreeze_layer(self, layer_name: str) -> None:
         """
@@ -472,9 +472,9 @@ class TransferLearningPipeline:
                     for param in module.parameters():
                         param.requires_grad = True
                     self._frozen_layers.discard(layer_name)
-                    logger.debug(f"Unfrozen layer: {layer_name}")
+                    logger.debug("Unfrozen layer: %s", layer_name)
         except Exception as e:
-            logger.error(f"Failed to unfreeze layer {layer_name}: {e}")
+            logger.error("Failed to unfreeze layer %s: %s", layer_name, e)
 
     def freeze_backbone(self, n_layers: Optional[int] = None) -> int:
         """
@@ -502,7 +502,7 @@ class TransferLearningPipeline:
         self._transfer_metrics.layers_frozen = frozen_count
         self._transfer_metrics.layers_unfrozen = len(layer_names) - frozen_count
 
-        logger.info(f"Frozen {frozen_count} backbone layers")
+        logger.info("Frozen %s backbone layers", frozen_count)
         return frozen_count
 
     def unfreeze_all(self) -> None:
@@ -514,7 +514,7 @@ class TransferLearningPipeline:
             self._frozen_layers.clear()
             logger.info("All layers unfrozen")
         except Exception as e:
-            logger.error(f"Failed to unfreeze layers: {e}")
+            logger.error("Failed to unfreeze layers: %s", e)
 
     def freeze_all_except_head(self) -> None:
         """Freeze all layers except the final classification head."""
@@ -523,7 +523,7 @@ class TransferLearningPipeline:
             # Freeze all but last layer
             for name in layer_names[:-1]:
                 self.freeze_layer(name)
-            logger.info(f"Frozen all layers except head ({layer_names[-1]})")
+            logger.info("Frozen all layers except head (%s)", layer_names[-1])
 
     def replace_head(
         self,
@@ -580,7 +580,7 @@ class TransferLearningPipeline:
         except ImportError:
             logger.warning("PyTorch required for head replacement")
         except Exception as e:
-            logger.error(f"Failed to replace head: {e}")
+            logger.error("Failed to replace head: %s", e)
 
     def get_feature_extractor(self) -> Any:
         """
@@ -633,7 +633,7 @@ class TransferLearningPipeline:
             logger.warning("PyTorch required for feature extraction")
             return X
         except Exception as e:
-            logger.error(f"Feature extraction failed: {e}")
+            logger.error("Feature extraction failed: %s", e)
             return X
 
     def set_discriminative_lrs(self, base_lr: Optional[float] = None) -> Dict[str, float]:
@@ -659,7 +659,7 @@ class TransferLearningPipeline:
             layer_lr = base_lr * (self.config.lr_decay_factor ** i)
             self._layer_lrs[name] = layer_lr
 
-        logger.info(f"Set discriminative LRs: {self._layer_lrs}")
+        logger.info("Set discriminative LRs: %s", self._layer_lrs)
         return self._layer_lrs
 
     def _create_optimizer(self) -> Any:
@@ -709,7 +709,7 @@ class TransferLearningPipeline:
                     mse = F.mse_loss(output.squeeze(), y_tensor.float())
                     return -mse.item()
         except Exception as e:
-            logger.error(f"Evaluation failed: {e}")
+            logger.error("Evaluation failed: %s", e)
             return 0.0
 
     def fine_tune(
@@ -863,7 +863,7 @@ class TransferLearningPipeline:
                 patience_counter += 1
 
             if patience_counter >= self.config.early_stopping_patience:
-                logger.info(f"Early stopping at epoch {epoch + 1}")
+                logger.info("Early stopping at epoch %s", epoch + 1)
                 break
 
             if (epoch + 1) % 10 == 0:
@@ -940,7 +940,7 @@ class TransferLearningPipeline:
 
                 return loss.item()
         except Exception as e:
-            logger.error(f"Validation evaluation failed: {e}")
+            logger.error("Validation evaluation failed: %s", e)
             return float('inf')
 
     def _calculate_provenance(
@@ -1001,9 +1001,9 @@ class TransferLearningPipeline:
                 'transfer_metrics': self._transfer_metrics.dict(),
                 'training_history': self._training_history
             }, path)
-            logger.info(f"Model saved to {path}")
+            logger.info("Model saved to %s", path)
         except Exception as e:
-            logger.error(f"Failed to save model: {e}")
+            logger.error("Failed to save model: %s", e)
 
     def load_model(self, path: str) -> None:
         """
@@ -1021,9 +1021,9 @@ class TransferLearningPipeline:
                 self.pretrained_info = PretrainedModelInfo(**checkpoint['pretrained_info'])
             self._transfer_metrics = TransferMetrics(**checkpoint['transfer_metrics'])
             self._training_history = checkpoint['training_history']
-            logger.info(f"Model loaded from {path}")
+            logger.info("Model loaded from %s", path)
         except Exception as e:
-            logger.error(f"Failed to load model: {e}")
+            logger.error("Failed to load model: %s", e)
 
 
 # Factory functions for common transfer learning scenarios

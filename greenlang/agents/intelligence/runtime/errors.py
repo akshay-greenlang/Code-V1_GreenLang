@@ -6,17 +6,39 @@ Machine-readable error codes with human remediation hints.
 All errors carry: .code, .message, .hint, .path
 
 CTO Specification: Structured errors enable auto-repair and clear debugging.
+
+Migration (2026-04-02):
+- All classes now inherit from the centralized greenlang.exceptions hierarchy
+- isinstance(error, GreenLangException) is now True for all GL runtime errors
+- Full backward compatibility: same class names, same public APIs, same attributes
 """
 
 from __future__ import annotations
 from typing import Optional
 
+from greenlang.utilities.exceptions.base import GreenLangException
+from greenlang.utilities.exceptions.agent import (
+    ValidationError as _CentralValidationError,
+)
+from greenlang.utilities.exceptions.security import (
+    SecurityException as _CentralSecurityException,
+)
+from greenlang.utilities.exceptions.data import (
+    DataException as _CentralDataException,
+)
+from greenlang.utilities.exceptions.compliance import (
+    ProvenanceError as _CentralProvenanceError,
+)
 
-class GLValidationError(Exception):
+
+class GLValidationError(_CentralValidationError):
     """
     JSON Schema validation failures
 
     Raised when tool arguments or results don't match declared schemas.
+
+    Inherits from greenlang.utilities.exceptions.agent.ValidationError
+    so that isinstance(error, GreenLangException) returns True.
     """
 
     # Error codes
@@ -32,10 +54,26 @@ class GLValidationError(Exception):
         path: Optional[str] = None,
     ):
         self.code = code
-        self.message = message
         self.hint = hint or self._default_hint(code)
         self.path = path
-        super().__init__(f"[{code}] {message}")
+
+        # Build context for the centralized parent
+        context = {
+            "code": code,
+            "hint": self.hint,
+        }
+        if path:
+            context["path"] = path
+
+        # Initialize the centralized parent
+        _CentralValidationError.__init__(
+            self,
+            message=f"[{code}] {message}",
+            context=context,
+        )
+
+        # Restore the original message attribute for backward compat
+        self.message = message
 
     @staticmethod
     def _default_hint(code: str) -> str:
@@ -57,11 +95,14 @@ class GLValidationError(Exception):
         }
 
 
-class GLRuntimeError(Exception):
+class GLRuntimeError(GreenLangException):
     """
     Runtime enforcement violations
 
     Raised when "no naked numbers" rule is violated.
+
+    Inherits from greenlang.utilities.exceptions.base.GreenLangException
+    so that isinstance(error, GreenLangException) returns True.
     """
 
     # Error codes
@@ -76,11 +117,33 @@ class GLRuntimeError(Exception):
         context: Optional[str] = None,
     ):
         self.code = code
-        self.message = message
         self.hint = hint or self._default_hint(code)
         self.path = path
+        # Note: 'context' here is a string (existing API), distinct from
+        # GreenLangException's dict context. We store it separately.
+        self.runtime_context = context
+
+        # Build dict context for the centralized parent
+        central_context = {
+            "code": code,
+            "hint": self.hint,
+        }
+        if path:
+            central_context["path"] = path
+        if context:
+            central_context["runtime_context"] = context
+
+        # Initialize the centralized parent
+        GreenLangException.__init__(
+            self,
+            message=f"[{code}] {message}",
+            context=central_context,
+        )
+
+        # Restore the original message attribute for backward compat
+        self.message = message
+        # Restore the string context attribute for backward compat
         self.context = context
-        super().__init__(f"[{code}] {message}")
 
     @staticmethod
     def _default_hint(code: str) -> str:
@@ -102,15 +165,18 @@ class GLRuntimeError(Exception):
             "message": self.message,
             "hint": self.hint,
             "path": self.path,
-            "context": self.context,
+            "context": self.runtime_context,
         }
 
 
-class GLSecurityError(Exception):
+class GLSecurityError(_CentralSecurityException):
     """
     Security violations
 
     Raised when tools attempt unauthorized operations.
+
+    Inherits from greenlang.utilities.exceptions.security.SecurityException
+    so that isinstance(error, GreenLangException) returns True.
     """
 
     # Error codes
@@ -125,10 +191,26 @@ class GLSecurityError(Exception):
         path: Optional[str] = None,
     ):
         self.code = code
-        self.message = message
         self.hint = hint or self._default_hint(code)
         self.path = path
-        super().__init__(f"[{code}] {message}")
+
+        # Build context for the centralized parent
+        context = {
+            "code": code,
+            "hint": self.hint,
+        }
+        if path:
+            context["path"] = path
+
+        # Initialize the centralized parent
+        _CentralSecurityException.__init__(
+            self,
+            message=f"[{code}] {message}",
+            context=context,
+        )
+
+        # Restore the original message attribute for backward compat
+        self.message = message
 
     @staticmethod
     def _default_hint(code: str) -> str:
@@ -155,11 +237,14 @@ class GLSecurityError(Exception):
         }
 
 
-class GLDataError(Exception):
+class GLDataError(_CentralDataException):
     """
     Data resolution failures
 
     Raised when claim paths can't be resolved or quantities don't match.
+
+    Inherits from greenlang.utilities.exceptions.data.DataException
+    so that isinstance(error, GreenLangException) returns True.
     """
 
     # Error codes
@@ -174,10 +259,26 @@ class GLDataError(Exception):
         path: Optional[str] = None,
     ):
         self.code = code
-        self.message = message
         self.hint = hint or self._default_hint(code)
         self.path = path
-        super().__init__(f"[{code}] {message}")
+
+        # Build context for the centralized parent
+        context = {
+            "code": code,
+            "hint": self.hint,
+        }
+        if path:
+            context["path"] = path
+
+        # Initialize the centralized parent
+        _CentralDataException.__init__(
+            self,
+            message=f"[{code}] {message}",
+            context=context,
+        )
+
+        # Restore the original message attribute for backward compat
+        self.message = message
 
     @staticmethod
     def _default_hint(code: str) -> str:
@@ -204,11 +305,14 @@ class GLDataError(Exception):
         }
 
 
-class GLProvenanceError(Exception):
+class GLProvenanceError(_CentralProvenanceError):
     """
     Provenance tracking failures
 
     Raised when required provenance metadata is missing.
+
+    Inherits from greenlang.utilities.exceptions.compliance.ProvenanceError
+    so that isinstance(error, GreenLangException) returns True.
     """
 
     # Error codes
@@ -224,10 +328,26 @@ class GLProvenanceError(Exception):
         path: Optional[str] = None,
     ):
         self.code = code
-        self.message = message
         self.hint = hint or self._default_hint(code)
         self.path = path
-        super().__init__(f"[{code}] {message}")
+
+        # Build context for the centralized parent
+        context = {
+            "code": code,
+            "hint": self.hint,
+        }
+        if path:
+            context["path"] = path
+
+        # Initialize the centralized parent
+        _CentralProvenanceError.__init__(
+            self,
+            message=f"[{code}] {message}",
+            context=context,
+        )
+
+        # Restore the original message attribute for backward compat
+        self.message = message
 
     @staticmethod
     def _default_hint(code: str) -> str:

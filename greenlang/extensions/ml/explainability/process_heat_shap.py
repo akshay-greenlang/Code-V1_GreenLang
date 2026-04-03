@@ -545,7 +545,7 @@ class SHAPCache:
         self._misses = 0
         self._access_order: List[str] = []
 
-        logger.info(f"SHAPCache initialized: max_size={max_size}, ttl={ttl_seconds}s")
+        logger.info("SHAPCache initialized: max_size=%s, ttl=%ss", max_size, ttl_seconds)
 
     def _generate_key(self, X: np.ndarray, config_hash: str) -> str:
         """Generate cache key from input data and configuration."""
@@ -1039,7 +1039,7 @@ class ProcessHeatSHAPExplainer(Generic[TConfig]):
             self._initialize_explainer(X)
 
         # Compute SHAP values
-        logger.info(f"Computing SHAP values for {X.shape[0]} samples")
+        logger.info("Computing SHAP values for %s samples", X.shape[0])
         shap_values = self._explainer.shap_values(X)
 
         # Handle different output formats

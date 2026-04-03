@@ -153,7 +153,7 @@ class StrategyModel:
             self.is_trained = True
             logger.info("LightGBM model trained successfully")
         else:
-            logger.warning(f"Model type {self.model_type} not available")
+            logger.warning("Model type %s not available", self.model_type)
             return {"status": "skipped", "reason": "library_unavailable"}
 
         return {"status": "trained", "model_type": self.model_type}

@@ -551,7 +551,7 @@ class ThirdPartyAuditEngine:
                     metadata={"provenance_hash": provenance_hash},
                 )
             except Exception as exc:
-                logger.warning(f"Provenance recording failed: {exc}")
+                logger.warning("Provenance recording failed: %s", exc)
 
     def _record_metrics(
         self, audit_type: str, start_time: float,

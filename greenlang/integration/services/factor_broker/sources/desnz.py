@@ -363,7 +363,7 @@ class DESNZSource(FactorSource):
                 latency_ms=latency_ms,
                 error=str(e)
             )
-            logger.error(f"Error fetching factor from DESNZ: {e}", exc_info=True)
+            logger.error("Error fetching factor from DESNZ: %s", e, exc_info=True)
             return None
 
     def _map_product_to_category(self, product: str) -> str:

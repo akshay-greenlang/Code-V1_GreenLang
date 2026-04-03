@@ -190,7 +190,7 @@ class AvoidedEmissionsCalculator(DeterministicAgent):
                 raise ValueError(f"Unknown operation: {calc_input.operation}")
 
         except Exception as e:
-            self.logger.error(f"Calculation failed: {str(e)}", exc_info=True)
+            logger.error("Calculation failed: %s", e, exc_info=True)
             return {
                 "operation": inputs.get("operation", "unknown"),
                 "success": False,

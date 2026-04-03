@@ -799,7 +799,7 @@ class SHAPSteamAnalyzer:
                     )
                     sensitivity_results.append(result)
                 except Exception as e:
-                    logger.warning(f"Sensitivity analysis failed for {feature_name}: {e}")
+                    logger.warning("Sensitivity analysis failed for %s: %s", feature_name, e)
 
         # Counterfactual explanations
         counterfactuals = []

@@ -723,7 +723,7 @@ class CarbonOffsetTracker:
 
         self._projects[project_id] = project
 
-        logger.info(f"Project {project_id} registered: {project_name}")
+        logger.info("Project %s registered: %s", project_id, project_name)
 
         return project
 
@@ -1250,7 +1250,7 @@ class CarbonOffsetTracker:
 
         offset.status = OffsetStatus.CANCELLED
 
-        logger.info(f"Offset {offset_id} cancelled: {reason}")
+        logger.info("Offset %s cancelled: %s", offset_id, reason)
 
         return offset
 

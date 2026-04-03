@@ -376,7 +376,7 @@ class ReportGenerator:
 
             return buffer
         except Exception as e:
-            logger.error(f"Error creating chart: {e}")
+            logger.error("Error creating chart: %s", e)
             return None
 
     def generate_csv_report(self, report_data: ReportData) -> bytes:
@@ -494,9 +494,9 @@ class ReportGenerator:
             server.send_message(msg)
             server.quit()
 
-            logger.info(f"Report sent to {email_to}")
+            logger.info("Report sent to %s", email_to)
         except Exception as e:
-            logger.error(f"Error sending email: {e}")
+            logger.error("Error sending email: %s", e)
             raise
 
 
@@ -543,9 +543,9 @@ class ReportScheduler:
                         ReportFormat.PDF
                     )
 
-                logger.info(f"Sent daily report to partner {partner.id}")
+                logger.info("Sent daily report to partner %s", partner.id)
             except Exception as e:
-                logger.error(f"Error sending daily report to {partner.id}: {e}")
+                logger.error("Error sending daily report to %s: %s", partner.id, e)
 
     async def send_monthly_reports(self):
         """Send monthly reports to all partners"""
@@ -589,9 +589,9 @@ class ReportScheduler:
                         ReportFormat.PDF
                     )
 
-                logger.info(f"Sent monthly report to partner {partner.id}")
+                logger.info("Sent monthly report to partner %s", partner.id)
             except Exception as e:
-                logger.error(f"Error sending monthly report to {partner.id}: {e}")
+                logger.error("Error sending monthly report to %s: %s", partner.id, e)
 
 
 if __name__ == "__main__":

@@ -117,7 +117,7 @@ class FactorBroker:
                     self.sources[SourceType.ECOINVENT] = EcoinventSource(ecoinvent_config)
                     logger.info("Initialized ecoinvent source")
                 except Exception as e:
-                    logger.error(f"Failed to initialize ecoinvent source: {e}")
+                    logger.error("Failed to initialize ecoinvent source: %s", e)
 
         # DESNZ UK
         if self.config.is_source_enabled(ConfigSourceType.DESNZ_UK):
@@ -127,7 +127,7 @@ class FactorBroker:
                     self.sources[SourceType.DESNZ_UK] = DESNZSource(desnz_config)
                     logger.info("Initialized DESNZ UK source")
                 except Exception as e:
-                    logger.error(f"Failed to initialize DESNZ source: {e}")
+                    logger.error("Failed to initialize DESNZ source: %s", e)
 
         # EPA US
         if self.config.is_source_enabled(ConfigSourceType.EPA_US):
@@ -137,7 +137,7 @@ class FactorBroker:
                     self.sources[SourceType.EPA_US] = EPASource(epa_config)
                     logger.info("Initialized EPA US source")
                 except Exception as e:
-                    logger.error(f"Failed to initialize EPA source: {e}")
+                    logger.error("Failed to initialize EPA source: %s", e)
 
         # Proxy (always enabled as fallback)
         proxy_config = self.config.get_source_config(ConfigSourceType.PROXY)
@@ -183,7 +183,7 @@ class FactorBroker:
             if cached_response:
                 self.performance_stats["cache_hits"] += 1
                 self._update_performance_stats(start_time, success=True)
-                logger.info(f"Cache hit for {request.product} ({request.region})")
+                logger.info("Cache hit for %s (%s)", request.product, request.region)
                 return cached_response
 
             # Step 2: Cascade through sources
@@ -257,7 +257,7 @@ class FactorBroker:
         except Exception as e:
             self._update_performance_stats(start_time, success=False)
             self.performance_stats["failed_requests"] += 1
-            logger.error(f"Unexpected error in resolve: {e}", exc_info=True)
+            logger.error("Unexpected error in resolve: %s", e, exc_info=True)
             raise
 
     async def compare_gwp_standards(

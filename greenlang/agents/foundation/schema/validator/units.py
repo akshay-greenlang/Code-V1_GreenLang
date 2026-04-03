@@ -262,7 +262,7 @@ class UnitValidator:
         if numeric_value is None:
             # Could not parse numeric value - this is a type error, not unit error
             # Let the structural validator handle this
-            logger.debug(f"Could not parse numeric value from {value} at {path}")
+            logger.debug("Could not parse numeric value from %s at %s", value, path)
             return findings, None
 
         # Step 3: Validate unit presence
@@ -372,7 +372,7 @@ class UnitValidator:
             return float(value), None
 
         # Unknown format
-        logger.debug(f"Unknown unit value format: {type(value)}")
+        logger.debug("Unknown unit value format: %s", type(value))
         return None, None
 
     def _parse_object_form(
@@ -754,7 +754,7 @@ class UnitValidator:
 
         except ValueError as e:
             # Conversion failed - return original
-            logger.warning(f"Unit conversion failed: {e}")
+            logger.warning("Unit conversion failed: %s", e)
             return NormalizedUnit(
                 value=value,
                 unit=from_unit,

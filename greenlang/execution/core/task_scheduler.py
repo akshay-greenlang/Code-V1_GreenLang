@@ -448,7 +448,7 @@ class TaskScheduler:
         self._agents[capacity.agent_id] = capacity
         self._metrics.agents_total = len(self._agents)
         self._update_available_agents()
-        logger.info(f"Registered agent: {capacity.agent_id}")
+        logger.info("Registered agent: %s", capacity.agent_id)
 
     def unregister_agent(self, agent_id: str) -> bool:
         """
@@ -464,7 +464,7 @@ class TaskScheduler:
             del self._agents[agent_id]
             self._metrics.agents_total = len(self._agents)
             self._update_available_agents()
-            logger.info(f"Unregistered agent: {agent_id}")
+            logger.info("Unregistered agent: %s", agent_id)
             return True
         return False
 
@@ -477,7 +477,7 @@ class TaskScheduler:
             executor: Async function to execute tasks
         """
         self._executors[task_type] = executor
-        logger.debug(f"Registered executor for task type: {task_type}")
+        logger.debug("Registered executor for task type: %s", task_type)
 
     def set_quota_manager(self, quota_manager: "QuotaManager") -> None:
         """
@@ -539,7 +539,7 @@ class TaskScheduler:
             self._metrics.tasks_scheduled += 1
             self._metrics.tasks_pending = self._pending_queue.qsize()
 
-        logger.debug(f"Scheduled task: {task.task_id} ({task.task_type})")
+        logger.debug("Scheduled task: %s (%s)", task.task_id, task.task_type)
         return task.task_id
 
     async def _check_namespace_quota(self, task: Task) -> bool:
@@ -616,7 +616,7 @@ class TaskScheduler:
                 self._metrics.tasks_cancelled += 1
                 if task_id in self._completion_events:
                     self._completion_events[task_id].set()
-                logger.info(f"Cancelled task: {task_id}")
+                logger.info("Cancelled task: %s", task_id)
                 return True
 
         return False
@@ -804,7 +804,7 @@ class TaskScheduler:
             except asyncio.CancelledError:
                 break
             except Exception as e:
-                logger.error(f"Scheduling error: {e}", exc_info=True)
+                logger.error("Scheduling error: %s", e, exc_info=True)
 
     async def _execute_task(self, task: Task) -> None:
         """
@@ -840,12 +840,12 @@ class TaskScheduler:
                 sum(self._execution_times) / len(self._execution_times)
             )
 
-            logger.debug(f"Task {task.task_id} completed in {exec_time:.2f}ms")
+            logger.debug("Task %s completed in %.2fms", task.task_id, exec_time)
 
         except asyncio.TimeoutError:
             task.mark_timeout()
             self._metrics.tasks_timeout += 1
-            logger.warning(f"Task {task.task_id} timed out")
+            logger.warning("Task %s timed out", task.task_id)
 
             # Retry if possible
             if task.can_retry():
@@ -854,7 +854,7 @@ class TaskScheduler:
         except Exception as e:
             task.mark_failed(str(e))
             self._metrics.tasks_failed += 1
-            logger.error(f"Task {task.task_id} failed: {e}")
+            logger.error("Task %s failed: %s", task.task_id, e)
 
             # Retry if possible
             if task.can_retry():
@@ -895,7 +895,7 @@ class TaskScheduler:
         await self._pending_queue.put(queue_item)
         self._metrics.tasks_pending = self._pending_queue.qsize()
 
-        logger.info(f"Retrying task {task.task_id} (attempt {task._attempts + 1})")
+        logger.info("Retrying task %s (attempt %s)", task.task_id, task._attempts + 1)
 
     async def _cleanup_loop(self) -> None:
         """Cleanup loop for removing old completed tasks."""
@@ -928,12 +928,12 @@ class TaskScheduler:
                             del self._completion_events[task_id]
 
                     if to_remove:
-                        logger.debug(f"Cleaned up {len(to_remove)} completed tasks")
+                        logger.debug("Cleaned up %s completed tasks", len(to_remove))
 
             except asyncio.CancelledError:
                 break
             except Exception as e:
-                logger.error(f"Cleanup error: {e}")
+                logger.error("Cleanup error: %s", e)
 
     def get_metrics(self) -> TaskSchedulerMetrics:
         """Get current scheduler metrics."""
@@ -987,7 +987,7 @@ class TaskScheduler:
                     "steps_utilization_percent": qm.steps_utilization_percent,
                 }
             except Exception as e:
-                logger.warning(f"Failed to get quota metrics for namespace {namespace}: {e}")
+                logger.warning("Failed to get quota metrics for namespace %s: %s", namespace, e)
 
         return {
             "namespace": namespace,
@@ -1024,7 +1024,7 @@ class TaskScheduler:
             for metrics in self._quota_manager.get_all_metrics():
                 result[metrics.namespace] = metrics.quota_usage_percent
         except Exception as e:
-            logger.warning(f"Failed to get quota utilization: {e}")
+            logger.warning("Failed to get quota utilization: %s", e)
 
         return result
 

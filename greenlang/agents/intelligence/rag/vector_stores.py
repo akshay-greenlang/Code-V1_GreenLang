@@ -228,7 +228,7 @@ class FAISSProvider(VectorStoreProvider):
             logger.warning("No documents to add")
             return
 
-        logger.info(f"Adding {len(docs)} documents to collection '{collection}'")
+        logger.info("Adding %s documents to collection '%s'", len(docs), collection)
 
         # Collect embeddings
         embeddings = []
@@ -316,7 +316,7 @@ class FAISSProvider(VectorStoreProvider):
                     allowed_indices.extend(self.collections[coll])
 
             if not allowed_indices:
-                logger.warning(f"No documents in collections: {collections}")
+                logger.warning("No documents in collections: %s", collections)
                 return []
 
             # Convert to set for fast lookup
@@ -373,7 +373,7 @@ class FAISSProvider(VectorStoreProvider):
         # Save FAISS index
         index_path = path / "index.faiss"
         faiss.write_index(self.index, str(index_path))
-        logger.info(f"Saved FAISS index to {index_path}")
+        logger.info("Saved FAISS index to %s", index_path)
 
         # Save documents and metadata using pickle
         # NOTE: This is safe because we control the data being pickled
@@ -388,7 +388,7 @@ class FAISSProvider(VectorStoreProvider):
                 },
                 f,
             )
-        logger.info(f"Saved metadata to {metadata_path}")
+        logger.info("Saved metadata to %s", metadata_path)
 
     def load(self, path: Path) -> None:
         """
@@ -411,7 +411,7 @@ class FAISSProvider(VectorStoreProvider):
 
         # Load with safe mode (no allow_dangerous_deserialization)
         self.index = faiss.read_index(str(index_path))
-        logger.info(f"Loaded FAISS index from {index_path}")
+        logger.info("Loaded FAISS index from %s", index_path)
 
         # Load metadata
         metadata_path = path / "metadata.pkl"
@@ -499,7 +499,7 @@ class WeaviateProvider(VectorStoreProvider):
         self.total_documents_added = 0
         self.collections_added = set()
 
-        logger.info(f"Weaviate provider initialized (dimension={dimension})")
+        logger.info("Weaviate provider initialized (dimension=%s)", dimension)
 
     def add_documents(
         self,
@@ -532,7 +532,7 @@ class WeaviateProvider(VectorStoreProvider):
             logger.warning("No documents to add")
             return
 
-        logger.info(f"Adding {len(docs)} documents to collection '{collection}'")
+        logger.info("Adding %s documents to collection '%s'", len(docs), collection)
 
         # Prepare objects for batch insertion
         objects = []
@@ -592,7 +592,7 @@ class WeaviateProvider(VectorStoreProvider):
                 f"but {result['failed']} failed"
             )
             for error in result["errors"][:5]:  # Show first 5 errors
-                logger.error(f"  {error}")
+                logger.error("  %s", error)
         else:
             logger.info(
                 f"Successfully added {result['added']} documents to '{collection}'"
@@ -644,7 +644,7 @@ class WeaviateProvider(VectorStoreProvider):
                 collection_filter=collections,
             )
         except Exception as e:
-            logger.error(f"Weaviate search failed: {e}")
+            logger.error("Weaviate search failed: %s", e)
             return []
 
         if not results:
@@ -699,7 +699,7 @@ class WeaviateProvider(VectorStoreProvider):
         # Deterministic tie-breaking by chunk_id
         documents.sort(key=lambda x: (x.metadata["distance"], x.chunk.chunk_id))
 
-        logger.info(f"Retrieved {len(documents)} documents from Weaviate")
+        logger.info("Retrieved %s documents from Weaviate", len(documents))
 
         return documents
 
@@ -730,7 +730,7 @@ class WeaviateProvider(VectorStoreProvider):
         with open(config_path, "w") as f:
             json.dump(config, f, indent=2)
 
-        logger.info(f"Saved Weaviate config to {config_path}")
+        logger.info("Saved Weaviate config to %s", config_path)
 
     def load(self, path: Path) -> None:
         """

@@ -148,7 +148,7 @@ class AuditLogger:
         self._execution_time_total_ms = 0.0
 
         self.logger = logging.getLogger(__name__)
-        self.logger.info(f"Initialized audit logger: {self.log_file}")
+        logger.info("Initialized audit logger: %s", self.log_file)
 
     def _hash_data(self, data: Any) -> str:
         """
@@ -165,7 +165,7 @@ class AuditLogger:
             json_str = json.dumps(data, sort_keys=True, default=str)
             return hashlib.sha256(json_str.encode()).hexdigest()
         except Exception as e:
-            self.logger.warning(f"Failed to hash data: {e}")
+            logger.warning("Failed to hash data: %s", e)
             return "HASH_ERROR"
 
     def log_execution(
@@ -240,7 +240,7 @@ class AuditLogger:
                     self._check_rotation()
 
             except Exception as e:
-                self.logger.error(f"Failed to log execution: {e}", exc_info=True)
+                logger.error("Failed to log execution: %s", e, exc_info=True)
 
     def _write_log_entry(self, entry: AuditLogEntry) -> None:
         """
@@ -253,7 +253,7 @@ class AuditLogger:
             with open(self.log_file, 'a', encoding='utf-8') as f:
                 f.write(entry.to_json() + "\n")
         except Exception as e:
-            self.logger.error(f"Failed to write log entry: {e}", exc_info=True)
+            logger.error("Failed to write log entry: %s", e, exc_info=True)
 
     def _add_to_cache(self, entry: AuditLogEntry) -> None:
         """
@@ -278,11 +278,11 @@ class AuditLogger:
             size_mb = self.log_file.stat().st_size / (1024 * 1024)
 
             if size_mb >= self.max_log_size_mb:
-                self.logger.info(f"Rotating log file (size: {size_mb:.2f}MB)")
+                logger.info("Rotating log file (size: %.2fMB)", size_mb)
                 self.rotate_logs()
 
         except Exception as e:
-            self.logger.error(f"Failed to check rotation: {e}", exc_info=True)
+            logger.error("Failed to check rotation: %s", e, exc_info=True)
 
     def rotate_logs(self) -> None:
         """
@@ -302,13 +302,13 @@ class AuditLogger:
                 # Rename current log file
                 self.log_file.rename(rotated_file)
 
-                self.logger.info(f"Rotated log file to: {rotated_file}")
+                logger.info("Rotated log file to: %s", rotated_file)
 
                 # Clean up old logs based on retention policy
                 self._cleanup_old_logs()
 
             except Exception as e:
-                self.logger.error(f"Failed to rotate logs: {e}", exc_info=True)
+                logger.error("Failed to rotate logs: %s", e, exc_info=True)
 
     def _cleanup_old_logs(self) -> None:
         """Delete log files older than retention period."""
@@ -332,13 +332,13 @@ class AuditLogger:
 
                         if file_date < cutoff_date:
                             log_file.unlink()
-                            self.logger.info(f"Deleted old log file: {log_file}")
+                            logger.info("Deleted old log file: %s", log_file)
 
                 except Exception as e:
-                    self.logger.warning(f"Failed to process log file {log_file}: {e}")
+                    logger.warning("Failed to process log file %s: %s", log_file, e)
 
         except Exception as e:
-            self.logger.error(f"Failed to cleanup old logs: {e}", exc_info=True)
+            logger.error("Failed to cleanup old logs: %s", e, exc_info=True)
 
     def query_logs(
         self,
@@ -480,10 +480,10 @@ class AuditLogger:
                                 break
 
                     except Exception as e:
-                        self.logger.warning(f"Failed to parse log entry: {e}")
+                        logger.warning("Failed to parse log entry: %s", e)
 
         except Exception as e:
-            self.logger.error(f"Failed to query log file: {e}", exc_info=True)
+            logger.error("Failed to query log file: %s", e, exc_info=True)
 
         return results
 
@@ -565,7 +565,7 @@ class AuditLogger:
         """Clear in-memory cache."""
         with self._lock:
             self._cache.clear()
-            self.logger.info("Cleared audit log cache")
+            logger.info("Cleared audit log cache")
 
     def __repr__(self) -> str:
         return (
@@ -624,5 +624,5 @@ def configure_audit_logger(
         max_log_size_mb=max_log_size_mb
     )
 
-    logger.info(f"Configured global audit logger: {_global_audit_logger}")
+    logger.info("Configured global audit logger: %s", _global_audit_logger)
     return _global_audit_logger

@@ -430,7 +430,7 @@ class ESDTestManager:
         # Initialize standard procedures
         self._initialize_standard_procedures()
 
-        logger.info(f"ESDTestManager initialized: {system_id}")
+        logger.info("ESDTestManager initialized: %s", system_id)
 
     def _initialize_standard_procedures(self) -> None:
         """Initialize standard test procedures."""
@@ -564,7 +564,7 @@ class ESDTestManager:
             procedure: TestProcedure to register
         """
         self.procedures[procedure.procedure_id] = procedure
-        logger.info(f"Registered procedure: {procedure.procedure_id}")
+        logger.info("Registered procedure: %s", procedure.procedure_id)
 
     def create_procedure_for_sif(
         self,

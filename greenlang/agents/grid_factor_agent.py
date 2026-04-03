@@ -34,7 +34,7 @@ class GridFactorAgent(Agent[GridFactorInput, GridFactorOutput]):
             with open(self.factors_path, "r") as f:
                 return json.load(f)
         except Exception as e:
-            logger.error(f"Failed to load emission factors: {e}")
+            logger.error("Failed to load emission factors: %s", e)
             # Fallback to basic factors
             return {
                 "US": {
@@ -91,7 +91,7 @@ class GridFactorAgent(Agent[GridFactorInput, GridFactorOutput]):
 
             # Check if country exists
             if mapped_country not in self.emission_factors:
-                logger.warning(f"Country {mapped_country} not found, using US factors")
+                logger.warning("Country %s not found, using US factors", mapped_country)
                 mapped_country = "US"
 
             country_factors = self.emission_factors[mapped_country]

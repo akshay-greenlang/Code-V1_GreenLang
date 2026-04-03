@@ -134,22 +134,6 @@ def reset_config_fixture():
 
 
 # ---------------------------------------------------------------------------
-# Override parent conftest autouse fixtures that do not apply here
-# ---------------------------------------------------------------------------
-
-@pytest.fixture(autouse=True)
-def mock_agents():
-    """Override parent conftest's mock_agents fixture (no-op for DLT tests).
-
-    The parent ``tests/integration/conftest.py`` defines an autouse
-    ``mock_agents`` fixture that patches ``greenlang.agents.registry``
-    which is irrelevant to data-lineage-tracker engine tests and may fail
-    due to missing attributes.  This override silences it.
-    """
-    yield
-
-
-# ---------------------------------------------------------------------------
 # Provenance fixture
 # ---------------------------------------------------------------------------
 

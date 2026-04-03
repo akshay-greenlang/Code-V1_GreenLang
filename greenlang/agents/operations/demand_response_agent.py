@@ -303,7 +303,7 @@ class DemandResponseAgent(BaseAgent):
         self._total_curtailment_kwh = 0.0
         self._total_incentives = 0.0
 
-        self.logger.info(f"Initialized {self.AGENT_ID}: {self.AGENT_NAME}")
+        logger.info("Initialized %s: %s", self.AGENT_ID, self.AGENT_NAME)
 
     def execute(self, input_data: Dict[str, Any]) -> AgentResult:
         """Execute demand response operations."""
@@ -332,7 +332,7 @@ class DemandResponseAgent(BaseAgent):
             )
 
         except Exception as e:
-            self.logger.error(f"Demand response operation failed: {e}", exc_info=True)
+            logger.error("Demand response operation failed: %s", e, exc_info=True)
             processing_time_ms = (time.time() - start_time) * 1000
 
             return AgentResult(

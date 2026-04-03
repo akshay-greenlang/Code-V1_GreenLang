@@ -382,7 +382,7 @@ class ThermalIQCalculationLibrary:
         Raises:
             ValueError: If input parameters are invalid
         """
-        logger.debug(f"Calculating boiler efficiency for {input_data.fuel_type}")
+        logger.debug("Calculating boiler efficiency for %s", input_data.fuel_type)
         self._calculation_count += 1
 
         # Calculate input hash for provenance
@@ -612,7 +612,7 @@ class ThermalIQCalculationLibrary:
         Returns:
             CalculationResult with combustion efficiency
         """
-        logger.debug(f"Calculating combustion efficiency for {input_data.fuel_type}")
+        logger.debug("Calculating combustion efficiency for %s", input_data.fuel_type)
         self._calculation_count += 1
 
         inputs_hash = self._hash_inputs(input_data.dict())

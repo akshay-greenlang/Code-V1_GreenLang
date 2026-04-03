@@ -294,7 +294,7 @@ async def create_dashboard(
     await db.commit()
     await db.refresh(new_dashboard)
 
-    logger.info(f"Created dashboard {new_dashboard.id} by user {user_id}")
+    logger.info("Created dashboard %s by user %s", new_dashboard.id, user_id)
 
     return serialize_dashboard(new_dashboard)
 
@@ -372,7 +372,7 @@ async def update_dashboard(
     await db.commit()
     await db.refresh(dashboard)
 
-    logger.info(f"Updated dashboard {dashboard_id}")
+    logger.info("Updated dashboard %s", dashboard_id)
 
     return serialize_dashboard(dashboard)
 
@@ -397,7 +397,7 @@ async def delete_dashboard(
     await db.delete(dashboard)
     await db.commit()
 
-    logger.info(f"Deleted dashboard {dashboard_id}")
+    logger.info("Deleted dashboard %s", dashboard_id)
 
 
 @router.post("/{dashboard_id}/share", response_model=DashboardShareResponse)
@@ -440,7 +440,7 @@ async def share_dashboard(
     await db.commit()
     await db.refresh(share)
 
-    logger.info(f"Created share link for dashboard {dashboard_id}")
+    logger.info("Created share link for dashboard %s", dashboard_id)
 
     return {
         'id': share.id,
@@ -580,6 +580,6 @@ async def create_from_template(
     await db.commit()
     await db.refresh(dashboard)
 
-    logger.info(f"Created dashboard {dashboard.id} from template {template_id}")
+    logger.info("Created dashboard %s from template %s", dashboard.id, template_id)
 
     return serialize_dashboard(dashboard)

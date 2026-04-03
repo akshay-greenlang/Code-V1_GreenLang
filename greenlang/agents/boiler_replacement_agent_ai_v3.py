@@ -147,7 +147,7 @@ class BoilerReplacementAgentAI_V3(ReasoningAgent):
             )
 
             formatted_knowledge = self._format_rag_results(rag_result)
-            logger.info(f"Retrieved {len(rag_result.chunks)} relevant boiler knowledge chunks")
+            logger.info("Retrieved %s relevant boiler knowledge chunks", len(rag_result.chunks))
 
             # Step 2: Initial Boiler Assessment
             logger.info("Step 2: Initiating boiler replacement analysis")
@@ -183,7 +183,7 @@ class BoilerReplacementAgentAI_V3(ReasoningAgent):
 
             while current_response.tool_calls and iteration < max_iterations:
                 iteration += 1
-                logger.info(f"Tool orchestration iteration {iteration}: {len(current_response.tool_calls)} tools called")
+                logger.info("Tool orchestration iteration %s: %s tools called", iteration, len(current_response.tool_calls))
 
                 tool_results = []
 
@@ -206,10 +206,10 @@ class BoilerReplacementAgentAI_V3(ReasoningAgent):
                         })
 
                         self._tool_execution_count += 1
-                        logger.info(f"Tool executed: {tool_call['name']}")
+                        logger.info("Tool executed: %s", tool_call['name'])
 
                     except Exception as e:
-                        logger.error(f"Tool execution failed: {tool_call['name']}: {e}")
+                        logger.error("Tool execution failed: %s: %s", tool_call['name'], e)
                         tool_results.append({
                             "tool_call_id": tool_call["id"],
                             "role": "tool",
@@ -227,7 +227,7 @@ class BoilerReplacementAgentAI_V3(ReasoningAgent):
                 conversation_history.append(next_response)
                 current_response = next_response
 
-            logger.info(f"Tool orchestration complete: {iteration} iterations, {len(tool_execution_trace)} total tools")
+            logger.info("Tool orchestration complete: %s iterations, %s total tools", iteration, len(tool_execution_trace))
 
             # Step 4: Parse and Structure Recommendations
             logger.info("Step 4: Parsing structured recommendations")
@@ -324,7 +324,7 @@ class BoilerReplacementAgentAI_V3(ReasoningAgent):
             return result
 
         except Exception as e:
-            logger.error(f"Error in boiler replacement analysis: {e}", exc_info=True)
+            logger.error("Error in boiler replacement analysis: %s", e, exc_info=True)
             return {
                 "success": False,
                 "error": str(e),

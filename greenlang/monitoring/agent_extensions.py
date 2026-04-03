@@ -100,7 +100,7 @@ class ProcessHeatMetrics(StandardAgentMetrics):
         self._init_scada_metrics()
         self._init_heat_distribution_metrics()
 
-        logger.info(f"ProcessHeatMetrics initialized: 86 total metrics (71 baseline + 15 specific)")
+        logger.info("ProcessHeatMetrics initialized: 86 total metrics (71 baseline + 15 specific)")
 
     def _init_plant_metrics(self):
         """Initialize plant-level metrics (5 metrics)."""
@@ -302,7 +302,7 @@ class BoilerOptimizerMetrics(StandardAgentMetrics):
         self._init_combustion_metrics()
         self._init_fuel_metrics()
 
-        logger.info(f"BoilerOptimizerMetrics initialized: 81 total metrics (71 baseline + 10 specific)")
+        logger.info("BoilerOptimizerMetrics initialized: 81 total metrics (71 baseline + 10 specific)")
 
     def _init_boiler_metrics(self):
         """Initialize boiler performance metrics (4 metrics)."""
@@ -447,7 +447,7 @@ class HeatRecoveryMetrics(StandardAgentMetrics):
         self._init_pinch_analysis_metrics()
         self._init_economic_metrics()
 
-        logger.info(f"HeatRecoveryMetrics initialized: 83 total metrics (71 baseline + 12 specific)")
+        logger.info("HeatRecoveryMetrics initialized: 83 total metrics (71 baseline + 12 specific)")
 
     def _init_heat_recovery_metrics(self):
         """Initialize heat recovery metrics (5 metrics)."""

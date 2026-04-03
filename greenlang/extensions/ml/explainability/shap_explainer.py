@@ -262,7 +262,7 @@ class SHAPExplainer:
             self._explainer = shap.KernelExplainer(predict_fn, background)
 
         self._initialized = True
-        logger.info(f"SHAP explainer initialized: {type(self._explainer).__name__}")
+        logger.info("SHAP explainer initialized: %s", type(self._explainer).__name__)
 
     def _calculate_provenance(
         self,
@@ -377,7 +377,7 @@ class SHAPExplainer:
             self._initialize_explainer(X)
 
         # Compute SHAP values
-        logger.info(f"Computing SHAP values for {X.shape[0]} samples")
+        logger.info("Computing SHAP values for %s samples", X.shape[0])
         shap_values = self._explainer.shap_values(X)
 
         # Handle different output formats

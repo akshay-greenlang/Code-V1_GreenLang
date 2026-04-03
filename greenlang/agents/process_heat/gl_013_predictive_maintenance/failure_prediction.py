@@ -463,7 +463,7 @@ class FailurePredictionEngine:
         Returns:
             FailurePrediction with probability and explainability
         """
-        logger.debug(f"Predicting {failure_mode.value}")
+        logger.debug("Predicting %s", failure_mode.value)
 
         # Get weights for failure mode
         weights = self.FAILURE_MODE_WEIGHTS.get(

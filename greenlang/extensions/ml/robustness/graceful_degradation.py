@@ -455,7 +455,7 @@ class GracefulDegradationManager:
         ... )
         >>> result = manager.predict_safe(X)
         >>> if result.degraded:
-        ...     logger.warning(f"Degraded to {result.model_used}")
+        logger.warning("Degraded to %s", result.model_used)
     """
 
     def __init__(
@@ -690,7 +690,7 @@ class GracefulDegradationManager:
         Example:
             >>> result = manager.predict_safe(X)
             >>> if result.degraded:
-            ...     logger.warning(f"Using fallback: {result.model_used}")
+            logger.warning("Using fallback: %s", result.model_used)
         """
         import time
         start_time = time.time()

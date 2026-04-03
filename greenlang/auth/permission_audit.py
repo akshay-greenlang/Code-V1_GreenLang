@@ -243,7 +243,7 @@ class PermissionAuditLogger:
             'events_by_actor': defaultdict(int)
         }
 
-        logger.info(f"Initialized PermissionAuditLogger (storage={self.storage_path})")
+        logger.info("Initialized PermissionAuditLogger (storage=%s)", self.storage_path)
 
     def log_permission_change(
         self,
@@ -626,7 +626,7 @@ class PermissionAuditLogger:
                 f.write(event.to_json() + "\n")
 
         except Exception as e:
-            logger.error(f"Failed to store audit event: {e}")
+            logger.error("Failed to store audit event: %s", e)
 
 
 # ==============================================================================

@@ -319,7 +319,7 @@ def validate_glob_pattern(
             else:
                 invalid_count += 1
         except Exception as e:
-            logger.error(f"Error validating {file_path}: {e}")
+            logger.error("Error validating %s: %s", file_path, e)
             # Create error report for this file
             error_finding = Finding(
                 code="GLSCHEMA-E800",
@@ -584,4 +584,4 @@ def validate(
         ctx.exit(EXIT_ERROR)
 
     elapsed_ms = (time.perf_counter() - start_time) * 1000
-    logger.debug(f"Total CLI time: {elapsed_ms:.2f}ms")
+    logger.debug("Total CLI time: %.2fms", elapsed_ms)

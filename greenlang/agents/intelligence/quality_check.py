@@ -475,7 +475,7 @@ class QualityChecker:
         self.range_validator = RangeValidator() if enable_range_check else None
         self.semantic_validator = SemanticValidator() if enable_semantic_check else None
 
-        logger.info(f"QualityChecker initialized (min_confidence={min_confidence})")
+        logger.info("QualityChecker initialized (min_confidence=%s)", min_confidence)
 
     def check(
         self,
@@ -548,7 +548,7 @@ class QualityChecker:
         quality_score.metadata["response_length"] = len(response)
         quality_score.metadata["num_errors"] = len(quality_score.errors)
 
-        logger.info(f"Quality check complete: confidence={quality_score.overall:.3f}, errors={len(quality_score.errors)}")
+        logger.info("Quality check complete: confidence=%.3f, errors=%s", quality_score.overall, len(quality_score.errors))
 
         return quality_score
 

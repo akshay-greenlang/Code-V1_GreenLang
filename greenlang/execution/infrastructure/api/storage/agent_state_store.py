@@ -388,7 +388,7 @@ class InMemoryAgentStateStore(BaseAgentStateStore):
                 "hash": provenance_hash
             })
 
-            logger.debug(f"Saved agent state for {agent_id} to memory")
+            logger.debug("Saved agent state for %s to memory", agent_id)
 
     async def get_agent_state(self, agent_id: str) -> Optional[Dict[str, Any]]:
         """
@@ -403,7 +403,7 @@ class InMemoryAgentStateStore(BaseAgentStateStore):
         async with self._lock:
             agent_state = self._states.get(agent_id)
             if agent_state:
-                logger.debug(f"Retrieved agent state for {agent_id} from memory")
+                logger.debug("Retrieved agent state for %s from memory", agent_id)
                 return agent_state.dict()
             return None
 
@@ -416,7 +416,7 @@ class InMemoryAgentStateStore(BaseAgentStateStore):
         """
         async with self._lock:
             states = [s.dict() for s in self._states.values()]
-            logger.debug(f"Listed {len(states)} agent states from memory")
+            logger.debug("Listed %s agent states from memory", len(states))
             return states
 
     async def delete_agent_state(self, agent_id: str) -> bool:
@@ -439,7 +439,7 @@ class InMemoryAgentStateStore(BaseAgentStateStore):
                     "timestamp": datetime.utcnow().isoformat()
                 })
 
-                logger.debug(f"Deleted agent state for {agent_id} from memory")
+                logger.debug("Deleted agent state for %s from memory", agent_id)
                 return True
             return False
 
@@ -484,7 +484,7 @@ class InMemoryAgentStateStore(BaseAgentStateStore):
 
             self._results[job_id] = calc_result
 
-            logger.debug(f"Saved calculation result for job {job_id} to memory")
+            logger.debug("Saved calculation result for job %s to memory", job_id)
 
     async def get_calculation_result(
         self,
@@ -502,7 +502,7 @@ class InMemoryAgentStateStore(BaseAgentStateStore):
         async with self._lock:
             calc_result = self._results.get(job_id)
             if calc_result:
-                logger.debug(f"Retrieved calculation result for job {job_id}")
+                logger.debug("Retrieved calculation result for job %s", job_id)
                 return calc_result.dict()
             return None
 
@@ -540,7 +540,7 @@ class InMemoryAgentStateStore(BaseAgentStateStore):
             # Apply pagination
             paginated = results[offset:offset + limit]
 
-            logger.debug(f"Listed {len(paginated)} calculation results")
+            logger.debug("Listed %s calculation results", len(paginated))
             return [r.dict() for r in paginated]
 
     async def close(self) -> None:
@@ -596,7 +596,7 @@ class SQLiteAgentStateStore(BaseAgentStateStore):
         self._lock = asyncio.Lock()
         self._initialized = False
 
-        logger.info(f"SQLiteAgentStateStore initialized with path: {db_path}")
+        logger.info("SQLiteAgentStateStore initialized with path: %s", db_path)
 
     async def initialize(self) -> None:
         """
@@ -734,7 +734,7 @@ class SQLiteAgentStateStore(BaseAgentStateStore):
                 conn.commit()
 
             await asyncio.get_event_loop().run_in_executor(None, _save)
-            logger.debug(f"Saved agent state for {agent_id} to SQLite")
+            logger.debug("Saved agent state for %s to SQLite", agent_id)
 
     async def get_agent_state(self, agent_id: str) -> Optional[Dict[str, Any]]:
         """
@@ -774,7 +774,7 @@ class SQLiteAgentStateStore(BaseAgentStateStore):
 
             result = await asyncio.get_event_loop().run_in_executor(None, _get)
             if result:
-                logger.debug(f"Retrieved agent state for {agent_id}")
+                logger.debug("Retrieved agent state for %s", agent_id)
             return result
 
     async def list_agent_states(self) -> List[Dict[str, Any]]:
@@ -810,7 +810,7 @@ class SQLiteAgentStateStore(BaseAgentStateStore):
                 return states
 
             states = await asyncio.get_event_loop().run_in_executor(None, _list)
-            logger.debug(f"Listed {len(states)} agent states")
+            logger.debug("Listed %s agent states", len(states))
             return states
 
     async def delete_agent_state(self, agent_id: str) -> bool:
@@ -845,7 +845,7 @@ class SQLiteAgentStateStore(BaseAgentStateStore):
 
             deleted = await asyncio.get_event_loop().run_in_executor(None, _delete)
             if deleted:
-                logger.debug(f"Deleted agent state for {agent_id}")
+                logger.debug("Deleted agent state for %s", agent_id)
             return deleted
 
     async def save_calculation_result(
@@ -909,7 +909,7 @@ class SQLiteAgentStateStore(BaseAgentStateStore):
                 conn.commit()
 
             await asyncio.get_event_loop().run_in_executor(None, _save)
-            logger.debug(f"Saved calculation result for job {job_id}")
+            logger.debug("Saved calculation result for job %s", job_id)
 
     async def get_calculation_result(
         self,
@@ -955,7 +955,7 @@ class SQLiteAgentStateStore(BaseAgentStateStore):
 
             result = await asyncio.get_event_loop().run_in_executor(None, _get)
             if result:
-                logger.debug(f"Retrieved calculation result for job {job_id}")
+                logger.debug("Retrieved calculation result for job %s", job_id)
             return result
 
     async def list_calculation_results(
@@ -1019,7 +1019,7 @@ class SQLiteAgentStateStore(BaseAgentStateStore):
                 return results
 
             results = await asyncio.get_event_loop().run_in_executor(None, _list)
-            logger.debug(f"Listed {len(results)} calculation results")
+            logger.debug("Listed %s calculation results", len(results))
             return results
 
     async def close(self) -> None:
@@ -1083,7 +1083,7 @@ class PostgresAgentStateStore(BaseAgentStateStore):
         self._initialized = False
         self._lock = asyncio.Lock()
 
-        logger.info(f"PostgresAgentStateStore initialized (pool_size={pool_size})")
+        logger.info("PostgresAgentStateStore initialized (pool_size=%s)", pool_size)
 
     async def initialize(self) -> None:
         """
@@ -1216,7 +1216,7 @@ class PostgresAgentStateStore(BaseAgentStateStore):
                 json.dumps(state.get("metadata", {}))
             )
 
-        logger.debug(f"Saved agent state for {agent_id} to PostgreSQL")
+        logger.debug("Saved agent state for %s to PostgreSQL", agent_id)
 
     async def get_agent_state(self, agent_id: str) -> Optional[Dict[str, Any]]:
         """
@@ -1285,7 +1285,7 @@ class PostgresAgentStateStore(BaseAgentStateStore):
                     "metadata": metadata
                 })
 
-        logger.debug(f"Listed {len(states)} agent states from PostgreSQL")
+        logger.debug("Listed %s agent states from PostgreSQL", len(states))
         return states
 
     async def delete_agent_state(self, agent_id: str) -> bool:
@@ -1308,7 +1308,7 @@ class PostgresAgentStateStore(BaseAgentStateStore):
             deleted = result.split()[-1] != "0"
 
         if deleted:
-            logger.debug(f"Deleted agent state for {agent_id} from PostgreSQL")
+            logger.debug("Deleted agent state for %s from PostgreSQL", agent_id)
         return deleted
 
     async def save_calculation_result(
@@ -1358,7 +1358,7 @@ class PostgresAgentStateStore(BaseAgentStateStore):
                 result.get("processing_time_ms")
             )
 
-        logger.debug(f"Saved calculation result for job {job_id} to PostgreSQL")
+        logger.debug("Saved calculation result for job %s to PostgreSQL", job_id)
 
     async def get_calculation_result(
         self,
@@ -1463,7 +1463,7 @@ class PostgresAgentStateStore(BaseAgentStateStore):
                     "processing_time_ms": row["processing_time_ms"]
                 })
 
-        logger.debug(f"Listed {len(results)} calculation results from PostgreSQL")
+        logger.debug("Listed %s calculation results from PostgreSQL", len(results))
         return results
 
     async def close(self) -> None:

@@ -158,7 +158,7 @@ class DocumentIngestionAgent(BaseAgent):
             DocumentType.PURCHASE_ORDER: ["purchase order", "p.o.", "po number"],
         }
 
-        self.logger.info(f"Initialized {self.AGENT_NAME} v{self.VERSION}")
+        logger.info("Initialized %s v%s", self.AGENT_NAME, self.VERSION)
 
     def execute(self, input_data: Dict[str, Any]) -> AgentResult:
         """
@@ -235,7 +235,7 @@ class DocumentIngestionAgent(BaseAgent):
             )
 
         except Exception as e:
-            self.logger.error(f"Document ingestion failed: {str(e)}", exc_info=True)
+            logger.error("Document ingestion failed: %s", e, exc_info=True)
             processing_time = (datetime.utcnow() - start_time).total_seconds() * 1000
 
             return AgentResult(
@@ -263,7 +263,7 @@ class DocumentIngestionAgent(BaseAgent):
             return self._simulate_ocr(doc_input)
 
         # Placeholder for real OCR integration
-        self.logger.warning(f"OCR engine {doc_input.ocr_engine} not implemented, using simulated")
+        logger.warning("OCR engine %s not implemented, using simulated", doc_input.ocr_engine)
         return self._simulate_ocr(doc_input)
 
     def _simulate_ocr(self, doc_input: DocumentIngestionInput) -> str:

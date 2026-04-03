@@ -1,12 +1,17 @@
 """
-Test Data Generators for GreenLang Testing
+Test Data Generators for GreenLang Testing.
 
 Creates synthetic test data for comprehensive testing scenarios.
-All generators use seeded random for reproducibility.
+All generators use seeded random for reproducibility.  No external
+dependencies (no ``faker``).
 
-Usage:
+Usage::
+
     generator = IndustrialTestDataGenerator(seed=42)
     fuel_data = generator.generate_fuel_data(num_records=100)
+
+    gen = EmissionDataGenerator(seed=42)
+    scope1 = gen.generate_scope1_data(num_records=20)
 """
 
 from typing import Any, Dict, List, Optional, Tuple
@@ -496,16 +501,521 @@ class EdgeCaseGenerator(BaseTestDataGenerator):
         ]
 
 
-# Convenience function to create all generators with same seed
+# =============================================================================
+# Emission Data Generator
+# =============================================================================
+
+
+class EmissionDataGenerator(BaseTestDataGenerator):
+    """
+    Generate emission calculation test data with Decimal-precision factors.
+
+    Produces Scope 1, Scope 2, and Scope 3 activity records together with
+    deterministic emission factors suitable for verifying calculation engines.
+    """
+
+    # GHG Protocol scopes
+    SCOPE1_SOURCES = ["stationary_combustion", "mobile_combustion", "process", "fugitive", "refrigerant"]
+    SCOPE2_SOURCES = ["electricity", "steam", "heating", "cooling"]
+    SCOPE3_CATEGORIES = [
+        "purchased_goods", "capital_goods", "fuel_energy_activities",
+        "upstream_transport", "waste", "business_travel", "employee_commuting",
+        "upstream_leased", "downstream_transport", "processing_sold",
+        "use_of_sold", "eol_sold", "downstream_leased",
+        "franchises", "investments",
+    ]
+
+    # Deterministic emission factors (Decimal for zero-hallucination maths)
+    _EMISSION_FACTORS: Dict[str, Dict[str, Decimal]] = {
+        "natural_gas": {"kgCO2e_per_MJ": Decimal("0.0561"), "kgCO2e_per_therm": Decimal("5.30")},
+        "diesel": {"kgCO2e_per_litre": Decimal("2.68"), "kgCO2e_per_gallon": Decimal("10.21")},
+        "gasoline": {"kgCO2e_per_litre": Decimal("2.31"), "kgCO2e_per_gallon": Decimal("8.78")},
+        "electricity_us": {"kgCO2e_per_kWh": Decimal("0.385")},
+        "electricity_uk": {"kgCO2e_per_kWh": Decimal("0.207")},
+        "electricity_eu": {"kgCO2e_per_kWh": Decimal("0.256")},
+        "coal": {"kgCO2e_per_kg": Decimal("2.42")},
+        "lpg": {"kgCO2e_per_litre": Decimal("1.56")},
+    }
+
+    def generate_emission_factors(self) -> Dict[str, Dict[str, Decimal]]:
+        """
+        Return the full set of deterministic emission factors.
+
+        Returns:
+            Nested dict: fuel -> unit -> Decimal factor.
+        """
+        # Return a deep copy so tests cannot mutate the class constant
+        return {
+            fuel: dict(factors)
+            for fuel, factors in self._EMISSION_FACTORS.items()
+        }
+
+    def generate_scope1_data(self, num_records: int = 50) -> List[Dict[str, Any]]:
+        """
+        Generate Scope 1 (direct emissions) activity records.
+
+        Args:
+            num_records: Number of records.
+
+        Returns:
+            List of Scope 1 activity dicts.
+        """
+        records: List[Dict[str, Any]] = []
+        fuels_for_source = {
+            "stationary_combustion": ["natural_gas", "diesel", "coal", "lpg"],
+            "mobile_combustion": ["diesel", "gasoline"],
+            "process": ["natural_gas"],
+            "fugitive": ["natural_gas"],
+            "refrigerant": ["R-410A", "HFC-134a"],
+        }
+
+        for _ in range(num_records):
+            source = self._random_choice(self.SCOPE1_SOURCES)
+            fuel = self._random_choice(fuels_for_source.get(source, ["natural_gas"]))
+            quantity = self._random_float(10.0, 50000.0, 2)
+
+            records.append({
+                "record_id": self._generate_id("S1"),
+                "scope": "scope_1",
+                "source_type": source,
+                "fuel_type": fuel,
+                "quantity": quantity,
+                "unit": self._random_choice(["MJ", "L", "kg", "kWh"]),
+                "facility_id": f"FAC-{self.random.randint(1, 20):03d}",
+                "reporting_year": self.random.randint(2022, 2025),
+                "reporting_date": self._random_date(2022, 2025),
+                "data_quality_score": self._random_float(0.7, 1.0, 2),
+            })
+        return records
+
+    def generate_scope2_data(self, num_records: int = 30) -> List[Dict[str, Any]]:
+        """
+        Generate Scope 2 (indirect energy) activity records.
+
+        Args:
+            num_records: Number of records.
+
+        Returns:
+            List of Scope 2 activity dicts.
+        """
+        records: List[Dict[str, Any]] = []
+        for _ in range(num_records):
+            source = self._random_choice(self.SCOPE2_SOURCES)
+            quantity = self._random_float(100.0, 500000.0, 2)
+            region = self._random_choice(["US", "GB", "EU", "DE", "FR", "IN"])
+
+            records.append({
+                "record_id": self._generate_id("S2"),
+                "scope": "scope_2",
+                "source_type": source,
+                "quantity_kwh": quantity,
+                "region": region,
+                "method": self._random_choice(["location_based", "market_based"]),
+                "facility_id": f"FAC-{self.random.randint(1, 20):03d}",
+                "reporting_year": self.random.randint(2022, 2025),
+                "data_quality_score": self._random_float(0.8, 1.0, 2),
+            })
+        return records
+
+    def generate_scope3_data(self, num_records: int = 100) -> List[Dict[str, Any]]:
+        """
+        Generate Scope 3 (value chain) activity records.
+
+        Args:
+            num_records: Number of records.
+
+        Returns:
+            List of Scope 3 activity dicts.
+        """
+        records: List[Dict[str, Any]] = []
+        for _ in range(num_records):
+            category = self._random_choice(self.SCOPE3_CATEGORIES)
+            cat_index = self.SCOPE3_CATEGORIES.index(category) + 1
+            spend = self._random_float(1000.0, 5000000.0, 2)
+            ef = self._random_float(0.01, 2.0, 6)
+
+            records.append({
+                "record_id": self._generate_id("S3"),
+                "scope": "scope_3",
+                "category": category,
+                "category_number": cat_index,
+                "activity_data": spend,
+                "activity_unit": self._random_choice(["USD", "EUR", "GBP", "kg", "tonne-km"]),
+                "emission_factor": ef,
+                "supplier_name": f"Supplier-{self.random.randint(1, 200):04d}",
+                "reporting_year": self.random.randint(2022, 2025),
+                "data_quality_score": self._random_float(0.5, 1.0, 2),
+            })
+        return records
+
+
+# =============================================================================
+# Supply Chain Data Generator
+# =============================================================================
+
+
+class SupplyChainDataGenerator(BaseTestDataGenerator):
+    """
+    Generate supply chain test data (suppliers, shipments, invoices).
+
+    Useful for EUDR traceability, CBAM upstream mapping, and Scope 3
+    upstream transport tests.
+    """
+
+    SUPPLIER_TIERS = ["tier_1", "tier_2", "tier_3", "raw_material"]
+    TRANSPORT_MODES = ["road", "rail", "sea", "air", "multimodal"]
+    INCOTERMS = ["EXW", "FCA", "CPT", "CIP", "DAP", "DPU", "DDP", "FAS", "FOB", "CFR", "CIF"]
+    CURRENCIES = ["USD", "EUR", "GBP", "INR", "CNY", "BRL"]
+
+    COUNTRIES = [
+        "US", "GB", "DE", "FR", "IT", "ES", "CN", "IN", "BR",
+        "JP", "KR", "AU", "CA", "MX", "ZA", "TR", "ID", "TH",
+    ]
+
+    def generate_suppliers(self, num_suppliers: int = 50) -> List[Dict[str, Any]]:
+        """
+        Generate supplier master records.
+
+        Args:
+            num_suppliers: Number of suppliers.
+
+        Returns:
+            List of supplier dicts.
+        """
+        suppliers: List[Dict[str, Any]] = []
+        for _ in range(num_suppliers):
+            country = self._random_choice(self.COUNTRIES)
+            suppliers.append({
+                "supplier_id": self._generate_id("SUP"),
+                "supplier_name": f"Supplier {self._record_count}",
+                "tier": self._random_choice(self.SUPPLIER_TIERS),
+                "country": country,
+                "region": self._random_choice(["APAC", "EMEA", "AMERICAS"]),
+                "industry": self._random_choice([
+                    "chemicals", "metals", "textiles", "electronics",
+                    "agriculture", "energy", "logistics", "packaging",
+                ]),
+                "annual_spend_usd": self._random_float(10000, 50000000, 2),
+                "risk_score": self._random_float(0.0, 1.0, 2),
+                "sustainability_rating": self._random_choice(["A", "B", "C", "D", "unrated"]),
+                "onboarding_date": self._random_date(2018, 2024),
+                "active": self.random.random() > 0.1,
+            })
+        return suppliers
+
+    def generate_shipments(self, num_shipments: int = 100) -> List[Dict[str, Any]]:
+        """
+        Generate logistics shipment records.
+
+        Args:
+            num_shipments: Number of shipments.
+
+        Returns:
+            List of shipment dicts.
+        """
+        shipments: List[Dict[str, Any]] = []
+        for _ in range(num_shipments):
+            origin = self._random_choice(self.COUNTRIES)
+            dest = self._random_choice([c for c in self.COUNTRIES if c != origin])
+            weight = self._random_float(100, 50000, 2)
+            distance = self._random_float(50, 20000, 0)
+            mode = self._random_choice(self.TRANSPORT_MODES)
+
+            shipments.append({
+                "shipment_id": self._generate_id("SHP"),
+                "supplier_id": f"SUP-{self.random.randint(1, 50):06d}",
+                "origin_country": origin,
+                "destination_country": dest,
+                "transport_mode": mode,
+                "weight_kg": weight,
+                "distance_km": distance,
+                "tonne_km": round(weight * distance / 1000, 2),
+                "departure_date": self._random_date(2023, 2025),
+                "incoterm": self._random_choice(self.INCOTERMS),
+                "customs_cleared": self.random.random() > 0.05,
+            })
+        return shipments
+
+    def generate_invoices(self, num_invoices: int = 200) -> List[Dict[str, Any]]:
+        """
+        Generate purchase invoice records.
+
+        Args:
+            num_invoices: Number of invoices.
+
+        Returns:
+            List of invoice dicts.
+        """
+        invoices: List[Dict[str, Any]] = []
+        for _ in range(num_invoices):
+            currency = self._random_choice(self.CURRENCIES)
+            amount = self._random_float(500, 2000000, 2)
+
+            invoices.append({
+                "invoice_id": self._generate_id("INV"),
+                "supplier_id": f"SUP-{self.random.randint(1, 50):06d}",
+                "invoice_date": self._random_date(2023, 2025),
+                "due_date": self._random_date(2023, 2025),
+                "amount": amount,
+                "currency": currency,
+                "line_items": self.random.randint(1, 15),
+                "category": self._random_choice([
+                    "raw_materials", "components", "services",
+                    "energy", "logistics", "equipment",
+                ]),
+                "payment_status": self._random_choice(["paid", "pending", "overdue"]),
+                "cost_center": f"CC-{self.random.randint(1, 30):03d}",
+            })
+        return invoices
+
+
+# =============================================================================
+# Facility Data Generator
+# =============================================================================
+
+
+class FacilityDataGenerator(BaseTestDataGenerator):
+    """
+    Generate facility and building test data.
+
+    Produces records suitable for site-level GHG inventories,
+    energy audits, and multi-site consolidation tests.
+    """
+
+    FACILITY_TYPES = [
+        "manufacturing_plant", "warehouse", "office", "retail_store",
+        "distribution_center", "data_center", "laboratory", "hospital",
+    ]
+
+    OWNERSHIP_TYPES = ["owned", "leased", "joint_venture", "franchise"]
+
+    def generate_facilities(self, num_facilities: int = 20) -> List[Dict[str, Any]]:
+        """
+        Generate facility master records.
+
+        Args:
+            num_facilities: Number of facilities.
+
+        Returns:
+            List of facility dicts with operational metadata.
+        """
+        facilities: List[Dict[str, Any]] = []
+        for _ in range(num_facilities):
+            ftype = self._random_choice(self.FACILITY_TYPES)
+            area = self._random_float(500, 200000, 0)
+            country = self._random_choice(["US", "GB", "DE", "IN", "CN", "BR", "AU", "JP"])
+
+            facilities.append({
+                "facility_id": self._generate_id("FAC"),
+                "facility_name": f"Test Facility {self._record_count}",
+                "facility_type": ftype,
+                "ownership_type": self._random_choice(self.OWNERSHIP_TYPES),
+                "country": country,
+                "state_province": f"State-{self.random.randint(1, 50)}",
+                "floor_area_sqm": area,
+                "operational_hours_per_year": self._random_float(2000, 8760, 0),
+                "headcount": self.random.randint(10, 5000),
+                "year_commissioned": self.random.randint(1960, 2024),
+                "scope1_sources": self._random_choice([
+                    ["stationary_combustion"],
+                    ["stationary_combustion", "mobile_combustion"],
+                    ["stationary_combustion", "process", "fugitive"],
+                ]),
+                "has_onsite_renewables": self.random.random() > 0.7,
+                "equity_share_pct": self._random_float(10, 100, 1),
+            })
+        return facilities
+
+    def generate_buildings(self, num_buildings: int = 30) -> List[Dict[str, Any]]:
+        """
+        Generate building energy profile records.
+
+        Args:
+            num_buildings: Number of buildings.
+
+        Returns:
+            List of building dicts with energy/envelope attributes.
+        """
+        buildings: List[Dict[str, Any]] = []
+        envelope_types = ["masonry", "curtain_wall", "precast_concrete", "steel_frame", "wood_frame"]
+
+        for _ in range(num_buildings):
+            btype = self._random_choice([
+                "office", "retail", "hotel", "hospital",
+                "school", "warehouse", "data_center",
+            ])
+            area = self._random_float(500, 100000, 0)
+            floors = self.random.randint(1, 40)
+
+            buildings.append({
+                "building_id": self._generate_id("BLDG"),
+                "building_name": f"Building {self._record_count}",
+                "building_type": btype,
+                "floor_area_sqm": area,
+                "num_floors": floors,
+                "envelope_type": self._random_choice(envelope_types),
+                "year_built": self.random.randint(1950, 2024),
+                "hvac_type": self._random_choice(["central_chiller", "split", "vrf", "district"]),
+                "lighting_type": self._random_choice(["led", "fluorescent", "mixed"]),
+                "eui_kwh_per_sqm": self._random_float(50, 600, 2),
+                "climate_zone": self._random_choice(["1A", "2A", "3A", "4A", "5A", "6A", "7"]),
+                "energy_star_score": self.random.randint(1, 100) if self.random.random() > 0.3 else None,
+            })
+        return buildings
+
+
+# =============================================================================
+# Compliance Data Generator
+# =============================================================================
+
+
+class ComplianceDataGenerator(BaseTestDataGenerator):
+    """
+    Generate compliance and regulatory test data.
+
+    Produces audit trails, compliance reports, and regulatory filing
+    records for CSRD, CBAM, EUDR, ISO 14064, and GHG Protocol tests.
+    """
+
+    FRAMEWORKS = ["CSRD", "CBAM", "EUDR", "GHG_PROTOCOL", "ISO_14064", "CDP", "TCFD", "SBTi"]
+    COMPLIANCE_STATUSES = ["compliant", "non_compliant", "partially_compliant", "pending_review"]
+    AUDIT_ACTIONS = [
+        "data_submitted", "calculation_executed", "report_generated",
+        "review_requested", "review_completed", "approved", "rejected",
+        "declaration_filed", "verification_initiated", "verification_completed",
+    ]
+    ACTOR_ROLES = ["data_entry", "analyst", "reviewer", "approver", "auditor", "system"]
+
+    def generate_audit_trail(self, num_entries: int = 100) -> List[Dict[str, Any]]:
+        """
+        Generate audit trail entries.
+
+        Args:
+            num_entries: Number of audit entries.
+
+        Returns:
+            List of audit entry dicts with provenance hashes.
+        """
+        entries: List[Dict[str, Any]] = []
+        base_time = datetime(2024, 1, 1, 8, 0, 0)
+
+        for i in range(num_entries):
+            action = self._random_choice(self.AUDIT_ACTIONS)
+            actor_role = self._random_choice(self.ACTOR_ROLES)
+            actor_id = f"user-{actor_role}-{self.random.randint(1, 20):03d}"
+
+            # Build deterministic provenance hash
+            payload = f"{action}:{actor_id}:{i}"
+            provenance_hash = hashlib.sha256(payload.encode()).hexdigest()
+
+            entry_time = base_time + timedelta(
+                days=self.random.randint(0, 365),
+                hours=self.random.randint(0, 23),
+                minutes=self.random.randint(0, 59),
+            )
+
+            entries.append({
+                "entry_id": self._generate_id("AUD"),
+                "timestamp": entry_time.isoformat(),
+                "action": action,
+                "actor": actor_id,
+                "actor_role": actor_role,
+                "resource_type": self._random_choice(["emission_record", "report", "declaration", "dataset"]),
+                "resource_id": f"RES-{self.random.randint(1, 500):06d}",
+                "framework": self._random_choice(self.FRAMEWORKS),
+                "provenance_hash": provenance_hash,
+                "ip_address": "127.0.0.1",
+                "details": f"Test audit action: {action}",
+            })
+        return entries
+
+    def generate_compliance_report(self, num_reports: int = 20) -> List[Dict[str, Any]]:
+        """
+        Generate compliance report metadata records.
+
+        Args:
+            num_reports: Number of reports.
+
+        Returns:
+            List of compliance report dicts.
+        """
+        reports: List[Dict[str, Any]] = []
+        for _ in range(num_reports):
+            framework = self._random_choice(self.FRAMEWORKS)
+            status = self._random_choice(self.COMPLIANCE_STATUSES)
+            year = self.random.randint(2022, 2025)
+            total_findings = self.random.randint(0, 50)
+            critical_findings = self.random.randint(0, min(total_findings, 5))
+
+            payload = f"{framework}:{year}:{self._record_count}"
+            provenance_hash = hashlib.sha256(payload.encode()).hexdigest()
+
+            reports.append({
+                "report_id": self._generate_id("RPT"),
+                "framework": framework,
+                "reporting_year": year,
+                "reporting_period": f"FY{year}",
+                "status": status,
+                "total_findings": total_findings,
+                "critical_findings": critical_findings,
+                "completeness_pct": self._random_float(60, 100, 1),
+                "generated_at": self._random_date(year, year),
+                "approved_by": f"user-approver-{self.random.randint(1, 5):03d}" if status == "compliant" else None,
+                "provenance_hash": provenance_hash,
+                "tenant_id": "tenant-test-001",
+            })
+        return reports
+
+    def generate_regulatory_filings(self, num_filings: int = 10) -> List[Dict[str, Any]]:
+        """
+        Generate regulatory filing records (CBAM declarations, EUDR statements, etc.).
+
+        Args:
+            num_filings: Number of filings.
+
+        Returns:
+            List of filing dicts.
+        """
+        filings: List[Dict[str, Any]] = []
+        filing_types = {
+            "CBAM": "quarterly_declaration",
+            "EUDR": "due_diligence_statement",
+            "CSRD": "annual_sustainability_report",
+            "CDP": "annual_questionnaire",
+        }
+
+        for _ in range(num_filings):
+            framework = self._random_choice(list(filing_types.keys()))
+            filing_type = filing_types[framework]
+
+            filings.append({
+                "filing_id": self._generate_id("FIL"),
+                "framework": framework,
+                "filing_type": filing_type,
+                "period": f"Q{self.random.randint(1, 4)} {self.random.randint(2024, 2025)}",
+                "submitted_at": self._random_date(2024, 2025),
+                "status": self._random_choice(["draft", "submitted", "accepted", "rejected"]),
+                "reference_number": f"{framework}-{self.random.randint(100000, 999999)}",
+                "authority": self._random_choice(["EU_Commission", "National_CA", "CDP_Global"]),
+                "tenant_id": "tenant-test-001",
+            })
+        return filings
+
+
+# =============================================================================
+# Convenience Functions
+# =============================================================================
+
+
 def create_test_generators(seed: int = 42) -> Dict[str, BaseTestDataGenerator]:
     """
     Create all test data generators with the same seed.
 
     Args:
-        seed: Random seed for reproducibility
+        seed: Random seed for reproducibility.
 
     Returns:
-        Dictionary of generator instances
+        Dictionary of generator instances keyed by short name.
     """
     return {
         "industrial": IndustrialTestDataGenerator(seed),
@@ -513,4 +1023,8 @@ def create_test_generators(seed: int = 42) -> Dict[str, BaseTestDataGenerator]:
         "building": BuildingEnergyGenerator(seed),
         "eudr": EUDRCommodityGenerator(seed),
         "edge_cases": EdgeCaseGenerator(seed),
+        "emissions": EmissionDataGenerator(seed),
+        "supply_chain": SupplyChainDataGenerator(seed),
+        "facility": FacilityDataGenerator(seed),
+        "compliance": ComplianceDataGenerator(seed),
     }

@@ -385,7 +385,7 @@ class WorkflowDefinitionEngine:
                 f"Sorted {len(result)} of {len(node_ids)} nodes."
             )
 
-        logger.debug(f"Topological sort: {result}")
+        logger.debug("Topological sort: %s", result)
         return result
 
     # ------------------------------------------------------------------

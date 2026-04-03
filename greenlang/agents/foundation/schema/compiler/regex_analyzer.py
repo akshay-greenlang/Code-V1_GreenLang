@@ -507,7 +507,7 @@ class RegexAnalyzer:
             parsed = sre_parse.parse(pattern)
             return self._check_nested_quantifiers_ast(parsed, 0, pattern)
         except Exception as e:
-            logger.warning(f"Failed to parse pattern for nested quantifier check: {e}")
+            logger.warning("Failed to parse pattern for nested quantifier check: %s", e)
             # Fall back to regex-based detection
             return self._check_nested_quantifiers_regex(pattern)
 
@@ -628,7 +628,7 @@ class RegexAnalyzer:
             parsed = sre_parse.parse(pattern)
             return self._check_overlapping_ast(parsed, pattern)
         except Exception as e:
-            logger.warning(f"Failed to parse pattern for overlap check: {e}")
+            logger.warning("Failed to parse pattern for overlap check: %s", e)
             return self._check_overlapping_regex(pattern)
 
     def _check_overlapping_ast(
@@ -1285,7 +1285,7 @@ def compile_with_timeout(
     try:
         return re.compile(pattern)
     except re.error as e:
-        logger.warning(f"Failed to compile pattern: {e}")
+        logger.warning("Failed to compile pattern: %s", e)
         return None
 
 

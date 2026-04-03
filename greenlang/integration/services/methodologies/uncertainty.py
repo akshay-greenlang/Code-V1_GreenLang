@@ -78,7 +78,7 @@ class UncertaintyQuantifier:
         # Try exact match
         if category_lower in DEFAULT_UNCERTAINTIES:
             uncertainty = DEFAULT_UNCERTAINTIES[category_lower]
-            logger.debug(f"Category uncertainty for '{category}': {uncertainty}")
+            logger.debug("Category uncertainty for '%s': %s", category, uncertainty)
             return uncertainty
 
         # Try partial matches
@@ -108,7 +108,7 @@ class UncertaintyQuantifier:
             Adjusted uncertainty
         """
         if tier not in TIER_UNCERTAINTY_MULTIPLIERS:
-            logger.warning(f"Invalid tier {tier}, using tier 3 multiplier")
+            logger.warning("Invalid tier %s, using tier 3 multiplier", tier)
             tier = 3
 
         multiplier = TIER_UNCERTAINTY_MULTIPLIERS[tier]
@@ -174,14 +174,14 @@ class UncertaintyQuantifier:
         # Use custom uncertainty if provided
         if custom_uncertainty is not None:
             uncertainty = custom_uncertainty
-            logger.debug(f"Using custom uncertainty: {uncertainty:.4f}")
+            logger.debug("Using custom uncertainty: %.4f", uncertainty)
 
         # Use pedigree-based uncertainty
         elif pedigree_score is not None:
             uncertainty = self.pedigree_evaluator.calculate_combined_uncertainty(
                 pedigree_score, base_uncertainty=0.0
             )
-            logger.debug(f"Using pedigree-based uncertainty: {uncertainty:.4f}")
+            logger.debug("Using pedigree-based uncertainty: %.4f", uncertainty)
 
         # Use category-based uncertainty
         elif category is not None:
@@ -199,7 +199,7 @@ class UncertaintyQuantifier:
         # Use default
         else:
             uncertainty = self.config.uncertainty.default_uncertainty
-            logger.debug(f"Using default uncertainty: {uncertainty:.4f}")
+            logger.debug("Using default uncertainty: %.4f", uncertainty)
 
         # Apply bounds
         uncertainty = self.apply_bounds(uncertainty)

@@ -455,12 +455,12 @@ class HeatExchangerOptimizer(
                     f"health={health_status.value}, "
                     f"effectiveness={thermal_result.thermal_effectiveness:.1%}"
                 )
-                logger.debug(f"Generated explanation and {len(recommendations)} recommendations")
+                logger.debug("Generated explanation and %s recommendations", len(recommendations))
 
                 return output
 
         except Exception as e:
-            logger.error(f"Heat exchanger analysis failed: {e}", exc_info=True)
+            logger.error("Heat exchanger analysis failed: %s", e, exc_info=True)
             raise ProcessingError(f"Analysis failed: {str(e)}") from e
 
     def validate_input(
@@ -509,7 +509,7 @@ class HeatExchangerOptimizer(
             errors.append("Tube pressure cannot be negative")
 
         if errors:
-            logger.warning(f"Validation errors: {errors}")
+            logger.warning("Validation errors: %s", errors)
             return False
 
         return True

@@ -77,7 +77,7 @@ class KubernetesBackend(Backend):
         # Track running jobs
         self.jobs = {}
 
-        logger.info(f"KubernetesBackend initialized for namespace: {self.namespace}")
+        logger.info("KubernetesBackend initialized for namespace: %s", self.namespace)
 
     def execute(self, pipeline: Pipeline, context: ExecutionContext) -> ExecutionResult:
         """
@@ -130,7 +130,7 @@ class KubernetesBackend(Backend):
             )
 
         except Exception as e:
-            logger.error(f"Failed to execute pipeline: {e}")
+            logger.error("Failed to execute pipeline: %s", e)
             return ExecutionResult(
                 run_id=context.run_id,
                 pipeline_name=pipeline.name,
@@ -262,7 +262,7 @@ class KubernetesBackend(Backend):
             "created_at": DeterministicClock.utcnow(),
         }
 
-        logger.info(f"Created Kubernetes job: {job_name}")
+        logger.info("Created Kubernetes job: %s", job_name)
         return job_name
 
     def _create_workflow(
@@ -358,7 +358,7 @@ class KubernetesBackend(Backend):
                 time.sleep(5)
 
             except ApiException as e:
-                logger.error(f"Error checking job status: {e}")
+                logger.error("Error checking job status: %s", e)
                 result["status"] = ExecutionStatus.FAILED
                 result["errors"].append(str(e))
                 break
@@ -387,10 +387,10 @@ class KubernetesBackend(Backend):
                     )
                     logs.extend(pod_logs.split("\n"))
                 except ApiException as e:
-                    logger.error(f"Failed to get logs for pod {pod.metadata.name}: {e}")
+                    logger.error("Failed to get logs for pod %s: %s", pod.metadata.name, e)
 
         except ApiException as e:
-            logger.error(f"Failed to list pods for job {job_name}: {e}")
+            logger.error("Failed to list pods for job %s: %s", job_name, e)
 
         return logs
 
@@ -417,7 +417,7 @@ class KubernetesBackend(Backend):
                 return ExecutionStatus.PENDING
 
         except ApiException as e:
-            logger.error(f"Failed to get job status: {e}")
+            logger.error("Failed to get job status: %s", e)
             return ExecutionStatus.UNKNOWN
 
     def get_logs(self, run_id: str, step_name: Optional[str] = None) -> List[str]:
@@ -445,11 +445,11 @@ class KubernetesBackend(Backend):
                 propagation_policy="Background",
             )
 
-            logger.info(f"Cancelled job: {job_info['name']}")
+            logger.info("Cancelled job: %s", job_info['name'])
             return True
 
         except ApiException as e:
-            logger.error(f"Failed to cancel job: {e}")
+            logger.error("Failed to cancel job: %s", e)
             return False
 
     def cleanup(self, run_id: str) -> bool:
@@ -471,11 +471,11 @@ class KubernetesBackend(Backend):
             # Remove from tracking
             del self.jobs[run_id]
 
-            logger.info(f"Cleaned up job: {job_info['name']}")
+            logger.info("Cleaned up job: %s", job_info['name'])
             return True
 
         except ApiException as e:
-            logger.error(f"Failed to cleanup job: {e}")
+            logger.error("Failed to cleanup job: %s", e)
             return False
 
     def _create_resource_requirements(
@@ -662,10 +662,10 @@ class KubernetesBackend(Backend):
                 body=network_policy
             )
 
-            logger.info(f"Created NetworkPolicy to deny network for job: {job_name}")
+            logger.info("Created NetworkPolicy to deny network for job: %s", job_name)
 
         except Exception as e:
-            logger.warning(f"Failed to create NetworkPolicy: {e}")
+            logger.warning("Failed to create NetworkPolicy: %s", e)
 
     def _get_required_capabilities(
         self, capabilities: Dict[str, Any]

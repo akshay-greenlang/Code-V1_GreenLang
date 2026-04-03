@@ -392,7 +392,7 @@ class BuildingMRVBaseAgent(ABC, Generic[InputT, OutputT]):
         start_time = datetime.now(timezone.utc)
 
         try:
-            self.logger.info(
+            logger.info(
                 f"{self.AGENT_ID} processing: building={input_data.building_id}, "
                 f"period={input_data.reporting_period}"
             )
@@ -415,7 +415,7 @@ class BuildingMRVBaseAgent(ABC, Generic[InputT, OutputT]):
 
             # Log completion
             duration_ms = (datetime.now(timezone.utc) - start_time).total_seconds() * 1000
-            self.logger.info(
+            logger.info(
                 f"{self.AGENT_ID} completed in {duration_ms:.2f}ms: "
                 f"emissions={output.total_emissions_kgco2e} kgCO2e"
             )
@@ -423,7 +423,7 @@ class BuildingMRVBaseAgent(ABC, Generic[InputT, OutputT]):
             return output
 
         except Exception as e:
-            self.logger.error(f"{self.AGENT_ID} failed: {str(e)}", exc_info=True)
+            logger.error("%s failed: %s", self.AGENT_ID, e, exc_info=True)
             raise
 
     # =========================================================================

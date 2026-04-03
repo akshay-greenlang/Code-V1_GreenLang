@@ -419,7 +419,7 @@ class GRIReportGenerator(BaseAgent):
         self._disclosures = GRI_DISCLOSURES.copy()
 
         super().__init__(config)
-        logger.info(f"Initialized {self.AGENT_NAME} v{self.VERSION}")
+        logger.info("Initialized %s v%s", self.AGENT_NAME, self.VERSION)
 
     def execute(self, input_data: Dict[str, Any]) -> AgentResult:
         """Execute GRI report operation."""
@@ -450,7 +450,7 @@ class GRIReportGenerator(BaseAgent):
             )
 
         except Exception as e:
-            logger.error(f"GRI report generation failed: {str(e)}", exc_info=True)
+            logger.error("GRI report generation failed: %s", e, exc_info=True)
             return AgentResult(success=False, error=str(e))
 
     def _handle_generate_report(

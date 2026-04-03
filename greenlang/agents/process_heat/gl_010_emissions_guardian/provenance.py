@@ -572,7 +572,7 @@ class ProvenanceTracker:
             hasher.update(data_str.encode())
             return hasher.hexdigest()
         except (TypeError, ValueError) as e:
-            logger.warning(f"Hash calculation failed: {e}")
+            logger.warning("Hash calculation failed: %s", e)
             # Fall back to string representation
             hasher = self._get_hasher()
             hasher.update(str(data).encode())
@@ -627,7 +627,7 @@ class ProvenanceTracker:
         )
 
         self.records[record.record_id] = record
-        logger.debug(f"Tracked input: {record.record_id}")
+        logger.debug("Tracked input: %s", record.record_id)
 
         return record
 
@@ -712,7 +712,7 @@ class ProvenanceTracker:
         )
 
         self.records[record.record_id] = record
-        logger.debug(f"Tracked calculation: {record.record_id}")
+        logger.debug("Tracked calculation: %s", record.record_id)
 
         return record
 
@@ -759,7 +759,7 @@ class ProvenanceTracker:
         )
 
         self.records[record.record_id] = record
-        logger.debug(f"Tracked validation: {record.record_id}")
+        logger.debug("Tracked validation: %s", record.record_id)
 
         return record
 
@@ -819,7 +819,7 @@ class ProvenanceTracker:
         )
 
         self.records[record.record_id] = record
-        logger.debug(f"Tracked aggregation: {record.record_id}")
+        logger.debug("Tracked aggregation: %s", record.record_id)
 
         return record
 
@@ -866,7 +866,7 @@ class ProvenanceTracker:
         )
 
         self.records[record.record_id] = record
-        logger.debug(f"Tracked compliance check: {record.record_id}")
+        logger.debug("Tracked compliance check: %s", record.record_id)
 
         return record
 
@@ -921,7 +921,7 @@ class ProvenanceTracker:
         )
 
         self.records[record.record_id] = record
-        logger.debug(f"Tracked report generation: {record.record_id}")
+        logger.debug("Tracked report generation: %s", record.record_id)
 
         return record
 
@@ -966,7 +966,7 @@ class ProvenanceTracker:
         record.verification_status = VerificationStatus.VERIFIED
         record.verified_at = datetime.now(timezone.utc)
 
-        logger.info(f"Record verified: {record_id}")
+        logger.info("Record verified: %s", record_id)
         return True, "Verification passed"
 
     def verify_chain(self, record_id: str) -> Tuple[bool, List[str]]:
@@ -1082,7 +1082,7 @@ class ProvenanceTracker:
         # Store lineage
         self.lineages[lineage.lineage_id] = lineage
 
-        logger.info(f"Built lineage: {lineage.lineage_id} with {len(chain)} records")
+        logger.info("Built lineage: %s with %s records", lineage.lineage_id, len(chain))
 
         return lineage
 
@@ -1150,7 +1150,7 @@ class ProvenanceTracker:
         # Calculate package hash
         package["package_hash"] = self._hash_data(package["records"])
 
-        logger.info(f"Exported audit package with {len(records_to_export)} records")
+        logger.info("Exported audit package with %s records", len(records_to_export))
 
         return package
 
@@ -1168,7 +1168,7 @@ class ProvenanceTracker:
             count = len(self.records)
             self.records.clear()
             self.lineages.clear()
-            logger.info(f"Cleared all {count} provenance records")
+            logger.info("Cleared all %s provenance records", count)
             return count
 
         cutoff = datetime.now(timezone.utc) - timedelta(days=older_than_days)
@@ -1180,7 +1180,7 @@ class ProvenanceTracker:
         for rid in to_remove:
             del self.records[rid]
 
-        logger.info(f"Cleared {len(to_remove)} provenance records older than {older_than_days} days")
+        logger.info("Cleared %s provenance records older than %s days", len(to_remove), older_than_days)
         return len(to_remove)
 
 

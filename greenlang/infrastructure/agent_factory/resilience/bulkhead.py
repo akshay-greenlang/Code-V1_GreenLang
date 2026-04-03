@@ -55,7 +55,10 @@ class BulkheadConfig:
 # ---------------------------------------------------------------------------
 
 
-class BulkheadFullError(Exception):
+from greenlang.utilities.exceptions.infrastructure import BulkheadFullError as _BulkheadFullError
+
+
+class BulkheadFullError(_BulkheadFullError):
     """Raised when the bulkhead queue is full and cannot accept more requests.
 
     Attributes:

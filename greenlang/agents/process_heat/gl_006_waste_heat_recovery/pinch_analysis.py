@@ -352,7 +352,7 @@ class PinchAnalyzer:
         Raises:
             ValueError: If streams are invalid
         """
-        logger.info(f"Starting pinch analysis for {len(streams)} streams")
+        logger.info("Starting pinch analysis for %s streams", len(streams))
 
         if len(streams) < 2:
             raise ValueError("At least 2 streams required for pinch analysis")
@@ -979,7 +979,7 @@ class PinchAnalyzer:
                     }
 
             except Exception as e:
-                logger.warning(f"Analysis failed at delta_T={dt}F: {e}")
+                logger.warning("Analysis failed at delta_T=%sF: %s", dt, e)
                 total_costs.append(float('inf'))
 
         return DeltaTMinOptimizationResult(

@@ -82,6 +82,7 @@ from uuid import uuid4
 
 from pydantic import Field, field_validator
 from greenlang.schemas import GreenLangBase
+from greenlang.utilities.exceptions.compliance import ComplianceException
 
 logger = logging.getLogger(__name__)
 
@@ -632,7 +633,7 @@ class GraphEngineConfig(GreenLangBase):
 # ===================================================================
 
 
-class GraphEngineError(Exception):
+class GraphEngineError(ComplianceException):
     """Base exception for graph engine errors."""
 
 

@@ -618,7 +618,7 @@ class RegulatoryReporter:
 
         self._emission_units[unit_id] = unit
 
-        logger.info(f"Emission unit {unit_id} registered: {unit_type}")
+        logger.info("Emission unit %s registered: %s", unit_id, unit_type)
 
         return unit
 
@@ -749,7 +749,7 @@ class RegulatoryReporter:
         """
         subparts = subparts or ["C"]  # Default to Subpart C (combustion)
 
-        logger.info(f"Generating Part 98 report for {self.facility_id}, year {year}")
+        logger.info("Generating Part 98 report for %s, year %s", self.facility_id, year)
 
         # Aggregate fuel data
         total_co2 = sum(f.co2_mt for f in self._fuel_data)
@@ -835,7 +835,7 @@ class RegulatoryReporter:
         Returns:
             TitleVReport
         """
-        logger.info(f"Generating Title V report for {self.facility_id}, year {year}")
+        logger.info("Generating Title V report for %s, year %s", self.facility_id, year)
 
         deviations = deviations or []
 
@@ -918,7 +918,7 @@ class RegulatoryReporter:
         Returns:
             EmissionInventoryReport
         """
-        logger.info(f"Generating emission inventory for {self.facility_id}, year {year}")
+        logger.info("Generating emission inventory for %s, year %s", self.facility_id, year)
 
         # Aggregate criteria pollutant emissions from units
         total_nox = sum(u.nox_tons for u in self._emission_units.values())
@@ -1220,7 +1220,7 @@ class RegulatoryReporter:
             if agency_comments:
                 submission.agency_comments = agency_comments
 
-            logger.info(f"Submission {submission_id} updated to {status.value}")
+            logger.info("Submission %s updated to %s", submission_id, status.value)
 
         return submission
 

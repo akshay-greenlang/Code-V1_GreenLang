@@ -72,9 +72,9 @@ class IPLDefinition(BaseModel):
     def validate_pfd(cls, v: float) -> float:
         """Validate PFD is within acceptable range for IPL."""
         if v < 1e-5:
-            logger.warning(f"PFD {v} is very low. Verify IPL credit is justified.")
+            logger.warning("PFD %s is very low. Verify IPL credit is justified.", v)
         if v > 0.1 and not cls.model_fields.get('is_sis'):
-            logger.warning(f"PFD {v} exceeds typical IPL credit of 0.1")
+            logger.warning("PFD %s exceeds typical IPL credit of 0.1", v)
         return v
 
 
@@ -264,7 +264,7 @@ class LOPAAnalyzer:
         start_time = datetime.utcnow()
         warnings: List[str] = []
 
-        logger.info(f"Starting LOPA analysis for scenario: {scenario.scenario_id}")
+        logger.info("Starting LOPA analysis for scenario: %s", scenario.scenario_id)
 
         try:
             # Step 1: Calculate conditional modifier product
@@ -384,7 +384,7 @@ class LOPAAnalyzer:
                     "must be between 0 and 1"
                 )
             product *= value
-            logger.debug(f"Applied conditional modifier '{name}': {value}")
+            logger.debug("Applied conditional modifier '%s': %s", name, value)
 
         return product
 
@@ -421,7 +421,7 @@ class LOPAAnalyzer:
                     "Ensure this credit is justified for non-SIS IPL."
                 )
 
-        logger.debug(f"Total IPL PFD: {total_pfd:.2e}")
+        logger.debug("Total IPL PFD: %s", total_pfd)
         return total_pfd, warnings
 
     def _get_target_frequency(
@@ -440,7 +440,7 @@ class LOPAAnalyzer:
             Target frequency (per year)
         """
         if override is not None:
-            logger.debug(f"Using override target frequency: {override}")
+            logger.debug("Using override target frequency: %s", override)
             return override
 
         return self.target_frequencies[severity]

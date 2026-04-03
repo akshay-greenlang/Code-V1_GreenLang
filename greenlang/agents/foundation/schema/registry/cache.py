@@ -339,7 +339,7 @@ class IRCacheService:
 
             if entry is None:
                 self._miss_count += 1
-                logger.debug(f"Cache miss: {key}")
+                logger.debug("Cache miss: %s", key)
                 return None
 
             # Check TTL expiration
@@ -348,14 +348,14 @@ class IRCacheService:
                 del self._cache[key]
                 self._eviction_count += 1
                 self._miss_count += 1
-                logger.debug(f"Cache expired: {key}")
+                logger.debug("Cache expired: %s", key)
                 return None
 
             # Cache hit: update access and move to end (most recently used)
             entry.touch()
             self._cache.move_to_end(key)
             self._hit_count += 1
-            logger.debug(f"Cache hit: {key}")
+            logger.debug("Cache hit: %s", key)
             return entry.ir
 
     def put(
@@ -412,7 +412,7 @@ class IRCacheService:
                 size_bytes=size_bytes,
             )
             self._cache[key] = entry
-            logger.debug(f"Cache put: {key} (size={size_bytes} bytes)")
+            logger.debug("Cache put: %s (size=%s bytes)", key, size_bytes)
 
     def invalidate(
         self,
@@ -448,7 +448,7 @@ class IRCacheService:
                 if key in self._cache:
                     del self._cache[key]
                     removed_count = 1
-                    logger.debug(f"Cache invalidated: {key}")
+                    logger.debug("Cache invalidated: %s", key)
             else:
                 # Invalidate all compiler versions for this schema
                 variant_part = f":{schema_ref.variant}" if schema_ref.variant else ""
@@ -462,7 +462,7 @@ class IRCacheService:
                 for key in keys_to_remove:
                     del self._cache[key]
                     removed_count += 1
-                    logger.debug(f"Cache invalidated: {key}")
+                    logger.debug("Cache invalidated: %s", key)
 
         return removed_count
 
@@ -480,7 +480,7 @@ class IRCacheService:
         with self._lock:
             count = len(self._cache)
             self._cache.clear()
-            logger.info(f"Cache cleared: {count} entries removed")
+            logger.info("Cache cleared: %s entries removed", count)
             return count
 
     def warm_up(
@@ -518,7 +518,7 @@ class IRCacheService:
                 cached_ir = self.get(schema_ref)
                 if cached_ir is not None:
                     results[key] = True
-                    logger.debug(f"Warm-up skipped (already cached): {key}")
+                    logger.debug("Warm-up skipped (already cached): %s", key)
                     continue
 
                 # Compile and cache
@@ -526,14 +526,14 @@ class IRCacheService:
                 if ir is not None:
                     self.put(schema_ref, ir)
                     results[key] = True
-                    logger.info(f"Warm-up success: {key}")
+                    logger.info("Warm-up success: %s", key)
                 else:
                     results[key] = False
-                    logger.warning(f"Warm-up failed (compile returned None): {key}")
+                    logger.warning("Warm-up failed (compile returned None): %s", key)
 
             except Exception as e:
                 results[key] = False
-                logger.error(f"Warm-up failed for {key}: {e}")
+                logger.error("Warm-up failed for %s: %s", key, e)
 
         return results
 
@@ -598,7 +598,7 @@ class IRCacheService:
         for key in expired_keys:
             del self._cache[key]
             self._eviction_count += 1
-            logger.debug(f"Evicted expired entry: {key}")
+            logger.debug("Evicted expired entry: %s", key)
 
         return len(expired_keys)
 
@@ -620,7 +620,7 @@ class IRCacheService:
         key = next(iter(self._cache))
         del self._cache[key]
         self._eviction_count += 1
-        logger.debug(f"LRU eviction: {key}")
+        logger.debug("LRU eviction: %s", key)
         return key
 
     def _estimate_size(self, ir: SchemaIR) -> int:
@@ -795,7 +795,7 @@ class CacheWarmupScheduler:
         with self._lock:
             self._popular_schemas.add(uri)
             self._schema_refs[uri] = schema_ref
-        logger.debug(f"Added popular schema: {uri}")
+        logger.debug("Added popular schema: %s", uri)
 
     def remove_popular_schema(self, schema_ref: "SchemaRef") -> bool:
         """
@@ -812,7 +812,7 @@ class CacheWarmupScheduler:
             if uri in self._popular_schemas:
                 self._popular_schemas.discard(uri)
                 self._schema_refs.pop(uri, None)
-                logger.debug(f"Removed popular schema: {uri}")
+                logger.debug("Removed popular schema: %s", uri)
                 return True
             return False
 
@@ -911,7 +911,7 @@ class CacheWarmupScheduler:
                     )
 
             except Exception as e:
-                logger.error(f"Warm-up cycle failed: {e}", exc_info=True)
+                logger.error("Warm-up cycle failed: %s", e, exc_info=True)
 
             # Wait for next cycle or stop signal
             self._stop_event.wait(timeout=self.interval_seconds)

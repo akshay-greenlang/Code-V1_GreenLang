@@ -267,7 +267,7 @@ class UnitCatalog:
             self._dimension_units[unit.dimension] = set()
         self._dimension_units[unit.dimension].add(symbol)
 
-        logger.debug(f"Registered unit: {symbol} ({unit.dimension})")
+        logger.debug("Registered unit: %s (%s)", symbol, unit.dimension)
 
     def register_alias(self, alias: str, canonical: str) -> None:
         """
@@ -289,7 +289,7 @@ class UnitCatalog:
         resolved = self._resolve_alias(canonical)
         self._aliases[alias] = resolved
 
-        logger.debug(f"Registered alias: {alias} -> {resolved}")
+        logger.debug("Registered alias: %s -> %s", alias, resolved)
 
     def register_dimension(self, dimension: DimensionDefinition) -> None:
         """
@@ -304,7 +304,7 @@ class UnitCatalog:
         if dimension.name not in self._dimension_units:
             self._dimension_units[dimension.name] = set()
 
-        logger.debug(f"Registered dimension: {dimension.name}")
+        logger.debug("Registered dimension: %s", dimension.name)
 
     # -------------------------------------------------------------------------
     # Lookup Methods

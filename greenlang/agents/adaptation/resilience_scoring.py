@@ -266,7 +266,7 @@ class ResilienceScoringAgent(BaseAgent):
         }
 
         super().__init__(config)
-        logger.info(f"Initialized {self.AGENT_NAME} v{self.VERSION}")
+        logger.info("Initialized %s v%s", self.AGENT_NAME, self.VERSION)
 
     def initialize(self):
         """Initialize agent resources."""
@@ -287,7 +287,7 @@ class ResilienceScoringAgent(BaseAgent):
         try:
             # Parse input
             scoring_input = ResilienceScoringInput(**input_data)
-            self.logger.info(
+            logger.info(
                 f"Starting resilience scoring: {scoring_input.assessment_id}, "
                 f"{len(scoring_input.assets)} assets"
             )
@@ -334,7 +334,7 @@ class ResilienceScoringAgent(BaseAgent):
 
             output.provenance_hash = self._calculate_provenance_hash(scoring_input, output)
 
-            self.logger.info(
+            logger.info(
                 f"Resilience scoring complete: {len(profiles)} assets, "
                 f"avg resilience: {avg_resilience:.2f}"
             )
@@ -350,7 +350,7 @@ class ResilienceScoringAgent(BaseAgent):
             )
 
         except Exception as e:
-            self.logger.error(f"Resilience scoring failed: {str(e)}", exc_info=True)
+            logger.error("Resilience scoring failed: %s", e, exc_info=True)
             return AgentResult(
                 success=False,
                 error=str(e),

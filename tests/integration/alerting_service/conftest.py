@@ -191,24 +191,3 @@ def reset_config_after_test():
     reset_config()
 
 
-@pytest.fixture(autouse=True)
-def mock_agents():
-    """Override parent conftest mock_agents to avoid unrelated agent patching.
-
-    The parent tests/integration/conftest.py defines a mock_agents autouse
-    fixture that patches GreenLang agent imports.  We override it here so
-    alerting service tests are not affected by those patches.
-    """
-    yield
-
-
-@pytest.fixture(scope="session", autouse=True)
-def block_network():
-    """Override parent conftest block_network.
-
-    The parent tests/integration/conftest.py blocks all socket operations,
-    which conflicts with pytest-asyncio event loop creation on Windows.
-    Alerting service integration tests use mocked httpx clients and do
-    not require network blocking.
-    """
-    yield

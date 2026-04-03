@@ -405,7 +405,7 @@ class HeatingValueCalculator:
         Raises:
             ValueError: If input data is invalid
         """
-        logger.debug(f"Calculating gas heating value for {input_data.fuel_type}")
+        logger.debug("Calculating gas heating value for %s", input_data.fuel_type)
         self._calculation_count += 1
 
         warnings = []
@@ -527,7 +527,7 @@ class HeatingValueCalculator:
         Raises:
             ValueError: If fuel type is unknown
         """
-        logger.debug(f"Calculating liquid heating value for {fuel_type}")
+        logger.debug("Calculating liquid heating value for %s", fuel_type)
         self._calculation_count += 1
 
         warnings = []
@@ -599,7 +599,7 @@ class HeatingValueCalculator:
         Returns:
             HeatingValueResult with HHV and LHV
         """
-        logger.debug(f"Calculating solid heating value for {fuel_type}")
+        logger.debug("Calculating solid heating value for %s", fuel_type)
         self._calculation_count += 1
 
         warnings = []

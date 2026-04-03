@@ -157,14 +157,14 @@ class SyncAgentWrapper(Generic[InT, OutT]):
         try:
             self._run_async(self._async_agent.cleanup_async())
         except Exception as e:
-            self.logger.warning(f"Cleanup failed during context exit: {e}")
+            logger.warning("Cleanup failed during context exit: %s", e)
 
         # Cleanup event loop if we own it
         if self._owns_loop and self._event_loop:
             try:
                 self._event_loop.close()
             except Exception as e:
-                self.logger.warning(f"Event loop cleanup failed: {e}")
+                logger.warning("Event loop cleanup failed: %s", e)
 
         # Don't suppress exceptions
         return False

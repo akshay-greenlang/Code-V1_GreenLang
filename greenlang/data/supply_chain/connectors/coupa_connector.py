@@ -251,7 +251,7 @@ class CoupaConnector:
         self.oauth_token = oauth_token
         self.timeout = timeout
 
-        logger.info(f"CoupaConnector initialized for: {instance_url}")
+        logger.info("CoupaConnector initialized for: %s", instance_url)
 
     def _make_request(
         self,
@@ -286,7 +286,7 @@ class CoupaConnector:
         else:
             headers["X-COUPA-API-KEY"] = self.api_key
 
-        logger.debug(f"Making {method} request to {url}")
+        logger.debug("Making %s request to %s", method, url)
 
         # In production, this would use requests/httpx
         # Returning placeholder structure
@@ -589,7 +589,7 @@ class CoupaConnector:
             supply_chain_graph.add_supplier(supplier)
             count += 1
 
-        logger.info(f"Synced {count} suppliers from Coupa")
+        logger.info("Synced %s suppliers from Coupa", count)
         return count
 
     def export_for_scope3(

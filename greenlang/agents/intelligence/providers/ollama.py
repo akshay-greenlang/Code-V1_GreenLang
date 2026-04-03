@@ -181,7 +181,7 @@ class OllamaProvider(LLMProvider):
 
                 if self.model in models or f"{self.model}:latest" in [m["name"] for m in data.get("models", [])]:
                     self._is_available = True
-                    logger.info(f"Ollama available with model: {self.model}")
+                    logger.info("Ollama available with model: %s", self.model)
                 else:
                     logger.warning(
                         f"Ollama running but model '{self.model}' not found. "
@@ -193,7 +193,7 @@ class OllamaProvider(LLMProvider):
                 self._is_available = False
 
         except Exception as e:
-            logger.debug(f"Ollama not available: {e}")
+            logger.debug("Ollama not available: %s", e)
             self._is_available = False
 
         return self._is_available

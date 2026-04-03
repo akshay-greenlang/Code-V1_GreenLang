@@ -774,7 +774,7 @@ class DecisionEngine:
                 metadata={"request_id": request_id, "priority": priority}
             )
 
-        logger.info(f"Review request created: {request_id}, priority={priority}")
+        logger.info("Review request created: %s, priority=%s", request_id, priority)
 
         return request
 

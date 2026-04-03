@@ -523,7 +523,7 @@ class ESDSimulator:
         Returns:
             Response time validation results
         """
-        logger.info(f"Running {iterations} response time validation iterations")
+        logger.info("Running %s response time validation iterations", iterations)
 
         response_times = []
         all_passed = True

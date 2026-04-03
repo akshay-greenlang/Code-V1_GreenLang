@@ -536,7 +536,7 @@ if FASTAPI_AVAILABLE:
         Returns:
             Paginated list of agent summaries
         """
-        logger.info(f"Listing agents: page={page}, page_size={page_size}")
+        logger.info("Listing agents: page=%s, page_size=%s", page, page_size)
 
         # Filter agents
         agents = list(_agents.values())
@@ -616,12 +616,12 @@ if FASTAPI_AVAILABLE:
         Raises:
             HTTPException: If agent not found
         """
-        logger.info(f"Getting agent details: {agent_id}")
+        logger.info("Getting agent details: %s", agent_id)
 
         agent = _agents.get(agent_id)
 
         if not agent:
-            logger.warning(f"Agent not found: {agent_id}")
+            logger.warning("Agent not found: %s", agent_id)
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail={
@@ -670,12 +670,12 @@ if FASTAPI_AVAILABLE:
         Raises:
             HTTPException: If agent not found or execution fails
         """
-        logger.info(f"Executing agent: {agent_id}")
+        logger.info("Executing agent: %s", agent_id)
 
         agent = _agents.get(agent_id)
 
         if not agent:
-            logger.warning(f"Agent not found: {agent_id}")
+            logger.warning("Agent not found: %s", agent_id)
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail={
@@ -715,7 +715,7 @@ if FASTAPI_AVAILABLE:
         agent.metrics.successful_executions += 1
         agent.metrics.last_execution_at = completed_at
 
-        logger.info(f"Agent execution completed: {execution_id}")
+        logger.info("Agent execution completed: %s", execution_id)
 
         return ExecutionResult(
             execution_id=execution_id,
@@ -765,12 +765,12 @@ if FASTAPI_AVAILABLE:
         Raises:
             HTTPException: If agent not found or validation fails
         """
-        logger.info(f"Updating config for agent: {agent_id}")
+        logger.info("Updating config for agent: %s", agent_id)
 
         agent = _agents.get(agent_id)
 
         if not agent:
-            logger.warning(f"Agent not found: {agent_id}")
+            logger.warning("Agent not found: %s", agent_id)
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail={
@@ -847,7 +847,7 @@ if FASTAPI_AVAILABLE:
 
         agent.last_updated_at = datetime.now(timezone.utc)
 
-        logger.info(f"Config updated for agent {agent_id}: {updated_fields}")
+        logger.info("Config updated for agent %s: %s", agent_id, updated_fields)
 
         return ConfigUpdateResult(
             success=True,

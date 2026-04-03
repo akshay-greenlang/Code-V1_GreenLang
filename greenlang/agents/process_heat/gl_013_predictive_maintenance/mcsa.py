@@ -194,7 +194,7 @@ class MCSAAnalyzer:
             MCSAResult with fault diagnostics
         """
         start_time = datetime.now(timezone.utc)
-        logger.info(f"Analyzing motor current: sensor={reading.sensor_id}")
+        logger.info("Analyzing motor current: sensor=%s", reading.sensor_id)
 
         params = motor_params or self.motor_params
         if not params:

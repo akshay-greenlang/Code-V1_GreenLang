@@ -57,6 +57,7 @@ from pydantic import Field, field_validator
 from greenlang.agents.foundation.schema.constants import SCHEMA_CACHE_TTL_SECONDS
 from greenlang.agents.foundation.schema.registry.resolver import SchemaRegistry, SchemaSource
 from greenlang.schemas import GreenLangBase
+from greenlang.utilities.exceptions.agent import AgentException
 
 logger = logging.getLogger(__name__)
 
@@ -66,7 +67,7 @@ logger = logging.getLogger(__name__)
 # =============================================================================
 
 
-class SchemaNotFoundError(Exception):
+class SchemaNotFoundError(AgentException):
     """
     Schema not found in registry.
 
@@ -95,7 +96,7 @@ class SchemaNotFoundError(Exception):
         super().__init__(f"Schema not found: {schema_id}@{version}")
 
 
-class InvalidSchemaIdError(Exception):
+class InvalidSchemaIdError(AgentException):
     """
     Invalid schema ID format.
 
@@ -119,7 +120,7 @@ class InvalidSchemaIdError(Exception):
         super().__init__(f"Invalid schema ID '{schema_id}': {reason}")
 
 
-class VersionConstraintError(Exception):
+class VersionConstraintError(AgentException):
     """
     Invalid version constraint.
 
@@ -143,7 +144,7 @@ class VersionConstraintError(Exception):
         super().__init__(f"Invalid version constraint '{constraint}': {reason}")
 
 
-class GitOperationError(Exception):
+class GitOperationError(AgentException):
     """
     Git operation failed.
 
@@ -167,7 +168,7 @@ class GitOperationError(Exception):
         super().__init__(f"Git {operation} failed: {message}")
 
 
-class SchemaParseError(Exception):
+class SchemaParseError(AgentException):
     """
     Schema parsing failed.
 
@@ -1062,7 +1063,7 @@ class GitSchemaRegistry(SchemaRegistry):
         cache_key = f"{schema_id}@{version}"
         cached = self._cache.get(cache_key)
         if cached:
-            logger.debug(f"Cache hit for {cache_key}")
+            logger.debug("Cache hit for %s", cache_key)
             # Convert to SchemaSource for interface compatibility
             return self._source_model_to_schema_source(cached)
 
@@ -1475,7 +1476,7 @@ class GitSchemaRegistry(SchemaRegistry):
         except FileNotFoundError:
             raise
         except Exception as e:
-            logger.error(f"Failed to read file {path}: {e}")
+            logger.error("Failed to read file %s: %s", path, e)
             raise IOError(f"Failed to read {path}: {e}")
 
     def _detect_content_type(self, path: Path) -> str:
@@ -1691,7 +1692,7 @@ class GitSchemaRegistry(SchemaRegistry):
             # Clear all
             count = self._cache.clear()
             self._current_commit_hash = None
-            logger.debug(f"Invalidated all {count} cached schemas")
+            logger.debug("Invalidated all %s cached schemas", count)
         else:
             # Clear specific schema (all versions)
             count = self._cache.invalidate_prefix(f"{schema_id}@")
@@ -1763,7 +1764,7 @@ def create_git_registry(
         try:
             registry.pull()
         except GitOperationError as e:
-            logger.warning(f"Auto-pull failed: {e}")
+            logger.warning("Auto-pull failed: %s", e)
 
     return registry
 

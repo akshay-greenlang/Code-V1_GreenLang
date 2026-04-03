@@ -753,7 +753,7 @@ class RiskRegister:
             "new_level": risk.risk_level.value
         })
 
-        logger.info(f"Risk updated: {risk_id}")
+        logger.info("Risk updated: %s", risk_id)
         return risk
 
     def delete_risk(
@@ -790,7 +790,7 @@ class RiskRegister:
             "deleted_by": deleted_by
         })
 
-        logger.info(f"Risk closed: {risk_id}")
+        logger.info("Risk closed: %s", risk_id)
         return True
 
     def add_control(
@@ -821,7 +821,7 @@ class RiskRegister:
             "description": control.description
         })
 
-        logger.info(f"Control added to risk {risk_id}")
+        logger.info("Control added to risk %s", risk_id)
         return risk
 
     # =========================================================================
@@ -958,7 +958,7 @@ class RiskRegister:
             "justification": justification
         })
 
-        logger.info(f"Risk {risk_id} accepted by {accepted_by}")
+        logger.info("Risk %s accepted by %s", risk_id, accepted_by)
         return risk
 
     # =========================================================================
@@ -1137,7 +1137,7 @@ class RiskRegister:
 
             created.append(self.add_risk(entry))
 
-        logger.info(f"Imported {len(created)} risks from HAZOP")
+        logger.info("Imported %s risks from HAZOP", len(created))
         return created
 
     def import_from_fmea(
@@ -1177,7 +1177,7 @@ class RiskRegister:
 
             created.append(self.add_risk(entry))
 
-        logger.info(f"Imported {len(created)} risks from FMEA")
+        logger.info("Imported %s risks from FMEA", len(created))
         return created
 
     # =========================================================================

@@ -162,12 +162,12 @@ class BuildingAdaptationBaseAgent(ABC, Generic[InputT, OutputT]):
     def process(self, input_data: InputT) -> OutputT:
         start_time = datetime.now(timezone.utc)
         try:
-            self.logger.info(f"{self.AGENT_ID} analyzing: building={input_data.building_id}")
+            logger.info("%s analyzing: building=%s", self.AGENT_ID, input_data.building_id)
             output = self.analyze(input_data)
             output.provenance_hash = self._calculate_hash({"input": input_data.model_dump()})
             return output
         except Exception as e:
-            self.logger.error(f"{self.AGENT_ID} failed: {str(e)}", exc_info=True)
+            logger.error("%s failed: %s", self.AGENT_ID, e, exc_info=True)
             raise
 
     def _round_financial(self, value: Decimal, precision: int = 2) -> Decimal:

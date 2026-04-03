@@ -7,12 +7,14 @@ on:
       - master
       - "release/**"
     paths:
+      - "frontend/**"
       - "cbam-pack-mvp/src/cbam_pack/web/**"
       - "cbam-pack-mvp/tests/test_web_*.py"
       - "applications/GL-VCCI-Carbon-APP/VCCI-Scope3-Platform/frontend/**"
       - ".github/workflows/v2-frontend-ux-ci.yml"
   pull_request:
     paths:
+      - "frontend/**"
       - "cbam-pack-mvp/src/cbam_pack/web/**"
       - "cbam-pack-mvp/tests/test_web_*.py"
       - "applications/GL-VCCI-Carbon-APP/VCCI-Scope3-Platform/frontend/**"
@@ -35,7 +37,7 @@ jobs:
           pip install -e "./cbam-pack-mvp[dev,web]"
       - name: Run web e2e and visual baseline tests
         run: |
-          pytest -q cbam-pack-mvp/tests/test_web_multiapp_shell.py cbam-pack-mvp/tests/test_web_v1_contract.py cbam-pack-mvp/tests/test_web_v1_csrd_vcci_endpoints.py cbam-pack-mvp/tests/test_web_v2_eudr_ghg_iso_endpoints.py cbam-pack-mvp/tests/test_web_visual_regression.py cbam-pack-mvp/tests/test_web_ux_budgets.py
+          pytest -q cbam-pack-mvp/tests/test_web_multiapp_shell.py cbam-pack-mvp/tests/test_web_v1_contract.py cbam-pack-mvp/tests/test_web_v1_csrd_vcci_endpoints.py cbam-pack-mvp/tests/test_web_v2_eudr_ghg_iso_endpoints.py cbam-pack-mvp/tests/test_web_visual_regression.py cbam-pack-mvp/tests/test_web_ux_budgets.py cbam-pack-mvp/tests/test_web_governance_endpoints.py
 
   v2-frontend-quality:
     runs-on: ubuntu-latest
@@ -57,5 +59,27 @@ jobs:
         run: |
           npm run lint
           npm run type-check
+          npm run test
+          npm run build
+
+  v2-2-shell-quality:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install dependencies
+        run: npm ci
+      - name: Shell quality gates
+        run: |
+          npm run lint
           npm run test
           npm run build

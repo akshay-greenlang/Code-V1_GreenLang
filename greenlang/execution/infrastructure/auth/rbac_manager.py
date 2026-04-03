@@ -67,6 +67,7 @@ from greenlang.infrastructure.auth.oauth2_provider import (
     OAuth2Error,
     TokenValidationError,
 )
+from greenlang.utilities.exceptions.security import AuthorizationError as _SecurityAuthzError
 
 logger = logging.getLogger(__name__)
 
@@ -79,7 +80,7 @@ audit_logger = logging.getLogger("greenlang.security.audit")
 # =============================================================================
 
 
-class AuthorizationError(Exception):
+class AuthorizationError(_SecurityAuthzError):
     """Base exception for authorization errors."""
 
     def __init__(
@@ -750,10 +751,10 @@ class RBACManager:
             return decision
 
         except OAuth2Error as e:
-            logger.error(f"Token validation failed during authorization: {e}")
+            logger.error("Token validation failed during authorization: %s", e)
             raise AuthorizationError(f"Authentication failed: {e}")
         except Exception as e:
-            logger.error(f"Authorization check failed: {e}")
+            logger.error("Authorization check failed: %s", e)
             raise AuthorizationError(f"Authorization check failed: {e}")
 
     def _evaluate_policies(

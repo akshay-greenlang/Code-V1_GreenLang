@@ -344,7 +344,7 @@ class AuthorityCommunicationManagerService:
                 await self._db_pool.open()
                 logger.info("PostgreSQL connection pool opened")
             except Exception as e:
-                logger.warning(f"PostgreSQL pool init failed: {e}")
+                logger.warning("PostgreSQL pool init failed: %s", e)
                 self._db_pool = None
 
         # Initialize Redis (message queue)
@@ -361,7 +361,7 @@ class AuthorityCommunicationManagerService:
                 await self._redis.ping()
                 logger.info("Redis connection established (message queue ready)")
             except Exception as e:
-                logger.warning(f"Redis init failed: {e}")
+                logger.warning("Redis init failed: %s", e)
                 self._redis = None
 
         # Initialize engines
@@ -372,9 +372,9 @@ class AuthorityCommunicationManagerService:
             try:
                 count = self._template_engine.load_default_templates()
                 _safe_gauge(set_template_count, count)
-                logger.info(f"Template library loaded: {count} templates")
+                logger.info("Template library loaded: %s templates", count)
             except Exception as e:
-                logger.warning(f"Template library load failed: {e}")
+                logger.warning("Template library load failed: %s", e)
 
         # Set authority count gauge
         _safe_gauge(set_authority_count, len(EU_MEMBER_STATES))
@@ -408,11 +408,11 @@ class AuthorityCommunicationManagerService:
                 try:
                     engine = engine_cls(config=self.config)
                     self._engines[name] = engine
-                    logger.info(f"Engine '{name}' initialized")
+                    logger.info("Engine '%s' initialized", name)
                 except Exception as e:
-                    logger.warning(f"Engine '{name}' init failed: {e}")
+                    logger.warning("Engine '%s' init failed: %s", name, e)
             else:
-                logger.debug(f"Engine '{name}' class not available")
+                logger.debug("Engine '%s' class not available", name)
 
         # Wire up convenience references
         self._request_handler = self._engines.get("request_handler")
@@ -433,23 +433,23 @@ class AuthorityCommunicationManagerService:
                     result = engine.shutdown()
                     if asyncio.iscoroutine(result):
                         await result
-                    logger.info(f"Engine '{name}' shut down")
+                    logger.info("Engine '%s' shut down", name)
                 except Exception as e:
-                    logger.warning(f"Engine '{name}' shutdown error: {e}")
+                    logger.warning("Engine '%s' shutdown error: %s", name, e)
 
         if self._redis is not None:
             try:
                 await self._redis.close()
                 logger.info("Redis connection closed")
             except Exception as e:
-                logger.warning(f"Redis close error: {e}")
+                logger.warning("Redis close error: %s", e)
 
         if self._db_pool is not None:
             try:
                 await self._db_pool.close()
                 logger.info("PostgreSQL pool closed")
             except Exception as e:
-                logger.warning(f"PostgreSQL pool close error: {e}")
+                logger.warning("PostgreSQL pool close error: %s", e)
 
         self._initialized = False
         logger.info("AuthorityCommunicationManagerService shutdown complete")

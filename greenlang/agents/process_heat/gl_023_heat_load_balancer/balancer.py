@@ -1209,7 +1209,7 @@ class HeatLoadBalancer(IntelligenceMixin, BaseProcessHeatAgent[LoadBalancerInput
                 return output
 
         except Exception as e:
-            logger.error(f"Load balancing failed: {e}", exc_info=True)
+            logger.error("Load balancing failed: %s", e, exc_info=True)
             raise ProcessingError(f"Load balancing failed: {str(e)}") from e
 
     async def process_async(self, input_data: LoadBalancerInput) -> LoadBalancerOutput:
@@ -1249,7 +1249,7 @@ class HeatLoadBalancer(IntelligenceMixin, BaseProcessHeatAgent[LoadBalancerInput
         Returns:
             Tuple of (allocations, optimization_metrics)
         """
-        logger.debug(f"Optimizing load for {len(equipment_fleet)} units, demand={demand:.2f} MW")
+        logger.debug("Optimizing load for %s units, demand=%.2f MW", len(equipment_fleet), demand)
 
         start_time = time.time()
 
@@ -1262,7 +1262,7 @@ class HeatLoadBalancer(IntelligenceMixin, BaseProcessHeatAgent[LoadBalancerInput
                 if metrics.solver_status in [SolverStatus.OPTIMAL, SolverStatus.FEASIBLE]:
                     return allocations, metrics
             except Exception as e:
-                logger.warning(f"MILP optimization failed: {e}, falling back to heuristic")
+                logger.warning("MILP optimization failed: %s, falling back to heuristic", e)
 
         # Fall back to heuristic
         allocations, metrics = self._optimize_heuristic(
@@ -1514,7 +1514,7 @@ class HeatLoadBalancer(IntelligenceMixin, BaseProcessHeatAgent[LoadBalancerInput
 
         # Handle any remaining demand (capacity exceeded)
         if remaining_demand > 0:
-            logger.warning(f"Demand exceeds capacity by {remaining_demand:.2f} MW")
+            logger.warning("Demand exceeds capacity by %.2f MW", remaining_demand)
             # Load all available units to max
             for eq in available:
                 allocations_dict[eq.unit_id] = eq.max_load_mw
@@ -2323,7 +2323,7 @@ class HeatLoadBalancer(IntelligenceMixin, BaseProcessHeatAgent[LoadBalancerInput
                 errors.append(f"Unit {eq.unit_id} has negative fuel cost")
 
         if errors:
-            logger.warning(f"Input validation errors: {errors}")
+            logger.warning("Input validation errors: %s", errors)
             return False
 
         return True

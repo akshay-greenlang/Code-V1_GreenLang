@@ -288,7 +288,7 @@ class DecarbonizationRoadmapAgentAI:
         # Setup tools
         self._setup_tools()
 
-        logger.info(f"Initialized DecarbonizationRoadmapAgent_AI with budget ${budget_usd:.2f}")
+        logger.info("Initialized DecarbonizationRoadmapAgent_AI with budget $%.2f", budget_usd)
 
     def _load_sub_agents(self):
         """
@@ -358,10 +358,10 @@ class DecarbonizationRoadmapAgentAI:
                 self._sub_agents_cache['carbon_agent'] = None
 
             self._sub_agents_loaded = True
-            logger.info(f"Loaded {len([a for a in self._sub_agents_cache.values() if a])} sub-agents")
+            logger.info("Loaded %s sub-agents", len([a for a in self._sub_agents_cache.values() if a]))
 
         except ImportError as e:
-            logger.error(f"Failed to load sub-agents: {e}")
+            logger.error("Failed to load sub-agents: %s", e)
             logger.warning("Falling back to standalone technology assessment")
             self._sub_agents_loaded = False
 
@@ -728,11 +728,11 @@ class DecarbonizationRoadmapAgentAI:
             # Process Agent #1 results (IndustrialProcessHeatAgent_AI)
             for (agent_type, _), result in zip(tasks, results):
                 if isinstance(result, Exception):
-                    logger.error(f"Sub-agent {agent_type} failed: {result}")
+                    logger.error("Sub-agent %s failed: %s", agent_type, result)
                     continue
 
                 if not result.get("success"):
-                    logger.warning(f"Sub-agent {agent_type} returned failure")
+                    logger.warning("Sub-agent %s returned failure", agent_type)
                     continue
 
                 data = result.get("data", {})
@@ -1044,10 +1044,10 @@ class DecarbonizationRoadmapAgentAI:
                         self._call_sub_agents_async(baseline_data, capital_budget_usd)
                     )
 
-                logger.info(f"Sub-agent coordination completed: {len(technology_options)} technologies assessed")
+                logger.info("Sub-agent coordination completed: %s technologies assessed", len(technology_options))
 
             except Exception as e:
-                logger.error(f"Sub-agent coordination failed: {e}")
+                logger.error("Sub-agent coordination failed: %s", e)
                 logger.warning("Falling back to technology database")
                 technology_options = self._get_fallback_technology_database(baseline_emissions)
 
@@ -2021,13 +2021,13 @@ Provide a comprehensive executive summary and actionable next steps."""
             )
 
         except BudgetExceeded as e:
-            logger.error(f"Budget exceeded: {e}")
+            logger.error("Budget exceeded: %s", e)
             return AgentResult(
                 success=False,
                 error=f"Budget exceeded: {e}",
             )
         except Exception as e:
-            logger.error(f"Execution error: {e}", exc_info=True)
+            logger.error("Execution error: %s", e, exc_info=True)
             return AgentResult(
                 success=False,
                 error=f"Execution error: {str(e)}",

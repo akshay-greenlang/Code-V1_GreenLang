@@ -831,7 +831,7 @@ class AbatementOptionsLibraryAgent(DeterministicAgent):
         # Load default options
         self._load_default_options()
 
-        self.logger.info(
+        logger.info(
             f"Initialized {self.AGENT_ID} with {len(self._options_library)} options"
         )
 
@@ -917,7 +917,7 @@ class AbatementOptionsLibraryAgent(DeterministicAgent):
             return result
 
         except Exception as e:
-            self.logger.error(f"Operation failed: {str(e)}", exc_info=True)
+            logger.error("Operation failed: %s", e, exc_info=True)
             processing_time = (time.time() - start_time) * 1000
 
             return {

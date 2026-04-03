@@ -156,7 +156,7 @@ def calculate_country_risk(
     else:
         risk_score = risk_data.get("UNKNOWN", 50.0)
         source = f"Default risk (country {country_upper} not in database)"
-        logger.warning(f"Country {country_upper} not found in risk database, using default")
+        logger.warning("Country %s not found in risk database, using default", country_upper)
 
     return (risk_score, source)
 

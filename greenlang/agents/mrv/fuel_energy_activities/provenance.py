@@ -1002,7 +1002,7 @@ class FuelEnergyActivitiesProvenance:
         Example:
             >>> is_valid, error = provenance.verify_chain_detailed()
             >>> if not is_valid:
-            ...     logger.error(f"Chain integrity failure: {error}")
+            logger.error("Chain integrity failure: %s", error)
         """
         with self._lock:
             return self._verify_chain_internal()

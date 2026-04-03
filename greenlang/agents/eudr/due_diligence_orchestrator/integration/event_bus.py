@@ -391,7 +391,7 @@ class EventBus:
             else:
                 self._subscribers[event_type].append(handler)
 
-        logger.debug(f"Subscribed handler to {event_type}")
+        logger.debug("Subscribed handler to %s", event_type)
 
     def subscribe_workflow(
         self,
@@ -644,7 +644,7 @@ class EventBus:
                 removed = len(self._history)
                 self._history.clear()
 
-        logger.info(f"Cleared {removed} events from history")
+        logger.info("Cleared %s events from history", removed)
         return removed
 
     def clear_all(self) -> None:

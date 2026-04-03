@@ -239,7 +239,7 @@ class FileStorageBackend(StorageBackend):
 
             return result
         except Exception as e:
-            logger.error(f"Failed to load idempotency result: {e}")
+            logger.error("Failed to load idempotency result: %s", e)
             return None
 
     def set(self, key: str, result: IdempotencyResult, ttl: Optional[int] = None) -> None:
@@ -252,7 +252,7 @@ class FileStorageBackend(StorageBackend):
             with open(path, "wb") as f:
                 pickle.dump(result, f)
         except Exception as e:
-            logger.error(f"Failed to save idempotency result: {e}")
+            logger.error("Failed to save idempotency result: %s", e)
 
     def delete(self, key: str) -> bool:
         """Delete result file."""
@@ -312,7 +312,7 @@ class RedisStorageBackend(StorageBackend):
                 return None
             return pickle.loads(data)
         except Exception as e:
-            logger.error(f"Redis get failed: {e}")
+            logger.error("Redis get failed: %s", e)
             return None
 
     def set(self, key: str, result: IdempotencyResult, ttl: Optional[int] = None) -> None:
@@ -325,7 +325,7 @@ class RedisStorageBackend(StorageBackend):
             else:
                 self.redis.set(redis_key, data)
         except Exception as e:
-            logger.error(f"Redis set failed: {e}")
+            logger.error("Redis set failed: %s", e)
 
     def delete(self, key: str) -> bool:
         """Delete result from Redis."""
@@ -394,18 +394,18 @@ class IdempotencyManager:
         result = self.storage.get(key)
 
         if result:
-            logger.info(f"Duplicate request detected for key: {key}")
+            logger.info("Duplicate request detected for key: %s", key)
 
             # Check if operation is still pending
             if result.status == IdempotencyStatus.PENDING:
                 # Check timeout (default 5 minutes for pending)
                 pending_timeout = 300
                 if (datetime.utcnow() - result.created_at).total_seconds() > pending_timeout:
-                    logger.warning(f"Pending operation timeout for key: {key}")
+                    logger.warning("Pending operation timeout for key: %s", key)
                     self.storage.delete(key)
                     return None
 
-                logger.info(f"Operation still pending for key: {key}")
+                logger.info("Operation still pending for key: %s", key)
 
             return result
 
@@ -434,7 +434,7 @@ class IdempotencyManager:
         # Try to acquire lock
         if self.enable_locking:
             if not self.storage.lock(key, timeout=30):
-                logger.warning(f"Failed to acquire lock for key: {key}")
+                logger.warning("Failed to acquire lock for key: %s", key)
                 # Check again after lock failure
                 existing = self.check_duplicate(key)
                 return False, existing
@@ -491,7 +491,7 @@ class IdempotencyManager:
         if key in self._active_operations:
             del self._active_operations[key]
 
-        logger.info(f"Operation completed for key: {key}")
+        logger.info("Operation completed for key: %s", key)
         return idempotency_result
 
     def fail_operation(
@@ -534,7 +534,7 @@ class IdempotencyManager:
         if key in self._active_operations:
             del self._active_operations[key]
 
-        logger.error(f"Operation failed for key: {key} - {error}")
+        logger.error("Operation failed for key: %s - %s", key, error)
         return idempotency_result
 
     def cleanup_expired(self) -> int:
@@ -548,7 +548,7 @@ class IdempotencyManager:
         # For file backend, scan and delete expired files
         # For Redis, TTL handles this automatically
         cleaned = 0
-        logger.info(f"Cleaned {cleaned} expired idempotency entries")
+        logger.info("Cleaned %s expired idempotency entries", cleaned)
         return cleaned
 
 
@@ -629,10 +629,10 @@ def IdempotentPipeline(
             if not should_execute:
                 if existing_result:
                     if existing_result.status == IdempotencyStatus.SUCCESS:
-                        logger.info(f"Returning cached result for {func.__name__}")
+                        logger.info("Returning cached result for %s", func.__name__)
                         return existing_result.result
                     elif existing_result.status == IdempotencyStatus.FAILED:
-                        logger.warning(f"Previous execution failed for {func.__name__}")
+                        logger.warning("Previous execution failed for %s", func.__name__)
                         # Optionally retry failed operations
                         if not retry_on_conflict:
                             raise RuntimeError(f"Previous execution failed: {existing_result.error}")
@@ -753,7 +753,7 @@ class IdempotentPipelineBase:
             self._last_idempotency_result = existing_result
 
             if existing_result.status == IdempotencyStatus.SUCCESS:
-                logger.info(f"Returning cached result for pipeline: {self.__class__.__name__}")
+                logger.info("Returning cached result for pipeline: %s", self.__class__.__name__)
 
                 # Update provenance with idempotency info
                 if hasattr(existing_result.result, "provenance"):

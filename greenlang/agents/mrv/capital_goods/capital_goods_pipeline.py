@@ -672,7 +672,7 @@ class CapitalGoodsPipelineEngine:
         stage_name = stage.value
 
         try:
-            logger.debug(f"Executing stage: {stage_name}")
+            logger.debug("Executing stage: %s", stage_name)
 
             if stage == PipelineStage.VALIDATE:
                 self._stage_validate(ctx)
@@ -702,7 +702,7 @@ class CapitalGoodsPipelineEngine:
             ).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
 
             ctx.stage_timings[stage_name] = stage_time
-            logger.debug(f"Stage {stage_name} completed in {stage_time}ms")
+            logger.debug("Stage %s completed in %sms", stage_name, stage_time)
 
         except Exception as e:
             stage_time = Decimal(
@@ -713,7 +713,7 @@ class CapitalGoodsPipelineEngine:
             ctx.add_error(
                 f"Stage {stage_name} failed after {stage_time}ms: {str(e)}"
             )
-            logger.exception(f"Stage {stage_name} failed")
+            logger.exception("Stage %s failed", stage_name)
             raise
 
     # -----------------------------------------------------------------------
@@ -829,7 +829,7 @@ class CapitalGoodsPipelineEngine:
         ctx.asset_classifications = classifications
         ctx.stage_results["classified_count"] = len(classifications)
 
-        logger.info(f"Classified {len(classifications)} assets")
+        logger.info("Classified %s assets", len(classifications))
 
     # -----------------------------------------------------------------------
     # Stage 3: RESOLVE_EFS
@@ -1192,7 +1192,7 @@ class CapitalGoodsPipelineEngine:
                     f"Provenance chain sealing failed: {str(e)}"
                 )
 
-        logger.info(f"Pipeline sealed with hash: {seal_hash[:16]}...")
+        logger.info("Pipeline sealed with hash: %s...", seal_hash[)
 
     # -----------------------------------------------------------------------
     # Validation

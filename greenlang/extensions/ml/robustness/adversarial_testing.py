@@ -928,7 +928,7 @@ class AdversarialTestingFramework:
             ...     }
             ... )
         """
-        logger.info(f"Starting comprehensive adversarial testing on {len(X)} samples")
+        logger.info("Starting comprehensive adversarial testing on %s samples", len(X))
 
         # Sample if needed
         if len(X) > self.config.n_samples:

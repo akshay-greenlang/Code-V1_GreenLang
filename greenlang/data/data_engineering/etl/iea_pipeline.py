@@ -208,7 +208,7 @@ class IEAPipeline(BasePipeline[IEARecord]):
                 if records:
                     return records
             except Exception as e:
-                logger.warning(f"IEA API extraction failed: {e}, falling back to file")
+                logger.warning("IEA API extraction failed: %s, falling back to file", e)
 
         # Fall back to file-based extraction
         if self.data_path.exists():
@@ -220,7 +220,7 @@ class IEAPipeline(BasePipeline[IEARecord]):
         # Apply filters
         records = self._apply_filters(records)
 
-        logger.info(f"Total records extracted from IEA: {len(records)}")
+        logger.info("Total records extracted from IEA: %s", len(records))
         return records
 
     async def _extract_from_api(self) -> List[IEARecord]:
@@ -263,7 +263,7 @@ class IEAPipeline(BasePipeline[IEARecord]):
         except ImportError:
             logger.warning("httpx not available for IEA API access")
         except Exception as e:
-            logger.error(f"IEA API error: {e}")
+            logger.error("IEA API error: %s", e)
             raise
 
         return records
@@ -287,7 +287,7 @@ class IEAPipeline(BasePipeline[IEARecord]):
                 data_source="IEA API",
             )
         except Exception as e:
-            logger.debug(f"Error parsing API response: {e}")
+            logger.debug("Error parsing API response: %s", e)
             return None
 
     async def _extract_from_files(self) -> List[IEARecord]:
@@ -307,7 +307,7 @@ class IEAPipeline(BasePipeline[IEARecord]):
                     file_records = self._parse_iea_dataframe(df)
                     records.extend(file_records)
                 except Exception as e:
-                    logger.debug(f"Error parsing {csv_file.name}: {e}")
+                    logger.debug("Error parsing %s: %s", csv_file.name, e)
 
             for excel_file in excel_files:
                 try:
@@ -317,7 +317,7 @@ class IEAPipeline(BasePipeline[IEARecord]):
                         sheet_records = self._parse_iea_dataframe(df)
                         records.extend(sheet_records)
                 except Exception as e:
-                    logger.debug(f"Error parsing {excel_file.name}: {e}")
+                    logger.debug("Error parsing %s: %s", excel_file.name, e)
 
         except ImportError:
             logger.warning("pandas required for file parsing")
@@ -374,7 +374,7 @@ class IEAPipeline(BasePipeline[IEARecord]):
                 records.append(record)
 
             except Exception as e:
-                logger.debug(f"Error parsing row {idx}: {e}")
+                logger.debug("Error parsing row %s: %s", idx, e)
                 continue
 
         return records
@@ -615,7 +615,7 @@ class IEAPipeline(BasePipeline[IEARecord]):
                 transformed.append(factor_dict)
 
             except Exception as e:
-                logger.warning(f"Error transforming IEA record: {e}")
+                logger.warning("Error transforming IEA record: %s", e)
                 self.metrics.warnings.append(f"Transform error: {e}")
                 continue
 
@@ -644,7 +644,7 @@ class IEAPipeline(BasePipeline[IEARecord]):
             try:
                 inserted += 1
             except Exception as e:
-                logger.error(f"Error loading record: {e}")
+                logger.error("Error loading record: %s", e)
                 errors += 1
 
         return {

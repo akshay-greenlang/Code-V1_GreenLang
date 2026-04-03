@@ -42,7 +42,7 @@ class ProcessHeatCausalAnalyzer:
     def __init__(self, data: pd.DataFrame):
         """Initialize analyzer with historical data."""
         self.data = data.copy()
-        logger.info(f"ProcessHeatCausalAnalyzer initialized with {len(data)} records")
+        logger.info("ProcessHeatCausalAnalyzer initialized with %s records", len(data))
 
     def analyze_excess_air_efficiency(self) -> Dict[str, Any]:
         """
@@ -64,7 +64,7 @@ class ProcessHeatCausalAnalyzer:
         # Estimate causal effect
         result = model.estimate_causal_effect()
 
-        logger.info(f"ATE: {result.average_treatment_effect:.4f} (CI: {result.confidence_interval})")
+        logger.info("ATE: %.4f (CI: %s)", result.average_treatment_effect, result.confidence_interval)
 
         # What-if analysis: reduce excess air from 25% to 15%
         current_state = {
@@ -116,7 +116,7 @@ class ProcessHeatCausalAnalyzer:
         model = ProcessHeatCausalModels.maintenance_failure_model(self.data)
         result = model.estimate_causal_effect()
 
-        logger.info(f"Maintenance effect: {result.average_treatment_effect:.4f}")
+        logger.info("Maintenance effect: %.4f", result.average_treatment_effect)
 
         # What-if: increase maintenance from 3 to 6 times per year
         current_state = {
@@ -167,7 +167,7 @@ class ProcessHeatCausalAnalyzer:
         model = ProcessHeatCausalModels.load_changes_emissions_model(self.data)
         result = model.estimate_causal_effect()
 
-        logger.info(f"Load-emissions ATE: {result.average_treatment_effect:.4f}")
+        logger.info("Load-emissions ATE: %.4f", result.average_treatment_effect)
 
         # What-if: reduce steam load by 20% during peak hours
         current_state = {
@@ -219,7 +219,7 @@ class ProcessHeatCausalAnalyzer:
         model = ProcessHeatCausalModels.fouling_heat_transfer_model(self.data)
         result = model.estimate_causal_effect()
 
-        logger.info(f"Fouling effect on U: {result.average_treatment_effect:.2f} W/m2K per mm")
+        logger.info("Fouling effect on U: %.2f W/m2K per mm", result.average_treatment_effect)
 
         # What-if: clean heat exchanger to remove 2mm of fouling
         current_state = {
@@ -270,7 +270,7 @@ class ProcessHeatCausalAnalyzer:
         Returns:
             Sensitivity analysis results with effect curves
         """
-        logger.info(f"Starting sensitivity analysis for {model_type}")
+        logger.info("Starting sensitivity analysis for %s", model_type)
 
         if variable_range is None:
             variable_range = [x * 0.1 for x in range(1, 11)]
@@ -320,7 +320,7 @@ class ProcessHeatCausalAnalyzer:
                     "ite": cf.individual_treatment_effect
                 })
             except Exception as e:
-                logger.warning(f"Sensitivity analysis failed at {treatment_val}: {e}")
+                logger.warning("Sensitivity analysis failed at %s: %s", treatment_val, e)
 
         return {
             "model_type": model_type,
@@ -447,7 +447,7 @@ def run_comprehensive_demo():
 
     # Generate synthetic data
     data = generate_synthetic_process_heat_data(n_samples=500)
-    logger.info(f"Generated synthetic dataset: {data.shape}")
+    logger.info("Generated synthetic dataset: %s", data.shape)
 
     # Create analyzer
     analyzer = ProcessHeatCausalAnalyzer(data)

@@ -188,7 +188,7 @@ def save_golden_test(test_spec: Dict[str, Any], path: Path):
     with open(path, "w") as f:
         json.dump(test_spec, f, indent=2, sort_keys=True)
 
-    logger.info(f"Golden test saved to {path}")
+    logger.info("Golden test saved to %s", path)
 
 
 def load_golden_test(path: Path) -> Dict[str, Any]:
@@ -243,7 +243,7 @@ def run_golden_test_suite(
             )
 
         except Exception as e:
-            logger.error(f"Failed to run test {test_file}: {e}")
+            logger.error("Failed to run test %s: %s", test_file, e)
             results["total"] += 1
             results["failed"] += 1
             results["tests"].append(
@@ -290,7 +290,7 @@ def generate_golden_output(
         comparison = compare_outputs(outputs[0], outputs[i])
         if not comparison["match"]:
             is_deterministic = False
-            logger.warning(f"Non-deterministic output detected: {comparison['error']}")
+            logger.warning("Non-deterministic output detected: %s", comparison['error'])
             break
 
     return outputs[0], is_deterministic
@@ -365,7 +365,7 @@ def validate_determinism(
     }
 
     for idx, inputs in enumerate(test_inputs):
-        logger.info(f"Testing input set {idx+1}/{len(test_inputs)}")
+        logger.info("Testing input set %s/%s", idx+1, len(test_inputs))
 
         try:
             golden_output, is_deterministic = generate_golden_output(

@@ -661,7 +661,7 @@ class ActionTracker:
             "updates": list(updates.keys())
         })
 
-        logger.info(f"Action updated: {action_id}")
+        logger.info("Action updated: %s", action_id)
         return action
 
     def update_status(
@@ -767,7 +767,7 @@ class ActionTracker:
             "deleted_by": deleted_by
         })
 
-        logger.info(f"Action cancelled: {action_id}")
+        logger.info("Action cancelled: %s", action_id)
         return True
 
     def _is_valid_transition(
@@ -873,7 +873,7 @@ class ActionTracker:
             "assigned_by": assigned_by
         })
 
-        logger.info(f"Action {action_id} assigned to {assignee}")
+        logger.info("Action %s assigned to %s", action_id, assignee)
         return action
 
     def reassign_action(
@@ -1025,7 +1025,7 @@ class ActionTracker:
                         break
 
         if escalated:
-            logger.warning(f"{len(escalated)} actions escalated")
+            logger.warning("%s actions escalated", len(escalated))
 
         return escalated
 
@@ -1196,7 +1196,7 @@ class ActionTracker:
             "has_evidence": bool(completion_evidence)
         })
 
-        logger.info(f"Action {action_id} completed by {completed_by}")
+        logger.info("Action %s completed by %s", action_id, completed_by)
         return action
 
     def verify_completion(
@@ -1568,7 +1568,7 @@ class ActionTracker:
                 event.sent_successfully = self.notification_handler(event)
                 event.sent_at = datetime.utcnow()
             except Exception as e:
-                logger.error(f"Notification failed: {e}")
+                logger.error("Notification failed: %s", e)
                 event.sent_successfully = False
 
         self.notifications.append(event)

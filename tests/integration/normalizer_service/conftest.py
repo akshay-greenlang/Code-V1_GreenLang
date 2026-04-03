@@ -13,21 +13,9 @@ Date: February 2026
 
 from __future__ import annotations
 
-from typing import Any, Dict, List
-from unittest.mock import MagicMock, patch
+from typing import Any, Dict
 
 import pytest
-
-
-@pytest.fixture(autouse=True)
-def mock_agents():
-    """Override parent conftest's mock_agents for normalizer tests.
-
-    Normalizer service does not use greenlang.agents.registry, so we
-    provide a simple no-op override to avoid the AttributeError from
-    the parent integration conftest.
-    """
-    yield {}
 
 
 @pytest.fixture

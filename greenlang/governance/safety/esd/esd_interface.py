@@ -224,7 +224,7 @@ class ESDInterface:
         self.faults: List[Dict[str, Any]] = []
         self.start_time = datetime.utcnow()
 
-        logger.info(f"ESDInterface initialized: {system_id}")
+        logger.info("ESDInterface initialized: %s", system_id)
 
     def initiate_shutdown(
         self,
@@ -319,7 +319,7 @@ class ESDInterface:
 
             else:
                 self.state = ESDState.FAULT
-                logger.error(f"ESD Level {level.value} FAILED to execute")
+                logger.error("ESD Level %s FAILED to execute", level.value)
 
                 return {
                     "status": "failed",
@@ -330,7 +330,7 @@ class ESDInterface:
 
         except Exception as e:
             self.state = ESDState.FAULT
-            logger.error(f"ESD Level {level.value} ERROR: {e}", exc_info=True)
+            logger.error("ESD Level %s ERROR: %s", level.value, e, exc_info=True)
 
             return {
                 "status": "error",
@@ -354,7 +354,7 @@ class ESDInterface:
         Returns:
             Result dictionary
         """
-        logger.info(f"ESD RESET requested by {operator_id}: {reason}")
+        logger.info("ESD RESET requested by %s: %s", operator_id, reason)
 
         if self.state not in [ESDState.SAFE_STATE, ESDState.SHUTDOWN]:
             return {
@@ -377,7 +377,7 @@ class ESDInterface:
         self.state = ESDState.NORMAL
         self.current_level = None
 
-        logger.info(f"ESD RESET complete from Level {previous_level}")
+        logger.info("ESD RESET complete from Level %s", previous_level)
 
         return {
             "status": "success",
@@ -440,7 +440,7 @@ class ESDInterface:
         if severity == "critical":
             self.state = ESDState.FAULT
 
-        logger.warning(f"ESD Fault registered: {fault_code} - {fault_description}")
+        logger.warning("ESD Fault registered: %s - %s", fault_code, fault_description)
 
     def clear_fault(self, fault_code: str) -> bool:
         """
@@ -472,13 +472,13 @@ class ESDInterface:
             "created_at": datetime.utcnow().isoformat(),
             "expires_at": expires_at.isoformat(),
         }
-        logger.warning(f"ESD Bypass added: {bypass_id}")
+        logger.warning("ESD Bypass added: %s", bypass_id)
 
     def remove_bypass(self, bypass_id: str) -> bool:
         """Remove an active bypass."""
         if bypass_id in self.active_bypasses:
             del self.active_bypasses[bypass_id]
-            logger.info(f"ESD Bypass removed: {bypass_id}")
+            logger.info("ESD Bypass removed: %s", bypass_id)
             return True
         return False
 
@@ -491,7 +491,7 @@ class ESDInterface:
 
     def _default_shutdown_handler(self, level: ESDLevel) -> bool:
         """Default shutdown handler (simulation)."""
-        logger.info(f"Executing default shutdown handler for Level {level.value}")
+        logger.info("Executing default shutdown handler for Level %s", level.value)
         # In production, this would trigger actual shutdown actions
         return True
 

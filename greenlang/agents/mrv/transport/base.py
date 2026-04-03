@@ -453,7 +453,7 @@ class BaseTransportMRVAgent(ABC):
         self._fuel_factors = DEFRA_FUEL_FACTORS
         self._vehicle_factors = DEFRA_VEHICLE_FACTORS
         self._freight_factors = DEFRA_FREIGHT_FACTORS
-        self.logger.info(f"Initialized {self.AGENT_ID} v{self.AGENT_VERSION}")
+        logger.info("Initialized %s v%s", self.AGENT_ID, self.AGENT_VERSION)
 
     @abstractmethod
     def calculate(self, input_data: TransportMRVInput) -> TransportMRVOutput:
@@ -484,7 +484,7 @@ class BaseTransportMRVAgent(ABC):
         """
         fuel_data = self._fuel_factors.get(fuel_type.value)
         if not fuel_data:
-            self.logger.warning(f"No factor for fuel type {fuel_type}, using diesel")
+            logger.warning("No factor for fuel type %s, using diesel", fuel_type)
             fuel_data = self._fuel_factors[FuelType.DIESEL.value]
 
         # Determine unit based on available data
@@ -526,7 +526,7 @@ class BaseTransportMRVAgent(ABC):
         """
         vehicle_data = self._vehicle_factors.get(vehicle_type.value)
         if not vehicle_data:
-            self.logger.warning(
+            logger.warning(
                 f"No factor for vehicle type {vehicle_type}, using medium car"
             )
             vehicle_data = self._vehicle_factors[VehicleType.CAR_MEDIUM.value]

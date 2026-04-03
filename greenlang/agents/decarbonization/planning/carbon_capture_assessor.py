@@ -191,7 +191,7 @@ class CarbonCaptureAssessor(DeterministicAgent):
                 raise ValueError(f"Unknown operation: {cc_input.operation}")
 
         except Exception as e:
-            self.logger.error(f"Assessment failed: {str(e)}", exc_info=True)
+            logger.error("Assessment failed: %s", e, exc_info=True)
             return {
                 "operation": inputs.get("operation", "unknown"),
                 "success": False,

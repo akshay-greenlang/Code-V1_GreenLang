@@ -146,7 +146,7 @@ class EPAeGRIDPipeline(BasePipeline[eGRIDRecord]):
             if not self.file_path.exists():
                 raise FileNotFoundError(f"eGRID file not found: {self.file_path}")
 
-            logger.info(f"Reading eGRID file: {self.file_path}")
+            logger.info("Reading eGRID file: %s", self.file_path)
 
             # Read subregion data (SRL sheet - subregion level)
             xlsx = pd.ExcelFile(self.file_path)
@@ -157,7 +157,7 @@ class EPAeGRIDPipeline(BasePipeline[eGRIDRecord]):
             for sheet_template in subregion_sheets:
                 sheet_name = sheet_template.format(str(self.egrid_config.egrid_year)[-2:])
                 if sheet_name in xlsx.sheet_names:
-                    logger.info(f"Processing subregion sheet: {sheet_name}")
+                    logger.info("Processing subregion sheet: %s", sheet_name)
                     df = pd.read_excel(xlsx, sheet_name=sheet_name)
                     subregion_records = self._parse_subregion_sheet(df)
                     records.extend(subregion_records)
@@ -167,7 +167,7 @@ class EPAeGRIDPipeline(BasePipeline[eGRIDRecord]):
             for sheet_name in xlsx.sheet_names:
                 if 'subregion' in sheet_name.lower() or 'srl' in sheet_name.lower():
                     if not records:  # Only if we haven't found data yet
-                        logger.info(f"Processing sheet: {sheet_name}")
+                        logger.info("Processing sheet: %s", sheet_name)
                         df = pd.read_excel(xlsx, sheet_name=sheet_name)
                         subregion_records = self._parse_subregion_sheet(df)
                         records.extend(subregion_records)
@@ -178,7 +178,7 @@ class EPAeGRIDPipeline(BasePipeline[eGRIDRecord]):
                 state_records = await self._extract_state_level(xlsx)
                 records.extend(state_records)
 
-            logger.info(f"Total records extracted from eGRID: {len(records)}")
+            logger.info("Total records extracted from eGRID: %s", len(records))
             return records
 
         except ImportError:
@@ -260,7 +260,7 @@ class EPAeGRIDPipeline(BasePipeline[eGRIDRecord]):
                 records.append(record)
 
             except Exception as e:
-                logger.debug(f"Error parsing eGRID row {idx}: {e}")
+                logger.debug("Error parsing eGRID row %s: %s", idx, e)
                 continue
 
         return records
@@ -278,10 +278,10 @@ class EPAeGRIDPipeline(BasePipeline[eGRIDRecord]):
                     df = pd.read_excel(xlsx, sheet_name=sheet_name)
                     # Parse state data similarly to subregion
                     # This would follow similar logic
-                    logger.info(f"Found state sheet: {sheet_name}")
+                    logger.info("Found state sheet: %s", sheet_name)
                     break
                 except Exception as e:
-                    logger.warning(f"Error reading state sheet: {e}")
+                    logger.warning("Error reading state sheet: %s", e)
 
         return records
 
@@ -404,7 +404,7 @@ class EPAeGRIDPipeline(BasePipeline[eGRIDRecord]):
                     transformed.append(co2_factor)
 
             except Exception as e:
-                logger.warning(f"Error transforming eGRID record: {e}")
+                logger.warning("Error transforming eGRID record: %s", e)
                 self.metrics.warnings.append(f"Transform error: {e}")
                 continue
 
@@ -440,7 +440,7 @@ class EPAeGRIDPipeline(BasePipeline[eGRIDRecord]):
                 # Database operations would go here
                 inserted += 1
             except Exception as e:
-                logger.error(f"Error loading record: {e}")
+                logger.error("Error loading record: %s", e)
                 errors += 1
 
         return {

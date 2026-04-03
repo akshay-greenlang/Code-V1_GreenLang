@@ -332,7 +332,7 @@ class GL021SHAPExplainer:
         self._shap_explainer = None
         self._initialized = False
 
-        logger.info(f"GL021SHAPExplainer initialized with {len(feature_names)} features")
+        logger.info("GL021SHAPExplainer initialized with %s features", len(feature_names))
 
     def _get_prediction_function(self) -> Callable:
         """Get prediction function from model."""
@@ -369,7 +369,7 @@ class GL021SHAPExplainer:
             self._shap_explainer = shap.KernelExplainer(predict_fn, background)
 
         self._initialized = True
-        logger.info(f"SHAP explainer initialized: {type(self._shap_explainer).__name__}")
+        logger.info("SHAP explainer initialized: %s", type(self._shap_explainer).__name__)
 
     def explain(
         self,
@@ -554,7 +554,7 @@ class GL021LIMEExplainer:
         self._lime_explainer = None
         self._initialized = False
 
-        logger.info(f"GL021LIMEExplainer initialized with {len(feature_names)} features")
+        logger.info("GL021LIMEExplainer initialized with %s features", len(feature_names))
 
     def _initialize_explainer(self, sample: np.ndarray) -> None:
         """Initialize LIME explainer."""
@@ -1543,7 +1543,7 @@ class GL021ProvenanceTracker:
         self.model_version = model_version
         self._records: List[Dict[str, Any]] = []
 
-        logger.info(f"GL021ProvenanceTracker initialized: {agent_id} v{model_version}")
+        logger.info("GL021ProvenanceTracker initialized: %s v%s", agent_id, model_version)
 
     def calculate_hash(
         self,
@@ -1611,7 +1611,7 @@ class GL021ProvenanceTracker:
         }
         self._records.append(record)
 
-        logger.debug(f"Provenance recorded: {provenance_hash[:16]}...")
+        logger.debug("Provenance recorded: %s...", provenance_hash[)
 
     def export_records(self, format: str = "json") -> str:
         """Export provenance records."""
@@ -1759,7 +1759,7 @@ class GL021Explainer:
             try:
                 shap_explanation = self.shap_explainer.explain(X, feature_values)
             except Exception as e:
-                logger.warning(f"SHAP explanation failed: {e}")
+                logger.warning("SHAP explanation failed: %s", e)
 
         # Generate LIME explanation
         lime_explanation = None
@@ -1767,7 +1767,7 @@ class GL021Explainer:
             try:
                 lime_explanation = self.lime_explainer.explain_instance(X)
             except Exception as e:
-                logger.warning(f"LIME explanation failed: {e}")
+                logger.warning("LIME explanation failed: %s", e)
 
         # Generate health score explanation
         health_scores = component_scores or {}
@@ -1785,7 +1785,7 @@ class GL021Explainer:
                     health_explanation, shap_explanation, audience
                 )
             except Exception as e:
-                logger.warning(f"NL explanation failed for {audience}: {e}")
+                logger.warning("NL explanation failed for %s: %s", audience, e)
 
         # Calculate provenance
         input_hash = self.provenance_tracker._hash_data(input_data)

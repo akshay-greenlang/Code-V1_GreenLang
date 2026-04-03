@@ -112,7 +112,7 @@ class DocumentVersionManager:
                 )
             else:
                 # Same version, same hash - already registered
-                logger.info(f"Version {standard_id} v{doc_meta.version} already registered")
+                logger.info("Version %s v%s already registered", standard_id, doc_meta.version)
                 return
 
         # Add to versions list (maintain sorted order by publication_date)
@@ -158,7 +158,7 @@ class DocumentVersionManager:
             >>> assert doc.version == "1.05"  # v1.05 is active
         """
         if standard_id not in self.versions:
-            logger.warning(f"No versions registered for {standard_id}")
+            logger.warning("No versions registered for %s", standard_id)
             return None
 
         # Find most recent version on or before reference_date
@@ -217,9 +217,9 @@ class DocumentVersionManager:
         doc_meta = self.version_index.get(version_key)
 
         if doc_meta:
-            logger.info(f"Retrieved {standard_id} v{version}")
+            logger.info("Retrieved %s v%s", standard_id, version)
         else:
-            logger.warning(f"Version {standard_id} v{version} not found")
+            logger.warning("Version %s v%s not found", standard_id, version)
 
         return doc_meta
 

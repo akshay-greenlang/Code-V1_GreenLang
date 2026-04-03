@@ -76,7 +76,7 @@ class CapitalAsset(GreenLangBase):
             "furniture", "computer", "software", "other"
         ]
         if v and v.lower() not in valid_types:
-            logger.warning(f"Asset type '{v}' not in standard list: {valid_types}")
+            logger.warning("Asset type '%s' not in standard list: %s", v, valid_types)
         return v
 
 

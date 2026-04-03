@@ -554,7 +554,7 @@ class CountryRiskEvaluatorService:
                 )
 
             except Exception as e:
-                logger.error(f"Startup failed: {e}", exc_info=True)
+                logger.error("Startup failed: %s", e, exc_info=True)
                 record_api_error("startup", str(e))
                 raise
 
@@ -587,9 +587,9 @@ class CountryRiskEvaluatorService:
                         try:
                             if hasattr(engine, "shutdown"):
                                 await engine.shutdown()
-                            logger.debug(f"{engine_name} shutdown complete")
+                            logger.debug("%s shutdown complete", engine_name)
                         except Exception as e:
-                            logger.warning(f"Error shutting down {engine_name}: {e}")
+                            logger.warning("Error shutting down %s: %s", engine_name, e)
 
                 # 2. Close Redis client
                 if self._redis_client is not None:
@@ -597,7 +597,7 @@ class CountryRiskEvaluatorService:
                         await self._redis_client.close()
                         logger.debug("Redis client closed")
                     except Exception as e:
-                        logger.warning(f"Error closing Redis client: {e}")
+                        logger.warning("Error closing Redis client: %s", e)
 
                 # 3. Close database pool
                 if self._db_pool is not None:
@@ -605,7 +605,7 @@ class CountryRiskEvaluatorService:
                         await self._db_pool.close()
                         logger.debug("PostgreSQL pool closed")
                     except Exception as e:
-                        logger.warning(f"Error closing PostgreSQL pool: {e}")
+                        logger.warning("Error closing PostgreSQL pool: %s", e)
 
                 # 4. Mark as shutdown
                 self._started = False
@@ -613,7 +613,7 @@ class CountryRiskEvaluatorService:
                 logger.info("CountryRiskEvaluatorService shutdown complete")
 
             except Exception as e:
-                logger.error(f"Shutdown error: {e}", exc_info=True)
+                logger.error("Shutdown error: %s", e, exc_info=True)
 
     # -----------------------------------------------------------------------
     # Engine lazy initialization
@@ -789,7 +789,7 @@ class CountryRiskEvaluatorService:
             RuntimeError: If required engines are not available
         """
         start_time = time.monotonic()
-        logger.info(f"Starting country risk assessment for {country_code}")
+        logger.info("Starting country risk assessment for %s", country_code)
 
         try:
             # 1. Validate country code
@@ -890,7 +890,7 @@ class CountryRiskEvaluatorService:
             )
 
         except Exception as e:
-            logger.error(f"Country risk assessment failed for {country_code}: {e}", exc_info=True)
+            logger.error("Country risk assessment failed for %s: %s", country_code, e, exc_info=True)
             record_api_error("assess_country", str(e))
             raise
 
@@ -924,7 +924,7 @@ class CountryRiskEvaluatorService:
             ValueError: If country_code or commodity is invalid
         """
         start_time = time.monotonic()
-        logger.info(f"Analyzing commodity risk: {country_code} / {commodity}")
+        logger.info("Analyzing commodity risk: %s / %s", country_code, commodity)
 
         try:
             # Validate inputs
@@ -964,7 +964,7 @@ class CountryRiskEvaluatorService:
             )
 
         except Exception as e:
-            logger.error(f"Commodity risk analysis failed: {e}", exc_info=True)
+            logger.error("Commodity risk analysis failed: %s", e, exc_info=True)
             record_api_error("analyze_commodity_risk", str(e))
             raise
 
@@ -999,7 +999,7 @@ class CountryRiskEvaluatorService:
             ValueError: If country_code is invalid
         """
         start_time = time.monotonic()
-        logger.info(f"Detecting deforestation hotspots for {country_code}")
+        logger.info("Detecting deforestation hotspots for %s", country_code)
 
         try:
             if country_code not in SUPPORTED_COUNTRIES:
@@ -1037,7 +1037,7 @@ class CountryRiskEvaluatorService:
             return hotspots_response
 
         except Exception as e:
-            logger.error(f"Hotspot detection failed: {e}", exc_info=True)
+            logger.error("Hotspot detection failed: %s", e, exc_info=True)
             record_api_error("detect_hotspots", str(e))
             raise
 
@@ -1072,7 +1072,7 @@ class CountryRiskEvaluatorService:
             ValueError: If country_code is invalid
         """
         start_time = time.monotonic()
-        logger.info(f"Evaluating governance for {country_code}")
+        logger.info("Evaluating governance for %s", country_code)
 
         try:
             if country_code not in SUPPORTED_COUNTRIES:
@@ -1102,7 +1102,7 @@ class CountryRiskEvaluatorService:
             return governance_response
 
         except Exception as e:
-            logger.error(f"Governance evaluation failed: {e}", exc_info=True)
+            logger.error("Governance evaluation failed: %s", e, exc_info=True)
             record_api_error("evaluate_governance", str(e))
             raise
 
@@ -1134,7 +1134,7 @@ class CountryRiskEvaluatorService:
             ValueError: If country_code is invalid
         """
         start_time = time.monotonic()
-        logger.info(f"Classifying due diligence for {country_code}")
+        logger.info("Classifying due diligence for %s", country_code)
 
         try:
             if country_code not in SUPPORTED_COUNTRIES:
@@ -1173,7 +1173,7 @@ class CountryRiskEvaluatorService:
             return dd_response
 
         except Exception as e:
-            logger.error(f"Due diligence classification failed: {e}", exc_info=True)
+            logger.error("Due diligence classification failed: %s", e, exc_info=True)
             record_api_error("classify_due_diligence", str(e))
             raise
 
@@ -1206,7 +1206,7 @@ class CountryRiskEvaluatorService:
             ValueError: If filters are invalid
         """
         start_time = time.monotonic()
-        logger.info(f"Analyzing trade flows (country={country_code}, commodity={commodity})")
+        logger.info("Analyzing trade flows (country=%s, commodity=%s)", country_code, commodity)
 
         try:
             # Delegate to TradeFlowAnalyzer
@@ -1232,7 +1232,7 @@ class CountryRiskEvaluatorService:
             return trade_response
 
         except Exception as e:
-            logger.error(f"Trade flow analysis failed: {e}", exc_info=True)
+            logger.error("Trade flow analysis failed: %s", e, exc_info=True)
             record_api_error("analyze_trade_flows", str(e))
             raise
 
@@ -1302,7 +1302,7 @@ class CountryRiskEvaluatorService:
             return report_response
 
         except Exception as e:
-            logger.error(f"Report generation failed: {e}", exc_info=True)
+            logger.error("Report generation failed: %s", e, exc_info=True)
             record_api_error("generate_report", str(e))
             raise
 
@@ -1355,7 +1355,7 @@ class CountryRiskEvaluatorService:
             return regulatory_response
 
         except Exception as e:
-            logger.error(f"Regulatory update tracking failed: {e}", exc_info=True)
+            logger.error("Regulatory update tracking failed: %s", e, exc_info=True)
             record_api_error("track_regulatory_updates", str(e))
             raise
 
@@ -1388,7 +1388,7 @@ class CountryRiskEvaluatorService:
             ValueError: If inputs are invalid
         """
         start_time = time.monotonic()
-        logger.info(f"Comparing {len(country_codes)} countries on metric '{metric}'")
+        logger.info("Comparing %s countries on metric '%s'", len(country_codes), metric)
 
         try:
             if not (2 <= len(country_codes) <= 20):
@@ -1437,7 +1437,7 @@ class CountryRiskEvaluatorService:
             )
 
         except Exception as e:
-            logger.error(f"Country comparison failed: {e}", exc_info=True)
+            logger.error("Country comparison failed: %s", e, exc_info=True)
             record_api_error("compare_countries", str(e))
             raise
 
@@ -1464,7 +1464,7 @@ class CountryRiskEvaluatorService:
             ValueError: If filters are invalid
         """
         start_time = time.monotonic()
-        logger.info(f"Generating risk matrix (region={region}, commodity={commodity})")
+        logger.info("Generating risk matrix (region=%s, commodity=%s)", region, commodity)
 
         try:
             # Get relevant countries
@@ -1514,7 +1514,7 @@ class CountryRiskEvaluatorService:
             )
 
         except Exception as e:
-            logger.error(f"Risk matrix generation failed: {e}", exc_info=True)
+            logger.error("Risk matrix generation failed: %s", e, exc_info=True)
             record_api_error("get_risk_matrix", str(e))
             raise
 
@@ -1569,7 +1569,7 @@ class CountryRiskEvaluatorService:
                     await conn.execute("SELECT 1")
                 db_healthy = True
             except Exception as e:
-                logger.warning(f"Database health check failed: {e}")
+                logger.warning("Database health check failed: %s", e)
                 overall_healthy = False
 
         # Check Redis connection
@@ -1579,7 +1579,7 @@ class CountryRiskEvaluatorService:
                 await self._redis_client.ping()
                 redis_healthy = True
             except Exception as e:
-                logger.warning(f"Redis health check failed: {e}")
+                logger.warning("Redis health check failed: %s", e)
                 # Redis is optional, don't mark overall as unhealthy
 
         duration_ms = (time.monotonic() - start_time) * 1000
@@ -1637,7 +1637,7 @@ class CountryRiskEvaluatorService:
             try:
                 stats["scorer_stats"] = await self._country_risk_scorer.get_statistics()
             except Exception as e:
-                logger.warning(f"Failed to get scorer statistics: {e}")
+                logger.warning("Failed to get scorer statistics: %s", e)
 
         # Add more engine stats as needed...
 

@@ -74,7 +74,7 @@ class SubscriptionManager:
         key = execution_id or "*"
         self.execution_subscribers[key].add(queue)
 
-        logger.info(f"New execution subscription: {key}")
+        logger.info("New execution subscription: %s", key)
 
         try:
             while True:
@@ -91,7 +91,7 @@ class SubscriptionManager:
         finally:
             # Cleanup on disconnect
             self.execution_subscribers[key].discard(queue)
-            logger.info(f"Execution subscription ended: {key}")
+            logger.info("Execution subscription ended: %s", key)
 
     async def subscribe_agent(
         self,
@@ -111,7 +111,7 @@ class SubscriptionManager:
         key = agent_id or "*"
         self.agent_subscribers[key].add(queue)
 
-        logger.info(f"New agent subscription: {key}")
+        logger.info("New agent subscription: %s", key)
 
         try:
             while True:
@@ -125,7 +125,7 @@ class SubscriptionManager:
 
         finally:
             self.agent_subscribers[key].discard(queue)
-            logger.info(f"Agent subscription ended: {key}")
+            logger.info("Agent subscription ended: %s", key)
 
     async def subscribe_workflow(
         self,
@@ -145,7 +145,7 @@ class SubscriptionManager:
         key = workflow_id or "*"
         self.workflow_subscribers[key].add(queue)
 
-        logger.info(f"New workflow subscription: {key}")
+        logger.info("New workflow subscription: %s", key)
 
         try:
             while True:
@@ -159,7 +159,7 @@ class SubscriptionManager:
 
         finally:
             self.workflow_subscribers[key].discard(queue)
-            logger.info(f"Workflow subscription ended: {key}")
+            logger.info("Workflow subscription ended: %s", key)
 
     async def subscribe_system_metrics(
         self,
@@ -177,7 +177,7 @@ class SubscriptionManager:
         queue = asyncio.Queue()
         self.system_subscribers.add(queue)
 
-        logger.info(f"New system metrics subscription (interval: {interval}s)")
+        logger.info("New system metrics subscription (interval: %ss)", interval)
 
         try:
             while True:
@@ -219,7 +219,7 @@ class SubscriptionManager:
         # Broadcast to wildcard subscribers
         await self._broadcast(self.execution_subscribers["*"], update)
 
-        logger.debug(f"Published execution update: {execution_id} ({event.value})")
+        logger.debug("Published execution update: %s (%s)", execution_id, event.value)
 
     async def publish_execution_status(
         self,
@@ -245,7 +245,7 @@ class SubscriptionManager:
         await self._broadcast(self.execution_subscribers[execution_id], update)
         await self._broadcast(self.execution_subscribers["*"], update)
 
-        logger.debug(f"Published status change: {execution_id} {old_status} -> {new_status}")
+        logger.debug("Published status change: %s %s -> %s", execution_id, old_status, new_status)
 
     async def publish_execution_progress(
         self,
@@ -301,7 +301,7 @@ class SubscriptionManager:
         await self._broadcast(self.agent_subscribers[agent_id], update)
         await self._broadcast(self.agent_subscribers["*"], update)
 
-        logger.debug(f"Published agent update: {agent_id} ({event.value})")
+        logger.debug("Published agent update: %s (%s)", agent_id, event.value)
 
     async def publish_workflow_update(
         self,
@@ -326,7 +326,7 @@ class SubscriptionManager:
         await self._broadcast(self.workflow_subscribers[workflow_id], update)
         await self._broadcast(self.workflow_subscribers["*"], update)
 
-        logger.debug(f"Published workflow update: {workflow_id} ({event.value})")
+        logger.debug("Published workflow update: %s (%s)", workflow_id, event.value)
 
     async def publish_system_metrics(self, metrics: SystemMetrics):
         """
@@ -353,7 +353,7 @@ class SubscriptionManager:
             try:
                 await queue.put(event)
             except Exception as e:
-                logger.error(f"Failed to broadcast to subscriber: {e}")
+                logger.error("Failed to broadcast to subscriber: %s", e)
                 # Remove dead subscriber
                 subscribers.discard(queue)
 

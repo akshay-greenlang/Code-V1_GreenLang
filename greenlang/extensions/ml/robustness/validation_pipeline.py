@@ -1125,7 +1125,7 @@ class ValidationPipeline:
             >>> print(f"Status: {result.status.value}")
             >>> print(f"Mean RMSE: {result.mean_score:.4f}")
         """
-        logger.info(f"Starting validation: samples={len(X)}, features={X.shape[1]}")
+        logger.info("Starting validation: samples=%s, features=%s", len(X), X.shape[1])
 
         # Cross-validation
         fold_results, all_predictions = self.cross_validate(X, y, groups, return_predictions=True)

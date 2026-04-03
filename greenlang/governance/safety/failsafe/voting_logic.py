@@ -228,7 +228,7 @@ class VotingLogic:
         Raises:
             ValueError: If channel count doesn't match architecture
         """
-        logger.debug(f"Evaluating {self.architecture.value} with {len(channel_inputs)} channels")
+        logger.debug("Evaluating %s with %s channels", self.architecture.value, len(channel_inputs))
 
         # Count channel states
         channels_trip = 0

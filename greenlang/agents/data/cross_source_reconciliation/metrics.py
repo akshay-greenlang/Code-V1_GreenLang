@@ -5,18 +5,20 @@ Prometheus Metrics - AGENT-DATA-015: Cross-Source Reconciliation Agent
 12 Prometheus metrics for cross-source reconciliation service monitoring
 with graceful fallback when prometheus_client is not installed.
 
-Metrics:
-    1.  gl_csr_jobs_processed_total (Counter, labels: status)
-    2.  gl_csr_records_matched_total (Counter, labels: strategy)
-    3.  gl_csr_comparisons_total (Counter, labels: result)
-    4.  gl_csr_discrepancies_detected_total (Counter, labels: type, severity)
-    5.  gl_csr_resolutions_applied_total (Counter, labels: strategy)
-    6.  gl_csr_golden_records_created_total (Counter, labels: status)
-    7.  gl_csr_processing_errors_total (Counter, labels: error_type)
-    8.  gl_csr_match_confidence (Histogram)
-    9.  gl_csr_processing_duration_seconds (Histogram)
-    10. gl_csr_discrepancy_magnitude (Histogram)
-    11. gl_csr_active_jobs (Gauge)
+Standard metrics (via MetricsFactory):
+    1.  gl_csr_operations_total (Counter, labels: type, tenant_id)
+    2.  gl_csr_processing_duration_seconds (Histogram, 12 buckets)
+    3.  gl_csr_validation_errors_total (Counter, labels: severity, type)
+    4.  gl_csr_batch_jobs_total (Counter, labels: status)
+    5.  gl_csr_active_jobs (Gauge)
+    6.  gl_csr_queue_size (Gauge)
+
+Agent-specific metrics:
+    7.  gl_csr_jobs_processed_total (Counter, labels: status)
+    8.  gl_csr_records_matched_total (Counter, labels: strategy)
+    9.  gl_csr_discrepancies_detected_total (Counter, labels: type, severity)
+    10. gl_csr_match_confidence (Histogram)
+    11. gl_csr_discrepancy_magnitude (Histogram)
     12. gl_csr_pending_reviews (Gauge)
 
 Author: GreenLang Platform Team
@@ -27,234 +29,101 @@ Status: Production Ready
 
 from __future__ import annotations
 
-import logging
-
-logger = logging.getLogger(__name__)
-
-# ---------------------------------------------------------------------------
-# Graceful prometheus_client import
-# ---------------------------------------------------------------------------
-
-try:
-    from prometheus_client import Counter, Gauge, Histogram
-
-    PROMETHEUS_AVAILABLE = True
-except ImportError:
-    PROMETHEUS_AVAILABLE = False
-    logger.info(
-        "prometheus_client not installed; "
-        "cross-source reconciliation metrics disabled"
-    )
-
+from greenlang.data_commons.metrics import (
+    PROMETHEUS_AVAILABLE,
+    MetricsFactory,
+)
 
 # ---------------------------------------------------------------------------
-# Dummy fallback classes
+# Standard metrics (6 of 12) via factory
 # ---------------------------------------------------------------------------
 
+m = MetricsFactory(
+    "gl_csr",
+    "Cross-Source Reconciliation",
+    duration_buckets=(
+        0.01, 0.05, 0.1, 0.5, 1.0,
+        5.0, 10.0, 30.0, 60.0,
+    ),
+)
 
-class _DummyLabeled:
-    """Dummy labeled metric that silently discards all observations."""
-
-    def inc(self, amount: float = 1) -> None:
-        """No-op increment."""
-
-    def observe(self, amount: float) -> None:
-        """No-op observe."""
-
-    def set(self, value: float) -> None:
-        """No-op set."""
-
-
-class DummyCounter:
-    """Fallback Counter that silently discards all increments."""
-
-    def labels(self, **kwargs: str) -> _DummyLabeled:
-        """Return a dummy labeled metric.
-
-        Args:
-            kwargs: Label key-value pairs (ignored).
-
-        Returns:
-            A no-op labeled metric instance.
-        """
-        return _DummyLabeled()
-
-    def inc(self, amount: float = 1) -> None:
-        """No-op increment.
-
-        Args:
-            amount: Increment amount (ignored).
-        """
-
-
-class DummyHistogram:
-    """Fallback Histogram that silently discards all observations."""
-
-    def labels(self, **kwargs: str) -> _DummyLabeled:
-        """Return a dummy labeled metric.
-
-        Args:
-            kwargs: Label key-value pairs (ignored).
-
-        Returns:
-            A no-op labeled metric instance.
-        """
-        return _DummyLabeled()
-
-    def observe(self, amount: float) -> None:
-        """No-op observe.
-
-        Args:
-            amount: Observation value (ignored).
-        """
-
-
-class DummyGauge:
-    """Fallback Gauge that silently discards all set/inc/dec operations."""
-
-    def labels(self, **kwargs: str) -> _DummyLabeled:
-        """Return a dummy labeled metric.
-
-        Args:
-            kwargs: Label key-value pairs (ignored).
-
-        Returns:
-            A no-op labeled metric instance.
-        """
-        return _DummyLabeled()
-
-    def set(self, value: float) -> None:
-        """No-op set.
-
-        Args:
-            value: Gauge value (ignored).
-        """
-
-    def inc(self, amount: float = 1) -> None:
-        """No-op increment.
-
-        Args:
-            amount: Increment amount (ignored).
-        """
-
-    def dec(self, amount: float = 1) -> None:
-        """No-op decrement.
-
-        Args:
-            amount: Decrement amount (ignored).
-        """
-
+# Backward-compat alias
+csr_active_jobs = m.active_jobs
 
 # ---------------------------------------------------------------------------
-# Metric definitions
+# Agent-specific metrics (6 of 12)
 # ---------------------------------------------------------------------------
 
-if PROMETHEUS_AVAILABLE:
-    # 1. Reconciliation jobs processed by status
-    csr_jobs_processed_total = Counter(
-        "gl_csr_jobs_processed_total",
-        "Total cross-source reconciliation jobs processed",
-        labelnames=["status"],
-    )
+csr_jobs_processed_total = m.create_custom_counter(
+    "jobs_processed_total",
+    "Total cross-source reconciliation jobs processed",
+    labelnames=["status"],
+)
 
-    # 2. Records matched by matching strategy
-    csr_records_matched_total = Counter(
-        "gl_csr_records_matched_total",
-        "Total records matched across sources",
-        labelnames=["strategy"],
-    )
+csr_records_matched_total = m.create_custom_counter(
+    "records_matched_total",
+    "Total records matched across sources",
+    labelnames=["strategy"],
+)
 
-    # 3. Field comparisons by result
-    csr_comparisons_total = Counter(
-        "gl_csr_comparisons_total",
-        "Total field-level comparisons performed",
-        labelnames=["result"],
-    )
+csr_comparisons_total = m.create_custom_counter(
+    "comparisons_total",
+    "Total field-level comparisons performed",
+    labelnames=["result"],
+)
 
-    # 4. Discrepancies detected by type and severity
-    csr_discrepancies_detected_total = Counter(
-        "gl_csr_discrepancies_detected_total",
-        "Total discrepancies detected between sources",
-        labelnames=["type", "severity"],
-    )
+csr_discrepancies_detected_total = m.create_custom_counter(
+    "discrepancies_detected_total",
+    "Total discrepancies detected between sources",
+    labelnames=["type", "severity"],
+)
 
-    # 5. Resolutions applied by strategy
-    csr_resolutions_applied_total = Counter(
-        "gl_csr_resolutions_applied_total",
-        "Total conflict resolutions applied",
-        labelnames=["strategy"],
-    )
+csr_resolutions_applied_total = m.create_custom_counter(
+    "resolutions_applied_total",
+    "Total conflict resolutions applied",
+    labelnames=["strategy"],
+)
 
-    # 6. Golden records created by status
-    csr_golden_records_created_total = Counter(
-        "gl_csr_golden_records_created_total",
-        "Total golden records created from reconciliation",
-        labelnames=["status"],
-    )
+csr_golden_records_created_total = m.create_custom_counter(
+    "golden_records_created_total",
+    "Total golden records created from reconciliation",
+    labelnames=["status"],
+)
 
-    # 7. Processing errors by error type
-    csr_processing_errors_total = Counter(
-        "gl_csr_processing_errors_total",
-        "Total processing errors encountered",
-        labelnames=["error_type"],
-    )
+csr_processing_errors_total = m.create_custom_counter(
+    "processing_errors_total",
+    "Total processing errors encountered",
+    labelnames=["error_type"],
+)
 
-    # 8. Match confidence score distribution
-    csr_match_confidence = Histogram(
-        "gl_csr_match_confidence",
-        "Distribution of record match confidence scores",
-        buckets=(
-            0.1, 0.2, 0.3, 0.4, 0.5,
-            0.6, 0.7, 0.8, 0.9, 0.95, 0.99, 1.0,
-        ),
-    )
+csr_match_confidence = m.create_custom_histogram(
+    "match_confidence",
+    "Distribution of record match confidence scores",
+    buckets=(
+        0.1, 0.2, 0.3, 0.4, 0.5,
+        0.6, 0.7, 0.8, 0.9, 0.95, 0.99, 1.0,
+    ),
+)
 
-    # 9. Processing duration histogram
-    csr_processing_duration_seconds = Histogram(
-        "gl_csr_processing_duration_seconds",
-        "Cross-source reconciliation processing duration in seconds",
-        buckets=(
-            0.01, 0.05, 0.1, 0.5, 1.0,
-            5.0, 10.0, 30.0, 60.0,
-        ),
-    )
+csr_processing_duration_seconds = m.create_custom_histogram(
+    "processing_duration_seconds_detail",
+    "Cross-source reconciliation processing duration in seconds",
+    buckets=(
+        0.01, 0.05, 0.1, 0.5, 1.0,
+        5.0, 10.0, 30.0, 60.0,
+    ),
+)
 
-    # 10. Discrepancy magnitude distribution
-    csr_discrepancy_magnitude = Histogram(
-        "gl_csr_discrepancy_magnitude",
-        "Distribution of discrepancy magnitudes (percentage deviation)",
-        buckets=(
-            1, 5, 10, 25, 50,
-            75, 100, 200, 500,
-        ),
-    )
+csr_discrepancy_magnitude = m.create_custom_histogram(
+    "discrepancy_magnitude",
+    "Distribution of discrepancy magnitudes (percentage deviation)",
+    buckets=(1, 5, 10, 25, 50, 75, 100, 200, 500),
+)
 
-    # 11. Currently active reconciliation jobs gauge
-    csr_active_jobs = Gauge(
-        "gl_csr_active_jobs",
-        "Number of currently active cross-source reconciliation jobs",
-    )
-
-    # 12. Pending human reviews gauge
-    csr_pending_reviews = Gauge(
-        "gl_csr_pending_reviews",
-        "Number of reconciliation results pending human review",
-    )
-
-else:
-    # Dummy fallback instances
-    csr_jobs_processed_total: Counter = DummyCounter()  # type: ignore[assignment]
-    csr_records_matched_total: Counter = DummyCounter()  # type: ignore[assignment]
-    csr_comparisons_total: Counter = DummyCounter()  # type: ignore[assignment]
-    csr_discrepancies_detected_total: Counter = DummyCounter()  # type: ignore[assignment]
-    csr_resolutions_applied_total: Counter = DummyCounter()  # type: ignore[assignment]
-    csr_golden_records_created_total: Counter = DummyCounter()  # type: ignore[assignment]
-    csr_processing_errors_total: Counter = DummyCounter()  # type: ignore[assignment]
-    csr_match_confidence: Histogram = DummyHistogram()  # type: ignore[assignment]
-    csr_processing_duration_seconds: Histogram = DummyHistogram()  # type: ignore[assignment]
-    csr_discrepancy_magnitude: Histogram = DummyHistogram()  # type: ignore[assignment]
-    csr_active_jobs: Gauge = DummyGauge()  # type: ignore[assignment]
-    csr_pending_reviews: Gauge = DummyGauge()  # type: ignore[assignment]
+csr_pending_reviews = m.create_custom_gauge(
+    "pending_reviews",
+    "Number of reconciliation results pending human review",
+)
 
 
 # ---------------------------------------------------------------------------
@@ -269,9 +138,7 @@ def inc_jobs_processed(status: str) -> None:
         status: Job status (completed, failed, cancelled, timeout,
             partial, pending_review).
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    csr_jobs_processed_total.labels(status=status).inc()
+    m.safe_inc(csr_jobs_processed_total, 1, status=status)
 
 
 def inc_records_matched(strategy: str, count: int = 1) -> None:
@@ -282,9 +149,7 @@ def inc_records_matched(strategy: str, count: int = 1) -> None:
             rule_based, ml_assisted, manual).
         count: Number of records matched.
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    csr_records_matched_total.labels(strategy=strategy).inc(count)
+    m.safe_inc(csr_records_matched_total, count, strategy=strategy)
 
 
 def inc_comparisons(result: str, count: int = 1) -> None:
@@ -295,9 +160,7 @@ def inc_comparisons(result: str, count: int = 1) -> None:
             missing_left, missing_right, type_mismatch, skipped).
         count: Number of comparisons.
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    csr_comparisons_total.labels(result=result).inc(count)
+    m.safe_inc(csr_comparisons_total, count, result=result)
 
 
 def inc_discrepancies(
@@ -314,12 +177,10 @@ def inc_discrepancies(
         severity: Severity level (critical, high, medium, low, info).
         count: Number of discrepancies detected.
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    csr_discrepancies_detected_total.labels(
-        type=discrepancy_type,
-        severity=severity,
-    ).inc(count)
+    m.safe_inc(
+        csr_discrepancies_detected_total, count,
+        type=discrepancy_type, severity=severity,
+    )
 
 
 def inc_resolutions(strategy: str, count: int = 1) -> None:
@@ -331,9 +192,7 @@ def inc_resolutions(strategy: str, count: int = 1) -> None:
             manual_override, rule_based, ml_suggested).
         count: Number of resolutions applied.
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    csr_resolutions_applied_total.labels(strategy=strategy).inc(count)
+    m.safe_inc(csr_resolutions_applied_total, count, strategy=strategy)
 
 
 def inc_golden_records(status: str, count: int = 1) -> None:
@@ -344,9 +203,7 @@ def inc_golden_records(status: str, count: int = 1) -> None:
             rejected, pending_review).
         count: Number of golden records.
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    csr_golden_records_created_total.labels(status=status).inc(count)
+    m.safe_inc(csr_golden_records_created_total, count, status=status)
 
 
 def observe_confidence(confidence: float) -> None:
@@ -355,9 +212,7 @@ def observe_confidence(confidence: float) -> None:
     Args:
         confidence: Confidence score (0.0 - 1.0).
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    csr_match_confidence.observe(confidence)
+    m.safe_observe(csr_match_confidence, confidence)
 
 
 def observe_duration(duration: float) -> None:
@@ -366,9 +221,7 @@ def observe_duration(duration: float) -> None:
     Args:
         duration: Duration in seconds.
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    csr_processing_duration_seconds.observe(duration)
+    m.safe_observe(csr_processing_duration_seconds, duration)
 
 
 def observe_magnitude(magnitude: float) -> None:
@@ -377,9 +230,7 @@ def observe_magnitude(magnitude: float) -> None:
     Args:
         magnitude: Discrepancy magnitude as percentage deviation.
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    csr_discrepancy_magnitude.observe(magnitude)
+    m.safe_observe(csr_discrepancy_magnitude, magnitude)
 
 
 def set_active_jobs(count: int) -> None:
@@ -388,9 +239,7 @@ def set_active_jobs(count: int) -> None:
     Args:
         count: Number of currently active reconciliation jobs.
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    csr_active_jobs.set(count)
+    m.safe_set(csr_active_jobs, count)
 
 
 def set_pending_reviews(count: int) -> None:
@@ -399,9 +248,7 @@ def set_pending_reviews(count: int) -> None:
     Args:
         count: Number of reconciliation results pending human review.
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    csr_pending_reviews.set(count)
+    m.safe_set(csr_pending_reviews, count)
 
 
 def inc_errors(error_type: str) -> None:
@@ -412,13 +259,12 @@ def inc_errors(error_type: str) -> None:
             integration, matching, comparison, resolution, merge,
             golden_record, unknown).
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    csr_processing_errors_total.labels(error_type=error_type).inc()
+    m.safe_inc(csr_processing_errors_total, 1, error_type=error_type)
 
 
 __all__ = [
     "PROMETHEUS_AVAILABLE",
+    "m",
     # Metric objects
     "csr_jobs_processed_total",
     "csr_records_matched_total",
@@ -445,8 +291,4 @@ __all__ = [
     "set_active_jobs",
     "set_pending_reviews",
     "inc_errors",
-    # Dummy fallback classes
-    "DummyCounter",
-    "DummyHistogram",
-    "DummyGauge",
 ]

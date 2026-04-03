@@ -718,7 +718,7 @@ def get_service() -> WasteGeneratedService:
             _service_instance = WasteGeneratedService()
             logger.info("WasteGeneratedService initialized successfully")
         except Exception as e:
-            logger.error(f"Failed to initialize WasteGeneratedService: {e}")
+            logger.error("Failed to initialize WasteGeneratedService: %s", e)
             raise HTTPException(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
                 detail="Service initialization failed"
@@ -771,13 +771,13 @@ async def calculate_emissions(
         return CalculateResponse(**result)
 
     except ValueError as e:
-        logger.error(f"Validation error in calculate_emissions: {e}")
+        logger.error("Validation error in calculate_emissions: %s", e)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e)
         )
     except Exception as e:
-        logger.error(f"Error in calculate_emissions: {e}", exc_info=True)
+        logger.error("Error in calculate_emissions: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Calculation failed"
@@ -823,13 +823,13 @@ async def calculate_batch_emissions(
         return BatchCalculateResponse(**result)
 
     except ValueError as e:
-        logger.error(f"Validation error in calculate_batch_emissions: {e}")
+        logger.error("Validation error in calculate_batch_emissions: %s", e)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e)
         )
     except Exception as e:
-        logger.error(f"Error in calculate_batch_emissions: {e}", exc_info=True)
+        logger.error("Error in calculate_batch_emissions: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Batch calculation failed"
@@ -875,13 +875,13 @@ async def calculate_landfill_emissions(
         return CalculateResponse(**result)
 
     except ValueError as e:
-        logger.error(f"Validation error in calculate_landfill_emissions: {e}")
+        logger.error("Validation error in calculate_landfill_emissions: %s", e)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e)
         )
     except Exception as e:
-        logger.error(f"Error in calculate_landfill_emissions: {e}", exc_info=True)
+        logger.error("Error in calculate_landfill_emissions: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Landfill calculation failed"
@@ -927,13 +927,13 @@ async def calculate_incineration_emissions(
         return CalculateResponse(**result)
 
     except ValueError as e:
-        logger.error(f"Validation error in calculate_incineration_emissions: {e}")
+        logger.error("Validation error in calculate_incineration_emissions: %s", e)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e)
         )
     except Exception as e:
-        logger.error(f"Error in calculate_incineration_emissions: {e}", exc_info=True)
+        logger.error("Error in calculate_incineration_emissions: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Incineration calculation failed"
@@ -979,13 +979,13 @@ async def calculate_recycling_emissions(
         return CalculateResponse(**result)
 
     except ValueError as e:
-        logger.error(f"Validation error in calculate_recycling_emissions: {e}")
+        logger.error("Validation error in calculate_recycling_emissions: %s", e)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e)
         )
     except Exception as e:
-        logger.error(f"Error in calculate_recycling_emissions: {e}", exc_info=True)
+        logger.error("Error in calculate_recycling_emissions: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Recycling calculation failed"
@@ -1031,13 +1031,13 @@ async def calculate_composting_emissions(
         return CalculateResponse(**result)
 
     except ValueError as e:
-        logger.error(f"Validation error in calculate_composting_emissions: {e}")
+        logger.error("Validation error in calculate_composting_emissions: %s", e)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e)
         )
     except Exception as e:
-        logger.error(f"Error in calculate_composting_emissions: {e}", exc_info=True)
+        logger.error("Error in calculate_composting_emissions: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Composting calculation failed"
@@ -1083,13 +1083,13 @@ async def calculate_anaerobic_digestion_emissions(
         return CalculateResponse(**result)
 
     except ValueError as e:
-        logger.error(f"Validation error in calculate_anaerobic_digestion_emissions: {e}")
+        logger.error("Validation error in calculate_anaerobic_digestion_emissions: %s", e)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e)
         )
     except Exception as e:
-        logger.error(f"Error in calculate_anaerobic_digestion_emissions: {e}", exc_info=True)
+        logger.error("Error in calculate_anaerobic_digestion_emissions: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Anaerobic digestion calculation failed"
@@ -1135,13 +1135,13 @@ async def calculate_wastewater_emissions(
         return CalculateResponse(**result)
 
     except ValueError as e:
-        logger.error(f"Validation error in calculate_wastewater_emissions: {e}")
+        logger.error("Validation error in calculate_wastewater_emissions: %s", e)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e)
         )
     except Exception as e:
-        logger.error(f"Error in calculate_wastewater_emissions: {e}", exc_info=True)
+        logger.error("Error in calculate_wastewater_emissions: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Wastewater calculation failed"
@@ -1177,7 +1177,7 @@ async def get_calculation_detail(
         HTTPException: If calculation not found or access denied
     """
     try:
-        logger.info(f"Getting calculation detail {calculation_id} for tenant {tenant_id}")
+        logger.info("Getting calculation detail %s for tenant %s", calculation_id, tenant_id)
 
         result = await service.get_calculation(calculation_id, tenant_id)
 
@@ -1192,7 +1192,7 @@ async def get_calculation_detail(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error in get_calculation_detail: {e}", exc_info=True)
+        logger.error("Error in get_calculation_detail: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to retrieve calculation"
@@ -1239,7 +1239,7 @@ async def list_calculations(
         HTTPException: If listing fails
     """
     try:
-        logger.info(f"Listing calculations for tenant {tenant_id}")
+        logger.info("Listing calculations for tenant %s", tenant_id)
 
         filters = {
             "tenant_id": tenant_id,
@@ -1256,7 +1256,7 @@ async def list_calculations(
         return CalculationListResponse(**result)
 
     except Exception as e:
-        logger.error(f"Error in list_calculations: {e}", exc_info=True)
+        logger.error("Error in list_calculations: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to list calculations"
@@ -1292,7 +1292,7 @@ async def delete_calculation(
         HTTPException: If calculation not found or deletion fails
     """
     try:
-        logger.info(f"Deleting calculation {calculation_id} for tenant {tenant_id}")
+        logger.info("Deleting calculation %s for tenant %s", calculation_id, tenant_id)
 
         deleted = await service.delete_calculation(calculation_id, tenant_id)
 
@@ -1311,7 +1311,7 @@ async def delete_calculation(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error in delete_calculation: {e}", exc_info=True)
+        logger.error("Error in delete_calculation: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to delete calculation"
@@ -1359,7 +1359,7 @@ async def list_emission_factors(
         HTTPException: If listing fails
     """
     try:
-        logger.info(f"Listing emission factors for tenant {tenant_id or 'global'}")
+        logger.info("Listing emission factors for tenant %s", tenant_id or 'global')
 
         filters = {
             "tenant_id": tenant_id,
@@ -1374,7 +1374,7 @@ async def list_emission_factors(
         return EmissionFactorListResponse(**result)
 
     except Exception as e:
-        logger.error(f"Error in list_emission_factors: {e}", exc_info=True)
+        logger.error("Error in list_emission_factors: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to list emission factors"
@@ -1410,7 +1410,7 @@ async def get_emission_factors_by_waste_type(
         HTTPException: If retrieval fails
     """
     try:
-        logger.info(f"Getting emission factors for waste type {waste_type}")
+        logger.info("Getting emission factors for waste type %s", waste_type)
 
         filters = {
             "tenant_id": tenant_id,
@@ -1424,7 +1424,7 @@ async def get_emission_factors_by_waste_type(
         return EmissionFactorListResponse(**result)
 
     except Exception as e:
-        logger.error(f"Error in get_emission_factors_by_waste_type: {e}", exc_info=True)
+        logger.error("Error in get_emission_factors_by_waste_type: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to retrieve emission factors"
@@ -1464,7 +1464,7 @@ async def list_waste_types(
         return WasteTypeListResponse(**result)
 
     except Exception as e:
-        logger.error(f"Error in list_waste_types: {e}", exc_info=True)
+        logger.error("Error in list_waste_types: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to list waste types"
@@ -1504,7 +1504,7 @@ async def list_treatment_methods(
         return TreatmentMethodListResponse(**result)
 
     except Exception as e:
-        logger.error(f"Error in list_treatment_methods: {e}", exc_info=True)
+        logger.error("Error in list_treatment_methods: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to list treatment methods"
@@ -1554,13 +1554,13 @@ async def check_compliance(
         return ComplianceCheckResponse(**result)
 
     except ValueError as e:
-        logger.error(f"Validation error in check_compliance: {e}")
+        logger.error("Validation error in check_compliance: %s", e)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e)
         )
     except Exception as e:
-        logger.error(f"Error in check_compliance: {e}", exc_info=True)
+        logger.error("Error in check_compliance: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Compliance check failed"
@@ -1606,13 +1606,13 @@ async def analyze_uncertainty(
         return UncertaintyResponse(**result)
 
     except ValueError as e:
-        logger.error(f"Validation error in analyze_uncertainty: {e}")
+        logger.error("Validation error in analyze_uncertainty: %s", e)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e)
         )
     except Exception as e:
-        logger.error(f"Error in analyze_uncertainty: {e}", exc_info=True)
+        logger.error("Error in analyze_uncertainty: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Uncertainty analysis failed"
@@ -1658,7 +1658,7 @@ async def get_aggregations(
         HTTPException: If aggregation fails
     """
     try:
-        logger.info(f"Getting aggregations for tenant {tenant_id}, period {period}")
+        logger.info("Getting aggregations for tenant %s, period %s", tenant_id, period)
 
         if period not in ["daily", "weekly", "monthly", "quarterly", "annual"]:
             raise HTTPException(
@@ -1680,7 +1680,7 @@ async def get_aggregations(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error in get_aggregations: {e}", exc_info=True)
+        logger.error("Error in get_aggregations: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Aggregation failed"
@@ -1725,13 +1725,13 @@ async def analyze_diversion(
         return DiversionAnalysisResponse(**result)
 
     except ValueError as e:
-        logger.error(f"Validation error in analyze_diversion: {e}")
+        logger.error("Validation error in analyze_diversion: %s", e)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e)
         )
     except Exception as e:
-        logger.error(f"Error in analyze_diversion: {e}", exc_info=True)
+        logger.error("Error in analyze_diversion: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Diversion analysis failed"
@@ -1773,7 +1773,7 @@ async def get_provenance(
         HTTPException: If calculation not found or access denied
     """
     try:
-        logger.info(f"Getting provenance for calculation {calculation_id}, tenant {tenant_id}")
+        logger.info("Getting provenance for calculation %s, tenant %s", calculation_id, tenant_id)
 
         result = await service.get_provenance(calculation_id, tenant_id)
 
@@ -1788,7 +1788,7 @@ async def get_provenance(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error in get_provenance: {e}", exc_info=True)
+        logger.error("Error in get_provenance: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to retrieve provenance"

@@ -199,7 +199,7 @@ class HEICleanlinessCalculator:
         Raises:
             ValueError: If input parameters are invalid
         """
-        logger.debug(f"Calculating HEI cleanliness factor")
+        logger.debug("Calculating HEI cleanliness factor")
         self._calculation_count += 1
         start_time = datetime.now(timezone.utc)
 
@@ -349,7 +349,7 @@ class HEICleanlinessCalculator:
         if velocity <= 0:
             raise ValueError("Velocity must be positive")
         if velocity > 15:
-            logger.warning(f"Velocity {velocity:.1f} fps exceeds typical range")
+            logger.warning("Velocity %.1f fps exceeds typical range", velocity)
         if inlet_temp < 32 or inlet_temp > 120:
             logger.warning(
                 f"Inlet temperature {inlet_temp:.1f}F outside typical range"

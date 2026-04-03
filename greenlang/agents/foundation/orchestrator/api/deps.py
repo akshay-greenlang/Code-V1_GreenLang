@@ -130,11 +130,11 @@ async def get_orchestrator():
             _orchestrator_instance = GLIPOrchestrator()
             logger.info("GLIPOrchestrator initialized via dependency injection")
         except ImportError as e:
-            logger.warning(f"GLIPOrchestrator not available: {e}")
+            logger.warning("GLIPOrchestrator not available: %s", e)
             # Return a mock for development/testing
             _orchestrator_instance = MockOrchestrator()
         except Exception as e:
-            logger.error(f"Failed to initialize GLIPOrchestrator: {e}")
+            logger.error("Failed to initialize GLIPOrchestrator: %s", e)
             raise HTTPException(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
                 detail="Orchestrator service unavailable",
@@ -186,10 +186,10 @@ async def get_agent_registry():
             _agent_registry_instance = VersionedAgentRegistry()
             logger.info("VersionedAgentRegistry initialized via dependency injection")
         except ImportError as e:
-            logger.warning(f"VersionedAgentRegistry not available: {e}")
+            logger.warning("VersionedAgentRegistry not available: %s", e)
             _agent_registry_instance = MockAgentRegistry()
         except Exception as e:
-            logger.error(f"Failed to initialize agent registry: {e}")
+            logger.error("Failed to initialize agent registry: %s", e)
             raise HTTPException(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
                 detail="Agent registry service unavailable",
@@ -239,10 +239,10 @@ async def get_event_store():
             _event_store_instance = InMemoryEventStore()
             logger.info("InMemoryEventStore initialized via dependency injection")
         except ImportError as e:
-            logger.warning(f"EventStore not available: {e}")
+            logger.warning("EventStore not available: %s", e)
             _event_store_instance = MockEventStore()
         except Exception as e:
-            logger.error(f"Failed to initialize event store: {e}")
+            logger.error("Failed to initialize event store: %s", e)
             raise HTTPException(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
                 detail="Event store service unavailable",
@@ -289,10 +289,10 @@ async def get_policy_engine():
             _policy_engine_instance = PolicyEngine()
             logger.info("PolicyEngine initialized via dependency injection")
         except ImportError as e:
-            logger.warning(f"PolicyEngine not available: {e}")
+            logger.warning("PolicyEngine not available: %s", e)
             _policy_engine_instance = MockPolicyEngine()
         except Exception as e:
-            logger.error(f"Failed to initialize policy engine: {e}")
+            logger.error("Failed to initialize policy engine: %s", e)
             raise HTTPException(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
                 detail="Policy engine service unavailable",
@@ -385,7 +385,7 @@ async def get_api_key(
     api_key = x_api_key or request.query_params.get("api_key")
 
     if not api_key:
-        logger.warning(f"Missing API key from {request.client.host if request.client else 'unknown'}")
+        logger.warning("Missing API key from %s", request.client.host if request.client else 'unknown')
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Missing API key. Provide X-API-Key header.",
@@ -395,7 +395,7 @@ async def get_api_key(
     # Validate API key
     # In production, this would look up the key in a database or cache
     if config.valid_api_keys and api_key not in config.valid_api_keys:
-        logger.warning(f"Invalid API key attempt from {request.client.host if request.client else 'unknown'}")
+        logger.warning("Invalid API key attempt from %s", request.client.host if request.client else 'unknown')
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid API key",
@@ -411,7 +411,7 @@ async def get_api_key(
         scopes=["pipelines:read", "pipelines:write", "runs:read", "runs:write"],
     )
 
-    logger.debug(f"Authenticated request: tenant={auth_context.tenant_id}")
+    logger.debug("Authenticated request: tenant=%s", auth_context.tenant_id)
     return auth_context
 
 
@@ -650,7 +650,7 @@ async def startup_dependencies() -> None:
         await get_event_store()
         await get_policy_engine()
     except Exception as e:
-        logger.error(f"Failed to initialize dependencies: {e}")
+        logger.error("Failed to initialize dependencies: %s", e)
         raise
 
     logger.info("API dependencies initialized successfully")
@@ -671,14 +671,14 @@ async def shutdown_dependencies() -> None:
         try:
             await _orchestrator_instance.shutdown()
         except Exception as e:
-            logger.warning(f"Error shutting down orchestrator: {e}")
+            logger.warning("Error shutting down orchestrator: %s", e)
 
     # Clean up event store
     if _event_store_instance and hasattr(_event_store_instance, "close"):
         try:
             await _event_store_instance.close()
         except Exception as e:
-            logger.warning(f"Error closing event store: {e}")
+            logger.warning("Error closing event store: %s", e)
 
     # Reset instances
     _orchestrator_instance = None
@@ -730,10 +730,10 @@ async def get_approval_workflow():
             )
             logger.info("ApprovalWorkflow initialized via dependency injection")
         except ImportError as e:
-            logger.warning(f"ApprovalWorkflow not available: {e}")
+            logger.warning("ApprovalWorkflow not available: %s", e)
             _approval_workflow_instance = MockApprovalWorkflow()
         except Exception as e:
-            logger.error(f"Failed to initialize approval workflow: {e}")
+            logger.error("Failed to initialize approval workflow: %s", e)
             raise HTTPException(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
                 detail="Approval workflow service unavailable",

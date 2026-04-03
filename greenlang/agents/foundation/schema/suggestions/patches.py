@@ -41,6 +41,7 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 from pydantic import Field, field_validator, model_validator
 from greenlang.schemas import GreenLangBase
+from greenlang.utilities.exceptions.agent import AgentException
 
 logger = logging.getLogger(__name__)
 
@@ -909,7 +910,7 @@ class PatchGenerator:
             >>> op.to_rfc6902()
             {'op': 'add', 'path': '/energy', 'value': {'value': 100, 'unit': 'kWh'}}
         """
-        logger.debug(f"Generating add operation at path '{path}'")
+        logger.debug("Generating add operation at path '%s'", path)
         return JSONPatchOperation(
             op=PatchOp.ADD,
             path=path,
@@ -937,7 +938,7 @@ class PatchGenerator:
             >>> op.to_rfc6902()
             {'op': 'remove', 'path': '/deprecated_field'}
         """
-        logger.debug(f"Generating remove operation at path '{path}'")
+        logger.debug("Generating remove operation at path '%s'", path)
         return JSONPatchOperation(
             op=PatchOp.REMOVE,
             path=path
@@ -975,7 +976,7 @@ class PatchGenerator:
             >>> ops[0].op
             <PatchOp.TEST: 'test'>
         """
-        logger.debug(f"Generating replace operation at path '{path}'")
+        logger.debug("Generating replace operation at path '%s'", path)
         operations = []
 
         if include_test and old_value is not None:
@@ -1025,7 +1026,7 @@ class PatchGenerator:
             >>> ops[-1].op
             <PatchOp.MOVE: 'move'>
         """
-        logger.debug(f"Generating move operation from '{from_path}' to '{to_path}'")
+        logger.debug("Generating move operation from '%s' to '%s'", from_path, to_path)
         operations = []
 
         # Note: We cannot truly test for non-existence in JSON Patch,
@@ -1071,7 +1072,7 @@ class PatchGenerator:
             >>> op.to_rfc6902()
             {'op': 'copy', 'path': '/instance', 'from': '/template'}
         """
-        logger.debug(f"Generating copy operation from '{from_path}' to '{to_path}'")
+        logger.debug("Generating copy operation from '%s' to '%s'", from_path, to_path)
         return JSONPatchOperation(
             op=PatchOp.COPY,
             path=to_path,
@@ -1103,7 +1104,7 @@ class PatchGenerator:
             >>> op.to_rfc6902()
             {'op': 'test', 'path': '/version', 'value': '1.0'}
         """
-        logger.debug(f"Generating test operation at path '{path}'")
+        logger.debug("Generating test operation at path '%s'", path)
         return JSONPatchOperation(
             op=PatchOp.TEST,
             path=path,
@@ -1138,7 +1139,7 @@ class PatchGenerator:
             >>> ops[0].op
             <PatchOp.ADD: 'add'>
         """
-        logger.debug(f"Generating add default operation at path '{path}'")
+        logger.debug("Generating add default operation at path '%s'", path)
         return [self.generate_add(path, default_value)]
 
     def generate_type_coercion(
@@ -1261,7 +1262,7 @@ class PatchGenerator:
             >>> len(seq)
             2
         """
-        logger.debug(f"Generating batch of {len(operations)} operations")
+        logger.debug("Generating batch of %s operations", len(operations))
         result_ops = []
 
         for spec in operations:
@@ -1300,7 +1301,7 @@ class PatchGenerator:
 # Patch Application
 # =============================================================================
 
-class PatchApplicationError(Exception):
+class PatchApplicationError(AgentException):
     """Error raised when patch application fails."""
 
     def __init__(
@@ -1465,13 +1466,13 @@ def apply_patch(
         >>> result
         {'name': 'new', 'value': 42}
     """
-    logger.debug(f"Applying patch with {len(patch)} operations")
+    logger.debug("Applying patch with %s operations", len(patch))
 
     # Start with a deep copy
     result = copy.deepcopy(document)
 
     for i, operation in enumerate(patch):
-        logger.debug(f"Applying operation {i}: {operation}")
+        logger.debug("Applying operation %s: %s", i, operation)
         result = _apply_single_operation(result, operation, i)
 
     return result
@@ -1527,7 +1528,7 @@ def validate_patch(
         >>> len(errors) > 0
         True
     """
-    logger.debug(f"Validating patch with {len(patch)} operations")
+    logger.debug("Validating patch with %s operations", len(patch))
     errors = []
 
     try:

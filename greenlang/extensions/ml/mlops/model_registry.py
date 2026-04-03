@@ -303,7 +303,7 @@ class ModelRegistry:
         with open(model_path, "wb") as f:
             pickle.dump(model, f)
 
-        logger.info(f"Model saved to {model_path}")
+        logger.info("Model saved to %s", model_path)
         return str(model_path)
 
     def _load_model_artifact(self, artifact_path: str) -> Any:
@@ -449,7 +449,7 @@ class ModelRegistry:
                     )
 
         except Exception as e:
-            logger.warning(f"Failed to log to MLflow: {e}")
+            logger.warning("Failed to log to MLflow: %s", e)
 
     def get_model(
         self,
@@ -472,7 +472,7 @@ class ModelRegistry:
             >>> model = registry.get_model("emission_predictor", stage=ModelStage.PRODUCTION)
         """
         if name not in self._metadata:
-            logger.warning(f"Model not found: {name}")
+            logger.warning("Model not found: %s", name)
             return None
 
         # Find matching version
@@ -563,7 +563,7 @@ class ModelRegistry:
             ... )
         """
         if name not in self._metadata:
-            logger.error(f"Model not found: {name}")
+            logger.error("Model not found: %s", name)
             return False
 
         # Find version
@@ -574,7 +574,7 @@ class ModelRegistry:
                 break
 
         if target_meta is None:
-            logger.error(f"Version not found: {name} v{version}")
+            logger.error("Version not found: %s v%s", name, version)
             return False
 
         # Archive existing production model
@@ -583,13 +583,13 @@ class ModelRegistry:
                 if meta.stage == ModelStage.PRODUCTION:
                     meta.stage = ModelStage.ARCHIVED
                     meta.updated_at = datetime.utcnow()
-                    logger.info(f"Archived {name} v{meta.version}")
+                    logger.info("Archived %s v%s", name, meta.version)
 
         # Update stage
         target_meta.stage = stage
         target_meta.updated_at = datetime.utcnow()
 
-        logger.info(f"Transitioned {name} v{version} to {stage.value}")
+        logger.info("Transitioned %s v%s to %s", name, version, stage.value)
 
         return True
 
@@ -618,13 +618,13 @@ class ModelRegistry:
             ]
             if name in self._models and version in self._models[name]:
                 del self._models[name][version]
-            logger.info(f"Deleted {name} v{version}")
+            logger.info("Deleted %s v%s", name, version)
         else:
             # Delete all versions
             del self._metadata[name]
             if name in self._models:
                 del self._models[name]
-            logger.info(f"Deleted all versions of {name}")
+            logger.info("Deleted all versions of %s", name)
 
         return True
 

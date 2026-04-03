@@ -187,7 +187,7 @@ class ReportingAgent:
             )
 
         except Exception as e:
-            logger.error(f"Report generation failed: {e}", exc_info=True)
+            logger.error("Report generation failed: %s", e, exc_info=True)
             self._stats["failed_reports"] += 1
 
             return ReportResult(
@@ -215,7 +215,7 @@ class ReportingAgent:
         template = self.templates.get(template_name)
 
         if not template:
-            logger.warning(f"Template {template_name} not found")
+            logger.warning("Template %s not found", template_name)
             return data
 
         # Template application logic would go here
@@ -361,11 +361,11 @@ class ReportingAgent:
             with open(output_path, mode) as f:
                 f.write(data)
 
-            logger.info(f"Report saved to {output_path}")
+            logger.info("Report saved to %s", output_path)
             return output_path
 
         except Exception as e:
-            logger.error(f"Failed to save report: {e}")
+            logger.error("Failed to save report: %s", e)
             raise
 
     def _check_compliance(
@@ -536,7 +536,7 @@ class ReportingAgent:
 
             else:
                 # For other formats, generate without charts
-                logger.warning(f"Charts not fully supported for {format}, generating data only")
+                logger.warning("Charts not fully supported for %s, generating data only", format)
                 return await self.generate_report(data, format, output_path=output_path)
 
         except ImportError:
@@ -544,7 +544,7 @@ class ReportingAgent:
             return await self.generate_report(data, format, output_path=output_path)
 
         except Exception as e:
-            logger.error(f"Chart generation failed: {e}", exc_info=True)
+            logger.error("Chart generation failed: %s", e, exc_info=True)
             return ReportResult(
                 success=False,
                 format=format,

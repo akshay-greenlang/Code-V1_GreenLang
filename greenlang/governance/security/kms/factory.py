@@ -156,7 +156,7 @@ def create_kms_provider(config: Optional[KMSConfig] = None,
         raise KMSProviderError(f"Unknown KMS provider: {provider}")
 
     try:
-        logger.info(f"Creating {provider.upper()} KMS provider")
+        logger.info("Creating %s KMS provider", provider.upper())
         return provider_class(config)
     except Exception as e:
         raise KMSProviderError(f"Failed to create {provider} KMS provider: {e}")

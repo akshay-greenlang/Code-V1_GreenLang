@@ -63,6 +63,7 @@ from greenlang.agents.foundation.schema.constants import (
 )
 from greenlang.agents.foundation.schema.errors import ErrorCode, format_error_message
 from greenlang.schemas import GreenLangBase
+from greenlang.utilities.exceptions.agent import AgentException
 
 logger = logging.getLogger(__name__)
 
@@ -135,7 +136,7 @@ class ParseResult(GreenLangBase):
     }
 
 
-class ParseError(Exception):
+class ParseError(AgentException):
     """
     Exception raised when parsing fails.
 
@@ -636,7 +637,7 @@ def _prepare_content(content: Union[str, bytes]) -> Tuple[str, int]:
             string_content = content.decode(DEFAULT_ENCODING)
         except UnicodeDecodeError as e:
             # Log the encoding error
-            logger.warning(f"UTF-8 decode error at position {e.start}: {e.reason}")
+            logger.warning("UTF-8 decode error at position %s: %s", e.start, e.reason)
 
             # Try with error replacement to provide more details
             try:
@@ -763,7 +764,7 @@ def parse_payload(
     except ParseError:
         raise
     except Exception as e:
-        logger.error(f"Content preparation failed: {e}", exc_info=True)
+        logger.error("Content preparation failed: %s", e, exc_info=True)
         raise ParseError(
             code=ErrorCode.SCHEMA_PARSE_ERROR.value,
             message=f"Failed to prepare content for parsing: {str(e)}",
@@ -788,7 +789,7 @@ def parse_payload(
 
     # Step 3: Detect format
     detected_format = detect_format(string_content)
-    logger.debug(f"Detected format: {detected_format} for {size_bytes} bytes")
+    logger.debug("Detected format: %s for %s bytes", detected_format, size_bytes)
 
     # Handle empty content early
     if not string_content.strip():
@@ -817,7 +818,7 @@ def parse_payload(
         # Re-raise our own errors
         raise
     except json.JSONDecodeError as e:
-        logger.warning(f"JSON parse error: {e}")
+        logger.warning("JSON parse error: %s", e)
         raise ParseError(
             code=ErrorCode.SCHEMA_PARSE_ERROR.value,
             message=f"JSON parse error at line {e.lineno}, column {e.colno}: {e.msg}",
@@ -829,7 +830,7 @@ def parse_payload(
             }
         )
     except yaml.YAMLError as e:
-        logger.warning(f"YAML parse error: {e}")
+        logger.warning("YAML parse error: %s", e)
         error_details: Dict[str, Any] = {"format": "yaml", "error": str(e)}
 
         # Extract position information if available
@@ -843,7 +844,7 @@ def parse_payload(
             details=error_details
         )
     except Exception as e:
-        logger.error(f"Unexpected parse error: {e}", exc_info=True)
+        logger.error("Unexpected parse error: %s", e, exc_info=True)
         raise ParseError(
             code=ErrorCode.SCHEMA_PARSE_ERROR.value,
             message=f"Unexpected error during parsing: {str(e)}",
@@ -854,7 +855,7 @@ def parse_payload(
     if not isinstance(parsed_data, dict):
         # Wrap non-dict values in a dict for consistent handling
         # This handles JSON arrays at root level
-        logger.debug(f"Wrapping non-dict parsed data of type {type(parsed_data).__name__}")
+        logger.debug("Wrapping non-dict parsed data of type %s", type(parsed_data).__name__)
         parsed_data = {"_root": parsed_data}
     else:
         # Ensure all keys are strings (YAML may have non-string keys)
@@ -872,7 +873,7 @@ def parse_payload(
     except ParseError:
         raise
     except Exception as e:
-        logger.error(f"Node counting failed: {e}", exc_info=True)
+        logger.error("Node counting failed: %s", e, exc_info=True)
         raise ParseError(
             code=ErrorCode.SCHEMA_PARSE_ERROR.value,
             message=f"Failed to analyze parsed structure: {str(e)}",

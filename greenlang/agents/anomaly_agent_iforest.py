@@ -355,24 +355,24 @@ class IsolationForestAnomalyAgent(Agent[Dict[str, Any], Dict[str, Any]]):
         """
         # Check required fields
         if "data" not in input_data:
-            self.logger.error("Missing required field: data")
+            logger.error("Missing required field: data")
             return False
 
         # Validate data is DataFrame
         data = input_data["data"]
         if not isinstance(data, pd.DataFrame):
-            self.logger.error("Data must be a pandas DataFrame")
+            logger.error("Data must be a pandas DataFrame")
             return False
 
         # Validate minimum data points
         if len(data) < 100:
-            self.logger.error("Insufficient data: need at least 100 points for stable model")
+            logger.error("Insufficient data: need at least 100 points for stable model")
             return False
 
         # Validate numeric features exist
         numeric_cols = data.select_dtypes(include=[np.number]).columns
         if len(numeric_cols) == 0:
-            self.logger.error("No numeric features found in data")
+            logger.error("No numeric features found in data")
             return False
 
         # Validate feature columns if specified
@@ -380,21 +380,21 @@ class IsolationForestAnomalyAgent(Agent[Dict[str, Any], Dict[str, Any]]):
             feature_cols = input_data["feature_columns"]
             for col in feature_cols:
                 if col not in data.columns:
-                    self.logger.error(f"Feature column '{col}' not found in data")
+                    logger.error("Feature column '%s' not found in data", col)
                     return False
 
         # Validate contamination parameter
         if "contamination" in input_data:
             contamination = input_data["contamination"]
             if not (0.0 < contamination < 0.5):
-                self.logger.error("Contamination must be between 0 and 0.5")
+                logger.error("Contamination must be between 0 and 0.5")
                 return False
 
         # Validate labels if provided
         if "labels" in input_data:
             labels = input_data["labels"]
             if len(labels) != len(data):
-                self.logger.error("Labels length must match data length")
+                logger.error("Labels length must match data length")
                 return False
 
         return True
@@ -517,10 +517,10 @@ class IsolationForestAnomalyAgent(Agent[Dict[str, Any], Dict[str, Any]]):
             return output
 
         except BudgetExceeded as e:
-            self.logger.error(f"Budget exceeded: {e}")
+            logger.error("Budget exceeded: %s", e)
             raise ValueError(f"AI budget exceeded: {str(e)}")
         except Exception as e:
-            self.logger.error(f"Error in anomaly detection: {e}")
+            logger.error("Error in anomaly detection: %s", e)
             raise
 
     def _build_prompt(self, input_data: Dict[str, Any]) -> str:
@@ -626,7 +626,7 @@ IMPORTANT:
                 elif name == "generate_alerts":
                     results["alerts"] = self._generate_alerts_impl(input_data, **args)
             except Exception as e:
-                self.logger.error(f"Tool {name} failed: {e}")
+                logger.error("Tool %s failed: %s", name, e)
                 results[name] = {"error": str(e)}
 
         return results
@@ -1165,7 +1165,7 @@ IMPORTANT:
                         else:
                             roc_auc = 0.0
                     except Exception as e:
-                        self.logger.warning(f"ROC-AUC calculation failed: {e}")
+                        logger.warning("ROC-AUC calculation failed: %s", e)
                         roc_auc = 0.0
 
                     output["metrics"] = {
@@ -1175,7 +1175,7 @@ IMPORTANT:
                         "roc_auc": float(roc_auc),
                     }
             except Exception as e:
-                self.logger.warning(f"Could not calculate metrics: {e}")
+                logger.warning("Could not calculate metrics: %s", e)
 
         # Add AI explanation
         if explanation and self.enable_explanations:

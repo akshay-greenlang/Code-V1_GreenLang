@@ -173,7 +173,7 @@ class VibrationAnalyzer:
             VibrationAnalysisResult with fault diagnostics
         """
         start_time = datetime.now(timezone.utc)
-        logger.info(f"Analyzing vibration: sensor={reading.sensor_id}")
+        logger.info("Analyzing vibration: sensor=%s", reading.sensor_id)
 
         # Calculate running speed in Hz
         running_speed_hz = reading.operating_speed_rpm / 60.0

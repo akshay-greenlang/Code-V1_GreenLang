@@ -213,7 +213,7 @@ async def validate_payload(
         return response
 
     except ValueError as e:
-        logger.warning(f"Validation error: {e} [{context.trace_id}]")
+        logger.warning("Validation error: %s [%s]", e, context.trace_id)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=create_error_response(
@@ -230,7 +230,7 @@ async def validate_payload(
         )
 
     except Exception as e:
-        logger.error(f"Validation failed: {e} [{context.trace_id}]", exc_info=True)
+        logger.error("Validation failed: %s [%s]", e, context.trace_id, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=create_error_response(
@@ -372,7 +372,7 @@ async def validate_batch(
         return response
 
     except ValueError as e:
-        logger.warning(f"Batch validation error: {e} [{context.trace_id}]")
+        logger.warning("Batch validation error: %s [%s]", e, context.trace_id)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=create_error_response(
@@ -450,7 +450,7 @@ async def compile_schema(
     """
     start_time = time.perf_counter()
 
-    logger.info(f"Compile request [{context.trace_id}]")
+    logger.info("Compile request [%s]", context.trace_id)
 
     try:
         # Get compiler
@@ -512,7 +512,7 @@ async def compile_schema(
         return response
 
     except ValueError as e:
-        logger.warning(f"Compilation error: {e} [{context.trace_id}]")
+        logger.warning("Compilation error: %s [%s]", e, context.trace_id)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=create_error_response(
@@ -529,7 +529,7 @@ async def compile_schema(
         )
 
     except Exception as e:
-        logger.error(f"Compilation failed: {e} [{context.trace_id}]", exc_info=True)
+        logger.error("Compilation failed: %s [%s]", e, context.trace_id, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=create_error_response(
@@ -572,7 +572,7 @@ async def list_schema_versions(
 
     Returns version information including deprecation status.
     """
-    logger.info(f"List versions for schema: {schema_id} [{context.trace_id}]")
+    logger.info("List versions for schema: %s [%s]", schema_id, context.trace_id)
 
     try:
         # Get registry
@@ -632,7 +632,7 @@ async def list_schema_versions(
         raise
 
     except Exception as e:
-        logger.error(f"Failed to list versions: {e} [{context.trace_id}]", exc_info=True)
+        logger.error("Failed to list versions: %s [%s]", e, context.trace_id, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=create_error_response(
@@ -665,7 +665,7 @@ async def get_schema(
 
     Returns the complete schema content with metadata.
     """
-    logger.info(f"Get schema: {schema_id}@{version} [{context.trace_id}]")
+    logger.info("Get schema: %s@%s [%s]", schema_id, version, context.trace_id)
 
     try:
         # Get registry
@@ -725,7 +725,7 @@ async def get_schema(
         raise
 
     except Exception as e:
-        logger.error(f"Failed to get schema: {e} [{context.trace_id}]", exc_info=True)
+        logger.error("Failed to get schema: %s [%s]", e, context.trace_id, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=create_error_response(

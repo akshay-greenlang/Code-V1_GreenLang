@@ -1015,7 +1015,7 @@ class DashboardStateManager:
     def select_model(self, model_id: str) -> None:
         """Set the currently selected model."""
         self._selected_model = model_id
-        logger.debug(f"Selected model: {model_id}")
+        logger.debug("Selected model: %s", model_id)
 
     def get_selected_model(self) -> Optional[str]:
         """Get the currently selected model ID."""
@@ -1046,7 +1046,7 @@ class DashboardStateManager:
             "metadata": metadata or {},
             "registered_at": datetime.now(timezone.utc),
         }
-        logger.info(f"Model registered: {model_id}")
+        logger.info("Model registered: %s", model_id)
 
     def get_model(self, model_id: str) -> Optional[Dict[str, Any]]:
         """Get registered model information."""
@@ -1502,10 +1502,10 @@ if FASTAPI_AVAILABLE:
                 except ImportError:
                     logger.warning("SHAP not available for instance explanation")
                 except Exception as e:
-                    logger.warning(f"SHAP explanation failed: {e}")
+                    logger.warning("SHAP explanation failed: %s", e)
 
             except Exception as e:
-                logger.error(f"Instance explanation failed: {e}")
+                logger.error("Instance explanation failed: %s", e)
 
         # Generate global importance
         if include_global and training_data is not None:
@@ -1552,7 +1552,7 @@ if FASTAPI_AVAILABLE:
             except ImportError:
                 logger.warning("SHAP not available for global importance")
             except Exception as e:
-                logger.warning(f"Global importance computation failed: {e}")
+                logger.warning("Global importance computation failed: %s", e)
 
         # Generate counterfactual (if requested and instance provided)
         if include_counterfactual and instance and prediction is not None:
@@ -1588,7 +1588,7 @@ if FASTAPI_AVAILABLE:
                 )
 
             except Exception as e:
-                logger.warning(f"Counterfactual generation failed: {e}")
+                logger.warning("Counterfactual generation failed: %s", e)
 
         processing_time = (time.time() - start_time) * 1000
 

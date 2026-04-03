@@ -475,7 +475,7 @@ class BoilerFeatures(BaseFeatures):
     def validate_efficiency(cls, v):
         """Validate efficiency is a reasonable value."""
         if v > 0.98:
-            logger.warning(f"Efficiency {v} exceeds typical maximum of 98%")
+            logger.warning("Efficiency %s exceeds typical maximum of 98%", v)
         return v
 
     @root_validator(skip_on_failure=True)
@@ -598,16 +598,16 @@ class CombustionFeatures(BaseFeatures):
     def validate_o2(cls, v):
         """Validate O2 is in typical combustion range."""
         if v < 1:
-            logger.warning(f"O2 {v}% is dangerously low - incomplete combustion risk")
+            logger.warning("O2 %s% is dangerously low - incomplete combustion risk", v)
         elif v > 10:
-            logger.warning(f"O2 {v}% indicates excessive air - efficiency loss")
+            logger.warning("O2 %s% indicates excessive air - efficiency loss", v)
         return v
 
     @validator('co_ppm')
     def validate_co(cls, v):
         """Validate CO is within acceptable limits."""
         if v > 400:
-            logger.warning(f"CO {v} ppm exceeds typical limit of 400 ppm")
+            logger.warning("CO %s ppm exceeds typical limit of 400 ppm", v)
         return v
 
 
@@ -957,14 +957,14 @@ class PredictiveFeatures(BaseFeatures):
     def validate_failure_prob(cls, v):
         """Validate and warn on high failure probability."""
         if v > 0.5:
-            logger.warning(f"High failure probability: {v:.1%} - maintenance recommended")
+            logger.warning("High failure probability: %s - maintenance recommended", v)
         return v
 
     @validator('remaining_life')
     def validate_remaining_life(cls, v):
         """Validate remaining life is reasonable."""
         if v < 168:  # Less than 1 week
-            logger.warning(f"Critical: Only {v:.0f} hours remaining life estimated")
+            logger.warning("Critical: Only %.0f hours remaining life estimated", v)
         return v
 
 

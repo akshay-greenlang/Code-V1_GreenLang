@@ -332,7 +332,7 @@ class CoercionEngine:
         """
         self.policy = policy
         self._records: List[CoercionRecord] = []
-        logger.debug(f"CoercionEngine initialized with policy: {policy.value}")
+        logger.debug("CoercionEngine initialized with policy: %s", policy.value)
 
     # -------------------------------------------------------------------------
     # Main Coercion Method

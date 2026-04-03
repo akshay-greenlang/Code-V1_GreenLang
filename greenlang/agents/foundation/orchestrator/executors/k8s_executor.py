@@ -153,7 +153,7 @@ class K8sExecutor(ExecutorBackend):
         self._initialized = False
         self._batch_api: Optional[Any] = None  # client.BatchV1Api when available
         self._core_api: Optional[Any] = None  # client.CoreV1Api when available
-        logger.info(f"Initialized K8sExecutor: namespace={config.default_namespace}")
+        logger.info("Initialized K8sExecutor: namespace=%s", config.default_namespace)
 
     async def _ensure_initialized(self):
         """Ensure K8s client is initialized."""
@@ -329,7 +329,7 @@ class K8sExecutor(ExecutorBackend):
         job_name = job.metadata.name
         started_at = DeterministicClock.now()
 
-        logger.info(f"Creating K8s Job: {namespace}/{job_name} for step {context.step_id}")
+        logger.info("Creating K8s Job: %s/%s for step %s", namespace, job_name, context.step_id)
 
         try:
             # Create the Job
@@ -407,7 +407,7 @@ class K8sExecutor(ExecutorBackend):
             )
 
         except ApiException as e:
-            logger.error(f"K8s API error for Job {job_name}: {e}")
+            logger.error("K8s API error for Job %s: %s", job_name, e)
             return ExecutionResult(
                 step_id=context.step_id,
                 status=ExecutionStatus.FAILED,
@@ -420,7 +420,7 @@ class K8sExecutor(ExecutorBackend):
             )
 
         except Exception as e:
-            logger.error(f"Unexpected error executing Job {job_name}: {e}", exc_info=True)
+            logger.error("Unexpected error executing Job %s: %s", job_name, e, exc_info=True)
             return ExecutionResult(
                 step_id=context.step_id,
                 status=ExecutionStatus.FAILED,
@@ -491,7 +491,7 @@ class K8sExecutor(ExecutorBackend):
                             return container_status.state.terminated.exit_code
 
         except Exception as e:
-            logger.warning(f"Failed to get pod exit code for {job_name}: {e}")
+            logger.warning("Failed to get pod exit code for %s: %s", job_name, e)
 
         return None
 
@@ -522,7 +522,7 @@ class K8sExecutor(ExecutorBackend):
             )
 
             if not jobs.items:
-                logger.warning(f"No Job found for step {step_id}")
+                logger.warning("No Job found for step %s", step_id)
                 return False
 
             for job in jobs.items:
@@ -534,12 +534,12 @@ class K8sExecutor(ExecutorBackend):
                         propagation_policy="Background",
                     ),
                 )
-                logger.info(f"Canceled Job: {namespace}/{job.metadata.name}")
+                logger.info("Canceled Job: %s/%s", namespace, job.metadata.name)
 
             return True
 
         except ApiException as e:
-            logger.error(f"Failed to cancel Job for step {step_id}: {e}")
+            logger.error("Failed to cancel Job for step %s: %s", step_id, e)
             return False
 
     async def get_status(self, step_id: str, namespace: str) -> ExecutionStatus:
@@ -615,7 +615,7 @@ class K8sExecutor(ExecutorBackend):
             return logs
 
         except ApiException as e:
-            logger.warning(f"Failed to get logs for step {step_id}: {e}")
+            logger.warning("Failed to get logs for step %s: %s", step_id, e)
             return ""
 
 

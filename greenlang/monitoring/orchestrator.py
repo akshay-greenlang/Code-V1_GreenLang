@@ -65,10 +65,10 @@ class MonitoringOrchestrator:
         try:
             with open(config_path, 'r') as f:
                 config = yaml.safe_load(f)
-            logger.info(f"Configuration loaded from {config_path}")
+            logger.info("Configuration loaded from %s", config_path)
             return config
         except Exception as e:
-            logger.error(f"Failed to load configuration: {e}")
+            logger.error("Failed to load configuration: %s", e)
             raise
 
     def initialize_components(self):
@@ -121,7 +121,7 @@ class MonitoringOrchestrator:
             self.metrics_collector.push_metrics()
             logger.info("Metrics collection completed successfully")
         except Exception as e:
-            logger.error(f"Error in metrics collection: {e}")
+            logger.error("Error in metrics collection: %s", e)
 
     async def run_log_aggregation(self):
         """Run log aggregation cycle"""
@@ -142,7 +142,7 @@ class MonitoringOrchestrator:
 
             logger.info("Log aggregation completed successfully")
         except Exception as e:
-            logger.error(f"Error in log aggregation: {e}")
+            logger.error("Error in log aggregation: %s", e)
 
     async def run_violation_scan(self):
         """Run violation scanning cycle"""
@@ -158,15 +158,15 @@ class MonitoringOrchestrator:
             report_path = Path(self.config['reporting']['output_dir']) / f"violations_{DeterministicClock.now().strftime('%Y%m%d_%H%M%S')}.txt"
             report_path.write_text(report)
 
-            logger.info(f"Violation scan completed. Found {len(violations)} violations")
+            logger.info("Violation scan completed. Found %s violations", len(violations))
 
             # Alert on critical violations
             critical_violations = [v for v in violations if v.severity == 'critical']
             if critical_violations:
-                logger.warning(f"Found {len(critical_violations)} critical violations!")
+                logger.warning("Found %s critical violations!", len(critical_violations))
 
         except Exception as e:
-            logger.error(f"Error in violation scanning: {e}")
+            logger.error("Error in violation scanning: %s", e)
 
     async def run_health_checks(self):
         """Run health check cycle"""
@@ -184,11 +184,11 @@ class MonitoringOrchestrator:
             # Check for unhealthy services
             overall_status = self.health_checker.get_overall_status()
             if overall_status.value != "healthy":
-                logger.warning(f"Infrastructure health status: {overall_status.value}")
+                logger.warning("Infrastructure health status: %s", overall_status.value)
 
             logger.info("Health checks completed successfully")
         except Exception as e:
-            logger.error(f"Error in health checks: {e}")
+            logger.error("Error in health checks: %s", e)
 
     async def generate_weekly_report(self):
         """Generate weekly summary report"""
@@ -224,7 +224,7 @@ class MonitoringOrchestrator:
 
             logger.info("Weekly report generated successfully")
         except Exception as e:
-            logger.error(f"Error generating weekly report: {e}")
+            logger.error("Error generating weekly report: %s", e)
 
     async def run_monitoring_cycle(self):
         """Run a complete monitoring cycle"""
@@ -253,14 +253,14 @@ class MonitoringOrchestrator:
                 # Wait for next cycle (5 minutes by default)
                 interval = self.config['collectors']['metrics_collector'].get('interval', '5m')
                 wait_seconds = self._parse_interval(interval)
-                logger.info(f"Waiting {wait_seconds} seconds until next cycle...")
+                logger.info("Waiting %s seconds until next cycle...", wait_seconds)
                 await asyncio.sleep(wait_seconds)
 
             except KeyboardInterrupt:
                 logger.info("Monitoring stopped by user")
                 break
             except Exception as e:
-                logger.error(f"Error in monitoring loop: {e}")
+                logger.error("Error in monitoring loop: %s", e)
                 await asyncio.sleep(60)  # Wait 1 minute before retrying
 
     def _parse_interval(self, interval: str) -> int:
@@ -304,14 +304,14 @@ class MonitoringOrchestrator:
                 dashboards_dir.mkdir(parents=True, exist_ok=True)
                 output_path = dashboards_dir / f"{dashboard.dashboard_uid}.json"
                 dashboard.export_to_file(str(output_path))
-                logger.info(f"Dashboard exported: {dashboard.dashboard_title}")
+                logger.info("Dashboard exported: %s", dashboard.dashboard_title)
 
                 # Deploy to Grafana (if API key is configured)
                 if api_key and api_key != "${GRAFANA_API_KEY}":
                     dashboard.deploy_to_grafana(grafana_url, api_key)
-                    logger.info(f"Dashboard deployed: {dashboard.dashboard_title}")
+                    logger.info("Dashboard deployed: %s", dashboard.dashboard_title)
             except Exception as e:
-                logger.error(f"Error deploying dashboard {dashboard.dashboard_title}: {e}")
+                logger.error("Error deploying dashboard %s: %s", dashboard.dashboard_title, e)
 
         logger.info("Dashboard deployment completed")
 
@@ -331,9 +331,9 @@ class MonitoringOrchestrator:
             grafana_path = alerts_dir / "grafana_alerts.json"
             self.alert_engine.export_grafana_alerts(str(grafana_path))
 
-            logger.info(f"Alert rules deployed: {len(self.alert_engine.rules)} rules")
+            logger.info("Alert rules deployed: %s rules", len(self.alert_engine.rules))
         except Exception as e:
-            logger.error(f"Error deploying alert rules: {e}")
+            logger.error("Error deploying alert rules: %s", e)
 
 
 async def main():

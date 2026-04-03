@@ -724,7 +724,7 @@ class EUDRTraceabilityManager:
             self._plots_by_country[country_code] = set()
         self._plots_by_country[country_code].add(plot_id)
 
-        logger.info(f"Registered plot: {plot_id} in {country_code}")
+        logger.info("Registered plot: %s in %s", plot_id, country_code)
         return plot
 
     def get_plot(self, plot_id: str) -> Optional[PlotRecord]:
@@ -777,7 +777,7 @@ class EUDRTraceabilityManager:
             elif plot.risk_level == RiskLevel.STANDARD:
                 plot.risk_level = RiskLevel.LOW
 
-        logger.info(f"Updated compliance for plot: {plot_id}")
+        logger.info("Updated compliance for plot: %s", plot_id)
         return plot
 
     def _assess_plot_risk(
@@ -860,7 +860,7 @@ class EUDRTraceabilityManager:
         )
 
         self._chain_of_custody[record.id] = record
-        logger.info(f"Recorded transfer: {record.id}")
+        logger.info("Recorded transfer: %s", record.id)
         return record
 
     def get_chain_of_custody(self, record_id: str) -> Optional[ChainOfCustodyRecord]:
@@ -1004,7 +1004,7 @@ class EUDRTraceabilityManager:
         )
 
         self._statements[statement.id] = statement
-        logger.info(f"Generated due diligence statement: {statement.id}")
+        logger.info("Generated due diligence statement: %s", statement.id)
         return statement
 
     def get_statement(self, statement_id: str) -> Optional[DueDiligenceStatement]:

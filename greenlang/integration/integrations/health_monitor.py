@@ -189,10 +189,10 @@ class HealthMonitor:
         connector_id = connector.config.connector_id
 
         if connector_id in self._connectors:
-            logger.warning(f"Connector {connector_id} already registered, replacing")
+            logger.warning("Connector %s already registered, replacing", connector_id)
 
         self._connectors[connector_id] = connector
-        logger.info(f"Registered connector for monitoring: {connector_id}")
+        logger.info("Registered connector for monitoring: %s", connector_id)
 
     def unregister_connector(self, connector_id: str):
         """
@@ -205,7 +205,7 @@ class HealthMonitor:
             del self._connectors[connector_id]
             if connector_id in self._health_results:
                 del self._health_results[connector_id]
-            logger.info(f"Unregistered connector: {connector_id}")
+            logger.info("Unregistered connector: %s", connector_id)
 
     async def check_connector_health(self, connector_id: str) -> HealthCheckResult:
         """
@@ -248,7 +248,7 @@ class HealthMonitor:
             return result
 
         except Exception as e:
-            logger.error(f"Health check failed for {connector_id}: {e}", exc_info=True)
+            logger.error("Health check failed for %s: %s", connector_id, e, exc_info=True)
 
             latency_ms = (datetime.now(timezone.utc) - start_time).total_seconds() * 1000
 
@@ -285,7 +285,7 @@ class HealthMonitor:
                 self._add_to_history(connector_id, result)
 
             except Exception as e:
-                logger.error(f"Failed to check health for {connector_id}: {e}")
+                logger.error("Failed to check health for %s: %s", connector_id, e)
 
         return results
 
@@ -357,12 +357,12 @@ class HealthMonitor:
                 try:
                     await self.check_all_connectors()
                 except Exception as e:
-                    logger.error(f"Error in monitoring loop: {e}", exc_info=True)
+                    logger.error("Error in monitoring loop: %s", e, exc_info=True)
 
                 await asyncio.sleep(self.check_interval)
 
         self._monitoring_task = asyncio.create_task(_monitoring_loop())
-        logger.info(f"Started health monitoring (interval={self.check_interval}s)")
+        logger.info("Started health monitoring (interval=%ss)", self.check_interval)
 
     async def stop_monitoring(self):
         """Stop health monitoring."""

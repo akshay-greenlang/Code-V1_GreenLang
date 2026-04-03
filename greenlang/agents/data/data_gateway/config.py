@@ -32,10 +32,13 @@ Status: Production Ready
 from __future__ import annotations
 
 import logging
-import os
-import threading
 from dataclasses import dataclass
-from typing import Any, Optional
+
+from greenlang.data_commons.config_base import (
+    BaseDataConfig,
+    EnvReader,
+    create_config_singleton,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -52,50 +55,33 @@ _ENV_PREFIX = "GL_DATA_GATEWAY_"
 
 
 @dataclass
-class DataGatewayConfig:
-    """Complete configuration for the GreenLang API Gateway Agent SDK.
+class DataGatewayConfig(BaseDataConfig):
+    """Configuration for the GreenLang API Gateway Agent SDK.
 
-    Attributes are grouped by concern: connections, cache settings,
-    query constraints, connection pool, health checks, circuit breaker,
-    retry policy, batch processing, data retention, feature toggles,
-    and logging.
+    Inherits shared connection, pool, batch, and logging fields from
+    ``BaseDataConfig``.  Only gateway-specific fields are declared here.
 
     All attributes can be overridden via environment variables using the
     ``GL_DATA_GATEWAY_`` prefix.
 
     Attributes:
-        database_url: PostgreSQL connection URL for persistent storage.
-        redis_url: Redis connection URL for caching layer.
-        s3_bucket_url: S3 bucket URL for document storage.
-        log_level: Logging level for the data gateway service.
         cache_default_ttl: Default cache TTL in seconds.
         cache_max_size_mb: Maximum cache size in megabytes.
         max_query_complexity: Maximum allowed query complexity score.
         max_sources_per_query: Maximum data sources per single query.
         query_timeout_seconds: Default query execution timeout in seconds.
-        connection_pool_min: Minimum connections in the connection pool.
-        connection_pool_max: Maximum connections in the connection pool.
+        connection_pool_min: Minimum connections in the gateway-to-sources pool.
+        connection_pool_max: Maximum connections in the gateway-to-sources pool.
         health_check_interval: Interval between health checks in seconds.
         circuit_breaker_threshold: Consecutive failures before circuit opens.
         circuit_breaker_timeout: Seconds before half-open retry after trip.
         retry_max_attempts: Maximum retry attempts for failed requests.
         retry_base_delay: Base delay in seconds between retries.
         batch_max_size: Maximum number of queries in a batch request.
-        batch_worker_count: Number of parallel workers for batch processing.
-        pool_min_size: Minimum connection pool size.
-        pool_max_size: Maximum connection pool size.
         retention_days: Number of days to retain query history and logs.
         enable_graphql: Whether to enable the GraphQL query interface.
         enable_cache_warming: Whether to enable proactive cache warming.
     """
-
-    # -- Connections ---------------------------------------------------------
-    database_url: str = ""
-    redis_url: str = ""
-    s3_bucket_url: str = ""
-
-    # -- Logging -------------------------------------------------------------
-    log_level: str = "INFO"
 
     # -- Cache settings ------------------------------------------------------
     cache_default_ttl: int = 300
@@ -121,13 +107,8 @@ class DataGatewayConfig:
     retry_max_attempts: int = 3
     retry_base_delay: float = 1.0
 
-    # -- Batch processing ----------------------------------------------------
+    # -- Batch processing (gateway-specific) ---------------------------------
     batch_max_size: int = 50
-    batch_worker_count: int = 4
-
-    # -- Pool sizing ---------------------------------------------------------
-    pool_min_size: int = 2
-    pool_max_size: int = 10
 
     # -- Data retention ------------------------------------------------------
     retention_days: int = 90
@@ -137,7 +118,7 @@ class DataGatewayConfig:
     enable_cache_warming: bool = True
 
     # ------------------------------------------------------------------
-    # Factory helpers
+    # Factory
     # ------------------------------------------------------------------
 
     @classmethod
@@ -146,113 +127,63 @@ class DataGatewayConfig:
 
         Every field can be overridden via ``GL_DATA_GATEWAY_<FIELD_UPPER>``.
         Boolean values accept ``true/1/yes`` (case-insensitive).
-        Integer values are parsed via ``int()``.
-        Float values are parsed via ``float()``.
 
         Returns:
             Populated DataGatewayConfig instance.
         """
-        prefix = _ENV_PREFIX
-
-        def _env(name: str, default: Any = None) -> Optional[str]:
-            return os.environ.get(f"{prefix}{name}", default)
-
-        def _bool(name: str, default: bool) -> bool:
-            val = _env(name)
-            if val is None:
-                return default
-            return val.lower() in ("true", "1", "yes")
-
-        def _int(name: str, default: int) -> int:
-            val = _env(name)
-            if val is None:
-                return default
-            try:
-                return int(val)
-            except ValueError:
-                logger.warning(
-                    "Invalid integer for %s%s=%s, using default %d",
-                    prefix, name, val, default,
-                )
-                return default
-
-        def _float(name: str, default: float) -> float:
-            val = _env(name)
-            if val is None:
-                return default
-            try:
-                return float(val)
-            except ValueError:
-                logger.warning(
-                    "Invalid float for %s%s=%s, using default %s",
-                    prefix, name, val, default,
-                )
-                return default
-
-        def _str(name: str, default: str) -> str:
-            val = _env(name)
-            if val is None:
-                return default
-            return val
+        env = EnvReader(_ENV_PREFIX)
+        base_kwargs = cls._base_kwargs_from_env(env)
 
         config = cls(
-            database_url=_str("DATABASE_URL", cls.database_url),
-            redis_url=_str("REDIS_URL", cls.redis_url),
-            s3_bucket_url=_str("S3_BUCKET_URL", cls.s3_bucket_url),
-            log_level=_str("LOG_LEVEL", cls.log_level),
-            cache_default_ttl=_int(
+            **base_kwargs,
+            cache_default_ttl=env.int(
                 "CACHE_DEFAULT_TTL", cls.cache_default_ttl,
             ),
-            cache_max_size_mb=_int(
+            cache_max_size_mb=env.int(
                 "CACHE_MAX_SIZE_MB", cls.cache_max_size_mb,
             ),
-            max_query_complexity=_int(
+            max_query_complexity=env.int(
                 "MAX_QUERY_COMPLEXITY", cls.max_query_complexity,
             ),
-            max_sources_per_query=_int(
+            max_sources_per_query=env.int(
                 "MAX_SOURCES_PER_QUERY", cls.max_sources_per_query,
             ),
-            query_timeout_seconds=_int(
+            query_timeout_seconds=env.int(
                 "QUERY_TIMEOUT_SECONDS", cls.query_timeout_seconds,
             ),
-            connection_pool_min=_int(
+            connection_pool_min=env.int(
                 "CONNECTION_POOL_MIN", cls.connection_pool_min,
             ),
-            connection_pool_max=_int(
+            connection_pool_max=env.int(
                 "CONNECTION_POOL_MAX", cls.connection_pool_max,
             ),
-            health_check_interval=_int(
+            health_check_interval=env.int(
                 "HEALTH_CHECK_INTERVAL", cls.health_check_interval,
             ),
-            circuit_breaker_threshold=_int(
+            circuit_breaker_threshold=env.int(
                 "CIRCUIT_BREAKER_THRESHOLD",
                 cls.circuit_breaker_threshold,
             ),
-            circuit_breaker_timeout=_int(
+            circuit_breaker_timeout=env.int(
                 "CIRCUIT_BREAKER_TIMEOUT",
                 cls.circuit_breaker_timeout,
             ),
-            retry_max_attempts=_int(
+            retry_max_attempts=env.int(
                 "RETRY_MAX_ATTEMPTS", cls.retry_max_attempts,
             ),
-            retry_base_delay=_float(
+            retry_base_delay=env.float(
                 "RETRY_BASE_DELAY", cls.retry_base_delay,
             ),
-            batch_max_size=_int(
+            batch_max_size=env.int(
                 "BATCH_MAX_SIZE", cls.batch_max_size,
             ),
-            batch_worker_count=_int(
-                "BATCH_WORKER_COUNT", cls.batch_worker_count,
-            ),
-            pool_min_size=_int("POOL_MIN_SIZE", cls.pool_min_size),
-            pool_max_size=_int("POOL_MAX_SIZE", cls.pool_max_size),
-            retention_days=_int(
+            retention_days=env.int(
                 "RETENTION_DAYS", cls.retention_days,
             ),
-            enable_graphql=_bool(
+            enable_graphql=env.bool(
                 "ENABLE_GRAPHQL", cls.enable_graphql,
             ),
-            enable_cache_warming=_bool(
+            enable_cache_warming=env.bool(
                 "ENABLE_CACHE_WARMING", cls.enable_cache_warming,
             ),
         )
@@ -288,42 +219,9 @@ class DataGatewayConfig:
 # Thread-safe singleton accessor
 # ---------------------------------------------------------------------------
 
-_config_instance: Optional[DataGatewayConfig] = None
-_config_lock = threading.Lock()
-
-
-def get_config() -> DataGatewayConfig:
-    """Return the singleton DataGatewayConfig, creating from env if needed.
-
-    Returns:
-        DataGatewayConfig singleton instance.
-    """
-    global _config_instance
-    if _config_instance is None:
-        with _config_lock:
-            if _config_instance is None:
-                _config_instance = DataGatewayConfig.from_env()
-    return _config_instance
-
-
-def set_config(config: DataGatewayConfig) -> None:
-    """Replace the singleton DataGatewayConfig (useful for testing).
-
-    Args:
-        config: New configuration to install.
-    """
-    global _config_instance
-    with _config_lock:
-        _config_instance = config
-    logger.info("DataGatewayConfig replaced programmatically")
-
-
-def reset_config() -> None:
-    """Reset the singleton (primarily for test teardown)."""
-    global _config_instance
-    with _config_lock:
-        _config_instance = None
-
+get_config, set_config, reset_config = create_config_singleton(
+    DataGatewayConfig, _ENV_PREFIX,
+)
 
 __all__ = [
     "DataGatewayConfig",

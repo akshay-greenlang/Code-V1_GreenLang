@@ -491,9 +491,9 @@ class CostSavingsDashboard:
         try:
             with open(output_path, 'w') as f:
                 json.dump(dashboard, f, indent=2)
-            logger.info(f"Cost Savings dashboard exported to {output_path}")
+            logger.info("Cost Savings dashboard exported to %s", output_path)
         except Exception as e:
-            logger.error(f"Failed to export dashboard: {e}")
+            logger.error("Failed to export dashboard: %s", e)
             raise
 
     def deploy_to_grafana(self, grafana_url: str, api_key: str) -> None:
@@ -510,9 +510,9 @@ class CostSavingsDashboard:
         try:
             response = requests.post(url, json=dashboard, headers=headers)
             response.raise_for_status()
-            logger.info(f"Cost Savings dashboard deployed: {response.json()}")
+            logger.info("Cost Savings dashboard deployed: %s", response.json())
         except requests.exceptions.RequestException as e:
-            logger.error(f"Failed to deploy dashboard: {e}")
+            logger.error("Failed to deploy dashboard: %s", e)
             raise
 
 

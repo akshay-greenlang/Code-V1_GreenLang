@@ -173,7 +173,7 @@ class AgentAccessControl:
         user_role_names = self.user_roles.get(user, [])
 
         if not user_role_names:
-            logger.debug(f"User {user} has no roles for agent {self.agent_id}")
+            logger.debug("User %s has no roles for agent %s", user, self.agent_id)
             return False
 
         # Check each role the user has
@@ -181,16 +181,16 @@ class AgentAccessControl:
             # Check predefined roles
             role = PREDEFINED_ROLES.get(role_name)
             if role and role.has_permission(permission):
-                logger.debug(f"User {user} has permission {permission.value} via role {role_name}")
+                logger.debug("User %s has permission %s via role %s", user, permission.value, role_name)
                 return True
 
             # Check custom roles
             role = self.custom_roles.get(role_name)
             if role and role.has_permission(permission):
-                logger.debug(f"User {user} has permission {permission.value} via custom role {role_name}")
+                logger.debug("User %s has permission %s via custom role %s", user, permission.value, role_name)
                 return True
 
-        logger.debug(f"User {user} lacks permission {permission.value} for agent {self.agent_id}")
+        logger.debug("User %s lacks permission %s for agent %s", user, permission.value, self.agent_id)
         return False
 
     def grant_role(self, user: str, role_name: str) -> None:
@@ -213,7 +213,7 @@ class AgentAccessControl:
 
         if role_name not in self.user_roles[user]:
             self.user_roles[user].append(role_name)
-            logger.info(f"Granted role {role_name} to user {user} for agent {self.agent_id}")
+            logger.info("Granted role %s to user %s for agent %s", role_name, user, self.agent_id)
 
     def revoke_role(self, user: str, role_name: str) -> None:
         """
@@ -225,7 +225,7 @@ class AgentAccessControl:
         """
         if user in self.user_roles and role_name in self.user_roles[user]:
             self.user_roles[user].remove(role_name)
-            logger.info(f"Revoked role {role_name} from user {user} for agent {self.agent_id}")
+            logger.info("Revoked role %s from user %s for agent %s", role_name, user, self.agent_id)
 
             # Clean up empty user entries
             if not self.user_roles[user]:
@@ -288,7 +288,7 @@ class AgentAccessControl:
             raise ValueError(f"Cannot override predefined role: {role.role_name}")
 
         self.custom_roles[role.role_name] = role
-        logger.info(f"Added custom role {role.role_name} for agent {self.agent_id}")
+        logger.info("Added custom role %s for agent %s", role.role_name, self.agent_id)
 
     def remove_custom_role(self, role_name: str) -> None:
         """
@@ -312,7 +312,7 @@ class AgentAccessControl:
                 self.revoke_role(user, role_name)
 
         del self.custom_roles[role_name]
-        logger.info(f"Removed custom role {role_name} for agent {self.agent_id}")
+        logger.info("Removed custom role %s for agent %s", role_name, self.agent_id)
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert ACL to dictionary for serialization."""
@@ -380,9 +380,9 @@ class AgentRBACManager:
 
                 acl = AgentAccessControl.from_dict(data)
                 self.access_controls[acl.agent_id] = acl
-                logger.info(f"Loaded ACL for agent {acl.agent_id}")
+                logger.info("Loaded ACL for agent %s", acl.agent_id)
             except Exception as e:
-                logger.error(f"Failed to load ACL from {acl_file}: {e}")
+                logger.error("Failed to load ACL from %s: %s", acl_file, e)
 
     def get_acl(self, agent_id: str) -> Optional[AgentAccessControl]:
         """
@@ -415,7 +415,7 @@ class AgentRBACManager:
         acl = AgentAccessControl(agent_id=agent_id)
         self.access_controls[agent_id] = acl
         self._save_acl(acl)
-        logger.info(f"Created ACL for agent {agent_id}")
+        logger.info("Created ACL for agent %s", agent_id)
 
         return acl
 
@@ -436,7 +436,7 @@ class AgentRBACManager:
         if acl_file.exists():
             acl_file.unlink()
 
-        logger.info(f"Deleted ACL for agent {agent_id}")
+        logger.info("Deleted ACL for agent %s", agent_id)
 
     def _save_acl(self, acl: AgentAccessControl) -> None:
         """Save ACL to storage."""
@@ -445,7 +445,7 @@ class AgentRBACManager:
         with open(acl_file, "w") as f:
             json.dump(acl.to_dict(), f, indent=2)
 
-        logger.debug(f"Saved ACL for agent {acl.agent_id}")
+        logger.debug("Saved ACL for agent %s", acl.agent_id)
 
     def grant_role(self, agent_id: str, user: str, role_name: str) -> None:
         """
@@ -495,7 +495,7 @@ class AgentRBACManager:
         acl = self.access_controls.get(agent_id)
         if not acl:
             # No ACL defined - default deny
-            logger.debug(f"No ACL defined for agent {agent_id}, denying access")
+            logger.debug("No ACL defined for agent %s, denying access", agent_id)
             return False
 
         return acl.check_permission(user, permission)
@@ -553,4 +553,4 @@ class AgentRBACManager:
         with open(output_path, "w") as f:
             json.dump(audit_data, f, indent=2)
 
-        logger.info(f"Exported audit log to {output_path}")
+        logger.info("Exported audit log to %s", output_path)

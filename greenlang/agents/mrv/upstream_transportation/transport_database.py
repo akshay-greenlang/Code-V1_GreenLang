@@ -1148,7 +1148,7 @@ class TransportDatabaseEngine:
             # Check DEFRA scenarios
             if lookup_key not in DEFRA_FREIGHT_SCENARIOS:
                 # Try to find closest match
-                logger.warning(f"No DEFRA factor for {lookup_key}, using AVERAGE")
+                logger.warning("No DEFRA factor for %s, using AVERAGE", lookup_key)
                 lookup_key = ("ROAD", vehicle_type, "AVERAGE")
 
             if lookup_key not in DEFRA_FREIGHT_SCENARIOS:
@@ -1208,7 +1208,7 @@ class TransportDatabaseEngine:
             for key in factor:
                 factor[key] = factor[key] * regional_adj
 
-            logger.debug(f"Rail EF: {rail_type} {region} = {factor['wtw']:.6f} kgCO2e/tkm")
+            logger.debug("Rail EF: %s %s = %.6f kgCO2e/tkm", rail_type, region, factor['wtw'])
 
             return factor
 
@@ -1240,7 +1240,7 @@ class TransportDatabaseEngine:
 
             factor = DEFRA_FREIGHT_SCENARIOS[lookup_key].copy()
 
-            logger.debug(f"Maritime EF: {vessel_type} = {factor['wtw']:.6f} kgCO2e/tkm")
+            logger.debug("Maritime EF: %s = %.6f kgCO2e/tkm", vessel_type, factor['wtw'])
 
             return factor
 
@@ -1280,7 +1280,7 @@ class TransportDatabaseEngine:
                 for key in factor:
                     factor[key] = factor[key] * distance_adj
 
-            logger.debug(f"Air EF: {aircraft_type} = {factor['wtw']:.6f} kgCO2e/tkm")
+            logger.debug("Air EF: %s = %.6f kgCO2e/tkm", aircraft_type, factor['wtw'])
 
             return factor
 
@@ -1317,7 +1317,7 @@ class TransportDatabaseEngine:
 
             factor = pipeline_factors[pipeline_type]
 
-            logger.debug(f"Pipeline EF: {pipeline_type} = {factor:.6f} kgCO2e/tkm")
+            logger.debug("Pipeline EF: %s = %.6f kgCO2e/tkm", pipeline_type, factor)
 
             return factor
 
@@ -1354,7 +1354,7 @@ class TransportDatabaseEngine:
 
             factor = FUEL_EMISSION_FACTORS[lookup_key]
 
-            logger.debug(f"Fuel EF: {fuel_type} {scope} = {factor:.6f} kgCO2e/unit")
+            logger.debug("Fuel EF: %s %s = %.6f kgCO2e/unit", fuel_type, scope, factor)
 
             return factor
 
@@ -1389,14 +1389,14 @@ class TransportDatabaseEngine:
                 raise ValueError(f"Only USD supported, got {currency}")
 
             if year != 2021:
-                logger.warning(f"Only 2021 factors available, requested {year}")
+                logger.warning("Only 2021 factors available, requested %s", year)
 
             if naics_code not in EEIO_FACTORS:
                 raise ValueError(f"Unknown NAICS code: {naics_code}")
 
             factor = EEIO_FACTORS[naics_code]
 
-            logger.debug(f"EEIO EF: {naics_code} = {factor:.2f} kgCO2e/$1000")
+            logger.debug("EEIO EF: %s = %.2f kgCO2e/$1000", naics_code, factor)
 
             return factor
 
@@ -1434,7 +1434,7 @@ class TransportDatabaseEngine:
 
             factor = HUB_EMISSION_FACTORS[lookup_key]
 
-            logger.debug(f"Hub EF: {hub_type} = {factor:.2f} kgCO2e/m²/year")
+            logger.debug("Hub EF: %s = %.2f kgCO2e/m²/year", hub_type, factor)
 
             return factor
 
@@ -1469,12 +1469,12 @@ class TransportDatabaseEngine:
             lookup_key = (mode, temperature)
 
             if lookup_key not in REEFER_UPLIFT_FACTORS:
-                logger.warning(f"No reefer uplift for {lookup_key}, using 1.0")
+                logger.warning("No reefer uplift for %s, using 1.0", lookup_key)
                 return Decimal("1.0")
 
             factor = REEFER_UPLIFT_FACTORS[lookup_key]
 
-            logger.debug(f"Reefer uplift: {mode} {temperature} = {factor:.2f}")
+            logger.debug("Reefer uplift: %s %s = %.2f", mode, temperature, factor)
 
             return factor
 
@@ -1502,12 +1502,12 @@ class TransportDatabaseEngine:
         """
         with self._instance_lock:
             if mode not in LOAD_FACTORS:
-                logger.warning(f"No load factor for {mode}, using 0.65")
+                logger.warning("No load factor for %s, using 0.65", mode)
                 return Decimal("0.65")
 
             factor = LOAD_FACTORS[mode]
 
-            logger.debug(f"Load factor: {mode} = {factor:.2f}")
+            logger.debug("Load factor: %s = %.2f", mode, factor)
 
             return factor
 
@@ -1535,12 +1535,12 @@ class TransportDatabaseEngine:
         """
         with self._instance_lock:
             if mode not in EMPTY_RUNNING_RATES:
-                logger.warning(f"No empty running rate for {mode}, using 0.30")
+                logger.warning("No empty running rate for %s, using 0.30", mode)
                 return Decimal("0.30")
 
             rate = EMPTY_RUNNING_RATES[mode]
 
-            logger.debug(f"Empty running rate: {mode} = {rate:.2f}")
+            logger.debug("Empty running rate: %s = %.2f", mode, rate)
 
             return rate
 
@@ -1578,7 +1578,7 @@ class TransportDatabaseEngine:
 
             intensity = HUB_EMISSION_FACTORS[lookup_key]
 
-            logger.debug(f"Warehouse intensity: {warehouse_type} {region} = {intensity:.2f}")
+            logger.debug("Warehouse intensity: %s %s = %.2f", warehouse_type, region, intensity)
 
             return intensity
 
@@ -1785,7 +1785,7 @@ class TransportDatabaseEngine:
 
             payload = VEHICLE_CLASSIFICATIONS[vehicle_type]["payload_tonnes"]
 
-            logger.debug(f"Vehicle payload: {vehicle_type} = {payload} tonnes")
+            logger.debug("Vehicle payload: %s = %s tonnes", vehicle_type, payload)
 
             return payload
 
@@ -1815,7 +1815,7 @@ class TransportDatabaseEngine:
 
             capacity = VESSEL_CLASSIFICATIONS[vessel_type].copy()
 
-            logger.debug(f"Vessel capacity: {vessel_type} = {capacity}")
+            logger.debug("Vessel capacity: %s = %s", vessel_type, capacity)
 
             return capacity
 
@@ -1945,7 +1945,7 @@ class TransportDatabaseEngine:
                         continue
 
             # Fallback
-            logger.warning(f"No EF found for {mode}/{vehicle_type}/{region}, using generic")
+            logger.warning("No EF found for %s/%s/%s, using generic", mode, vehicle_type, region)
             result["factor"] = Decimal("0.100")
             result["source"] = "GENERIC"
             result["confidence"] = "LOW"
@@ -1990,7 +1990,7 @@ class TransportDatabaseEngine:
             conversion_factor = UNIT_CONVERSIONS[lookup_key]
             result = value * conversion_factor
 
-            logger.debug(f"Unit conversion: {value} {from_unit} = {result} {to_unit}")
+            logger.debug("Unit conversion: %s %s = %s %s", value, from_unit, result, to_unit)
 
             return result
 
@@ -2128,7 +2128,7 @@ class TransportDatabaseEngine:
                     "source": "DEFRA",
                 })
 
-            logger.info(f"Listed {len(factors)} available factors")
+            logger.info("Listed %s available factors", len(factors))
 
             return factors
 
@@ -2150,7 +2150,7 @@ class TransportDatabaseEngine:
         if lookup_key in REGIONAL_ADJUSTMENTS:
             return REGIONAL_ADJUSTMENTS[lookup_key]
 
-        logger.warning(f"No regional adjustment for {mode}/{region}, using 1.0")
+        logger.warning("No regional adjustment for %s/%s, using 1.0", mode, region)
         return Decimal("1.0")
 
     def _calculate_air_distance_adjustment(

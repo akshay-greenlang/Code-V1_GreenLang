@@ -433,7 +433,7 @@ class ProcessHeatDriftMonitor:
         start_time = datetime.utcnow()
         self._validate_agent_id(agent_id)
 
-        logger.info(f"Detecting data drift for {agent_id} ({model_name} v{model_version})")
+        logger.info("Detecting data drift for %s (%s v%s)", agent_id, model_name, model_version)
 
         # Validate and prepare data
         reference_data = np.array(reference_data)
@@ -1109,7 +1109,7 @@ class ProcessHeatDriftMonitor:
                 f.write(html_content)
             generated_paths.append(str(html_path))
 
-        logger.info(f"Generated drift report(s): {', '.join(generated_paths)}")
+        logger.info("Generated drift report(s): %s", ', '.join(generated_paths))
 
         return generated_paths[0] if generated_paths else ""
 

@@ -54,7 +54,10 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 
-class VaultError(Exception):
+from greenlang.utilities.exceptions.security import PIIViolationError as _PIIViolationError
+
+
+class VaultError(_PIIViolationError):
     """Base exception for token vault errors."""
 
     pass

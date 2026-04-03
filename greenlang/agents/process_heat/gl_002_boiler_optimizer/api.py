@@ -124,7 +124,7 @@ class BoilerAPIController:
             )
 
         except Exception as e:
-            logger.error(f"Efficiency calculation failed: {e}")
+            logger.error("Efficiency calculation failed: %s", e)
             return BoilerAPIResponse(success=False, error=str(e))
 
     async def get_recommendations(
@@ -143,7 +143,7 @@ class BoilerAPIController:
             )
 
         except Exception as e:
-            logger.error(f"Optimization failed: {e}")
+            logger.error("Optimization failed: %s", e)
             return BoilerAPIResponse(success=False, error=str(e))
 
     async def get_status(self, boiler_id: str) -> BoilerAPIResponse:
@@ -163,7 +163,7 @@ class BoilerAPIController:
             )
 
         except Exception as e:
-            logger.error(f"Status retrieval failed: {e}")
+            logger.error("Status retrieval failed: %s", e)
             return BoilerAPIResponse(success=False, error=str(e))
 
     async def get_kpis(self, boiler_id: str) -> BoilerAPIResponse:
@@ -180,7 +180,7 @@ class BoilerAPIController:
             )
 
         except Exception as e:
-            logger.error(f"KPI retrieval failed: {e}")
+            logger.error("KPI retrieval failed: %s", e)
             return BoilerAPIResponse(success=False, error=str(e))
 
     async def analyze_combustion(
@@ -206,7 +206,7 @@ class BoilerAPIController:
             return BoilerAPIResponse(success=True, data=result.dict())
 
         except Exception as e:
-            logger.error(f"Combustion analysis failed: {e}")
+            logger.error("Combustion analysis failed: %s", e)
             return BoilerAPIResponse(success=False, error=str(e))
 
     async def analyze_steam(
@@ -232,7 +232,7 @@ class BoilerAPIController:
             return BoilerAPIResponse(success=True, data=result.dict())
 
         except Exception as e:
-            logger.error(f"Steam analysis failed: {e}")
+            logger.error("Steam analysis failed: %s", e)
             return BoilerAPIResponse(success=False, error=str(e))
 
     async def analyze_economizer(
@@ -258,5 +258,5 @@ class BoilerAPIController:
             return BoilerAPIResponse(success=True, data=result.dict())
 
         except Exception as e:
-            logger.error(f"Economizer analysis failed: {e}")
+            logger.error("Economizer analysis failed: %s", e)
             return BoilerAPIResponse(success=False, error=str(e))

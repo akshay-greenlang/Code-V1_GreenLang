@@ -347,7 +347,7 @@ class ComplianceCheckerEngine:
             WasteTreatmentMethod.INCINERATION_WITH_ENERGY_RECOVERY,
         }
 
-        logger.info(f"ComplianceCheckerEngine initialized with {len(config.enabled_frameworks)} frameworks")
+        logger.info("ComplianceCheckerEngine initialized with %s frameworks", len(config.enabled_frameworks))
 
     @classmethod
     def get_instance(cls, config: Optional[ComplianceCheckerConfig] = None) -> "ComplianceCheckerEngine":
@@ -414,7 +414,7 @@ class ComplianceCheckerEngine:
                 elif framework == ComplianceFramework.EPA_40CFR98:
                     check_result = self.check_epa_40cfr98(result)
                 else:
-                    logger.warning(f"Unknown framework: {framework}")
+                    logger.warning("Unknown framework: %s", framework)
                     continue
 
                 all_results[framework] = check_result

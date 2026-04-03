@@ -130,7 +130,7 @@ class HeatTransferCalculator:
         self._property_db = ThermalFluidPropertyDatabase()
         self._calculation_count = 0
 
-        logger.info(f"HeatTransferCalculator initialized for {fluid_type}")
+        logger.info("HeatTransferCalculator initialized for %s", fluid_type)
 
     def calculate_film_coefficient(
         self,

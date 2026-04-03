@@ -214,7 +214,7 @@ class CommercialBuildingsMRVAgent(BuildingMRVBaseAgent[CommercialBuildingInput, 
 
         # Validate building type
         if metadata.building_type not in self.SUPPORTED_BUILDING_TYPES:
-            self.logger.warning(
+            logger.warning(
                 f"Building type {metadata.building_type} not optimized for commercial agent"
             )
 

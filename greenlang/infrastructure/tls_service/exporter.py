@@ -218,27 +218,27 @@ async def get_certificate_info(
                 )
 
     except ssl.SSLCertVerificationError as e:
-        logger.warning(f"Certificate verification failed for {host}:{port}: {e}")
+        logger.warning("Certificate verification failed for %s:%s: %s", host, port, e)
         return _create_error_cert_info(host, port, f"Verification failed: {e}")
 
     except ssl.SSLError as e:
-        logger.warning(f"SSL error for {host}:{port}: {e}")
+        logger.warning("SSL error for %s:%s: %s", host, port, e)
         return _create_error_cert_info(host, port, f"SSL error: {e}")
 
     except socket.timeout:
-        logger.warning(f"Connection timeout for {host}:{port}")
+        logger.warning("Connection timeout for %s:%s", host, port)
         return _create_error_cert_info(host, port, "Connection timeout")
 
     except socket.gaierror as e:
-        logger.warning(f"DNS resolution failed for {host}:{port}: {e}")
+        logger.warning("DNS resolution failed for %s:%s: %s", host, port, e)
         return _create_error_cert_info(host, port, f"DNS resolution failed: {e}")
 
     except ConnectionRefusedError:
-        logger.warning(f"Connection refused for {host}:{port}")
+        logger.warning("Connection refused for %s:%s", host, port)
         return _create_error_cert_info(host, port, "Connection refused")
 
     except Exception as e:
-        logger.error(f"Failed to get certificate info for {host}:{port}: {e}")
+        logger.error("Failed to get certificate info for %s:%s: %s", host, port, e)
         return _create_error_cert_info(host, port, str(e))
 
 
@@ -291,7 +291,7 @@ def _parse_cert_date(date_str: str) -> datetime:
             dt = datetime.strptime(date_str, "%b  %d %H:%M:%S %Y %Z")
             return dt.replace(tzinfo=timezone.utc)
         except ValueError:
-            logger.warning(f"Failed to parse certificate date: {date_str}")
+            logger.warning("Failed to parse certificate date: %s", date_str)
             return datetime.min.replace(tzinfo=timezone.utc)
 
 
@@ -405,7 +405,7 @@ class TLSCertificateScanner:
                 self._cache[f"{result.host}:{result.port}"] = result
                 certs.append(result)
             elif isinstance(result, Exception):
-                logger.error(f"Scan error: {result}")
+                logger.error("Scan error: %s", result)
 
         self._last_scan = datetime.now(timezone.utc)
         self._scan_duration = time.perf_counter() - start_time

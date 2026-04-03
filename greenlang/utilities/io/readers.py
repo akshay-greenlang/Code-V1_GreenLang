@@ -109,7 +109,7 @@ class DataReader:
             raise ValueError(f"Unsupported format: {ext}")
 
         # Read using appropriate handler
-        logger.debug(f"Reading {path} as {ext} format")
+        logger.debug("Reading %s as %s format", path, ext)
         handler = self._format_handlers[ext]
         return handler(path, **kwargs)
 

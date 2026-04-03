@@ -1,0 +1,232 @@
+# syntax=docker/dockerfile:1.7
+# =============================================================================
+# GreenLang Parameterized Agent Dockerfile Template
+# =============================================================================
+# Replaces 16+ near-identical agent Dockerfiles (DATA-011 through DATA-020,
+# GL-001 through GL-017, Agent Factory runtime, Registry, etc.)
+#
+# Usage:
+#   docker build \
+#     --build-arg AGENT_ID=GL-DATA-X-014 \
+#     --build-arg AGENT_NAME=duplicate-detector \
+#     --build-arg APP_MODULE=greenlang.duplicate_detector.setup:create_app \
+#     --build-arg HEALTH_PATH=/api/v1/dedup/health \
+#     -f deployment/docker/templates/Dockerfile.agent \
+#     -t greenlang/duplicate-detector:1.0.0 .
+#
+# Build targets:
+#   --target production   (default) Minimal hardened production image
+#   --target development  Dev image with test/lint tooling + hot-reload
+#   --target test         CI image that runs pytest on startup
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# Build arguments - override at build time to configure for any agent
+# ---------------------------------------------------------------------------
+ARG PYTHON_VERSION=3.11-slim-bookworm
+
+# ===========================================================================
+# Stage 1: base -- shared runtime foundation (no build tools)
+# ===========================================================================
+FROM python:${PYTHON_VERSION} AS base
+
+# Deterministic, secure Python environment
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PYTHONFAULTHANDLER=1 \
+    PYTHONHASHSEED=random \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    PIP_DEFAULT_TIMEOUT=100
+
+# Minimal runtime system packages:
+#   curl        -- healthcheck probe
+#   ca-certs    -- TLS verification
+#   tini        -- PID 1 signal forwarding, zombie reaping
+#   libpq5      -- PostgreSQL client library (runtime only, no -dev headers)
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        curl \
+        ca-certificates \
+        tini \
+        libpq5 \
+    && apt-get upgrade -y \
+    && rm -rf /var/lib/apt/lists/* /var/cache/apt/* /tmp/*
+
+# Non-root user with high UID (10001+) per container security best practices
+RUN groupadd --gid 10001 glagent \
+    && useradd --uid 10001 --gid 10001 --shell /usr/sbin/nologin --create-home glagent
+
+# ===========================================================================
+# Stage 2: builder -- compile native extensions, install pip packages
+# ===========================================================================
+FROM base AS builder
+
+# Build-time system dependencies for native wheels (psycopg2, cryptography, etc.)
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        build-essential \
+        gcc \
+        g++ \
+        libpq-dev \
+        libffi-dev \
+        libssl-dev \
+        git \
+    && rm -rf /var/lib/apt/lists/*
+
+# Isolated venv keeps the final image clean -- we COPY only the venv later
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+RUN pip install --upgrade pip setuptools wheel
+
+# Install Python dependencies from the supplied requirements file.
+# Default is requirements.txt at the build context root; override with
+# --build-arg REQUIREMENTS_FILE=path/to/other.txt
+ARG REQUIREMENTS_FILE=requirements.txt
+COPY ${REQUIREMENTS_FILE} /tmp/requirements.txt
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install --no-cache-dir -r /tmp/requirements.txt
+
+# ===========================================================================
+# Stage 3: production -- minimal, hardened runtime image
+# ===========================================================================
+FROM base AS production
+
+# --- Agent identity (override per service) ---
+ARG AGENT_ID=gl-000
+ARG AGENT_NAME=agent
+ARG VERSION=1.0.0
+ARG BUILD_DATE=""
+ARG VCS_REF=""
+
+# --- Network ---
+ARG APP_PORT=8000
+ARG METRICS_PORT=9090
+
+# --- Runtime tuning ---
+ARG WORKERS=4
+
+# --- Application module (uvicorn import path) ---
+#   Examples:
+#     greenlang.duplicate_detector.setup:create_app
+#     greenlang.climate_hazard.setup:create_app
+#     api.rest_api:app
+ARG APP_MODULE=api.rest_api:app
+
+# --- Healthcheck path ---
+ARG HEALTH_PATH=/health
+
+# Bring the pre-built venv from the builder stage
+COPY --from=builder /opt/venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Environment variables baked into the image (overridable at runtime)
+ENV GL_AGENT_ID=${AGENT_ID} \
+    GL_AGENT_NAME=${AGENT_NAME} \
+    GL_VERSION=${VERSION} \
+    GL_LOG_LEVEL=INFO \
+    GL_LOG_FORMAT=json \
+    GL_METRICS_ENABLED=true \
+    GL_DETERMINISTIC_MODE=true \
+    GL_FAIL_CLOSED=true \
+    ENVIRONMENT=production \
+    APP_PORT=${APP_PORT} \
+    METRICS_PORT=${METRICS_PORT} \
+    APP_MODULE=${APP_MODULE} \
+    HEALTH_PATH=${HEALTH_PATH} \
+    WORKERS=${WORKERS}
+
+WORKDIR /app
+
+# Copy application source. The .dockerignore should exclude tests, docs, .git, etc.
+COPY --chown=glagent:glagent . .
+
+# Create writable directories the agent may need at runtime
+RUN mkdir -p /app/logs /app/data /app/cache /app/audit \
+    && chown -R glagent:glagent /app
+
+# Strip non-production artefacts that may have leaked past .dockerignore
+RUN rm -rf /app/.git /app/tests /app/docs /app/*.md \
+           /app/Dockerfile* /app/.env* /app/.dockerignore \
+           /app/docker-compose* /app/.github /app/.vscode \
+           /app/benchmarks /app/examples 2>/dev/null || true
+
+# Drop to non-root
+USER glagent
+
+EXPOSE ${APP_PORT} ${METRICS_PORT}
+
+# Healthcheck -- uses the parameterized health path and port
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD curl -sf http://localhost:${APP_PORT}${HEALTH_PATH} || exit 1
+
+# OCI image metadata
+LABEL org.opencontainers.image.title="${AGENT_ID} ${AGENT_NAME}" \
+      org.opencontainers.image.version="${VERSION}" \
+      org.opencontainers.image.created="${BUILD_DATE}" \
+      org.opencontainers.image.revision="${VCS_REF}" \
+      org.opencontainers.image.vendor="GreenLang" \
+      org.opencontainers.image.licenses="MIT" \
+      org.opencontainers.image.source="https://github.com/greenlang/greenlang" \
+      com.greenlang.agent.id="${AGENT_ID}" \
+      com.greenlang.agent.name="${AGENT_NAME}" \
+      com.greenlang.agent.port="${APP_PORT}" \
+      security.capabilities.drop="ALL" \
+      security.no-new-privileges="true"
+
+# tini as PID 1 for proper signal handling and zombie reaping
+ENTRYPOINT ["/usr/bin/tini", "--"]
+
+# Default command -- uvicorn with the parameterized module
+# NOTE: shell form is used here so ENV variable substitution works at runtime.
+# If you need exec form, override CMD in docker-compose or k8s.
+CMD uvicorn ${APP_MODULE} \
+    --host 0.0.0.0 \
+    --port ${APP_PORT} \
+    --workers ${WORKERS} \
+    --access-log \
+    --proxy-headers
+
+# ===========================================================================
+# Stage 4: development -- adds dev/test tooling + hot-reload
+# ===========================================================================
+FROM production AS development
+
+USER root
+
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install --no-cache-dir \
+        pytest \
+        pytest-cov \
+        pytest-asyncio \
+        httpx \
+        black \
+        ruff \
+        mypy \
+        ipython
+
+USER glagent
+
+ENV GL_LOG_LEVEL=DEBUG \
+    ENVIRONMENT=development
+
+# Hot-reload for local development
+CMD uvicorn ${APP_MODULE} \
+    --host 0.0.0.0 \
+    --port ${APP_PORT} \
+    --reload
+
+# ===========================================================================
+# Stage 5: test -- runs pytest on container start (CI usage)
+# ===========================================================================
+FROM development AS test
+
+# Re-copy tests that were stripped in production stage
+COPY --chown=glagent:glagent tests/ /app/tests/
+
+ENV GL_TEST_MODE=true \
+    GL_LOG_LEVEL=DEBUG \
+    ENVIRONMENT=test
+
+CMD ["pytest", "tests/", "-v", "--cov=.", "--cov-report=term-missing", "--cov-fail-under=85"]

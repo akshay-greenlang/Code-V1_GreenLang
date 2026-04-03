@@ -353,7 +353,7 @@ class AgroforestryMRVAgent(DeterministicAgent):
     def __init__(self, enable_audit_trail: bool = True):
         """Initialize Agroforestry MRV Agent."""
         super().__init__(enable_audit_trail=enable_audit_trail)
-        logger.info(f"Initialized {self.AGENT_NAME} v{self.VERSION}")
+        logger.info("Initialized %s v%s", self.AGENT_NAME, self.VERSION)
 
     def execute(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
         """Execute agroforestry carbon calculation."""
@@ -435,7 +435,7 @@ class AgroforestryMRVAgent(DeterministicAgent):
             return output.model_dump()
 
         except Exception as e:
-            logger.error(f"Agroforestry calculation failed: {str(e)}", exc_info=True)
+            logger.error("Agroforestry calculation failed: %s", e, exc_info=True)
             raise
 
     def _calculate_site_carbon(

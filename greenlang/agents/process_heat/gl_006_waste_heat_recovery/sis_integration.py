@@ -239,7 +239,7 @@ class WHRInterlock(BaseModel):
     def validate_response_time(cls, v: int) -> int:
         """Validate response time meets SIL 2 requirements."""
         if v > 500:
-            logger.warning(f"Response time {v}ms exceeds 500ms limit for SIL 2")
+            logger.warning("Response time %sms exceeds 500ms limit for SIL 2", v)
         return v
 
 

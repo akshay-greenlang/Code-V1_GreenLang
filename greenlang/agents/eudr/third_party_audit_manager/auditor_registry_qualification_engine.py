@@ -207,7 +207,7 @@ class AuditorRegistryQualificationEngine:
             return response
 
         except Exception as e:
-            logger.error(f"Auditor matching failed: {e}", exc_info=True)
+            logger.error("Auditor matching failed: %s", e, exc_info=True)
             raise
 
     def register_auditor(

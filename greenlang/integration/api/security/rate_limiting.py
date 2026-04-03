@@ -181,7 +181,7 @@ class RateLimiter:
                 )
                 logger.info("Redis-backed rate limiting initialized")
             except Exception as e:
-                logger.warning(f"Failed to connect to Redis: {e}. Using local rate limiting.")
+                logger.warning("Failed to connect to Redis: %s. Using local rate limiting.", e)
                 self.redis = None
         else:
             logger.info("Using local in-memory rate limiting")
@@ -311,7 +311,7 @@ class RateLimiter:
                     return False, 0, reset_time
 
         except Exception as e:
-            logger.error(f"Redis rate limit check failed: {e}")
+            logger.error("Redis rate limit check failed: %s", e)
             # Fall back to allowing request on Redis error
             return True, limit, 0
 

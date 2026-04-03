@@ -159,7 +159,7 @@ class BaseDataProcessor(BaseAgent):
                 record_data=record,
                 error_message=str(e)
             )
-            self.logger.warning(f"Failed to process record {index}: {str(e)}")
+            logger.warning("Failed to process record %s: %s", index, e)
 
             return {"_error": error}
 
@@ -216,7 +216,7 @@ class BaseDataProcessor(BaseAgent):
                 # Check error threshold
                 errors = self.stats.custom_counters.get("records_failed", 0)
                 if errors >= self.config.max_errors:
-                    self.logger.error(f"Exceeded max errors ({self.config.max_errors}), aborting")
+                    logger.error("Exceeded max errors (%s), aborting", self.config.max_errors)
                     executor.shutdown(wait=False, cancel_futures=True)
                     break
 
@@ -245,7 +245,7 @@ class BaseDataProcessor(BaseAgent):
             # Check error threshold
             errors = self.stats.custom_counters.get("records_failed", 0)
             if errors >= self.config.max_errors:
-                self.logger.error(f"Exceeded max errors ({self.config.max_errors}), aborting")
+                logger.error("Exceeded max errors (%s), aborting", self.config.max_errors)
                 break
 
         return all_results
@@ -284,7 +284,7 @@ class BaseDataProcessor(BaseAgent):
                 error="No records provided in input_data['records']"
             )
 
-        self.logger.info(f"Processing {len(records)} records with batch size {self.config.batch_size}")
+        logger.info("Processing %s records with batch size %s", len(records), self.config.batch_size)
 
         # Create batches
         batches = self.create_batches(records)
@@ -335,12 +335,12 @@ class BaseDataProcessor(BaseAgent):
     def validate_input(self, input_data: Dict[str, Any]) -> bool:
         """Validate that input contains records."""
         if "records" not in input_data:
-            self.logger.error("Input data must contain 'records' key")
+            logger.error("Input data must contain 'records' key")
             return False
 
         records = input_data["records"]
         if not isinstance(records, list):
-            self.logger.error("'records' must be a list")
+            logger.error("'records' must be a list")
             return False
 
         return True

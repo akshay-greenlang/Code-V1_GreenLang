@@ -492,7 +492,7 @@ class CustomValidator(ValidationRule):
                 )
 
         except Exception as e:
-            self.logger.error(f"Custom validation failed: {e}", exc_info=True)
+            logger.error("Custom validation failed: %s", e, exc_info=True)
             return self._create_result(
                 False,
                 value,

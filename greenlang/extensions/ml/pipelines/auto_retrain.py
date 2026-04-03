@@ -163,7 +163,7 @@ class PerformanceDegradationTrigger(RetrainingTrigger):
 
     def _fetch_current_metrics(self, model_name: str) -> Optional[Dict[str, float]]:
         """Fetch current metrics from metrics store."""
-        logger.info(f"Fetching metrics for {model_name}")
+        logger.info("Fetching metrics for %s", model_name)
         return {"accuracy": 0.94, "precision": 0.92, "recall": 0.93}
 
 
@@ -191,7 +191,7 @@ class DataDriftTrigger(RetrainingTrigger):
 
     def _check_drift_from_evidently(self, model_name: str) -> Optional[float]:
         """Check drift from Evidently monitoring."""
-        logger.info(f"Checking drift for {model_name} using Evidently")
+        logger.info("Checking drift for %s using Evidently", model_name)
         return 0.18
 
 
@@ -277,10 +277,10 @@ class AutoRetrainPipeline:
         for trigger in self.triggers:
             should_retrain, reason = trigger.should_retrain(model_name)
             if should_retrain:
-                logger.info(f"Retrain needed for {model_name}: {reason}")
+                logger.info("Retrain needed for %s: %s", model_name, reason)
                 return True
 
-        logger.debug(f"No retrain needed for {model_name}")
+        logger.debug("No retrain needed for %s", model_name)
         return False
 
     def start_retrain_job(
@@ -302,7 +302,7 @@ class AutoRetrainPipeline:
 
             self.job_history[job_id] = job
 
-            logger.info(f"Starting retrain job {job_id} for {model_name}")
+            logger.info("Starting retrain job %s for %s", job_id, model_name)
             training_data = self._extract_training_data(
                 model_name,
                 self.config.training_window_days
@@ -322,7 +322,7 @@ class AutoRetrainPipeline:
                 f"Job ID: {job_id}\nTrigger: {trigger_type.value}"
             )
 
-            logger.info(f"Retrain job {job_id} submitted to Kubernetes")
+            logger.info("Retrain job %s submitted to Kubernetes", job_id)
             return job_id
 
     def validate_new_model(
@@ -331,7 +331,7 @@ class AutoRetrainPipeline:
         validation_data: Optional[Dict[str, Any]] = None
     ) -> ValidationResult:
         """Validate a newly trained model."""
-        logger.info(f"Validating model {model_name}")
+        logger.info("Validating model %s", model_name)
 
         if validation_data is None:
             validation_data = self._extract_validation_data(model_name)
@@ -361,7 +361,7 @@ class AutoRetrainPipeline:
             notes=f"Validated against {len(validation_data['labels'])} samples"
         )
 
-        logger.info(f"Validation complete: accuracy={result.accuracy:.4f}")
+        logger.info("Validation complete: accuracy=%.4f", result.accuracy)
         return result
 
     def deploy_if_better(
@@ -373,10 +373,10 @@ class AutoRetrainPipeline:
         """Deploy new model if it shows sufficient improvement."""
         job = self.job_history.get(job_id)
         if not job:
-            logger.error(f"Job {job_id} not found")
+            logger.error("Job %s not found", job_id)
             return False
 
-        logger.info(f"Evaluating deployment for {model_name}")
+        logger.info("Evaluating deployment for %s", model_name)
         job.status = RetrainingStatus.VALIDATION
 
         new_metrics = self._get_model_metrics(model_name, "challenger")
@@ -395,7 +395,7 @@ class AutoRetrainPipeline:
         )
 
         if improvement >= min_improvement:
-            logger.info(f"Deploying {model_name} (improvement: {improvement*100:.2f}%)")
+            logger.info("Deploying %s (improvement: %.2f%)", model_name, improvement*100)
 
             job.status = RetrainingStatus.DEPLOYING
             success = self._promote_to_production(model_name, job_id)
@@ -410,7 +410,7 @@ class AutoRetrainPipeline:
                     f"Improvement: {improvement*100:.2f}%\nJob ID: {job_id}"
                 )
 
-                logger.info(f"Model {model_name} successfully deployed")
+                logger.info("Model %s successfully deployed", model_name)
                 return True
             else:
                 job.status = RetrainingStatus.FAILED
@@ -456,12 +456,12 @@ class AutoRetrainPipeline:
         lookback_days: int
     ) -> Dict[str, Any]:
         """Extract training data from the last N days."""
-        logger.info(f"Extracting training data for {model_name} (last {lookback_days} days)")
+        logger.info("Extracting training data for %s (last %s days)", model_name, lookback_days)
         return {"features": np.random.rand(1000, 10), "labels": np.random.rand(1000)}
 
     def _extract_validation_data(self, model_name: str) -> Dict[str, Any]:
         """Extract validation/holdout data."""
-        logger.info(f"Extracting validation data for {model_name}")
+        logger.info("Extracting validation data for %s", model_name)
         return {"features": np.random.rand(200, 10), "labels": np.random.rand(200)}
 
     def _submit_k8s_job(
@@ -473,12 +473,12 @@ class AutoRetrainPipeline:
     ) -> str:
         """Submit a training job to Kubernetes."""
         k8s_job_name = f"retrain-{model_name}-{job_id[:8]}"
-        logger.info(f"Submitting K8s job: {k8s_job_name}")
+        logger.info("Submitting K8s job: %s", k8s_job_name)
         return k8s_job_name
 
     def _load_model_from_mlflow(self, model_name: str) -> Any:
         """Load a model from MLflow."""
-        logger.info(f"Loading model {model_name} from MLflow")
+        logger.info("Loading model %s from MLflow", model_name)
         return None
 
     def _calculate_metrics(
@@ -528,7 +528,7 @@ class AutoRetrainPipeline:
 
     def _promote_to_production(self, model_name: str, job_id: str) -> bool:
         """Promote model to production."""
-        logger.info(f"Promoting {model_name} to production (job {job_id})")
+        logger.info("Promoting %s to production (job %s)", model_name, job_id)
         return True
 
     def _notify_slack(self, title: str, message: str) -> None:
@@ -536,4 +536,4 @@ class AutoRetrainPipeline:
         if not self.slack_webhook:
             return
 
-        logger.info(f"Slack notification: {title}")
+        logger.info("Slack notification: %s", title)

@@ -35,6 +35,8 @@ from typing import Any, Callable, Optional, TypeVar
 
 import httpx
 
+from greenlang.utilities.exceptions.security import SecretAccessError
+
 logger = logging.getLogger(__name__)
 
 T = TypeVar('T')
@@ -48,7 +50,7 @@ class VaultAuthMethod(str, Enum):
     AWS_IAM = "aws_iam"
 
 
-class VaultError(Exception):
+class VaultError(SecretAccessError):
     """Base exception for Vault operations."""
     pass
 
@@ -436,7 +438,7 @@ class VaultClient:
             except asyncio.CancelledError:
                 break
             except Exception as e:
-                logger.error(f"Token renewal failed: {e}")
+                logger.error("Token renewal failed: %s", e)
                 await asyncio.sleep(30)
 
     async def _renew_token(self) -> None:
@@ -450,7 +452,7 @@ class VaultClient:
                     self._token_expiry = datetime.utcnow() + timedelta(seconds=self._token_ttl)
                 logger.debug("Token renewed successfully")
             except VaultError as e:
-                logger.warning(f"Token renewal failed, re-authenticating: {e}")
+                logger.warning("Token renewal failed, re-authenticating: %s", e)
                 await self.authenticate()
 
     async def _request(
@@ -512,7 +514,7 @@ class VaultClient:
                     self.config.base_retry_delay * (2 ** attempt),
                     self.config.max_retry_delay,
                 )
-                logger.warning(f"Vault request failed, retrying in {delay}s: {last_error}")
+                logger.warning("Vault request failed, retrying in %ss: %s", delay, last_error)
                 await asyncio.sleep(delay)
 
         raise last_error or VaultError("Request failed after retries")

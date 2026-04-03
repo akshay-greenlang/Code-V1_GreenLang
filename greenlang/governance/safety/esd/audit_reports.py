@@ -310,7 +310,7 @@ class ESDReportGenerator:
         self.organization = organization
         self.reports: Dict[str, Any] = {}
 
-        logger.info(f"ESDReportGenerator initialized: {system_id}")
+        logger.info("ESDReportGenerator initialized: %s", system_id)
 
     def generate_test_history_report(
         self,
@@ -418,7 +418,7 @@ class ESDReportGenerator:
 
         self.reports[metadata.report_id] = report
 
-        logger.info(f"Test history report generated: {metadata.report_id}")
+        logger.info("Test history report generated: %s", metadata.report_id)
 
         return report
 
@@ -534,7 +534,7 @@ class ESDReportGenerator:
         metadata.provenance_hash = self._calculate_provenance(report)
         self.reports[metadata.report_id] = report
 
-        logger.info(f"Bypass history report generated: {metadata.report_id}")
+        logger.info("Bypass history report generated: %s", metadata.report_id)
 
         return report
 
@@ -653,7 +653,7 @@ class ESDReportGenerator:
         metadata.provenance_hash = self._calculate_provenance(report)
         self.reports[metadata.report_id] = report
 
-        logger.info(f"Response time trend report generated: {metadata.report_id}")
+        logger.info("Response time trend report generated: %s", metadata.report_id)
 
         return report
 
@@ -867,7 +867,7 @@ class ESDReportGenerator:
         metadata.provenance_hash = self._calculate_provenance(report)
         self.reports[metadata.report_id] = report
 
-        logger.info(f"Compliance report generated: {metadata.report_id}")
+        logger.info("Compliance report generated: %s", metadata.report_id)
 
         return report
 

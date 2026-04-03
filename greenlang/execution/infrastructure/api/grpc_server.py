@@ -84,11 +84,11 @@ class LoggingInterceptor(grpc.aio.ServerInterceptor):
         try:
             handler = await continuation(handler_call_details)
             elapsed = (datetime.now() - start).total_seconds() * 1000
-            logger.info(f"{handler_call_details.method} completed in {elapsed:.2f}ms")
+            logger.info("%s completed in %.2fms", handler_call_details.method, elapsed)
             return handler
         except grpc.RpcError as e:
             elapsed = (datetime.now() - start).total_seconds() * 1000
-            logger.warning(f"{handler_call_details.method} failed: {e.code()} ({elapsed:.2f}ms)")
+            logger.warning("%s failed: %s (%.2fms)", handler_call_details.method, e.code(), elapsed)
             raise
 
 
@@ -165,7 +165,7 @@ class ProcessHeatServicer(ProcessHeatServiceServicer):
             }
 
             asyncio.create_task(self._process(calc_id, request))
-            logger.info(f"Calculation {calc_id} queued")
+            logger.info("Calculation %s queued", calc_id)
 
             return CalculationResponse(
                 calculation_id=calc_id,
@@ -175,7 +175,7 @@ class ProcessHeatServicer(ProcessHeatServiceServicer):
             )
 
         except Exception as e:
-            logger.error(f"RunCalculation failed: {e}", exc_info=True)
+            logger.error("RunCalculation failed: %s", e, exc_info=True)
             await context.abort(grpc.StatusCode.INTERNAL, str(e))
 
     async def GetStatus(
@@ -241,7 +241,7 @@ class ProcessHeatServicer(ProcessHeatServiceServicer):
                 except asyncio.TimeoutError:
                     continue
         except Exception as e:
-            logger.error(f"StreamResults error: {e}", exc_info=True)
+            logger.error("StreamResults error: %s", e, exc_info=True)
             await context.abort(grpc.StatusCode.INTERNAL, str(e))
 
     async def _process(self, calc_id: str, request: CalculationRequest) -> None:
@@ -278,10 +278,10 @@ class ProcessHeatServicer(ProcessHeatServiceServicer):
             state["completed_at"] = datetime.now()
             state["progress"] = 100
 
-            logger.info(f"Calculation {calc_id} completed")
+            logger.info("Calculation %s completed", calc_id)
 
         except Exception as e:
-            logger.error(f"Processing failed: {e}")
+            logger.error("Processing failed: %s", e)
             self.states[calc_id]["status"] = "FAILED"
             self.states[calc_id]["error"] = str(e)
 
@@ -412,7 +412,7 @@ class EmissionsServicer(EmissionsServiceServicer):
             # CH4 GWP = 28, N2O GWP = 265
             co2e = total_co2 + (total_ch4 * 28) + (total_n2o * 265)
 
-            logger.info(f"Emissions {emis_id} calculated: {co2e:.2f} CO2e tonnes")
+            logger.info("Emissions %s calculated: %.2f CO2e tonnes", emis_id, co2e)
 
             return EmissionsResponse(
                 emissions_id=emis_id,
@@ -427,7 +427,7 @@ class EmissionsServicer(EmissionsServiceServicer):
             )
 
         except Exception as e:
-            logger.error(f"CalculateEmissions failed: {e}", exc_info=True)
+            logger.error("CalculateEmissions failed: %s", e, exc_info=True)
             await context.abort(grpc.StatusCode.INTERNAL, str(e))
 
     async def GetEmissionFactors(
@@ -456,7 +456,7 @@ class EmissionsServicer(EmissionsServiceServicer):
         key = f"{fuel}_{scope}_{region}_{year}"
         factors = self.factors_db.get(key, [])
 
-        logger.info(f"Retrieved {len(factors)} emission factors for {fuel}/{scope}/{region}")
+        logger.info("Retrieved %s emission factors for %s/%s/%s", len(factors), fuel, scope, region)
 
         return EmissionFactorsResponse(
             fuel_type=fuel,
@@ -560,7 +560,7 @@ class ComplianceServicer(ComplianceServiceServicer):
                 else "NON_COMPLIANT"
             )
 
-            logger.info(f"Report {report_id} generated for {framework}: score {score:.1f}%")
+            logger.info("Report %s generated for %s: score %.1f%", report_id, framework, score)
 
             return ReportResponse(
                 report_id=report_id,
@@ -576,7 +576,7 @@ class ComplianceServicer(ComplianceServiceServicer):
             )
 
         except Exception as e:
-            logger.error(f"GenerateReport failed: {e}", exc_info=True)
+            logger.error("GenerateReport failed: %s", e, exc_info=True)
             await context.abort(grpc.StatusCode.INTERNAL, str(e))
 
     async def CheckCompliance(
@@ -605,7 +605,7 @@ class ComplianceServicer(ComplianceServiceServicer):
             is_compliant = len(violations) == 0
             score = max(0.0, 100.0 - (len(violations) * 10.0))
 
-            logger.info(f"Compliance check {check_id} for {regulation}: score {score:.1f}%")
+            logger.info("Compliance check %s for %s: score %.1f%", check_id, regulation, score)
 
             return ComplianceCheckResponse(
                 check_id=check_id,
@@ -619,7 +619,7 @@ class ComplianceServicer(ComplianceServiceServicer):
             )
 
         except Exception as e:
-            logger.error(f"CheckCompliance failed: {e}", exc_info=True)
+            logger.error("CheckCompliance failed: %s", e, exc_info=True)
             await context.abort(grpc.StatusCode.INTERNAL, str(e))
 
     @staticmethod
@@ -791,7 +791,7 @@ class ProcessHeatGrpcServer:
         # Add port
         self.server.add_insecure_port(f"{self.host}:{self.port}")
 
-        logger.info(f"Starting gRPC server on {self.host}:{self.port}")
+        logger.info("Starting gRPC server on %s:%s", self.host, self.port)
         await self.server.start()
         logger.info("gRPC server started successfully")
 
@@ -840,7 +840,7 @@ class ProcessHeatGrpcServer:
         service_names.append("grpc.health.v1.Health")
 
         reflection.enable_server_reflection(service_names, self.server)
-        logger.info(f"gRPC reflection enabled for {len(service_names)} services")
+        logger.info("gRPC reflection enabled for %s services", len(service_names))
 
     def _enable_health_checks(self) -> None:
         """
@@ -856,12 +856,12 @@ class ProcessHeatGrpcServer:
             self.health_servicer.set(service_name, health_pb2.HealthCheckResponse.SERVING)
 
         health_pb2_grpc.add_HealthServicer_to_server(self.health_servicer, self.server)
-        logger.info(f"Health check service enabled for {len(get_service_names())} services")
+        logger.info("Health check service enabled for %s services", len(get_service_names()))
 
     async def stop(self, grace_period: int = 5) -> None:
         """Gracefully shutdown the server."""
         if self.server:
-            logger.info(f"Shutting down gRPC server (grace period: {grace_period}s)")
+            logger.info("Shutting down gRPC server (grace period: %ss)", grace_period)
             await self.server.stop(grace_period)
             logger.info("gRPC server shutdown complete")
 

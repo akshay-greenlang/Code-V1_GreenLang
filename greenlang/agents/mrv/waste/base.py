@@ -466,7 +466,7 @@ class BaseWasteMRVAgent(ABC, Generic[InputT, OutputT]):
         self._incineration_factors = INCINERATION_FACTORS
         self._composting_factors = COMPOSTING_FACTORS
         self._recycling_credits = RECYCLING_CREDITS
-        self.logger.info(f"Initialized {self.AGENT_ID} v{self.AGENT_VERSION}")
+        logger.info("Initialized %s v%s", self.AGENT_ID, self.AGENT_VERSION)
 
     @abstractmethod
     def calculate(self, input_data: InputT) -> OutputT:

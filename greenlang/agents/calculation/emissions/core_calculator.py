@@ -246,7 +246,7 @@ class EmissionFactorDatabase:
 
         self.factor_registry_path = factor_registry_path
         self.factors = self._load_factors()
-        logger.info(f"Loaded {len(self.factors)} emission factor categories from {factor_registry_path}")
+        logger.info("Loaded %s emission factor categories from %s", len(self.factors), factor_registry_path)
 
     def _load_factors(self) -> Dict[str, Any]:
         """Load emission factors from YAML registry"""
@@ -255,10 +255,10 @@ class EmissionFactorDatabase:
                 data = yaml.safe_load(f)
             return data
         except FileNotFoundError:
-            logger.error(f"Emission factor registry not found: {self.factor_registry_path}")
+            logger.error("Emission factor registry not found: %s", self.factor_registry_path)
             return {}
         except yaml.YAMLError as e:
-            logger.error(f"Failed to parse emission factor registry: {e}")
+            logger.error("Failed to parse emission factor registry: %s", e)
             return {}
 
     def get_factor(
@@ -311,7 +311,7 @@ class EmissionFactorDatabase:
                 )
 
         # Factor not found
-        logger.error(f"Emission factor not found: {factor_id}")
+        logger.error("Emission factor not found: %s", factor_id)
         raise ValueError(f"Emission factor not found: {factor_id}. Available categories: {categories}")
 
     def _create_factor_resolution(
@@ -538,6 +538,6 @@ class EmissionCalculator:
             warnings=warnings,
         )
 
-        logger.info(f"Calculation completed: {request.request_id} → {emissions_kg_co2e} kg CO2e ({duration_ms:.2f}ms)")
+        logger.info("Calculation completed: %s → %s kg CO2e (%.2fms)", request.request_id, emissions_kg_co2e, duration_ms)
 
         return result

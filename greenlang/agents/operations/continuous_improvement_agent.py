@@ -299,7 +299,7 @@ class ContinuousImprovementAgent(BaseAgent):
         self._total_savings_identified = 0.0
         self._total_emissions_reduction_identified = 0.0
 
-        self.logger.info(f"Initialized {self.AGENT_ID}: {self.AGENT_NAME}")
+        logger.info("Initialized %s: %s", self.AGENT_ID, self.AGENT_NAME)
 
     def execute(self, input_data: Dict[str, Any]) -> AgentResult:
         """Execute continuous improvement operations."""
@@ -328,7 +328,7 @@ class ContinuousImprovementAgent(BaseAgent):
             )
 
         except Exception as e:
-            self.logger.error(f"Continuous improvement operation failed: {e}", exc_info=True)
+            logger.error("Continuous improvement operation failed: %s", e, exc_info=True)
             processing_time_ms = (time.time() - start_time) * 1000
 
             return AgentResult(

@@ -21,7 +21,7 @@ from ._version import __version__
 try:
     from .integration.sdk.base import Agent, Pipeline, Connector, Dataset, Report
     from .integration.sdk.context import Context, Artifact
-except ImportError:
+except Exception:
     # Fallback for development
     Agent = Pipeline = Connector = Dataset = Report = None
     Context = Artifact = None
@@ -29,17 +29,17 @@ except ImportError:
 try:
     from .ecosystem.packs.registry import PackRegistry
     from .ecosystem.packs.loader import PackLoader
-except ImportError:
+except Exception:
     PackRegistry = PackLoader = None
 
 try:
     from .execution.runtime.executor import Executor
-except ImportError:
+except Exception:
     Executor = None
 
 try:
     from .governance.policy.enforcer import PolicyEnforcer
-except ImportError:
+except Exception:
     PolicyEnforcer = None
 
 __all__ = [

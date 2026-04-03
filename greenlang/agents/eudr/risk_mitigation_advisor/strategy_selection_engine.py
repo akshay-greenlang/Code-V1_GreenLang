@@ -706,7 +706,7 @@ class StrategySelectionEngine:
                 logger.info("XGBoost model interface ready (rule-based fallback active)")
                 self._model_loaded = False
             except Exception as e:
-                logger.warning(f"XGBoost model load failed: {e}")
+                logger.warning("XGBoost model load failed: %s", e)
                 self._model_loaded = False
 
         elif model_type == "lightgbm" and LIGHTGBM_AVAILABLE:
@@ -714,7 +714,7 @@ class StrategySelectionEngine:
                 logger.info("LightGBM model interface ready (rule-based fallback active)")
                 self._model_loaded = False
             except Exception as e:
-                logger.warning(f"LightGBM model load failed: {e}")
+                logger.warning("LightGBM model load failed: %s", e)
                 self._model_loaded = False
 
         else:

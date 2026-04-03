@@ -119,7 +119,7 @@ async def submit_approval_by_id(
     workflow=Depends(get_approval_workflow),
 ) -> ApprovalSubmitResponse:
     """Submit an approval decision with Ed25519 signature."""
-    logger.info(f"Submitting approval: {approval_id} [{trace.trace_id}]")
+    logger.info("Submitting approval: %s [%s]", approval_id, trace.trace_id)
 
     try:
         decision = ApprovalDecision.APPROVED if request.decision == ApprovalDecisionEnum.APPROVED else ApprovalDecision.REJECTED
@@ -173,7 +173,7 @@ async def submit_approval_by_id(
             )
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=create_error_response("bad_request", error_msg, trace_id=trace.trace_id).model_dump())
     except Exception as e:
-        logger.error(f"Failed to submit approval: {e} [{trace.trace_id}]", exc_info=True)
+        logger.error("Failed to submit approval: %s [%s]", e, trace.trace_id, exc_info=True)
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=create_error_response("internal_error", "Failed to submit approval", trace_id=trace.trace_id).model_dump())
 
 
@@ -194,7 +194,7 @@ async def get_approval(
     workflow=Depends(get_approval_workflow),
 ) -> ApprovalRequestResponse:
     """Get approval request details."""
-    logger.debug(f"Getting approval: {approval_id} [{trace.trace_id}]")
+    logger.debug("Getting approval: %s [%s]", approval_id, trace.trace_id)
 
     try:
         request = await workflow.get_approval(approval_id)
@@ -207,7 +207,7 @@ async def get_approval(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Failed to get approval: {e} [{trace.trace_id}]", exc_info=True)
+        logger.error("Failed to get approval: %s [%s]", e, trace.trace_id, exc_info=True)
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=create_error_response("internal_error", "Failed to get approval", trace_id=trace.trace_id).model_dump())
 
 
@@ -228,7 +228,7 @@ async def verify_attestation(
     workflow=Depends(get_approval_workflow),
 ) -> dict:
     """Verify the cryptographic signature on an attestation."""
-    logger.debug(f"Verifying attestation: {approval_id} [{trace.trace_id}]")
+    logger.debug("Verifying attestation: %s [%s]", approval_id, trace.trace_id)
 
     try:
         is_valid = await workflow.verify_attestation(approval_id)
@@ -236,7 +236,7 @@ async def verify_attestation(
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=create_error_response("not_found", str(e), trace_id=trace.trace_id).model_dump())
     except Exception as e:
-        logger.error(f"Failed to verify attestation: {e} [{trace.trace_id}]", exc_info=True)
+        logger.error("Failed to verify attestation: %s [%s]", e, trace.trace_id, exc_info=True)
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=create_error_response("internal_error", "Failed to verify attestation", trace_id=trace.trace_id).model_dump())
 
 
@@ -262,7 +262,7 @@ async def list_run_approvals(
     workflow=Depends(get_approval_workflow),
 ) -> ApprovalListResponse:
     """List all pending approvals for a run."""
-    logger.debug(f"Listing approvals for run: {run_id} [{trace.trace_id}]")
+    logger.debug("Listing approvals for run: %s [%s]", run_id, trace.trace_id)
 
     try:
         run = await orchestrator.get_run(run_id)
@@ -278,7 +278,7 @@ async def list_run_approvals(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Failed to list approvals: {e} [{trace.trace_id}]", exc_info=True)
+        logger.error("Failed to list approvals: %s [%s]", e, trace.trace_id, exc_info=True)
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=create_error_response("internal_error", "Failed to list approvals", trace_id=trace.trace_id).model_dump())
 
 
@@ -303,7 +303,7 @@ async def submit_step_approval(
     workflow=Depends(get_approval_workflow),
 ) -> ApprovalSubmitResponse:
     """Submit approval for a specific step."""
-    logger.info(f"Submitting step approval: {run_id}/{step_id} [{trace.trace_id}]")
+    logger.info("Submitting step approval: %s/%s [%s]", run_id, step_id, trace.trace_id)
 
     try:
         approval_request = await workflow.get_step_approval(run_id, step_id)
@@ -352,7 +352,7 @@ async def submit_step_approval(
             raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=create_error_response("conflict", error_msg, [ErrorDetail(code=APPROVAL_ALREADY_DECIDED, message=error_msg)], trace.trace_id).model_dump())
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=create_error_response("bad_request", error_msg, trace_id=trace.trace_id).model_dump())
     except Exception as e:
-        logger.error(f"Failed to submit step approval: {e} [{trace.trace_id}]", exc_info=True)
+        logger.error("Failed to submit step approval: %s [%s]", e, trace.trace_id, exc_info=True)
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=create_error_response("internal_error", "Failed to submit approval", trace_id=trace.trace_id).model_dump())
 
 

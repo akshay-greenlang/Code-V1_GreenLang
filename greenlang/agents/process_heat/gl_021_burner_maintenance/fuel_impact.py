@@ -428,7 +428,7 @@ class FuelImpactAnalyzer:
         Returns:
             FuelQualityScore with component scores and recommendations
         """
-        logger.info(f"Calculating quality score for {fuel.fuel_type.value}")
+        logger.info("Calculating quality score for %s", fuel.fuel_type.value)
 
         concerns: List[str] = []
 

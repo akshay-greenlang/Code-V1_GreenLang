@@ -105,7 +105,7 @@ class ToolRegistry:
                     self._categories[tag] = []
                 self._categories[tag].append(tool_name)
 
-            logger.info(f"Registered tool: {tool_name}")
+            logger.info("Registered tool: %s", tool_name)
             return func
 
         return decorator
@@ -134,10 +134,10 @@ class ToolRegistry:
 
         try:
             result = tool.function(**kwargs)
-            logger.debug(f"Executed tool: {name}")
+            logger.debug("Executed tool: %s", name)
             return result
         except Exception as e:
-            logger.error(f"Error executing tool {name}: {e}")
+            logger.error("Error executing tool %s: %s", name, e)
             raise
 
     def list_tools(self, tag: Optional[str] = None) -> List[str]:

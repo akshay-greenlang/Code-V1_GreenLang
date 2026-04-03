@@ -1101,7 +1101,7 @@ Temperature: 0.6 for consistency while allowing clear narrative flow."""
                         arguments, calculation_result, context
                     )
             except Exception as e:
-                logger.error(f"Tool {tool_name} failed: {e}")
+                logger.error("Tool %s failed: %s", tool_name, e)
                 tool_evidence[tool_name.replace("_tool", "") + "_recommendations"] = {
                     "error": str(e),
                     "status": "failed"

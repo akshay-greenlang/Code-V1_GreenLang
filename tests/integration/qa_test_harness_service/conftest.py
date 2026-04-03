@@ -24,9 +24,3 @@ def _clean_qa_test_harness_env(monkeypatch):
     for key in list(os.environ.keys()):
         if key.startswith(prefix):
             monkeypatch.delenv(key, raising=False)
-
-
-@pytest.fixture(autouse=True)
-def mock_agents():
-    """Override parent conftest mock_agents fixture to avoid patching non-existent attributes."""
-    yield

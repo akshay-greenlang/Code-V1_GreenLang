@@ -876,7 +876,7 @@ class InformationGatheringCoordinator:
                 completed_agents.add(agent_id)
 
             except Exception as e:
-                logger.error(f"Agent {agent_id} failed: {e}")
+                logger.error("Agent %s failed: %s", agent_id, e)
                 failed_agents.add(agent_id)
 
         # Create result object

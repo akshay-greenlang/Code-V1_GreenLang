@@ -289,7 +289,7 @@ class ManualOverride:
         # Store record
         self.overrides[record.record_id] = record
 
-        logger.info(f"Override request created: {record.record_id}")
+        logger.info("Override request created: %s", record.record_id)
 
         return record
 

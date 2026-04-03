@@ -16,6 +16,8 @@ from dataclasses import dataclass, field
 from collections import defaultdict
 from greenlang.utilities.determinism import DeterministicClock
 
+logger = logging.getLogger(__name__)
+
 
 @dataclass
 class PerformanceMetric:
@@ -92,7 +94,7 @@ class PerformanceTracker:
         )
 
         self.active_metrics[operation_name] = metric
-        self.logger.debug(f"Started tracking: {operation_name}")
+        logger.debug("Started tracking: %s", operation_name)
 
         return metric
 
@@ -106,7 +108,7 @@ class PerformanceTracker:
             Optional[PerformanceMetric]: The completed metric or None if not found
         """
         if operation_name not in self.active_metrics:
-            self.logger.warning(f"No active tracking for: {operation_name}")
+            logger.warning("No active tracking for: %s", operation_name)
             return None
 
         metric = self.active_metrics.pop(operation_name)
@@ -126,17 +128,20 @@ class PerformanceTracker:
 
         # Check for performance issues
         if metric.duration > self.slow_execution_threshold:
-            self.logger.warning(
-                f"Slow execution detected: {operation_name} took {metric.duration:.3f}s"
+            logger.warning(
+                "Slow execution detected: %s took %.3fs",
+                operation_name, metric.duration
             )
 
         if abs(metric.memory_delta) > self.high_memory_threshold:
-            self.logger.warning(
-                f"High memory usage: {operation_name} used {metric.memory_delta:.1f}MB"
+            logger.warning(
+                "High memory usage: %s used %.1fMB",
+                operation_name, metric.memory_delta
             )
 
-        self.logger.debug(
-            f"Stopped tracking: {operation_name} (duration: {metric.duration:.3f}s)"
+        logger.debug(
+            "Stopped tracking: %s (duration: %.3fs)",
+            operation_name, metric.duration
         )
 
         return metric
@@ -318,7 +323,7 @@ class PerformanceTracker:
         else:
             raise ValueError(f"Unsupported format: {format}")
 
-        self.logger.info(f"Exported metrics to {filename}")
+        logger.info("Exported metrics to %s", filename)
         return filename
 
     def reset(self):
@@ -326,7 +331,7 @@ class PerformanceTracker:
         self.metrics.clear()
         self.active_metrics.clear()
         self.summary_stats.clear()
-        self.logger.info("Performance tracker reset")
+        logger.info("Performance tracker reset")
 
     def get_current_memory_usage(self) -> Dict[str, float]:
         """Get current memory usage of the process.

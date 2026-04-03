@@ -391,7 +391,7 @@ class BaseOrchestrator(ABC, Generic[InT, OutT]):
         self._state = OrchestratorState.EXECUTING
         self._metrics.current_state = self._state.value
 
-        logger.info(f"Starting orchestration: {execution_id}")
+        logger.info("Starting orchestration: %s", execution_id)
 
         try:
             # Safety validation
@@ -461,7 +461,7 @@ class BaseOrchestrator(ABC, Generic[InT, OutT]):
             self._metrics.current_state = self._state.value
             execution_time_ms = (time.perf_counter() - start_time) * 1000
 
-            logger.error(f"Orchestration failed: {execution_id} - {e}", exc_info=True)
+            logger.error("Orchestration failed: %s - %s", execution_id, e, exc_info=True)
 
             # Record failure
             if self.safety_monitor:
@@ -496,7 +496,7 @@ class BaseOrchestrator(ABC, Generic[InT, OutT]):
         Call this method to start the message bus processor,
         task scheduler, and other async components.
         """
-        logger.info(f"Starting orchestrator: {self.config.orchestrator_id}")
+        logger.info("Starting orchestrator: %s", self.config.orchestrator_id)
 
         if self.message_bus:
             await self.message_bus.start()
@@ -507,7 +507,7 @@ class BaseOrchestrator(ABC, Generic[InT, OutT]):
         self._state = OrchestratorState.READY
         self._metrics.current_state = self._state.value
 
-        logger.info(f"Orchestrator started: {self.config.orchestrator_id}")
+        logger.info("Orchestrator started: %s", self.config.orchestrator_id)
 
     async def shutdown(self) -> None:
         """
@@ -515,7 +515,7 @@ class BaseOrchestrator(ABC, Generic[InT, OutT]):
 
         Stops all components and releases resources.
         """
-        logger.info(f"Shutting down orchestrator: {self.config.orchestrator_id}")
+        logger.info("Shutting down orchestrator: %s", self.config.orchestrator_id)
 
         if self.message_bus:
             await self.message_bus.close()
@@ -526,7 +526,7 @@ class BaseOrchestrator(ABC, Generic[InT, OutT]):
         self._state = OrchestratorState.TERMINATED
         self._metrics.current_state = self._state.value
 
-        logger.info(f"Orchestrator shutdown complete: {self.config.orchestrator_id}")
+        logger.info("Orchestrator shutdown complete: %s", self.config.orchestrator_id)
 
     async def register_agent(
         self,
@@ -564,7 +564,7 @@ class BaseOrchestrator(ABC, Generic[InT, OutT]):
             self.task_scheduler.register_agent(capacity)
 
         self._metrics.agents_managed = len(self._managed_agents)
-        logger.info(f"Registered agent: {agent_id} (role: {role})")
+        logger.info("Registered agent: %s (role: %s)", agent_id, role)
 
     async def unregister_agent(self, agent_id: str) -> bool:
         """
@@ -830,7 +830,7 @@ class BaseOrchestrator(ABC, Generic[InT, OutT]):
         self._state = OrchestratorState.RECOVERING
         self._metrics.current_state = self._state.value
 
-        logger.warning(f"Attempting error recovery for {execution_id}")
+        logger.warning("Attempting error recovery for %s", execution_id)
 
         # Default recovery: just log and return failure
         # Subclasses can override for custom recovery

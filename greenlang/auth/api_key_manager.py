@@ -27,6 +27,8 @@ from datetime import datetime, timedelta, timezone
 from typing import Dict, List, Optional, Any, Set
 from enum import Enum
 
+from greenlang.utilities.exceptions.security import SecurityException
+
 logger = logging.getLogger(__name__)
 
 # API Key constants
@@ -50,7 +52,7 @@ class APIKeyScope(Enum):
     REGISTRY_PUBLISH = "registry:publish"
 
 
-class APIKeyError(Exception):
+class APIKeyError(SecurityException):
     """Base exception for API key operations"""
     pass
 
@@ -303,7 +305,7 @@ class APIKeyManager:
         self._key_hashes[key_hash] = key_id
         self._user_key_counts[user_id] = user_key_count + 1
 
-        logger.info(f"Generated API key: {key_id} for user={user_id}, tenant={tenant_id}")
+        logger.info("Generated API key: %s for user=%s, tenant=%s", key_id, user_id, tenant_id)
 
         return record, full_key
 
@@ -348,13 +350,13 @@ class APIKeyManager:
                 grace_key_id, grace_expiry = grace_entry
                 if datetime.now(timezone.utc) < grace_expiry:
                     key_id = grace_key_id
-                    logger.info(f"API key validated via grace period: {key_id}")
+                    logger.info("API key validated via grace period: %s", key_id)
                 else:
                     # Clean up expired grace period entry
                     del self._grace_period_hashes[key_hash]
 
         if not key_id:
-            logger.warning(f"API key validation failed: key not found")
+            logger.warning("API key validation failed: key not found")
             raise InvalidAPIKeyError("Invalid API key")
 
         record = self._keys.get(key_id)
@@ -363,35 +365,35 @@ class APIKeyManager:
 
         # Check if revoked
         if record.revoked:
-            logger.warning(f"API key validation failed: key revoked - {key_id}")
+            logger.warning("API key validation failed: key revoked - %s", key_id)
             raise InvalidAPIKeyError("API key has been revoked")
 
         # Check if active
         if not record.active:
-            logger.warning(f"API key validation failed: key inactive - {key_id}")
+            logger.warning("API key validation failed: key inactive - %s", key_id)
             raise InvalidAPIKeyError("API key is inactive")
 
         # Check expiration
         if record.is_expired():
-            logger.warning(f"API key validation failed: key expired - {key_id}")
+            logger.warning("API key validation failed: key expired - %s", key_id)
             raise ExpiredAPIKeyError("API key has expired")
 
         # Check IP allowlist
         if record.allowed_ips and client_ip:
             if client_ip not in record.allowed_ips:
-                logger.warning(f"API key validation failed: IP not allowed - {key_id}")
+                logger.warning("API key validation failed: IP not allowed - %s", key_id)
                 raise InvalidAPIKeyError("Client IP not in allowlist")
 
         # Check origin allowlist
         if record.allowed_origins and origin:
             if origin not in record.allowed_origins:
-                logger.warning(f"API key validation failed: origin not allowed - {key_id}")
+                logger.warning("API key validation failed: origin not allowed - %s", key_id)
                 raise InvalidAPIKeyError("Origin not in allowlist")
 
         # Check scopes
         if required_scopes:
             if not record.has_any_scope(required_scopes):
-                logger.warning(f"API key validation failed: missing scopes - {key_id}")
+                logger.warning("API key validation failed: missing scopes - %s", key_id)
                 raise InvalidAPIKeyError(
                     f"API key missing required scopes: {required_scopes}"
                 )
@@ -399,14 +401,14 @@ class APIKeyManager:
         # Check rate limit
         if record.rate_limit:
             if not self._check_rate_limit(key_id, record.rate_limit):
-                logger.warning(f"API key rate limit exceeded - {key_id}")
+                logger.warning("API key rate limit exceeded - %s", key_id)
                 raise RateLimitExceededError("API key rate limit exceeded")
 
         # Update usage
         record.use_count += 1
         record.last_used_at = datetime.now(timezone.utc)
 
-        logger.debug(f"Validated API key: {key_id} for tenant={record.tenant_id}")
+        logger.debug("Validated API key: %s for tenant=%s", key_id, record.tenant_id)
         return record
 
     def revoke_api_key(
@@ -440,7 +442,7 @@ class APIKeyManager:
         if record.key_hash in self._key_hashes:
             del self._key_hashes[record.key_hash]
 
-        logger.info(f"Revoked API key: {key_id} by {revoked_by}")
+        logger.info("Revoked API key: %s by %s", key_id, revoked_by)
         return True
 
     def rotate_api_key(
@@ -487,7 +489,7 @@ class APIKeyManager:
         del self._key_hashes[old_hash]
         self._key_hashes[new_hash] = key_id
 
-        logger.info(f"Rotated API key: {key_id}, old key valid until {grace_expiry.isoformat()}")
+        logger.info("Rotated API key: %s, old key valid until %s", key_id, grace_expiry.isoformat())
         return old_record, new_full_key
 
     def list_user_keys(self, user_id: str) -> List[APIKeyRecord]:
@@ -548,7 +550,7 @@ class APIKeyManager:
             return False
 
         record.scopes = scopes
-        logger.info(f"Updated scopes for API key: {key_id}")
+        logger.info("Updated scopes for API key: %s", key_id)
         return True
 
     def _generate_key_id(self) -> str:

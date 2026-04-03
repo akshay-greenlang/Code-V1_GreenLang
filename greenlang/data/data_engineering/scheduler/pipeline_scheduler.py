@@ -284,7 +284,7 @@ class PipelineScheduler:
         )
 
         self.pipelines[pipeline_id] = pipeline
-        logger.info(f"Registered pipeline: {pipeline_name} ({pipeline_id})")
+        logger.info("Registered pipeline: %s (%s)", pipeline_name, pipeline_id)
 
         self._save_state()
 
@@ -402,7 +402,7 @@ class PipelineScheduler:
         }
 
         try:
-            logger.info(f"Starting pipeline: {pipeline.pipeline_name}")
+            logger.info("Starting pipeline: %s", pipeline.pipeline_name)
 
             # Import and instantiate pipeline
             pipeline_instance = self._instantiate_pipeline(pipeline)
@@ -485,7 +485,7 @@ class PipelineScheduler:
                         result
                     )
 
-            logger.error(f"Pipeline {pipeline.pipeline_name} failed: {e}")
+            logger.error("Pipeline %s failed: %s", pipeline.pipeline_name, e)
 
         # Record history
         self.run_history.append(result)
@@ -568,14 +568,14 @@ class PipelineScheduler:
                 elif channel == AlertChannel.WEBHOOK:
                     await self._send_webhook_alert(pipeline.alerts, alert_data)
                 elif channel == AlertChannel.LOG:
-                    logger.warning(f"Alert: {json.dumps(alert_data)}")
+                    logger.warning("Alert: %s", json.dumps(alert_data))
             except Exception as e:
-                logger.error(f"Failed to send {channel} alert: {e}")
+                logger.error("Failed to send %s alert: %s", channel, e)
 
     async def _send_email_alert(self, config: AlertConfig, data: Dict) -> None:
         """Send email alert."""
         # Implementation would use email service
-        logger.info(f"Email alert to {config.recipients}: {data['message']}")
+        logger.info("Email alert to %s: %s", config.recipients, data['message'])
 
     async def _send_slack_alert(self, config: AlertConfig, data: Dict) -> None:
         """Send Slack alert."""
@@ -608,7 +608,7 @@ class PipelineScheduler:
             return
 
         # Implementation would use PagerDuty API
-        logger.info(f"PagerDuty alert: {data['message']}")
+        logger.info("PagerDuty alert: %s", data['message'])
 
     async def _send_webhook_alert(self, config: AlertConfig, data: Dict) -> None:
         """Send webhook alert."""
@@ -667,10 +667,10 @@ class PipelineScheduler:
                 state = json.load(f)
 
             self.run_history = state.get('run_history', [])
-            logger.info(f"Loaded scheduler state from {self.state_file}")
+            logger.info("Loaded scheduler state from %s", self.state_file)
 
         except Exception as e:
-            logger.warning(f"Failed to load scheduler state: {e}")
+            logger.warning("Failed to load scheduler state: %s", e)
 
     # =========================================================================
     # AIRFLOW DAG GENERATION
@@ -700,7 +700,7 @@ class PipelineScheduler:
         if output_path:
             with open(output_path, 'w') as f:
                 f.write(dag_code)
-            logger.info(f"Generated Airflow DAG: {output_path}")
+            logger.info("Generated Airflow DAG: %s", output_path)
 
         return dag_code
 

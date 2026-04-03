@@ -97,7 +97,7 @@ class PowerGenerationMRVAgent(MRVEnergyBaseAgent):
             enable_audit_trail=enable_audit_trail
         )
 
-        self.logger.info("PowerGenerationMRVAgent initialized")
+        logger.info("PowerGenerationMRVAgent initialized")
 
     def execute(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
         """

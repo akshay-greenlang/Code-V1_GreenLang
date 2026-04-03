@@ -329,7 +329,7 @@ class ProcessHeatSankeyGenerator:
         self._creation_timestamp = datetime.now(timezone.utc)
         self._modification_count = 0
 
-        logger.info(f"ProcessHeatSankeyGenerator initialized: {title}")
+        logger.info("ProcessHeatSankeyGenerator initialized: %s", title)
 
     @property
     def nodes(self) -> Dict[str, SankeyNode]:
@@ -367,7 +367,7 @@ class ProcessHeatSankeyGenerator:
         self._nodes[node.id] = node
         self._modification_count += 1
 
-        logger.debug(f"Added node: {node.id} ({node.label}) = {node.value} {self.unit}")
+        logger.debug("Added node: %s (%s) = %s %s", node.id, node.label, node.value, self.unit)
 
     def add_flow(self, flow: SankeyFlow) -> None:
         """
@@ -401,7 +401,7 @@ class ProcessHeatSankeyGenerator:
         self._input_nodes.add(flow.source)
         self._output_nodes.add(flow.target)
 
-        logger.debug(f"Added flow: {flow.source} -> {flow.target} = {flow.value} {self.unit}")
+        logger.debug("Added flow: %s -> %s = %s %s", flow.source, flow.target, flow.value, self.unit)
 
     def mark_as_input(self, node_id: str) -> None:
         """
@@ -668,7 +668,7 @@ class ProcessHeatSankeyGenerator:
             plot_bgcolor="white"
         )
 
-        logger.info(f"Generated Sankey figure: {self.title}")
+        logger.info("Generated Sankey figure: %s", self.title)
         return fig
 
     def export_html(self, filepath: Union[str, Path]) -> None:
@@ -681,7 +681,7 @@ class ProcessHeatSankeyGenerator:
         filepath = Path(filepath)
         fig = self.generate_figure()
         fig.write_html(str(filepath), include_plotlyjs=True, full_html=True)
-        logger.info(f"Exported Sankey diagram to HTML: {filepath}")
+        logger.info("Exported Sankey diagram to HTML: %s", filepath)
 
     def export_png(
         self,
@@ -702,7 +702,7 @@ class ProcessHeatSankeyGenerator:
             filepath = Path(filepath)
             fig = self.generate_figure()
             fig.write_image(str(filepath), scale=scale)
-            logger.info(f"Exported Sankey diagram to PNG: {filepath}")
+            logger.info("Exported Sankey diagram to PNG: %s", filepath)
         except ValueError as e:
             if "kaleido" in str(e).lower():
                 raise ImportError(
@@ -771,7 +771,7 @@ class ProcessHeatSankeyGenerator:
         # Calculate provenance hash
         export_data["provenance_hash"] = self._calculate_hash(export_data)
 
-        logger.info(f"Exported Sankey diagram to JSON: {self.title}")
+        logger.info("Exported Sankey diagram to JSON: %s", self.title)
         return export_data
 
     def _calculate_hash(self, data: Dict[str, Any]) -> str:

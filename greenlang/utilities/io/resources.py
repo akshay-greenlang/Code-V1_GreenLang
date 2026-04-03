@@ -127,7 +127,7 @@ class ResourceLoader:
         path = Path(path)
         if path not in self.search_paths:
             self.search_paths.append(path)
-            logger.debug(f"Added search path: {path}")
+            logger.debug("Added search path: %s", path)
 
     def find_resource(self, resource_name: str) -> Optional[Path]:
         """
@@ -213,11 +213,11 @@ class ResourceLoader:
             cached_data = self.cache.get(cache_key)
             if cached_data is not None:
                 self._cache_hits += 1
-                logger.debug(f"Cache hit for {resource_name}")
+                logger.debug("Cache hit for %s", resource_name)
                 return cached_data
 
         # Load resource
-        logger.info(f"Loading resource: {resource_name} from {path}")
+        logger.info("Loading resource: %s from %s", resource_name, path)
         data = self.reader.read(path, **kwargs)
 
         # Validate if validator provided
@@ -227,7 +227,7 @@ class ResourceLoader:
                 if not is_valid:
                     raise ValueError(f"Resource validation failed for {resource_name}")
             except Exception as e:
-                logger.error(f"Validation error for {resource_name}: {str(e)}")
+                logger.error("Validation error for %s: %s", resource_name, e)
                 raise
 
         # Cache if enabled
@@ -248,7 +248,7 @@ class ResourceLoader:
             try:
                 self.load(name, **kwargs)
             except Exception as e:
-                logger.error(f"Failed to preload {name}: {str(e)}")
+                logger.error("Failed to preload %s: %s", name, e)
 
     def clear_cache(self):
         """Clear resource cache."""

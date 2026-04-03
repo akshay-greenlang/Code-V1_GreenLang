@@ -391,7 +391,7 @@ class RedFlagDetectionEngine:
         try:
             triggered, data = self._evaluate_condition(condition, supplier_data)
         except Exception as exc:
-            logger.debug(f"Trigger evaluation error: {exc}")
+            logger.debug("Trigger evaluation error: %s", exc)
             triggered = False
             data = {"error": str(exc)}
 
@@ -754,7 +754,7 @@ class RedFlagDetectionEngine:
                     metadata={"provenance_hash": provenance_hash},
                 )
             except Exception as exc:
-                logger.warning(f"Provenance recording failed: {exc}")
+                logger.warning("Provenance recording failed: %s", exc)
 
     def _record_scan_metrics(
         self, country_code: str, commodity: str, start_time: float,

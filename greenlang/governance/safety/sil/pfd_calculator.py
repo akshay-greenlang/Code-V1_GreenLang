@@ -337,7 +337,7 @@ class PFDCalculator:
             return result
 
         except Exception as e:
-            logger.error(f"PFD calculation failed: {str(e)}", exc_info=True)
+            logger.error("PFD calculation failed: %s", e, exc_info=True)
             raise
 
     def _get_calculation_method(self, architecture: VotingArchitecture):
@@ -652,7 +652,7 @@ class PFDCalculator:
             else:
                 high = mid - 1
 
-        logger.info(f"Optimal proof test interval: {optimal} hours")
+        logger.info("Optimal proof test interval: %s hours", optimal)
         return optimal
 
     def compare_architectures(
@@ -684,6 +684,6 @@ class PFDCalculator:
                 )
                 results[arch] = self.calculate(input_data)
             except Exception as e:
-                logger.warning(f"Failed to calculate PFD for {arch}: {e}")
+                logger.warning("Failed to calculate PFD for %s: %s", arch, e)
 
         return results

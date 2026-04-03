@@ -13,20 +13,8 @@ Date: February 2026
 from __future__ import annotations
 
 from typing import Any, Dict
-from unittest.mock import MagicMock, patch
 
 import pytest
-
-
-@pytest.fixture(autouse=True)
-def mock_agents():
-    """Override parent conftest's mock_agents for PDF extractor tests.
-
-    PDF extractor service does not use greenlang.agents.registry, so we
-    provide a simple no-op override to avoid the AttributeError from
-    the parent integration conftest.
-    """
-    yield {}
 
 
 @pytest.fixture

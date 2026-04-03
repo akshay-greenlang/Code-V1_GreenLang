@@ -415,13 +415,13 @@ class DownstreamTransportService:
             mod = importlib.import_module(module_path)
             cls = getattr(mod, class_name)
             instance = cls()
-            logger.info(f"{class_name} initialized")
+            logger.info("%s initialized", class_name)
             return instance
         except ImportError:
-            logger.warning(f"{class_name} not available (ImportError)")
+            logger.warning("%s not available (ImportError)", class_name)
             return None
         except Exception as e:
-            logger.warning(f"{class_name} initialization failed: {e}")
+            logger.warning("%s initialization failed: %s", class_name, e)
             return None
 
     # ========================================================================
@@ -497,7 +497,7 @@ class DownstreamTransportService:
 
         except Exception as e:
             elapsed = (time.monotonic() - start_time) * 1000.0
-            logger.error(f"Calculate failed: {e}", exc_info=True)
+            logger.error("Calculate failed: %s", e, exc_info=True)
             raise
 
     async def calculate_distance(self, request: Dict[str, Any]) -> Dict[str, Any]:
@@ -564,7 +564,7 @@ class DownstreamTransportService:
             return result
 
         except Exception as e:
-            logger.error(f"Distance calculation failed: {e}", exc_info=True)
+            logger.error("Distance calculation failed: %s", e, exc_info=True)
             raise
 
     async def calculate_spend(self, request: Dict[str, Any]) -> Dict[str, Any]:
@@ -634,7 +634,7 @@ class DownstreamTransportService:
             return result
 
         except Exception as e:
-            logger.error(f"Spend calculation failed: {e}", exc_info=True)
+            logger.error("Spend calculation failed: %s", e, exc_info=True)
             raise
 
     async def calculate_average_data(self, request: Dict[str, Any]) -> Dict[str, Any]:
@@ -708,7 +708,7 @@ class DownstreamTransportService:
             return result
 
         except Exception as e:
-            logger.error(f"Average-data calculation failed: {e}", exc_info=True)
+            logger.error("Average-data calculation failed: %s", e, exc_info=True)
             raise
 
     async def calculate_warehouse(self, request: Dict[str, Any]) -> Dict[str, Any]:
@@ -779,7 +779,7 @@ class DownstreamTransportService:
             return result
 
         except Exception as e:
-            logger.error(f"Warehouse calculation failed: {e}", exc_info=True)
+            logger.error("Warehouse calculation failed: %s", e, exc_info=True)
             raise
 
     async def calculate_last_mile(self, request: Dict[str, Any]) -> Dict[str, Any]:
@@ -859,7 +859,7 @@ class DownstreamTransportService:
             return result
 
         except Exception as e:
-            logger.error(f"Last-mile calculation failed: {e}", exc_info=True)
+            logger.error("Last-mile calculation failed: %s", e, exc_info=True)
             raise
 
     async def calculate_supplier_specific(self, request: Dict[str, Any]) -> Dict[str, Any]:
@@ -928,7 +928,7 @@ class DownstreamTransportService:
             return result
 
         except Exception as e:
-            logger.error(f"Supplier-specific calculation failed: {e}", exc_info=True)
+            logger.error("Supplier-specific calculation failed: %s", e, exc_info=True)
             raise
 
     async def calculate_batch(self, request: Dict[str, Any]) -> Dict[str, Any]:
@@ -955,7 +955,7 @@ class DownstreamTransportService:
                 results.append(result)
                 total_co2e += Decimal(str(result.get("co2e_kg", "0")))
             except Exception as e:
-                logger.error(f"Batch item {idx} failed: {e}")
+                logger.error("Batch item %s failed: %s", idx, e)
                 errors.append({
                     "index": idx,
                     "error": str(e),
@@ -1167,7 +1167,7 @@ class DownstreamTransportService:
             }
 
         except Exception as e:
-            logger.error(f"Compliance check failed: {e}", exc_info=True)
+            logger.error("Compliance check failed: %s", e, exc_info=True)
             raise
 
     async def analyze_uncertainty(self, request: Dict[str, Any]) -> Dict[str, Any]:
@@ -1224,7 +1224,7 @@ class DownstreamTransportService:
             }
 
         except Exception as e:
-            logger.error(f"Uncertainty analysis failed: {e}", exc_info=True)
+            logger.error("Uncertainty analysis failed: %s", e, exc_info=True)
             raise
 
     async def analyze_portfolio(self, request: Dict[str, Any]) -> Dict[str, Any]:
@@ -1311,7 +1311,7 @@ class DownstreamTransportService:
             }
 
         except Exception as e:
-            logger.error(f"Portfolio analysis failed: {e}", exc_info=True)
+            logger.error("Portfolio analysis failed: %s", e, exc_info=True)
             raise
 
     # ========================================================================

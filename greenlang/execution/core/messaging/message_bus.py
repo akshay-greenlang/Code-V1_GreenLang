@@ -415,7 +415,7 @@ class InMemoryMessageBus(MessageBus):
             return True
 
         except asyncio.QueueFull:
-            logger.error(f"Queue full, event {event.event_id} dropped")
+            logger.error("Queue full, event %s dropped", event.event_id)
             return False
 
     async def subscribe(
@@ -461,7 +461,7 @@ class InMemoryMessageBus(MessageBus):
             )
 
         subscription_id = f"{subscriber_id}:{event_type}:{len(self._subscriptions[event_type])}"
-        logger.debug(f"Subscription created: {subscription_id}")
+        logger.debug("Subscription created: %s", subscription_id)
         return subscription_id
 
     async def unsubscribe(self, event_type: str, subscriber_id: str) -> bool:
@@ -495,7 +495,7 @@ class InMemoryMessageBus(MessageBus):
             )
 
         if removed:
-            logger.debug(f"Unsubscribed {subscriber_id} from {event_type}")
+            logger.debug("Unsubscribed %s from %s", subscriber_id, event_type)
         return removed
 
     async def request_reply(
@@ -524,7 +524,7 @@ class InMemoryMessageBus(MessageBus):
         # Wait for reply with timeout
         try:
             reply = await asyncio.wait_for(reply_future, timeout=timeout)
-            logger.debug(f"Request {event.event_id} received reply")
+            logger.debug("Request %s received reply", event.event_id)
             return reply
         except asyncio.TimeoutError:
             logger.warning(
@@ -563,7 +563,7 @@ class InMemoryMessageBus(MessageBus):
             except asyncio.CancelledError:
                 break
             except Exception as e:
-                logger.error(f"Error processing event: {e}", exc_info=True)
+                logger.error("Error processing event: %s", e, exc_info=True)
 
     async def _deliver_event(self, event: Event) -> int:
         """
@@ -654,7 +654,7 @@ class InMemoryMessageBus(MessageBus):
             if event.event_id == event_id:
                 del self._dead_letter_queue[i]
                 await self.publish(event)
-                logger.info(f"Replayed dead-lettered event: {event_id}")
+                logger.info("Replayed dead-lettered event: %s", event_id)
                 return True
         return False
 
@@ -695,7 +695,7 @@ class RedisMessageBus(MessageBus):
         """
         self.redis_url = redis_url
         self.config = config or MessageBusConfig()
-        logger.info(f"RedisMessageBus initialized (NOT YET IMPLEMENTED)")
+        logger.info("RedisMessageBus initialized (NOT YET IMPLEMENTED)")
 
     async def start(self) -> None:
         """Start the message bus processor."""

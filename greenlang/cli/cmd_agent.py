@@ -488,11 +488,11 @@ def publish(
 
                 # Note: In production, this uploads the actual package tarball
                 # For now, we validate connectivity and log the intent
-                logger.info(f"Would publish to: {upload_url}")
-                logger.info(f"Payload: {json.dumps(payload, indent=2)}")
+                logger.info("Would publish to: %s", upload_url)
+                logger.info("Payload: %s", json.dumps(payload, indent=2))
 
             except Exception as e:
-                logger.warning(f"Registry upload not available: {e}")
+                logger.warning("Registry upload not available: %s", e)
 
             progress.update(task, description="[green]Published")
 

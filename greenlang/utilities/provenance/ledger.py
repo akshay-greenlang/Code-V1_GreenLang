@@ -299,7 +299,7 @@ class RunLedger:
         # Initialize ledger file if it doesn't exist
         if not self.ledger_path.exists():
             self.ledger_path.touch()
-            logger.info(f"Created new ledger: {self.ledger_path}")
+            logger.info("Created new ledger: %s", self.ledger_path)
 
     def record_run(
         self,
@@ -346,7 +346,7 @@ class RunLedger:
         with open(self.ledger_path, "a") as f:
             f.write(json.dumps(entry) + "\n")
 
-        logger.info(f"Recorded run {run_id} for pipeline {pipeline}")
+        logger.info("Recorded run %s for pipeline %s", run_id, pipeline)
         return run_id
 
     def get_run(self, run_id: str) -> Optional[Dict[str, Any]]:
@@ -540,7 +540,7 @@ class RunLedger:
         with open(output_path, "w") as f:
             json.dump(export_data, f, indent=2)
 
-        logger.info(f"Exported {len(runs)} runs to {output_path}")
+        logger.info("Exported %s runs to %s", len(runs), output_path)
         return output_path
 
     def clean_old_entries(self, days_to_keep: int = 90) -> int:
@@ -575,7 +575,7 @@ class RunLedger:
             for entry in kept_entries:
                 f.write(json.dumps(entry) + "\n")
 
-        logger.info(f"Cleaned {removed_count} old entries from ledger")
+        logger.info("Cleaned %s old entries from ledger", removed_count)
         return removed_count
 
 

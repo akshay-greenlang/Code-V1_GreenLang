@@ -313,7 +313,7 @@ class CEMSReading(GreenLangBase):
         """Validate unit is appropriate for pollutant type."""
         valid_units = ["ppm", "ppb", "mg/m3", "ug/m3", "lb/hr", "%", "gr/dscf"]
         if v.lower() not in [u.lower() for u in valid_units]:
-            logger.warning(f"Unusual unit '{v}' for CEMS reading")
+            logger.warning("Unusual unit '%s' for CEMS reading", v)
         return v
 
 
@@ -731,7 +731,7 @@ class EmissionsExplainability:
         self.citations = []
         self.decision_log = []
 
-        self.logger.info(
+        logger.info(
             f"Started {calculation_type} calculation, ID: {self.provenance.calculation_id}"
         )
 
@@ -775,7 +775,7 @@ class EmissionsExplainability:
             standard_reference=standard_reference
         )
 
-        self.logger.debug(
+        logger.debug(
             f"Step {step.step_number}: {description} -> {output}"
         )
 
@@ -811,7 +811,7 @@ class EmissionsExplainability:
         )
         self.citations.append(citation)
 
-        self.logger.debug(f"Added citation: {citation.formatted()}")
+        logger.debug("Added citation: %s", citation.formatted())
 
         return citation
 
@@ -846,7 +846,7 @@ class EmissionsExplainability:
         }
         self.decision_log.append(entry)
 
-        self.logger.info(f"Decision: {decision_point} -> {decision_made}")
+        logger.info("Decision: %s -> %s", decision_point, decision_made)
 
         return entry
 
@@ -854,13 +854,13 @@ class EmissionsExplainability:
         """Add a warning to the provenance record."""
         if self.provenance:
             self.provenance.add_warning(warning)
-        self.logger.warning(warning)
+        logger.warning(warning)
 
     def add_error(self, error: str) -> None:
         """Add an error to the provenance record."""
         if self.provenance:
             self.provenance.add_error(error)
-        self.logger.error(error)
+        logger.error(error)
 
     def finalize(self, output_data: Any) -> Dict[str, Any]:
         """
@@ -888,7 +888,7 @@ class EmissionsExplainability:
             "audit_summary": self.provenance.get_audit_summary()
         }
 
-        self.logger.info(
+        logger.info(
             f"Finalized calculation {self.provenance.calculation_id}, "
             f"duration: {self.provenance.duration_ms:.1f}ms"
         )
@@ -980,7 +980,7 @@ class EmissionsGuardianAgent(BaseAgent):
         # Cache for emission factors
         self._ef_cache: Dict[str, Dict[str, float]] = {}
 
-        self.logger.info(f"Initialized {config.name} v{config.version}")
+        logger.info("Initialized %s v%s", config.name, config.version)
 
     def validate_input(self, input_data: Dict[str, Any]) -> bool:
         """
@@ -997,7 +997,7 @@ class EmissionsGuardianAgent(BaseAgent):
             EmissionsGuardianInput(**input_data)
             return True
         except Exception as e:
-            self.logger.error(f"Input validation failed: {e}")
+            logger.error("Input validation failed: %s", e)
             return False
 
     def execute(self, input_data: Dict[str, Any]) -> AgentResult:
@@ -1116,7 +1116,7 @@ class EmissionsGuardianAgent(BaseAgent):
             )
 
         except Exception as e:
-            self.logger.error(f"Execution failed: {e}", exc_info=True)
+            logger.error("Execution failed: %s", e, exc_info=True)
             self.explainability.add_error(str(e))
 
             return AgentResult(

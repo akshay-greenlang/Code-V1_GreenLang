@@ -143,7 +143,7 @@ class SystemMetrics:
                 }
             }
         except Exception as e:
-            logger.error(f"Error collecting system metrics: {e}")
+            logger.error("Error collecting system metrics: %s", e)
             return {}
 
 
@@ -197,7 +197,7 @@ class WorkflowMetrics:
 
             return metrics
         except Exception as e:
-            logger.error(f"Error collecting workflow metrics: {e}")
+            logger.error("Error collecting workflow metrics: %s", e)
             return {}
 
 
@@ -251,7 +251,7 @@ class AgentMetrics:
 
             return metrics
         except Exception as e:
-            logger.error(f"Error collecting agent metrics: {e}")
+            logger.error("Error collecting agent metrics: %s", e)
             return {}
 
 
@@ -309,7 +309,7 @@ class DistributedMetrics:
 
             return metrics
         except Exception as e:
-            logger.error(f"Error collecting distributed metrics: {e}")
+            logger.error("Error collecting distributed metrics: %s", e)
             return {}
 
 
@@ -404,7 +404,7 @@ class MetricDownsampler:
             # using Redis TimeSeries or similar functionality
             pass
         except Exception as e:
-            logger.error(f"Error downsampling metrics: {e}")
+            logger.error("Error downsampling metrics: %s", e)
 
 
 class MetricCollector:
@@ -494,7 +494,7 @@ class MetricCollector:
                     await self._publish_metric("system.metrics", metrics)
 
             except Exception as e:
-                logger.error(f"Error collecting system metrics: {e}")
+                logger.error("Error collecting system metrics: %s", e)
 
             await asyncio.sleep(self.collection_interval)
 
@@ -510,7 +510,7 @@ class MetricCollector:
                     await self._publish_metric("workflow.metrics", metrics)
 
             except Exception as e:
-                logger.error(f"Error collecting workflow metrics: {e}")
+                logger.error("Error collecting workflow metrics: %s", e)
 
             await asyncio.sleep(5)  # Collect every 5 seconds
 
@@ -526,7 +526,7 @@ class MetricCollector:
                     await self._publish_metric("agent.metrics", metrics)
 
             except Exception as e:
-                logger.error(f"Error collecting agent metrics: {e}")
+                logger.error("Error collecting agent metrics: %s", e)
 
             await asyncio.sleep(5)  # Collect every 5 seconds
 
@@ -542,7 +542,7 @@ class MetricCollector:
                     await self._publish_metric("distributed.metrics", metrics)
 
             except Exception as e:
-                logger.error(f"Error collecting distributed metrics: {e}")
+                logger.error("Error collecting distributed metrics: %s", e)
 
             await asyncio.sleep(5)  # Collect every 5 seconds
 
@@ -562,7 +562,7 @@ class MetricCollector:
                 await self._flush_channel(channel)
 
         except Exception as e:
-            logger.error(f"Error publishing metric to {channel}: {e}")
+            logger.error("Error publishing metric to %s: %s", channel, e)
 
     async def _flush_buffer(self) -> None:
         """Flush metric buffer periodically."""
@@ -575,7 +575,7 @@ class MetricCollector:
                         await self._flush_channel(channel)
 
             except Exception as e:
-                logger.error(f"Error flushing buffer: {e}")
+                logger.error("Error flushing buffer: %s", e)
 
     async def _flush_channel(self, channel: str) -> None:
         """Flush metrics for a channel.
@@ -599,7 +599,7 @@ class MetricCollector:
             await self._store_metrics(channel, metrics)
 
         except Exception as e:
-            logger.error(f"Error flushing channel {channel}: {e}")
+            logger.error("Error flushing channel %s: %s", channel, e)
 
     async def _store_metrics(self, channel: str, metrics: List[Dict[str, Any]]) -> None:
         """Store metrics for historical queries.
@@ -631,7 +631,7 @@ class MetricCollector:
                 )
 
         except Exception as e:
-            logger.error(f"Error storing metrics: {e}")
+            logger.error("Error storing metrics: %s", e)
 
     async def _cleanup_old_metrics(self) -> None:
         """Clean up old metrics based on retention policy."""
@@ -651,7 +651,7 @@ class MetricCollector:
                 # using Redis TimeSeries retention or key scanning
 
             except Exception as e:
-                logger.error(f"Error cleaning up old metrics: {e}")
+                logger.error("Error cleaning up old metrics: %s", e)
 
     def get_stats(self) -> Dict[str, Any]:
         """Get collector statistics.

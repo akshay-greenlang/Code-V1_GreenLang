@@ -280,7 +280,7 @@ class WebhookSubscriberManager:
             stored_webhooks = await self._store.list_webhooks()
             for webhook in stored_webhooks:
                 self.webhooks[webhook.webhook_id] = webhook
-            logger.info(f"Loaded {len(stored_webhooks)} webhooks from storage")
+            logger.info("Loaded %s webhooks from storage", len(stored_webhooks))
 
         self._initialized = True
 
@@ -320,7 +320,7 @@ class WebhookSubscriberManager:
         if self._store:
             asyncio.create_task(self._persist_webhook(webhook))
 
-        logger.info(f"Registered webhook {webhook_id} for {len(events)} events to {url}")
+        logger.info("Registered webhook %s for %s events to %s", webhook_id, len(events), url)
         return webhook_id
 
     async def register_webhook_async(
@@ -362,7 +362,7 @@ class WebhookSubscriberManager:
         # Update cache
         self.webhooks[webhook_id] = webhook
 
-        logger.info(f"Registered webhook {webhook_id} for {len(events)} events to {url}")
+        logger.info("Registered webhook %s for %s events to %s", webhook_id, len(events), url)
         return webhook_id
 
     async def _persist_webhook(self, webhook: WebhookModel) -> None:
@@ -371,7 +371,7 @@ class WebhookSubscriberManager:
             try:
                 await self._store.save_webhook(webhook)
             except Exception as e:
-                logger.error(f"Failed to persist webhook {webhook.webhook_id}: {e}")
+                logger.error("Failed to persist webhook %s: %s", webhook.webhook_id, e)
 
     def unregister_webhook(self, webhook_id: str) -> bool:
         """
@@ -392,7 +392,7 @@ class WebhookSubscriberManager:
             if self._store:
                 asyncio.create_task(self._delete_webhook_from_store(webhook_id))
 
-            logger.info(f"Unregistered webhook {webhook_id}")
+            logger.info("Unregistered webhook %s", webhook_id)
             return True
         return False
 
@@ -419,7 +419,7 @@ class WebhookSubscriberManager:
         # Update cache
         if webhook_id in self.webhooks:
             del self.webhooks[webhook_id]
-            logger.info(f"Unregistered webhook {webhook_id}")
+            logger.info("Unregistered webhook %s", webhook_id)
             return True
 
         return False
@@ -430,7 +430,7 @@ class WebhookSubscriberManager:
             try:
                 await self._store.delete_webhook(webhook_id)
             except Exception as e:
-                logger.error(f"Failed to delete webhook {webhook_id} from store: {e}")
+                logger.error("Failed to delete webhook %s from store: %s", webhook_id, e)
 
     def list_webhooks(self) -> List[WebhookModel]:
         """
@@ -556,7 +556,7 @@ class WebhookSubscriberManager:
         await self._ensure_initialized()
 
         if event_type not in PROCESS_HEAT_EVENTS and event_type != "test":
-            logger.warning(f"Unknown event type: {event_type}")
+            logger.warning("Unknown event type: %s", event_type)
             return ""
 
         delivery_ids = []
@@ -568,7 +568,7 @@ class WebhookSubscriberManager:
                       if event_type in w.events and w.is_active]
 
         if not targets:
-            logger.debug(f"No active webhooks subscribed to {event_type}")
+            logger.debug("No active webhooks subscribed to %s", event_type)
             return ""
 
         for webhook in targets:
@@ -645,7 +645,7 @@ class WebhookSubscriberManager:
             except asyncio.TimeoutError:
                 break
             except Exception as e:
-                logger.error(f"Error processing delivery: {e}")
+                logger.error("Error processing delivery: %s", e)
 
     async def _send_webhook(self, delivery: WebhookDelivery, webhook: WebhookModel) -> bool:
         """
@@ -708,14 +708,14 @@ class WebhookSubscriberManager:
         except Exception as e:
             delivery.status = WebhookStatus.FAILED
             delivery.error_message = str(e)
-            logger.error(f"Failed to send webhook to {webhook.url}: {e}")
+            logger.error("Failed to send webhook to %s: %s", webhook.url, e)
 
             # Persist failed delivery
             if self._store:
                 try:
                     await self._store.save_delivery(delivery)
                 except Exception as persist_error:
-                    logger.error(f"Failed to persist delivery error: {persist_error}")
+                    logger.error("Failed to persist delivery error: %s", persist_error)
 
             return False
 

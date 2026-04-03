@@ -239,7 +239,7 @@ class DDSCreatorService:
                 await self._db_pool.open()
                 logger.info("PostgreSQL connection pool opened")
             except Exception as e:
-                logger.warning(f"PostgreSQL pool init failed: {e}")
+                logger.warning("PostgreSQL pool init failed: %s", e)
                 self._db_pool = None
 
         # Initialize Redis
@@ -255,7 +255,7 @@ class DDSCreatorService:
                 await self._redis.ping()
                 logger.info("Redis connection established")
             except Exception as e:
-                logger.warning(f"Redis init failed: {e}")
+                logger.warning("Redis init failed: %s", e)
                 self._redis = None
 
         # Initialize engines
@@ -301,11 +301,11 @@ class DDSCreatorService:
                 try:
                     engine = engine_cls(config=self.config)
                     self._engines[name] = engine
-                    logger.info(f"Engine '{name}' initialized")
+                    logger.info("Engine '%s' initialized", name)
                 except Exception as e:
-                    logger.warning(f"Engine '{name}' init failed: {e}")
+                    logger.warning("Engine '%s' init failed: %s", name, e)
             else:
-                logger.debug(f"Engine '{name}' class not available")
+                logger.debug("Engine '%s' class not available", name)
 
         self._assembler = self._engines.get("statement_assembler")
         self._geolocation_formatter = self._engines.get("geolocation_formatter")
@@ -325,21 +325,21 @@ class DDSCreatorService:
                     result = engine.shutdown()
                     if asyncio.iscoroutine(result):
                         await result
-                    logger.info(f"Engine '{name}' shut down")
+                    logger.info("Engine '%s' shut down", name)
                 except Exception as e:
-                    logger.warning(f"Engine '{name}' shutdown error: {e}")
+                    logger.warning("Engine '%s' shutdown error: %s", name, e)
 
         if self._redis is not None:
             try:
                 await self._redis.close()
             except Exception as e:
-                logger.warning(f"Redis close error: {e}")
+                logger.warning("Redis close error: %s", e)
 
         if self._db_pool is not None:
             try:
                 await self._db_pool.close()
             except Exception as e:
-                logger.warning(f"PostgreSQL pool close error: {e}")
+                logger.warning("PostgreSQL pool close error: %s", e)
 
         self._initialized = False
         logger.info("DDSCreatorService shutdown complete")

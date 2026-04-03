@@ -153,7 +153,7 @@ class EvidenceVersioner:
             )
             self._initialized = False
         except Exception as exc:
-            logger.error(f"Failed to initialize versioner: {exc}")
+            logger.error("Failed to initialize versioner: %s", exc)
             self._initialized = False
 
     async def _ensure_schema(self) -> None:
@@ -198,9 +198,9 @@ class EvidenceVersioner:
                 async with conn.cursor() as cur:
                     await cur.execute(ddl)
                 await conn.commit()
-            logger.info(f"Evidence versioning schema ensured: {schema}")
+            logger.info("Evidence versioning schema ensured: %s", schema)
         except Exception as exc:
-            logger.error(f"Failed to create versioning schema: {exc}")
+            logger.error("Failed to create versioning schema: %s", exc)
 
     async def close(self) -> None:
         """Close database connection pool."""
@@ -291,7 +291,7 @@ class EvidenceVersioner:
                     row = await cur.fetchone()
                     return row["next_version"] if row else 1
         except Exception as exc:
-            logger.error(f"Failed to get next version number: {exc}")
+            logger.error("Failed to get next version number: %s", exc)
             return 1
 
     async def _store_version(
@@ -350,7 +350,7 @@ class EvidenceVersioner:
                     await cur.execute(query, params)
                 await conn.commit()
         except Exception as exc:
-            logger.error(f"Failed to store version: {exc}")
+            logger.error("Failed to store version: %s", exc)
 
     async def _store_in_s3(
         self,
@@ -400,7 +400,7 @@ class EvidenceVersioner:
             return s3_key
 
         except Exception as exc:
-            logger.warning(f"Failed to store version in S3: {exc}")
+            logger.warning("Failed to store version in S3: %s", exc)
             return None
 
     async def get_version_history(
@@ -469,7 +469,7 @@ class EvidenceVersioner:
                         )
 
         except Exception as exc:
-            logger.error(f"Failed to get version history: {exc}")
+            logger.error("Failed to get version history: %s", exc)
 
         return versions
 
@@ -531,7 +531,7 @@ class EvidenceVersioner:
                         )
 
         except Exception as exc:
-            logger.error(f"Failed to get version: {exc}")
+            logger.error("Failed to get version: %s", exc)
 
         return None
 
@@ -581,7 +581,7 @@ class EvidenceVersioner:
                             snapshots[vid] = row["content_snapshot"] or {}
 
             except Exception as exc:
-                logger.error(f"Failed to get snapshots for comparison: {exc}")
+                logger.error("Failed to get snapshots for comparison: %s", exc)
 
         # Compute differences
         s1 = snapshots.get(version_id_1, {})
@@ -642,10 +642,10 @@ class EvidenceVersioner:
                     )
                 await conn.commit()
 
-            logger.info(f"Tagged version {version_id} with '{tag}'")
+            logger.info("Tagged version %s with '%s'", version_id, tag)
 
         except Exception as exc:
-            logger.error(f"Failed to tag version: {exc}")
+            logger.error("Failed to tag version: %s", exc)
 
     async def remove_tag(
         self,
@@ -678,11 +678,11 @@ class EvidenceVersioner:
                 await conn.commit()
 
             if deleted:
-                logger.info(f"Removed tag '{tag}' from version {version_id}")
+                logger.info("Removed tag '%s' from version %s", tag, version_id)
             return deleted
 
         except Exception as exc:
-            logger.error(f"Failed to remove tag: {exc}")
+            logger.error("Failed to remove tag: %s", exc)
             return False
 
     async def find_versions_by_tag(
@@ -749,7 +749,7 @@ class EvidenceVersioner:
                         )
 
         except Exception as exc:
-            logger.error(f"Failed to find versions by tag: {exc}")
+            logger.error("Failed to find versions by tag: %s", exc)
 
         return versions
 

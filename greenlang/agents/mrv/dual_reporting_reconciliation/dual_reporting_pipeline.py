@@ -42,6 +42,7 @@ from io import StringIO
 
 from pydantic import BaseModel, Field, validator
 
+from greenlang.exceptions import WorkflowException
 from greenlang.agents.mrv.dual_reporting_reconciliation.models import (
     EnergyType,
     Scope2Method,
@@ -89,7 +90,7 @@ __all__ = [
 ]
 
 
-class PipelineExecutionError(Exception):
+class PipelineExecutionError(WorkflowException):
     """Raised when pipeline execution fails."""
 
     def __init__(self, message: str, stage: Optional[PipelineStage] = None, details: Optional[Dict] = None):
@@ -99,7 +100,7 @@ class PipelineExecutionError(Exception):
         super().__init__(message)
 
 
-class StageExecutionError(Exception):
+class StageExecutionError(WorkflowException):
     """Raised when a specific stage fails."""
 
     def __init__(self, stage: PipelineStage, message: str, details: Optional[Dict] = None):
@@ -181,7 +182,7 @@ class DualReportingPipelineEngine:
             self._pipeline_start_time: Optional[datetime] = None
 
             self._initialized = True
-            logger.info(f"{AGENT_COMPONENT}-DualReportingPipelineEngine initialized (v{VERSION})")
+            logger.info("%s-DualReportingPipelineEngine initialized (v%s)", AGENT_COMPONENT, VERSION)
 
     def _get_collector(self):
         """Lazy load result collector engine."""
@@ -269,7 +270,7 @@ class DualReportingPipelineEngine:
                 stage_start = datetime.utcnow()
                 self._current_stage = stage
 
-                logger.info(f"Pipeline {pipeline_id}: Executing stage {stage.value}")
+                logger.info("Pipeline %s: Executing stage %s", pipeline_id, stage.value)
 
                 try:
                     context = self._execute_stage(stage, context)
@@ -289,7 +290,7 @@ class DualReportingPipelineEngine:
                     )
 
                 except Exception as e:
-                    logger.error(f"Pipeline {pipeline_id}: Stage {stage.value} failed: {str(e)}", exc_info=True)
+                    logger.error("Pipeline %s: Stage %s failed: %s", pipeline_id, stage.value, e, exc_info=True)
                     self.metrics.record_stage_execution(
                         stage=stage.value,
                         duration_ms=0.0,
@@ -326,7 +327,7 @@ class DualReportingPipelineEngine:
             return report
 
         except Exception as e:
-            logger.error(f"Pipeline {pipeline_id} failed: {str(e)}", exc_info=True)
+            logger.error("Pipeline %s failed: %s", pipeline_id, e, exc_info=True)
 
             if self._pipeline_start_time:
                 total_duration = (datetime.utcnow() - self._pipeline_start_time).total_seconds() * 1000
@@ -503,7 +504,7 @@ class DualReportingPipelineEngine:
         alignment_issues = collector.verify_boundary_alignment(workspace)
 
         if alignment_issues:
-            logger.warning(f"Found {len(alignment_issues)} boundary alignment issues")
+            logger.warning("Found %s boundary alignment issues", len(alignment_issues))
             # Store issues in metadata
             workspace.metadata["boundary_alignment_issues"] = [
                 {
@@ -533,7 +534,7 @@ class DualReportingPipelineEngine:
         # Map energy types
         energy_mapping = collector.map_energy_types(workspace)
 
-        logger.info(f"Mapped {len(energy_mapping)} energy type classifications")
+        logger.info("Mapped %s energy type classifications", len(energy_mapping))
 
         # Store mapping in metadata
         workspace.metadata["energy_type_mapping"] = {
@@ -616,7 +617,7 @@ class DualReportingPipelineEngine:
             frameworks=frameworks,
         )
 
-        logger.info(f"Generated reporting tables for {len(frameworks)} frameworks")
+        logger.info("Generated reporting tables for %s frameworks", len(frameworks))
 
         return table_set
 
@@ -686,7 +687,7 @@ class DualReportingPipelineEngine:
             compliance_results[framework.value] = result
 
         total_issues = sum(len(result.issues) for result in compliance_results.values())
-        logger.info(f"Compliance check complete: {len(frameworks)} frameworks, {total_issues} total issues")
+        logger.info("Compliance check complete: %s frameworks, %s total issues", len(frameworks), total_issues)
 
         return compliance_results
 
@@ -742,7 +743,7 @@ class DualReportingPipelineEngine:
             created_at=datetime.utcnow(),
         )
 
-        logger.info(f"Report assembled with status={status.value}")
+        logger.info("Report assembled with status=%s", status.value)
 
         return report
 
@@ -822,7 +823,7 @@ class DualReportingPipelineEngine:
             },
         )
 
-        logger.info(f"Report sealed with provenance hash: {provenance_hash}")
+        logger.info("Report sealed with provenance hash: %s", provenance_hash)
 
         return report
 
@@ -840,7 +841,7 @@ class DualReportingPipelineEngine:
             ValueError: If batch request validation fails
         """
         batch_id = str(uuid4())
-        logger.info(f"Starting batch reconciliation {batch_id} with {len(request.periods)} periods")
+        logger.info("Starting batch reconciliation %s with %s periods", batch_id, len(request.periods))
 
         # Validate batch size
         if len(request.periods) > MAX_BATCH_PERIODS:
@@ -865,7 +866,7 @@ class DualReportingPipelineEngine:
                 failed_count += 1
 
                 if request.fail_fast:
-                    logger.error(f"Batch {batch_id}: Fail-fast enabled, stopping batch")
+                    logger.error("Batch %s: Fail-fast enabled, stopping batch", batch_id)
                     break
 
         # Determine batch status

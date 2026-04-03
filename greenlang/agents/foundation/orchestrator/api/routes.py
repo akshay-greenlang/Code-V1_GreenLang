@@ -225,7 +225,7 @@ async def register_pipeline(
 
     Returns the registered pipeline with generated ID and content hash.
     """
-    logger.info(f"Registering pipeline: {request.metadata.name} [{trace.trace_id}]")
+    logger.info("Registering pipeline: %s [%s]", request.metadata.name, trace.trace_id)
 
     try:
         # Convert to internal format
@@ -263,7 +263,7 @@ async def register_pipeline(
         )
 
     except ValueError as e:
-        logger.warning(f"Pipeline validation failed: {e} [{trace.trace_id}]")
+        logger.warning("Pipeline validation failed: %s [%s]", e, trace.trace_id)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=create_error_response(
@@ -279,7 +279,7 @@ async def register_pipeline(
             ).model_dump(),
         )
     except Exception as e:
-        logger.error(f"Pipeline registration failed: {e} [{trace.trace_id}]", exc_info=True)
+        logger.error("Pipeline registration failed: %s [%s]", e, trace.trace_id, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=create_error_response(
@@ -323,7 +323,7 @@ async def list_pipelines(
 
     Supports filtering by namespace, owner, team, labels, and text search.
     """
-    logger.debug(f"Listing pipelines [{trace.trace_id}]")
+    logger.debug("Listing pipelines [%s]", trace.trace_id)
 
     try:
         # Build filter params
@@ -376,7 +376,7 @@ async def list_pipelines(
         )
 
     except Exception as e:
-        logger.error(f"Failed to list pipelines: {e} [{trace.trace_id}]", exc_info=True)
+        logger.error("Failed to list pipelines: %s [%s]", e, trace.trace_id, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=create_error_response(
@@ -407,7 +407,7 @@ async def get_pipeline(
     """
     Get detailed information about a pipeline including its full specification.
     """
-    logger.debug(f"Getting pipeline: {pipeline_id} [{trace.trace_id}]")
+    logger.debug("Getting pipeline: %s [%s]", pipeline_id, trace.trace_id)
 
     try:
         pipeline = await orchestrator.get_pipeline(pipeline_id)
@@ -472,7 +472,7 @@ async def get_pipeline(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Failed to get pipeline: {e} [{trace.trace_id}]", exc_info=True)
+        logger.error("Failed to get pipeline: %s [%s]", e, trace.trace_id, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=create_error_response(
@@ -505,7 +505,7 @@ async def delete_pipeline(
 
     Note: This does not affect runs that have already been submitted.
     """
-    logger.info(f"Deleting pipeline: {pipeline_id} [{trace.trace_id}]")
+    logger.info("Deleting pipeline: %s [%s]", pipeline_id, trace.trace_id)
 
     try:
         deleted = await orchestrator.delete_pipeline(pipeline_id)
@@ -531,7 +531,7 @@ async def delete_pipeline(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Failed to delete pipeline: {e} [{trace.trace_id}]", exc_info=True)
+        logger.error("Failed to delete pipeline: %s [%s]", e, trace.trace_id, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=create_error_response(
@@ -665,7 +665,7 @@ async def submit_run(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Failed to submit run: {e} [{trace.trace_id}]", exc_info=True)
+        logger.error("Failed to submit run: %s [%s]", e, trace.trace_id, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=create_error_response(
@@ -703,7 +703,7 @@ async def list_runs(
     """
     List pipeline runs with filtering and pagination.
     """
-    logger.debug(f"Listing runs [{trace.trace_id}]")
+    logger.debug("Listing runs [%s]", trace.trace_id)
 
     try:
         # Build filters
@@ -765,7 +765,7 @@ async def list_runs(
         )
 
     except Exception as e:
-        logger.error(f"Failed to list runs: {e} [{trace.trace_id}]", exc_info=True)
+        logger.error("Failed to list runs: %s [%s]", e, trace.trace_id, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=create_error_response(
@@ -796,7 +796,7 @@ async def get_run(
     """
     Get detailed information about a run including step statuses.
     """
-    logger.debug(f"Getting run: {run_id} [{trace.trace_id}]")
+    logger.debug("Getting run: %s [%s]", run_id, trace.trace_id)
 
     try:
         run = await orchestrator.get_run(run_id)
@@ -865,7 +865,7 @@ async def get_run(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Failed to get run: {e} [{trace.trace_id}]", exc_info=True)
+        logger.error("Failed to get run: %s [%s]", e, trace.trace_id, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=create_error_response(
@@ -900,7 +900,7 @@ async def cancel_run(
 
     Running steps will be terminated gracefully unless force=True.
     """
-    logger.info(f"Canceling run: {run_id} [{trace.trace_id}]")
+    logger.info("Canceling run: %s [%s]", run_id, trace.trace_id)
 
     try:
         # Check if run exists
@@ -955,7 +955,7 @@ async def cancel_run(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Failed to cancel run: {e} [{trace.trace_id}]", exc_info=True)
+        logger.error("Failed to cancel run: %s [%s]", e, trace.trace_id, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=create_error_response(
@@ -993,7 +993,7 @@ async def get_run_logs(
     """
     Get logs for a pipeline run with filtering.
     """
-    logger.debug(f"Getting logs for run: {run_id} [{trace.trace_id}]")
+    logger.debug("Getting logs for run: %s [%s]", run_id, trace.trace_id)
 
     try:
         # Check if run exists
@@ -1037,7 +1037,7 @@ async def get_run_logs(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Failed to get run logs: {e} [{trace.trace_id}]", exc_info=True)
+        logger.error("Failed to get run logs: %s [%s]", e, trace.trace_id, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=create_error_response(
@@ -1071,7 +1071,7 @@ async def get_run_audit(
 
     The audit trail provides tamper-evident compliance logging.
     """
-    logger.debug(f"Getting audit trail for run: {run_id} [{trace.trace_id}]")
+    logger.debug("Getting audit trail for run: %s [%s]", run_id, trace.trace_id)
 
     try:
         # Check if run exists
@@ -1138,7 +1138,7 @@ async def get_run_audit(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Failed to get run audit: {e} [{trace.trace_id}]", exc_info=True)
+        logger.error("Failed to get run audit: %s [%s]", e, trace.trace_id, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=create_error_response(
@@ -1186,7 +1186,7 @@ async def get_checkpoint_manager():
             )
             logger.info("CheckpointManager initialized via dependency injection")
         except ImportError as e:
-            logger.warning(f"CheckpointManager not available: {e}")
+            logger.warning("CheckpointManager not available: %s", e)
             raise HTTPException(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
                 detail="Checkpoint management service unavailable",
@@ -1237,7 +1237,7 @@ async def retry_run(
     - Expired checkpoints: Returns appropriate error
     - Max retries exceeded: Returns error when limit reached
     """
-    logger.info(f"Retry requested for run: {run_id} [{trace.trace_id}]")
+    logger.info("Retry requested for run: %s [%s]", run_id, trace.trace_id)
 
     try:
         # Step 1: Check if original run exists
@@ -1350,7 +1350,7 @@ async def retry_run(
                     run_id, current_plan_hash
                 )
                 if not schema_compatible:
-                    logger.warning(f"Schema mismatch for retry of {run_id}")
+                    logger.warning("Schema mismatch for retry of %s", run_id)
 
             # Determine which steps to skip and execute
             all_step_ids = [s.get("id", "") for s in pipeline.get("definition", {}).get("spec", {}).get("steps", [])]
@@ -1441,7 +1441,7 @@ async def retry_run(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Failed to retry run: {e} [{trace.trace_id}]", exc_info=True)
+        logger.error("Failed to retry run: %s [%s]", e, trace.trace_id, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=create_error_response(
@@ -1478,7 +1478,7 @@ async def get_run_checkpoint(
     - Expiration status
     - State hash for integrity verification
     """
-    logger.debug(f"Getting checkpoint for run: {run_id} [{trace.trace_id}]")
+    logger.debug("Getting checkpoint for run: %s [%s]", run_id, trace.trace_id)
 
     try:
         # Check if run exists
@@ -1555,7 +1555,7 @@ async def get_run_checkpoint(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Failed to get checkpoint: {e} [{trace.trace_id}]", exc_info=True)
+        logger.error("Failed to get checkpoint: %s [%s]", e, trace.trace_id, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=create_error_response(
@@ -1589,7 +1589,7 @@ async def clear_run_checkpoint(
     This operation is irreversible. Once cleared, the run cannot be
     retried from checkpoint.
     """
-    logger.info(f"Clearing checkpoint for run: {run_id} [{trace.trace_id}]")
+    logger.info("Clearing checkpoint for run: %s [%s]", run_id, trace.trace_id)
 
     try:
         # Check if run exists
@@ -1639,7 +1639,7 @@ async def clear_run_checkpoint(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Failed to clear checkpoint: {e} [{trace.trace_id}]", exc_info=True)
+        logger.error("Failed to clear checkpoint: %s [%s]", e, trace.trace_id, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=create_error_response(
@@ -1687,7 +1687,7 @@ async def health_check(
             )
         )
     except Exception as e:
-        logger.error(f"Orchestrator health check failed: {e}")
+        logger.error("Orchestrator health check failed: %s", e)
         components.append(
             ComponentHealth(
                 name="orchestrator",
@@ -1710,7 +1710,7 @@ async def health_check(
             )
         )
     except Exception as e:
-        logger.error(f"Agent registry health check failed: {e}")
+        logger.error("Agent registry health check failed: %s", e)
         components.append(
             ComponentHealth(
                 name="agent_registry",
@@ -1732,7 +1732,7 @@ async def health_check(
             )
         )
     except Exception as e:
-        logger.error(f"Event store health check failed: {e}")
+        logger.error("Event store health check failed: %s", e)
         components.append(
             ComponentHealth(
                 name="event_store",
@@ -1785,7 +1785,7 @@ async def readiness_probe() -> ReadinessResponse:
         return ReadinessResponse(ready=True, message="Service is ready")
 
     except Exception as e:
-        logger.warning(f"Readiness check failed: {e}")
+        logger.warning("Readiness check failed: %s", e)
         return JSONResponse(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             content=ReadinessResponse(ready=False, message=str(e)).model_dump(),
@@ -1866,7 +1866,7 @@ greenlang_uptime_seconds {uptime}
         quota_prometheus = quota_manager.get_prometheus_metrics()
         prometheus_output += "\n" + quota_prometheus
     except Exception as e:
-        logger.debug(f"Quota metrics not available: {e}")
+        logger.debug("Quota metrics not available: %s", e)
 
     return PlainTextResponse(content=prometheus_output, media_type="text/plain")
 
@@ -1903,7 +1903,7 @@ async def list_agents(
     """
     List registered agents with filtering.
     """
-    logger.debug(f"Listing agents [{trace.trace_id}]")
+    logger.debug("Listing agents [%s]", trace.trace_id)
 
     try:
         # Build query
@@ -2001,7 +2001,7 @@ async def list_agents(
         )
 
     except Exception as e:
-        logger.error(f"Failed to list agents: {e} [{trace.trace_id}]", exc_info=True)
+        logger.error("Failed to list agents: %s [%s]", e, trace.trace_id, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=create_error_response(
@@ -2033,7 +2033,7 @@ async def get_agent(
     """
     Get detailed information about an agent.
     """
-    logger.debug(f"Getting agent: {agent_id} [{trace.trace_id}]")
+    logger.debug("Getting agent: %s [%s]", agent_id, trace.trace_id)
 
     try:
         agent = agent_registry.get_agent(agent_id, version)
@@ -2116,7 +2116,7 @@ async def get_agent(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Failed to get agent: {e} [{trace.trace_id}]", exc_info=True)
+        logger.error("Failed to get agent: %s [%s]", e, trace.trace_id, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=create_error_response(
@@ -2161,11 +2161,11 @@ async def get_quota_manager():
                 )
                 _quota_manager_instance.load_from_yaml(config_path)
             except Exception as e:
-                logger.warning(f"Could not load quota config: {e}")
+                logger.warning("Could not load quota config: %s", e)
 
             logger.info("QuotaManager initialized via dependency injection")
         except ImportError as e:
-            logger.warning(f"QuotaManager not available: {e}")
+            logger.warning("QuotaManager not available: %s", e)
             raise HTTPException(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
                 detail="Quota management service unavailable",
@@ -2262,7 +2262,7 @@ async def list_quotas(
 
     Returns both explicitly configured namespaces and the default quota.
     """
-    logger.debug(f"Listing all quotas [{trace.trace_id}]")
+    logger.debug("Listing all quotas [%s]", trace.trace_id)
 
     try:
         quota_manager = await get_quota_manager()
@@ -2286,7 +2286,7 @@ async def list_quotas(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Failed to list quotas: {e} [{trace.trace_id}]", exc_info=True)
+        logger.error("Failed to list quotas: %s [%s]", e, trace.trace_id, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=create_error_response(
@@ -2317,7 +2317,7 @@ async def get_namespace_quota(
 
     If no explicit quota is configured, returns the default quota.
     """
-    logger.debug(f"Getting quota for namespace: {namespace} [{trace.trace_id}]")
+    logger.debug("Getting quota for namespace: %s [%s]", namespace, trace.trace_id)
 
     try:
         quota_manager = await get_quota_manager()
@@ -2335,7 +2335,7 @@ async def get_namespace_quota(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Failed to get quota: {e} [{trace.trace_id}]", exc_info=True)
+        logger.error("Failed to get quota: %s [%s]", e, trace.trace_id, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=create_error_response(
@@ -2368,7 +2368,7 @@ async def update_namespace_quota(
 
     Requires admin scope.
     """
-    logger.info(f"Updating quota for namespace: {namespace} [{trace.trace_id}]")
+    logger.info("Updating quota for namespace: %s [%s]", namespace, trace.trace_id)
 
     # Check admin permission
     if not auth.has_scope("admin") and not auth.has_scope("quotas:write"):
@@ -2415,7 +2415,7 @@ async def update_namespace_quota(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Failed to update quota: {e} [{trace.trace_id}]", exc_info=True)
+        logger.error("Failed to update quota: %s [%s]", e, trace.trace_id, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=create_error_response(
@@ -2446,7 +2446,7 @@ async def get_namespace_quota_usage(
 
     Returns real-time information about active runs, steps, and queue status.
     """
-    logger.debug(f"Getting quota usage for namespace: {namespace} [{trace.trace_id}]")
+    logger.debug("Getting quota usage for namespace: %s [%s]", namespace, trace.trace_id)
 
     try:
         quota_manager = await get_quota_manager()
@@ -2467,7 +2467,7 @@ async def get_namespace_quota_usage(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Failed to get quota usage: {e} [{trace.trace_id}]", exc_info=True)
+        logger.error("Failed to get quota usage: %s [%s]", e, trace.trace_id, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=create_error_response(
@@ -2500,10 +2500,10 @@ async def get_alert_manager():
                 if os.path.exists(config_path):
                     await _alert_manager_instance.load_config(config_path)
             except Exception as e:
-                logger.warning(f"Could not load alerting config: {e}")
+                logger.warning("Could not load alerting config: %s", e)
             logger.info("AlertManager initialized via dependency injection")
         except ImportError as e:
-            logger.warning(f"AlertManager not available: {e}")
+            logger.warning("AlertManager not available: %s", e)
             _alert_manager_instance = None
     return _alert_manager_instance
 
@@ -2578,7 +2578,7 @@ async def list_webhooks(
     trace: RequestTrace = Depends(get_request_trace),
 ) -> WebhookListResponse:
     """List all webhooks configured for a namespace."""
-    logger.debug(f"Listing webhooks for namespace '{namespace}' [{trace.trace_id}]")
+    logger.debug("Listing webhooks for namespace '%s' [%s]", namespace, trace.trace_id)
     try:
         alert_manager = await get_alert_manager()
         if alert_manager is None:
@@ -2594,7 +2594,7 @@ async def list_webhooks(
         ]
         return WebhookListResponse(webhooks=webhook_responses, total=len(webhook_responses), namespace=namespace)
     except Exception as e:
-        logger.error(f"Failed to list webhooks: {e} [{trace.trace_id}]", exc_info=True)
+        logger.error("Failed to list webhooks: %s [%s]", e, trace.trace_id, exc_info=True)
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=create_error_response(error_type="internal_error", message="Failed to list webhooks", trace_id=trace.trace_id).model_dump())
 
@@ -2613,7 +2613,7 @@ async def register_webhook(
     trace: RequestTrace = Depends(get_request_trace),
 ) -> WebhookResponse:
     """Register a new webhook for a namespace."""
-    logger.info(f"Registering webhook '{request.name}' for '{namespace}' [{trace.trace_id}]")
+    logger.info("Registering webhook '%s' for '%s' [%s]", request.name, namespace, trace.trace_id)
     try:
         alert_manager = await get_alert_manager()
         if alert_manager is None:
@@ -2631,7 +2631,7 @@ async def register_webhook(
             headers=request.headers, metadata=request.metadata,
         )
         webhook_id = alert_manager.register_webhook(namespace, webhook_config)
-        logger.info(f"Webhook registered: {webhook_id} [{trace.trace_id}]")
+        logger.info("Webhook registered: %s [%s]", webhook_id, trace.trace_id)
         return WebhookResponse(
             webhook_id=webhook_id, name=webhook_config.name, provider=webhook_config.provider,
             events=webhook_config.events, severity_threshold=webhook_config.severity_threshold.value,
@@ -2640,7 +2640,7 @@ async def register_webhook(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Failed to register webhook: {e} [{trace.trace_id}]", exc_info=True)
+        logger.error("Failed to register webhook: %s [%s]", e, trace.trace_id, exc_info=True)
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=create_error_response(error_type="internal_error", message="Failed to register webhook", trace_id=trace.trace_id).model_dump())
 
@@ -2658,7 +2658,7 @@ async def delete_webhook(
     trace: RequestTrace = Depends(get_request_trace),
 ) -> Response:
     """Unregister a webhook from a namespace."""
-    logger.info(f"Deleting webhook '{webhook_id}' from '{namespace}' [{trace.trace_id}]")
+    logger.info("Deleting webhook '%s' from '%s' [%s]", webhook_id, namespace, trace.trace_id)
     try:
         alert_manager = await get_alert_manager()
         if alert_manager is None:
@@ -2674,7 +2674,7 @@ async def delete_webhook(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Failed to delete webhook: {e} [{trace.trace_id}]", exc_info=True)
+        logger.error("Failed to delete webhook: %s [%s]", e, trace.trace_id, exc_info=True)
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=create_error_response(error_type="internal_error", message="Failed to delete webhook", trace_id=trace.trace_id).model_dump())
 
@@ -2692,7 +2692,7 @@ async def send_test_alert(
     trace: RequestTrace = Depends(get_request_trace),
 ) -> TestAlertResponse:
     """Send a test alert to verify webhook configuration."""
-    logger.info(f"Sending test alert to '{request.namespace}' [{trace.trace_id}]")
+    logger.info("Sending test alert to '%s' [%s]", request.namespace, trace.trace_id)
     try:
         alert_manager = await get_alert_manager()
         if alert_manager is None:
@@ -2705,7 +2705,7 @@ async def send_test_alert(
         message = f"Test alert sent to {delivered}/{len(results)} webhooks" if results else "No webhooks configured"
         return TestAlertResponse(success=success, results=result_dicts, message=message)
     except Exception as e:
-        logger.error(f"Failed to send test alert: {e} [{trace.trace_id}]", exc_info=True)
+        logger.error("Failed to send test alert: %s [%s]", e, trace.trace_id, exc_info=True)
         return TestAlertResponse(success=False, results=[], message=f"Failed: {str(e)}")
 
 

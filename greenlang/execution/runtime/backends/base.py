@@ -229,7 +229,7 @@ class Backend(ABC):
         """
         self.config = config or {}
         self.name = self.__class__.__name__
-        logger.info(f"Initializing {self.name}")
+        logger.info("Initializing %s", self.name)
 
     @abstractmethod
     def execute(self, pipeline: Pipeline, context: ExecutionContext) -> ExecutionResult:

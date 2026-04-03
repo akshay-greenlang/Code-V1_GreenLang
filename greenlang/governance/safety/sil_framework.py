@@ -420,9 +420,9 @@ class IPLDefinition(BaseModel):
     def validate_pfd(cls, v: float) -> float:
         """Validate PFD is within acceptable range."""
         if v < 1e-5:
-            logger.warning(f"IPL PFD {v} is very low. Verify credit is justified.")
+            logger.warning("IPL PFD %s is very low. Verify credit is justified.", v)
         if v > 0.1:
-            logger.warning(f"IPL PFD {v} exceeds typical credit of 0.1")
+            logger.warning("IPL PFD %s exceeds typical credit of 0.1", v)
         return v
 
 
@@ -501,9 +501,9 @@ class PFDInput(BaseModel):
     def validate_beta(cls, v: float) -> float:
         """Validate CCF beta factor."""
         if v < 0.01:
-            logger.warning(f"Beta CCF {v} is very low. Typical values: 0.05-0.2")
+            logger.warning("Beta CCF %s is very low. Typical values: 0.05-0.2", v)
         if v > 0.2:
-            logger.warning(f"Beta CCF {v} is high. Consider improving diversity.")
+            logger.warning("Beta CCF %s is high. Consider improving diversity.", v)
         return v
 
 
@@ -887,7 +887,7 @@ class LOPAAnalyzer:
         start_time = datetime.utcnow()
         warnings: List[str] = []
 
-        logger.info(f"Starting LOPA analysis for scenario: {scenario.scenario_id}")
+        logger.info("Starting LOPA analysis for scenario: %s", scenario.scenario_id)
 
         try:
             # Calculate conditional modifier product
@@ -1058,7 +1058,7 @@ class LOPAAnalyzer:
                 result = self.analyze(scenario)
                 results.append(result)
             except Exception as e:
-                logger.error(f"Failed to analyze scenario {scenario.scenario_id}: {e}")
+                logger.error("Failed to analyze scenario %s: %s", scenario.scenario_id, e)
                 raise
         return results
 
@@ -1140,7 +1140,7 @@ class PFDCalculator:
         start_time = datetime.utcnow()
         warnings: List[str] = []
 
-        logger.info(f"Calculating PFD for {input_data.architecture.value} architecture")
+        logger.info("Calculating PFD for %s architecture", input_data.architecture.value)
 
         try:
             calc_method = self._get_calculation_method(input_data.architecture)
@@ -1191,12 +1191,12 @@ class PFDCalculator:
                 warnings=warnings,
             )
 
-            logger.info(f"PFD calculation complete. PFDavg: {pfd_avg:.2e}, SIL: {sil_achieved}")
+            logger.info("PFD calculation complete. PFDavg: %s, SIL: %s", pfd_avg, sil_achieved)
 
             return result
 
         except Exception as e:
-            logger.error(f"PFD calculation failed: {str(e)}", exc_info=True)
+            logger.error("PFD calculation failed: %s", e, exc_info=True)
             raise
 
     def calculate_pfd_1oo1(
@@ -1566,7 +1566,7 @@ class PFDCalculator:
         Returns:
             Optimal proof test interval in hours
         """
-        logger.info(f"Optimizing proof test interval for target PFD {target_pfd:.2e}")
+        logger.info("Optimizing proof test interval for target PFD %s", target_pfd)
 
         low = min_interval_hours
         high = max_interval_hours
@@ -1590,7 +1590,7 @@ class PFDCalculator:
             else:
                 high = mid - 1
 
-        logger.info(f"Optimal proof test interval: {optimal} hours")
+        logger.info("Optimal proof test interval: %s hours", optimal)
         return optimal
 
     def compare_architectures(
@@ -1612,7 +1612,7 @@ class PFDCalculator:
                 )
                 results[arch] = self.calculate(input_data)
             except Exception as e:
-                logger.warning(f"Failed to calculate PFD for {arch}: {e}")
+                logger.warning("Failed to calculate PFD for %s: %s", arch, e)
 
         return results
 
@@ -1706,7 +1706,7 @@ class ProofTestScheduler:
         Returns:
             ProofTestSchedule object
         """
-        logger.info(f"Creating proof test schedule for {equipment_id}")
+        logger.info("Creating proof test schedule for %s", equipment_id)
 
         # Validate SIL-specific constraints
         max_interval = self.MAX_INTERVALS_BY_SIL.get(target_sil, 87600)
@@ -1744,7 +1744,7 @@ class ProofTestScheduler:
 
         self.schedules[equipment_id] = schedule
 
-        logger.info(f"Schedule created. Next test due: {next_test_due.isoformat()}")
+        logger.info("Schedule created. Next test due: %s", next_test_due.isoformat())
 
         return schedule
 
@@ -1888,7 +1888,7 @@ class ProofTestScheduler:
         Returns:
             ProofTestRecord object
         """
-        logger.info(f"Recording {test_type.value} for {equipment_id}")
+        logger.info("Recording %s for %s", test_type.value, equipment_id)
 
         if equipment_id not in self.schedules:
             raise ValueError(f"No schedule found for equipment: {equipment_id}")
@@ -1922,7 +1922,7 @@ class ProofTestScheduler:
         if test_type == TestType.FULL_PROOF_TEST:
             self._update_schedule_after_test(schedule, actual_date, test_coverage)
 
-        logger.info(f"Test recorded for {equipment_id}. Result: {result.value}")
+        logger.info("Test recorded for %s. Result: %s", equipment_id, result.value)
 
         return record
 
@@ -1956,7 +1956,7 @@ class ProofTestScheduler:
         overdue = [s for s in self.schedules.values() if s.is_overdue]
 
         if overdue:
-            logger.warning(f"{len(overdue)} equipment items have overdue proof tests")
+            logger.warning("%s equipment items have overdue proof tests", len(overdue))
 
         return overdue
 
@@ -2066,7 +2066,7 @@ class SRSGenerator:
         Returns:
             Complete SRSDocument
         """
-        logger.info(f"Generating SRS for agent: {agent_id}")
+        logger.info("Generating SRS for agent: %s", agent_id)
 
         # Convert SafetyFunction to SafetyFunctionRequirement
         requirements = []
@@ -2122,7 +2122,7 @@ class SRSGenerator:
             "description": "Initial release"
         })
 
-        logger.info(f"SRS created: {srs.document_id}")
+        logger.info("SRS created: %s", srs.document_id)
 
         return srs
 
@@ -2367,7 +2367,7 @@ class FailSafeManager:
         Returns:
             VotingResult with trip decision
         """
-        logger.debug(f"Evaluating {architecture.value} with {len(channel_inputs)} channels")
+        logger.debug("Evaluating %s with %s channels", architecture.value, len(channel_inputs))
 
         channels_trip = 0
         channels_healthy = 0
@@ -2438,7 +2438,7 @@ class FailSafeManager:
 
         result.provenance_hash = self._calculate_voting_provenance(result)
 
-        logger.info(f"Voting result: {trip_decision}, {channels_trip}/{effective_required}")
+        logger.info("Voting result: %s, %s/%s", trip_decision, channels_trip, effective_required)
 
         return result
 
@@ -2502,7 +2502,7 @@ class FailSafeManager:
 
             self._start_watchdog_timer()
 
-            logger.info(f"Watchdog started: {config.watchdog_id}, timeout={config.timeout_ms}ms")
+            logger.info("Watchdog started: %s, timeout=%sms", config.watchdog_id, config.timeout_ms)
 
     def _start_watchdog_timer(self) -> None:
         """Start internal watchdog timer thread."""
@@ -2522,7 +2522,7 @@ class FailSafeManager:
 
             self.watchdog_state = WatchdogState.EXPIRED
 
-            logger.warning(f"Watchdog TIMEOUT! Action: {self.watchdog_config.action_on_timeout.value}")
+            logger.warning("Watchdog TIMEOUT! Action: %s", self.watchdog_config.action_on_timeout.value)
 
         if self.watchdog_config.action_on_timeout == TimeoutAction.TRIP:
             logger.critical("Watchdog triggered TRIP action")
@@ -2545,7 +2545,7 @@ class FailSafeManager:
         """
         with self._watchdog_lock:
             if self.watchdog_state != WatchdogState.RUNNING:
-                logger.warning(f"Cannot kick watchdog: state={self.watchdog_state.value}")
+                logger.warning("Cannot kick watchdog: state=%s", self.watchdog_state.value)
                 return False
 
             if self.watchdog:
@@ -2646,7 +2646,7 @@ class FailSafeManager:
         steps_completed = 0
         achieved_state = config.from_state
 
-        logger.info(f"Starting transition: {config.from_state} -> {config.to_state}")
+        logger.info("Starting transition: %s -> %s", config.from_state, config.to_state)
 
         try:
             if config.mode == TransitionMode.IMMEDIATE:
@@ -2729,7 +2729,7 @@ class FailSafeManager:
             status = TransitionStatus.FAILED
             errors.append(f"Transition error: {str(e)}")
             verified = False
-            logger.error(f"Transition failed: {e}", exc_info=True)
+            logger.error("Transition failed: %s", e, exc_info=True)
 
         end_time = datetime.utcnow()
         duration_ms = (end_time - start_time).total_seconds() * 1000
@@ -2753,7 +2753,7 @@ class FailSafeManager:
 
         result.provenance_hash = self._calculate_transition_provenance(result)
 
-        logger.info(f"Transition {status.value}: {achieved_state} in {duration_ms:.0f}ms")
+        logger.info("Transition %s: %s in %.0fms", status.value, achieved_state, duration_ms)
 
         return result
 
@@ -2776,7 +2776,7 @@ class FailSafeManager:
         Returns:
             Dict mapping element to success status
         """
-        logger.info(f"Executing de-energize-to-trip for {len(final_elements)} elements")
+        logger.info("Executing de-energize-to-trip for %s elements", len(final_elements))
 
         results = {}
 
@@ -2787,18 +2787,18 @@ class FailSafeManager:
                 else:
                     # Simulation: assume success
                     success = True
-                    logger.debug(f"Simulated de-energize for {element}")
+                    logger.debug("Simulated de-energize for %s", element)
 
                 results[element] = success
 
                 if success:
-                    logger.info(f"De-energize successful: {element}")
+                    logger.info("De-energize successful: %s", element)
                 else:
-                    logger.error(f"De-energize FAILED: {element}")
+                    logger.error("De-energize FAILED: %s", element)
 
             except Exception as e:
                 results[element] = False
-                logger.error(f"De-energize error for {element}: {e}")
+                logger.error("De-energize error for %s: %s", element, e)
 
         # Report summary
         success_count = sum(1 for v in results.values() if v)

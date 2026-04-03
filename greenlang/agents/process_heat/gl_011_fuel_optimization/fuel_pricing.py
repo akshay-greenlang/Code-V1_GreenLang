@@ -341,10 +341,10 @@ class FuelPricingService:
         # Check cache
         cached = self._cache.get(cache_key)
         if cached is not None:
-            logger.debug(f"Cache hit for {cache_key}")
+            logger.debug("Cache hit for %s", cache_key)
             return cached
 
-        logger.debug(f"Fetching price for {fuel_type} in {region}")
+        logger.debug("Fetching price for %s in %s", fuel_type, region)
 
         # Fetch base commodity price
         commodity_price = self._get_commodity_price(fuel_type)
@@ -546,7 +546,7 @@ class FuelPricingService:
             price: Price in $/MMBTU
         """
         self._manual_prices[fuel_type] = price
-        logger.info(f"Manual price set for {fuel_type}: ${price:.4f}/MMBTU")
+        logger.info("Manual price set for %s: $%.4f/MMBTU", fuel_type, price)
 
         # Clear cache for this fuel type
         self._cache.clear()
@@ -615,7 +615,7 @@ class FuelPricingService:
                     self.config.secondary_source
                 )
             except Exception as e:
-                logger.warning(f"Secondary source also failed: {e}")
+                logger.warning("Secondary source also failed: %s", e)
 
         # Return fallback prices
         return self._get_fallback_price(fuel_key)

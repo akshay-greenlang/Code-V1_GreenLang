@@ -313,7 +313,7 @@ class OrchestratorMetrics:
             labels=["calculation_type"],
         )
 
-        logger.info(f"OrchestratorMetrics initialized with prefix: {prefix}")
+        logger.info("OrchestratorMetrics initialized with prefix: %s", prefix)
 
     def record_workflow_completed(
         self,
@@ -427,7 +427,7 @@ class MetricsHTTPHandler:
         """Start the metrics HTTP server."""
         # In production, this would start an actual HTTP server
         self._running = True
-        logger.info(f"Metrics endpoint available at http://localhost:{self.port}/metrics")
+        logger.info("Metrics endpoint available at http://localhost:%s/metrics", self.port)
 
     async def stop(self) -> None:
         """Stop the metrics HTTP server."""

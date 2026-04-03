@@ -106,7 +106,7 @@ class PCFExchangeService:
             return response
 
         except Exception as e:
-            logger.error(f"PCF exchange failed: {e}", exc_info=True)
+            logger.error("PCF exchange failed: %s", e, exc_info=True)
             self._stats["failed_exchanges"] += 1
 
             return PCFExchangeResponse(

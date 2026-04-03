@@ -369,7 +369,7 @@ class UnifiedSteamOptimizer(IntelligenceMixin, BaseProcessHeatAgent[UnifiedSteam
         start_time = time.time()
         self._calculation_count = 0
 
-        logger.info(f"Processing steam system optimization at {input_data.timestamp}")
+        logger.info("Processing steam system optimization at %s", input_data.timestamp)
 
         try:
             with self.safety_guard():
@@ -512,7 +512,7 @@ class UnifiedSteamOptimizer(IntelligenceMixin, BaseProcessHeatAgent[UnifiedSteam
                 return output
 
         except Exception as e:
-            logger.error(f"Steam optimization failed: {e}", exc_info=True)
+            logger.error("Steam optimization failed: %s", e, exc_info=True)
             raise ProcessingError(f"Steam optimization failed: {str(e)}") from e
 
     def validate_input(self, input_data: UnifiedSteamOptimizerInput) -> bool:
@@ -533,7 +533,7 @@ class UnifiedSteamOptimizer(IntelligenceMixin, BaseProcessHeatAgent[UnifiedSteam
         # Check for reasonable values
         for reading in input_data.header_readings:
             if reading.current_pressure_psig > 1500:
-                logger.warning(f"Unusually high pressure: {reading.current_pressure_psig}")
+                logger.warning("Unusually high pressure: %s", reading.current_pressure_psig)
 
         return True
 
@@ -549,7 +549,7 @@ class UnifiedSteamOptimizer(IntelligenceMixin, BaseProcessHeatAgent[UnifiedSteam
         """
         # Check efficiency bounds
         if output_data.system_efficiency_pct < 0 or output_data.system_efficiency_pct > 100:
-            logger.warning(f"Invalid efficiency: {output_data.system_efficiency_pct}")
+            logger.warning("Invalid efficiency: %s", output_data.system_efficiency_pct)
             return False
 
         # Check provenance hash exists
@@ -577,7 +577,7 @@ class UnifiedSteamOptimizer(IntelligenceMixin, BaseProcessHeatAgent[UnifiedSteam
                 )
                 results.append(result)
             except ValueError as e:
-                logger.warning(f"Header analysis failed for {reading.header_id}: {e}")
+                logger.warning("Header analysis failed for %s: %s", reading.header_id, e)
 
         return results
 

@@ -1,0 +1,338 @@
+{
+  "command_results": [
+    {
+      "command": [
+        "C:\\Users\\aksha\\AppData\\Local\\Programs\\Python\\Python311\\python.exe",
+        "-m",
+        "greenlang.cli.main",
+        "v2",
+        "validate-contracts"
+      ],
+      "name": "v2_validate_contracts",
+      "ok": true,
+      "returncode": 0,
+      "stderr_tail": "C:\\Users\\aksha\\AppData\\Local\\Programs\\Python\\Python311\\Lib\\site-packages\\requests\\__init__.py:113: RequestsDependencyWarning: urllib3 (2.5.0) or chardet (7.3.0)/charset_normalizer (3.4.4) doesn't match a supported version!\n  warnings.warn(\nWARNING:root:FAISS not available. Install with: pip install faiss-cpu\nWARNING:root:Redis not available. Install with: pip install redis\nWARNING:root:tiktoken not available. Install with: pip install tiktoken\nWARNING:greenlang.agents.foundation.orchestrator.executors.k8s_executor:kubernetes_asyncio not available. Install with: pip install kubernetes_asyncio\nWARNING:greenlang.agents.foundation.orchestrator.artifacts.s3_store:aioboto3 not available. Install with: pip install aioboto3\nWARNING:greenlang.agents.foundation.orchestrator:GLIP Orchestrator not available: cannot import name 'AgentNode' from partially initialized module 'greenlang.agents.foundation.orchestrator' (most likely due to a circular import) (C:\\Users\\aksha\\Code-V1_GreenLang\\greenlang\\agents\\foundation\\orchestrator\\__init__.py)\n<frozen runpy>:128: RuntimeWarning: 'greenlang.cli.main' found in sys.modules after import of package 'greenlang.cli', but prior to execution of 'greenlang.cli.main'; this may result in unpredictable behaviour\n",
+      "stdout_tail": "v2 contract checks\n[OK] applications/GL-CBAM-APP/v2 pack contract\n[OK] applications/GL-CBAM-APP/v2 pipeline contract\n[OK] applications/GL-CSRD-APP/CSRD-Reporting-Platform/v2 pack contract\n[OK] applications/GL-CSRD-APP/CSRD-Reporting-Platform/v2 pipeline contract\n[OK] applications/GL-VCCI-Carbon-APP/VCCI-Scope3-Platform/v2 pack contract\n[OK] applications/GL-VCCI-Carbon-APP/VCCI-Scope3-Platform/v2 pipeline contract\n[OK] applications/GL-EUDR-APP/v2 pack contract\n[OK] applications/GL-EUDR-APP/v2 pipeline contract\n[OK] applications/GL-GHG-APP/v2 pack contract\n[OK] applications/GL-GHG-APP/v2 pipeline contract\n[OK] applications/GL-ISO14064-APP/v2 pack contract\n[OK] applications/GL-ISO14064-APP/v2 pipeline contract\n"
+    },
+    {
+      "command": [
+        "C:\\Users\\aksha\\AppData\\Local\\Programs\\Python\\Python311\\python.exe",
+        "-m",
+        "greenlang.cli.main",
+        "v2",
+        "runtime-checks"
+      ],
+      "name": "v2_runtime_checks",
+      "ok": true,
+      "returncode": 0,
+      "stderr_tail": "C:\\Users\\aksha\\AppData\\Local\\Programs\\Python\\Python311\\Lib\\site-packages\\requests\\__init__.py:113: RequestsDependencyWarning: urllib3 (2.5.0) or chardet (7.3.0)/charset_normalizer (3.4.4) doesn't match a supported version!\n  warnings.warn(\nWARNING:root:FAISS not available. Install with: pip install faiss-cpu\nWARNING:root:Redis not available. Install with: pip install redis\nWARNING:root:tiktoken not available. Install with: pip install tiktoken\nWARNING:greenlang.agents.foundation.orchestrator.executors.k8s_executor:kubernetes_asyncio not available. Install with: pip install kubernetes_asyncio\nWARNING:greenlang.agents.foundation.orchestrator.artifacts.s3_store:aioboto3 not available. Install with: pip install aioboto3\nWARNING:greenlang.agents.foundation.orchestrator:GLIP Orchestrator not available: cannot import name 'AgentNode' from partially initialized module 'greenlang.agents.foundation.orchestrator' (most likely due to a circular import) (C:\\Users\\aksha\\Code-V1_GreenLang\\greenlang\\agents\\foundation\\orchestrator\\__init__.py)\n<frozen runpy>:128: RuntimeWarning: 'greenlang.cli.main' found in sys.modules after import of package 'greenlang.cli', but prior to execution of 'greenlang.cli.main'; this may result in unpredictable behaviour\n",
+      "stdout_tail": "v2 runtime checks\n[OK] applications/GL-CBAM-APP/v2 runtime conventions\n[OK] applications/GL-CSRD-APP/CSRD-Reporting-Platform/v2 runtime conventions\n[OK] applications/GL-VCCI-Carbon-APP/VCCI-Scope3-Platform/v2 runtime conventions\n[OK] applications/GL-EUDR-APP/v2 runtime conventions\n[OK] applications/GL-GHG-APP/v2 runtime conventions\n[OK] applications/GL-ISO14064-APP/v2 runtime conventions\n"
+    },
+    {
+      "command": [
+        "C:\\Users\\aksha\\AppData\\Local\\Programs\\Python\\Python311\\python.exe",
+        "-m",
+        "greenlang.cli.main",
+        "v2",
+        "docs-check"
+      ],
+      "name": "v2_docs_check",
+      "ok": true,
+      "returncode": 0,
+      "stderr_tail": "C:\\Users\\aksha\\AppData\\Local\\Programs\\Python\\Python311\\Lib\\site-packages\\requests\\__init__.py:113: RequestsDependencyWarning: urllib3 (2.5.0) or chardet (7.3.0)/charset_normalizer (3.4.4) doesn't match a supported version!\n  warnings.warn(\nWARNING:root:FAISS not available. Install with: pip install faiss-cpu\nWARNING:root:Redis not available. Install with: pip install redis\nWARNING:root:tiktoken not available. Install with: pip install tiktoken\nWARNING:greenlang.agents.foundation.orchestrator.executors.k8s_executor:kubernetes_asyncio not available. Install with: pip install kubernetes_asyncio\nWARNING:greenlang.agents.foundation.orchestrator.artifacts.s3_store:aioboto3 not available. Install with: pip install aioboto3\nWARNING:greenlang.agents.foundation.orchestrator:GLIP Orchestrator not available: cannot import name 'AgentNode' from partially initialized module 'greenlang.agents.foundation.orchestrator' (most likely due to a circular import) (C:\\Users\\aksha\\Code-V1_GreenLang\\greenlang\\agents\\foundation\\orchestrator\\__init__.py)\n<frozen runpy>:128: RuntimeWarning: 'greenlang.cli.main' found in sys.modules after import of package 'greenlang.cli', but prior to execution of 'greenlang.cli.main'; this may result in unpredictable behaviour\n",
+      "stdout_tail": "v2 docs checks\n[OK] docs contract: docs/v2/PHASE3_CHARTER.md\n[OK] docs contract: docs/v2/PHASE0_CHARTER.md\n[OK] docs contract: docs/v2/V2_SCOPE_AND_DEFERRED.md\n[OK] docs contract: docs/v2/RFC_PROCESS.md\n[OK] docs contract: docs/v2/OWNERSHIP_MATRIX.md\n[OK] docs contract: docs/v2/COMPATIBILITY_MATRIX.md\n[OK] docs contract: docs/v2/PACK_TIERING_POLICY.md\n[OK] docs contract: docs/v2/AGENT_LIFECYCLE_POLICY.md\n[OK] docs contract: docs/v2/RELEASE_TRAINS.md\n[OK] docs contract: docs/v2/ONCALL_AND_SLOS.md\n[OK] docs contract: docs/v2/PRIORITIZED_CONNECTORS.md\n[OK] docs contract: docs/v2/PLATFORM_HANDBOOK.md\n[OK] docs contract: docs/v2/MIGRATION_PLAYBOOKS.md\n[OK] docs contract: docs/v2/GO_NO_GO_RECORD.md\n[OK] docs contract: docs/v2/UAT_RESULTS.md\n[OK] docs contract: docs/v2/RC_SOAK_LOG.md\n[OK] docs contract: docs/v2/RELEASE_TRAIN_CYCLE_LOG.md\n[OK] docs contract: docs/v2/IMMUTABLE_EVIDENCE_MANIFEST.json\n[OK] docs contract: docs/v2/PHASE1_GATE_STATUS.json\n[OK] docs contract: docs/v2/PHASE4_GATE_STATUS.json\n[OK] docs contract: docs/v2/PHASE5_GATE_STATUS.json\n[OK] docs contract: docs/v2/PHASE6_GATE_STATUS.json\n[OK] docs contract: docs/runbooks/V2_CONNECTOR_ALERT_MATRIX.md\n"
+    },
+    {
+      "command": [
+        "C:\\Users\\aksha\\AppData\\Local\\Programs\\Python\\Python311\\python.exe",
+        "-m",
+        "greenlang.cli.main",
+        "v2",
+        "agent-checks"
+      ],
+      "name": "v2_agent_checks",
+      "ok": true,
+      "returncode": 0,
+      "stderr_tail": "C:\\Users\\aksha\\AppData\\Local\\Programs\\Python\\Python311\\Lib\\site-packages\\requests\\__init__.py:113: RequestsDependencyWarning: urllib3 (2.5.0) or chardet (7.3.0)/charset_normalizer (3.4.4) doesn't match a supported version!\n  warnings.warn(\nWARNING:root:FAISS not available. Install with: pip install faiss-cpu\nWARNING:root:Redis not available. Install with: pip install redis\nWARNING:root:tiktoken not available. Install with: pip install tiktoken\nWARNING:greenlang.agents.foundation.orchestrator.executors.k8s_executor:kubernetes_asyncio not available. Install with: pip install kubernetes_asyncio\nWARNING:greenlang.agents.foundation.orchestrator.artifacts.s3_store:aioboto3 not available. Install with: pip install aioboto3\nWARNING:greenlang.agents.foundation.orchestrator:GLIP Orchestrator not available: cannot import name 'AgentNode' from partially initialized module 'greenlang.agents.foundation.orchestrator' (most likely due to a circular import) (C:\\Users\\aksha\\Code-V1_GreenLang\\greenlang\\agents\\foundation\\orchestrator\\__init__.py)\n<frozen runpy>:128: RuntimeWarning: 'greenlang.cli.main' found in sys.modules after import of package 'greenlang.cli', but prior to execution of 'greenlang.cli.main'; this may result in unpredictable behaviour\n",
+      "stdout_tail": "v2 agent lifecycle checks\n[OK] agent lifecycle registry\n"
+    },
+    {
+      "command": [
+        "C:\\Users\\aksha\\AppData\\Local\\Programs\\Python\\Python311\\python.exe",
+        "-m",
+        "greenlang.cli.main",
+        "v2",
+        "connector-checks"
+      ],
+      "name": "v2_connector_checks",
+      "ok": true,
+      "returncode": 0,
+      "stderr_tail": "C:\\Users\\aksha\\AppData\\Local\\Programs\\Python\\Python311\\Lib\\site-packages\\requests\\__init__.py:113: RequestsDependencyWarning: urllib3 (2.5.0) or chardet (7.3.0)/charset_normalizer (3.4.4) doesn't match a supported version!\n  warnings.warn(\nWARNING:root:FAISS not available. Install with: pip install faiss-cpu\nWARNING:root:Redis not available. Install with: pip install redis\nWARNING:root:tiktoken not available. Install with: pip install tiktoken\nWARNING:greenlang.agents.foundation.orchestrator.executors.k8s_executor:kubernetes_asyncio not available. Install with: pip install kubernetes_asyncio\nWARNING:greenlang.agents.foundation.orchestrator.artifacts.s3_store:aioboto3 not available. Install with: pip install aioboto3\nWARNING:greenlang.agents.foundation.orchestrator:GLIP Orchestrator not available: cannot import name 'AgentNode' from partially initialized module 'greenlang.agents.foundation.orchestrator' (most likely due to a circular import) (C:\\Users\\aksha\\Code-V1_GreenLang\\greenlang\\agents\\foundation\\orchestrator\\__init__.py)\n<frozen runpy>:128: RuntimeWarning: 'greenlang.cli.main' found in sys.modules after import of package 'greenlang.cli', but prior to execution of 'greenlang.cli.main'; this may result in unpredictable behaviour\n",
+      "stdout_tail": "v2 connector reliability checks\n[OK] connector reliability registry\n"
+    },
+    {
+      "command": [
+        "C:\\Users\\aksha\\AppData\\Local\\Programs\\Python\\Python311\\python.exe",
+        "-m",
+        "greenlang.cli.main",
+        "v2",
+        "gate"
+      ],
+      "name": "v2_gate",
+      "ok": true,
+      "returncode": 0,
+      "stderr_tail": "C:\\Users\\aksha\\AppData\\Local\\Programs\\Python\\Python311\\Lib\\site-packages\\requests\\__init__.py:113: RequestsDependencyWarning: urllib3 (2.5.0) or chardet (7.3.0)/charset_normalizer (3.4.4) doesn't match a supported version!\n  warnings.warn(\nWARNING:root:FAISS not available. Install with: pip install faiss-cpu\nWARNING:root:Redis not available. Install with: pip install redis\nWARNING:root:tiktoken not available. Install with: pip install tiktoken\nWARNING:greenlang.agents.foundation.orchestrator.executors.k8s_executor:kubernetes_asyncio not available. Install with: pip install kubernetes_asyncio\nWARNING:greenlang.agents.foundation.orchestrator.artifacts.s3_store:aioboto3 not available. Install with: pip install aioboto3\nWARNING:greenlang.agents.foundation.orchestrator:GLIP Orchestrator not available: cannot import name 'AgentNode' from partially initialized module 'greenlang.agents.foundation.orchestrator' (most likely due to a circular import) (C:\\Users\\aksha\\Code-V1_GreenLang\\greenlang\\agents\\foundation\\orchestrator\\__init__.py)\n<frozen runpy>:128: RuntimeWarning: 'greenlang.cli.main' found in sys.modules after import of package 'greenlang.cli', but prior to execution of 'greenlang.cli.main'; this may result in unpredictable behaviour\n",
+      "stdout_tail": "v2 release gates\n[OK] applications/GL-CBAM-APP/v2 pack contract\n[OK] applications/GL-CBAM-APP/v2 pipeline contract\n[OK] applications/GL-CSRD-APP/CSRD-Reporting-Platform/v2 pack contract\n[OK] applications/GL-CSRD-APP/CSRD-Reporting-Platform/v2 pipeline contract\n[OK] applications/GL-VCCI-Carbon-APP/VCCI-Scope3-Platform/v2 pack contract\n[OK] applications/GL-VCCI-Carbon-APP/VCCI-Scope3-Platform/v2 pipeline contract\n[OK] applications/GL-EUDR-APP/v2 pack contract\n[OK] applications/GL-EUDR-APP/v2 pipeline contract\n[OK] applications/GL-GHG-APP/v2 pack contract\n[OK] applications/GL-GHG-APP/v2 pipeline contract\n[OK] applications/GL-ISO14064-APP/v2 pack contract\n[OK] applications/GL-ISO14064-APP/v2 pipeline contract\n[OK] applications/GL-CBAM-APP/v2 runtime conventions\n[OK] applications/GL-CSRD-APP/CSRD-Reporting-Platform/v2 runtime conventions\n[OK] applications/GL-VCCI-Carbon-APP/VCCI-Scope3-Platform/v2 runtime conventions\n[OK] applications/GL-EUDR-APP/v2 runtime conventions\n[OK] applications/GL-GHG-APP/v2 runtime conventions\n[OK] applications/GL-ISO14064-APP/v2 runtime conventions\n[OK] runtime execution: GL-EUDR-APP\n[OK] runtime execution: GL-GHG-APP\n[OK] runtime execution: GL-ISO14064-APP\n[OK] agent lifecycle registry\n[OK] connector reliability registry\n[OK] pack tier registry\n[OK] policy bundle: greenlang/governance/policy/bundles/v2_authz.rego\n[OK] policy bundle: greenlang/governance/policy/bundles/v2_pack_trust.rego\n[OK] policy bundle: greenlang/governance/policy/bundles/v2_egress_controls.rego\n[OK] policy bundle: greenlang/governance/policy/bundles/v2_data_controls.rego\n[OK] policy bundle: greenlang/governance/policy/bundles/v2_pack_tier_policy.rego\n[OK] determinism contract: GL-EUDR-APP\n[OK] determinism contract: GL-GHG-APP\n[OK] determinism contract: GL-ISO14064-APP\n[OK] docs contract: docs/v2/PHASE3_CHARTER.md\n[OK] docs contract: docs/v2/PHASE0_CHARTER.md\n[OK] docs contract: docs/v2/V2_SCOPE_AND_DEFERRED.md\n[OK] docs contract: docs/v2/RFC_PROCESS.md\n[OK] docs contract: docs/v2/OWNERSHIP_MATRIX.md\n[OK] docs contract: docs/v2/COMPATIBILITY_MATRIX.md\n[OK] docs contract: docs/v2/PACK_TIERING_POLICY.md\n[OK] docs contract: docs/v2/AGENT_LIFECYCLE_POLICY.md\n[OK] docs contract: docs/v2/RELEASE_TRAINS.md\n[OK] docs contract: docs/v2/ONCALL_AND_SLOS.md\n[OK] docs contract: docs/v2/PRIORITIZED_CONNECTORS.md\n[OK] docs contract: docs/v2/PLATFORM_HANDBOOK.md\n[OK] docs contract: docs/v2/MIGRATION_PLAYBOOKS.md\n[OK] docs contract: docs/v2/GO_NO_GO_RECORD.md\n[OK] docs contract: docs/v2/UAT_RESULTS.md\n[OK] docs contract: docs/v2/RC_SOAK_LOG.md\n[OK] docs contract: docs/v2/RELEASE_TRAIN_CYCLE_LOG.md\n[OK] docs contract: docs/v2/IMMUTABLE_EVIDENCE_MANIFEST.json\n[OK] docs contract: docs/v2/PHASE1_GATE_STATUS.json\n[OK] docs contract: docs/v2/PHASE4_GATE_STATUS.json\n[OK] docs contract: docs/v2/PHASE5_GATE_STATUS.json\n[OK] docs contract: docs/v2/PHASE6_GATE_STATUS.json\n[OK] docs contract: docs/runbooks/V2_CONNECTOR_ALERT_MATRIX.md\n[OK] immutable evidence manifest\nv2 release gates passed\n"
+    }
+  ],
+  "generated_at_utc": "2026-04-02T13:07:26.558565Z",
+  "json_files": {
+    "mvp_release_gate.json": {
+      "artifact_version": "2.0",
+      "checklist": {
+        "cli_cbam_happy_path": {
+          "command": "python -m greenlang.cli.main run cbam <sample_config> <sample_imports> <output_dir>",
+          "exit_code": 0,
+          "output_dir": "c:/Users/aksha/Code-V1_GreenLang/tmp_mvp_release_run_v2",
+          "status": "PASS"
+        },
+        "cli_help_available": {
+          "command": "python -m greenlang.cli.main --help",
+          "exit_code": 0,
+          "status": "PASS"
+        },
+        "cli_nonzero_on_invalid_cbam_usage": {
+          "command": "python -m greenlang.cli.main run cbam",
+          "exit_code": 2,
+          "status": "PASS"
+        },
+        "determinism_two_run_hash_match": {
+          "result": {
+            "diff_count": 0,
+            "run1_dir": "c:/Users/aksha/Code-V1_GreenLang/cbam-pack-mvp/tmp_release_det_run3",
+            "run1_success": true,
+            "run2_dir": "c:/Users/aksha/Code-V1_GreenLang/cbam-pack-mvp/tmp_release_det_run4",
+            "run2_success": true,
+            "same_fileset": true
+          },
+          "status": "PASS"
+        },
+        "pilot_mode_api_key_enforcement": {
+          "missing_key_status": 401,
+          "status": "PASS",
+          "valid_key_status": 200
+        },
+        "run_help_available": {
+          "command": "python -m greenlang.cli.main run --help",
+          "exit_code": 0,
+          "status": "PASS"
+        },
+        "security_oversize_upload_rejection": {
+          "status": "PASS",
+          "status_code": 413
+        },
+        "security_sanitized_yaml_error": {
+          "error_message": "Invalid YAML. Please fix file formatting and retry.",
+          "status": "PASS"
+        },
+        "security_traversal_upload_rejection": {
+          "status": "PASS",
+          "status_code": 400
+        },
+        "test_suite_cbam_mvp": {
+          "command": "pytest -q c:/Users/aksha/Code-V1_GreenLang/cbam-pack-mvp/tests",
+          "result": "15 passed",
+          "status": "PASS"
+        },
+        "web_health_endpoint": {
+          "command": "GET http://127.0.0.1:8000/health",
+          "status": "PASS",
+          "status_code": 200
+        }
+      },
+      "generated_at_utc": "2026-03-23T09:45:48Z",
+      "notes": [
+        "Web export gating consumes PipelineResult.can_export as source of truth.",
+        "Upload traversal attempts are explicitly rejected with 400.",
+        "Upload size limit enforcement is verified with 413 response.",
+        "Preview error responses are sanitized for public API safety.",
+        "Pilot mode controls are available via CBAM_API_KEY, rate limiting, and session TTL cleanup."
+      ],
+      "scope": "CBAM flagship MVP remediation acceptance gate",
+      "verdict": "GO_FOR_PILOT"
+    },
+    "mvp_v1_v1_1_closure_report.json": {
+      "additional_tests": [
+        {
+          "command": "python -m pytest -q tests/v1/test_full_backends.py tests/v1/test_cli_v1.py",
+          "log": "phase1_evidence/current_head/tests_v1_backend_semantics.log",
+          "name": "backend semantic tests",
+          "status": "pass"
+        },
+        {
+          "command": "python -m pytest -q cbam-pack-mvp/tests/test_web_security.py cbam-pack-mvp/tests/test_web_v1_csrd_vcci_endpoints.py cbam-pack-mvp/tests/test_web_v1_contract.py",
+          "log": "phase1_evidence/current_head/tests_web_security_contract.log",
+          "name": "web security and contract tests",
+          "status": "pass"
+        }
+      ],
+      "approval_metadata": {
+        "board": "v1 Release Board",
+        "decision": "go",
+        "notes": [
+          "All strict v1 gates passed on current HEAD.",
+          "Backend semantic tests and web security/contract tests passed.",
+          "Frontend quality blocker workflow added for VCCI frontend lint/type/test/build."
+        ]
+      },
+      "artifact_hashes_sha256": {
+        "phase1_evidence/cbam/cbam_report.xml": "d62568bc26dc3384ce7741849b133ce493eb5001ab0e9d814b545844e1a08db8",
+        "phase1_evidence/cbam/report_summary.xlsx": "b446802db4c788d7d1eacdd171a39616a984d8bcf187e4d1592ac0fe2e71ac2e",
+        "phase1_evidence/csrd/esrs_report.json": "a1e59b92c7dd6ca330ac0a1bfe8079c3ed566c92e32ac5690636fa3cd84d52ee",
+        "phase1_evidence/vcci/scope3_inventory.json": "bfbbc207677069f77b72cd510efba0de1eabc8b92900d9be3d82b232de9b1f6b"
+      },
+      "ci_blockers": [
+        ".github/workflows/cbam-mvp-ci.yml",
+        ".github/workflows/greenlang-v1-platform-ci.yml",
+        ".github/workflows/csrd-v1-backend-ci.yml",
+        ".github/workflows/vcci-v1-backend-ci.yml",
+        ".github/workflows/vcci-frontend-ci.yml"
+      ],
+      "commit_sha": "0c12d8a57e30597739d4e18e5adc810dfbcc1f21",
+      "docs_refreshed": [
+        "docs/v1/UAT_RESULTS.md",
+        "docs/v1/RC_SOAK_LOG.md",
+        "docs/v1/GO_NO_GO_RECORD.md",
+        "docs/v1/AUDIT_STATUS_MATRIX.md"
+      ],
+      "gate_commands": [
+        {
+          "command": "python -m greenlang.cli.main v1 validate-contracts",
+          "log": "phase1_evidence/current_head/v1_validate_contracts.log",
+          "name": "v1 validate contracts",
+          "status": "pass"
+        },
+        {
+          "command": "python -m greenlang.cli.main v1 check-policy",
+          "log": "phase1_evidence/current_head/v1_check_policy.log",
+          "name": "v1 signed-pack policy",
+          "status": "pass"
+        },
+        {
+          "command": "python -m greenlang.cli.main v1 full-backend-checks",
+          "log": "phase1_evidence/current_head/v1_full_backend_checks.log",
+          "name": "v1 full backend checks",
+          "status": "pass"
+        },
+        {
+          "command": "python -m greenlang.cli.main v1 gate",
+          "log": "phase1_evidence/current_head/v1_gate.log",
+          "name": "v1 release gate",
+          "status": "pass"
+        }
+      ],
+      "generated_at_utc": "2026-03-27T11:41:28Z",
+      "release_profile": {
+        "cbam_monorepo_fallback_policy": {
+          "env_flag": "GL_ALLOW_MONOREPO_CBAM_FALLBACK",
+          "release_blockers": [
+            "GL_RELEASE_STRICT=1",
+            "CI=true"
+          ]
+        },
+        "strict_backend_mode": "GL_V1_ALLOW_BACKEND_FALLBACK=0"
+      },
+      "report_id": "mvp-v1-v1_1-closure-2026-03-27",
+      "scope": {
+        "frontend": "multi-app shell + security/contract test coverage + CI quality blocker",
+        "mvp": "CBAM flagship loop",
+        "v1": "platformization across CBAM/CSRD/VCCI",
+        "v1_1": "strict full-backend parity and evidence refresh"
+      }
+    },
+    "v2_closure_report.json": {
+      "artifacts": {
+        "agent_policy": "docs/v2/AGENT_LIFECYCLE_POLICY.md",
+        "charter": "docs/v2/PHASE0_CHARTER.md",
+        "compatibility_matrix": "docs/v2/COMPATIBILITY_MATRIX.md",
+        "determinism_contract": "docs/v2/DETERMINISM_CONTRACT.md",
+        "go_no_go_record": "docs/v2/GO_NO_GO_RECORD.md",
+        "handbook": "docs/v2/PLATFORM_HANDBOOK.md",
+        "migration_playbooks": "docs/v2/MIGRATION_PLAYBOOKS.md",
+        "oncall_slos": "docs/v2/ONCALL_AND_SLOS.md",
+        "ownership": "docs/v2/OWNERSHIP_MATRIX.md",
+        "pack_policy": "docs/v2/PACK_TIERING_POLICY.md",
+        "rc_soak_log": "docs/v2/RC_SOAK_LOG.md",
+        "release_trains": "docs/v2/RELEASE_TRAINS.md",
+        "reliability_standard": "docs/v2/CONNECTOR_RELIABILITY_STANDARD.md",
+        "rfc": "docs/v2/RFC_PROCESS.md",
+        "scope": "docs/v2/V2_SCOPE_AND_DEFERRED.md",
+        "security_governance": "docs/v2/SECURITY_GOVERNANCE.md",
+        "uat_results": "docs/v2/UAT_RESULTS.md",
+        "ux_shell": "docs/v2/UX_ENTERPRISE_SHELL.md"
+      },
+      "decision": "go",
+      "gates": {
+        "frontend_ux_blockers": {
+          "evidence": "All 6 workspaces production-grade: drag-drop upload, progress bars, results visualization, artifacts, error handling. No raw JSON output.",
+          "passed_at_utc": "2026-03-30T14:00:00Z",
+          "status": "passed"
+        },
+        "security_governance_blockers": {
+          "evidence": "V2 security governance CI passes: bandit, pip-audit, detect-secrets, Rego bundles verified",
+          "passed_at_utc": "2026-03-30T14:00:00Z",
+          "status": "passed"
+        },
+        "tests_v2": {
+          "evidence": "tests/v2/ suite green; 85% coverage threshold met",
+          "passed_at_utc": "2026-03-30T14:00:00Z",
+          "status": "passed"
+        },
+        "v2_docs_checks": {
+          "evidence": "18 governance docs published under docs/v2/",
+          "passed_at_utc": "2026-03-30T14:00:00Z",
+          "status": "passed"
+        },
+        "v2_gate": {
+          "evidence": "All V2 gate checks pass: contracts, conformance, pack tiers, agent registry",
+          "passed_at_utc": "2026-03-30T14:00:00Z",
+          "status": "passed"
+        },
+        "v2_runtime_checks": {
+          "evidence": "backends.py routes all 6 profiles through native V2 runtime_backend.py entrypoints",
+          "passed_at_utc": "2026-03-30T14:00:00Z",
+          "status": "passed"
+        },
+        "v2_validate_contracts": {
+          "evidence": "All 6 apps have gl.yaml with artifact_contract; V2 runtime_backend.py present for all 6",
+          "passed_at_utc": "2026-03-30T14:00:00Z",
+          "status": "passed"
+        }
+      },
+      "generated_at_utc": "2026-03-30T14:00:00Z",
+      "phase": "V2 Scale and Productization",
+      "report_id": "greenlang-v2-90-day-closure",
+      "scope": {
+        "agents_registered": "30",
+        "apps_delivered": "6",
+        "apps_target": "6",
+        "packs_delivered": "50",
+        "packs_target": "35+",
+        "quality_model": "release-train with mandatory blockers"
+      },
+      "sign_off_notes": "V2 product gaps closed: UI upgraded for all 6 apps, V2 backends created for CBAM/CSRD/VCCI, agent registry scaled to 30, all gates passed.",
+      "v2_completion_summary": {
+        "agent_registry": "30 agents registered across 8 domains (platform-runtime, cbam, csrd, vcci, eudr, ghg, iso14064, governance, data); lifecycle states: 24 production, 3 qualified, 2 incubating, 1 retired",
+        "backend_parity": "All 6 apps (CBAM, CSRD, VCCI, EUDR, GHG, ISO14064) have native V2 runtime_backend.py; no V1 delegation in release mode",
+        "navigation": "Unified shell with all 6 app workspaces accessible from consistent top navigation across all pages",
+        "ui_ux": "All 6 workspaces upgraded to production-grade with consistent design system, drag-drop upload, progress visualization, structured results display, artifact management, and error handling"
+      },
+      "workflows": [
+        ".github/workflows/greenlang-v2-platform-ci.yml",
+        ".github/workflows/v2-security-governance-ci.yml",
+        ".github/workflows/v2-release-train.yml",
+        ".github/workflows/v2-frontend-ux-ci.yml"
+      ]
+    }
+  }
+}

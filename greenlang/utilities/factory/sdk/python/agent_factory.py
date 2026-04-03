@@ -27,6 +27,7 @@ import yaml
 import jinja2
 from greenlang.utilities.determinism import DeterministicClock
 from greenlang.schemas.enums import Environment
+from greenlang.exceptions import InfrastructureException
 
 logger = logging.getLogger(__name__)
 
@@ -328,7 +329,7 @@ class AgentFactory:
         if kwargs.get("with_docs", True):
             self.generate_docs(agent)
 
-        logger.info(f"Agent created successfully: {agent.name}")
+        logger.info("Agent created successfully: %s", agent.name)
         return agent
 
     def scaffold_agent(
@@ -377,7 +378,7 @@ class AgentFactory:
         spec_path = Path(kwargs.get("output_dir", ".")) / f"{name}_spec.yaml"
         spec.to_yaml(spec_path)
 
-        logger.info(f"Agent scaffolded: {spec_path}")
+        logger.info("Agent scaffolded: %s", spec_path)
         return spec
 
     def validate_agent(
@@ -606,7 +607,7 @@ class AgentFactory:
             tests_passed=len(test_files)
         )
 
-        logger.info(f"Generated {len(test_files)} test files for {agent.name}")
+        logger.info("Generated %s test files for %s", len(test_files), agent.name)
         return result
 
     def generate_docs(
@@ -750,7 +751,7 @@ class AgentFactory:
         # Execute build
         result = builder.build(agent, build_config)
 
-        logger.info(f"Agent built successfully: {agent.name} [{platform.value}]")
+        logger.info("Agent built successfully: %s [%s]", agent.name, platform.value)
         return result
 
     def deploy_agent(
@@ -807,7 +808,7 @@ class AgentFactory:
                     self.rollback_agent(agent, env)
                 raise DeploymentError(f"Deployment verification failed for {agent.name}")
 
-        logger.info(f"Agent deployed successfully: {agent.name} -> {env.value}")
+        logger.info("Agent deployed successfully: %s -> %s", agent.name, env.value)
         return result
 
     def rollback_agent(
@@ -842,7 +843,7 @@ class AgentFactory:
         # Execute rollback
         result = deployer.rollback(agent, version, **kwargs)
 
-        logger.info(f"Agent rolled back: {agent.name} in {env.value}")
+        logger.info("Agent rolled back: %s in %s", agent.name, env.value)
         return result
 
     def batch_create(
@@ -869,7 +870,7 @@ class AgentFactory:
         specs_dir = Path(specs_dir)
         spec_files = list(specs_dir.glob(pattern))
 
-        logger.info(f"Found {len(spec_files)} specifications to process")
+        logger.info("Found %s specifications to process", len(spec_files))
 
         agents = []
         futures = []
@@ -884,11 +885,11 @@ class AgentFactory:
                     agent = future.result()
                     agents.append(agent)
                 except Exception as e:
-                    logger.error(f"Failed to create agent from {spec_file}: {e}")
+                    logger.error("Failed to create agent from %s: %s", spec_file, e)
                     if not continue_on_error:
                         raise
 
-        logger.info(f"Successfully created {len(agents)} agents")
+        logger.info("Successfully created %s agents", len(agents))
         return agents
 
     def batch_test(
@@ -936,7 +937,7 @@ class AgentFactory:
                         break
 
                 except Exception as e:
-                    logger.error(f"Failed to test agent {agent_dir}: {e}")
+                    logger.error("Failed to test agent %s: %s", agent_dir, e)
                     if fail_fast:
                         raise
 
@@ -989,7 +990,7 @@ class AgentFactory:
                     raise DeploymentError(f"Failed to deploy {agent_name}")
 
         except Exception as e:
-            logger.error(f"Batch deployment failed: {e}")
+            logger.error("Batch deployment failed: %s", e)
 
             if rollback_all_on_failure:
                 logger.info("Rolling back all deployed agents...")
@@ -1051,7 +1052,7 @@ class AgentFactory:
         # Reload plugins
         self._load_plugins()
 
-        logger.info(f"Plugin installed: {plugin_name}")
+        logger.info("Plugin installed: %s", plugin_name)
 
     def list_plugins(self) -> List[Dict[str, Any]]:
         """
@@ -1132,7 +1133,7 @@ class Agent:
 
 # Exception classes
 
-class AgentFactoryError(Exception):
+class AgentFactoryError(InfrastructureException):
     """Base exception for agent factory."""
     pass
 

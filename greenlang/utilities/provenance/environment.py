@@ -270,7 +270,7 @@ def get_all_installed_packages() -> Dict[str, str]:
             for dist in pkg_resources.working_set:
                 packages[dist.project_name] = dist.version
     except Exception as e:
-        logger.warning(f"Could not enumerate packages: {e}")
+        logger.warning("Could not enumerate packages: %s", e)
 
     return packages
 

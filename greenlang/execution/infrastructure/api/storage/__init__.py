@@ -211,7 +211,7 @@ class StorageFactory:
                 logger.debug("Reusing existing webhook store instance")
                 return cls._webhook_store_instance
 
-        logger.info(f"Creating webhook store with backend: {backend}")
+        logger.info("Creating webhook store with backend: %s", backend)
 
         if backend == "memory":
             store = InMemoryWebhookStore()
@@ -293,7 +293,7 @@ class StorageFactory:
                 logger.debug("Reusing existing agent store instance")
                 return cls._agent_store_instance
 
-        logger.info(f"Creating agent store with backend: {backend}")
+        logger.info("Creating agent store with backend: %s", backend)
 
         if backend == "memory":
             store = InMemoryAgentStateStore()

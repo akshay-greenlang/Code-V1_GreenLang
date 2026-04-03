@@ -29,10 +29,13 @@ Status: Production Ready
 from __future__ import annotations
 
 import logging
-import os
-import threading
 from dataclasses import dataclass
-from typing import Any, Optional
+
+from greenlang.data_commons.config_base import (
+    BaseDataConfig,
+    EnvReader,
+    create_config_singleton,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -49,101 +52,42 @@ _ENV_PREFIX = "GL_TSGF_"
 
 
 @dataclass
-class TimeSeriesGapFillerConfig:
-    """Complete configuration for the GreenLang Time Series Gap Filler SDK.
+class TimeSeriesGapFillerConfig(BaseDataConfig):
+    """Configuration for the GreenLang Time Series Gap Filler SDK.
 
-    Attributes are grouped by concern: connections, logging, record
-    processing, gap tolerance, strategy selection, seasonal decomposition,
-    smoothing parameters, quality thresholds, feature toggles, worker pool,
-    cache, rate limiting, and provenance.
+    Inherits shared connection, pool, batch, and logging fields from
+    ``BaseDataConfig``.  Only gap-filler-specific fields are declared here.
 
     All attributes can be overridden via environment variables using the
     ``GL_TSGF_`` prefix.
 
     Attributes:
-        database_url: PostgreSQL connection URL for persistent storage.
-            Holds time series data, gap metadata, fill audit records,
-            and provenance chains.
-        redis_url: Redis connection URL for caching layer.
-            Used for fill result caching, rate limiting counters,
-            and cross-series correlation caches.
-        log_level: Logging level for the time series gap filler service.
-            Accepts standard Python logging levels: DEBUG, INFO,
-            WARNING, ERROR, CRITICAL.
         batch_size: Default batch size for record processing.
-            Controls how many data points are processed in a single
-            chunk during batch gap filling operations.
         max_records: Maximum records allowed in a single gap filling job.
-            Prevents runaway processing on excessively large datasets.
         max_gap_ratio: Maximum allowable fraction of a series that may
-            consist of gaps (0.0 to 1.0). Series exceeding this
-            threshold are rejected rather than filled, since too few
-            observations remain for reliable interpolation.
+            consist of gaps (0.0 to 1.0).
         min_data_points: Minimum number of non-null data points required
-            before gap filling can be attempted. Series with fewer
-            valid observations are rejected to avoid unreliable fills.
-        default_strategy: Default strategy selection mode for gap
-            filling. ``auto`` uses the strategy selector engine to
-            pick the best method per gap; alternatives include
-            ``linear``, ``cubic_spline``, ``seasonal``,
-            ``moving_average``, ``exponential_smoothing``.
+            before gap filling can be attempted.
+        default_strategy: Default strategy selection mode for gap filling.
         interpolation_method: Default interpolation method when the
-            strategy resolves to numeric interpolation. Supports
-            ``linear``, ``cubic``, ``spline``, ``pchip``, ``akima``.
-        seasonal_periods: Number of observations per seasonal cycle
-            used by the seasonal decomposition engine. Set to 12
-            for monthly data, 4 for quarterly, 52 for weekly, etc.
-        smoothing_alpha: Holt-Winters exponential smoothing level
-            coefficient (alpha). Controls the weight given to the
-            most recent observation in the level component.
-            Range 0.0 to 1.0.
-        smoothing_beta: Holt-Winters exponential smoothing trend
-            coefficient (beta). Controls the weight given to the
-            most recent observation in the trend component.
-            Range 0.0 to 1.0.
-        smoothing_gamma: Holt-Winters exponential smoothing seasonal
-            coefficient (gamma). Controls the weight given to the
-            most recent observation in the seasonal component.
-            Range 0.0 to 1.0.
+            strategy resolves to numeric interpolation.
+        seasonal_periods: Number of observations per seasonal cycle.
+        smoothing_alpha: Holt-Winters level coefficient (alpha).
+        smoothing_beta: Holt-Winters trend coefficient (beta).
+        smoothing_gamma: Holt-Winters seasonal coefficient (gamma).
         correlation_threshold: Minimum Pearson correlation coefficient
-            (0.0 to 1.0) required between two series for cross-series
-            gap filling to be applied. Prevents unreliable fills from
-            weakly correlated reference series.
-        confidence_threshold: Minimum confidence score (0.0 to 1.0)
-            for a gap fill to be accepted. Fills below this threshold
-            are flagged as low-confidence and may trigger manual review
-            or alternative strategy fallback.
-        enable_seasonal: Whether seasonal decomposition based gap
-            filling is enabled. When True, the seasonal engine
-            decomposes the series into trend, seasonal, and residual
-            components for pattern-aware filling.
-        enable_cross_series: Whether cross-series correlation based
-            gap filling is enabled. When True, correlated reference
-            series are used to inform fills in the target series.
+            for cross-series gap filling.
+        confidence_threshold: Minimum confidence score for a gap fill
+            to be accepted.
+        short_gap_limit: Maximum gap length classified as short.
+        long_gap_limit: Maximum gap length classified as long.
+        enable_seasonal: Whether seasonal decomposition is enabled.
+        enable_cross_series: Whether cross-series correlation is enabled.
         worker_count: Number of parallel workers for batch processing.
-            Controls concurrency for multi-series gap filling jobs.
-        pool_min_size: Minimum connection pool size for database
-            connections. Ensures baseline availability under low load.
-        pool_max_size: Maximum connection pool size for database
-            connections. Caps resource usage under high concurrency.
-        cache_ttl: Cache time-to-live in seconds for gap fill results.
-            Prevents redundant re-computation when the same series
-            is queried repeatedly within the TTL window.
-        rate_limit_rpm: Rate limit in requests per minute for the
-            gap filler API. Protects backend resources from excessive
-            concurrent fill requests.
-        enable_provenance: Whether SHA-256 provenance tracking is
-            enabled. When True, every gap fill operation records a
-            provenance chain including input hash, method used,
-            parameters applied, and output hash for full auditability.
+        cache_ttl: Cache time-to-live in seconds.
+        rate_limit_rpm: Rate limit in requests per minute.
+        enable_provenance: Whether SHA-256 provenance tracking is enabled.
     """
-
-    # -- Connections ---------------------------------------------------------
-    database_url: str = ""
-    redis_url: str = ""
-
-    # -- Logging -------------------------------------------------------------
-    log_level: str = "INFO"
 
     # -- Record processing ---------------------------------------------------
     batch_size: int = 1000
@@ -179,8 +123,6 @@ class TimeSeriesGapFillerConfig:
 
     # -- Worker pool ---------------------------------------------------------
     worker_count: int = 4
-    pool_min_size: int = 2
-    pool_max_size: int = 10
 
     # -- Cache ---------------------------------------------------------------
     cache_ttl: int = 3600
@@ -192,7 +134,7 @@ class TimeSeriesGapFillerConfig:
     enable_provenance: bool = True
 
     # ------------------------------------------------------------------
-    # Factory helpers
+    # Factory
     # ------------------------------------------------------------------
 
     @classmethod
@@ -201,127 +143,79 @@ class TimeSeriesGapFillerConfig:
 
         Every field can be overridden via ``GL_TSGF_<FIELD_UPPER>``.
         Boolean values accept ``true/1/yes`` (case-insensitive).
-        Integer values are parsed via ``int()``.
-        Float values are parsed via ``float()``.
 
         Returns:
             Populated TimeSeriesGapFillerConfig instance.
         """
-        prefix = _ENV_PREFIX
-
-        def _env(name: str, default: Any = None) -> Optional[str]:
-            return os.environ.get(f"{prefix}{name}", default)
-
-        def _bool(name: str, default: bool) -> bool:
-            val = _env(name)
-            if val is None:
-                return default
-            return val.lower() in ("true", "1", "yes")
-
-        def _int(name: str, default: int) -> int:
-            val = _env(name)
-            if val is None:
-                return default
-            try:
-                return int(val)
-            except ValueError:
-                logger.warning(
-                    "Invalid integer for %s%s=%s, using default %d",
-                    prefix, name, val, default,
-                )
-                return default
-
-        def _float(name: str, default: float) -> float:
-            val = _env(name)
-            if val is None:
-                return default
-            try:
-                return float(val)
-            except ValueError:
-                logger.warning(
-                    "Invalid float for %s%s=%s, using default %f",
-                    prefix, name, val, default,
-                )
-                return default
-
-        def _str(name: str, default: str) -> str:
-            val = _env(name)
-            if val is None:
-                return default
-            return val
+        env = EnvReader(_ENV_PREFIX)
+        base_kwargs = cls._base_kwargs_from_env(env)
 
         config = cls(
-            # Connections
-            database_url=_str("DATABASE_URL", cls.database_url),
-            redis_url=_str("REDIS_URL", cls.redis_url),
-            # Logging
-            log_level=_str("LOG_LEVEL", cls.log_level),
+            **base_kwargs,
             # Record processing
-            batch_size=_int("BATCH_SIZE", cls.batch_size),
-            max_records=_int("MAX_RECORDS", cls.max_records),
+            batch_size=env.int("BATCH_SIZE", cls.batch_size),
+            max_records=env.int("MAX_RECORDS", cls.max_records),
             # Gap tolerance
-            max_gap_ratio=_float(
+            max_gap_ratio=env.float(
                 "MAX_GAP_RATIO", cls.max_gap_ratio,
             ),
-            min_data_points=_int(
+            min_data_points=env.int(
                 "MIN_DATA_POINTS", cls.min_data_points,
             ),
             # Strategy selection
-            default_strategy=_str(
+            default_strategy=env.str(
                 "DEFAULT_STRATEGY", cls.default_strategy,
             ),
-            interpolation_method=_str(
+            interpolation_method=env.str(
                 "INTERPOLATION_METHOD", cls.interpolation_method,
             ),
             # Seasonal decomposition
-            seasonal_periods=_int(
+            seasonal_periods=env.int(
                 "SEASONAL_PERIODS", cls.seasonal_periods,
             ),
             # Holt-Winters smoothing parameters
-            smoothing_alpha=_float(
+            smoothing_alpha=env.float(
                 "SMOOTHING_ALPHA", cls.smoothing_alpha,
             ),
-            smoothing_beta=_float(
+            smoothing_beta=env.float(
                 "SMOOTHING_BETA", cls.smoothing_beta,
             ),
-            smoothing_gamma=_float(
+            smoothing_gamma=env.float(
                 "SMOOTHING_GAMMA", cls.smoothing_gamma,
             ),
             # Quality thresholds
-            correlation_threshold=_float(
+            correlation_threshold=env.float(
                 "CORRELATION_THRESHOLD", cls.correlation_threshold,
             ),
-            confidence_threshold=_float(
+            confidence_threshold=env.float(
                 "CONFIDENCE_THRESHOLD", cls.confidence_threshold,
             ),
             # Gap classification
-            short_gap_limit=_int(
+            short_gap_limit=env.int(
                 "SHORT_GAP_LIMIT", cls.short_gap_limit,
             ),
-            long_gap_limit=_int(
+            long_gap_limit=env.int(
                 "LONG_GAP_LIMIT", cls.long_gap_limit,
             ),
             # Feature toggles
-            enable_seasonal=_bool(
+            enable_seasonal=env.bool(
                 "ENABLE_SEASONAL", cls.enable_seasonal,
             ),
-            enable_cross_series=_bool(
+            enable_cross_series=env.bool(
                 "ENABLE_CROSS_SERIES", cls.enable_cross_series,
             ),
             # Worker pool
-            worker_count=_int(
+            worker_count=env.int(
                 "WORKER_COUNT", cls.worker_count,
             ),
-            pool_min_size=_int("POOL_MIN_SIZE", cls.pool_min_size),
-            pool_max_size=_int("POOL_MAX_SIZE", cls.pool_max_size),
             # Cache
-            cache_ttl=_int("CACHE_TTL", cls.cache_ttl),
+            cache_ttl=env.int("CACHE_TTL", cls.cache_ttl),
             # Rate limiting
-            rate_limit_rpm=_int(
+            rate_limit_rpm=env.int(
                 "RATE_LIMIT_RPM", cls.rate_limit_rpm,
             ),
             # Provenance
-            enable_provenance=_bool(
+            enable_provenance=env.bool(
                 "ENABLE_PROVENANCE", cls.enable_provenance,
             ),
         )
@@ -467,45 +361,9 @@ class TimeSeriesGapFillerConfig:
 # Thread-safe singleton accessor
 # ---------------------------------------------------------------------------
 
-_config_instance: Optional[TimeSeriesGapFillerConfig] = None
-_config_lock = threading.Lock()
-
-
-def get_config() -> TimeSeriesGapFillerConfig:
-    """Return the singleton TimeSeriesGapFillerConfig, creating from env if needed.
-
-    Uses double-checked locking for thread safety with minimal
-    contention on the hot path.
-
-    Returns:
-        TimeSeriesGapFillerConfig singleton instance.
-    """
-    global _config_instance
-    if _config_instance is None:
-        with _config_lock:
-            if _config_instance is None:
-                _config_instance = TimeSeriesGapFillerConfig.from_env()
-    return _config_instance
-
-
-def set_config(config: TimeSeriesGapFillerConfig) -> None:
-    """Replace the singleton TimeSeriesGapFillerConfig (useful for testing).
-
-    Args:
-        config: New configuration to install.
-    """
-    global _config_instance
-    with _config_lock:
-        _config_instance = config
-    logger.info("TimeSeriesGapFillerConfig replaced programmatically")
-
-
-def reset_config() -> None:
-    """Reset the singleton (primarily for test teardown)."""
-    global _config_instance
-    with _config_lock:
-        _config_instance = None
-
+get_config, set_config, reset_config = create_config_singleton(
+    TimeSeriesGapFillerConfig, _ENV_PREFIX,
+)
 
 __all__ = [
     "TimeSeriesGapFillerConfig",

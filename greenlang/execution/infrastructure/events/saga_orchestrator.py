@@ -294,7 +294,7 @@ class SagaOrchestrator:
             logger.info("Saga orchestrator started")
 
         except Exception as e:
-            logger.error(f"Failed to start orchestrator: {e}", exc_info=True)
+            logger.error("Failed to start orchestrator: %s", e, exc_info=True)
             raise
 
     async def stop(self) -> None:
@@ -390,7 +390,7 @@ class SagaOrchestrator:
                 await self._emit_saga_event(saga, EventType.SAGA_COMPLETED)
 
         except Exception as e:
-            logger.error(f"Saga execution failed: {e}")
+            logger.error("Saga execution failed: %s", e)
             saga.error = str(e)
             saga.status = SagaStatus.COMPENSATING
             saga = await self._compensate(saga)
@@ -526,7 +526,7 @@ class SagaOrchestrator:
 
     async def _compensate(self, saga: Saga) -> Saga:
         """Execute compensation for failed saga."""
-        logger.info(f"Starting compensation for saga {saga.saga_id}")
+        logger.info("Starting compensation for saga %s", saga.saga_id)
 
         # Compensate in reverse order
         for i in range(saga.current_step_index, -1, -1):
@@ -536,7 +536,7 @@ class SagaOrchestrator:
                 continue
 
             if not step.compensator:
-                logger.warning(f"No compensator for step '{step.name}'")
+                logger.warning("No compensator for step '%s'", step.name)
                 continue
 
             step.status = StepStatus.COMPENSATING
@@ -552,10 +552,10 @@ class SagaOrchestrator:
 
                 step.status = StepStatus.COMPENSATED
                 self._metrics["steps_compensated"] += 1
-                logger.info(f"Compensated step '{step.name}'")
+                logger.info("Compensated step '%s'", step.name)
 
             except Exception as e:
-                logger.error(f"Compensation failed for step '{step.name}': {e}")
+                logger.error("Compensation failed for step '%s': %s", step.name, e)
                 step.status = StepStatus.FAILED
                 saga.status = SagaStatus.FAILED
                 self._metrics["sagas_failed"] += 1
@@ -584,7 +584,7 @@ class SagaOrchestrator:
                     if saga.started_at:
                         elapsed = (datetime.utcnow() - saga.started_at).total_seconds()
                         if elapsed >= saga.timeout_seconds:
-                            logger.warning(f"Recovering timed out saga: {saga.saga_id}")
+                            logger.warning("Recovering timed out saga: %s", saga.saga_id)
                             saga.status = SagaStatus.COMPENSATING
                             saga.error = "Saga timeout - recovered"
                             await self._compensate(saga)
@@ -592,7 +592,7 @@ class SagaOrchestrator:
             except asyncio.CancelledError:
                 break
             except Exception as e:
-                logger.error(f"Recovery loop error: {e}")
+                logger.error("Recovery loop error: %s", e)
 
     async def _emit_saga_event(self, saga: Saga, event_type: EventType) -> None:
         """Emit saga lifecycle event."""
@@ -613,7 +613,7 @@ class SagaOrchestrator:
             },
         )
 
-        logger.debug(f"Saga event: {event_type.value} for {saga.saga_id}")
+        logger.debug("Saga event: %s for %s", event_type.value, saga.saga_id)
 
     async def _emit_step_event(
         self,
@@ -639,7 +639,7 @@ class SagaOrchestrator:
             },
         )
 
-        logger.debug(f"Step event: {event_type.value} for {step.name}")
+        logger.debug("Step event: %s for %s", event_type.value, step.name)
 
     async def get_saga(self, saga_id: str) -> Optional[Saga]:
         """

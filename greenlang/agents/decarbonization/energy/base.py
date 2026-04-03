@@ -96,7 +96,7 @@ class DecarbonizationEnergyBaseAgent(ReasoningAgent):
         self.version = version
         self.logger = logging.getLogger(f"{__name__}.{agent_id}")
 
-        self.logger.info(f"Initialized {agent_id} v{version}")
+        logger.info("Initialized %s v%s", agent_id, version)
 
     def calculate_provenance_hash(
         self,
@@ -341,7 +341,7 @@ class DecarbonizationEnergyBaseAgent(ReasoningAgent):
             return outputs
 
         except Exception as e:
-            self.logger.error(f"Processing failed: {str(e)}", exc_info=True)
+            logger.error("Processing failed: %s", e, exc_info=True)
             raise
 
     @abstractmethod

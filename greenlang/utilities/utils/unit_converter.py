@@ -13,10 +13,10 @@ from decimal import Decimal
 from typing import Dict, Union
 import logging
 
-from greenlang.exceptions import ValidationError
+from greenlang.exceptions import ValidationError, CalculationException
 
 
-class UnitConversionError(Exception):
+class UnitConversionError(CalculationException):
     """Raised when unit conversion fails"""
     pass
 

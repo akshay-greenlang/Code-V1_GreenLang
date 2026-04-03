@@ -311,7 +311,7 @@ class BaseWasteAdaptAgent(ABC, Generic[InputT, OutputT]):
         self.logger = logging.getLogger(self.__class__.__name__)
         self._temperature_projections = TEMPERATURE_PROJECTIONS
         self._precipitation_projections = PRECIPITATION_PROJECTIONS
-        self.logger.info(f"Initialized {self.AGENT_ID} v{self.AGENT_VERSION}")
+        logger.info("Initialized %s v%s", self.AGENT_ID, self.AGENT_VERSION)
 
     @abstractmethod
     def assess(self, input_data: InputT) -> OutputT:

@@ -290,10 +290,10 @@ class OpenAIStreamingProvider(StreamingProvider):
 
             # Finalize metrics
             metrics.finalize()
-            logger.info(f"Stream complete: {metrics.total_tokens} tokens, first token: {metrics.first_token_time:.0f}ms")
+            logger.info("Stream complete: %s tokens, first token: %.0fms", metrics.total_tokens, metrics.first_token_time)
 
         except Exception as e:
-            logger.error(f"Streaming error: {e}")
+            logger.error("Streaming error: %s", e)
             # Yield error token
             error_token = StreamToken(
                 token="",
@@ -322,7 +322,7 @@ class DemoStreamingProvider(StreamingProvider):
         self.tokens_per_second = tokens_per_second
         self.delay = 1.0 / tokens_per_second
 
-        logger.info(f"Demo streaming provider initialized ({tokens_per_second} tokens/s)")
+        logger.info("Demo streaming provider initialized (%s tokens/s)", tokens_per_second)
 
     async def stream_completion(
         self,

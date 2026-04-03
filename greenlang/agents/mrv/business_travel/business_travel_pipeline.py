@@ -183,7 +183,7 @@ class BusinessTravelPipelineEngine:
 
             if not is_valid:
                 raise ValueError(f"Input validation failed: {'; '.join(errors)}")
-            logger.info(f"[{chain_id}] Stage VALIDATE completed in {duration_ms:.2f}ms")
+            logger.info("[%s] Stage VALIDATE completed in %.2fms", chain_id, duration_ms)
 
             # ------------------------------------------------------------------
             # Stage 2: CLASSIFY
@@ -193,7 +193,7 @@ class BusinessTravelPipelineEngine:
             duration_ms = self._elapsed_ms(start)
             stage_durations["CLASSIFY"] = duration_ms
             self._record_provenance(chain_id, ProvenanceStage.CLASSIFY, trip_input, {"mode": mode.value, "method": method.value})
-            logger.info(f"[{chain_id}] Stage CLASSIFY completed in {duration_ms:.2f}ms (mode={mode.value})")
+            logger.info("[%s] Stage CLASSIFY completed in %.2fms (mode=%s)", chain_id, duration_ms, mode.value)
 
             # ------------------------------------------------------------------
             # Stage 3: NORMALIZE
@@ -203,7 +203,7 @@ class BusinessTravelPipelineEngine:
             duration_ms = self._elapsed_ms(start)
             stage_durations["NORMALIZE"] = duration_ms
             self._record_provenance(chain_id, ProvenanceStage.NORMALIZE, trip_input.trip_data, normalized_data)
-            logger.info(f"[{chain_id}] Stage NORMALIZE completed in {duration_ms:.2f}ms")
+            logger.info("[%s] Stage NORMALIZE completed in %.2fms", chain_id, duration_ms)
 
             # ------------------------------------------------------------------
             # Stage 4: RESOLVE_EFS
@@ -213,7 +213,7 @@ class BusinessTravelPipelineEngine:
             duration_ms = self._elapsed_ms(start)
             stage_durations["RESOLVE_EFS"] = duration_ms
             self._record_provenance(chain_id, ProvenanceStage.RESOLVE_EFS, normalized_data, ef_data)
-            logger.info(f"[{chain_id}] Stage RESOLVE_EFS completed in {duration_ms:.2f}ms")
+            logger.info("[%s] Stage RESOLVE_EFS completed in %.2fms", chain_id, duration_ms)
 
             # ------------------------------------------------------------------
             # Stage 5: CALCULATE_FLIGHTS  (air only)
@@ -243,7 +243,7 @@ class BusinessTravelPipelineEngine:
             duration_ms = self._elapsed_ms(start)
             stage_durations["ALLOCATE"] = duration_ms
             self._record_provenance(chain_id, ProvenanceStage.ALLOCATE, calc_result, allocated)
-            logger.info(f"[{chain_id}] Stage ALLOCATE completed in {duration_ms:.2f}ms")
+            logger.info("[%s] Stage ALLOCATE completed in %.2fms", chain_id, duration_ms)
 
             # ------------------------------------------------------------------
             # Stage 8: COMPLIANCE
@@ -253,7 +253,7 @@ class BusinessTravelPipelineEngine:
             duration_ms = self._elapsed_ms(start)
             stage_durations["COMPLIANCE"] = duration_ms
             self._record_provenance(chain_id, ProvenanceStage.COMPLIANCE, allocated, compliance)
-            logger.info(f"[{chain_id}] Stage COMPLIANCE completed in {duration_ms:.2f}ms")
+            logger.info("[%s] Stage COMPLIANCE completed in %.2fms", chain_id, duration_ms)
 
             # ------------------------------------------------------------------
             # Stage 9: AGGREGATE  (DQI scoring)
@@ -263,7 +263,7 @@ class BusinessTravelPipelineEngine:
             duration_ms = self._elapsed_ms(start)
             stage_durations["AGGREGATE"] = duration_ms
             self._record_provenance(chain_id, ProvenanceStage.AGGREGATE, allocated, {"dqi": str(dqi_score)})
-            logger.info(f"[{chain_id}] Stage AGGREGATE completed in {duration_ms:.2f}ms (DQI={dqi_score})")
+            logger.info("[%s] Stage AGGREGATE completed in %.2fms (DQI=%s)", chain_id, duration_ms, dqi_score)
 
             # ------------------------------------------------------------------
             # Stage 10: SEAL
@@ -272,7 +272,7 @@ class BusinessTravelPipelineEngine:
             provenance_hash = self._stage_seal(chain_id, allocated)
             duration_ms = self._elapsed_ms(start)
             stage_durations["SEAL"] = duration_ms
-            logger.info(f"[{chain_id}] Stage SEAL completed in {duration_ms:.2f}ms")
+            logger.info("[%s] Stage SEAL completed in %.2fms", chain_id, duration_ms)
 
             # Build unified result
             total_co2e = Decimal(str(allocated.get("total_co2e", 0)))
@@ -302,7 +302,7 @@ class BusinessTravelPipelineEngine:
         except ValueError:
             raise
         except Exception as e:
-            logger.error(f"[{chain_id}] Pipeline execution failed: {e}", exc_info=True)
+            logger.error("[%s] Pipeline execution failed: %s", chain_id, e, exc_info=True)
             raise RuntimeError(f"Pipeline execution failed: {e}") from e
         finally:
             # Cleanup provenance chain from memory (already sealed or failed)
@@ -335,7 +335,7 @@ class BusinessTravelPipelineEngine:
                 result = self.calculate(trip)
                 results.append(result)
             except Exception as e:
-                logger.error(f"Batch trip {idx} ({trip.mode.value}) failed: {e}")
+                logger.error("Batch trip %s (%s) failed: %s", idx, trip.mode.value, e)
                 errors.append({
                     "index": idx,
                     "mode": trip.mode.value,
@@ -776,7 +776,7 @@ class BusinessTravelPipelineEngine:
                 try:
                     return engine.calculate(normalized_data, ef_data)
                 except Exception as e:
-                    logger.warning(f"AirTravelCalculatorEngine failed, using inline: {e}")
+                    logger.warning("AirTravelCalculatorEngine failed, using inline: %s", e)
             return self._calculate_air_inline(normalized_data, ef_data)
 
         elif mode == TransportMode.HOTEL:
@@ -785,7 +785,7 @@ class BusinessTravelPipelineEngine:
                 try:
                     return engine.calculate(normalized_data, ef_data)
                 except Exception as e:
-                    logger.warning(f"HotelStayCalculatorEngine failed, using inline: {e}")
+                    logger.warning("HotelStayCalculatorEngine failed, using inline: %s", e)
             return self._calculate_hotel_inline(normalized_data, ef_data)
 
         elif mode in (
@@ -801,7 +801,7 @@ class BusinessTravelPipelineEngine:
                 try:
                     return engine.calculate(mode, normalized_data, ef_data)
                 except Exception as e:
-                    logger.warning(f"GroundTransportCalculatorEngine failed, using inline: {e}")
+                    logger.warning("GroundTransportCalculatorEngine failed, using inline: %s", e)
             return self._calculate_ground_inline(mode, normalized_data, ef_data)
 
         else:
@@ -860,7 +860,7 @@ class BusinessTravelPipelineEngine:
             try:
                 return engine.check(mode, method, allocated)
             except Exception as e:
-                logger.warning(f"ComplianceCheckerEngine failed, using inline: {e}")
+                logger.warning("ComplianceCheckerEngine failed, using inline: %s", e)
 
         # Inline lightweight compliance check
         findings: List[str] = []

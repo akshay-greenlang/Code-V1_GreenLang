@@ -10,6 +10,7 @@ from typing import Any, Dict, List, Optional, Protocol, runtime_checkable
 from uuid import uuid4
 from pydantic import Field, field_validator
 from greenlang.schemas import GreenLangBase
+from greenlang.utilities.exceptions.workflow import WorkflowException
 
 try:
     from cryptography.hazmat.primitives import serialization
@@ -337,10 +338,10 @@ class ApprovalWorkflow:
                 if et:
                     await self._event_factory.emit(run_id=run_id, event_type=et, payload=payload, step_id=step_id)
             except Exception as e:
-                logger.warning(f"Failed to emit event: {e}")
+                logger.warning("Failed to emit event: %s", e)
 
 
-class ApprovalError(Exception):
+class ApprovalError(WorkflowException):
     pass
 
 class ApprovalNotFoundError(ApprovalError):

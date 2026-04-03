@@ -237,20 +237,20 @@ class MetricsCollector:
         # Check if alert already exists
         for existing in self._active_alerts:
             if existing.name == name and not existing.resolved:
-                logger.debug(f"Alert {name} already active, not creating duplicate")
+                logger.debug("Alert %s already active, not creating duplicate", name)
                 return
 
         self._active_alerts.append(alert)
         self._alert_history.append(alert)
 
-        logger.warning(f"Alert created: [{severity.value}] {name}: {message}")
+        logger.warning("Alert created: [%s] %s: %s", severity.value, name, message)
 
     def resolve_alert(self, name: str):
         """Resolve an active alert"""
         for alert in self._active_alerts:
             if alert.name == name and not alert.resolved:
                 alert.resolved = True
-                logger.info(f"Alert resolved: {name}")
+                logger.info("Alert resolved: %s", name)
 
     def get_active_alerts(self) -> List[Alert]:
         """Get all active (unresolved) alerts"""

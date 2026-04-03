@@ -149,7 +149,7 @@ class ProvenanceTracker(BaseInfrastructureComponent):
             )
         self.lineages[data_id].add_record(record)
 
-        logger.debug(f"Recorded transformation: {transformation} (ID: {record.id})")
+        logger.debug("Recorded transformation: %s (ID: %s)", transformation, record.id)
 
         self._update_metrics()
         return record
@@ -211,7 +211,7 @@ class ProvenanceTracker(BaseInfrastructureComponent):
         is_valid = actual_hash == expected_hash
 
         if not is_valid:
-            logger.warning(f"Integrity check failed. Expected: {expected_hash}, Got: {actual_hash}")
+            logger.warning("Integrity check failed. Expected: %s, Got: %s", expected_hash, actual_hash)
 
         return is_valid
 

@@ -406,7 +406,7 @@ class EventStore:
             logger.info("Event store started")
 
         except Exception as e:
-            logger.error(f"Failed to start event store: {e}", exc_info=True)
+            logger.error("Failed to start event store: %s", e, exc_info=True)
             raise
 
     async def stop(self) -> None:
@@ -457,7 +457,7 @@ class EventStore:
             expected_version
         )
 
-        logger.debug(f"Appended event to stream {stream_id}, version {new_version}")
+        logger.debug("Appended event to stream %s, version %s", stream_id, new_version)
         return new_version
 
     async def append_batch(
@@ -677,7 +677,7 @@ class EventStore:
         )
 
         await self._backend.save_snapshot(snapshot)
-        logger.info(f"Created snapshot for {aggregate.aggregate_id} at version {version}")
+        logger.info("Created snapshot for %s at version %s", aggregate.aggregate_id, version)
 
     def register_projection(
         self,
@@ -693,7 +693,7 @@ class EventStore:
         """
         self._projections[projection.name] = projection
         self._projection_handlers[projection.name] = handler
-        logger.info(f"Registered projection: {projection.name}")
+        logger.info("Registered projection: %s", projection.name)
 
     async def _projection_loop(self) -> None:
         """Background loop for projection processing."""
@@ -720,14 +720,14 @@ class EventStore:
                                 handler(projection, event)
                             projection.position += 1
                         except Exception as e:
-                            logger.error(f"Projection handler error: {e}")
+                            logger.error("Projection handler error: %s", e)
 
                     projection.last_updated = datetime.utcnow()
 
             except asyncio.CancelledError:
                 break
             except Exception as e:
-                logger.error(f"Projection loop error: {e}")
+                logger.error("Projection loop error: %s", e)
 
     async def get_stream_info(self, stream_id: str) -> Optional[StreamInfo]:
         """

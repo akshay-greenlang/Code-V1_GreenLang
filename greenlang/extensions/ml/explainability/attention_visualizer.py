@@ -326,7 +326,7 @@ class AttentionVisualizer:
             return weights
 
         except Exception as e:
-            logger.error(f"Failed to extract attention weights: {e}")
+            logger.error("Failed to extract attention weights: %s", e)
             raise RuntimeError(f"Attention extraction failed: {str(e)}")
 
     def _extract_hf_attention(
@@ -751,7 +751,7 @@ class AttentionVisualizer:
 
         # Write to file
         output_path.write_text(html_content, encoding="utf-8")
-        logger.info(f"Exported HTML visualization to {output_path}")
+        logger.info("Exported HTML visualization to %s", output_path)
 
         return output_path
 
@@ -786,7 +786,7 @@ class AttentionVisualizer:
             json.dumps(data, indent=2),
             encoding="utf-8"
         )
-        logger.info(f"Exported JSON visualization to {output_path}")
+        logger.info("Exported JSON visualization to %s", output_path)
 
         return output_path
 
@@ -813,7 +813,7 @@ class AttentionVisualizer:
             "\n".join(csv_lines),
             encoding="utf-8"
         )
-        logger.info(f"Exported CSV visualization to {output_path}")
+        logger.info("Exported CSV visualization to %s", output_path)
 
         return output_path
 
@@ -866,7 +866,7 @@ class AttentionVisualizer:
         fig.savefig(output_path, dpi=300, bbox_inches="tight")
         plt.close(fig)
 
-        logger.info(f"Exported PNG visualization to {output_path}")
+        logger.info("Exported PNG visualization to %s", output_path)
 
         return output_path
 

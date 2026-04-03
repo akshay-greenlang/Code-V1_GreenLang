@@ -378,7 +378,7 @@ class AssumptionsRegistryAgent(BaseAgent):
         # Create default baseline scenario
         self._create_default_scenarios()
 
-        self.logger.info(f"Initialized {self.AGENT_NAME} v{self.VERSION}")
+        logger.info("Initialized %s v%s", self.AGENT_NAME, self.VERSION)
 
     def _create_default_scenarios(self):
         """Create default scenarios."""
@@ -415,7 +415,7 @@ class AssumptionsRegistryAgent(BaseAgent):
             validator: Function that takes a value and returns True if valid
         """
         self._custom_validators[name] = validator
-        self.logger.info(f"Registered custom validator: {name}")
+        logger.info("Registered custom validator: %s", name)
 
     def execute(self, input_data: Dict[str, Any]) -> AgentResult:
         """
@@ -435,7 +435,7 @@ class AssumptionsRegistryAgent(BaseAgent):
             try:
                 return self._execute_via_sdk(input_data)
             except Exception as sdk_err:
-                self.logger.warning(
+                logger.warning(
                     "SDK delegation failed, falling back to built-in: %s",
                     str(sdk_err),
                 )
@@ -482,7 +482,7 @@ class AssumptionsRegistryAgent(BaseAgent):
             # Calculate provenance hash
             output.provenance_hash = self._compute_provenance_hash(output.model_dump())
 
-            self.logger.info(
+            logger.info(
                 f"Operation {registry_input.operation} completed in {processing_time_ms:.2f}ms"
             )
 
@@ -493,7 +493,7 @@ class AssumptionsRegistryAgent(BaseAgent):
             )
 
         except Exception as e:
-            self.logger.error(f"Operation failed: {str(e)}", exc_info=True)
+            logger.error("Operation failed: %s", e, exc_info=True)
             return AgentResult(
                 success=False,
                 error=str(e),
@@ -632,7 +632,7 @@ class AssumptionsRegistryAgent(BaseAgent):
                 change_reason=input_data.change_reason or "Initial creation"
             )
 
-            self.logger.info(f"Created assumption: {assumption.assumption_id}")
+            logger.info("Created assumption: %s", assumption.assumption_id)
 
             return AssumptionsRegistryOutput(
                 success=True,
@@ -762,7 +762,7 @@ class AssumptionsRegistryAgent(BaseAgent):
             scenario_id=input_data.scenario_id
         )
 
-        self.logger.info(
+        logger.info(
             f"Updated assumption {assumption.assumption_id}: {old_value} -> {new_value}"
         )
 
@@ -822,7 +822,7 @@ class AssumptionsRegistryAgent(BaseAgent):
             change_reason=input_data.change_reason or "Deletion"
         )
 
-        self.logger.info(f"Deleted assumption: {input_data.assumption_id}")
+        logger.info("Deleted assumption: %s", input_data.assumption_id)
 
         return AssumptionsRegistryOutput(
             success=True,
@@ -897,7 +897,7 @@ class AssumptionsRegistryAgent(BaseAgent):
             # Store scenario
             self._scenarios[scenario.scenario_id] = scenario
 
-            self.logger.info(f"Created scenario: {scenario.name} ({scenario.scenario_id})")
+            logger.info("Created scenario: %s (%s)", scenario.name, scenario.scenario_id)
 
             return AssumptionsRegistryOutput(
                 success=True,
@@ -978,7 +978,7 @@ class AssumptionsRegistryAgent(BaseAgent):
             if "tags" in input_data.scenario_data:
                 scenario.tags = input_data.scenario_data["tags"]
 
-        self.logger.info(f"Updated scenario: {scenario.name}")
+        logger.info("Updated scenario: %s", scenario.name)
 
         return AssumptionsRegistryOutput(
             success=True,
@@ -1014,7 +1014,7 @@ class AssumptionsRegistryAgent(BaseAgent):
 
         del self._scenarios[input_data.scenario_id]
 
-        self.logger.info(f"Deleted scenario: {input_data.scenario_id}")
+        logger.info("Deleted scenario: %s", input_data.scenario_id)
 
         return AssumptionsRegistryOutput(
             success=True,

@@ -31,6 +31,8 @@ from typing import Any, Callable, List, Optional, Set, Type, Union
 
 from pydantic import BaseModel, Field
 
+from greenlang.utilities.exceptions.infrastructure import InfrastructureException
+
 logger = logging.getLogger(__name__)
 
 
@@ -84,7 +86,7 @@ class RetryMetrics(BaseModel):
     last_call_attempts: int = Field(default=0, description="Attempts in last call")
 
 
-class RetryExhaustedError(Exception):
+class RetryExhaustedError(InfrastructureException):
     """Raised when all retry attempts are exhausted."""
 
     def __init__(
@@ -381,7 +383,7 @@ class RetryPolicy:
                         else:
                             callback(attempt, delay_ms, last_exception)
                     except Exception as e:
-                        logger.error(f"Before retry callback error: {e}")
+                        logger.error("Before retry callback error: %s", e)
 
                 logger.debug(
                     f"Retry attempt {attempt}/{self.config.max_attempts} "
@@ -412,7 +414,7 @@ class RetryPolicy:
                         else:
                             callback(attempt, None, result)
                     except Exception as e:
-                        logger.error(f"After retry callback error: {e}")
+                        logger.error("After retry callback error: %s", e)
 
                 return result
 

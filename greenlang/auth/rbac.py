@@ -289,7 +289,7 @@ class RBACManager:
         )
 
         self.roles[name] = role
-        logger.info(f"Created role: {name}")
+        logger.info("Created role: %s", name)
 
         return role
 
@@ -314,13 +314,13 @@ class RBACManager:
 
         role.updated_at = DeterministicClock.utcnow()
 
-        logger.info(f"Updated role: {name}")
+        logger.info("Updated role: %s", name)
         return role
 
     def delete_role(self, name: str) -> bool:
         """Delete role"""
         if name in ["super_admin", "admin", "developer", "operator", "viewer"]:
-            logger.warning(f"Cannot delete system role: {name}")
+            logger.warning("Cannot delete system role: %s", name)
             return False
 
         if name in self.roles:
@@ -330,7 +330,7 @@ class RBACManager:
             for user_id in list(self.user_roles.keys()):
                 self.user_roles[user_id].discard(name)
 
-            logger.info(f"Deleted role: {name}")
+            logger.info("Deleted role: %s", name)
             return True
 
         return False
@@ -347,14 +347,14 @@ class RBACManager:
             True if successful
         """
         if role_name not in self.roles:
-            logger.error(f"Role not found: {role_name}")
+            logger.error("Role not found: %s", role_name)
             return False
 
         if user_id not in self.user_roles:
             self.user_roles[user_id] = set()
 
         self.user_roles[user_id].add(role_name)
-        logger.info(f"Assigned role {role_name} to user {user_id}")
+        logger.info("Assigned role %s to user %s", role_name, user_id)
 
         return True
 
@@ -371,7 +371,7 @@ class RBACManager:
         """
         if user_id in self.user_roles:
             self.user_roles[user_id].discard(role_name)
-            logger.info(f"Revoked role {role_name} from user {user_id}")
+            logger.info("Revoked role %s from user %s", role_name, user_id)
             return True
 
         return False
@@ -440,7 +440,7 @@ class RBACManager:
                     )
                     return True
 
-        logger.debug(f"User {user_id} denied {action} on {resource}")
+        logger.debug("User %s denied %s on %s", user_id, action, resource)
         return False
 
     def add_resource_policy(self, resource: str, policy: Dict[str, Any]):
@@ -455,7 +455,7 @@ class RBACManager:
             self.resource_policies[resource] = []
 
         self.resource_policies[resource].append(policy)
-        logger.info(f"Added policy for resource: {resource}")
+        logger.info("Added policy for resource: %s", resource)
 
     def _evaluate_policy(
         self, policy: Dict[str, Any], user_id: str, action: str, context: Dict[str, Any]

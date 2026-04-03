@@ -154,8 +154,8 @@ async def startup_event():
         cache_ttl=3600  # 1 hour
     )
 
-    logger.info(f"Loaded {len(emission_db.factors)} emission factors")
-    logger.info(f"Cache enabled: {emission_db.enable_cache}")
+    logger.info("Loaded %s emission factors", len(emission_db.factors))
+    logger.info("Cache enabled: %s", emission_db.enable_cache)
     logger.info("API ready to serve requests")
 
 
@@ -209,7 +209,7 @@ async def get_current_user(
             # API key validation - check prefix and minimum length
             if len(token) >= 32:
                 # In production, validate against key store
-                logger.info(f"API key authentication: {token[:8]}...")
+                logger.info("API key authentication: %s...", token[)
                 return {"user_id": f"apikey:{token[:12]}", "tenant_id": "default"}
             else:
                 raise HTTPException(
@@ -338,7 +338,7 @@ async def list_factors(
         )
 
     except Exception as e:
-        logger.error(f"Error listing factors: {e}", exc_info=True)
+        logger.error("Error listing factors: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Internal error retrieving factors"
@@ -387,7 +387,7 @@ async def get_factor(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error retrieving factor {factor_id}: {e}", exc_info=True)
+        logger.error("Error retrieving factor %s: %s", factor_id, e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Internal error retrieving factor"
@@ -456,7 +456,7 @@ async def search_factors(
         )
 
     except Exception as e:
-        logger.error(f"Error searching factors: {e}", exc_info=True)
+        logger.error("Error searching factors: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Internal error searching factors"
@@ -590,7 +590,7 @@ async def calculate_emissions(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error calculating emissions: {e}", exc_info=True)
+        logger.error("Error calculating emissions: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Internal error calculating emissions"
@@ -641,7 +641,7 @@ async def calculate_batch(
         )
 
     except Exception as e:
-        logger.error(f"Error in batch calculation: {e}", exc_info=True)
+        logger.error("Error in batch calculation: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Internal error in batch calculation"
@@ -681,7 +681,7 @@ async def calculate_scope1(
         )
 
     except Exception as e:
-        logger.error(f"Error calculating Scope 1: {e}", exc_info=True)
+        logger.error("Error calculating Scope 1: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Internal error calculating Scope 1 emissions"
@@ -737,7 +737,7 @@ async def calculate_scope2(
             )
 
     except Exception as e:
-        logger.error(f"Error calculating Scope 2: {e}", exc_info=True)
+        logger.error("Error calculating Scope 2: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Internal error calculating Scope 2 emissions"
@@ -772,7 +772,7 @@ async def calculate_scope3(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error calculating Scope 3: {e}", exc_info=True)
+        logger.error("Error calculating Scope 3: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Internal error calculating Scope 3 emissions"
@@ -816,7 +816,7 @@ async def get_statistics(
         )
 
     except Exception as e:
-        logger.error(f"Error retrieving statistics: {e}", exc_info=True)
+        logger.error("Error retrieving statistics: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Internal error retrieving statistics"
@@ -863,7 +863,7 @@ async def get_coverage_stats(
         )
 
     except Exception as e:
-        logger.error(f"Error retrieving coverage stats: {e}", exc_info=True)
+        logger.error("Error retrieving coverage stats: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Internal error retrieving coverage statistics"
@@ -912,7 +912,7 @@ async def health_check(request: Request) -> HealthResponse:
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Health check failed: {e}", exc_info=True)
+        logger.error("Health check failed: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="Service unhealthy"
@@ -937,7 +937,7 @@ async def http_exception_handler(request: Request, exc: HTTPException):
 @app.exception_handler(Exception)
 async def general_exception_handler(request: Request, exc: Exception):
     """Handle unexpected exceptions"""
-    logger.error(f"Unhandled exception: {exc}", exc_info=True)
+    logger.error("Unhandled exception: %s", exc, exc_info=True)
 
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

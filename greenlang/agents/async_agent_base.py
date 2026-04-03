@@ -226,7 +226,7 @@ class AsyncAgentBase(ABC, Generic[InT, OutT]):
         try:
             await self.cleanup_async()
         except Exception as e:
-            self.logger.warning(f"Cleanup failed during context exit: {e}")
+            logger.warning("Cleanup failed during context exit: %s", e)
 
         # Don't suppress exceptions
         return False
@@ -258,11 +258,11 @@ class AsyncAgentBase(ABC, Generic[InT, OutT]):
             await self.initialize_impl_async()
 
             self._state = AsyncAgentLifecycleState.INITIALIZED
-            self.logger.info(f"{self.agent_id} initialized successfully (async)")
+            logger.info("%s initialized successfully (async)", self.agent_id)
 
         except Exception as e:
             self._state = AsyncAgentLifecycleState.FAILED
-            self.logger.error(f"Async initialization failed: {e}", exc_info=True)
+            logger.error("Async initialization failed: %s", e, exc_info=True)
             raise ExecutionError(
                 f"Agent initialization failed: {str(e)}",
                 agent_name=self.agent_id,
@@ -304,7 +304,7 @@ class AsyncAgentBase(ABC, Generic[InT, OutT]):
             # Custom validation
             validated_input = await self.validate_impl_async(input_data, context)
 
-            self.logger.debug(f"Async input validation passed for {self.agent_id}")
+            logger.debug("Async input validation passed for %s", self.agent_id)
             return validated_input
 
         except Exception as e:
@@ -365,7 +365,7 @@ class AsyncAgentBase(ABC, Generic[InT, OutT]):
                 self._total_execution_time_ms += execution_time_ms
                 context.metadata["execution_time_ms"] = execution_time_ms
 
-            self.logger.info(
+            logger.info(
                 f"{self.agent_id} executed successfully (async) "
                 f"(took {context.metadata.get('execution_time_ms', 0):.2f}ms)"
             )
@@ -385,13 +385,13 @@ class AsyncAgentBase(ABC, Generic[InT, OutT]):
 
         except asyncio.CancelledError:
             context.state = AsyncAgentLifecycleState.CANCELLED
-            self.logger.warning(f"{self.agent_id} execution was cancelled")
+            logger.warning("%s execution was cancelled", self.agent_id)
             raise
 
         except Exception as e:
             context.errors.append(f"Execution failed: {str(e)}")
             context.state = AsyncAgentLifecycleState.FAILED
-            self.logger.error(f"Async execution failed: {e}", exc_info=True)
+            logger.error("Async execution failed: %s", e, exc_info=True)
             raise ExecutionError(
                 f"Agent execution failed: {str(e)}",
                 agent_name=self.agent_id,
@@ -441,7 +441,7 @@ class AsyncAgentBase(ABC, Generic[InT, OutT]):
             result = await self.finalize_impl_async(result, context)
 
             context.state = AsyncAgentLifecycleState.COMPLETED
-            self.logger.info(f"{self.agent_id} finalized successfully (async)")
+            logger.info("%s finalized successfully (async)", self.agent_id)
 
             return result
 
@@ -504,7 +504,7 @@ class AsyncAgentBase(ABC, Generic[InT, OutT]):
 
         except GLValidationError as e:
             # Handle validation errors
-            self.logger.error(f"Validation error: {e}")
+            logger.error("Validation error: %s", e)
             return AgentResult(
                 success=False,
                 error=f"Validation error: {str(e)}",
@@ -514,7 +514,7 @@ class AsyncAgentBase(ABC, Generic[InT, OutT]):
 
         except GLTimeoutError as e:
             # Handle timeout errors
-            self.logger.error(f"Timeout error: {e}")
+            logger.error("Timeout error: %s", e)
             return AgentResult(
                 success=False,
                 error=f"Timeout error: {str(e)}",
@@ -524,7 +524,7 @@ class AsyncAgentBase(ABC, Generic[InT, OutT]):
 
         except Exception as e:
             # Handle other errors
-            self.logger.error(f"Agent execution failed: {e}", exc_info=True)
+            logger.error("Agent execution failed: %s", e, exc_info=True)
             return AgentResult(
                 success=False,
                 error=str(e),
@@ -605,7 +605,7 @@ class AsyncAgentBase(ABC, Generic[InT, OutT]):
                 elif hasattr(resource, "close"):
                     resource.close()
             except Exception as e:
-                self.logger.warning(f"Failed to close resource {resource}: {e}")
+                logger.warning("Failed to close resource %s: %s", resource, e)
 
         self._resources.clear()
         self._session_cache.clear()
@@ -630,7 +630,7 @@ class AsyncAgentBase(ABC, Generic[InT, OutT]):
                 else:
                     callback(self)
             except Exception as e:
-                self.logger.warning(f"Hook {hook_name} failed: {e}")
+                logger.warning("Hook %s failed: %s", hook_name, e)
 
     # ==========================================================================
     # Private Helper Methods
@@ -656,7 +656,7 @@ class AsyncAgentBase(ABC, Generic[InT, OutT]):
         try:
             self.spec = AgentSpecV2(**pack_data)
             self.agent_id = self.spec.id
-            self.logger.info(f"Loaded pack.yaml for {self.agent_id} (v{self.spec.version}) [async]")
+            logger.info("Loaded pack.yaml for %s (v%s) [async]", self.agent_id, self.spec.version)
         except ValidationError as e:
             raise GLValidationError(
                 f"pack.yaml validation failed: {e}",

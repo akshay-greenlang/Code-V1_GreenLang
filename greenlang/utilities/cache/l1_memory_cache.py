@@ -469,7 +469,7 @@ class L1MemoryCache:
         if self._metrics:
             self._metrics.record_eviction(entry.size_bytes)
 
-        logger.debug(f"Evicted cache entry: {key} (reason: {reason})")
+        logger.debug("Evicted cache entry: %s (reason: %s)", key, reason)
 
     def _evict_lru(self) -> None:
         """
@@ -500,7 +500,7 @@ class L1MemoryCache:
             except asyncio.CancelledError:
                 break
             except Exception as e:
-                logger.error(f"Error in cleanup loop: {e}", exc_info=True)
+                logger.error("Error in cleanup loop: %s", e, exc_info=True)
 
     async def _cleanup_expired(self) -> None:
         """Remove expired entries from the cache."""
@@ -516,7 +516,7 @@ class L1MemoryCache:
                 self._evict_entry(key, entry, reason="ttl_expired")
 
         if expired_keys:
-            logger.debug(f"Cleaned up {len(expired_keys)} expired entries")
+            logger.debug("Cleaned up %s expired entries", len(expired_keys))
 
 
 # Decorator for caching function results

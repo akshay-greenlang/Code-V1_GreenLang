@@ -127,7 +127,7 @@ class PublicHealthClimateAgent(BaseAgent):
             )
         super().__init__(config)
         self._plans: Dict[str, HealthAdaptationPlan] = {}
-        self.logger.info(f"Initialized {self.AGENT_NAME} v{self.VERSION}")
+        logger.info("Initialized %s v%s", self.AGENT_NAME, self.VERSION)
 
     def execute(self, input_data: Dict[str, Any]) -> AgentResult:
         import time
@@ -148,7 +148,7 @@ class PublicHealthClimateAgent(BaseAgent):
             output.provenance_hash = self._hash_output(output)
             return AgentResult(success=output.success, data=output.model_dump(), error=output.error)
         except Exception as e:
-            self.logger.error(f"Error: {e}", exc_info=True)
+            logger.error("Error: %s", e, exc_info=True)
             return AgentResult(success=False, error=str(e))
 
     def _create_plan(self, inp: PublicHealthInput) -> PublicHealthOutput:

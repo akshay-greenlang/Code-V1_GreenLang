@@ -138,14 +138,14 @@ class ValidationFramework:
 
         self.validators[name] = validator_func
         self.validator_configs[name] = config
-        logger.debug(f"Registered validator: {name}")
+        logger.debug("Registered validator: %s", name)
 
     def remove_validator(self, name: str):
         """Remove a validator by name."""
         if name in self.validators:
             del self.validators[name]
             del self.validator_configs[name]
-            logger.debug(f"Removed validator: {name}")
+            logger.debug("Removed validator: %s", name)
 
     def add_pre_validator(self, validator_func: Callable):
         """Add a pre-validation hook."""
@@ -183,17 +183,17 @@ class ValidationFramework:
             try:
                 pre_validator(data)
             except Exception as e:
-                logger.warning(f"Pre-validator failed: {str(e)}")
+                logger.warning("Pre-validator failed: %s", e)
 
         # Run validators
         for validator_name in validators:
             if validator_name not in self.validators:
-                logger.warning(f"Validator not found: {validator_name}")
+                logger.warning("Validator not found: %s", validator_name)
                 continue
 
             config = self.validator_configs[validator_name]
             if not config.enabled:
-                logger.debug(f"Skipping disabled validator: {validator_name}")
+                logger.debug("Skipping disabled validator: %s", validator_name)
                 continue
 
             try:
@@ -205,11 +205,11 @@ class ValidationFramework:
 
                 # Check if should stop
                 if (stop_on_error or config.stop_on_error) and not validator_result.valid:
-                    logger.debug(f"Stopping validation after {validator_name} due to errors")
+                    logger.debug("Stopping validation after %s due to errors", validator_name)
                     break
 
             except Exception as e:
-                logger.error(f"Validator {validator_name} raised exception: {str(e)}", exc_info=True)
+                logger.error("Validator %s raised exception: %s", validator_name, e, exc_info=True)
                 error = ValidationError(
                     field="__framework__",
                     message=f"Validator {validator_name} failed: {str(e)}",
@@ -227,7 +227,7 @@ class ValidationFramework:
             try:
                 post_validator(data, result)
             except Exception as e:
-                logger.warning(f"Post-validator failed: {str(e)}")
+                logger.warning("Post-validator failed: %s", e)
 
         # Set metadata
         result.metadata["validators_run"] = validators

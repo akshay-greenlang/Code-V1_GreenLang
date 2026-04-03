@@ -22,6 +22,8 @@ import logging
 
 import numpy as np
 
+from greenlang.utilities.exceptions.base import GreenLangException
+
 logger = logging.getLogger(__name__)
 
 
@@ -54,7 +56,7 @@ class IndexResult:
         return self.valid_pixel_count / total if total > 0 else 0.0
 
 
-class VegetationIndicesError(Exception):
+class VegetationIndicesError(GreenLangException):
     """Base exception for vegetation index calculation errors."""
     pass
 
@@ -152,7 +154,7 @@ def calculate_ndvi(
     # Calculate statistics
     valid_count, min_val, max_val, mean_val, std_val = _calculate_stats(ndvi)
 
-    logger.debug(f"NDVI calculated: mean={mean_val:.3f}, valid pixels={valid_count}")
+    logger.debug("NDVI calculated: mean=%.3f, valid pixels=%s", mean_val, valid_count)
 
     return IndexResult(
         index_type=IndexType.NDVI,
@@ -222,7 +224,7 @@ def calculate_evi(
 
     valid_count, min_val, max_val, mean_val, std_val = _calculate_stats(evi)
 
-    logger.debug(f"EVI calculated: mean={mean_val:.3f}, valid pixels={valid_count}")
+    logger.debug("EVI calculated: mean=%.3f, valid pixels=%s", mean_val, valid_count)
 
     return IndexResult(
         index_type=IndexType.EVI,
@@ -277,7 +279,7 @@ def calculate_ndwi(
 
     valid_count, min_val, max_val, mean_val, std_val = _calculate_stats(ndwi)
 
-    logger.debug(f"NDWI calculated: mean={mean_val:.3f}, valid pixels={valid_count}")
+    logger.debug("NDWI calculated: mean=%.3f, valid pixels=%s", mean_val, valid_count)
 
     return IndexResult(
         index_type=IndexType.NDWI,
@@ -333,7 +335,7 @@ def calculate_nbr(
 
     valid_count, min_val, max_val, mean_val, std_val = _calculate_stats(nbr)
 
-    logger.debug(f"NBR calculated: mean={mean_val:.3f}, valid pixels={valid_count}")
+    logger.debug("NBR calculated: mean=%.3f, valid pixels=%s", mean_val, valid_count)
 
     return IndexResult(
         index_type=IndexType.NBR,
@@ -387,7 +389,7 @@ def calculate_savi(
 
     valid_count, min_val, max_val, mean_val, std_val = _calculate_stats(savi)
 
-    logger.debug(f"SAVI calculated: mean={mean_val:.3f}, valid pixels={valid_count}")
+    logger.debug("SAVI calculated: mean=%.3f, valid pixels=%s", mean_val, valid_count)
 
     return IndexResult(
         index_type=IndexType.SAVI,
@@ -440,7 +442,7 @@ def calculate_msavi(
 
     valid_count, min_val, max_val, mean_val, std_val = _calculate_stats(msavi)
 
-    logger.debug(f"MSAVI calculated: mean={mean_val:.3f}, valid pixels={valid_count}")
+    logger.debug("MSAVI calculated: mean=%.3f, valid pixels=%s", mean_val, valid_count)
 
     return IndexResult(
         index_type=IndexType.MSAVI,
@@ -495,7 +497,7 @@ def calculate_ndmi(
 
     valid_count, min_val, max_val, mean_val, std_val = _calculate_stats(ndmi)
 
-    logger.debug(f"NDMI calculated: mean={mean_val:.3f}, valid pixels={valid_count}")
+    logger.debug("NDMI calculated: mean=%.3f, valid pixels=%s", mean_val, valid_count)
 
     return IndexResult(
         index_type=IndexType.NDMI,
@@ -641,7 +643,7 @@ class VegetationIndexCalculator:
             try:
                 results[index_type] = self.calculate(index_type, bands)
             except VegetationIndicesError as e:
-                logger.warning(f"Failed to calculate {index_type.value}: {e}")
+                logger.warning("Failed to calculate %s: %s", index_type.value, e)
 
         return results
 

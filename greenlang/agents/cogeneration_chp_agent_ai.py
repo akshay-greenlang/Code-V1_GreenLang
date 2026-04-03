@@ -534,7 +534,7 @@ class CogenerationCHPAgentAI:
         # Register all tools
         self._register_tools()
 
-        logger.info(f"{config.agent_name} initialized (v{self._version()})")
+        logger.info("%s initialized (v%s)", config.agent_name, self._version())
 
     def _register_tools(self):
         """Register all agent tools with registry"""
@@ -762,7 +762,7 @@ class CogenerationCHPAgentAI:
             }
 
         except Exception as e:
-            logger.error(f"Tool 1 (select_chp_technology) failed: {e}")
+            logger.error("Tool 1 (select_chp_technology) failed: %s", e)
             raise
 
     # ========================================================================
@@ -940,7 +940,7 @@ class CogenerationCHPAgentAI:
             }
 
         except Exception as e:
-            logger.error(f"Tool 2 (calculate_chp_performance) failed: {e}")
+            logger.error("Tool 2 (calculate_chp_performance) failed: %s", e)
             raise
 
     # ========================================================================
@@ -1022,7 +1022,7 @@ class CogenerationCHPAgentAI:
             }
 
         except Exception as e:
-            logger.error(f"Tool 3 (size_heat_recovery_system) failed: {e}")
+            logger.error("Tool 3 (size_heat_recovery_system) failed: %s", e)
             raise
 
     # ========================================================================
@@ -1257,7 +1257,7 @@ class CogenerationCHPAgentAI:
             }
 
         except Exception as e:
-            logger.error(f"Tool 4 (calculate_economic_metrics) failed: {e}")
+            logger.error("Tool 4 (calculate_economic_metrics) failed: %s", e)
             raise
 
     # ========================================================================
@@ -1472,7 +1472,7 @@ class CogenerationCHPAgentAI:
             }
 
         except Exception as e:
-            logger.error(f"Tool 5 (assess_grid_interconnection) failed: {e}")
+            logger.error("Tool 5 (assess_grid_interconnection) failed: %s", e)
             raise
 
     # ========================================================================
@@ -1625,7 +1625,7 @@ class CogenerationCHPAgentAI:
             }
 
         except Exception as e:
-            logger.error(f"Tool 6 (optimize_operating_strategy) failed: {e}")
+            logger.error("Tool 6 (optimize_operating_strategy) failed: %s", e)
             raise
 
     # ========================================================================
@@ -1771,7 +1771,7 @@ class CogenerationCHPAgentAI:
             }
 
         except Exception as e:
-            logger.error(f"Tool 7 (calculate_emissions_reduction) failed: {e}")
+            logger.error("Tool 7 (calculate_emissions_reduction) failed: %s", e)
             raise
 
     # ========================================================================
@@ -1918,7 +1918,7 @@ Recommendation: {"PROCEED - Excellent economics and emissions reduction" if simp
             }
 
         except Exception as e:
-            logger.error(f"Tool 8 (generate_chp_report) failed: {e}")
+            logger.error("Tool 8 (generate_chp_report) failed: %s", e)
             raise
 
     # ========================================================================
@@ -1947,7 +1947,7 @@ Recommendation: {"PROCEED - Excellent economics and emissions reduction" if simp
             ...     context={"facility_type": "food_processing"}
             ... )
         """
-        logger.info(f"Starting CHP analysis: {query[:50]}...")
+        logger.info("Starting CHP analysis: %s...", query[)
 
         # Build system prompt
         system_prompt = self._build_system_prompt()
@@ -1982,12 +1982,12 @@ Remember: Use deterministic tools for ALL calculations.
             response["deterministic"] = True
             response["timestamp"] = DeterministicClock.now().isoformat()
 
-            logger.info(f"CHP analysis complete. Cost: ${response.get('cost_usd', 0):.3f}")
+            logger.info("CHP analysis complete. Cost: $%.3f", response.get('cost_usd', 0))
 
             return response
 
         except Exception as e:
-            logger.error(f"CHP analysis failed: {e}")
+            logger.error("CHP analysis failed: %s", e)
             raise
 
     def _build_system_prompt(self) -> str:

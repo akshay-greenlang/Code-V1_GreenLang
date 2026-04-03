@@ -385,11 +385,11 @@ class SlackHandler(AlertHandler):
             )
             response.raise_for_status()
 
-            logger.info(f"Slack alert sent for {alert.agent_id}: {alert.alert_id}")
+            logger.info("Slack alert sent for %s: %s", alert.agent_id, alert.alert_id)
             return True
 
         except Exception as e:
-            logger.error(f"Failed to send Slack alert: {e}")
+            logger.error("Failed to send Slack alert: %s", e)
             return False
 
     def _severity_to_color(self, severity: AlertSeverity) -> str:
@@ -472,11 +472,11 @@ class PagerDutyHandler(AlertHandler):
             )
             response.raise_for_status()
 
-            logger.info(f"PagerDuty alert sent for {alert.agent_id}: {alert.alert_id}")
+            logger.info("PagerDuty alert sent for %s: %s", alert.agent_id, alert.alert_id)
             return True
 
         except Exception as e:
-            logger.error(f"Failed to send PagerDuty alert: {e}")
+            logger.error("Failed to send PagerDuty alert: %s", e)
             return False
 
     def test_connection(self) -> bool:
@@ -514,11 +514,11 @@ class WebhookHandler(AlertHandler):
             )
             response.raise_for_status()
 
-            logger.info(f"Webhook alert sent for {alert.agent_id}: {alert.alert_id}")
+            logger.info("Webhook alert sent for %s: %s", alert.agent_id, alert.alert_id)
             return True
 
         except Exception as e:
-            logger.error(f"Failed to send webhook alert: {e}")
+            logger.error("Failed to send webhook alert: %s", e)
             return False
 
     def test_connection(self) -> bool:
@@ -748,7 +748,7 @@ class DriftAlertManager:
                     if handler.send(alert):
                         successful_channels.append(channel)
                 except Exception as e:
-                    logger.error(f"Failed to send alert to {channel.value}: {e}")
+                    logger.error("Failed to send alert to %s: %s", channel.value, e)
 
         # Update alert
         if successful_channels:
@@ -852,7 +852,7 @@ class DriftAlertManager:
             try:
                 callback(alert)
             except Exception as e:
-                logger.error(f"Remediation callback failed: {e}")
+                logger.error("Remediation callback failed: %s", e)
 
         alert.remediation_triggered = True
         self._save_alert(alert)
@@ -873,7 +873,7 @@ class DriftAlertManager:
             self._remediation_callbacks[action] = []
         self._remediation_callbacks[action].append(callback)
 
-        logger.info(f"Registered remediation callback for {action.value}")
+        logger.info("Registered remediation callback for %s", action.value)
 
     def acknowledge_alert(
         self,
@@ -898,7 +898,7 @@ class DriftAlertManager:
                     alert.acknowledged_by = acknowledged_by
                     self._save_alert(alert)
 
-                    logger.info(f"Alert {alert_id} acknowledged by {acknowledged_by}")
+                    logger.info("Alert %s acknowledged by %s", alert_id, acknowledged_by)
                     return True
 
         return False
@@ -923,7 +923,7 @@ class DriftAlertManager:
                     # Remove from active
                     self._active_alerts[agent_id].pop(i)
 
-                    logger.info(f"Alert {alert_id} resolved")
+                    logger.info("Alert %s resolved", alert_id)
                     return True
 
         return False
@@ -1047,9 +1047,9 @@ class DriftAlertManager:
                     alert_file.unlink()
                     cleaned += 1
             except Exception as e:
-                logger.warning(f"Failed to clean up {alert_file}: {e}")
+                logger.warning("Failed to clean up %s: %s", alert_file, e)
 
         if cleaned > 0:
-            logger.info(f"Cleaned up {cleaned} old alert files")
+            logger.info("Cleaned up %s old alert files", cleaned)
 
         return cleaned

@@ -485,7 +485,7 @@ class EconomicOptimizer:
         Returns:
             Complete economic analysis results
         """
-        logger.info(f"Analyzing project: {project.name}")
+        logger.info("Analyzing project: %s", project.name)
 
         project_life = project.project_life_years or self.project_life
 
@@ -1150,7 +1150,7 @@ class EconomicOptimizer:
         Returns:
             Portfolio analysis result with optimal selection
         """
-        logger.info(f"Optimizing portfolio of {len(projects)} projects")
+        logger.info("Optimizing portfolio of %s projects", len(projects))
 
         # Analyze each project
         project_analyses = []

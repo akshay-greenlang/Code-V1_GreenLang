@@ -361,7 +361,7 @@ class HardwareFaultTolerance:
         Raises:
             ValueError: If parameters are invalid
         """
-        logger.info(f"Assessing HFT for {equipment_id}")
+        logger.info("Assessing HFT for %s", equipment_id)
 
         # Get architecture HFT
         arch = ArchitectureType(architecture)
@@ -552,7 +552,7 @@ class HardwareFaultTolerance:
             "sff_category": self._get_sff_category(sff).value,
         }
 
-        logger.debug(f"Calculated SFF: {sff:.2%}")
+        logger.debug("Calculated SFF: %s", sff)
 
         return sff, breakdown
 
@@ -587,7 +587,7 @@ class HardwareFaultTolerance:
             "dc": dc,
         }
 
-        logger.debug(f"Calculated DC: {dc:.2%}")
+        logger.debug("Calculated DC: %s", dc)
 
         return dc, breakdown
 

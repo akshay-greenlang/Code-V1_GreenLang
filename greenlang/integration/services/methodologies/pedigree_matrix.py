@@ -117,7 +117,7 @@ class PedigreeMatrixEvaluator:
         self.validate_score(pedigree.geographical, "Geographical")
         self.validate_score(pedigree.technological, "Technological")
 
-        logger.debug(f"Validated pedigree score: {pedigree.to_dict()}")
+        logger.debug("Validated pedigree score: %s", pedigree.to_dict())
         return True
 
     def assess_temporal_score(
@@ -198,7 +198,7 @@ class PedigreeMatrixEvaluator:
             )
 
         factor = factors[score]
-        logger.debug(f"Uncertainty factor for {dimension}[{score}] = {factor}")
+        logger.debug("Uncertainty factor for %s[%s] = %s", dimension, score, factor)
 
         return factor
 
@@ -465,7 +465,7 @@ class PedigreeMatrixEvaluator:
         # Clamp to valid range
         dqi = max(0.0, min(100.0, dqi))
 
-        logger.debug(f"Converted pedigree to DQI: avg_score={avg_score:.2f}, DQI={dqi:.2f}")
+        logger.debug("Converted pedigree to DQI: avg_score=%.2f, DQI=%.2f", avg_score, dqi)
 
         return dqi
 
@@ -529,7 +529,7 @@ class PedigreeMatrixEvaluator:
             "assessment_timestamp": DeterministicClock.utcnow().isoformat(),
         }
 
-        logger.info(f"Generated quality report: quality={pedigree.quality_label}, DQI={dqi:.2f}")
+        logger.info("Generated quality report: quality=%s, DQI=%.2f", pedigree.quality_label, dqi)
 
         return report
 

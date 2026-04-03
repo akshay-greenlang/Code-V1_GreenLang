@@ -431,7 +431,7 @@ class SchemaRegistry:
             self._default_versions[schema_id] = version
 
         self._schemas[schema_id][version] = entry
-        logger.info(f"Registered schema: {schema_id} v{version}")
+        logger.info("Registered schema: %s v%s", schema_id, version)
 
         return entry
 
@@ -1365,7 +1365,7 @@ class SchemaCompilerAgent(BaseAgent):
             )
 
         except Exception as e:
-            logger.error(f"Schema validation failed: {e}", exc_info=True)
+            logger.error("Schema validation failed: %s", e, exc_info=True)
             return AgentResult(
                 success=False,
                 error=str(e),
@@ -1432,7 +1432,7 @@ class SchemaCompilerAgent(BaseAgent):
                 result.add_error(validation_error)
 
         except Exception as e:
-            logger.error(f"JSON Schema validation error: {e}")
+            logger.error("JSON Schema validation error: %s", e)
             result.add_error(ValidationError(
                 field="__schema__",
                 message=f"Schema validation failed: {str(e)}",

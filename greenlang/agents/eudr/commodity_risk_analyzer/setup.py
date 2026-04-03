@@ -679,7 +679,7 @@ class CommodityRiskAnalyzerSetup:
                 )
 
             except Exception as e:
-                logger.error(f"Startup failed: {e}", exc_info=True)
+                logger.error("Startup failed: %s", e, exc_info=True)
                 record_api_error("startup", str(e))
                 raise RuntimeError(f"Service startup failed: {e}") from e
 
@@ -709,7 +709,7 @@ class CommodityRiskAnalyzerSetup:
                         await self._redis_client.close()
                         logger.debug("Redis client closed")
                     except Exception as e:
-                        logger.warning(f"Error closing Redis client: {e}")
+                        logger.warning("Error closing Redis client: %s", e)
 
                 # 3. Close database pool
                 if self._db_pool is not None:
@@ -717,7 +717,7 @@ class CommodityRiskAnalyzerSetup:
                         await self._db_pool.close()
                         logger.debug("PostgreSQL pool closed")
                     except Exception as e:
-                        logger.warning(f"Error closing PostgreSQL pool: {e}")
+                        logger.warning("Error closing PostgreSQL pool: %s", e)
 
                 # 4. Mark as shutdown
                 self._started = False
@@ -727,7 +727,7 @@ class CommodityRiskAnalyzerSetup:
                 )
 
             except Exception as e:
-                logger.error(f"Shutdown error: {e}", exc_info=True)
+                logger.error("Shutdown error: %s", e, exc_info=True)
 
     async def initialize(self) -> Dict[str, Any]:
         """
@@ -775,10 +775,10 @@ class CommodityRiskAnalyzerSetup:
             try:
                 await init_method()
                 init_results["engines"][engine_name] = "initialized"
-                logger.info(f"Engine {engine_name} initialized successfully")
+                logger.info("Engine %s initialized successfully", engine_name)
             except Exception as e:
                 init_results["engines"][engine_name] = f"failed: {str(e)}"
-                logger.warning(f"Engine {engine_name} initialization failed: {e}")
+                logger.warning("Engine %s initialization failed: %s", engine_name, e)
 
         # Load reference data
         try:
@@ -795,7 +795,7 @@ class CommodityRiskAnalyzerSetup:
             init_results["reference_data"]["regulatory_requirements"] = "loaded"
         except ImportError as e:
             init_results["reference_data"]["status"] = f"partial: {str(e)}"
-            logger.warning(f"Reference data import failed: {e}")
+            logger.warning("Reference data import failed: %s", e)
 
         # Verify connectivity
         init_results["connectivity"]["database"] = (
@@ -883,9 +883,9 @@ class CommodityRiskAnalyzerSetup:
                 try:
                     if hasattr(engine, "shutdown"):
                         await engine.shutdown()
-                    logger.debug(f"{engine_name} shutdown complete")
+                    logger.debug("%s shutdown complete", engine_name)
                 except Exception as e:
-                    logger.warning(f"Error shutting down {engine_name}: {e}")
+                    logger.warning("Error shutting down %s: %s", engine_name, e)
 
     # -----------------------------------------------------------------------
     # Engine lazy initialization
@@ -1109,7 +1109,7 @@ class CommodityRiskAnalyzerSetup:
             RuntimeError: If CommodityProfiler engine is not available.
         """
         start_time = time.monotonic()
-        logger.info(f"Profiling commodity: {commodity_type}")
+        logger.info("Profiling commodity: %s", commodity_type)
 
         try:
             if commodity_type not in SUPPORTED_COMMODITIES:
@@ -1156,7 +1156,7 @@ class CommodityRiskAnalyzerSetup:
         except Exception as e:
             self._stats["errors"] += 1
             record_api_error("profile_commodity", str(e))
-            logger.error(f"profile_commodity failed: {e}", exc_info=True)
+            logger.error("profile_commodity failed: %s", e, exc_info=True)
             raise
 
     async def analyze_derived_product(
@@ -1240,7 +1240,7 @@ class CommodityRiskAnalyzerSetup:
         except Exception as e:
             self._stats["errors"] += 1
             record_api_error("analyze_derived_product", str(e))
-            logger.error(f"analyze_derived_product failed: {e}", exc_info=True)
+            logger.error("analyze_derived_product failed: %s", e, exc_info=True)
             raise
 
     async def get_price_volatility(
@@ -1319,7 +1319,7 @@ class CommodityRiskAnalyzerSetup:
         except Exception as e:
             self._stats["errors"] += 1
             record_api_error("get_price_volatility", str(e))
-            logger.error(f"get_price_volatility failed: {e}", exc_info=True)
+            logger.error("get_price_volatility failed: %s", e, exc_info=True)
             raise
 
     async def forecast_production(
@@ -1408,7 +1408,7 @@ class CommodityRiskAnalyzerSetup:
         except Exception as e:
             self._stats["errors"] += 1
             record_api_error("forecast_production", str(e))
-            logger.error(f"forecast_production failed: {e}", exc_info=True)
+            logger.error("forecast_production failed: %s", e, exc_info=True)
             raise
 
     async def detect_substitution(
@@ -1491,7 +1491,7 @@ class CommodityRiskAnalyzerSetup:
         except Exception as e:
             self._stats["errors"] += 1
             record_api_error("detect_substitution", str(e))
-            logger.error(f"detect_substitution failed: {e}", exc_info=True)
+            logger.error("detect_substitution failed: %s", e, exc_info=True)
             raise
 
     async def check_regulatory_compliance(
@@ -1658,7 +1658,7 @@ class CommodityRiskAnalyzerSetup:
         except Exception as e:
             self._stats["errors"] += 1
             record_api_error("initiate_due_diligence", str(e))
-            logger.error(f"initiate_due_diligence failed: {e}", exc_info=True)
+            logger.error("initiate_due_diligence failed: %s", e, exc_info=True)
             raise
 
     async def analyze_portfolio(
@@ -1743,7 +1743,7 @@ class CommodityRiskAnalyzerSetup:
         except Exception as e:
             self._stats["errors"] += 1
             record_api_error("analyze_portfolio", str(e))
-            logger.error(f"analyze_portfolio failed: {e}", exc_info=True)
+            logger.error("analyze_portfolio failed: %s", e, exc_info=True)
             raise
 
     # -----------------------------------------------------------------------
@@ -1822,7 +1822,7 @@ class CommodityRiskAnalyzerSetup:
                     provenance_chain.append(profile["provenance_hash"])
             except Exception as e:
                 results["commodity_profile"] = {"error": str(e)}
-                logger.warning(f"Commodity profiling failed: {e}")
+                logger.warning("Commodity profiling failed: %s", e)
 
             # 2. Price Volatility (always included)
             try:
@@ -1835,7 +1835,7 @@ class CommodityRiskAnalyzerSetup:
                     provenance_chain.append(volatility["provenance_hash"])
             except Exception as e:
                 results["price_volatility"] = {"error": str(e)}
-                logger.warning(f"Price volatility query failed: {e}")
+                logger.warning("Price volatility query failed: %s", e)
 
             # 3. Regulatory Compliance (always included)
             try:
@@ -1849,7 +1849,7 @@ class CommodityRiskAnalyzerSetup:
                     provenance_chain.append(compliance["provenance_hash"])
             except Exception as e:
                 results["regulatory_compliance"] = {"error": str(e)}
-                logger.warning(f"Regulatory compliance check failed: {e}")
+                logger.warning("Regulatory compliance check failed: %s", e)
 
             # 4. Production Forecast (if region specified or include_all)
             if include_all or kwargs.get("region"):
@@ -1865,7 +1865,7 @@ class CommodityRiskAnalyzerSetup:
                         provenance_chain.append(forecast["provenance_hash"])
                 except Exception as e:
                     results["production_forecast"] = {"error": str(e)}
-                    logger.warning(f"Production forecast failed: {e}")
+                    logger.warning("Production forecast failed: %s", e)
 
             # 5. Derived Products (if include_all)
             if include_all or kwargs.get("include_derived_products"):
@@ -1880,7 +1880,7 @@ class CommodityRiskAnalyzerSetup:
                         provenance_chain.append(derived["provenance_hash"])
                 except Exception as e:
                     results["derived_products"] = {"error": str(e)}
-                    logger.warning(f"Derived product analysis failed: {e}")
+                    logger.warning("Derived product analysis failed: %s", e)
 
             # 6. Substitution Risk (if supplier_id provided)
             if supplier_id and (include_all or kwargs.get("include_substitution")):
@@ -1898,7 +1898,7 @@ class CommodityRiskAnalyzerSetup:
                         provenance_chain.append(substitution["provenance_hash"])
                 except Exception as e:
                     results["substitution_risk"] = {"error": str(e)}
-                    logger.warning(f"Substitution detection failed: {e}")
+                    logger.warning("Substitution detection failed: %s", e)
 
             # 7. Due Diligence (if supplier_id provided)
             if supplier_id and (include_all or kwargs.get("include_dd")):
@@ -1912,7 +1912,7 @@ class CommodityRiskAnalyzerSetup:
                         provenance_chain.append(dd["provenance_hash"])
                 except Exception as e:
                     results["due_diligence"] = {"error": str(e)}
-                    logger.warning(f"Due diligence initiation failed: {e}")
+                    logger.warning("Due diligence initiation failed: %s", e)
 
             # 8. Portfolio Impact (if include_all)
             if include_all or kwargs.get("include_portfolio_impact"):
@@ -1927,7 +1927,7 @@ class CommodityRiskAnalyzerSetup:
                         provenance_chain.append(portfolio["provenance_hash"])
                 except Exception as e:
                     results["portfolio_impact"] = {"error": str(e)}
-                    logger.warning(f"Portfolio analysis failed: {e}")
+                    logger.warning("Portfolio analysis failed: %s", e)
 
             # Calculate comprehensive provenance
             comprehensive_provenance = _calculate_sha256({
@@ -2024,7 +2024,7 @@ class CommodityRiskAnalyzerSetup:
                     await conn.execute("SELECT 1")
                 db_healthy = True
             except Exception as e:
-                logger.warning(f"Database health check failed: {e}")
+                logger.warning("Database health check failed: %s", e)
                 overall_healthy = False
 
         # Check Redis connection
@@ -2034,7 +2034,7 @@ class CommodityRiskAnalyzerSetup:
                 await self._redis_client.ping()
                 redis_healthy = True
             except Exception as e:
-                logger.warning(f"Redis health check failed: {e}")
+                logger.warning("Redis health check failed: %s", e)
 
         # Calculate uptime
         uptime_seconds = 0.0

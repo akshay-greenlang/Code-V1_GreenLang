@@ -141,7 +141,7 @@ def get_ca_bundle_path(
     # Check environment variables first
     env_ca = os.environ.get("SSL_CERT_FILE") or os.environ.get("REQUESTS_CA_BUNDLE")
     if env_ca and Path(env_ca).exists():
-        logger.debug(f"Using CA bundle from environment: {env_ca}")
+        logger.debug("Using CA bundle from environment: %s", env_ca)
         return env_ca
 
     # AWS-specific bundles
@@ -164,7 +164,7 @@ def get_ca_bundle_path(
     try:
         import certifi
         certifi_path = certifi.where()
-        logger.debug(f"Using certifi CA bundle: {certifi_path}")
+        logger.debug("Using certifi CA bundle: %s", certifi_path)
         return certifi_path
     except ImportError:
         pass
@@ -177,7 +177,7 @@ def get_ca_bundle_path(
         if default_verify.cafile:
             return default_verify.cafile
     except Exception as e:
-        logger.warning(f"Could not determine default CA path: {e}")
+        logger.warning("Could not determine default CA path: %s", e)
 
     raise FileNotFoundError(
         "No CA bundle found. Install certifi or set SSL_CERT_FILE environment variable."
@@ -193,7 +193,7 @@ def get_aws_rds_ca_bundle() -> Optional[str]:
     """
     path = _find_first_existing(AWS_RDS_CA_BUNDLE_PATHS)
     if path:
-        logger.debug(f"Using AWS RDS CA bundle: {path}")
+        logger.debug("Using AWS RDS CA bundle: %s", path)
     return path
 
 
@@ -206,7 +206,7 @@ def get_aws_elasticache_ca_bundle() -> Optional[str]:
     """
     path = _find_first_existing(AWS_ELASTICACHE_CA_PATHS)
     if path:
-        logger.debug(f"Using AWS ElastiCache CA bundle: {path}")
+        logger.debug("Using AWS ElastiCache CA bundle: %s", path)
     return path
 
 
@@ -219,7 +219,7 @@ def get_system_ca_bundle() -> Optional[str]:
     """
     path = _find_first_existing(SYSTEM_CA_BUNDLE_PATHS)
     if path:
-        logger.debug(f"Using system CA bundle: {path}")
+        logger.debug("Using system CA bundle: %s", path)
     return path
 
 
@@ -264,7 +264,7 @@ async def refresh_ca_bundle(
     else:
         target_path = Path(tempfile.gettempdir()) / filename
 
-    logger.info(f"Downloading CA bundle from {url}")
+    logger.info("Downloading CA bundle from %s", url)
 
     try:
         async with httpx.AsyncClient(verify=True) as client:
@@ -280,7 +280,7 @@ async def refresh_ca_bundle(
             if not is_valid:
                 raise RuntimeError(f"Downloaded bundle failed validation: {target_path}")
 
-            logger.info(f"CA bundle saved to {target_path}")
+            logger.info("CA bundle saved to %s", target_path)
             return str(target_path)
 
     except httpx.HTTPError as e:

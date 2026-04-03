@@ -149,7 +149,7 @@ class URIValidator(ValidationRule):
             return False, errors, warnings
 
         except Exception as e:
-            logger.error(f"Unexpected error validating URI {uri}: {e}")
+            logger.error("Unexpected error validating URI %s: %s", uri, e)
             warnings.append(f"URI validation error: {str(e)}")
             return True, errors, warnings
 
@@ -585,7 +585,7 @@ class EmissionFactorValidator:
                     })
 
             except Exception as e:
-                logger.error(f"Validation rule {rule.name} failed: {e}")
+                logger.error("Validation rule %s failed: %s", rule.name, e)
                 all_errors.append({
                     'factor_id': factor_id,
                     'rule': rule.name,

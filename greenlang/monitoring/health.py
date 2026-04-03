@@ -156,7 +156,7 @@ class HealthChecker:
     def add_component_check(self, name: str, check_func: Callable[[], Union[ComponentHealth, Tuple[HealthStatus, str, Dict]]]):
         """Add a component health check function"""
         self.component_checks[name] = check_func
-        logger.info(f"Added health check for component: {name}")
+        logger.info("Added health check for component: %s", name)
 
     def remove_component_check(self, name: str):
         """Remove a component health check"""
@@ -164,7 +164,7 @@ class HealthChecker:
             del self.component_checks[name]
             if name in self.component_health:
                 del self.component_health[name]
-            logger.info(f"Removed health check for component: {name}")
+            logger.info("Removed health check for component: %s", name)
 
     async def check_component(self, name: str) -> ComponentHealth:
         """Check health of a single component"""
@@ -214,7 +214,7 @@ class HealthChecker:
 
         except Exception as e:
             response_time_ms = (time.perf_counter() - start_time) * 1000
-            logger.error(f"Health check failed for {name}: {e}")
+            logger.error("Health check failed for %s: %s", name, e)
 
             return ComponentHealth(
                 name=name,
@@ -591,7 +591,7 @@ def create_simple_health_server(health_checker: HealthChecker, port: int = 8080)
     handler = lambda *args, **kwargs: SimpleHealthHandler(health_checker, *args, **kwargs)
     server = HTTPServer(('', port), handler)
 
-    logger.info(f"Health check server created on port {port}")
+    logger.info("Health check server created on port %s", port)
     return server
 
 

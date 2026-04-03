@@ -106,7 +106,10 @@ def _record_operation(
 # ---------------------------------------------------------------------------
 
 
-class SecretsServiceError(Exception):
+from greenlang.utilities.exceptions.security import SecretAccessError as _SecretAccessError
+
+
+class SecretsServiceError(_SecretAccessError):
     """Base exception for Secrets Service errors."""
 
     pass

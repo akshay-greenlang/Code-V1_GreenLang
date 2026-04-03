@@ -597,7 +597,7 @@ def _load_custom_templates() -> List[Dict[str, Any]]:
                     config["id"] = template_dir.name
                     templates.append(config)
             except Exception as e:
-                logger.warning(f"Failed to load template {template_dir.name}: {e}")
+                logger.warning("Failed to load template %s: %s", template_dir.name, e)
 
     return templates
 

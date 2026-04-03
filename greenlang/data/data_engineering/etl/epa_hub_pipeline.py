@@ -184,7 +184,7 @@ class EPAHubPipeline(BasePipeline[EPAHubRecord]):
             if not self.file_path.exists():
                 raise FileNotFoundError(f"EPA Hub file not found: {self.file_path}")
 
-            logger.info(f"Reading EPA Hub file: {self.file_path}")
+            logger.info("Reading EPA Hub file: %s", self.file_path)
 
             xlsx = pd.ExcelFile(self.file_path)
 
@@ -194,16 +194,16 @@ class EPAHubPipeline(BasePipeline[EPAHubRecord]):
 
                 for sheet_name in sheet_names:
                     try:
-                        logger.debug(f"Processing sheet: {sheet_name} for category: {category}")
+                        logger.debug("Processing sheet: %s for category: %s", sheet_name, category)
                         df = pd.read_excel(xlsx, sheet_name=sheet_name, header=None)
                         sheet_records = self._parse_epa_hub_sheet(df, category, sheet_name)
                         records.extend(sheet_records)
-                        logger.info(f"Extracted {len(sheet_records)} records from '{sheet_name}'")
+                        logger.info("Extracted %s records from '%s'", len(sheet_records), sheet_name)
                     except Exception as e:
-                        logger.error(f"Error processing sheet '{sheet_name}': {e}")
+                        logger.error("Error processing sheet '%s': %s", sheet_name, e)
                         self.metrics.warnings.append(f"Sheet '{sheet_name}' error: {e}")
 
-            logger.info(f"Total records extracted from EPA Hub: {len(records)}")
+            logger.info("Total records extracted from EPA Hub: %s", len(records))
             return records
 
         except ImportError:
@@ -240,7 +240,7 @@ class EPAHubPipeline(BasePipeline[EPAHubRecord]):
         # Find header row
         header_row = self._find_header_row(df)
         if header_row is None:
-            logger.warning(f"Could not find header row in sheet '{sheet_name}'")
+            logger.warning("Could not find header row in sheet '%s'", sheet_name)
             return records
 
         # Set headers and process data rows
@@ -258,7 +258,7 @@ class EPAHubPipeline(BasePipeline[EPAHubRecord]):
                 if record:
                     records.append(record)
             except Exception as e:
-                logger.debug(f"Error parsing row {idx}: {e}")
+                logger.debug("Error parsing row %s: %s", idx, e)
                 continue
 
         return records
@@ -510,7 +510,7 @@ class EPAHubPipeline(BasePipeline[EPAHubRecord]):
                 transformed.append(factor_dict)
 
             except Exception as e:
-                logger.warning(f"Error transforming EPA Hub record: {e}")
+                logger.warning("Error transforming EPA Hub record: %s", e)
                 self.metrics.warnings.append(f"Transform error: {e}")
                 continue
 
@@ -561,7 +561,7 @@ class EPAHubPipeline(BasePipeline[EPAHubRecord]):
                 # Database operations would go here
                 inserted += 1
             except Exception as e:
-                logger.error(f"Error loading record: {e}")
+                logger.error("Error loading record: %s", e)
                 errors += 1
 
         return {

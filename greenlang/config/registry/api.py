@@ -142,7 +142,7 @@ class Database:
             )
             logger.info("Database connection pool initialized")
         except Exception as e:
-            logger.error(f"Failed to connect to database: {e}")
+            logger.error("Failed to connect to database: %s", e)
             raise
 
     @classmethod
@@ -243,7 +243,7 @@ async def create_agent(agent: AgentCreate, db: Pool = Depends(get_db)):
         """, agent.name, agent.namespace, agent.description, agent.author,
             agent.repository_url, agent.homepage_url, agent.spec_hash)
 
-        logger.info(f"Created agent: {agent.namespace}/{agent.name} (id={row['id']})")
+        logger.info("Created agent: %s/%s (id=%s)", agent.namespace, agent.name, row['id'])
         return dict(row)
 
 
@@ -352,7 +352,7 @@ async def publish_version(agent_id: str, version: AgentVersionCreate, db: Pool =
         """, uuid.UUID(agent_id), version.version, version.pack_path, version.pack_hash,
             version.metadata, version.capabilities, version.dependencies, version.size_bytes, version.published_by)
 
-        logger.info(f"Published version {version.version} for agent {agent['name']} (id={row['id']})")
+        logger.info("Published version %s for agent %s (id=%s)", version.version, agent['name'], row['id'])
         return dict(row)
 
 
@@ -411,7 +411,7 @@ async def submit_certification(agent_id: str, cert: CertificationCreate, db: Poo
             RETURNING id, agent_id, version, dimension, status, score, evidence, certified_by, certification_date, expiry_date
         """, uuid.UUID(agent_id), cert.version, cert.dimension, cert.status, cert.score, cert.evidence, cert.certified_by)
 
-        logger.info(f"Submitted {cert.dimension} certification for agent {agent_id} version {cert.version}: {cert.status}")
+        logger.info("Submitted %s certification for agent %s version %s: %s", cert.dimension, agent_id, cert.version, cert.status)
         return dict(row)
 
 
@@ -468,7 +468,7 @@ async def track_download(
             VALUES ($1, $2, $3)
         """, uuid.UUID(agent_id), version, downloaded_by)
 
-        logger.info(f"Tracked download of agent {agent_id} version {version}")
+        logger.info("Tracked download of agent %s version %s", agent_id, version)
         return {"status": "recorded"}
 
 

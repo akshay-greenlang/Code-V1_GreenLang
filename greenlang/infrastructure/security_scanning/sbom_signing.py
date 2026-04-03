@@ -202,11 +202,11 @@ class SBOMSigner:
             )
             self._cosign_available = result.returncode == 0
             if self._cosign_available:
-                logger.info(f"Cosign available: {result.stdout.strip()}")
+                logger.info("Cosign available: %s", result.stdout.strip())
             else:
                 logger.warning("Cosign not available or not functioning")
         except (subprocess.TimeoutExpired, FileNotFoundError) as e:
-            logger.warning(f"Cosign check failed: {e}")
+            logger.warning("Cosign check failed: %s", e)
             self._cosign_available = False
 
         return self._cosign_available
@@ -288,14 +288,14 @@ class SBOMSigner:
             )
 
         except json.JSONDecodeError as e:
-            logger.error(f"Invalid SBOM JSON: {e}")
+            logger.error("Invalid SBOM JSON: %s", e)
             return SBOMSigningResult(
                 success=False,
                 image_reference=image_reference,
                 error_message=f"Invalid SBOM JSON: {e}",
             )
         except Exception as e:
-            logger.error(f"SBOM signing failed: {e}", exc_info=True)
+            logger.error("SBOM signing failed: %s", e, exc_info=True)
             return SBOMSigningResult(
                 success=False,
                 image_reference=image_reference,
@@ -380,7 +380,7 @@ class SBOMSigner:
         # Add image reference
         cmd.append(image_reference)
 
-        logger.info(f"Executing: {' '.join(cmd)}")
+        logger.info("Executing: %s", ' '.join(cmd))
 
         try:
             result = await asyncio.get_event_loop().run_in_executor(
@@ -394,7 +394,7 @@ class SBOMSigner:
             )
 
             if result.returncode == 0:
-                logger.info(f"SBOM attestation successful for {image_reference}")
+                logger.info("SBOM attestation successful for %s", image_reference)
                 # Parse Rekor log ID from output if available
                 rekor_log_id = self._extract_rekor_id(result.stderr)
                 return {
@@ -404,14 +404,14 @@ class SBOMSigner:
                     "stderr": result.stderr,
                 }
             else:
-                logger.error(f"SBOM attestation failed: {result.stderr}")
+                logger.error("SBOM attestation failed: %s", result.stderr)
                 return {
                     "success": False,
                     "error": result.stderr,
                 }
 
         except subprocess.TimeoutExpired:
-            logger.error(f"SBOM attestation timed out after {self.config.timeout_seconds}s")
+            logger.error("SBOM attestation timed out after %ss", self.config.timeout_seconds)
             return {
                 "success": False,
                 "error": f"Timeout after {self.config.timeout_seconds} seconds",
@@ -483,10 +483,10 @@ class SBOMSigner:
             )
 
             if result.returncode == 0:
-                logger.info(f"Attestation verification passed for {image_reference}")
+                logger.info("Attestation verification passed for %s", image_reference)
                 return True
             else:
-                logger.warning(f"Attestation verification failed: {result.stderr}")
+                logger.warning("Attestation verification failed: %s", result.stderr)
                 return False
 
         except subprocess.TimeoutExpired:
@@ -535,12 +535,12 @@ class SBOMSigner:
             )
 
             if result.returncode == 0:
-                logger.info(f"SBOM generated successfully: {output_path}")
+                logger.info("SBOM generated successfully: %s", output_path)
                 return True
             else:
-                logger.error(f"SBOM generation failed: {result.stderr}")
+                logger.error("SBOM generation failed: %s", result.stderr)
                 return False
 
         except (subprocess.TimeoutExpired, FileNotFoundError) as e:
-            logger.error(f"SBOM generation failed: {e}")
+            logger.error("SBOM generation failed: %s", e)
             return False

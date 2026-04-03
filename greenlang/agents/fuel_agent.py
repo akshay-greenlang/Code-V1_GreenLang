@@ -10,6 +10,8 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from ..types import Agent, AgentResult, ErrorInfo
 from .types import FuelInput, FuelOutput
 from greenlang.data.emission_factors import EmissionFactors
+
+logger = logging.getLogger(__name__)
 from greenlang.utils.unit_converter import UnitConverter
 from greenlang.utils.performance_tracker import PerformanceTracker
 from greenlang.agents.tools import get_registry
@@ -106,21 +108,22 @@ class FuelAgent(Agent[FuelInput, FuelOutput]):
         Returns:
             bool: True if validation passes, False otherwise
         """
-        self.logger.debug(
-            f"Validating payload for fuel type: {payload.get('fuel_type')}"
+        logger.debug(
+            "Validating payload for fuel type: %s",
+            payload.get('fuel_type')
         )
 
         # Basic validation
         if "fuel_type" not in payload:
-            self.logger.error("Missing fuel_type in payload")
+            logger.error("Missing fuel_type in payload")
             return False
 
         if "amount" not in payload:
-            self.logger.error("Missing amount in payload")
+            logger.error("Missing amount in payload")
             return False
 
         if "unit" not in payload:
-            self.logger.error("Missing unit in payload")
+            logger.error("Missing unit in payload")
             return False
 
         # Check renewable fuels can have negative amounts
@@ -135,16 +138,18 @@ class FuelAgent(Agent[FuelInput, FuelOutput]):
         )
 
         if renewable_fuels and amount > 0:
-            self.logger.warning(
-                f"Renewable fuel {fuel_type} should have negative amount for generation"
+            logger.warning(
+                "Renewable fuel %s should have negative amount for generation",
+                fuel_type
             )
         elif not renewable_fuels and amount < 0:
-            self.logger.error(
-                f"Non-renewable fuel {fuel_type} cannot have negative amount"
+            logger.error(
+                "Non-renewable fuel %s cannot have negative amount",
+                fuel_type
             )
             return False
 
-        self.logger.debug("Validation passed")
+        logger.debug("Validation passed")
         return True
 
     @lru_cache(maxsize=256)
@@ -166,10 +171,10 @@ class FuelAgent(Agent[FuelInput, FuelOutput]):
         # Track cache performance
         if cache_key in self._cache:
             self._cache_hits += 1
-            self.logger.debug(f"Cache hit for {cache_key}")
+            logger.debug("Cache hit for %s", cache_key)
         else:
             self._cache_misses += 1
-            self.logger.debug(f"Cache miss for {cache_key}")
+            logger.debug("Cache miss for %s", cache_key)
 
         return self.emission_factors.get_factor(
             fuel_type=fuel_type, unit=unit, region=region
@@ -211,8 +216,9 @@ class FuelAgent(Agent[FuelInput, FuelOutput]):
                 }
                 fuel_type = fuel_type_mapping.get(fuel_type, fuel_type)
 
-                self.logger.info(
-                    f"Calculating emissions for {amount} {unit} of {fuel_type}"
+                logger.info(
+                    "Calculating emissions for %s %s of %s",
+                    amount, unit, fuel_type
                 )
 
                 # Get emission factor with caching
@@ -256,15 +262,16 @@ class FuelAgent(Agent[FuelInput, FuelOutput]):
                 if renewable_percentage > 0 and fuel_type == "electricity":
                     offset = co2e_emissions_kg * (renewable_percentage / 100)
                     co2e_emissions_kg -= offset
-                    self.logger.info(
-                        f"Applied {renewable_percentage}% renewable offset"
+                    logger.info(
+                        "Applied %s%% renewable offset",
+                        renewable_percentage
                     )
 
                 # Apply efficiency if specified
                 efficiency = payload.get("efficiency", 1.0)
                 if efficiency < 1.0:
                     co2e_emissions_kg = co2e_emissions_kg / efficiency
-                    self.logger.info(f"Adjusted for {efficiency*100}% efficiency")
+                    logger.info("Adjusted for %s% efficiency", efficiency*100)
 
                 # Get fuel properties
                 fuel_props = self.fuel_config.get("fuel_properties", {}).get(
@@ -318,8 +325,9 @@ class FuelAgent(Agent[FuelInput, FuelOutput]):
                 if energy_content:
                     output["energy_content_info"] = energy_content
 
-                self.logger.info(
-                    f"Calculated {co2e_emissions_kg:.2f} kg CO2e emissions"
+                logger.info(
+                    "Calculated %.2f kg CO2e emissions",
+                    co2e_emissions_kg
                 )
 
                 return {
@@ -334,7 +342,7 @@ class FuelAgent(Agent[FuelInput, FuelOutput]):
                 }
 
             except ValidationError as e:
-                self.logger.warning(f"Validation error in fuel calculation: {e}")
+                logger.warning("Validation error in fuel calculation: %s", e)
                 error_info: ErrorInfo = {
                     "type": "ValidationError",
                     "message": e.message,
@@ -344,7 +352,7 @@ class FuelAgent(Agent[FuelInput, FuelOutput]):
                 return {"success": False, "error": error_info}
 
             except MissingData as e:
-                self.logger.error(f"Missing data in fuel calculation: {e}")
+                logger.error("Missing data in fuel calculation: %s", e)
                 error_info: ErrorInfo = {
                     "type": "DataError",
                     "message": e.message,
@@ -354,7 +362,7 @@ class FuelAgent(Agent[FuelInput, FuelOutput]):
                 return {"success": False, "error": error_info}
 
             except ExecutionError as e:
-                self.logger.error(f"Execution error in fuel calculation: {e}")
+                logger.error("Execution error in fuel calculation: %s", e)
                 error_info: ErrorInfo = {
                     "type": "ExecutionError",
                     "message": e.message,
@@ -364,7 +372,7 @@ class FuelAgent(Agent[FuelInput, FuelOutput]):
                 return {"success": False, "error": error_info}
 
             except Exception as e:
-                self.logger.error(f"Unexpected error in fuel calculation: {e}")
+                logger.error("Unexpected error in fuel calculation: %s", e)
                 error_info: ErrorInfo = {
                     "type": "CalculationError",
                     "message": f"Failed to calculate fuel emissions: {str(e)}",
@@ -382,7 +390,7 @@ class FuelAgent(Agent[FuelInput, FuelOutput]):
         Returns:
             List of results for each fuel source
         """
-        self.logger.info(f"Batch processing {len(fuels)} fuel sources")
+        logger.info("Batch processing %s fuel sources", len(fuels))
 
         with self.performance_tracker.track("batch_processing"):
             results = []
@@ -400,8 +408,9 @@ class FuelAgent(Agent[FuelInput, FuelOutput]):
                 r["data"]["co2e_emissions_kg"] for r in results if r["success"]
             )
 
-            self.logger.info(
-                f"Batch processing complete. Total emissions: {total_emissions:.2f} kg CO2e"
+            logger.info(
+                "Batch processing complete. Total emissions: %.2f kg CO2e",
+                total_emissions
             )
 
             return results
@@ -417,7 +426,7 @@ class FuelAgent(Agent[FuelInput, FuelOutput]):
         Returns:
             List of results for each fuel source
         """
-        self.logger.info(f"Async batch processing {len(fuels)} fuel sources")
+        logger.info("Async batch processing %s fuel sources", len(fuels))
 
         async def process_fuel(fuel: FuelInput) -> AgentResult[FuelOutput]:
             loop = asyncio.get_event_loop()
@@ -430,8 +439,9 @@ class FuelAgent(Agent[FuelInput, FuelOutput]):
             r["data"]["co2e_emissions_kg"] for r in results if r["success"]
         )
 
-        self.logger.info(
-            f"Async processing complete. Total emissions: {total_emissions:.2f} kg CO2e"
+        logger.info(
+            "Async processing complete. Total emissions: %.2f kg CO2e",
+            total_emissions
         )
 
         return results
@@ -455,7 +465,7 @@ class FuelAgent(Agent[FuelInput, FuelOutput]):
             )
         except Exception as e:
             # Fallback calculation
-            self.logger.warning(f"Unit conversion failed: {e}, using fallback calculation")
+            logger.warning("Unit conversion failed: %s, using fallback calculation", e)
             if unit == "kWh":
                 return abs(amount) * 0.003412
             elif unit == "therms":
@@ -613,7 +623,7 @@ class FuelAgent(Agent[FuelInput, FuelOutput]):
                 df = pd.DataFrame(data)
                 df.to_excel(filename, index=False)
             except ImportError:
-                self.logger.error(
+                logger.error(
                     "pandas is required for Excel export. "
                     "Install it with: pip install greenlang[analytics]"
                 )
@@ -622,7 +632,7 @@ class FuelAgent(Agent[FuelInput, FuelOutput]):
         else:
             raise ValueError(f"Unsupported format: {format}")
 
-        self.logger.info(f"Exported results to {filename}")
+        logger.info("Exported results to %s", filename)
         return filename
 
     def get_performance_summary(self) -> Dict[str, Any]:
@@ -661,7 +671,7 @@ class FuelAgent(Agent[FuelInput, FuelOutput]):
         self._cache.clear()
         self._cache_timestamps.clear()
         self._get_cached_emission_factor.cache_clear()
-        self.logger.info("Cache cleared")
+        logger.info("Cache cleared")
 
     def reset_metrics(self):
         """Reset performance metrics."""
@@ -670,4 +680,4 @@ class FuelAgent(Agent[FuelInput, FuelOutput]):
         self._cache_misses = 0
         self._historical_data.clear()
         self.performance_tracker.reset()
-        self.logger.info("Metrics reset")
+        logger.info("Metrics reset")

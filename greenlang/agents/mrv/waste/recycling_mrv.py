@@ -265,7 +265,7 @@ class RecyclingMRVAgent(BaseWasteMRVAgent[RecyclingInput, RecyclingOutput]):
         self._avoided_emissions = AVOIDED_VIRGIN_EMISSIONS
         self._loss_rates = MATERIAL_LOSS_RATES
         self._quality_factors = QUALITY_FACTORS
-        self.logger.info(f"Initialized {self.AGENT_ID}: {self.AGENT_NAME}")
+        logger.info("Initialized %s: %s", self.AGENT_ID, self.AGENT_NAME)
 
     def calculate(self, input_data: RecyclingInput) -> RecyclingOutput:
         """

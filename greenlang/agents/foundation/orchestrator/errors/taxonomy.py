@@ -633,7 +633,7 @@ class ErrorRegistry:
         cls._register_k8s_exit_codes()
 
         cls._initialized = True
-        logger.info(f"ErrorRegistry initialized with {len(cls._error_metadata)} error codes")
+        logger.info("ErrorRegistry initialized with %s error codes", len(cls._error_metadata))
 
     @classmethod
     def _register_error(
@@ -2129,7 +2129,7 @@ def create_error(
         retry_policy = RetryPolicy.NO_RETRY
         default_message = "Unknown error: {code}"
         default_fixes = []
-        logger.warning(f"Unknown error code: {code}")
+        logger.warning("Unknown error code: %s", code)
 
     # Format message
     if message is None:

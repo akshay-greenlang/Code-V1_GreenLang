@@ -98,7 +98,7 @@ class WorkflowCoordinator(BaseCoordinator):
     async def start(self) -> None:
         """Start the workflow coordinator."""
         self._active = True
-        logger.info(f"WorkflowCoordinator '{self.name}' started")
+        logger.info("WorkflowCoordinator '%s' started", self.name)
 
     async def stop(self) -> None:
         """Stop the workflow coordinator."""
@@ -108,7 +108,7 @@ class WorkflowCoordinator(BaseCoordinator):
         for workflow_id in list(self._active_workflows.keys()):
             await self.cancel_workflow(workflow_id)
 
-        logger.info(f"WorkflowCoordinator '{self.name}' stopped")
+        logger.info("WorkflowCoordinator '%s' stopped", self.name)
 
     async def execute_workflow(
         self,
@@ -123,7 +123,7 @@ class WorkflowCoordinator(BaseCoordinator):
         Returns:
             WorkflowResult with execution results
         """
-        logger.info(f"Starting workflow: {spec.workflow_id} ({spec.name})")
+        logger.info("Starting workflow: %s (%s)", spec.workflow_id, spec.name)
 
         # Create execution context
         execution = WorkflowExecution(
@@ -135,7 +135,7 @@ class WorkflowCoordinator(BaseCoordinator):
         try:
             # Build execution plan
             execution_order = self._build_execution_order(spec)
-            logger.debug(f"Execution order: {execution_order}")
+            logger.debug("Execution order: %s", execution_order)
 
             # Execute tasks
             for task_batch in execution_order:
@@ -183,13 +183,13 @@ class WorkflowCoordinator(BaseCoordinator):
             execution.status = WorkflowStatus.TIMEOUT
             execution.end_time = datetime.now(timezone.utc)
             execution.error = "Workflow timeout exceeded"
-            logger.error(f"Workflow timeout: {spec.workflow_id}")
+            logger.error("Workflow timeout: %s", spec.workflow_id)
 
         except Exception as e:
             execution.status = WorkflowStatus.FAILED
             execution.end_time = datetime.now(timezone.utc)
             execution.error = str(e)
-            logger.error(f"Workflow failed: {spec.workflow_id}: {e}")
+            logger.error("Workflow failed: %s: %s", spec.workflow_id, e)
 
         finally:
             # Move to history
@@ -216,7 +216,7 @@ class WorkflowCoordinator(BaseCoordinator):
         execution.status = WorkflowStatus.CANCELLED
         execution.end_time = datetime.now(timezone.utc)
 
-        logger.info(f"Workflow cancelled: {workflow_id}")
+        logger.info("Workflow cancelled: %s", workflow_id)
         return True
 
     async def pause_workflow(self, workflow_id: str) -> bool:
@@ -226,7 +226,7 @@ class WorkflowCoordinator(BaseCoordinator):
             return False
 
         execution.status = WorkflowStatus.PAUSED
-        logger.info(f"Workflow paused: {workflow_id}")
+        logger.info("Workflow paused: %s", workflow_id)
         return True
 
     async def resume_workflow(self, workflow_id: str) -> bool:
@@ -236,7 +236,7 @@ class WorkflowCoordinator(BaseCoordinator):
             return False
 
         execution.status = WorkflowStatus.RUNNING
-        logger.info(f"Workflow resumed: {workflow_id}")
+        logger.info("Workflow resumed: %s", workflow_id)
         return True
 
     def _build_execution_order(
@@ -288,7 +288,7 @@ class WorkflowCoordinator(BaseCoordinator):
         task: TaskSpec,
     ) -> TaskResult:
         """Execute a single task."""
-        logger.debug(f"Executing task: {task.task_id} ({task.name})")
+        logger.debug("Executing task: %s (%s)", task.task_id, task.name)
 
         start_time = datetime.now(timezone.utc)
 
@@ -350,7 +350,7 @@ class WorkflowCoordinator(BaseCoordinator):
             return result
 
         except Exception as e:
-            logger.error(f"Task execution failed: {task.task_id}: {e}")
+            logger.error("Task execution failed: %s: %s", task.task_id, e)
             return TaskResult(
                 task_id=task.task_id,
                 status=TaskStatus.FAILED,
@@ -375,18 +375,18 @@ class WorkflowCoordinator(BaseCoordinator):
         self._checkpoints[checkpoint_id] = checkpoint_data
         execution.checkpoints.append(checkpoint_id)
 
-        logger.debug(f"Checkpoint created: {checkpoint_id}")
+        logger.debug("Checkpoint created: %s", checkpoint_id)
         return checkpoint_id
 
     async def _rollback_workflow(self, execution: "WorkflowExecution") -> None:
         """Rollback a failed workflow."""
-        logger.warning(f"Rolling back workflow: {execution.workflow_id}")
+        logger.warning("Rolling back workflow: %s", execution.workflow_id)
 
         # In production, this would undo completed tasks
         # For now, just log the rollback
         for task_id, result in execution.task_results.items():
             if result.status == TaskStatus.COMPLETED:
-                logger.info(f"Rolling back task: {task_id}")
+                logger.info("Rolling back task: %s", task_id)
 
     def get_workflow_status(self, workflow_id: str) -> Optional[WorkflowStatus]:
         """Get current workflow status."""
@@ -491,12 +491,12 @@ class SafetyCoordinator(BaseCoordinator):
         """Start the safety coordinator."""
         self._active = True
         self._safety_state = "normal"
-        logger.info(f"SafetyCoordinator '{self.name}' started (SIL-{self._sil_level})")
+        logger.info("SafetyCoordinator '%s' started (SIL-%s)", self.name, self._sil_level)
 
     async def stop(self) -> None:
         """Stop the safety coordinator."""
         self._active = False
-        logger.info(f"SafetyCoordinator '{self.name}' stopped")
+        logger.info("SafetyCoordinator '%s' stopped", self.name)
 
     def register_interlock(
         self,
@@ -520,7 +520,7 @@ class SafetyCoordinator(BaseCoordinator):
             action=action,
             threshold=threshold,
         )
-        logger.info(f"Interlock registered: {interlock_id}")
+        logger.info("Interlock registered: %s", interlock_id)
 
     async def check_interlock(
         self,
@@ -566,7 +566,7 @@ class SafetyCoordinator(BaseCoordinator):
         self._esd_triggered = True
         self._safety_state = "emergency_shutdown"
 
-        logger.critical(f"EMERGENCY SHUTDOWN TRIGGERED: {reason}")
+        logger.critical("EMERGENCY SHUTDOWN TRIGGERED: %s", reason)
 
         # In production, this would:
         # 1. Send ESD signal to DCS/PLC
@@ -588,7 +588,7 @@ class SafetyCoordinator(BaseCoordinator):
         if not self._esd_triggered:
             return True
 
-        logger.info(f"ESD reset authorized by: {authorized_by}")
+        logger.info("ESD reset authorized by: %s", authorized_by)
 
         # Check all interlocks are clear
         for interlock in self._interlocks.values():
@@ -624,7 +624,7 @@ class SafetyCoordinator(BaseCoordinator):
         """
         # Check safety state
         if self._safety_state != "normal":
-            logger.warning(f"Permit denied: System in {self._safety_state} state")
+            logger.warning("Permit denied: System in %s state", self._safety_state)
             return None
 
         permit_id = str(uuid.uuid4())[:8]
@@ -636,7 +636,7 @@ class SafetyCoordinator(BaseCoordinator):
             duration_hours=duration_hours,
         )
 
-        logger.info(f"Permit issued: {permit_id} ({permit_type}) for {equipment_id}")
+        logger.info("Permit issued: %s (%s) for %s", permit_id, permit_type, equipment_id)
         return permit_id
 
     def close_permit(self, permit_id: str) -> bool:
@@ -647,7 +647,7 @@ class SafetyCoordinator(BaseCoordinator):
 
         permit.active = False
         permit.closed_time = datetime.now(timezone.utc)
-        logger.info(f"Permit closed: {permit_id}")
+        logger.info("Permit closed: %s", permit_id)
         return True
 
     @property
@@ -716,12 +716,12 @@ class OptimizationCoordinator(BaseCoordinator):
     async def start(self) -> None:
         """Start the optimization coordinator."""
         self._active = True
-        logger.info(f"OptimizationCoordinator '{self.name}' started")
+        logger.info("OptimizationCoordinator '%s' started", self.name)
 
     async def stop(self) -> None:
         """Stop the optimization coordinator."""
         self._active = False
-        logger.info(f"OptimizationCoordinator '{self.name}' stopped")
+        logger.info("OptimizationCoordinator '%s' stopped", self.name)
 
     def add_target(
         self,
@@ -745,7 +745,7 @@ class OptimizationCoordinator(BaseCoordinator):
             direction=direction,
             weight=weight,
         )
-        logger.info(f"Optimization target added: {name} ({direction})")
+        logger.info("Optimization target added: %s (%s)", name, direction)
 
     def add_constraint(
         self,
@@ -769,7 +769,7 @@ class OptimizationCoordinator(BaseCoordinator):
             min_value=min_value,
             max_value=max_value,
         ))
-        logger.info(f"Constraint added: {variable} [{min_value}, {max_value}]")
+        logger.info("Constraint added: %s [%s, %s]", variable, min_value, max_value)
 
     async def optimize(
         self,

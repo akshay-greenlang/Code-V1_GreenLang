@@ -162,7 +162,7 @@ class ERPConnector(BaseConnector[ERPQuery, ERPPayload, ERPConfig]):
     async def connect(self) -> bool:
         """Establish connection to ERP system."""
         try:
-            self.logger.info(f"Connecting to ERP: {self.config.erp_system}")
+            logger.info("Connecting to ERP: %s", self.config.erp_system)
 
             if self.config.mock_mode:
                 return True
@@ -171,7 +171,7 @@ class ERPConnector(BaseConnector[ERPQuery, ERPPayload, ERPConfig]):
             return True
 
         except Exception as e:
-            self.logger.error(f"Failed to connect to ERP: {e}")
+            logger.error("Failed to connect to ERP: %s", e)
             raise ConnectionError(f"ERP connection failed: {e}") from e
 
     async def disconnect(self) -> bool:

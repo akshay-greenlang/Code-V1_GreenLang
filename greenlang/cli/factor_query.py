@@ -90,7 +90,7 @@ def cmd_list(args):
         client.close()
 
     except Exception as e:
-        logger.error(f" {e}", file=sys.stderr)
+        logger.error(" %s", e, file=sys.stderr)
         sys.exit(1)
 
 
@@ -125,7 +125,7 @@ def cmd_search(args):
         client.close()
 
     except Exception as e:
-        logger.error(f" {e}", file=sys.stderr)
+        logger.error(" %s", e, file=sys.stderr)
         sys.exit(1)
 
 
@@ -219,10 +219,10 @@ def cmd_get(args):
         client.close()
 
     except EmissionFactorNotFoundError as e:
-        logger.error(f" {e}", file=sys.stderr)
+        logger.error(" %s", e, file=sys.stderr)
         sys.exit(1)
     except Exception as e:
-        logger.error(f" {e}", file=sys.stderr)
+        logger.error(" %s", e, file=sys.stderr)
         sys.exit(1)
 
 
@@ -282,14 +282,14 @@ def cmd_calculate(args):
         client.close()
 
     except EmissionFactorNotFoundError as e:
-        logger.error(f" {e}", file=sys.stderr)
+        logger.error(" %s", e, file=sys.stderr)
         print("\nTip: Use 'greenlang factors search' to find available factors")
         sys.exit(1)
     except UnitNotAvailableError as e:
-        logger.error(f" {e}", file=sys.stderr)
+        logger.error(" %s", e, file=sys.stderr)
         sys.exit(1)
     except Exception as e:
-        logger.error(f" {e}", file=sys.stderr)
+        logger.error(" %s", e, file=sys.stderr)
         sys.exit(1)
 
 
@@ -329,7 +329,7 @@ def cmd_stats(args):
         client.close()
 
     except Exception as e:
-        logger.error(f" {e}", file=sys.stderr)
+        logger.error(" %s", e, file=sys.stderr)
         sys.exit(1)
 
 
@@ -367,7 +367,7 @@ def cmd_validate_db(args):
         sys.exit(0 if results['valid'] else 1)
 
     except Exception as e:
-        logger.error(f" {e}", file=sys.stderr)
+        logger.error(" %s", e, file=sys.stderr)
         sys.exit(1)
 
 
@@ -395,7 +395,7 @@ def cmd_info(args):
         print()
 
     except Exception as e:
-        logger.error(f" {e}", file=sys.stderr)
+        logger.error(" %s", e, file=sys.stderr)
         sys.exit(1)
 
 

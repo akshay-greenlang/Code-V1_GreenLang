@@ -137,7 +137,7 @@ class TSPRouteOptimizer:
         else:
             route = self._nearest_neighbor(locations, start_location)
 
-        logger.debug(f"Route optimized: {len(route)} stops using {method}")
+        logger.debug("Route optimized: %s stops using %s", len(route), method)
 
         return route
 
@@ -376,7 +376,7 @@ class TrapPopulationManager:
             **kwargs,
         )
         self._traps[trap_id] = location
-        logger.debug(f"Registered trap {trap_id}")
+        logger.debug("Registered trap %s", trap_id)
 
     def update_trap_status(
         self,

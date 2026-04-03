@@ -317,7 +317,7 @@ class OPCUAServer(BaseProtocolClient):
         self._running = False
         self._event_callbacks: Dict[str, List[Callable]] = {}
 
-        logger.info(f"OPCUAServer initialized with endpoint: {config.endpoint}")
+        logger.info("OPCUAServer initialized with endpoint: %s", config.endpoint)
 
     async def connect(self) -> None:
         """Start the OPC-UA server (alias for start)."""
@@ -375,7 +375,7 @@ class OPCUAServer(BaseProtocolClient):
         except Exception as e:
             self.state = ProtocolState.ERROR
             self.last_error = str(e)
-            logger.error(f"Failed to start OPC-UA server: {e}", exc_info=True)
+            logger.error("Failed to start OPC-UA server: %s", e, exc_info=True)
             raise RuntimeError(f"OPC-UA server start failed: {e}") from e
 
     async def stop(self) -> None:
@@ -388,7 +388,7 @@ class OPCUAServer(BaseProtocolClient):
             try:
                 # Notify subscribers
                 for sub_id, sub_info in self.subscriptions.items():
-                    logger.info(f"Closing subscription {sub_id}")
+                    logger.info("Closing subscription %s", sub_id)
 
                 await self._server.stop()
                 self._running = False
@@ -396,7 +396,7 @@ class OPCUAServer(BaseProtocolClient):
                 logger.info("OPC-UA server stopped gracefully")
 
             except Exception as e:
-                logger.error(f"Error stopping OPC-UA server: {e}", exc_info=True)
+                logger.error("Error stopping OPC-UA server: %s", e, exc_info=True)
 
     async def _configure_security(self) -> None:
         """Configure server security policies and certificates."""
@@ -423,7 +423,7 @@ class OPCUAServer(BaseProtocolClient):
             if security_policies:
                 self._server.set_security_policy(security_policies)
 
-            logger.info(f"Security configured: {self.config.security_policies}")
+            logger.info("Security configured: %s", self.config.security_policies)
         else:
             logger.warning("No certificates configured - running without security")
 
@@ -523,7 +523,7 @@ class OPCUAServer(BaseProtocolClient):
         # Notify subscribers
         await self._notify_subscribers(node_id, value, dv.SourceTimestamp)
 
-        logger.debug(f"Wrote value to {node_id}: {value}")
+        logger.debug("Wrote value to %s: %s", node_id, value)
         return provenance_hash
 
     async def subscribe(
@@ -553,7 +553,7 @@ class OPCUAServer(BaseProtocolClient):
         )
 
         self.subscriptions[subscription.subscription_id] = subscription
-        logger.info(f"Created subscription {subscription.subscription_id} for {client_id}")
+        logger.info("Created subscription %s for %s", subscription.subscription_id, client_id)
 
         return subscription.subscription_id
 
@@ -574,7 +574,7 @@ class OPCUAServer(BaseProtocolClient):
                         else:
                             callback(node_id, value, timestamp)
                     except Exception as e:
-                        logger.error(f"Subscriber callback error: {e}")
+                        logger.error("Subscriber callback error: %s", e)
 
     async def register_agent_namespace(
         self,
@@ -605,7 +605,7 @@ class OPCUAServer(BaseProtocolClient):
         # Create nodes from schema
         await self._create_nodes_from_schema(agent_folder, ns_idx, agent_name, schema)
 
-        logger.info(f"Registered namespace for agent '{agent_name}' (ns={ns_idx})")
+        logger.info("Registered namespace for agent '%s' (ns=%s)", agent_name, ns_idx)
         return ns_idx
 
     async def _create_nodes_from_schema(
@@ -663,7 +663,7 @@ class OPCUAServer(BaseProtocolClient):
             await self._server.nodes.server.read_value()
             return HealthStatus.HEALTHY
         except Exception as e:
-            logger.warning(f"OPC-UA server health check failed: {e}")
+            logger.warning("OPC-UA server health check failed: %s", e)
             return HealthStatus.DEGRADED
 
 
@@ -739,7 +739,7 @@ class OPCUAClient(BaseProtocolClient):
         self._keepalive_task: Optional[asyncio.Task] = None
         self._shutdown = False
 
-        logger.info(f"OPCUAClient initialized for: {config.endpoint}")
+        logger.info("OPCUAClient initialized for: %s", config.endpoint)
 
     async def connect(self) -> None:
         """Connect to the OPC-UA server."""
@@ -780,12 +780,12 @@ class OPCUAClient(BaseProtocolClient):
             # Start keepalive
             self._keepalive_task = asyncio.create_task(self._keepalive_loop())
 
-            logger.info(f"Connected to OPC-UA server: {self.config.endpoint}")
+            logger.info("Connected to OPC-UA server: %s", self.config.endpoint)
 
         except Exception as e:
             self.state = ProtocolState.ERROR
             self.last_error = str(e)
-            logger.error(f"Connection failed: {e}", exc_info=True)
+            logger.error("Connection failed: %s", e, exc_info=True)
             raise ConnectionError(f"Failed to connect: {e}") from e
 
     async def disconnect(self) -> None:
@@ -806,7 +806,7 @@ class OPCUAClient(BaseProtocolClient):
             try:
                 await subscription.delete()
             except Exception as e:
-                logger.warning(f"Error deleting subscription {sub_id}: {e}")
+                logger.warning("Error deleting subscription %s: %s", sub_id, e)
 
         self._subscriptions.clear()
 
@@ -814,7 +814,7 @@ class OPCUAClient(BaseProtocolClient):
             try:
                 await self._client.disconnect()
             except Exception as e:
-                logger.warning(f"Error during disconnect: {e}")
+                logger.warning("Error during disconnect: %s", e)
 
         self.state = ProtocolState.DISCONNECTED
         logger.info("Disconnected from OPC-UA server")
@@ -835,7 +835,7 @@ class OPCUAClient(BaseProtocolClient):
                     )
                     await server_node.read_value()
                 except Exception as e:
-                    logger.warning(f"Keepalive failed: {e}")
+                    logger.warning("Keepalive failed: %s", e)
                     await self._handle_reconnection()
 
             except asyncio.CancelledError:
@@ -868,11 +868,11 @@ class OPCUAClient(BaseProtocolClient):
                 # Resubscribe
                 await self._resubscribe_all()
 
-                logger.info(f"Reconnected after {attempt + 1} attempts")
+                logger.info("Reconnected after %s attempts", attempt + 1)
                 return
 
             except Exception as e:
-                logger.warning(f"Reconnection attempt {attempt + 1} failed: {e}")
+                logger.warning("Reconnection attempt %s failed: %s", attempt + 1, e)
 
         self.state = ProtocolState.ERROR
         self.last_error = "Max reconnection attempts reached"
@@ -906,7 +906,7 @@ class OPCUAClient(BaseProtocolClient):
             return value
         except Exception as e:
             self._metrics["errors"] += 1
-            logger.error(f"Failed to read {node_id}: {e}")
+            logger.error("Failed to read %s: %s", node_id, e)
             raise
 
     async def read_values(self, node_ids: List[str]) -> Dict[str, Any]:
@@ -953,12 +953,12 @@ class OPCUAClient(BaseProtocolClient):
             self._metrics["messages_sent"] += 1
 
             provenance_hash = self._calculate_provenance("write", f"{node_id}:{value}")
-            logger.debug(f"Wrote value to {node_id}: {value}")
+            logger.debug("Wrote value to %s: %s", node_id, value)
             return provenance_hash
 
         except Exception as e:
             self._metrics["errors"] += 1
-            logger.error(f"Failed to write to {node_id}: {e}")
+            logger.error("Failed to write to %s: %s", node_id, e)
             raise
 
     async def subscribe_data_change(
@@ -997,7 +997,7 @@ class OPCUAClient(BaseProtocolClient):
             self._data_change_handlers[node_id] = []
         self._data_change_handlers[node_id].append(callback)
 
-        logger.info(f"Subscribed to {node_id} with ID {sub_id}")
+        logger.info("Subscribed to %s with ID %s", node_id, sub_id)
         return sub_id
 
     def _create_data_change_handler(self, sub_id: str) -> Callable:
@@ -1019,7 +1019,7 @@ class OPCUAClient(BaseProtocolClient):
                     else:
                         cb(notification)
                 except Exception as e:
-                    logger.error(f"Data change handler error: {e}")
+                    logger.error("Data change handler error: %s", e)
 
         return handler
 
@@ -1170,7 +1170,7 @@ class MQTTClient(BaseProtocolClient):
         self._shutdown = False
         self._connected_event = asyncio.Event()
 
-        logger.info(f"MQTTClient initialized for: {config.broker_host}:{config.broker_port}")
+        logger.info("MQTTClient initialized for: %s:%s", config.broker_host, config.broker_port)
 
     async def connect(self) -> None:
         """Connect to the MQTT broker."""
@@ -1209,12 +1209,12 @@ class MQTTClient(BaseProtocolClient):
                 self._message_handler_loop()
             )
 
-            logger.info(f"Connected to MQTT broker: {self.config.broker_host}")
+            logger.info("Connected to MQTT broker: %s", self.config.broker_host)
 
         except Exception as e:
             self.state = ProtocolState.ERROR
             self.last_error = str(e)
-            logger.error(f"Connection failed: {e}", exc_info=True)
+            logger.error("Connection failed: %s", e, exc_info=True)
             raise ConnectionError(f"Failed to connect to MQTT: {e}") from e
 
     async def disconnect(self) -> None:
@@ -1233,7 +1233,7 @@ class MQTTClient(BaseProtocolClient):
             try:
                 await self._client.__aexit__(None, None, None)
             except Exception as e:
-                logger.warning(f"Error during disconnect: {e}")
+                logger.warning("Error during disconnect: %s", e)
 
         self.state = ProtocolState.DISCONNECTED
         logger.info("Disconnected from MQTT broker")
@@ -1265,12 +1265,12 @@ class MQTTClient(BaseProtocolClient):
                     try:
                         await self._process_message(message)
                     except Exception as e:
-                        logger.error(f"Error processing message: {e}")
+                        logger.error("Error processing message: %s", e)
 
         except asyncio.CancelledError:
             pass
         except Exception as e:
-            logger.error(f"Message handler loop error: {e}")
+            logger.error("Message handler loop error: %s", e)
             if not self._shutdown:
                 await self._handle_reconnection()
 
@@ -1303,7 +1303,7 @@ class MQTTClient(BaseProtocolClient):
                     else:
                         subscription.callback(mqtt_message)
                 except Exception as e:
-                    logger.error(f"Subscription callback error: {e}")
+                    logger.error("Subscription callback error: %s", e)
 
     def _topic_matches(self, pattern: str, topic: str) -> bool:
         """Check if topic matches subscription pattern."""
@@ -1341,11 +1341,11 @@ class MQTTClient(BaseProtocolClient):
                 await self.connect()
                 await self._resubscribe_all()
 
-                logger.info(f"Reconnected after {attempt + 1} attempts")
+                logger.info("Reconnected after %s attempts", attempt + 1)
                 return
 
             except Exception as e:
-                logger.warning(f"Reconnection attempt {attempt + 1} failed: {e}")
+                logger.warning("Reconnection attempt %s failed: %s", attempt + 1, e)
 
         self.state = ProtocolState.ERROR
         logger.error("Max reconnection attempts reached")
@@ -1355,9 +1355,9 @@ class MQTTClient(BaseProtocolClient):
         for topic, subscription in self.subscriptions.items():
             try:
                 await self._client.subscribe(topic, qos=subscription.qos)
-                logger.debug(f"Resubscribed to {topic}")
+                logger.debug("Resubscribed to %s", topic)
             except Exception as e:
-                logger.error(f"Failed to resubscribe to {topic}: {e}")
+                logger.error("Failed to resubscribe to %s: %s", topic, e)
 
     async def publish(
         self,
@@ -1407,12 +1407,12 @@ class MQTTClient(BaseProtocolClient):
 
             self._metrics["messages_sent"] += 1
             provenance_hash = message.provenance_hash()
-            logger.debug(f"Published to {topic} (QoS {qos_level})")
+            logger.debug("Published to %s (QoS %s)", topic, qos_level)
             return provenance_hash
 
         except Exception as e:
             self._metrics["errors"] += 1
-            logger.error(f"Publish failed: {e}")
+            logger.error("Publish failed: %s", e)
             raise
 
     async def subscribe(
@@ -1446,11 +1446,11 @@ class MQTTClient(BaseProtocolClient):
             )
             self.subscriptions[topic] = subscription
 
-            logger.info(f"Subscribed to {topic} (QoS {qos_level})")
+            logger.info("Subscribed to %s (QoS %s)", topic, qos_level)
             return topic
 
         except Exception as e:
-            logger.error(f"Subscribe failed: {e}")
+            logger.error("Subscribe failed: %s", e)
             raise
 
     async def unsubscribe(self, topic: str) -> None:
@@ -1460,9 +1460,9 @@ class MQTTClient(BaseProtocolClient):
         try:
             await self._client.unsubscribe(topic)
             self.subscriptions.pop(topic, None)
-            logger.info(f"Unsubscribed from {topic}")
+            logger.info("Unsubscribed from %s", topic)
         except Exception as e:
-            logger.error(f"Unsubscribe failed: {e}")
+            logger.error("Unsubscribe failed: %s", e)
             raise
 
     def _ensure_connected(self) -> None:
@@ -1584,7 +1584,7 @@ class AvroSchemaRegistry:
             schema_id = hash(json.dumps(schema, sort_keys=True)) % 100000
             self._schema_ids[subject] = schema_id
 
-            logger.info(f"Registered schema '{subject}' with ID {schema_id}")
+            logger.info("Registered schema '%s' with ID %s", subject, schema_id)
             return schema_id
         except ImportError:
             raise ImportError("fastavro is required for Avro support")
@@ -1666,7 +1666,7 @@ class KafkaProducer(BaseProtocolClient):
         self._started = False
         self._transaction_active = False
 
-        logger.info(f"KafkaProducer initialized: {config.bootstrap_servers}")
+        logger.info("KafkaProducer initialized: %s", config.bootstrap_servers)
 
     async def connect(self) -> None:
         """Start the Kafka producer (alias for start)."""
@@ -1713,7 +1713,7 @@ class KafkaProducer(BaseProtocolClient):
         except Exception as e:
             self.state = ProtocolState.ERROR
             self.last_error = str(e)
-            logger.error(f"Failed to start producer: {e}", exc_info=True)
+            logger.error("Failed to start producer: %s", e, exc_info=True)
             raise ConnectionError(f"Failed to connect to Kafka: {e}") from e
 
     async def stop(self) -> None:
@@ -1731,7 +1731,7 @@ class KafkaProducer(BaseProtocolClient):
             logger.info("Kafka producer stopped")
 
         except Exception as e:
-            logger.error(f"Error stopping producer: {e}")
+            logger.error("Error stopping producer: %s", e)
 
     async def send(
         self,
@@ -1796,7 +1796,7 @@ class KafkaProducer(BaseProtocolClient):
 
             self._metrics["messages_sent"] += 1
 
-            logger.debug(f"Sent to {topic}[{result.partition}] offset={result.offset}")
+            logger.debug("Sent to %s[%s] offset=%s", topic, result.partition, result.offset)
 
             return ProducerResult(
                 topic=result.topic,
@@ -1808,7 +1808,7 @@ class KafkaProducer(BaseProtocolClient):
 
         except Exception as e:
             self._metrics["errors"] += 1
-            logger.error(f"Failed to send message: {e}")
+            logger.error("Failed to send message: %s", e)
             raise
 
     async def send_batch(self, records: List[ProducerRecord]) -> List[ProducerResult]:
@@ -1827,7 +1827,7 @@ class KafkaProducer(BaseProtocolClient):
             )
             results.append(result)
 
-        logger.info(f"Sent batch of {len(records)} messages")
+        logger.info("Sent batch of %s messages", len(records))
         return results
 
     async def begin_transaction(self) -> None:
@@ -2003,7 +2003,7 @@ class KafkaConsumer(BaseProtocolClient):
         self._shutdown = False
         self._pending_commits: Dict[Any, int] = {}
 
-        logger.info(f"KafkaConsumer initialized: group={config.group_id}")
+        logger.info("KafkaConsumer initialized: group=%s", config.group_id)
 
     async def connect(self) -> None:
         """Start the Kafka consumer (alias for start)."""
@@ -2051,7 +2051,7 @@ class KafkaConsumer(BaseProtocolClient):
         except Exception as e:
             self.state = ProtocolState.ERROR
             self.last_error = str(e)
-            logger.error(f"Failed to start consumer: {e}", exc_info=True)
+            logger.error("Failed to start consumer: %s", e, exc_info=True)
             raise ConnectionError(f"Failed to connect to Kafka: {e}") from e
 
     async def stop(self) -> None:
@@ -2074,7 +2074,7 @@ class KafkaConsumer(BaseProtocolClient):
             logger.info("Kafka consumer stopped")
 
         except Exception as e:
-            logger.error(f"Error stopping consumer: {e}")
+            logger.error("Error stopping consumer: %s", e)
 
     async def subscribe(
         self,
@@ -2095,7 +2095,7 @@ class KafkaConsumer(BaseProtocolClient):
         for topic in topics:
             self._handlers[topic] = handler
 
-        logger.info(f"Subscribed to topics: {topics}")
+        logger.info("Subscribed to topics: %s", topics)
 
     async def consume(self, max_messages: Optional[int] = None) -> None:
         """
@@ -2129,7 +2129,7 @@ class KafkaConsumer(BaseProtocolClient):
         except asyncio.CancelledError:
             logger.info("Consume cancelled")
         except Exception as e:
-            logger.error(f"Consume error: {e}", exc_info=True)
+            logger.error("Consume error: %s", e, exc_info=True)
             raise
         finally:
             self._consuming = False
@@ -2170,7 +2170,7 @@ class KafkaConsumer(BaseProtocolClient):
 
         handler = self._handlers.get(message.topic)
         if not handler:
-            logger.warning(f"No handler for topic {message.topic}")
+            logger.warning("No handler for topic %s", message.topic)
             tp = self._TopicPartition(message.topic, message.partition)
             self._pending_commits[tp] = message.offset + 1
             return ProcessingResult(
@@ -2215,7 +2215,7 @@ class KafkaConsumer(BaseProtocolClient):
 
             except Exception as e:
                 last_error = str(e)
-                logger.error(f"Handler error (retry {retry_count}): {e}")
+                logger.error("Handler error (retry %s): %s", retry_count, e)
                 retry_count += 1
 
                 if retry_count <= self.config.max_retries:
@@ -2248,7 +2248,7 @@ class KafkaConsumer(BaseProtocolClient):
             self._pending_commits.clear()
             logger.debug("Committed offsets")
         except Exception as e:
-            logger.error(f"Failed to commit offsets: {e}")
+            logger.error("Failed to commit offsets: %s", e)
 
     def _ensure_started(self) -> None:
         """Ensure consumer is started."""
@@ -2412,7 +2412,7 @@ class ModbusGateway(BaseProtocolClient):
         self._poll_tasks: Dict[str, asyncio.Task] = {}
         self._poll_callbacks: Dict[str, List[Callable]] = {}
 
-        logger.info(f"ModbusGateway initialized: {config.protocol.value} {config.host}:{config.port}")
+        logger.info("ModbusGateway initialized: %s %s:%s", config.protocol.value, config.host, config.port)
 
     async def connect(self) -> None:
         """Connect to the Modbus device."""
@@ -2460,12 +2460,12 @@ class ModbusGateway(BaseProtocolClient):
             self.state = ProtocolState.CONNECTED
             self.connected_at = datetime.utcnow()
 
-            logger.info(f"Connected to Modbus device at {self.config.host}:{self.config.port}")
+            logger.info("Connected to Modbus device at %s:%s", self.config.host, self.config.port)
 
         except Exception as e:
             self.state = ProtocolState.ERROR
             self.last_error = str(e)
-            logger.error(f"Connection failed: {e}", exc_info=True)
+            logger.error("Connection failed: %s", e, exc_info=True)
             raise ConnectionError(f"Modbus connection failed: {e}") from e
 
     async def disconnect(self) -> None:
@@ -2508,11 +2508,11 @@ class ModbusGateway(BaseProtocolClient):
                     self.config.reconnect_delay * (1.5 ** attempt)
                 )
                 await self.connect()
-                logger.info(f"Reconnected after {attempt + 1} attempts")
+                logger.info("Reconnected after %s attempts", attempt + 1)
                 return
 
             except Exception as e:
-                logger.warning(f"Reconnection attempt {attempt + 1} failed: {e}")
+                logger.warning("Reconnection attempt %s failed: %s", attempt + 1, e)
 
         self.state = ProtocolState.ERROR
         logger.error("Max reconnection attempts reached")
@@ -2520,7 +2520,7 @@ class ModbusGateway(BaseProtocolClient):
     def add_register(self, mapping: RegisterMapping) -> None:
         """Add a register mapping."""
         self.register_map[mapping.name] = mapping
-        logger.debug(f"Added register mapping: {mapping.name} @ {mapping.address}")
+        logger.debug("Added register mapping: %s @ %s", mapping.name, mapping.address)
 
     def add_registers(self, mappings: List[RegisterMapping]) -> None:
         """Add multiple register mappings."""
@@ -2562,7 +2562,7 @@ class ModbusGateway(BaseProtocolClient):
 
         except Exception as e:
             self._metrics["errors"] += 1
-            logger.error(f"Read holding registers failed: {e}")
+            logger.error("Read holding registers failed: %s", e)
             await self._handle_reconnection()
             raise
 
@@ -2591,7 +2591,7 @@ class ModbusGateway(BaseProtocolClient):
 
         except Exception as e:
             self._metrics["errors"] += 1
-            logger.error(f"Read input registers failed: {e}")
+            logger.error("Read input registers failed: %s", e)
             await self._handle_reconnection()
             raise
 
@@ -2620,7 +2620,7 @@ class ModbusGateway(BaseProtocolClient):
 
         except Exception as e:
             self._metrics["errors"] += 1
-            logger.error(f"Read coils failed: {e}")
+            logger.error("Read coils failed: %s", e)
             await self._handle_reconnection()
             raise
 
@@ -2655,7 +2655,7 @@ class ModbusGateway(BaseProtocolClient):
 
         except Exception as e:
             self._metrics["errors"] += 1
-            logger.error(f"Write register failed: {e}")
+            logger.error("Write register failed: %s", e)
             raise
 
     async def write_registers(
@@ -2684,7 +2684,7 @@ class ModbusGateway(BaseProtocolClient):
 
         except Exception as e:
             self._metrics["errors"] += 1
-            logger.error(f"Write registers failed: {e}")
+            logger.error("Write registers failed: %s", e)
             raise
 
     async def read_register_value(self, name: str) -> ModbusValue:
@@ -2725,7 +2725,7 @@ class ModbusGateway(BaseProtocolClient):
             try:
                 results[name] = await self.read_register_value(name)
             except Exception as e:
-                logger.error(f"Failed to read register {name}: {e}")
+                logger.error("Failed to read register %s: %s", name, e)
         return results
 
     def _decode_registers(
@@ -2781,7 +2781,7 @@ class ModbusGateway(BaseProtocolClient):
             callback: Function to call with each value
         """
         if name in self._poll_tasks:
-            logger.warning(f"Polling already active for {name}")
+            logger.warning("Polling already active for %s", name)
             return
 
         if name not in self._poll_callbacks:
@@ -2799,14 +2799,14 @@ class ModbusGateway(BaseProtocolClient):
                             else:
                                 cb(value)
                         except Exception as e:
-                            logger.error(f"Poll callback error: {e}")
+                            logger.error("Poll callback error: %s", e)
                 except Exception as e:
-                    logger.error(f"Polling error for {name}: {e}")
+                    logger.error("Polling error for %s: %s", name, e)
 
                 await asyncio.sleep(interval_ms / 1000)
 
         self._poll_tasks[name] = asyncio.create_task(poll_loop())
-        logger.info(f"Started polling {name} every {interval_ms}ms")
+        logger.info("Started polling %s every %sms", name, interval_ms)
 
     async def stop_polling(self, name: str) -> None:
         """Stop polling a register."""
@@ -2817,7 +2817,7 @@ class ModbusGateway(BaseProtocolClient):
             except asyncio.CancelledError:
                 pass
             del self._poll_tasks[name]
-            logger.info(f"Stopped polling {name}")
+            logger.info("Stopped polling %s", name)
 
     def _ensure_connected(self) -> None:
         """Ensure client is connected."""
@@ -2997,9 +2997,9 @@ class ProtocolManager:
         """Start a client with error handling."""
         try:
             await client.connect()
-            logger.info(f"{name} started successfully")
+            logger.info("%s started successfully", name)
         except Exception as e:
-            logger.error(f"Failed to start {name}: {e}")
+            logger.error("Failed to start %s: %s", name, e)
             self._protocol_health[client.protocol_type] = ProtocolHealth(
                 protocol_type=client.protocol_type,
                 status=HealthStatus.UNHEALTHY,
@@ -3053,7 +3053,7 @@ class ProtocolManager:
             except asyncio.CancelledError:
                 break
             except Exception as e:
-                logger.error(f"Health monitor error: {e}")
+                logger.error("Health monitor error: %s", e)
 
     async def _check_all_health(self) -> None:
         """Check health of all protocols."""
@@ -3087,7 +3087,7 @@ class ProtocolManager:
                     metrics=client.get_statistics()
                 )
             except Exception as e:
-                logger.warning(f"Health check failed for {name}: {e}")
+                logger.warning("Health check failed for %s: %s", name, e)
                 self._protocol_health[client.protocol_type] = ProtocolHealth(
                     protocol_type=client.protocol_type,
                     status=HealthStatus.UNKNOWN,

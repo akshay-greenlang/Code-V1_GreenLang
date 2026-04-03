@@ -463,7 +463,7 @@ class EconomicReplacementModel:
         Returns:
             Tuple of (net_npv, cost_breakdown)
         """
-        logger.info(f"Calculating NPV for {asset.asset_id}")
+        logger.info("Calculating NPV for %s", asset.asset_id)
 
         # Calculate annual benefits of replacement
         fuel_savings = self._calculate_fuel_savings(asset, params)
@@ -516,7 +516,7 @@ class EconomicReplacementModel:
             "net_npv": net_npv,
         }
 
-        logger.info(f"NPV calculation complete: ${net_npv:,.0f}")
+        logger.info("NPV calculation complete: $%,.0f", net_npv)
         return net_npv, cost_breakdown
 
     def calculate_irr(
@@ -770,7 +770,7 @@ class OptimalTimingCalculator:
         Returns:
             Dictionary with optimal timing results
         """
-        logger.info(f"Finding optimal replacement time for {asset.asset_id}")
+        logger.info("Finding optimal replacement time for %s", asset.asset_id)
 
         max_hours = max_hours or asset.expected_life_hours * 2
         current_hours = asset.current_age_hours
@@ -827,7 +827,7 @@ class OptimalTimingCalculator:
             "current_age_hours": current_hours,
         }
 
-        logger.info(f"Optimal replacement: {optimal_hours:,.0f} hours")
+        logger.info("Optimal replacement: %,.0f hours", optimal_hours)
         return result
 
     def _maintenance_cost_to_time(
@@ -989,7 +989,7 @@ class GroupReplacementStrategy:
         Returns:
             GroupReplacementResult with recommendations
         """
-        logger.info(f"Analyzing group replacement for {len(assets)} assets")
+        logger.info("Analyzing group replacement for %s assets", len(assets))
 
         if not assets:
             raise ValueError("At least one asset required")
@@ -1082,7 +1082,7 @@ class GroupReplacementStrategy:
         Returns:
             List of scheduled replacements
         """
-        logger.info(f"Creating staggered schedule for {len(assets)} assets")
+        logger.info("Creating staggered schedule for %s assets", len(assets))
 
         # Sort assets by urgency (failure probability)
         def urgency_score(asset: BurnerAsset) -> float:
@@ -1163,7 +1163,7 @@ class InventoryOptimizer:
         Returns:
             InventoryOptimizationResult
         """
-        logger.info(f"Optimizing inventory for {len(parts)} parts")
+        logger.info("Optimizing inventory for %s parts", len(parts))
 
         # Classify parts using ABC analysis
         classified_parts = self._abc_classification(parts)
@@ -1353,7 +1353,7 @@ class MonteCarloSimulator:
         Returns:
             Dictionary with simulation results
         """
-        logger.info(f"Running {n_simulations} Monte Carlo simulations")
+        logger.info("Running %s Monte Carlo simulations", n_simulations)
 
         econ_model = EconomicReplacementModel()
         npv_results = []
@@ -1491,7 +1491,7 @@ class ReplacementPlanner:
         Returns:
             ReplacementAnalysisResult with comprehensive analysis
         """
-        logger.info(f"Analyzing replacement for {asset.asset_id}")
+        logger.info("Analyzing replacement for %s", asset.asset_id)
         start_time = datetime.now(timezone.utc)
 
         # Economic analysis

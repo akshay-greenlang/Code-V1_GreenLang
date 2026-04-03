@@ -385,7 +385,7 @@ def _extract_text(file_path: Path) -> str:
         try:
             return _extract_text_from_pdf(file_path)
         except ImportError as e:
-            logger.warning(f"PyMuPDF not available: {e}. Falling back to text reading.")
+            logger.warning("PyMuPDF not available: %s. Falling back to text reading.", e)
         except Exception as e:
             logger.warning(
                 f"PDF extraction failed for {file_path}: {e}. "
@@ -398,7 +398,7 @@ def _extract_text(file_path: Path) -> str:
             return f.read()
     except UnicodeDecodeError:
         # Try latin-1 fallback
-        logger.warning(f"UTF-8 decode failed for {file_path}, trying latin-1")
+        logger.warning("UTF-8 decode failed for %s, trying latin-1", file_path)
         with open(file_path, "r", encoding="latin-1") as f:
             return f.read()
 

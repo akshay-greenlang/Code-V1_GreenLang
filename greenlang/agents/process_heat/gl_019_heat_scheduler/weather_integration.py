@@ -580,7 +580,7 @@ class WeatherService:
             return result
 
         except Exception as e:
-            logger.error(f"Failed to fetch weather forecast: {e}")
+            logger.error("Failed to fetch weather forecast: %s", e)
             # Return cached data if available
             if self._forecast_cache:
                 return self._forecast_cache

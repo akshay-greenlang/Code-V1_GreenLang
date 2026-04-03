@@ -277,7 +277,7 @@ class CacheManager:
             except Exception as e:
                 if not self._arch.fallback_on_error:
                     raise
-                logger.warning(f"Failed to start L2 cache: {e}")
+                logger.warning("Failed to start L2 cache: %s", e)
                 self._l2 = None
 
         # Initialize L3 (disk cache)
@@ -323,7 +323,7 @@ class CacheManager:
                 try:
                     await cache.stop()
                 except Exception as e:
-                    logger.error(f"Error stopping cache layer: {e}")
+                    logger.error("Error stopping cache layer: %s", e)
 
         logger.info("CacheManager stopped")
 
@@ -389,7 +389,7 @@ class CacheManager:
             except Exception as e:
                 if not self._arch.fallback_on_error:
                     raise
-                logger.warning(f"L2 get failed: {e}")
+                logger.warning("L2 get failed: %s", e)
 
         # Try L3
         if self._l3:
@@ -481,7 +481,7 @@ class CacheManager:
             except Exception as e:
                 if not self._arch.fallback_on_error:
                     raise
-                logger.warning(f"L2 set failed: {e}")
+                logger.warning("L2 set failed: %s", e)
 
         # L3
         if CacheLayer.L3_DISK in write_layers and self._l3:
@@ -498,7 +498,7 @@ class CacheManager:
                     if await task:
                         success = True
                 except Exception as e:
-                    logger.error(f"Error in cache set: {e}")
+                    logger.error("Error in cache set: %s", e)
 
         return success
 
@@ -543,7 +543,7 @@ class CacheManager:
             try:
                 await self._l2._publish_invalidation([full_key])
             except Exception as e:
-                logger.error(f"Error publishing invalidation: {e}")
+                logger.error("Error publishing invalidation: %s", e)
 
         return success
 
@@ -579,7 +579,7 @@ class CacheManager:
                 count = await self._l2.delete_pattern(full_pattern)
                 total_count += count
             except Exception as e:
-                logger.error(f"Error in L2 pattern delete: {e}")
+                logger.error("Error in L2 pattern delete: %s", e)
 
         # For L1 and L3, we'd need to iterate (not implemented here for brevity)
         # In production, you'd want to track keys per namespace
@@ -603,7 +603,7 @@ class CacheManager:
             if self._l3:
                 await self._l3.delete(key)
 
-        logger.debug(f"Coherence invalidation: {len(keys)} keys")
+        logger.debug("Coherence invalidation: %s keys", len(keys))
 
     async def _warm_cache(self) -> None:
         """Warm cache with frequently accessed data."""
@@ -660,7 +660,7 @@ class CacheManager:
             except asyncio.CancelledError:
                 break
             except Exception as e:
-                logger.error(f"Error in warming loop: {e}", exc_info=True)
+                logger.error("Error in warming loop: %s", e, exc_info=True)
 
     async def get_analytics(self) -> Dict[str, Any]:
         """

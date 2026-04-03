@@ -492,7 +492,7 @@ class RightsViolationEngine:
             metadata={"new_status": new_status},
         )
 
-        logger.info(f"Violation {alert_id} status updated to {new_status}")
+        logger.info("Violation %s status updated to %s", alert_id, new_status)
 
     # -------------------------------------------------------------------
     # Deterministic severity scoring (Zero-Hallucination)

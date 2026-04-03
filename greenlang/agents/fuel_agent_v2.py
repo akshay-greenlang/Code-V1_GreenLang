@@ -95,7 +95,7 @@ class FuelInputV2(GreenLangBase):
             "coal", "biomass", "electricity", "lpg", "heating_oil"
         }
         if v.lower() not in valid_fuels:
-            logger.warning(f"Fuel type '{v}' not in standard list. Will attempt lookup anyway.")
+            logger.warning("Fuel type '%s' not in standard list. Will attempt lookup anyway.", v)
         return v.lower()
 
     @validator('unit')
@@ -246,10 +246,10 @@ class FuelAgentV2(AgentSpecV2Base[FuelInputV2, FuelOutputV2], DeterministicMixin
             # Load fuel properties config
             self.fuel_config = self._load_fuel_config()
 
-            self.logger.info("FuelAgent V2 initialized successfully")
+            logger.info("FuelAgent V2 initialized successfully")
 
         except Exception as e:
-            self.logger.error(f"FuelAgent V2 initialization failed: {e}", exc_info=True)
+            logger.error("FuelAgent V2 initialization failed: %s", e, exc_info=True)
             raise
 
     @lru_cache(maxsize=1)
@@ -297,7 +297,7 @@ class FuelAgentV2(AgentSpecV2Base[FuelInputV2, FuelOutputV2], DeterministicMixin
         fuel_type = input_data.fuel_type.lower()
         if fuel_type in self.fuel_type_mapping:
             normalized_fuel = self.fuel_type_mapping[fuel_type]
-            self.logger.info(f"Normalized fuel type: {fuel_type} → {normalized_fuel}")
+            logger.info("Normalized fuel type: %s → %s", fuel_type, normalized_fuel)
 
             # Create new instance with normalized fuel type
             input_data = input_data.copy(update={"fuel_type": normalized_fuel})
@@ -357,7 +357,7 @@ class FuelAgentV2(AgentSpecV2Base[FuelInputV2, FuelOutputV2], DeterministicMixin
                 co2e_emissions_kg -= offset
                 renewable_offset_applied = True
 
-                self.logger.info(
+                logger.info(
                     f"Applied {validated_input.renewable_percentage}% renewable offset: -{offset:.2f} kg CO2e"
                 )
 
@@ -367,7 +367,7 @@ class FuelAgentV2(AgentSpecV2Base[FuelInputV2, FuelOutputV2], DeterministicMixin
                 co2e_emissions_kg = co2e_emissions_kg / validated_input.efficiency
                 efficiency_adjusted = True
 
-                self.logger.info(
+                logger.info(
                     f"Adjusted for {validated_input.efficiency*100}% efficiency"
                 )
 
@@ -441,7 +441,7 @@ class FuelAgentV2(AgentSpecV2Base[FuelInputV2, FuelOutputV2], DeterministicMixin
             )
 
         except Exception as e:
-            self.logger.error(f"Fuel calculation failed: {e}", exc_info=True)
+            logger.error("Fuel calculation failed: %s", e, exc_info=True)
             raise
 
     @lru_cache(maxsize=256)

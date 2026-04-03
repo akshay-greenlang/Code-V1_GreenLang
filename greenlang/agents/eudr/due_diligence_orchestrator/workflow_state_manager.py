@@ -248,7 +248,7 @@ class WorkflowStateManager:
                 )
                 state.commodity = EUDRCommodity(commodity)
             except ValueError:
-                logger.warning(f"Unknown commodity: {commodity}")
+                logger.warning("Unknown commodity: %s", commodity)
 
         with self._lock:
             self._states[workflow_id] = state

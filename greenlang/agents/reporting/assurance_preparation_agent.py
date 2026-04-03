@@ -296,7 +296,7 @@ class AssurancePreparationAgent(BaseAgent):
             )
 
         super().__init__(config)
-        logger.info(f"Initialized {self.AGENT_NAME} v{self.VERSION}")
+        logger.info("Initialized %s v%s", self.AGENT_NAME, self.VERSION)
 
     def execute(self, input_data: Dict[str, Any]) -> AgentResult:
         """Execute assurance preparation operation."""
@@ -327,7 +327,7 @@ class AssurancePreparationAgent(BaseAgent):
             )
 
         except Exception as e:
-            logger.error(f"Assurance preparation failed: {str(e)}", exc_info=True)
+            logger.error("Assurance preparation failed: %s", e, exc_info=True)
             return AgentResult(success=False, error=str(e))
 
     def _handle_prepare_package(

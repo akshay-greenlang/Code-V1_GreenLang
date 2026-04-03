@@ -204,7 +204,7 @@ class SAPODataConnector(BaseConnector[Dict[str, Any]]):
                 logger.warning("Reached pagination limit of 100,000 records")
                 break
 
-        logger.info(f"Fetched {len(all_records)} records from {entity_set}")
+        logger.info("Fetched %s records from %s", len(all_records), entity_set)
         return all_records
 
     def _build_odata_params(
@@ -309,7 +309,7 @@ class SAPODataConnector(BaseConnector[Dict[str, Any]]):
                 )
                 orders.append(order)
             except Exception as e:
-                logger.warning(f"Error parsing purchase order: {e}")
+                logger.warning("Error parsing purchase order: %s", e)
 
         return orders
 
@@ -361,7 +361,7 @@ class SAPODataConnector(BaseConnector[Dict[str, Any]]):
                 )
                 materials.append(material)
             except Exception as e:
-                logger.warning(f"Error parsing material: {e}")
+                logger.warning("Error parsing material: %s", e)
 
         return materials
 

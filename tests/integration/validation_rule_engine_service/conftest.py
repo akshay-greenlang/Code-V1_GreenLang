@@ -569,11 +569,3 @@ def sample_security_records() -> List[Dict[str, Any]]:
     ]
 
 
-# ---------------------------------------------------------------------------
-# Override parent conftest autouse fixtures
-# ---------------------------------------------------------------------------
-
-@pytest.fixture(autouse=True)
-def mock_agents():
-    """Override parent conftest's mock_agents fixture (no-op for VRE tests)."""
-    yield

@@ -352,7 +352,7 @@ class TemporalAccessManager:
             'cleanups_performed': 0
         }
 
-        logger.info(f"Initialized TemporalAccessManager (cleanup_interval={cleanup_interval_minutes}m)")
+        logger.info("Initialized TemporalAccessManager (cleanup_interval=%sm)", cleanup_interval_minutes)
 
     def create_temporal_permission(
         self,
@@ -400,7 +400,7 @@ class TemporalAccessManager:
         self._stats['total_permissions'] += 1
         self._stats['active_permissions'] += 1
 
-        logger.info(f"Created temporal permission {temporal_perm.temporal_id} for user {user_id}")
+        logger.info("Created temporal permission %s for user %s", temporal_perm.temporal_id, user_id)
         return temporal_perm
 
     def get_temporal_permission(self, temporal_id: str) -> Optional[TemporalPermission]:
@@ -429,7 +429,7 @@ class TemporalAccessManager:
 
         self._stats['active_permissions'] -= 1
 
-        logger.info(f"Revoked temporal permission {temporal_id}")
+        logger.info("Revoked temporal permission %s", temporal_id)
         return True
 
     def get_user_temporal_permissions(
@@ -508,7 +508,7 @@ class TemporalAccessManager:
 
         if count > 0:
             self._stats['cleanups_performed'] += 1
-            logger.info(f"Cleaned up {count} expired temporal permissions")
+            logger.info("Cleaned up %s expired temporal permissions", count)
 
         self._last_cleanup = DeterministicClock.utcnow()
         return count

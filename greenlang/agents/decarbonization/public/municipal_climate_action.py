@@ -507,7 +507,7 @@ class MunicipalClimateActionAgent(BaseAgent):
             "waste": {"scope_1_factor": 1.2, "scope_2_factor": 0.2},
         }
 
-        self.logger.info(f"Initialized {self.AGENT_NAME} v{self.VERSION}")
+        logger.info("Initialized %s v%s", self.AGENT_NAME, self.VERSION)
 
     def execute(self, input_data: Dict[str, Any]) -> AgentResult:
         """
@@ -559,7 +559,7 @@ class MunicipalClimateActionAgent(BaseAgent):
             )
 
         except Exception as e:
-            self.logger.error(f"Climate action operation failed: {str(e)}", exc_info=True)
+            logger.error("Climate action operation failed: %s", e, exc_info=True)
             return AgentResult(
                 success=False,
                 error=str(e),
@@ -603,7 +603,7 @@ class MunicipalClimateActionAgent(BaseAgent):
         self._plans[plan_id] = plan
         trace.append(f"Created plan for {input_data.municipality_name}")
 
-        self.logger.info(f"Created climate action plan: {plan_id}")
+        logger.info("Created climate action plan: %s", plan_id)
 
         return MunicipalClimateActionOutput(
             success=True,
@@ -670,7 +670,7 @@ class MunicipalClimateActionAgent(BaseAgent):
 
         plan.updated_at = DeterministicClock.now()
 
-        self.logger.info(
+        logger.info(
             f"Updated inventory for plan {input_data.plan_id}: "
             f"{total_emissions:.2f} tCO2e"
         )
@@ -738,7 +738,7 @@ class MunicipalClimateActionAgent(BaseAgent):
         plan.targets.append(target)
         plan.updated_at = DeterministicClock.now()
 
-        self.logger.info(f"Added target to plan {input_data.plan_id}: {target.target_id}")
+        logger.info("Added target to plan %s: %s", input_data.plan_id, target.target_id)
 
         return MunicipalClimateActionOutput(
             success=True,
@@ -803,7 +803,7 @@ class MunicipalClimateActionAgent(BaseAgent):
         total_reduction = sum(a.estimated_reduction_tco2e for a in plan.actions)
         trace.append(f"Total planned reduction: {total_reduction:.2f} tCO2e/year")
 
-        self.logger.info(f"Added action to plan {input_data.plan_id}: {action.action_id}")
+        logger.info("Added action to plan %s: %s", input_data.plan_id, action.action_id)
 
         return MunicipalClimateActionOutput(
             success=True,
@@ -971,7 +971,7 @@ class MunicipalClimateActionAgent(BaseAgent):
 
         gap_analysis["by_category"] = category_analysis
 
-        self.logger.info(
+        logger.info(
             f"Gap analysis for {input_data.plan_id}: "
             f"{gap:.2f} tCO2e gap ({gap_percent:.1f}%)"
         )
@@ -1095,7 +1095,7 @@ class MunicipalClimateActionAgent(BaseAgent):
         trace.append(f"Medium-term actions: {len(medium_term_actions)}")
         trace.append(f"Long-term actions: {len(long_term_actions)}")
 
-        self.logger.info(f"Generated roadmap for plan {input_data.plan_id}")
+        logger.info("Generated roadmap for plan %s", input_data.plan_id)
 
         return MunicipalClimateActionOutput(
             success=True,
@@ -1176,7 +1176,7 @@ class MunicipalClimateActionAgent(BaseAgent):
         trace.append(f"Overall progress: {overall_progress:.1f}%")
         trace.append(f"Actual reduction: {actual_reduction:.2f} tCO2e")
 
-        self.logger.info(
+        logger.info(
             f"Progress report for {input_data.plan_id}: "
             f"{overall_progress:.1f}% overall progress"
         )

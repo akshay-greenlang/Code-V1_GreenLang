@@ -83,7 +83,7 @@ class BatchAgent(ABC, Generic[T, R]):
         self.use_async = use_async
         self.continue_on_error = continue_on_error
         self._executor: Optional[ThreadPoolExecutor] = None
-        logger.info(f"Initialized BatchAgent with batch_size={batch_size}, max_workers={max_workers}")
+        logger.info("Initialized BatchAgent with batch_size=%s, max_workers=%s", batch_size, max_workers)
 
     @abstractmethod
     def process_item(self, item: T) -> R:
@@ -180,7 +180,7 @@ class BatchAgent(ABC, Generic[T, R]):
                     "error": str(e),
                     "item": str(item)[:100]
                 })
-                logger.error(f"Error processing item {i}: {e}")
+                logger.error("Error processing item %s: %s", i, e)
 
                 if not self.continue_on_error:
                     break
@@ -207,7 +207,7 @@ class BatchAgent(ABC, Generic[T, R]):
         # Process in batches
         for i in range(0, len(items), self.batch_size):
             batch = items[i:i + self.batch_size]
-            logger.info(f"Processing batch {i//self.batch_size + 1} ({len(batch)} items)")
+            logger.info("Processing batch %s (%s items)", i//self.batch_size + 1, len(batch))
 
             batch_result = self.process_batch(batch)
 
@@ -283,7 +283,7 @@ class BatchAgent(ABC, Generic[T, R]):
             loop = asyncio.get_event_loop()
             return await loop.run_in_executor(None, self.process_item, item)
         except Exception as e:
-            logger.error(f"Error processing item {index}: {e}")
+            logger.error("Error processing item %s: %s", index, e)
             raise
 
     def cleanup(self) -> None:

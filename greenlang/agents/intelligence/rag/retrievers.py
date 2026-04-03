@@ -231,7 +231,7 @@ class MMRRetriever:
             logger.warning("No candidates found in vector store")
             return []
 
-        logger.debug(f"Fetched {len(candidates)} candidates")
+        logger.debug("Fetched %s candidates", len(candidates))
 
         # Stage 2: MMR re-ranking
         results = mmr_retrieval(
@@ -241,7 +241,7 @@ class MMRRetriever:
             k=top_k,
         )
 
-        logger.info(f"MMR retrieval returned {len(results)} documents")
+        logger.info("MMR retrieval returned %s documents", len(results))
 
         return results
 
@@ -304,7 +304,7 @@ class SimilarityRetriever:
             similarity = cosine_similarity(query_embedding, doc.embedding)
             results_with_scores.append((doc, similarity))
 
-        logger.info(f"Similarity retrieval returned {len(results_with_scores)} documents")
+        logger.info("Similarity retrieval returned %s documents", len(results_with_scores))
 
         return results_with_scores
 

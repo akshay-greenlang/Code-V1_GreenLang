@@ -24,6 +24,8 @@ from enum import Enum
 import yaml
 from pydantic import BaseModel, Field, validator, root_validator
 
+from greenlang.exceptions import DataException
+
 logger = logging.getLogger(__name__)
 
 
@@ -434,7 +436,7 @@ class ParsedAgentSpec(BaseModel):
 # Validation Errors
 # =============================================================================
 
-class ValidationError(Exception):
+class ValidationError(DataException):
     """Raised when AgentSpec validation fails."""
 
     def __init__(self, message: str, errors: Optional[List[str]] = None):
@@ -504,7 +506,7 @@ class AgentSpecParser:
         if not yaml_path.exists():
             raise FileNotFoundError(f"AgentSpec file not found: {yaml_path}")
 
-        logger.info(f"Parsing AgentSpec from: {yaml_path}")
+        logger.info("Parsing AgentSpec from: %s", yaml_path)
 
         # Read and parse YAML
         content = yaml_path.read_text(encoding="utf-8")
@@ -540,7 +542,7 @@ class AgentSpecParser:
             for warning in self._warnings:
                 logger.warning(warning)
 
-        logger.info(f"Successfully parsed AgentSpec: {spec.name} v{spec.version}")
+        logger.info("Successfully parsed AgentSpec: %s v%s", spec.name, spec.version)
         return spec
 
     def parse_string(self, yaml_content: str) -> ParsedAgentSpec:

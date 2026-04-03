@@ -55,6 +55,8 @@ from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union
 
 from pydantic import BaseModel, Field, HttpUrl, validator
 
+from greenlang.utilities.exceptions.security import AuthenticationError as _SecurityAuthError
+
 logger = logging.getLogger(__name__)
 
 
@@ -63,7 +65,7 @@ logger = logging.getLogger(__name__)
 # =============================================================================
 
 
-class OAuth2Error(Exception):
+class OAuth2Error(_SecurityAuthError):
     """Base exception for OAuth2 errors."""
 
     def __init__(
@@ -451,7 +453,7 @@ class OAuth2Provider:
             logger.info("OAuth2Provider initialized successfully")
 
         except Exception as e:
-            logger.error(f"Failed to initialize OAuth2Provider: {e}")
+            logger.error("Failed to initialize OAuth2Provider: %s", e)
             raise OAuth2Error(f"Initialization failed: {e}")
 
     async def close(self) -> None:
@@ -481,10 +483,10 @@ class OAuth2Provider:
             if not self.config.userinfo_uri:
                 self.config.userinfo_uri = config_data.get("userinfo_endpoint")
 
-            logger.info(f"Discovered OIDC endpoints from {discovery_url}")
+            logger.info("Discovered OIDC endpoints from %s", discovery_url)
 
         except Exception as e:
-            logger.error(f"OIDC discovery failed: {e}")
+            logger.error("OIDC discovery failed: %s", e)
             raise OAuth2Error(f"OIDC discovery failed: {e}")
 
     async def _fetch_jwks(self) -> None:
@@ -514,10 +516,10 @@ class OAuth2Provider:
                 )
             )
 
-            logger.info(f"Fetched {len(keys)} JWKS keys")
+            logger.info("Fetched %s JWKS keys", len(keys))
 
         except Exception as e:
-            logger.error(f"Failed to fetch JWKS: {e}")
+            logger.error("Failed to fetch JWKS: %s", e)
             raise JWKSError(f"Failed to fetch JWKS: {e}")
 
     async def _get_signing_key(self, kid: str) -> Dict[str, Any]:
@@ -542,7 +544,7 @@ class OAuth2Provider:
             return key
 
         # Key not found, try refreshing
-        logger.info(f"Key {kid} not found, refreshing JWKS")
+        logger.info("Key %s not found, refreshing JWKS", kid)
         await self._fetch_jwks()
 
         key = self._jwks_cache.get_key(kid)
@@ -654,7 +656,7 @@ class OAuth2Provider:
         except OAuth2Error:
             raise
         except Exception as e:
-            logger.error(f"Token validation failed: {e}")
+            logger.error("Token validation failed: %s", e)
             raise TokenValidationError(f"Token validation failed: {e}")
 
     async def _validate_jwt(self, token: str) -> TokenInfo:
@@ -893,7 +895,7 @@ class OAuth2Provider:
         except OAuth2Error:
             raise
         except Exception as e:
-            logger.error(f"Token introspection failed: {e}")
+            logger.error("Token introspection failed: %s", e)
             raise OAuth2Error(f"Token introspection failed: {e}")
 
     async def get_user_info(self, token: str) -> UserInfo:
@@ -936,7 +938,7 @@ class OAuth2Provider:
             )
 
         except Exception as e:
-            logger.error(f"UserInfo request failed: {e}")
+            logger.error("UserInfo request failed: %s", e)
             raise OAuth2Error(f"UserInfo request failed: {e}")
 
     async def get_user_roles(self, token: str) -> List[str]:

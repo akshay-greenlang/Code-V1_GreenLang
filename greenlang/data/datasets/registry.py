@@ -129,7 +129,7 @@ class DatasetRegistry:
             self.versions[name] = []
         self.versions[name].append(version)
 
-        logger.info(f"Registered dataset: {name} v{version}")
+        logger.info("Registered dataset: %s v%s", name, version)
         return dataset
 
     def get(self, name: str, version: Optional[str] = None) -> Optional[Dataset]:
@@ -154,7 +154,7 @@ class DatasetRegistry:
 
         if dataset:
             dataset.access()
-            logger.debug(f"Accessed dataset: {name} v{version}")
+            logger.debug("Accessed dataset: %s v%s", name, version)
 
         return dataset
 
@@ -266,7 +266,7 @@ class DatasetRegistry:
                     del self.datasets[key]
             if name in self.versions:
                 del self.versions[name]
-            logger.info(f"Deleted all versions of dataset: {name}")
+            logger.info("Deleted all versions of dataset: %s", name)
             return True
         else:
             # Delete specific version
@@ -275,7 +275,7 @@ class DatasetRegistry:
                 del self.datasets[key]
                 if name in self.versions and version in self.versions[name]:
                     self.versions[name].remove(version)
-                logger.info(f"Deleted dataset: {name} v{version}")
+                logger.info("Deleted dataset: %s v%s", name, version)
                 return True
 
         return False
@@ -283,12 +283,12 @@ class DatasetRegistry:
     def lock(self, name: str) -> None:
         """Lock a dataset to prevent deletion."""
         self._locked_datasets.add(name)
-        logger.info(f"Locked dataset: {name}")
+        logger.info("Locked dataset: %s", name)
 
     def unlock(self, name: str) -> None:
         """Unlock a dataset."""
         self._locked_datasets.discard(name)
-        logger.info(f"Unlocked dataset: {name}")
+        logger.info("Unlocked dataset: %s", name)
 
     def get_metadata(self, name: str, version: Optional[str] = None) -> Optional[DatasetMetadata]:
         """Get metadata for a dataset."""

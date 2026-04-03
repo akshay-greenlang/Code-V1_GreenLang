@@ -296,7 +296,7 @@ class IncinerationMRVAgent(BaseWasteMRVAgent[IncinerationInput, IncinerationOutp
         self._combustion_eff = COMBUSTION_EFFICIENCY
         self._n2o_factors = N2O_FACTORS
         self._ch4_factors = CH4_FACTORS
-        self.logger.info(f"Initialized {self.AGENT_ID}: {self.AGENT_NAME}")
+        logger.info("Initialized %s: %s", self.AGENT_ID, self.AGENT_NAME)
 
     def calculate(self, input_data: IncinerationInput) -> IncinerationOutput:
         """

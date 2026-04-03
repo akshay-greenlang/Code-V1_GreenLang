@@ -31,10 +31,13 @@ Status: Production Ready
 from __future__ import annotations
 
 import logging
-import os
-import threading
 from dataclasses import dataclass
-from typing import Any, Optional
+
+from greenlang.data_commons.config_base import (
+    BaseDataConfig,
+    EnvReader,
+    create_config_singleton,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -51,20 +54,16 @@ _ENV_PREFIX = "GL_EUDR_TRACEABILITY_"
 
 
 @dataclass
-class EUDRTraceabilityConfig:
-    """Complete configuration for the GreenLang EUDR Traceability Connector SDK.
+class EUDRTraceabilityConfig(BaseDataConfig):
+    """Configuration for the GreenLang EUDR Traceability Connector SDK.
 
-    Attributes are grouped by concern: connections, EUDR defaults,
-    plot settings, risk scoring, DDS settings, EU System integration,
-    batch processing, pool sizing, logging, and record retention.
+    Inherits shared connection, pool, batch, and logging fields from
+    ``BaseDataConfig``.  Only EUDR-specific fields are declared here.
 
     All attributes can be overridden via environment variables using the
     ``GL_EUDR_TRACEABILITY_`` prefix.
 
     Attributes:
-        database_url: PostgreSQL connection URL for persistent storage.
-        redis_url: Redis connection URL for caching layer.
-        s3_bucket_url: S3 bucket URL for document storage.
         deforestation_cutoff_date: EUDR deforestation-free cutoff date (ISO format).
         default_risk_level: Default risk level for new assessments.
         max_polygon_vertices: Maximum vertices allowed in plot polygon.
@@ -82,17 +81,8 @@ class EUDRTraceabilityConfig:
         eu_system_sandbox: Whether to use the EU System sandbox environment.
         eu_system_timeout_seconds: Timeout for EU System API calls.
         batch_max_size: Maximum number of records per batch operation.
-        batch_worker_count: Number of parallel workers for batch processing.
-        pool_min_size: Minimum connection pool size.
-        pool_max_size: Maximum connection pool size.
-        log_level: Logging level for the EUDR traceability service.
         retention_years: Number of years to retain records for audit compliance.
     """
-
-    # -- Connections ---------------------------------------------------------
-    database_url: str = ""
-    redis_url: str = ""
-    s3_bucket_url: str = ""
 
     # -- EUDR defaults -------------------------------------------------------
     deforestation_cutoff_date: str = "2020-12-31"
@@ -120,22 +110,14 @@ class EUDRTraceabilityConfig:
     eu_system_sandbox: bool = True
     eu_system_timeout_seconds: int = 60
 
-    # -- Batch processing ----------------------------------------------------
+    # -- Batch processing (EUDR-specific) ------------------------------------
     batch_max_size: int = 1000
-    batch_worker_count: int = 4
-
-    # -- Pool sizing ---------------------------------------------------------
-    pool_min_size: int = 2
-    pool_max_size: int = 10
-
-    # -- Logging -------------------------------------------------------------
-    log_level: str = "INFO"
 
     # -- Record retention ----------------------------------------------------
     retention_years: int = 5
 
     # ------------------------------------------------------------------
-    # Factory helpers
+    # Factory
     # ------------------------------------------------------------------
 
     @classmethod
@@ -144,121 +126,71 @@ class EUDRTraceabilityConfig:
 
         Every field can be overridden via ``GL_EUDR_TRACEABILITY_<FIELD_UPPER>``.
         Boolean values accept ``true/1/yes`` (case-insensitive).
-        Integer values are parsed via ``int()``.
-        Float values are parsed via ``float()``.
 
         Returns:
             Populated EUDRTraceabilityConfig instance.
         """
-        prefix = _ENV_PREFIX
-
-        def _env(name: str, default: Any = None) -> Optional[str]:
-            return os.environ.get(f"{prefix}{name}", default)
-
-        def _bool(name: str, default: bool) -> bool:
-            val = _env(name)
-            if val is None:
-                return default
-            return val.lower() in ("true", "1", "yes")
-
-        def _int(name: str, default: int) -> int:
-            val = _env(name)
-            if val is None:
-                return default
-            try:
-                return int(val)
-            except ValueError:
-                logger.warning(
-                    "Invalid integer for %s%s=%s, using default %d",
-                    prefix, name, val, default,
-                )
-                return default
-
-        def _float(name: str, default: float) -> float:
-            val = _env(name)
-            if val is None:
-                return default
-            try:
-                return float(val)
-            except ValueError:
-                logger.warning(
-                    "Invalid float for %s%s=%s, using default %f",
-                    prefix, name, val, default,
-                )
-                return default
-
-        def _str(name: str, default: str) -> str:
-            val = _env(name)
-            if val is None:
-                return default
-            return val
+        env = EnvReader(_ENV_PREFIX)
+        base_kwargs = cls._base_kwargs_from_env(env)
 
         config = cls(
-            database_url=_str("DATABASE_URL", cls.database_url),
-            redis_url=_str("REDIS_URL", cls.redis_url),
-            s3_bucket_url=_str("S3_BUCKET_URL", cls.s3_bucket_url),
-            deforestation_cutoff_date=_str(
+            **base_kwargs,
+            deforestation_cutoff_date=env.str(
                 "DEFORESTATION_CUTOFF_DATE",
                 cls.deforestation_cutoff_date,
             ),
-            default_risk_level=_str(
+            default_risk_level=env.str(
                 "DEFAULT_RISK_LEVEL", cls.default_risk_level,
             ),
-            max_polygon_vertices=_int(
+            max_polygon_vertices=env.int(
                 "MAX_POLYGON_VERTICES", cls.max_polygon_vertices,
             ),
-            coordinate_precision=_int(
+            coordinate_precision=env.int(
                 "COORDINATE_PRECISION", cls.coordinate_precision,
             ),
-            require_polygon_above_hectares=_float(
+            require_polygon_above_hectares=env.float(
                 "REQUIRE_POLYGON_ABOVE_HECTARES",
                 cls.require_polygon_above_hectares,
             ),
-            country_risk_weight=_float(
+            country_risk_weight=env.float(
                 "COUNTRY_RISK_WEIGHT", cls.country_risk_weight,
             ),
-            commodity_risk_weight=_float(
+            commodity_risk_weight=env.float(
                 "COMMODITY_RISK_WEIGHT", cls.commodity_risk_weight,
             ),
-            supplier_risk_weight=_float(
+            supplier_risk_weight=env.float(
                 "SUPPLIER_RISK_WEIGHT", cls.supplier_risk_weight,
             ),
-            traceability_risk_weight=_float(
+            traceability_risk_weight=env.float(
                 "TRACEABILITY_RISK_WEIGHT", cls.traceability_risk_weight,
             ),
-            high_risk_threshold=_float(
+            high_risk_threshold=env.float(
                 "HIGH_RISK_THRESHOLD", cls.high_risk_threshold,
             ),
-            low_risk_threshold=_float(
+            low_risk_threshold=env.float(
                 "LOW_RISK_THRESHOLD", cls.low_risk_threshold,
             ),
-            dds_validity_days=_int(
+            dds_validity_days=env.int(
                 "DDS_VALIDITY_DAYS", cls.dds_validity_days,
             ),
-            enable_digital_signing=_bool(
+            enable_digital_signing=env.bool(
                 "ENABLE_DIGITAL_SIGNING",
                 cls.enable_digital_signing,
             ),
-            eu_system_url=_str(
+            eu_system_url=env.str(
                 "EU_SYSTEM_URL", cls.eu_system_url,
             ),
-            eu_system_sandbox=_bool(
+            eu_system_sandbox=env.bool(
                 "EU_SYSTEM_SANDBOX", cls.eu_system_sandbox,
             ),
-            eu_system_timeout_seconds=_int(
+            eu_system_timeout_seconds=env.int(
                 "EU_SYSTEM_TIMEOUT_SECONDS",
                 cls.eu_system_timeout_seconds,
             ),
-            batch_max_size=_int(
+            batch_max_size=env.int(
                 "BATCH_MAX_SIZE", cls.batch_max_size,
             ),
-            batch_worker_count=_int(
-                "BATCH_WORKER_COUNT", cls.batch_worker_count,
-            ),
-            pool_min_size=_int("POOL_MIN_SIZE", cls.pool_min_size),
-            pool_max_size=_int("POOL_MAX_SIZE", cls.pool_max_size),
-            log_level=_str("LOG_LEVEL", cls.log_level),
-            retention_years=_int(
+            retention_years=env.int(
                 "RETENTION_YEARS", cls.retention_years,
             ),
         )
@@ -295,42 +227,9 @@ class EUDRTraceabilityConfig:
 # Thread-safe singleton accessor
 # ---------------------------------------------------------------------------
 
-_config_instance: Optional[EUDRTraceabilityConfig] = None
-_config_lock = threading.Lock()
-
-
-def get_config() -> EUDRTraceabilityConfig:
-    """Return the singleton EUDRTraceabilityConfig, creating from env if needed.
-
-    Returns:
-        EUDRTraceabilityConfig singleton instance.
-    """
-    global _config_instance
-    if _config_instance is None:
-        with _config_lock:
-            if _config_instance is None:
-                _config_instance = EUDRTraceabilityConfig.from_env()
-    return _config_instance
-
-
-def set_config(config: EUDRTraceabilityConfig) -> None:
-    """Replace the singleton EUDRTraceabilityConfig (useful for testing).
-
-    Args:
-        config: New configuration to install.
-    """
-    global _config_instance
-    with _config_lock:
-        _config_instance = config
-    logger.info("EUDRTraceabilityConfig replaced programmatically")
-
-
-def reset_config() -> None:
-    """Reset the singleton (primarily for test teardown)."""
-    global _config_instance
-    with _config_lock:
-        _config_instance = None
-
+get_config, set_config, reset_config = create_config_singleton(
+    EUDRTraceabilityConfig, _ENV_PREFIX,
+)
 
 __all__ = [
     "EUDRTraceabilityConfig",

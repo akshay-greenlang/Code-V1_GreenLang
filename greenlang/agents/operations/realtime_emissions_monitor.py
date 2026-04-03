@@ -294,7 +294,7 @@ class RealtimeEmissionsMonitor(BaseAgent):
         self._total_readings_ingested = 0
         self._total_aggregations = 0
 
-        self.logger.info(f"Initialized {self.AGENT_ID}: {self.AGENT_NAME}")
+        logger.info("Initialized %s: %s", self.AGENT_ID, self.AGENT_NAME)
 
     def execute(self, input_data: Dict[str, Any]) -> AgentResult:
         """
@@ -331,7 +331,7 @@ class RealtimeEmissionsMonitor(BaseAgent):
             )
 
         except Exception as e:
-            self.logger.error(f"Monitor operation failed: {e}", exc_info=True)
+            logger.error("Monitor operation failed: %s", e, exc_info=True)
             processing_time_ms = (time.time() - start_time) * 1000
 
             return AgentResult(

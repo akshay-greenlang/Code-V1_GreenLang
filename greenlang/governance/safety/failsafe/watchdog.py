@@ -195,7 +195,7 @@ class Watchdog:
         """
         with self._lock:
             if self.state == WatchdogState.RUNNING:
-                logger.warning(f"Watchdog {self.config.watchdog_id} already running")
+                logger.warning("Watchdog %s already running", self.config.watchdog_id)
                 return False
 
             state_before = self.state
@@ -209,7 +209,7 @@ class Watchdog:
             # Log event
             self._log_event("start", state_before, self.state)
 
-            logger.info(f"Watchdog {self.config.watchdog_id} started")
+            logger.info("Watchdog %s started", self.config.watchdog_id)
             return True
 
     def stop(self) -> bool:
@@ -235,7 +235,7 @@ class Watchdog:
             # Log event
             self._log_event("stop", state_before, self.state)
 
-            logger.info(f"Watchdog {self.config.watchdog_id} stopped")
+            logger.info("Watchdog %s stopped", self.config.watchdog_id)
             return True
 
     def kick(self) -> bool:
@@ -381,7 +381,7 @@ class Watchdog:
                 self.state = WatchdogState.RUNNING
                 self._last_kick_time = datetime.utcnow()
                 self._start_timer()
-                logger.info(f"Watchdog {self.config.watchdog_id} auto-restarted")
+                logger.info("Watchdog %s auto-restarted", self.config.watchdog_id)
 
     def _execute_timeout_action(self) -> None:
         """Execute configured timeout action."""

@@ -351,7 +351,7 @@ class TargetSettingAgent(DeterministicAgent):
         )
 
         self.logger = logging.getLogger(self.__class__.__name__)
-        self.logger.info(f"Initialized {self.AGENT_ID}: {self.AGENT_NAME}")
+        logger.info("Initialized %s: %s", self.AGENT_ID, self.AGENT_NAME)
 
     def execute(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -398,7 +398,7 @@ class TargetSettingAgent(DeterministicAgent):
             return result
 
         except Exception as e:
-            self.logger.error(f"Target setting failed: {str(e)}", exc_info=True)
+            logger.error("Target setting failed: %s", e, exc_info=True)
             processing_time = (time.time() - start_time) * 1000
 
             return {

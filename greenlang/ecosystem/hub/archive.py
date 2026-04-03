@@ -69,7 +69,7 @@ def create_pack_archive(
     mode_map = {"gz": "w:gz", "bz2": "w:bz2", "xz": "w:xz", None: "w"}
     mode = mode_map.get(compression, "w:gz")
 
-    logger.info(f"Creating archive: {output_path}")
+    logger.info("Creating archive: %s", output_path)
 
     try:
         with tarfile.open(output_path, mode) as tar:
@@ -77,12 +77,12 @@ def create_pack_archive(
             for item in sorted(pack_path.iterdir()):
                 # Check if item should be excluded
                 if _should_exclude(item, exclude_patterns):
-                    logger.debug(f"Excluding: {item}")
+                    logger.debug("Excluding: %s", item)
                     continue
 
                 # Add to archive with relative path
                 arcname = item.relative_to(pack_path.parent)
-                logger.debug(f"Adding: {arcname}")
+                logger.debug("Adding: %s", arcname)
                 tar.add(
                     item,
                     arcname=str(arcname),
@@ -92,12 +92,12 @@ def create_pack_archive(
 
         # Calculate checksum
         checksum = calculate_checksum(output_path)
-        logger.info(f"Archive created: {output_path} (SHA256: {checksum})")
+        logger.info("Archive created: %s (SHA256: %s)", output_path, checksum)
 
         return output_path
 
     except Exception as e:
-        logger.error(f"Failed to create archive: {e}")
+        logger.error("Failed to create archive: %s", e)
         if output_path.exists():
             output_path.unlink()
         raise
@@ -141,7 +141,7 @@ def extract_pack_archive(
                 f"Checksum mismatch: expected {verify_checksum}, got {actual_checksum}"
             )
 
-    logger.info(f"Extracting archive to: {output_dir}")
+    logger.info("Extracting archive to: %s", output_dir)
 
     try:
         # Detect compression
@@ -162,11 +162,11 @@ def extract_pack_archive(
         # Find the actual pack directory (might be nested)
         pack_dir = _find_pack_root(output_dir)
 
-        logger.info(f"Archive extracted successfully to: {pack_dir}")
+        logger.info("Archive extracted successfully to: %s", pack_dir)
         return pack_dir
 
     except Exception as e:
-        logger.error(f"Failed to extract archive: {e}")
+        logger.error("Failed to extract archive: %s", e)
         raise
     finally:
         # Cleanup temporary file if created
@@ -345,5 +345,5 @@ def verify_archive_integrity(archive_path: Path) -> bool:
         return True
 
     except Exception as e:
-        logger.error(f"Archive integrity check failed: {e}")
+        logger.error("Archive integrity check failed: %s", e)
         return False

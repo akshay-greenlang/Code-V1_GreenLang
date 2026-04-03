@@ -56,7 +56,7 @@ class LocalBackend(Backend):
         # Ensure working directory exists
         self.working_dir.mkdir(parents=True, exist_ok=True)
 
-        logger.info(f"LocalBackend initialized with working_dir: {self.working_dir}")
+        logger.info("LocalBackend initialized with working_dir: %s", self.working_dir)
 
     def execute(self, pipeline: Pipeline, context: ExecutionContext) -> ExecutionResult:
         """
@@ -107,7 +107,7 @@ class LocalBackend(Backend):
             )
 
         except Exception as e:
-            logger.error(f"Failed to execute pipeline: {e}")
+            logger.error("Failed to execute pipeline: %s", e)
             return ExecutionResult(
                 run_id=context.run_id,
                 pipeline_name=pipeline.name,
@@ -154,7 +154,7 @@ class LocalBackend(Backend):
         stderr_file = step_dir / "stderr.log"
 
         try:
-            logger.info(f"Starting process for step: {step.name}")
+            logger.info("Starting process for step: %s", step.name)
 
             # Start process
             with open(stdout_file, "w") as stdout, open(stderr_file, "w") as stderr:
@@ -181,7 +181,7 @@ class LocalBackend(Backend):
                 except subprocess.TimeoutExpired:
                     process.kill()
                     return_code = -1
-                    logger.warning(f"Process for step {step.name} timed out")
+                    logger.warning("Process for step %s timed out", step.name)
 
             # Read logs
             with open(stdout_file, "r") as f:
@@ -213,7 +213,7 @@ class LocalBackend(Backend):
             }
 
         except Exception as e:
-            logger.error(f"Failed to run process: {e}")
+            logger.error("Failed to run process: %s", e)
             return {
                 "status": ExecutionStatus.FAILED,
                 "logs": [],
@@ -288,7 +288,7 @@ class LocalBackend(Backend):
                 with open(output_file, "r") as f:
                     outputs = json.load(f)
             except Exception as e:
-                logger.error(f"Failed to read outputs: {e}")
+                logger.error("Failed to read outputs: %s", e)
 
         # Look for result files
         for file in step_dir.glob("*.result"):
@@ -296,7 +296,7 @@ class LocalBackend(Backend):
                 with open(file, "r") as f:
                     outputs[file.stem] = f.read()
             except Exception as e:
-                logger.error(f"Failed to read result file {file}: {e}")
+                logger.error("Failed to read result file %s: %s", file, e)
 
         return outputs
 
@@ -337,7 +337,7 @@ class LocalBackend(Backend):
                     with open(proc_info["stderr_file"], "r") as f:
                         logs.extend(f.read().split("\n"))
                 except Exception as e:
-                    logger.error(f"Failed to read logs: {e}")
+                    logger.error("Failed to read logs: %s", e)
         else:
             # Get all logs for run
             for step_id, step_logs in self.process_logs.items():
@@ -362,10 +362,10 @@ class LocalBackend(Backend):
                         if process.poll() is None:
                             process.kill()
 
-                        logger.info(f"Cancelled process for step: {proc_info['step']}")
+                        logger.info("Cancelled process for step: %s", proc_info['step'])
                         cancelled = True
                 except Exception as e:
-                    logger.error(f"Failed to cancel process: {e}")
+                    logger.error("Failed to cancel process: %s", e)
 
         return cancelled
 
@@ -397,6 +397,6 @@ class LocalBackend(Backend):
                             import shutil
 
                             shutil.rmtree(step_dir)
-                            logger.info(f"Cleaned up directory: {step_dir}")
+                            logger.info("Cleaned up directory: %s", step_dir)
 
         return cleaned

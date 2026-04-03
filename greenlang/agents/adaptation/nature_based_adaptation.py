@@ -285,12 +285,12 @@ class NatureBasedAdaptationAgent(BaseAgent):
         self._solutions: Dict[str, NbSSolution] = {}
 
         super().__init__(config)
-        logger.info(f"Initialized {self.AGENT_NAME} v{self.VERSION}")
+        logger.info("Initialized %s v%s", self.AGENT_NAME, self.VERSION)
 
     def initialize(self):
         """Initialize agent resources and load solution library."""
         self._load_solution_library()
-        logger.info(f"Loaded {len(self._solutions)} NbS solutions")
+        logger.info("Loaded %s NbS solutions", len(self._solutions))
 
     def _load_solution_library(self):
         """Load the nature-based solutions library."""
@@ -454,7 +454,7 @@ class NatureBasedAdaptationAgent(BaseAgent):
 
         try:
             nbs_input = NbSInput(**input_data)
-            self.logger.info(
+            logger.info(
                 f"Starting NbS analysis: {nbs_input.request_id}, "
                 f"hazards: {nbs_input.target_hazards}"
             )
@@ -521,7 +521,7 @@ class NatureBasedAdaptationAgent(BaseAgent):
 
             output.provenance_hash = self._calculate_provenance_hash(nbs_input, output)
 
-            self.logger.info(
+            logger.info(
                 f"NbS analysis complete: {len(matches)} solutions matched, "
                 f"top: {top_recs[:3]}"
             )
@@ -537,7 +537,7 @@ class NatureBasedAdaptationAgent(BaseAgent):
             )
 
         except Exception as e:
-            self.logger.error(f"NbS analysis failed: {str(e)}", exc_info=True)
+            logger.error("NbS analysis failed: %s", e, exc_info=True)
             return AgentResult(
                 success=False,
                 error=str(e),

@@ -242,7 +242,7 @@ class AnalyticsEngine:
         self.db.add(usage_record)
         self.db.commit()
 
-        logger.debug(f"Tracked usage event for partner {event.partner_id}")
+        logger.debug("Tracked usage event for partner %s", event.partner_id)
 
     def aggregate_metrics(
         self,
@@ -570,9 +570,9 @@ async def aggregate_metrics_task(db: Session):
                 end_time,
                 period="hour"
             )
-            logger.info(f"Aggregated metrics for partner {partner.id}")
+            logger.info("Aggregated metrics for partner %s", partner.id)
         except Exception as e:
-            logger.error(f"Error aggregating metrics for {partner.id}: {e}")
+            logger.error("Error aggregating metrics for %s: %s", partner.id, e)
 
 
 if __name__ == "__main__":

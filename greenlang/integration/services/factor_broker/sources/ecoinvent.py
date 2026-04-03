@@ -383,7 +383,7 @@ class EcoinventSource(FactorSource):
                 latency_ms=latency_ms,
                 error=str(e)
             )
-            logger.error(f"Error fetching factor from ecoinvent: {e}", exc_info=True)
+            logger.error("Error fetching factor from ecoinvent: %s", e, exc_info=True)
             return None
 
     async def health_check(self) -> Dict[str, Any]:

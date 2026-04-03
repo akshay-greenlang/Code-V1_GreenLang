@@ -51,6 +51,8 @@ import time
 import uuid
 
 from pydantic import BaseModel, Field, validator
+from greenlang.utilities.exceptions.agent import AgentException
+from greenlang.utilities.exceptions.calculation import CalculationException
 
 logger = logging.getLogger(__name__)
 
@@ -453,7 +455,7 @@ class BaseProcessHeatAgent(ABC, Generic[InputT, OutputT]):
                 "timestamp": datetime.now(timezone.utc).isoformat(),
             })
 
-            logger.info(f"Agent state changed: {old_state} -> {new_state}")
+            logger.info("Agent state changed: %s -> %s", old_state, new_state)
 
     @property
     def is_ready(self) -> bool:
@@ -517,7 +519,7 @@ class BaseProcessHeatAgent(ABC, Generic[InputT, OutputT]):
 
     async def start(self) -> None:
         """Start the agent."""
-        logger.info(f"Starting agent: {self.config.name}")
+        logger.info("Starting agent: %s", self.config.name)
 
         try:
             # Run safety checks
@@ -535,13 +537,13 @@ class BaseProcessHeatAgent(ABC, Generic[InputT, OutputT]):
             self._emit_event("agent_started", {"agent_id": self.config.agent_id})
 
         except Exception as e:
-            logger.error(f"Failed to start agent: {e}", exc_info=True)
+            logger.error("Failed to start agent: %s", e, exc_info=True)
             self.state = AgentState.ERROR
             raise
 
     async def stop(self) -> None:
         """Stop the agent gracefully."""
-        logger.info(f"Stopping agent: {self.config.name}")
+        logger.info("Stopping agent: %s", self.config.name)
 
         self.state = AgentState.SHUTDOWN
 
@@ -555,7 +557,7 @@ class BaseProcessHeatAgent(ABC, Generic[InputT, OutputT]):
 
     async def reset(self) -> None:
         """Reset the agent from error or emergency state."""
-        logger.info(f"Resetting agent: {self.config.name}")
+        logger.info("Resetting agent: %s", self.config.name)
 
         with self._lock:
             self._consecutive_failures = 0
@@ -599,7 +601,7 @@ class BaseProcessHeatAgent(ABC, Generic[InputT, OutputT]):
         with self._lock:
             # Check agent state
             if self.state not in {AgentState.READY, AgentState.PROCESSING}:
-                logger.warning(f"Agent not in valid state for operation: {self.state}")
+                logger.warning("Agent not in valid state for operation: %s", self.state)
                 return False
 
             # Check heartbeat timeout
@@ -650,7 +652,7 @@ class BaseProcessHeatAgent(ABC, Generic[InputT, OutputT]):
 
     def _trigger_emergency_shutdown(self, reason: str) -> None:
         """Trigger emergency shutdown."""
-        logger.critical(f"EMERGENCY SHUTDOWN triggered: {reason}")
+        logger.critical("EMERGENCY SHUTDOWN triggered: %s", reason)
 
         self.state = AgentState.EMERGENCY_STOP
         self._emit_event("emergency_shutdown", {
@@ -692,12 +694,12 @@ class BaseProcessHeatAgent(ABC, Generic[InputT, OutputT]):
             try:
                 result = await check_func()
                 if result:
-                    logger.info(f"Safety check passed: {check_name}")
+                    logger.info("Safety check passed: %s", check_name)
                 else:
-                    logger.error(f"Safety check failed: {check_name}")
+                    logger.error("Safety check failed: %s", check_name)
                     all_passed = False
             except Exception as e:
-                logger.error(f"Safety check error ({check_name}): {e}")
+                logger.error("Safety check error (%s): %s", check_name, e)
                 all_passed = False
 
         return all_passed
@@ -787,7 +789,7 @@ class BaseProcessHeatAgent(ABC, Generic[InputT, OutputT]):
             return
 
         # In production, this would use prometheus_client
-        logger.debug(f"Metric {metric_name}: {value} {labels or {}}")
+        logger.debug("Metric %s: %s %s", metric_name, value, labels or {})
 
     # =========================================================================
     # PROVENANCE METHODS
@@ -864,7 +866,7 @@ class BaseProcessHeatAgent(ABC, Generic[InputT, OutputT]):
             try:
                 handler(data)
             except Exception as e:
-                logger.error(f"Event handler error ({event_type}): {e}")
+                logger.error("Event handler error (%s): %s", event_type, e)
 
         # Also log to audit buffer
         if self.config.audit_enabled:
@@ -895,7 +897,7 @@ class BaseProcessHeatAgent(ABC, Generic[InputT, OutputT]):
         if not self._audit_buffer:
             return
 
-        logger.info(f"Flushing {len(self._audit_buffer)} audit records")
+        logger.info("Flushing %s audit records", len(self._audit_buffer))
 
         # In production, this would write to audit log storage
         self._audit_buffer.clear()
@@ -935,7 +937,7 @@ class BaseProcessHeatAgent(ABC, Generic[InputT, OutputT]):
             return prediction
 
         except Exception as e:
-            logger.error(f"ML prediction failed: {e}")
+            logger.error("ML prediction failed: %s", e)
             return None
 
     # =========================================================================
@@ -963,16 +965,16 @@ class BaseProcessHeatAgent(ABC, Generic[InputT, OutputT]):
 # EXCEPTIONS
 # =============================================================================
 
-class ProcessingError(Exception):
+class ProcessingError(CalculationException):
     """Exception raised when processing fails."""
     pass
 
 
-class SafetyError(Exception):
+class SafetyError(AgentException):
     """Exception raised when safety checks fail."""
     pass
 
 
-class ValidationError(Exception):
+class ValidationError(AgentException):
     """Exception raised when validation fails."""
     pass

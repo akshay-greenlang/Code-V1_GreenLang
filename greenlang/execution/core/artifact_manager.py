@@ -104,7 +104,7 @@ class Artifact:
                 s3_client = get_s3_client()
                 return s3_client.exists(str(self.storage_path))
             except Exception as e:
-                logger.warning(f"Error checking S3 existence: {e}")
+                logger.warning("Error checking S3 existence: %s", e)
                 return False
 
         # Azure Blob Storage implementation
@@ -118,7 +118,7 @@ class Artifact:
                     blob_client = blob_service.get_blob_client(container, str(self.storage_path))
                     return blob_client.exists()
             except Exception as e:
-                logger.warning(f"Error checking Azure existence: {e}")
+                logger.warning("Error checking Azure existence: %s", e)
                 return False
 
         # GCS implementation
@@ -131,7 +131,7 @@ class Artifact:
                 blob = bucket.blob(str(self.storage_path))
                 return blob.exists()
             except Exception as e:
-                logger.warning(f"Error checking GCS existence: {e}")
+                logger.warning("Error checking GCS existence: %s", e)
                 return False
 
         return False
@@ -158,7 +158,7 @@ class Artifact:
                     return content.decode("utf-8")
                 return content
             except Exception as e:
-                logger.error(f"Error reading from S3: {e}")
+                logger.error("Error reading from S3: %s", e)
                 raise
 
         # Azure Blob Storage read implementation
@@ -176,7 +176,7 @@ class Artifact:
                         return content.decode("utf-8")
                     return content
             except Exception as e:
-                logger.error(f"Error reading from Azure: {e}")
+                logger.error("Error reading from Azure: %s", e)
                 raise
 
         # GCS read implementation
@@ -192,7 +192,7 @@ class Artifact:
                     return content.decode("utf-8")
                 return content
             except Exception as e:
-                logger.error(f"Error reading from GCS: {e}")
+                logger.error("Error reading from GCS: %s", e)
                 raise
 
         raise NotImplementedError(f"Storage type {self.storage_type} not implemented")
@@ -218,7 +218,7 @@ class Artifact:
                 )
                 return
             except Exception as e:
-                logger.error(f"Error writing to S3: {e}")
+                logger.error("Error writing to S3: %s", e)
                 raise
 
         # Azure Blob Storage write implementation
@@ -235,7 +235,7 @@ class Artifact:
                     blob_client.upload_blob(content, overwrite=True)
                     return
             except Exception as e:
-                logger.error(f"Error writing to Azure: {e}")
+                logger.error("Error writing to Azure: %s", e)
                 raise
 
         # GCS write implementation
@@ -252,7 +252,7 @@ class Artifact:
                     blob.upload_from_string(content, content_type="application/octet-stream")
                 return
             except Exception as e:
-                logger.error(f"Error writing to GCS: {e}")
+                logger.error("Error writing to GCS: %s", e)
                 raise
 
         raise NotImplementedError(

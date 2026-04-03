@@ -574,7 +574,7 @@ class FuelSwitchingController:
             self._pending_switch = None
             return False
 
-        logger.info(f"Switch approved by operator {operator_id}")
+        logger.info("Switch approved by operator %s", operator_id)
         self._state = SwitchingState.PREPARING
         return True
 
@@ -654,7 +654,7 @@ class FuelSwitchingController:
         Args:
             reason: Abort reason
         """
-        logger.warning(f"Aborting switch: {reason}")
+        logger.warning("Aborting switch: %s", reason)
         self._state = SwitchingState.ABORTED
         self._pending_switch = None
 

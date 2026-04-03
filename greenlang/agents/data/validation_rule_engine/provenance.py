@@ -2,16 +2,12 @@
 """
 Provenance Tracking for Validation Rule Engine - AGENT-DATA-019
 
-Provides SHA-256 based audit trail tracking for all validation rule
-engine operations. Maintains an in-memory chain-hashed operation log
-for tamper-evident provenance across rule registration, evaluation,
-conflict detection, and compliance reporting.
-
-Zero-Hallucination Guarantees:
-    - All hashes are deterministic SHA-256
-    - Chain hashing links operations in sequence
-    - JSON export for external audit systems
-    - Complete provenance for every validation rule operation
+Thin shim that delegates core chain-hashing to the shared
+``greenlang.data_commons.provenance`` base class while preserving the
+extended validation-rule-engine API (``ProvenanceEntry`` dataclass,
+``VALID_ENTITY_TYPES``/``VALID_ACTIONS`` constants, ``record()``
+returning ``ProvenanceEntry``, ``verify_chain()`` returning ``bool``,
+singleton helpers, and ``reset``).
 
 Example:
     >>> from greenlang.agents.data.validation_rule_engine.provenance import ProvenanceTracker
@@ -34,9 +30,9 @@ import json
 import logging
 import threading
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
+from greenlang.data_commons.provenance import ProvenanceTracker as _BaseProvenanceTracker
 from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
@@ -45,24 +41,10 @@ logger = logging.getLogger(__name__)
 # ProvenanceEntry dataclass
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class ProvenanceEntry:
-    """A single tamper-evident provenance record for a validation rule event.
-
-    Attributes:
-        entity_type: Type of entity being tracked (validation_rule,
-            rule_set, compound_rule, rule_pack, evaluation, conflict,
-            report, audit).
-        entity_id: Unique identifier for the entity instance.
-        action: Action performed (rule_registered, rule_set_created,
-            compound_rule_composed, rule_pack_applied,
-            evaluation_completed, conflict_detected,
-            report_generated, audit_recorded).
-        hash_value: SHA-256 hash of the input data at the time of recording.
-        parent_hash: SHA-256 chain hash of the immediately preceding entry.
-        timestamp: UTC ISO-formatted timestamp when the entry was created.
-        metadata: Optional dictionary of additional contextual fields.
-    """
+    """A single tamper-evident provenance record for a validation rule event."""
 
     entity_type: str
     entity_id: str
@@ -73,11 +55,7 @@ class ProvenanceEntry:
     metadata: Dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
-        """Serialize the entry to a plain dictionary.
-
-        Returns:
-            Dictionary representation suitable for JSON serialization.
-        """
+        """Serialize the entry to a plain dictionary."""
         return {
             "entity_type": self.entity_type,
             "entity_id": self.entity_id,
@@ -87,6 +65,7 @@ class ProvenanceEntry:
             "timestamp": self.timestamp,
             "metadata": self.metadata,
         }
+
 
 # ---------------------------------------------------------------------------
 # Valid entity types and actions
@@ -105,109 +84,57 @@ VALID_ENTITY_TYPES = frozenset({
 
 VALID_ACTIONS = frozenset({
     # validation_rule actions
-    "rule_registered",
-    "rule_updated",
-    "rule_activated",
-    "rule_deactivated",
-    "rule_deprecated",
-    "rule_deleted",
+    "rule_registered", "rule_updated", "rule_activated",
+    "rule_deactivated", "rule_deprecated", "rule_deleted",
     # rule_set actions
-    "rule_set_created",
-    "rule_set_updated",
-    "rule_set_activated",
-    "rule_set_deactivated",
-    "rule_added_to_set",
-    "rule_removed_from_set",
+    "rule_set_created", "rule_set_updated", "rule_set_activated",
+    "rule_set_deactivated", "rule_added_to_set", "rule_removed_from_set",
     # compound_rule actions
-    "compound_rule_composed",
-    "compound_rule_updated",
+    "compound_rule_composed", "compound_rule_updated",
     "compound_rule_decomposed",
     # rule_pack actions
-    "rule_pack_applied",
-    "rule_pack_imported",
-    "rule_pack_exported",
-    "rule_pack_versioned",
+    "rule_pack_applied", "rule_pack_imported",
+    "rule_pack_exported", "rule_pack_versioned",
     # evaluation actions
-    "evaluation_started",
-    "evaluation_completed",
-    "evaluation_failed",
-    "evaluation_skipped",
-    "batch_evaluation_completed",
+    "evaluation_started", "evaluation_completed", "evaluation_failed",
+    "evaluation_skipped", "batch_evaluation_completed",
     # conflict actions
-    "conflict_detected",
-    "conflict_resolved",
-    "conflict_escalated",
-    "conflict_overridden",
+    "conflict_detected", "conflict_resolved",
+    "conflict_escalated", "conflict_overridden",
     # report actions
-    "report_generated",
-    "report_exported",
-    "compliance_report_generated",
-    "audit_report_generated",
+    "report_generated", "report_exported",
+    "compliance_report_generated", "audit_report_generated",
     # audit actions
-    "audit_recorded",
-    "audit_reviewed",
-    "audit_signed",
-    "audit_exported",
+    "audit_recorded", "audit_reviewed", "audit_signed", "audit_exported",
 })
+
 
 # ---------------------------------------------------------------------------
 # ProvenanceTracker
 # ---------------------------------------------------------------------------
 
-class ProvenanceTracker:
-    """Tracks provenance for validation rule engine operations with SHA-256 chain hashing.
 
-    Maintains an ordered log of operations with SHA-256 hashes that chain
-    together to provide tamper-evident audit trails, grouped by entity type
-    and entity ID.
+class ProvenanceTracker(_BaseProvenanceTracker):
+    """Validation rule engine provenance tracker with extended dataclass API.
 
-    The genesis hash anchors the chain. Every new entry incorporates the
-    previous chain hash so that any tampering is detectable via
-    ``verify_chain()``.
-
-    Supported entity types:
-        - ``validation_rule``: Individual validation rules (range checks,
-          format validators, cross-field constraints, regulatory rules).
-        - ``rule_set``: Named collections of related validation rules.
-        - ``compound_rule``: Composite rules built from AND/OR/NOT
-          combinations of base rules.
-        - ``rule_pack``: Versioned bundles of rule sets for distribution
-          and regulatory framework compliance.
-        - ``evaluation``: Rule evaluation executions against datasets
-          or individual records.
-        - ``conflict``: Rule conflict detections and resolutions when
-          overlapping rules produce contradictory outcomes.
-        - ``report``: Generated validation reports, compliance summaries,
-          and audit trail exports.
-        - ``audit``: Internal audit actions for governance and sign-off.
-
-    Attributes:
-        _genesis_hash: Immutable anchor hash for the provenance chain.
-        _chain_store: In-memory chain storage keyed by ``"entity_type:entity_id"``.
-        _global_chain: Flat list of all ProvenanceEntry objects in insertion order.
-        _last_chain_hash: Most recent chain hash for linking the next entry.
-        _lock: Reentrant lock for thread-safe access.
-
-    Example:
-        >>> tracker = ProvenanceTracker()
-        >>> entry = tracker.record("validation_rule", "rule_001", "rule_registered")
-        >>> assert entry.hash_value != ""
-        >>> valid = tracker.verify_chain()
-        >>> assert valid is True
+    Inherits genesis-hash derivation from the shared base class while
+    maintaining the ``ProvenanceEntry`` chain, thread-safe state, and
+    the full validation-rule-engine-specific public API.
     """
 
     def __init__(
-        self, genesis_hash: str = "greenlang-validation-rule-engine-genesis"
+        self, genesis_hash: str = "greenlang-validation-rule-engine-genesis",
     ) -> None:
-        """Initialize ProvenanceTracker with a genesis hash anchor.
+        """Initialize with validation-rule-engine genesis hash.
 
         Args:
             genesis_hash: String used to compute the immutable genesis hash.
-                Defaults to ``"greenlang-validation-rule-engine-genesis"``.
         """
         self._genesis_hash: str = hashlib.sha256(
             genesis_hash.encode("utf-8")
         ).hexdigest()
+        self.agent_name: str = "validation-rule-engine"
+        self._GENESIS_HASH: str = self._genesis_hash
         self._chain_store: Dict[str, List[ProvenanceEntry]] = {}
         self._global_chain: List[ProvenanceEntry] = []
         self._last_chain_hash: str = self._genesis_hash
@@ -217,9 +144,7 @@ class ProvenanceTracker:
             self._genesis_hash[:16],
         )
 
-    # ------------------------------------------------------------------
-    # Public API
-    # ------------------------------------------------------------------
+    # -- Public API --------------------------------------------------------
 
     def record(
         self,
@@ -230,29 +155,17 @@ class ProvenanceTracker:
     ) -> ProvenanceEntry:
         """Record a provenance entry for a validation rule engine operation.
 
-        Computes a SHA-256 hash of ``metadata`` (or a placeholder when None),
-        then chains it to the previous entry hash to produce a
-        tamper-evident audit record.
-
         Args:
-            entity_type: Type of entity (validation_rule, rule_set,
-                compound_rule, rule_pack, evaluation, conflict,
-                report, audit).
+            entity_type: Type of entity.
             entity_id: Unique entity identifier.
-            action: Action performed (rule_registered, rule_set_created,
-                compound_rule_composed, rule_pack_applied,
-                evaluation_completed, conflict_detected,
-                report_generated, audit_recorded).
-            metadata: Optional serializable payload; its SHA-256 hash is
-                stored. Pass ``None`` to record an action without
-                associated data.
+            action: Action performed.
+            metadata: Optional serializable payload.
 
         Returns:
-            The newly created :class:`ProvenanceEntry`.
+            The newly created ProvenanceEntry.
 
         Raises:
-            ValueError: If ``entity_type``, ``entity_id``, or ``action``
-                are empty strings.
+            ValueError: If entity_type, entity_id, or action are empty.
         """
         if not entity_type:
             raise ValueError("entity_type must not be empty")
@@ -267,13 +180,12 @@ class ProvenanceTracker:
 
         with self._lock:
             parent_hash = self._last_chain_hash
-            chain_hash = self._compute_chain_hash(
+            chain_hash = self._compute_vre_chain_hash(
                 parent_hash=parent_hash,
                 data_hash=data_hash,
                 action=action,
                 timestamp=timestamp,
             )
-
             entry = ProvenanceEntry(
                 entity_type=entity_type,
                 entity_id=entity_id,
@@ -283,8 +195,6 @@ class ProvenanceTracker:
                 timestamp=timestamp,
                 metadata={"data_hash": data_hash},
             )
-
-            # Persist to entity-scoped and global stores
             if store_key not in self._chain_store:
                 self._chain_store[store_key] = []
             self._chain_store[store_key].append(entry)
@@ -293,67 +203,45 @@ class ProvenanceTracker:
 
         logger.debug(
             "Recorded provenance: %s/%s action=%s hash_prefix=%s",
-            entity_type,
-            entity_id[:16],
-            action,
-            chain_hash[:16],
+            entity_type, entity_id[:16], action, chain_hash[:16],
         )
         return entry
 
     def verify_chain(self) -> bool:
         """Verify the integrity of the entire global provenance chain.
 
-        Walks the global chain in insertion order and checks that every
-        entry contains all required fields and that the chain is
-        structurally consistent (non-empty hash values, correct types).
-
         Returns:
-            ``True`` if the chain is intact, ``False`` if any entry is
-            malformed or missing required fields.
+            True if the chain is intact, False otherwise.
         """
         with self._lock:
             chain = list(self._global_chain)
-
         if not chain:
             logger.debug("verify_chain: chain is empty - trivially valid")
             return True
-
         required_fields = {
-            "entity_type",
-            "entity_id",
-            "action",
-            "hash_value",
-            "parent_hash",
-            "timestamp",
+            "entity_type", "entity_id", "action",
+            "hash_value", "parent_hash", "timestamp",
         }
-
         for i, entry in enumerate(chain):
             for field_name in required_fields:
                 value = getattr(entry, field_name, None)
                 if not value:
                     logger.warning(
                         "verify_chain: entry[%d] missing or empty field '%s'",
-                        i,
-                        field_name,
+                        i, field_name,
                     )
                     return False
-
-            # First entry must chain from the genesis hash
             if i == 0 and entry.parent_hash != self._genesis_hash:
                 logger.warning(
                     "verify_chain: entry[0] parent_hash does not match genesis hash"
                 )
                 return False
-
-            # Each subsequent entry's parent must match the previous entry's hash
             if i > 0 and entry.parent_hash != chain[i - 1].hash_value:
                 logger.warning(
                     "verify_chain: chain break between entry[%d] and entry[%d]",
-                    i - 1,
-                    i,
+                    i - 1, i,
                 )
                 return False
-
         logger.debug("verify_chain: %d entries verified successfully", len(chain))
         return True
 
@@ -362,52 +250,37 @@ class ProvenanceTracker:
         entity_type: Optional[str] = None,
         entity_id: Optional[str] = None,
     ) -> List[ProvenanceEntry]:
-        """Return provenance entries filtered by optional entity_type and/or entity_id.
-
-        When both ``entity_type`` and ``entity_id`` are provided the lookup
-        uses the O(1) keyed store.  When only ``entity_type`` is provided
-        the global chain is scanned.  When neither is provided the full
-        global chain is returned.
+        """Return provenance entries filtered by entity_type and/or entity_id.
 
         Args:
-            entity_type: Optional entity type to filter by.
-            entity_id: Optional entity ID to filter by. Requires
-                ``entity_type`` to be effective via the keyed store.
+            entity_type: Optional entity type filter.
+            entity_id: Optional entity ID filter.
 
         Returns:
-            List of matching :class:`ProvenanceEntry` objects, oldest first.
+            List of matching ProvenanceEntry objects.
         """
         with self._lock:
             if entity_type and entity_id:
                 store_key = f"{entity_type}:{entity_id}"
                 return list(self._chain_store.get(store_key, []))
-
             if entity_type:
                 return [
-                    entry
-                    for entry in self._global_chain
+                    entry for entry in self._global_chain
                     if entry.entity_type == entity_type
                 ]
-
-            # No filter - return full global chain
             return list(self._global_chain)
 
     def get_entry_by_hash(self, hash_value: str) -> Optional[ProvenanceEntry]:
-        """Look up a single provenance entry by its SHA-256 chain hash.
-
-        Performs a linear scan of the global chain to find the entry whose
-        ``hash_value`` matches the provided value.
+        """Look up a single entry by its chain hash.
 
         Args:
-            hash_value: The SHA-256 chain hash to search for.
+            hash_value: SHA-256 chain hash to search for.
 
         Returns:
-            The matching :class:`ProvenanceEntry`, or ``None`` if no entry
-            with the given hash exists.
+            The matching ProvenanceEntry, or None.
         """
         if not hash_value:
             return None
-
         with self._lock:
             for entry in self._global_chain:
                 if entry.hash_value == hash_value:
@@ -415,154 +288,90 @@ class ProvenanceTracker:
         return None
 
     def get_chain(self, entity_id: str) -> List[ProvenanceEntry]:
-        """Return all provenance entries for a given entity_id across all types.
-
-        Scans the global chain and collects every entry whose ``entity_id``
-        matches, preserving insertion order.
+        """Return all entries for a given entity_id across all types.
 
         Args:
-            entity_id: The entity identifier to look up.
+            entity_id: Entity identifier.
 
         Returns:
-            List of :class:`ProvenanceEntry` objects for the entity, oldest
-            first.  Returns an empty list if the entity has no entries.
+            List of ProvenanceEntry objects.
         """
         with self._lock:
             return [
-                entry
-                for entry in self._global_chain
+                entry for entry in self._global_chain
                 if entry.entity_id == entity_id
             ]
 
     def export_chain(self) -> List[Dict[str, Any]]:
-        """Export the entire global provenance chain as a list of dictionaries.
-
-        Suitable for serializing to JSON for external audit systems.
-
-        Returns:
-            List of entry dictionaries in insertion order (oldest first).
-        """
+        """Export the chain as a list of dictionaries."""
         with self._lock:
             return [entry.to_dict() for entry in self._global_chain]
 
     def export_json(self) -> str:
-        """Export all provenance records as a formatted JSON string.
-
-        Returns:
-            Indented JSON string representation of the global chain.
-        """
+        """Export all provenance records as JSON string."""
         return json.dumps(self.export_chain(), indent=2, default=str)
 
     def reset(self) -> None:
-        """Clear all provenance state and reset to genesis.
-
-        After calling this method the tracker behaves as if newly
-        constructed.  Primarily intended for testing.
-        """
+        """Clear all provenance state and reset to genesis."""
         with self._lock:
             self._chain_store.clear()
             self._global_chain.clear()
             self._last_chain_hash = self._genesis_hash
         logger.info("ProvenanceTracker reset to genesis state")
 
-    # ------------------------------------------------------------------
-    # Properties
-    # ------------------------------------------------------------------
+    # -- Properties --------------------------------------------------------
 
     @property
     def entry_count(self) -> int:
-        """Return the total number of provenance entries recorded."""
+        """Return the total number of provenance entries."""
         with self._lock:
             return len(self._global_chain)
 
     @property
     def entity_count(self) -> int:
-        """Return the number of unique ``entity_type:entity_id`` keys tracked."""
+        """Return the number of unique entity keys tracked."""
         with self._lock:
             return len(self._chain_store)
 
-    # ------------------------------------------------------------------
-    # Dunder methods
-    # ------------------------------------------------------------------
-
     def __len__(self) -> int:
-        """Return the total number of provenance entries recorded.
-
-        Returns:
-            Integer count of entries in the global chain.
-        """
         return self.entry_count
 
-    # ------------------------------------------------------------------
-    # Internal helpers
-    # ------------------------------------------------------------------
+    # -- Internal ----------------------------------------------------------
 
     def _hash_data(self, data: Optional[Any]) -> str:
-        """Compute a SHA-256 hash for arbitrary data.
-
-        Serializes the payload to canonical JSON (sorted keys, default
-        ``str`` fallback) before hashing so that equivalent structures
-        always produce the same digest.
-
-        Args:
-            data: Any JSON-serializable object, or ``None``.
-
-        Returns:
-            Hex-encoded SHA-256 hash string.
-        """
+        """Compute SHA-256 hash for arbitrary data."""
         if data is None:
             serialized = "null"
         else:
             serialized = json.dumps(data, sort_keys=True, default=str)
         return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
 
-    def _compute_chain_hash(
-        self,
-        parent_hash: str,
-        data_hash: str,
-        action: str,
-        timestamp: str,
+    @staticmethod
+    def _compute_vre_chain_hash(
+        parent_hash: str, data_hash: str,
+        action: str, timestamp: str,
     ) -> str:
-        """Compute the next SHA-256 chain hash linking to the previous entry.
-
-        The input is a sorted-key JSON object containing the four inputs
-        so that the hash is deterministic regardless of Python dict
-        ordering.
+        """Compute the next chain hash for validation rule engine entries.
 
         Args:
-            parent_hash: The chain hash of the immediately preceding entry
-                (or the genesis hash for the first entry).
-            data_hash: SHA-256 hash of the operation's data payload.
-            action: Action label recorded in this entry.
-            timestamp: ISO-formatted UTC timestamp string.
+            parent_hash: Previous chain hash.
+            data_hash: SHA-256 hash of the data payload.
+            action: Action label.
+            timestamp: ISO-formatted timestamp.
 
         Returns:
-            New hex-encoded SHA-256 chain hash.
+            New SHA-256 chain hash.
         """
-        combined = json.dumps(
-            {
-                "action": action,
-                "data_hash": data_hash,
-                "parent_hash": parent_hash,
-                "timestamp": timestamp,
-            },
-            sort_keys=True,
-        )
+        combined = json.dumps({
+            "action": action, "data_hash": data_hash,
+            "parent_hash": parent_hash, "timestamp": timestamp,
+        }, sort_keys=True)
         return hashlib.sha256(combined.encode("utf-8")).hexdigest()
 
     def build_hash(self, data: Any) -> str:
-        """Build a standalone SHA-256 hash for arbitrary data.
-
-        Utility method for callers that need to pre-compute hashes before
-        calling :meth:`record`.
-
-        Args:
-            data: Any JSON-serializable object.
-
-        Returns:
-            Hex-encoded SHA-256 hash.
-        """
+        """Build a SHA-256 hash for arbitrary data."""
         return self._hash_data(data)
+
 
 # ---------------------------------------------------------------------------
 # Thread-safe singleton helpers
@@ -571,19 +380,12 @@ class ProvenanceTracker:
 _singleton_lock = threading.Lock()
 _singleton_tracker: Optional[ProvenanceTracker] = None
 
-def get_provenance_tracker() -> ProvenanceTracker:
-    """Return the process-wide singleton :class:`ProvenanceTracker`.
 
-    Creates the instance on first call (lazy initialization).  Subsequent
-    calls return the same object.  The function is thread-safe.
+def get_provenance_tracker() -> ProvenanceTracker:
+    """Return the process-wide singleton ProvenanceTracker.
 
     Returns:
-        The singleton :class:`ProvenanceTracker` instance.
-
-    Example:
-        >>> tracker_a = get_provenance_tracker()
-        >>> tracker_b = get_provenance_tracker()
-        >>> assert tracker_a is tracker_b
+        The singleton ProvenanceTracker instance.
     """
     global _singleton_tracker
     if _singleton_tracker is None:
@@ -595,16 +397,15 @@ def get_provenance_tracker() -> ProvenanceTracker:
                 )
     return _singleton_tracker
 
-def set_provenance_tracker(tracker: ProvenanceTracker) -> None:
-    """Replace the process-wide singleton with a custom tracker.
 
-    Useful in tests that need isolated tracker instances.
+def set_provenance_tracker(tracker: ProvenanceTracker) -> None:
+    """Replace the singleton with a custom tracker.
 
     Args:
-        tracker: The :class:`ProvenanceTracker` instance to install.
+        tracker: The ProvenanceTracker instance to install.
 
     Raises:
-        TypeError: If ``tracker`` is not a :class:`ProvenanceTracker` instance.
+        TypeError: If tracker is not a ProvenanceTracker.
     """
     if not isinstance(tracker, ProvenanceTracker):
         raise TypeError(
@@ -615,16 +416,9 @@ def set_provenance_tracker(tracker: ProvenanceTracker) -> None:
         _singleton_tracker = tracker
     logger.info("Validation rule engine ProvenanceTracker singleton replaced")
 
+
 def reset_provenance_tracker() -> None:
-    """Destroy the current singleton and reset to ``None``.
-
-    The next call to :func:`get_provenance_tracker` will create a fresh
-    instance.  Intended for use in test teardown to prevent state leakage.
-
-    Example:
-        >>> reset_provenance_tracker()
-        >>> tracker = get_provenance_tracker()  # fresh instance
-    """
+    """Destroy the current singleton."""
     global _singleton_tracker
     with _singleton_lock:
         _singleton_tracker = None
@@ -632,19 +426,12 @@ def reset_provenance_tracker() -> None:
         "Validation rule engine ProvenanceTracker singleton reset to None"
     )
 
-# ---------------------------------------------------------------------------
-# Public API
-# ---------------------------------------------------------------------------
 
 __all__ = [
-    # Dataclass
     "ProvenanceEntry",
-    # Constants
     "VALID_ENTITY_TYPES",
     "VALID_ACTIONS",
-    # Tracker class
     "ProvenanceTracker",
-    # Singleton helpers
     "get_provenance_tracker",
     "set_provenance_tracker",
     "reset_provenance_tracker",

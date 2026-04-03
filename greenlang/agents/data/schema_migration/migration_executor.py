@@ -77,6 +77,7 @@ from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from greenlang.agents.data.schema_migration.provenance import ProvenanceTracker
 from greenlang.schemas import utcnow
+from greenlang.exceptions import AgentException
 
 logger = logging.getLogger(__name__)
 
@@ -1930,5 +1931,5 @@ class MigrationExecutorEngine:
 # Internal exception
 # ---------------------------------------------------------------------------
 
-class _TimeoutError(Exception):
+class _TimeoutError(AgentException):
     """Raised when a migration execution exceeds its configured timeout."""

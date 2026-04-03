@@ -352,7 +352,7 @@ class CCFAnalyzer:
         Returns:
             CCFResult with calculated beta and recommendations
         """
-        logger.info(f"Calculating beta factor for {scenario.system_id}")
+        logger.info("Calculating beta factor for %s", scenario.system_id)
 
         try:
             # Calculate total score
@@ -420,7 +420,7 @@ class CCFAnalyzer:
             return result
 
         except Exception as e:
-            logger.error(f"Beta calculation failed: {str(e)}", exc_info=True)
+            logger.error("Beta calculation failed: %s", e, exc_info=True)
             raise
 
     def _lookup_beta(self, score: int) -> float:

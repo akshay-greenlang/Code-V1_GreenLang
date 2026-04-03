@@ -93,7 +93,7 @@ class DataWriter:
             raise ValueError(f"Unsupported format: {ext}")
 
         # Write using appropriate handler
-        logger.debug(f"Writing to {path} as {ext} format")
+        logger.debug("Writing to %s as %s format", path, ext)
         handler = self._format_handlers[ext]
         handler(data, path, **kwargs)
 

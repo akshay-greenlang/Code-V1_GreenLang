@@ -172,7 +172,7 @@ class ProvenanceHashGenerator:
         self.algorithm = algorithm
         self.precision = precision
 
-        logger.debug(f"ProvenanceHashGenerator initialized: {algorithm}")
+        logger.debug("ProvenanceHashGenerator initialized: %s", algorithm)
 
     def generate_hash(
         self,
@@ -329,7 +329,7 @@ class CalculationAuditTrail:
         self._entries: deque = deque(maxlen=max_entries)
         self._hash_generator = ProvenanceHashGenerator()
 
-        logger.info(f"CalculationAuditTrail initialized: session={self.session_id}")
+        logger.info("CalculationAuditTrail initialized: session=%s", self.session_id)
 
     def record_calculation(
         self,
@@ -383,7 +383,7 @@ class CalculationAuditTrail:
 
         self._entries.append(entry)
 
-        logger.debug(f"Recorded calculation: {calc_type} -> {entry_id}")
+        logger.debug("Recorded calculation: %s -> %s", calc_type, entry_id)
 
         return entry_id
 
@@ -582,7 +582,7 @@ class ProvenanceTracker:
         # Provenance records cache
         self._records: Dict[str, ProvenanceRecord] = {}
 
-        logger.info(f"ProvenanceTracker initialized: session={self.session_id}")
+        logger.info("ProvenanceTracker initialized: session=%s", self.session_id)
 
     def track_calculation(
         self,
@@ -659,7 +659,7 @@ class ProvenanceTracker:
                 steps=calc_steps,
             )
 
-        logger.debug(f"Tracked calculation: {calc_type} -> {calculation_id}")
+        logger.debug("Tracked calculation: %s -> %s", calc_type, calculation_id)
 
         return record
 

@@ -253,7 +253,7 @@ async def create_communication(request: CreateCommunicationRequest) -> Dict[str,
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e))
     except Exception as e:
-        logger.error(f"create_communication failed: {e}", exc_info=True)
+        logger.error("create_communication failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -270,7 +270,7 @@ async def get_communication(communication_id: str) -> Dict[str, Any]:
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"get_communication failed: {e}", exc_info=True)
+        logger.error("get_communication failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -289,7 +289,7 @@ async def respond_to_communication(communication_id: str, request: RespondReques
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e))
     except Exception as e:
-        logger.error(f"respond_to_communication failed: {e}", exc_info=True)
+        logger.error("respond_to_communication failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -301,7 +301,7 @@ async def list_pending(operator_id: Optional[str] = Query(None)) -> List[Dict[st
         service = get_service()
         return await service.list_pending_communications(operator_id=operator_id)
     except Exception as e:
-        logger.error(f"list_pending failed: {e}", exc_info=True)
+        logger.error("list_pending failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -313,7 +313,7 @@ async def list_overdue() -> List[Dict[str, Any]]:
         service = get_service()
         return await service.list_overdue_communications()
     except Exception as e:
-        logger.error(f"list_overdue failed: {e}", exc_info=True)
+        logger.error("list_overdue failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -346,7 +346,7 @@ async def handle_information_request(request: InformationRequestBody) -> Dict[st
     except RuntimeError as e:
         raise HTTPException(status_code=503, detail=str(e))
     except Exception as e:
-        logger.error(f"handle_information_request failed: {e}", exc_info=True)
+        logger.error("handle_information_request failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -378,7 +378,7 @@ async def schedule_inspection(request: ScheduleInspectionRequest) -> Dict[str, A
     except RuntimeError as e:
         raise HTTPException(status_code=503, detail=str(e))
     except Exception as e:
-        logger.error(f"schedule_inspection failed: {e}", exc_info=True)
+        logger.error("schedule_inspection failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -417,7 +417,7 @@ async def record_violation(request: RecordViolationRequest) -> Dict[str, Any]:
     except RuntimeError as e:
         raise HTTPException(status_code=503, detail=str(e))
     except Exception as e:
-        logger.error(f"record_violation failed: {e}", exc_info=True)
+        logger.error("record_violation failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -447,7 +447,7 @@ async def file_appeal(request: FileAppealRequest) -> Dict[str, Any]:
     except RuntimeError as e:
         raise HTTPException(status_code=503, detail=str(e))
     except Exception as e:
-        logger.error(f"file_appeal failed: {e}", exc_info=True)
+        logger.error("file_appeal failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -473,7 +473,7 @@ async def record_appeal_decision(appeal_id: str, request: AppealDecisionRequest)
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"record_appeal_decision failed: {e}", exc_info=True)
+        logger.error("record_appeal_decision failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -501,7 +501,7 @@ async def grant_appeal_extension(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"grant_appeal_extension failed: {e}", exc_info=True)
+        logger.error("grant_appeal_extension failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -523,7 +523,7 @@ async def withdraw_appeal(appeal_id: str) -> Dict[str, Any]:
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"withdraw_appeal failed: {e}", exc_info=True)
+        logger.error("withdraw_appeal failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -560,7 +560,7 @@ async def upload_document(request: UploadDocumentRequest) -> Dict[str, Any]:
     except RuntimeError as e:
         raise HTTPException(status_code=503, detail=str(e))
     except Exception as e:
-        logger.error(f"upload_document failed: {e}", exc_info=True)
+        logger.error("upload_document failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -582,7 +582,7 @@ async def get_document_metadata(document_id: str) -> Dict[str, Any]:
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"get_document_metadata failed: {e}", exc_info=True)
+        logger.error("get_document_metadata failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -601,7 +601,7 @@ async def verify_document_integrity(document_id: str) -> Dict[str, Any]:
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"verify_document_integrity failed: {e}", exc_info=True)
+        logger.error("verify_document_integrity failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -634,7 +634,7 @@ async def send_notification(request: SendNotificationRequest) -> Dict[str, Any]:
     except RuntimeError as e:
         raise HTTPException(status_code=503, detail=str(e))
     except Exception as e:
-        logger.error(f"send_notification failed: {e}", exc_info=True)
+        logger.error("send_notification failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -666,7 +666,7 @@ async def list_templates(
                 results.append(dict(t))
         return results
     except Exception as e:
-        logger.error(f"list_templates failed: {e}", exc_info=True)
+        logger.error("list_templates failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -687,7 +687,7 @@ async def get_templates_by_language(language: str) -> List[Dict[str, Any]]:
                 results.append(dict(t))
         return results
     except Exception as e:
-        logger.error(f"get_templates_by_language failed: {e}", exc_info=True)
+        logger.error("get_templates_by_language failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -707,7 +707,7 @@ async def render_template(request: RenderTemplateRequest) -> Dict[str, str]:
     except RuntimeError as e:
         raise HTTPException(status_code=503, detail=str(e))
     except Exception as e:
-        logger.error(f"render_template failed: {e}", exc_info=True)
+        logger.error("render_template failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -726,7 +726,7 @@ async def list_authorities(
         service = get_service()
         return await service.get_authorities(member_state=member_state)
     except Exception as e:
-        logger.error(f"list_authorities failed: {e}", exc_info=True)
+        logger.error("list_authorities failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -743,7 +743,7 @@ async def health_check() -> Dict[str, Any]:
         service = get_service()
         return await service.health_check()
     except Exception as e:
-        logger.error(f"health_check failed: {e}", exc_info=True)
+        logger.error("health_check failed: %s", e, exc_info=True)
         return {
             "agent_id": "GL-EUDR-ACM-040",
             "status": "error",

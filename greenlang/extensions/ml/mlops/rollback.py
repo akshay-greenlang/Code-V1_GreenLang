@@ -441,7 +441,7 @@ class RollbackManager:
             metrics: Baseline metrics
         """
         self._baseline_metrics[model_name] = metrics
-        logger.info(f"Baseline metrics set for {model_name}")
+        logger.info("Baseline metrics set for %s", model_name)
 
     def record_prediction_result(
         self,
@@ -563,7 +563,7 @@ class RollbackManager:
             baseline_metrics = self._baseline_metrics.get(model_name)
 
         if baseline_metrics is None:
-            logger.warning(f"No baseline metrics for {model_name}")
+            logger.warning("No baseline metrics for %s", model_name)
             return None
 
         # Calculate performance delta
@@ -732,7 +732,7 @@ class RollbackManager:
                         to_version,
                         ModelStage.PRODUCTION
                     )
-                    logger.info(f"Promoted {model_name} v{to_version} to Production")
+                    logger.info("Promoted %s v%s to Production", model_name, to_version)
 
             # Mark rollback as complete
             event.status = RollbackStatus.COMPLETED
@@ -750,7 +750,7 @@ class RollbackManager:
             event.error_message = str(e)
             event.completed_at = datetime.utcnow()
 
-            logger.error(f"Rollback failed: {event_id}, error: {e}")
+            logger.error("Rollback failed: %s, error: %s", event_id, e)
 
         # Store in history
         self._rollback_history.append(event)
@@ -865,7 +865,7 @@ class RollbackManager:
         status = self._canary_status[model_name]
 
         if not status.should_promote:
-            logger.warning(f"Canary not ready for promotion: {model_name}")
+            logger.warning("Canary not ready for promotion: %s", model_name)
             return None
 
         # This is technically the reverse of rollback - promoting new version

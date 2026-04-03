@@ -10,6 +10,8 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from ..types import Agent, AgentResult, ErrorInfo
 from .types import BoilerInput, BoilerOutput
 from greenlang.data.emission_factors import EmissionFactors
+
+logger = logging.getLogger(__name__)
 from greenlang.utils.unit_converter import UnitConverter
 from greenlang.utils.performance_tracker import PerformanceTracker
 from greenlang.utilities.determinism import DeterministicClock
@@ -122,13 +124,14 @@ class BoilerAgent(Agent[BoilerInput, BoilerOutput]):
         Returns:
             bool: True if validation passes, False otherwise
         """
-        self.logger.debug(
-            f"Validating payload for boiler type: {payload.get('boiler_type')}"
+        logger.debug(
+            "Validating payload for boiler type: %s",
+            payload.get('boiler_type')
         )
 
         # Check required fields
         if not payload.get("boiler_type"):
-            self.logger.error("Missing boiler_type in payload")
+            logger.error("Missing boiler_type in payload")
             return False
 
         # Validate based on input type (thermal output or fuel consumption)
@@ -150,7 +153,7 @@ class BoilerAgent(Agent[BoilerInput, BoilerOutput]):
                 return False
         else:
             # Must have either thermal output or fuel consumption
-            self.logger.error("Neither thermal_output nor fuel_consumption provided")
+            logger.error("Neither thermal_output nor fuel_consumption provided")
             return False
 
         # Validate efficiency if provided
@@ -167,7 +170,7 @@ class BoilerAgent(Agent[BoilerInput, BoilerOutput]):
             elif eff > 100:
                 return False
 
-        self.logger.debug("Validation passed")
+        logger.debug("Validation passed")
         return True
 
     @lru_cache(maxsize=256)
@@ -190,10 +193,10 @@ class BoilerAgent(Agent[BoilerInput, BoilerOutput]):
         # Track cache performance
         if cache_key in self._cache:
             self._cache_hits += 1
-            self.logger.debug(f"Cache hit for {cache_key}")
+            logger.debug("Cache hit for %s", cache_key)
         else:
             self._cache_misses += 1
-            self.logger.debug(f"Cache miss for {cache_key}")
+            logger.debug("Cache miss for %s", cache_key)
 
         # Get the emission factor
         factor = self.emission_factors.get_factor(
@@ -352,8 +355,9 @@ class BoilerAgent(Agent[BoilerInput, BoilerOutput]):
                 )
 
                 # Log performance metrics
-                self.logger.info(
-                    f"Boiler calculation completed in {execution_time:.3f}s"
+                logger.info(
+                    "Boiler calculation completed in %.3fs",
+                    execution_time
                 )
 
                 return {
@@ -370,8 +374,8 @@ class BoilerAgent(Agent[BoilerInput, BoilerOutput]):
                 }
 
             except Exception as e:
-                self.logger.error(
-                    f"Error in boiler calculation: {str(e)}", exc_info=True
+                logger.error(
+                    "Error in boiler calculation: %s", str(e), exc_info=True
                 )
                 error_info: ErrorInfo = {
                     "type": "CalculationError",
@@ -392,7 +396,7 @@ class BoilerAgent(Agent[BoilerInput, BoilerOutput]):
         Returns:
             List of AgentResult for each boiler
         """
-        self.logger.info(f"Batch processing {len(boilers)} boilers")
+        logger.info("Batch processing %s boilers", len(boilers))
         results = []
 
         with ThreadPoolExecutor(max_workers=5) as executor:
@@ -406,7 +410,7 @@ class BoilerAgent(Agent[BoilerInput, BoilerOutput]):
                     result = future.result()
                     results.append((idx, result))
                 except Exception as e:
-                    self.logger.error(f"Error processing boiler {idx}: {str(e)}")
+                    logger.error("Error processing boiler %s: %s", idx, e)
                     error_result = {
                         "success": False,
                         "error": {
@@ -444,7 +448,7 @@ class BoilerAgent(Agent[BoilerInput, BoilerOutput]):
         Returns:
             List of AgentResult for each boiler
         """
-        self.logger.info(f"Async batch processing {len(boilers)} boilers")
+        logger.info("Async batch processing %s boilers", len(boilers))
         tasks = [self.async_run(boiler) for boiler in boilers]
         return await asyncio.gather(*tasks)
 
@@ -765,7 +769,7 @@ class BoilerAgent(Agent[BoilerInput, BoilerOutput]):
                 df = pd.DataFrame(results)
                 df.to_excel(output_path, index=False)
             except ImportError:
-                self.logger.error(
+                logger.error(
                     "pandas is required for Excel export. "
                     "Install it with: pip install greenlang[analytics]. "
                     "Falling back to CSV export."
@@ -775,7 +779,7 @@ class BoilerAgent(Agent[BoilerInput, BoilerOutput]):
         else:
             raise ValueError(f"Unsupported format: {format}")
 
-        self.logger.info(f"Results exported to {output_path}")
+        logger.info("Results exported to %s", output_path)
         return output_path
 
     def get_performance_metrics(self) -> Dict[str, Any]:
@@ -806,4 +810,4 @@ class BoilerAgent(Agent[BoilerInput, BoilerOutput]):
         self._get_cached_emission_factor.cache_clear()
         self._cache_hits = 0
         self._cache_misses = 0
-        self.logger.info("Cache cleared")
+        logger.info("Cache cleared")

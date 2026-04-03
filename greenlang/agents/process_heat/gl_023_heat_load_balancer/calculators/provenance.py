@@ -290,7 +290,7 @@ class ProvenanceHashGenerator:
         self.salt = salt or self._generate_salt()
         self._hash_count = 0
 
-        logger.info(f"ProvenanceHashGenerator initialized (algorithm: {algorithm})")
+        logger.info("ProvenanceHashGenerator initialized (algorithm: %s)", algorithm)
 
     def generate(
         self,
@@ -463,7 +463,7 @@ class OptimizationAuditTrail:
         self._hash_gen = ProvenanceHashGenerator()
         self._lock = threading.RLock()
 
-        logger.info(f"OptimizationAuditTrail initialized: {self.optimization_id}")
+        logger.info("OptimizationAuditTrail initialized: %s", self.optimization_id)
 
     def log_event(
         self,
@@ -529,7 +529,7 @@ class OptimizationAuditTrail:
             if event_type == AuditEventType.OPTIMIZATION_COMPLETE:
                 self._end_time = datetime.now(timezone.utc)
 
-            logger.debug(f"Audit event logged: {event_type.value}")
+            logger.debug("Audit event logged: %s", event_type.value)
 
             return event
 

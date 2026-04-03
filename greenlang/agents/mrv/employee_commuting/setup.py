@@ -775,13 +775,13 @@ class EmployeeCommutingService:
             mod = importlib.import_module(module_path)
             cls = getattr(mod, class_name)
             instance = cls()
-            logger.info(f"{class_name} initialized")
+            logger.info("%s initialized", class_name)
             return instance
         except ImportError:
-            logger.warning(f"{class_name} not available (ImportError)")
+            logger.warning("%s not available (ImportError)", class_name)
             return None
         except Exception as e:
-            logger.warning(f"{class_name} initialization failed: {e}")
+            logger.warning("%s initialization failed: %s", class_name, e)
             return None
 
     # ========================================================================
@@ -1482,7 +1482,7 @@ class EmployeeCommutingService:
             telework_co2e = annual_kwh * grid_ef
 
         except (ImportError, ValueError) as e:
-            logger.warning(f"Telework model import failed, using defaults: {e}")
+            logger.warning("Telework model import failed, using defaults: %s", e)
             daily_kwh = request.daily_kwh or 4.0
             working_days = request.working_days or 230
             telework_days = int(working_days * 0.6)
@@ -1700,7 +1700,7 @@ class EmployeeCommutingService:
                 mode_detail[mode_key] = round(co2e, 4)
 
         except (ImportError, ValueError) as e:
-            logger.warning(f"Average-data model import failed: {e}")
+            logger.warning("Average-data model import failed: %s", e)
             avg_distance = 15.0
             working_days = 230
             annual_distance = avg_distance * 2 * working_days
@@ -1791,7 +1791,7 @@ class EmployeeCommutingService:
             co2e = deflated_usd * eeio_factor
 
         except (ImportError, ValueError) as e:
-            logger.warning(f"Spend-based model import failed: {e}")
+            logger.warning("Spend-based model import failed: %s", e)
             amount_usd = request.amount
             deflated_usd = amount_usd
             eeio_factor = 0.26
@@ -1908,7 +1908,7 @@ class EmployeeCommutingService:
                 elif mode in ("cycling", "walking"):
                     leg_detail["zero_emission"] = True
                 else:
-                    logger.warning(f"Unknown mode in leg {leg_idx}: {mode}")
+                    logger.warning("Unknown mode in leg %s: %s", leg_idx, mode)
 
                 leg_details.append(leg_detail)
 

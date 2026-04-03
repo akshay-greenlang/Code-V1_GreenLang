@@ -272,7 +272,7 @@ class ThermalFluidAnalyzer(IntelligenceMixin, BaseProcessHeatAgent[ThermalFluidI
         start_time = time.time()
         self._calculation_count = 0
 
-        logger.info(f"Processing thermal fluid analysis for {input_data.system_id}")
+        logger.info("Processing thermal fluid analysis for %s", input_data.system_id)
 
         try:
             with self.safety_guard():
@@ -399,7 +399,7 @@ class ThermalFluidAnalyzer(IntelligenceMixin, BaseProcessHeatAgent[ThermalFluidI
                 return output
 
         except Exception as e:
-            logger.error(f"Thermal fluid analysis failed: {e}", exc_info=True)
+            logger.error("Thermal fluid analysis failed: %s", e, exc_info=True)
             raise ProcessingError(f"Thermal fluid analysis failed: {str(e)}") from e
 
     def validate_input(self, input_data: ThermalFluidInput) -> bool:
@@ -428,7 +428,7 @@ class ThermalFluidAnalyzer(IntelligenceMixin, BaseProcessHeatAgent[ThermalFluidI
 
         if errors:
             for error in errors:
-                logger.warning(f"Validation error: {error}")
+                logger.warning("Validation error: %s", error)
             return False
 
         return True

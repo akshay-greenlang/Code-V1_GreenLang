@@ -249,7 +249,7 @@ class HazardMappingAgent(BaseAgent):
         self._initialize_hazard_data()
 
         super().__init__(config)
-        logger.info(f"Initialized {self.AGENT_NAME} v{self.VERSION}")
+        logger.info("Initialized %s v%s", self.AGENT_NAME, self.VERSION)
 
     def _initialize_hazard_data(self):
         """Initialize baseline hazard data."""
@@ -308,7 +308,7 @@ class HazardMappingAgent(BaseAgent):
         try:
             # Parse input
             mapping_input = HazardMappingInput(**input_data)
-            self.logger.info(
+            logger.info(
                 f"Starting hazard mapping: {mapping_input.mapping_id}, "
                 f"{len(mapping_input.hazard_types)} hazards"
             )
@@ -374,7 +374,7 @@ class HazardMappingAgent(BaseAgent):
             # Calculate provenance
             output.provenance_hash = self._calculate_provenance_hash(mapping_input, output)
 
-            self.logger.info(
+            logger.info(
                 f"Hazard mapping complete: {len(grid)} cells, {total_hotspots} hotspots"
             )
 
@@ -389,7 +389,7 @@ class HazardMappingAgent(BaseAgent):
             )
 
         except Exception as e:
-            self.logger.error(f"Hazard mapping failed: {str(e)}", exc_info=True)
+            logger.error("Hazard mapping failed: %s", e, exc_info=True)
             return AgentResult(
                 success=False,
                 error=str(e),

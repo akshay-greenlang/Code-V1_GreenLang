@@ -163,7 +163,7 @@ class DecarbonizationRoadmapAgentAI_V3(ReasoningAgent):
             )
 
             formatted_knowledge = self._format_rag_results(rag_result)
-            logger.info(f"Retrieved {len(rag_result.chunks)} relevant knowledge chunks")
+            logger.info("Retrieved %s relevant knowledge chunks", len(rag_result.chunks))
 
             # Step 2: Initial Strategic Planning
             logger.info("Step 2: Initiating strategic planning with AI reasoning")
@@ -199,7 +199,7 @@ class DecarbonizationRoadmapAgentAI_V3(ReasoningAgent):
 
             while current_response.tool_calls and iteration < max_iterations:
                 iteration += 1
-                logger.info(f"Tool orchestration iteration {iteration}: {len(current_response.tool_calls)} tools called")
+                logger.info("Tool orchestration iteration %s: %s tools called", iteration, len(current_response.tool_calls))
 
                 tool_results = []
 
@@ -226,10 +226,10 @@ class DecarbonizationRoadmapAgentAI_V3(ReasoningAgent):
                         })
 
                         self._tool_execution_count += 1
-                        logger.info(f"Tool executed: {tool_call['name']}")
+                        logger.info("Tool executed: %s", tool_call['name'])
 
                     except Exception as e:
-                        logger.error(f"Tool execution failed: {tool_call['name']}: {e}")
+                        logger.error("Tool execution failed: %s: %s", tool_call['name'], e)
                         tool_results.append({
                             "tool_call_id": tool_call["id"],
                             "role": "tool",
@@ -248,7 +248,7 @@ class DecarbonizationRoadmapAgentAI_V3(ReasoningAgent):
                 conversation_history.append(next_response)
                 current_response = next_response
 
-            logger.info(f"Tool orchestration complete: {iteration} iterations, {len(tool_execution_trace)} total tools")
+            logger.info("Tool orchestration complete: %s iterations, %s total tools", iteration, len(tool_execution_trace))
 
             # Step 4: Parse and Structure Roadmap
             logger.info("Step 4: Parsing structured roadmap from AI output")
@@ -344,7 +344,7 @@ class DecarbonizationRoadmapAgentAI_V3(ReasoningAgent):
             return result
 
         except Exception as e:
-            logger.error(f"Error in decarbonization roadmap generation: {e}", exc_info=True)
+            logger.error("Error in decarbonization roadmap generation: %s", e, exc_info=True)
             return {
                 "success": False,
                 "error": str(e),
@@ -821,7 +821,7 @@ Be strategic. Be specific. Be implementable."""
             except Exception as e:
                 if attempt == max_retries:
                     raise
-                logger.warning(f"Tool execution failed (attempt {attempt + 1}/{max_retries + 1}): {e}")
+                logger.warning("Tool execution failed (attempt %s/%s): %s", attempt + 1, max_retries + 1, e)
                 await asyncio.sleep(0.5 * (attempt + 1))  # Exponential backoff
 
     # ===== TOOL IMPLEMENTATIONS =====

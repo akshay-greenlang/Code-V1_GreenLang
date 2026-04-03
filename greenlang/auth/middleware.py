@@ -201,7 +201,7 @@ if FASTAPI_AVAILABLE:
                 )
 
             except Exception as e:
-                logger.debug(f"JWT authentication failed: {e}")
+                logger.debug("JWT authentication failed: %s", e)
                 return None
 
         def _get_client_ip(self, request: Request) -> str:
@@ -280,7 +280,7 @@ if FASTAPI_AVAILABLE:
                 )
 
             except Exception as e:
-                logger.debug(f"API key authentication failed: {e}")
+                logger.debug("API key authentication failed: %s", e)
                 return None
 
         def _get_client_ip(self, request: Request) -> str:

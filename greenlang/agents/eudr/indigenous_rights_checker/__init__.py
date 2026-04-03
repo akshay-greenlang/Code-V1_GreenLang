@@ -73,7 +73,7 @@ try:
         reset_config,
     )
 except ImportError as e:
-    logger.warning(f"Could not import config: {e}")
+    logger.warning("Could not import config: %s", e)
     IndigenousRightsCheckerConfig = None  # type: ignore[assignment,misc]
     get_config = None  # type: ignore[assignment]
     set_config = None  # type: ignore[assignment]
@@ -144,7 +144,7 @@ try:
         HealthCheckResponse,
     )
 except ImportError as e:
-    logger.warning(f"Could not import models: {e}")
+    logger.warning("Could not import models: %s", e)
 
 # ---------------------------------------------------------------------------
 # Provenance imports
@@ -158,7 +158,7 @@ try:
         reset_tracker,
     )
 except ImportError as e:
-    logger.warning(f"Could not import provenance: {e}")
+    logger.warning("Could not import provenance: %s", e)
     ProvenanceRecord = None  # type: ignore[assignment,misc]
     ProvenanceTracker = None  # type: ignore[assignment,misc]
     get_tracker = None  # type: ignore[assignment]
@@ -188,7 +188,7 @@ try:
         set_active_workflows,
     )
 except ImportError as e:
-    logger.warning(f"Could not import metrics: {e}")
+    logger.warning("Could not import metrics: %s", e)
     PROMETHEUS_AVAILABLE = False  # type: ignore[assignment]
 
 # ---------------------------------------------------------------------------
@@ -200,7 +200,7 @@ try:
         TerritoryDatabaseEngine,
     )
 except ImportError as e:
-    logger.warning(f"Could not import TerritoryDatabaseEngine: {e}")
+    logger.warning("Could not import TerritoryDatabaseEngine: %s", e)
     TerritoryDatabaseEngine = None  # type: ignore[assignment,misc]
 
 try:
@@ -208,7 +208,7 @@ try:
         FPICVerificationEngine,
     )
 except ImportError as e:
-    logger.warning(f"Could not import FPICVerificationEngine: {e}")
+    logger.warning("Could not import FPICVerificationEngine: %s", e)
     FPICVerificationEngine = None  # type: ignore[assignment,misc]
 
 try:
@@ -216,7 +216,7 @@ try:
         LandRightsOverlapEngine,
     )
 except ImportError as e:
-    logger.warning(f"Could not import LandRightsOverlapEngine: {e}")
+    logger.warning("Could not import LandRightsOverlapEngine: %s", e)
     LandRightsOverlapEngine = None  # type: ignore[assignment,misc]
 
 try:
@@ -224,7 +224,7 @@ try:
         CommunityConsultationEngine,
     )
 except ImportError as e:
-    logger.warning(f"Could not import CommunityConsultationEngine: {e}")
+    logger.warning("Could not import CommunityConsultationEngine: %s", e)
     CommunityConsultationEngine = None  # type: ignore[assignment,misc]
 
 try:
@@ -232,7 +232,7 @@ try:
         RightsViolationEngine,
     )
 except ImportError as e:
-    logger.warning(f"Could not import RightsViolationEngine: {e}")
+    logger.warning("Could not import RightsViolationEngine: %s", e)
     RightsViolationEngine = None  # type: ignore[assignment,misc]
 
 try:
@@ -240,7 +240,7 @@ try:
         IndigenousRegistryEngine,
     )
 except ImportError as e:
-    logger.warning(f"Could not import IndigenousRegistryEngine: {e}")
+    logger.warning("Could not import IndigenousRegistryEngine: %s", e)
     IndigenousRegistryEngine = None  # type: ignore[assignment,misc]
 
 try:
@@ -248,7 +248,7 @@ try:
         ComplianceReportingEngine,
     )
 except ImportError as e:
-    logger.warning(f"Could not import ComplianceReportingEngine: {e}")
+    logger.warning("Could not import ComplianceReportingEngine: %s", e)
     ComplianceReportingEngine = None  # type: ignore[assignment,misc]
 
 # ---------------------------------------------------------------------------
@@ -263,7 +263,7 @@ try:
         lifespan,
     )
 except ImportError as e:
-    logger.warning(f"Could not import setup: {e}")
+    logger.warning("Could not import setup: %s", e)
     IndigenousRightsCheckerService = None  # type: ignore[assignment,misc]
     get_service = None  # type: ignore[assignment]
     reset_service = None  # type: ignore[assignment]
@@ -281,7 +281,7 @@ try:
         get_eudr_relevant_ratifiers,
     )
 except ImportError as e:
-    logger.warning(f"Could not import ILO 169 reference data: {e}")
+    logger.warning("Could not import ILO 169 reference data: %s", e)
 
 try:
     from greenlang.agents.eudr.indigenous_rights_checker.reference_data.indigenous_territory_sources import (
@@ -291,7 +291,7 @@ try:
         get_total_estimated_territories,
     )
 except ImportError as e:
-    logger.warning(f"Could not import territory sources reference data: {e}")
+    logger.warning("Could not import territory sources reference data: %s", e)
 
 try:
     from greenlang.agents.eudr.indigenous_rights_checker.reference_data.fpic_legal_frameworks import (
@@ -303,7 +303,7 @@ try:
         get_countries_with_fpic_requirement,
     )
 except ImportError as e:
-    logger.warning(f"Could not import FPIC frameworks reference data: {e}")
+    logger.warning("Could not import FPIC frameworks reference data: %s", e)
 
 
 # ---------------------------------------------------------------------------

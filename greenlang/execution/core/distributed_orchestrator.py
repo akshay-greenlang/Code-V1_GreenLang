@@ -330,10 +330,10 @@ class DistributedOrchestrator(AsyncOrchestrator):
             self._monitor_task = asyncio.create_task(self._monitor_loop())
             self._cleanup_task = asyncio.create_task(self._cleanup_loop())
 
-            logger.info(f"Node {self.node_id} registered and background tasks started")
+            logger.info("Node %s registered and background tasks started", self.node_id)
 
         except Exception as e:
-            logger.error(f"Failed to connect to Redis: {e}")
+            logger.error("Failed to connect to Redis: %s", e)
             raise
 
     async def disconnect(self):
@@ -388,10 +388,10 @@ class DistributedOrchestrator(AsyncOrchestrator):
             )
 
             if acquired:
-                logger.debug(f"Acquired lock: {key}")
+                logger.debug("Acquired lock: %s", key)
                 yield True
             else:
-                logger.debug(f"Failed to acquire lock: {key}")
+                logger.debug("Failed to acquire lock: %s", key)
                 yield False
         finally:
             # Release lock if we acquired it
@@ -405,7 +405,7 @@ class DistributedOrchestrator(AsyncOrchestrator):
                 end
                 """
                 await self.redis.eval(script, 1, lock_key, lock_value)
-                logger.debug(f"Released lock: {key}")
+                logger.debug("Released lock: %s", key)
 
     async def _register_node(self, node: NodeInfo):
         """Register node in distributed registry."""
@@ -416,14 +416,14 @@ class DistributedOrchestrator(AsyncOrchestrator):
             json.dumps(node.to_dict())
         )
         self.nodes[node.node_id] = node
-        logger.info(f"Registered node: {node.node_id}")
+        logger.info("Registered node: %s", node.node_id)
 
     async def _unregister_node(self, node_id: str):
         """Unregister node from distributed registry."""
         key = f"{self.cluster_name}:nodes:{node_id}"
         await self.redis.delete(key)
         self.nodes.pop(node_id, None)
-        logger.info(f"Unregistered node: {node_id}")
+        logger.info("Unregistered node: %s", node_id)
 
     async def _heartbeat_loop(self):
         """Background task to send heartbeats."""
@@ -445,7 +445,7 @@ class DistributedOrchestrator(AsyncOrchestrator):
             except asyncio.CancelledError:
                 break
             except Exception as e:
-                logger.error(f"Heartbeat error: {e}")
+                logger.error("Heartbeat error: %s", e)
 
     async def _monitor_loop(self):
         """Background task to monitor node health."""
@@ -483,7 +483,7 @@ class DistributedOrchestrator(AsyncOrchestrator):
 
                             self.nodes[node.node_id] = node
                     except Exception as e:
-                        logger.error(f"Error monitoring node {key}: {e}")
+                        logger.error("Error monitoring node %s: %s", key, e)
 
                 # Handle failed nodes
                 for node_id in failed_nodes:
@@ -492,7 +492,7 @@ class DistributedOrchestrator(AsyncOrchestrator):
             except asyncio.CancelledError:
                 break
             except Exception as e:
-                logger.error(f"Monitor loop error: {e}")
+                logger.error("Monitor loop error: %s", e)
 
     async def _cleanup_loop(self):
         """Background task to cleanup old tasks."""
@@ -520,12 +520,12 @@ class DistributedOrchestrator(AsyncOrchestrator):
                                 await self.redis.delete(key)
 
                     except Exception as e:
-                        logger.error(f"Error cleaning up task {key}: {e}")
+                        logger.error("Error cleaning up task %s: %s", key, e)
 
             except asyncio.CancelledError:
                 break
             except Exception as e:
-                logger.error(f"Cleanup loop error: {e}")
+                logger.error("Cleanup loop error: %s", e)
 
     async def _handle_node_failure(self, failed_node_id: str):
         """Handle node failure by redistributing its tasks.
@@ -533,7 +533,7 @@ class DistributedOrchestrator(AsyncOrchestrator):
         Args:
             failed_node_id: ID of the failed node
         """
-        logger.warning(f"Handling failure of node: {failed_node_id}")
+        logger.warning("Handling failure of node: %s", failed_node_id)
 
         # Find tasks assigned to failed node
         pattern = f"{self.cluster_name}:tasks:*"
@@ -560,7 +560,7 @@ class DistributedOrchestrator(AsyncOrchestrator):
                             await self._save_task(task)
                             reassigned_count += 1
                             self.metrics["tasks_retried"] += 1
-                            logger.info(f"Reassigned task {task.task_id}")
+                            logger.info("Reassigned task %s", task.task_id)
                         else:
                             task.status = TaskStatus.FAILED
                             task.error = f"Max retries exceeded after node failure"
@@ -568,7 +568,7 @@ class DistributedOrchestrator(AsyncOrchestrator):
                             self.metrics["tasks_failed"] += 1
 
             except Exception as e:
-                logger.error(f"Error reassigning task {key}: {e}")
+                logger.error("Error reassigning task %s: %s", key, e)
 
         self.metrics["failovers_performed"] += 1
         logger.info(

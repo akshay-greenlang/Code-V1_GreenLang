@@ -257,7 +257,7 @@ class BaseLRScheduler(ABC):
         self.state = SchedulerState(current_lr=config.base_lr)
         self._lr_history: List[float] = []
 
-        logger.info(f"{self.__class__.__name__} initialized")
+        logger.info("%s initialized", self.__class__.__name__)
 
     @abstractmethod
     def get_lr(self) -> float:
@@ -307,7 +307,7 @@ class BaseLRScheduler(ABC):
         """Reset scheduler to initial state."""
         self.state = SchedulerState(current_lr=self.config.base_lr)
         self._lr_history.clear()
-        logger.info(f"{self.__class__.__name__} reset")
+        logger.info("%s reset", self.__class__.__name__)
 
     def get_lr_history(self, limit: Optional[int] = None) -> List[float]:
         """Get learning rate history."""
@@ -427,7 +427,7 @@ class CyclicLRScheduler(BaseLRScheduler):
         if new_cycle > self.state.cycle_count:
             self.state.cycle_count = new_cycle
             if self.config.enable_logging:
-                logger.info(f"CyclicLR: Starting cycle {new_cycle}")
+                logger.info("CyclicLR: Starting cycle %s", new_cycle)
 
         self.state.step_count += 1
 
@@ -899,7 +899,7 @@ class WarmupScheduler(BaseLRScheduler):
             if self.state.step_count == self.config.warmup_steps:
                 self.state.warmup_complete = True
                 if self.config.enable_logging:
-                    logger.info(f"Warmup complete at step {self.state.step_count}")
+                    logger.info("Warmup complete at step %s", self.state.step_count)
         else:
             lr = self.base_scheduler.step(metrics)
 

@@ -298,7 +298,7 @@ class DatabaseSession:
             Base.metadata.create_all(bind=self.engine)
             logger.info("Database schema initialized successfully")
         except Exception as e:
-            logger.error(f"Failed to initialize database schema: {e}")
+            logger.error("Failed to initialize database schema: %s", e)
             raise
 
     @contextmanager
@@ -310,7 +310,7 @@ class DatabaseSession:
             session.commit()
         except Exception as e:
             session.rollback()
-            logger.error(f"Database session error: {e}")
+            logger.error("Database session error: %s", e)
             raise
         finally:
             session.close()
@@ -398,13 +398,13 @@ class PostgreSQLBackend:
                 )
 
                 processing_time = (datetime.utcnow() - start_time).total_seconds() * 1000
-                logger.info(f"Created permission {permission.permission_id} in {processing_time:.2f}ms")
+                logger.info("Created permission %s in %.2fms", permission.permission_id, processing_time)
 
                 return permission
 
         except Exception as e:
             self._stats['errors'] += 1
-            logger.error(f"Failed to create permission: {e}")
+            logger.error("Failed to create permission: %s", e)
             raise
         finally:
             self._stats['operations'] += 1
@@ -430,7 +430,7 @@ class PostgreSQLBackend:
                 return None
 
         except Exception as e:
-            logger.error(f"Failed to get permission: {e}")
+            logger.error("Failed to get permission: %s", e)
             raise
 
     def update_permission(self, permission: Permission) -> Permission:
@@ -481,11 +481,11 @@ class PostgreSQLBackend:
                     details={"permission_id": permission.permission_id}
                 )
 
-                logger.info(f"Updated permission {permission.permission_id}")
+                logger.info("Updated permission %s", permission.permission_id)
                 return permission
 
         except Exception as e:
-            logger.error(f"Failed to update permission: {e}")
+            logger.error("Failed to update permission: %s", e)
             raise
 
     def delete_permission(self, permission_id: str) -> bool:
@@ -515,13 +515,13 @@ class PostgreSQLBackend:
                         details={"permission_id": permission_id}
                     )
 
-                    logger.info(f"Deleted permission {permission_id}")
+                    logger.info("Deleted permission %s", permission_id)
                     return True
 
                 return False
 
         except Exception as e:
-            logger.error(f"Failed to delete permission: {e}")
+            logger.error("Failed to delete permission: %s", e)
             raise
 
     def list_permissions(
@@ -581,7 +581,7 @@ class PostgreSQLBackend:
                 return [p.to_permission() for p in db_permissions]
 
         except Exception as e:
-            logger.error(f"Failed to list permissions: {e}")
+            logger.error("Failed to list permissions: %s", e)
             raise
 
     def create_role(self, role_data: Dict[str, Any]) -> Dict[str, Any]:
@@ -640,12 +640,12 @@ class PostgreSQLBackend:
                     details={"role_id": role_id, "role_name": role_data['role_name']}
                 )
 
-                logger.info(f"Created role {role_data['role_name']}")
+                logger.info("Created role %s", role_data['role_name'])
                 role_data['role_id'] = role_id
                 return role_data
 
         except Exception as e:
-            logger.error(f"Failed to create role: {e}")
+            logger.error("Failed to create role: %s", e)
             raise
 
     def get_role(self, role_id: str) -> Optional[Dict[str, Any]]:
@@ -677,7 +677,7 @@ class PostgreSQLBackend:
                 return None
 
         except Exception as e:
-            logger.error(f"Failed to get role: {e}")
+            logger.error("Failed to get role: %s", e)
             raise
 
     def create_policy(self, policy_data: Dict[str, Any]) -> Dict[str, Any]:
@@ -726,12 +726,12 @@ class PostgreSQLBackend:
                     details={"policy_id": policy_id, "policy_name": policy_data['policy_name']}
                 )
 
-                logger.info(f"Created policy {policy_data['policy_name']}")
+                logger.info("Created policy %s", policy_data['policy_name'])
                 policy_data['policy_id'] = policy_id
                 return policy_data
 
         except Exception as e:
-            logger.error(f"Failed to create policy: {e}")
+            logger.error("Failed to create policy: %s", e)
             raise
 
     def log_audit_event(
@@ -772,7 +772,7 @@ class PostgreSQLBackend:
                     result, details, ip_address, user_agent, session_id, correlation_id
                 )
         except Exception as e:
-            logger.error(f"Failed to log audit event: {e}")
+            logger.error("Failed to log audit event: %s", e)
             raise
 
     def _log_audit_event(
@@ -884,7 +884,7 @@ class PostgreSQLBackend:
                 ]
 
         except Exception as e:
-            logger.error(f"Failed to get audit logs: {e}")
+            logger.error("Failed to get audit logs: %s", e)
             raise
 
     def assign_role_to_user(
@@ -924,7 +924,7 @@ class PostgreSQLBackend:
                 ).first()
 
                 if existing:
-                    logger.warning(f"User {user_id} already has role {role_id}")
+                    logger.warning("User %s already has role %s", user_id, role_id)
                     return True
 
                 # Create assignment
@@ -952,11 +952,11 @@ class PostgreSQLBackend:
                     }
                 )
 
-                logger.info(f"Assigned role {role_id} to user {user_id}")
+                logger.info("Assigned role %s to user %s", role_id, user_id)
                 return True
 
         except Exception as e:
-            logger.error(f"Failed to assign role: {e}")
+            logger.error("Failed to assign role: %s", e)
             raise
 
     def get_user_roles(self, user_id: str) -> List[Dict[str, Any]]:
@@ -1001,7 +1001,7 @@ class PostgreSQLBackend:
                 ]
 
         except Exception as e:
-            logger.error(f"Failed to get user roles: {e}")
+            logger.error("Failed to get user roles: %s", e)
             raise
 
     def cleanup_expired_data(self, older_than_days: int = 90) -> Dict[str, int]:
@@ -1047,11 +1047,11 @@ class PostgreSQLBackend:
 
                 session.commit()
 
-                logger.info(f"Cleanup completed: {counts}")
+                logger.info("Cleanup completed: %s", counts)
                 return counts
 
         except Exception as e:
-            logger.error(f"Failed to cleanup expired data: {e}")
+            logger.error("Failed to cleanup expired data: %s", e)
             raise
 
     def get_statistics(self) -> Dict[str, Any]:
@@ -1084,7 +1084,7 @@ class PostgreSQLBackend:
                 return stats
 
         except Exception as e:
-            logger.error(f"Failed to get statistics: {e}")
+            logger.error("Failed to get statistics: %s", e)
             raise
 
     def close(self):

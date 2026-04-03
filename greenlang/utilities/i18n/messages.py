@@ -287,7 +287,7 @@ class I18n:
         self.language = language.lower()
 
         if self.language not in MESSAGES:
-            logger.warning(f"Language {language} not supported, falling back to English")
+            logger.warning("Language %s not supported, falling back to English", language)
             self.language = "en"
 
     def get(self, key: str, **kwargs) -> str:
@@ -307,14 +307,14 @@ class I18n:
         # Fallback to English if not found
         if message is None:
             message = MESSAGES["en"].get(key, key)
-            logger.warning(f"Message key '{key}' not found for language '{self.language}'")
+            logger.warning("Message key '%s' not found for language '%s'", key, self.language)
 
         # Format with parameters if provided
         if kwargs:
             try:
                 message = message.format(**kwargs)
             except KeyError as e:
-                logger.error(f"Missing format parameter {e} for message '{key}'")
+                logger.error("Missing format parameter %s for message '%s'", e, key)
 
         return message
 

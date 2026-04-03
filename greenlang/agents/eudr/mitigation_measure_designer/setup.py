@@ -483,7 +483,7 @@ class MitigationMeasureDesignerService:
                 await self._db_pool.open()
                 logger.info("PostgreSQL connection pool opened")
             except Exception as e:
-                logger.warning(f"PostgreSQL pool init failed: {e}")
+                logger.warning("PostgreSQL pool init failed: %s", e)
                 self._db_pool = None
 
         # Initialize Redis
@@ -500,7 +500,7 @@ class MitigationMeasureDesignerService:
                 await self._redis.ping()
                 logger.info("Redis connection established")
             except Exception as e:
-                logger.warning(f"Redis init failed: {e}")
+                logger.warning("Redis init failed: %s", e)
                 self._redis = None
 
         # Initialize engines
@@ -517,7 +517,7 @@ class MitigationMeasureDesignerService:
                         f"Template library loaded: {template_count} templates"
                     )
             except Exception as e:
-                logger.warning(f"Template library load failed: {e}")
+                logger.warning("Template library load failed: %s", e)
 
         self._initialized = True
         elapsed = (time.monotonic() - start) * 1000
@@ -564,11 +564,11 @@ class MitigationMeasureDesignerService:
                 try:
                     engine = engine_cls(config=self.config)
                     self._engines[name] = engine
-                    logger.info(f"Engine '{name}' initialized")
+                    logger.info("Engine '%s' initialized", name)
                 except Exception as e:
-                    logger.warning(f"Engine '{name}' init failed: {e}")
+                    logger.warning("Engine '%s' init failed: %s", name, e)
             else:
-                logger.debug(f"Engine '{name}' class not available")
+                logger.debug("Engine '%s' class not available", name)
 
         # Wire up convenience references
         self._strategy_designer = self._engines.get(
@@ -608,9 +608,9 @@ class MitigationMeasureDesignerService:
                     result = engine.shutdown()
                     if asyncio.iscoroutine(result):
                         await result
-                    logger.info(f"Engine '{name}' shut down")
+                    logger.info("Engine '%s' shut down", name)
                 except Exception as e:
-                    logger.warning(f"Engine '{name}' shutdown error: {e}")
+                    logger.warning("Engine '%s' shutdown error: %s", name, e)
 
         # Close Redis
         if self._redis is not None:
@@ -618,7 +618,7 @@ class MitigationMeasureDesignerService:
                 await self._redis.close()
                 logger.info("Redis connection closed")
             except Exception as e:
-                logger.warning(f"Redis close error: {e}")
+                logger.warning("Redis close error: %s", e)
 
         # Close database pool
         if self._db_pool is not None:
@@ -626,7 +626,7 @@ class MitigationMeasureDesignerService:
                 await self._db_pool.close()
                 logger.info("PostgreSQL pool closed")
             except Exception as e:
-                logger.warning(f"PostgreSQL pool close error: {e}")
+                logger.warning("PostgreSQL pool close error: %s", e)
 
         # Record shutdown provenance
         if self._provenance is not None:
@@ -951,7 +951,7 @@ class MitigationMeasureDesignerService:
             try:
                 return await self._strategy_designer.get_strategy(strategy_id)
             except Exception as e:
-                logger.debug(f"Engine strategy lookup failed: {e}")
+                logger.debug("Engine strategy lookup failed: %s", e)
 
         # Fallback to in-memory
         return self._strategies.get(strategy_id)
@@ -981,7 +981,7 @@ class MitigationMeasureDesignerService:
                     status=status,
                 )
             except Exception as e:
-                logger.debug(f"Engine list_strategies failed: {e}")
+                logger.debug("Engine list_strategies failed: %s", e)
 
         # Fallback: filter in-memory strategies
         results = list(self._strategies.values())
@@ -1042,7 +1042,7 @@ class MitigationMeasureDesignerService:
                 _safe_record(record_measure_approved)
                 return result
             except Exception as e:
-                logger.debug(f"Engine approve_measure failed: {e}")
+                logger.debug("Engine approve_measure failed: %s", e)
 
         # Fallback: in-memory state transition
         measure = self._measures.get(measure_id)
@@ -1071,7 +1071,7 @@ class MitigationMeasureDesignerService:
         _safe_record(record_measure_approved)
         _safe_gauge(set_active_measures, len(self._measures))
 
-        logger.info(f"Measure {measure_id} approved by {approved_by}")
+        logger.info("Measure %s approved by %s", measure_id, approved_by)
         return measure
 
     async def start_measure(
@@ -1091,7 +1091,7 @@ class MitigationMeasureDesignerService:
         Raises:
             ValueError: If measure not found or not in approved status.
         """
-        logger.info(f"Starting measure {measure_id}")
+        logger.info("Starting measure %s", measure_id)
 
         # Delegate to engine if available
         if self._implementation_tracker is not None:
@@ -1100,7 +1100,7 @@ class MitigationMeasureDesignerService:
                     measure_id=measure_id,
                 )
             except Exception as e:
-                logger.debug(f"Engine start_measure failed: {e}")
+                logger.debug("Engine start_measure failed: %s", e)
 
         # Fallback: in-memory state transition
         measure = self._measures.get(measure_id)
@@ -1125,7 +1125,7 @@ class MitigationMeasureDesignerService:
                 actor="system",
             )
 
-        logger.info(f"Measure {measure_id} started")
+        logger.info("Measure %s started", measure_id)
         return measure
 
     async def complete_measure(
@@ -1148,7 +1148,7 @@ class MitigationMeasureDesignerService:
         Raises:
             ValueError: If measure not found or not in_progress.
         """
-        logger.info(f"Completing measure {measure_id}")
+        logger.info("Completing measure %s", measure_id)
 
         # Delegate to engine if available
         if self._implementation_tracker is not None:
@@ -1160,7 +1160,7 @@ class MitigationMeasureDesignerService:
                 _safe_record(record_measure_completed)
                 return result
             except Exception as e:
-                logger.debug(f"Engine complete_measure failed: {e}")
+                logger.debug("Engine complete_measure failed: %s", e)
 
         # Fallback: in-memory state transition
         measure = self._measures.get(measure_id)
@@ -1224,7 +1224,7 @@ class MitigationMeasureDesignerService:
         Raises:
             ValueError: If measure not found or already completed/cancelled.
         """
-        logger.info(f"Cancelling measure {measure_id}: {reason}")
+        logger.info("Cancelling measure %s: %s", measure_id, reason)
 
         # Delegate to engine if available
         if self._implementation_tracker is not None:
@@ -1234,7 +1234,7 @@ class MitigationMeasureDesignerService:
                     reason=reason,
                 )
             except Exception as e:
-                logger.debug(f"Engine cancel_measure failed: {e}")
+                logger.debug("Engine cancel_measure failed: %s", e)
 
         # Fallback: in-memory state transition
         measure = self._measures.get(measure_id)
@@ -1262,7 +1262,7 @@ class MitigationMeasureDesignerService:
                 metadata={"reason": reason},
             )
 
-        logger.info(f"Measure {measure_id} cancelled: {reason}")
+        logger.info("Measure %s cancelled: %s", measure_id, reason)
         return measure
 
     async def add_evidence(
@@ -1309,7 +1309,7 @@ class MitigationMeasureDesignerService:
                         uploaded_by=uploaded_by,
                     )
                 except Exception as e:
-                    logger.debug(f"Engine add_evidence failed: {e}")
+                    logger.debug("Engine add_evidence failed: %s", e)
 
             raise ValueError(f"Measure {measure_id} not found")
 
@@ -1385,7 +1385,7 @@ class MitigationMeasureDesignerService:
                     commodity=commodity,
                 )
             except Exception as e:
-                logger.debug(f"Engine list_templates failed: {e}")
+                logger.debug("Engine list_templates failed: %s", e)
 
         # Fallback: return filtered in-memory templates
         results = list(self._templates)
@@ -1426,7 +1426,7 @@ class MitigationMeasureDesignerService:
             try:
                 return await self._template_library.get_template(template_id)
             except Exception as e:
-                logger.debug(f"Engine get_template failed: {e}")
+                logger.debug("Engine get_template failed: %s", e)
 
         # Fallback: search in-memory templates
         for tmpl in self._templates:
@@ -1474,7 +1474,7 @@ class MitigationMeasureDesignerService:
                 _safe_observe(observe_verification_duration, elapsed)
                 return result
             except Exception as e:
-                logger.debug(f"Engine verify failed: {e}")
+                logger.debug("Engine verify failed: %s", e)
 
         # Fallback: compute from in-memory data
         strategy = self._strategies.get(strategy_id)
@@ -1613,7 +1613,7 @@ class MitigationMeasureDesignerService:
                 _safe_observe(observe_report_generation_duration, elapsed)
                 return result
             except Exception as e:
-                logger.debug(f"Engine generate_report failed: {e}")
+                logger.debug("Engine generate_report failed: %s", e)
 
         # Fallback: generate from in-memory data
         strategy = self._strategies.get(strategy_id)
@@ -1740,7 +1740,7 @@ class MitigationMeasureDesignerService:
                 _safe_gauge(set_active_workflows, len(self._workflows))
                 return result
             except Exception as e:
-                logger.debug(f"Engine initiate_workflow failed: {e}")
+                logger.debug("Engine initiate_workflow failed: %s", e)
 
         # Fallback: create workflow and design strategy
         workflow_id = _new_uuid()
@@ -1826,7 +1826,7 @@ class MitigationMeasureDesignerService:
                     workflow_id=workflow_id,
                 )
             except Exception as e:
-                logger.debug(f"Engine get_workflow_status failed: {e}")
+                logger.debug("Engine get_workflow_status failed: %s", e)
 
         # Fallback: in-memory lookup
         workflow = self._workflows.get(workflow_id)
@@ -1871,7 +1871,7 @@ class MitigationMeasureDesignerService:
                 )
                 return result
             except Exception as e:
-                logger.debug(f"Engine estimate failed: {e}")
+                logger.debug("Engine estimate failed: %s", e)
 
         # Fallback: compute from in-memory data
         measure = self._measures.get(measure_id)

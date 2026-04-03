@@ -281,7 +281,7 @@ class ClimateBudgetAgent(BaseAgent):
 
         self._allocations: Dict[str, BudgetAllocation] = {}
         super().__init__(config)
-        logger.info(f"Initialized {self.AGENT_NAME} v{self.VERSION}")
+        logger.info("Initialized %s v%s", self.AGENT_NAME, self.VERSION)
 
     def execute(self, input_data: Dict[str, Any]) -> AgentResult:
         """Execute climate budget operations."""
@@ -311,7 +311,7 @@ class ClimateBudgetAgent(BaseAgent):
             )
 
         except Exception as e:
-            logger.error(f"Climate budget operation failed: {e}", exc_info=True)
+            logger.error("Climate budget operation failed: %s", e, exc_info=True)
             return AgentResult(success=False, error=str(e))
 
     def _allocate_budget(self, input_data: ClimateBudgetInput) -> ClimateBudgetOutput:

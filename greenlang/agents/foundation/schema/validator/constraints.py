@@ -740,7 +740,7 @@ class ConstraintValidator:
                 ))
             elif pattern_matched is None:
                 # Timeout occurred during regex matching
-                logger.warning(f"Regex pattern match timed out at path {path}")
+                logger.warning("Regex pattern match timed out at path %s", path)
                 findings.append(Finding(
                     code="GLSCHEMA-E809",
                     severity=Severity.ERROR,
@@ -1004,13 +1004,13 @@ class ConstraintValidator:
         """
         # If pattern is marked as unsafe, return None to skip
         if not pattern.is_safe:
-            logger.warning(f"Skipping unsafe pattern: {pattern.pattern}")
+            logger.warning("Skipping unsafe pattern: %s", pattern.pattern)
             return None
 
         # Get the compiled regex
         compiled = pattern.get_compiled()
         if compiled is None:
-            logger.warning(f"Failed to compile pattern: {pattern.pattern}")
+            logger.warning("Failed to compile pattern: %s", pattern.pattern)
             return None
 
         # Use timeout for matching
@@ -1071,7 +1071,7 @@ class ConstraintValidator:
 
         if validator is None:
             # Unknown format - log warning but don't fail
-            logger.debug(f"Unknown format '{format_name}' at path {path}")
+            logger.debug("Unknown format '%s' at path %s", format_name, path)
             return None
 
         try:
@@ -1089,7 +1089,7 @@ class ConstraintValidator:
                     )
                 )
         except Exception as e:
-            logger.warning(f"Format validation failed for '{format_name}': {e}")
+            logger.warning("Format validation failed for '%s': %s", format_name, e)
             return Finding(
                 code="GLSCHEMA-E206",
                 severity=Severity.ERROR,

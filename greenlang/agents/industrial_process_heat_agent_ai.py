@@ -857,20 +857,20 @@ class IndustrialProcessHeatAgent_AI(Agent[IndustrialProcessHeatInput, Industrial
 
         for field in required_fields:
             if field not in payload:
-                self.logger.error(f"Missing required field: {field}")
+                logger.error("Missing required field: %s", field)
                 return False
 
         # Validate ranges
         if payload["production_rate"] <= 0:
-            self.logger.error("production_rate must be positive")
+            logger.error("production_rate must be positive")
             return False
 
         if not (20 <= payload["temperature_requirement"] <= 600):
-            self.logger.error("temperature_requirement must be between 20 and 600°C")
+            logger.error("temperature_requirement must be between 20 and 600°C")
             return False
 
         if not (-90 <= payload["latitude"] <= 90):
-            self.logger.error("latitude must be between -90 and 90")
+            logger.error("latitude must be between -90 and 90")
             return False
 
         # Validate process type
@@ -886,13 +886,13 @@ class IndustrialProcessHeatAgent_AI(Agent[IndustrialProcessHeatInput, Industrial
             "metal_treating",
         ]
         if payload["process_type"] not in valid_processes:
-            self.logger.error(f"Invalid process_type: {payload['process_type']}")
+            logger.error("Invalid process_type: %s", payload['process_type'])
             return False
 
         # Validate fuel type
         valid_fuels = ["natural_gas", "fuel_oil", "propane", "coal", "electricity_grid"]
         if payload["current_fuel_type"] not in valid_fuels:
-            self.logger.error(f"Invalid current_fuel_type: {payload['current_fuel_type']}")
+            logger.error("Invalid current_fuel_type: %s", payload['current_fuel_type'])
             return False
 
         return True
@@ -958,7 +958,7 @@ class IndustrialProcessHeatAgent_AI(Agent[IndustrialProcessHeatInput, Industrial
             return result
 
         except Exception as e:
-            self.logger.error(f"Error in industrial process heat analysis: {e}")
+            logger.error("Error in industrial process heat analysis: %s", e)
             error_info: ErrorInfo = {
                 "type": "CalculationError",
                 "message": f"Failed to analyze process heat: {str(e)}",
@@ -1085,7 +1085,7 @@ class IndustrialProcessHeatAgent_AI(Agent[IndustrialProcessHeatInput, Industrial
             }
 
         except BudgetExceeded as e:
-            self.logger.error(f"Budget exceeded: {e}")
+            logger.error("Budget exceeded: %s", e)
             error_info: ErrorInfo = {
                 "type": "BudgetError",
                 "message": f"AI budget exceeded: {str(e)}",
@@ -1194,7 +1194,7 @@ IMPORTANT:
                         **args
                     )
             except Exception as e:
-                self.logger.warning(f"Tool call {name} failed: {e}")
+                logger.warning("Tool call %s failed: %s", name, e)
                 # Continue processing other tools
 
         return results

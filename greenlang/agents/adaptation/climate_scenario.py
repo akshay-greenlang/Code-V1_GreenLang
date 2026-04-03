@@ -241,7 +241,7 @@ class ClimateScenarioAgent(BaseAgent):
             )
 
         super().__init__(config)
-        logger.info(f"Initialized {self.AGENT_NAME} v{self.VERSION}")
+        logger.info("Initialized %s v%s", self.AGENT_NAME, self.VERSION)
 
     def initialize(self):
         """Initialize agent resources."""
@@ -261,7 +261,7 @@ class ClimateScenarioAgent(BaseAgent):
 
         try:
             scenario_input = ScenarioInput(**input_data)
-            self.logger.info(
+            logger.info(
                 f"Applying climate scenarios: {scenario_input.request_id}, "
                 f"{len(scenario_input.scenarios)} scenarios"
             )
@@ -304,7 +304,7 @@ class ClimateScenarioAgent(BaseAgent):
                 }, sort_keys=True).encode()
             ).hexdigest()
 
-            self.logger.info(
+            logger.info(
                 f"Climate scenario application complete: "
                 f"{len(location_projections)} locations"
             )
@@ -320,7 +320,7 @@ class ClimateScenarioAgent(BaseAgent):
             )
 
         except Exception as e:
-            self.logger.error(f"Climate scenario application failed: {str(e)}", exc_info=True)
+            logger.error("Climate scenario application failed: %s", e, exc_info=True)
             return AgentResult(
                 success=False,
                 error=str(e),

@@ -290,7 +290,7 @@ class RoleHierarchy:
         for parent_id in role.parent_role_ids:
             self._children_map[parent_id].add(role.role_id)
 
-        logger.info(f"Added role: {role.name} (id={role.role_id})")
+        logger.info("Added role: %s (id=%s)", role.name, role.role_id)
 
     def get_role(self, role_id: str) -> Optional[Role]:
         """Get role by ID."""
@@ -318,7 +318,7 @@ class RoleHierarchy:
         # Remove from roles
         del self._roles[role_id]
 
-        logger.info(f"Removed role: {role.name} (id={role_id})")
+        logger.info("Removed role: %s (id=%s)", role.name, role_id)
         return True
 
     def get_effective_permissions(self, role_id: str) -> List[Permission]:
@@ -596,7 +596,7 @@ class RoleManager:
         )
 
         self.hierarchy.add_role(role)
-        logger.info(f"Created role: {role.name}")
+        logger.info("Created role: %s", role.name)
         return role
 
     def get_role(self, role_id: str) -> Optional[Role]:
@@ -621,7 +621,7 @@ class RoleManager:
 
         role.updated_at = DeterministicClock.utcnow()
         self.hierarchy.add_role(role)  # Updates existing
-        logger.info(f"Updated role: {role.name}")
+        logger.info("Updated role: %s", role.name)
         return role
 
     def delete_role(self, role_id: str) -> bool:
@@ -685,7 +685,7 @@ class RoleManager:
         self._assignments[assignment.assignment_id] = assignment
         self._user_assignments[principal_id].add(assignment.assignment_id)
 
-        logger.info(f"Assigned role {role_id} to {principal_type} {principal_id}")
+        logger.info("Assigned role %s to %s %s", role_id, principal_type, principal_id)
         return assignment
 
     def unassign_role(self, assignment_id: str) -> bool:
@@ -697,7 +697,7 @@ class RoleManager:
         self._user_assignments[assignment.principal_id].discard(assignment_id)
         del self._assignments[assignment_id]
 
-        logger.info(f"Unassigned role assignment {assignment_id}")
+        logger.info("Unassigned role assignment %s", assignment_id)
         return True
 
     def get_user_roles(self, principal_id: str, include_expired: bool = False) -> List[Role]:

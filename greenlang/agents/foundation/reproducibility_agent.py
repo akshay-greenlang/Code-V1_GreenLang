@@ -467,8 +467,8 @@ class ReproducibilityAgent(BaseAgent):
 
     def initialize(self):
         """Initialize agent resources."""
-        self.logger.info(f"Initializing {self.AGENT_ID}: {self.AGENT_NAME}")
-        self.logger.info("Reproducibility Agent initialized")
+        logger.info("Initializing %s: %s", self.AGENT_ID, self.AGENT_NAME)
+        logger.info("Reproducibility Agent initialized")
 
     def execute(self, input_data: Dict[str, Any]) -> AgentResult:
         """
@@ -485,7 +485,7 @@ class ReproducibilityAgent(BaseAgent):
         try:
             # Parse input
             repro_input = ReproducibilityInput(**input_data)
-            self.logger.info(
+            logger.info(
                 f"Starting reproducibility verification for: {repro_input.execution_id}"
             )
 
@@ -622,7 +622,7 @@ class ReproducibilityAgent(BaseAgent):
                 replay_successful=is_reproducible if repro_input.replay_config else None
             )
 
-            self.logger.info(
+            logger.info(
                 f"Reproducibility verification complete: "
                 f"status={overall_status.value}, "
                 f"is_reproducible={is_reproducible}, "
@@ -640,7 +640,7 @@ class ReproducibilityAgent(BaseAgent):
             )
 
         except Exception as e:
-            self.logger.error(
+            logger.error(
                 f"Reproducibility verification failed: {str(e)}",
                 exc_info=True
             )
@@ -1377,7 +1377,7 @@ class ReproducibilityAgent(BaseAgent):
             except ImportError:
                 pass
 
-        self.logger.info(f"Applied replay seeds: global={seeds.global_seed}")
+        logger.info("Applied replay seeds: global=%s", seeds.global_seed)
 
     # ==========================================================================
     # Public API Methods
@@ -1568,7 +1568,7 @@ class ReproducibilityAgent(BaseAgent):
             manifest: Version manifest to use
         """
         self._version_manifest = manifest
-        self.logger.info(f"Version manifest set: {manifest.manifest_id}")
+        logger.info("Version manifest set: %s", manifest.manifest_id)
 
     def get_current_environment(self) -> EnvironmentFingerprint:
         """

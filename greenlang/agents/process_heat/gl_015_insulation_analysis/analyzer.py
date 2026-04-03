@@ -225,7 +225,7 @@ class InsulationAnalysisAgent(IntelligenceMixin, BaseProcessHeatAgent[Insulation
         start_time = datetime.now(timezone.utc)
         self._analysis_count += 1
 
-        logger.info(f"Processing insulation analysis for {input_data.item_id}")
+        logger.info("Processing insulation analysis for %s", input_data.item_id)
 
         try:
             with self.safety_guard():
@@ -368,12 +368,12 @@ class InsulationAnalysisAgent(IntelligenceMixin, BaseProcessHeatAgent[Insulation
                     f"surface_temp={heat_loss_result.outer_surface_temperature_f:.1f}F, "
                     f"recommendations={len(recommendations)}"
                 )
-                logger.debug(f"Generated explanation for {input_data.item_id}")
+                logger.debug("Generated explanation for %s", input_data.item_id)
 
                 return output
 
         except Exception as e:
-            logger.error(f"Insulation analysis failed: {e}", exc_info=True)
+            logger.error("Insulation analysis failed: %s", e, exc_info=True)
             raise
 
     def validate_input(self, input_data: InsulationInput) -> bool:
@@ -429,7 +429,7 @@ class InsulationAnalysisAgent(IntelligenceMixin, BaseProcessHeatAgent[Insulation
                 )
 
         if errors:
-            logger.warning(f"Validation errors: {errors}")
+            logger.warning("Validation errors: %s", errors)
             return False
 
         return True

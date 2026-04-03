@@ -255,7 +255,7 @@ class CircuitBreaker:
         self.success_count = 0
         self.last_failure_time: Optional[datetime] = None
 
-        logger.info(f"CircuitBreaker initialized (threshold={failure_threshold}, timeout={recovery_timeout}s)")
+        logger.info("CircuitBreaker initialized (threshold=%s, timeout=%ss)", failure_threshold, recovery_timeout)
 
     def record_success(self):
         """Record successful request"""
@@ -285,7 +285,7 @@ class CircuitBreaker:
             if self.failure_count >= self.failure_threshold:
                 # Open circuit
                 self.state = CircuitState.OPEN
-                logger.warning(f"Circuit breaker OPEN ({self.failure_count} consecutive failures)")
+                logger.warning("Circuit breaker OPEN (%s consecutive failures)", self.failure_count)
 
     def can_execute(self) -> bool:
         """Check if request can be executed"""
@@ -353,7 +353,7 @@ class FallbackManager:
         self.fallback_counts: Dict[str, int] = {}
         self.success_counts: Dict[str, int] = {}
 
-        logger.info(f"FallbackManager initialized with {len(self.fallback_chain)} models")
+        logger.info("FallbackManager initialized with %s models", len(self.fallback_chain))
 
     async def execute_with_fallback(
         self,
@@ -384,7 +384,7 @@ class FallbackManager:
             if self.enable_circuit_breaker:
                 circuit = self.circuit_breakers.get(config.model)
                 if circuit and not circuit.can_execute():
-                    logger.warning(f"Circuit breaker OPEN for {config.model}. Skipping.")
+                    logger.warning("Circuit breaker OPEN for %s. Skipping.", config.model)
                     attempts.append(FallbackAttempt(
                         model=config.model,
                         success=False,
@@ -435,9 +435,9 @@ class FallbackManager:
         )
 
         if result.success:
-            logger.info(f"Request succeeded with {model_used} after {fallback_count} fallbacks ({total_latency:.2f}s)")
+            logger.info("Request succeeded with %s after %s fallbacks (%.2fs)", model_used, fallback_count, total_latency)
         else:
-            logger.error(f"Request failed after trying all {len(attempts)} models ({total_latency:.2f}s)")
+            logger.error("Request failed after trying all %s models (%.2fs)", len(attempts), total_latency)
 
         return result
 
@@ -474,7 +474,7 @@ class FallbackManager:
                 if quality_check_fn:
                     quality_score = quality_check_fn(response)
                     if quality_score < min_quality:
-                        logger.warning(f"{config.model}: Quality check failed ({quality_score:.2f} < {min_quality})")
+                        logger.warning("%s: Quality check failed (%.2f < %s)", config.model, quality_score, min_quality)
                         if retry < config.max_retries - 1:
                             await asyncio.sleep(self._get_backoff_delay(retry))
                             continue
@@ -494,7 +494,7 @@ class FallbackManager:
                 )
 
             except asyncio.TimeoutError:
-                logger.warning(f"{config.model}: Timeout (retry {retry+1}/{config.max_retries})")
+                logger.warning("%s: Timeout (retry %s/%s)", config.model, retry+1, config.max_retries)
                 if retry < config.max_retries - 1:
                     await asyncio.sleep(self._get_backoff_delay(retry))
                     continue
@@ -517,7 +517,7 @@ class FallbackManager:
                 else:
                     reason = FallbackReason.GENERIC_ERROR
 
-                logger.warning(f"{config.model}: {reason.value} (retry {retry+1}/{config.max_retries}): {e}")
+                logger.warning("%s: %s (retry %s/%s): %s", config.model, reason.value, retry+1, config.max_retries, e)
 
                 if retry < config.max_retries - 1:
                     await asyncio.sleep(self._get_backoff_delay(retry))

@@ -367,7 +367,7 @@ class FeatureServer:
             self._initialized = True
             logger.info("FeatureServer initialized successfully")
         except Exception as e:
-            logger.warning(f"Failed to initialize feature store: {e}")
+            logger.warning("Failed to initialize feature store: %s", e)
             # Continue without store - will return mock data
             self._initialized = True
 
@@ -430,7 +430,7 @@ class FeatureServer:
                     features[feature_name] = None
 
         except Exception as e:
-            logger.error(f"Error retrieving features: {e}")
+            logger.error("Error retrieving features: %s", e)
             for ref in feature_refs:
                 feature_name = ref.split(":")[-1]
                 features[feature_name] = None
@@ -539,7 +539,7 @@ class FeatureServer:
                     successful += 1
 
         except Exception as e:
-            logger.error(f"Error retrieving batch features: {e}")
+            logger.error("Error retrieving batch features: %s", e)
             failed = len(entity_ids)
 
         # Calculate total time
@@ -621,7 +621,7 @@ class FeatureServer:
                     entities[entity_id] = entity_features
 
             except Exception as e:
-                logger.error(f"Error getting feature view features: {e}")
+                logger.error("Error getting feature view features: %s", e)
 
         return FeatureViewResponse(
             feature_view=feature_view,

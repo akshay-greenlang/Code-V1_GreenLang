@@ -51,7 +51,7 @@ class DataQualityValidator:
     def add_check(self, check: QualityCheck):
         """Add a quality check."""
         self.checks.append(check)
-        logger.debug(f"Added quality check: {check.name}")
+        logger.debug("Added quality check: %s", check.name)
 
     def check_missing_ratio(self, records: List[Dict[str, Any]], threshold: float) -> ValidationResult:
         """Check ratio of missing values."""
@@ -180,6 +180,6 @@ class DataQualityValidator:
                 # Add more check types as needed
 
             except Exception as e:
-                logger.error(f"Quality check {check.name} failed: {str(e)}", exc_info=True)
+                logger.error("Quality check %s failed: %s", check.name, e, exc_info=True)
 
         return result

@@ -147,7 +147,7 @@ class FurnaceHeatTransfer:
         self.precision = precision
         self._provenance_tracker = ProvenanceTracker() if provenance_enabled else None
 
-        logger.info(f"FurnaceHeatTransfer initialized v{self.VERSION}")
+        logger.info("FurnaceHeatTransfer initialized v%s", self.VERSION)
 
     # =========================================================================
     # RADIANT HEAT TRANSFER - DETERMINISTIC
@@ -317,7 +317,7 @@ class FurnaceHeatTransfer:
 
         # Handle edge cases - DETERMINISTIC
         if dt1 <= 0 or dt2 <= 0:
-            logger.warning(f"Invalid temperature crosses: dT1={dt1}, dT2={dt2}")
+            logger.warning("Invalid temperature crosses: dT1=%s, dT2=%s", dt1, dt2)
             return {
                 "lmtd_f": 0.0,
                 "dt1_f": round(dt1, 2),
@@ -347,7 +347,7 @@ class FurnaceHeatTransfer:
             "valid": True,
         }
 
-        logger.debug(f"LMTD calculated: {lmtd:.1f}F ({flow_arrangement})")
+        logger.debug("LMTD calculated: %.1fF (%s)", lmtd, flow_arrangement)
 
         return result
 

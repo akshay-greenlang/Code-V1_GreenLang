@@ -161,7 +161,7 @@ class IntegrationRegistry:
         if connector_type in self._registry:
             del self._registry[connector_type]
             del self._metadata[connector_type]
-            logger.info(f"Unregistered connector: {connector_type}")
+            logger.info("Unregistered connector: %s", connector_type)
 
     def create_connector(
         self,
@@ -191,11 +191,11 @@ class IntegrationRegistry:
 
         try:
             connector = connector_class(config)
-            logger.info(f"Created connector instance: {connector_type}")
+            logger.info("Created connector instance: %s", connector_type)
             return connector
 
         except Exception as e:
-            logger.error(f"Failed to create connector {connector_type}: {e}")
+            logger.error("Failed to create connector %s: %s", connector_type, e)
             raise
 
     def get_connector_class(self, connector_type: str) -> Optional[Type[BaseConnector]]:
@@ -313,7 +313,7 @@ def _register_builtin_connectors():
             supported_protocols=["opcua", "modbus", "dnp3", "bacnet"]
         )
     except ImportError as e:
-        logger.debug(f"Could not register SCADAConnector: {e}")
+        logger.debug("Could not register SCADAConnector: %s", e)
 
     try:
         from greenlang.integrations.erp_connector import ERPConnector
@@ -323,7 +323,7 @@ def _register_builtin_connectors():
             supported_protocols=["rest", "odata", "soap"]
         )
     except ImportError as e:
-        logger.debug(f"Could not register ERPConnector: {e}")
+        logger.debug("Could not register ERPConnector: %s", e)
 
     try:
         from greenlang.integrations.cems_connector import CEMSConnector
@@ -333,7 +333,7 @@ def _register_builtin_connectors():
             supported_protocols=["modbus", "profibus"]
         )
     except ImportError as e:
-        logger.debug(f"Could not register CEMSConnector: {e}")
+        logger.debug("Could not register CEMSConnector: %s", e)
 
     try:
         from greenlang.integrations.historian_connector import HistorianConnector
@@ -343,7 +343,7 @@ def _register_builtin_connectors():
             supported_protocols=["pi-sdk", "opc-hda"]
         )
     except ImportError as e:
-        logger.debug(f"Could not register HistorianConnector: {e}")
+        logger.debug("Could not register HistorianConnector: %s", e)
 
     try:
         from greenlang.integrations.cmms_connector import CMMSConnector
@@ -353,6 +353,6 @@ def _register_builtin_connectors():
             supported_protocols=["rest", "soap"]
         )
     except ImportError as e:
-        logger.debug(f"Could not register CMMSConnector: {e}")
+        logger.debug("Could not register CMMSConnector: %s", e)
 
-    logger.info(f"Registered {len(registry._registry)} built-in connectors")
+    logger.info("Registered %s built-in connectors", len(registry._registry))

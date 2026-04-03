@@ -140,7 +140,7 @@ class FeedwaterAnalyzer:
             FeedwaterOutput with comprehensive analysis
         """
         start_time = datetime.now(timezone.utc)
-        logger.debug(f"Analyzing feedwater sample: {input_data.sample_id}")
+        logger.debug("Analyzing feedwater sample: %s", input_data.sample_id)
 
         parameter_results: List[WaterQualityResult] = []
         recommendations: List[str] = []

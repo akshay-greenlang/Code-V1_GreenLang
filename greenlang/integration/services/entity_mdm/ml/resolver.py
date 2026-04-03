@@ -372,7 +372,7 @@ class EntityResolver:
         )
 
         self._review_queue[review_id] = review_item
-        logger.info(f"Added review item {review_id} to queue")
+        logger.info("Added review item %s to queue", review_id)
 
         return review_id
 
@@ -471,10 +471,10 @@ class EntityResolver:
             results.append(result)
 
             if show_progress and (i + 1) % 100 == 0:
-                logger.info(f"Resolved {i + 1}/{len(query_entities)} entities")
+                logger.info("Resolved %s/%s entities", i + 1, len(query_entities))
 
         if show_progress:
-            logger.info(f"Batch resolution complete: {len(results)} entities")
+            logger.info("Batch resolution complete: %s entities", len(results))
 
         return results
 

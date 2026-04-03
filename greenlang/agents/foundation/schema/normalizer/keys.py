@@ -424,7 +424,7 @@ class KeyCanonicalizer:
         if self.ir.renamed_fields:
             for old_name, new_name in self.ir.renamed_fields.items():
                 alias_map[old_name] = new_name
-                logger.debug(f"Added alias: '{old_name}' -> '{new_name}'")
+                logger.debug("Added alias: '%s' -> '%s'", old_name, new_name)
 
         # Check property extensions for additional aliases
         for path, prop in self.ir.properties.items():
@@ -644,7 +644,7 @@ class KeyCanonicalizer:
         # Direct lookup in alias map
         if key in self._alias_to_canonical:
             canonical = self._alias_to_canonical[key]
-            logger.debug(f"Resolved alias '{key}' -> '{canonical}' at path '{path}'")
+            logger.debug("Resolved alias '%s' -> '%s' at path '%s'", key, canonical, path)
             return canonical
 
         return None

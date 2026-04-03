@@ -67,7 +67,7 @@ class FormulaRepository:
 
         # Initialize database if it doesn't exist
         if not Path(db_path).exists():
-            logger.info(f"Creating new database at {db_path}")
+            logger.info("Creating new database at %s", db_path)
             self._initialize_database()
 
     def _get_connection(self) -> sqlite3.Connection:
@@ -79,9 +79,9 @@ class FormulaRepository:
                     detect_types=sqlite3.PARSE_DECLTYPES | sqlite3.PARSE_COLNAMES,
                 )
                 self._connection.row_factory = sqlite3.Row
-                logger.debug(f"Connected to database: {self.db_path}")
+                logger.debug("Connected to database: %s", self.db_path)
             except Exception as e:
-                logger.error(f"Database connection failed: {e}")
+                logger.error("Database connection failed: %s", e)
                 raise DataAccessError(f"Database connection failed: {e}") from e
 
         return self._connection
@@ -98,7 +98,7 @@ class FormulaRepository:
 
             logger.info("Database schema initialized successfully")
         except Exception as e:
-            logger.error(f"Database initialization failed: {e}")
+            logger.error("Database initialization failed: %s", e)
             raise DataAccessError(f"Database initialization failed: {e}") from e
 
     def close(self):
@@ -150,16 +150,16 @@ class FormulaRepository:
             conn.commit()
             formula_id = cursor.lastrowid
 
-            logger.info(f"Created formula {formula.formula_code} (id={formula_id})")
+            logger.info("Created formula %s (id=%s)", formula.formula_code, formula_id)
             return formula_id
 
         except sqlite3.IntegrityError as e:
-            logger.error(f"Formula {formula.formula_code} already exists")
+            logger.error("Formula %s already exists", formula.formula_code)
             raise ValidationError(
                 f"Formula {formula.formula_code} already exists"
             ) from e
         except Exception as e:
-            logger.error(f"Failed to create formula: {e}")
+            logger.error("Failed to create formula: %s", e)
             raise DataAccessError(f"Failed to create formula: {e}") from e
 
     def get_formula_by_code(self, formula_code: str) -> Optional[FormulaMetadata]:
@@ -197,7 +197,7 @@ class FormulaRepository:
             )
 
         except Exception as e:
-            logger.error(f"Failed to get formula {formula_code}: {e}")
+            logger.error("Failed to get formula %s: %s", formula_code, e)
             raise DataAccessError(f"Failed to get formula: {e}") from e
 
     def get_formula_by_id(self, formula_id: int) -> Optional[FormulaMetadata]:
@@ -225,7 +225,7 @@ class FormulaRepository:
             )
 
         except Exception as e:
-            logger.error(f"Failed to get formula by id {formula_id}: {e}")
+            logger.error("Failed to get formula by id %s: %s", formula_id, e)
             raise DataAccessError(f"Failed to get formula: {e}") from e
 
     def list_formulas(
@@ -285,7 +285,7 @@ class FormulaRepository:
             return formulas
 
         except Exception as e:
-            logger.error(f"Failed to list formulas: {e}")
+            logger.error("Failed to list formulas: %s", e)
             raise DataAccessError(f"Failed to list formulas: {e}") from e
 
     # ========================================================================
@@ -357,12 +357,12 @@ class FormulaRepository:
             return version_id
 
         except sqlite3.IntegrityError as e:
-            logger.error(f"Version {version.version_number} already exists")
+            logger.error("Version %s already exists", version.version_number)
             raise ValidationError(
                 f"Version {version.version_number} already exists"
             ) from e
         except Exception as e:
-            logger.error(f"Failed to create version: {e}")
+            logger.error("Failed to create version: %s", e)
             raise DataAccessError(f"Failed to create version: {e}") from e
 
     def get_version(
@@ -389,7 +389,7 @@ class FormulaRepository:
             return self._row_to_formula_version(row)
 
         except Exception as e:
-            logger.error(f"Failed to get version: {e}")
+            logger.error("Failed to get version: %s", e)
             raise DataAccessError(f"Failed to get version: {e}") from e
 
     def get_active_version(
@@ -432,7 +432,7 @@ class FormulaRepository:
             return self._row_to_formula_version(row)
 
         except Exception as e:
-            logger.error(f"Failed to get active version: {e}")
+            logger.error("Failed to get active version: %s", e)
             raise DataAccessError(f"Failed to get active version: {e}") from e
 
     def get_latest_version_number(self, formula_id: int) -> int:
@@ -454,7 +454,7 @@ class FormulaRepository:
             return row["max_version"] or 0
 
         except Exception as e:
-            logger.error(f"Failed to get latest version number: {e}")
+            logger.error("Failed to get latest version number: %s", e)
             raise DataAccessError(f"Failed to get latest version number: {e}") from e
 
     def list_versions(
@@ -482,7 +482,7 @@ class FormulaRepository:
             return versions
 
         except Exception as e:
-            logger.error(f"Failed to list versions: {e}")
+            logger.error("Failed to list versions: %s", e)
             raise DataAccessError(f"Failed to list versions: {e}") from e
 
     def update_version_status(
@@ -503,10 +503,10 @@ class FormulaRepository:
             )
 
             conn.commit()
-            logger.info(f"Updated version {version_id} status to {new_status}")
+            logger.info("Updated version %s status to %s", version_id, new_status)
 
         except Exception as e:
-            logger.error(f"Failed to update version status: {e}")
+            logger.error("Failed to update version status: %s", e)
             raise DataAccessError(f"Failed to update version status: {e}") from e
 
     def set_effective_dates(
@@ -531,10 +531,10 @@ class FormulaRepository:
             )
 
             conn.commit()
-            logger.info(f"Set effective dates for version {version_id}")
+            logger.info("Set effective dates for version %s", version_id)
 
         except Exception as e:
-            logger.error(f"Failed to set effective dates: {e}")
+            logger.error("Failed to set effective dates: %s", e)
             raise DataAccessError(f"Failed to set effective dates: {e}") from e
 
     # ========================================================================
@@ -566,7 +566,7 @@ class FormulaRepository:
             return cursor.lastrowid
 
         except Exception as e:
-            logger.error(f"Failed to add dependency: {e}")
+            logger.error("Failed to add dependency: %s", e)
             raise DataAccessError(f"Failed to add dependency: {e}") from e
 
     def get_dependencies(self, version_id: int) -> List[FormulaDependency]:
@@ -598,7 +598,7 @@ class FormulaRepository:
             return dependencies
 
         except Exception as e:
-            logger.error(f"Failed to get dependencies: {e}")
+            logger.error("Failed to get dependencies: %s", e)
             raise DataAccessError(f"Failed to get dependencies: {e}") from e
 
     # ========================================================================
@@ -640,7 +640,7 @@ class FormulaRepository:
             return cursor.lastrowid
 
         except Exception as e:
-            logger.error(f"Failed to log execution: {e}")
+            logger.error("Failed to log execution: %s", e)
             raise DataAccessError(f"Failed to log execution: {e}") from e
 
     # ========================================================================

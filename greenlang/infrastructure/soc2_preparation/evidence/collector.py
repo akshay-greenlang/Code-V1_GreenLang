@@ -260,12 +260,12 @@ class SourceAdapter(ABC):
     async def initialize(self) -> None:
         """Initialize the adapter (connect to source, validate config)."""
         self._initialized = True
-        logger.info(f"{self.__class__.__name__} initialized")
+        logger.info("%s initialized", self.__class__.__name__)
 
     async def close(self) -> None:
         """Close the adapter and release resources."""
         self._initialized = False
-        logger.info(f"{self.__class__.__name__} closed")
+        logger.info("%s closed", self.__class__.__name__)
 
     @abstractmethod
     async def collect(
@@ -360,7 +360,7 @@ class CloudTrailCollector(SourceAdapter):
             )
 
         except Exception as exc:
-            logger.error(f"CloudTrail collection failed: {exc}")
+            logger.error("CloudTrail collection failed: %s", exc)
 
         return evidence_list
 
@@ -501,7 +501,7 @@ class GitHubCollector(SourceAdapter):
             )
 
         except Exception as exc:
-            logger.error(f"GitHub collection failed: {exc}")
+            logger.error("GitHub collection failed: %s", exc)
 
         return evidence_list
 
@@ -680,7 +680,7 @@ class PostgreSQLCollector(SourceAdapter):
             logger.warning("psycopg not available, PostgreSQL collection disabled")
             self._initialized = False
         except Exception as exc:
-            logger.error(f"PostgreSQL init failed: {exc}")
+            logger.error("PostgreSQL init failed: %s", exc)
             self._initialized = False
 
     async def close(self) -> None:
@@ -721,7 +721,7 @@ class PostgreSQLCollector(SourceAdapter):
             )
 
         except Exception as exc:
-            logger.error(f"PostgreSQL collection failed: {exc}")
+            logger.error("PostgreSQL collection failed: %s", exc)
 
         return evidence_list
 
@@ -873,7 +873,7 @@ class LokiCollector(SourceAdapter):
             )
 
         except Exception as exc:
-            logger.error(f"Loki collection failed: {exc}")
+            logger.error("Loki collection failed: %s", exc)
 
         return evidence_list
 
@@ -1015,7 +1015,7 @@ class AuthServiceCollector(SourceAdapter):
             )
 
         except Exception as exc:
-            logger.error(f"AuthService collection failed: {exc}")
+            logger.error("AuthService collection failed: %s", exc)
 
         return evidence_list
 
@@ -1133,7 +1133,7 @@ class JiraCollector(SourceAdapter):
             )
 
         except Exception as exc:
-            logger.error(f"Jira collection failed: {exc}")
+            logger.error("Jira collection failed: %s", exc)
 
         return evidence_list
 
@@ -1286,7 +1286,7 @@ class OktaCollector(SourceAdapter):
             )
 
         except Exception as exc:
-            logger.error(f"Okta collection failed: {exc}")
+            logger.error("Okta collection failed: %s", exc)
 
         return evidence_list
 
@@ -1434,7 +1434,7 @@ class EvidenceCollector:
         # Get sources for this criterion
         sources = CRITERION_SOURCE_MAP.get(criterion_id.upper(), [])
         if not sources:
-            logger.warning(f"No sources mapped for criterion {criterion_id}")
+            logger.warning("No sources mapped for criterion %s", criterion_id)
             return []
 
         # Collect from each applicable source
@@ -1455,7 +1455,7 @@ class EvidenceCollector:
                     if isinstance(result, list):
                         all_evidence.extend(result)
                     elif isinstance(result, Exception):
-                        logger.error(f"Collection error: {result}")
+                        logger.error("Collection error: %s", result)
         else:
             # Sequential collection
             for source in sources:
@@ -1466,7 +1466,7 @@ class EvidenceCollector:
                         )
                         all_evidence.extend(evidence)
                     except Exception as exc:
-                        logger.error(f"Collection error from {source}: {exc}")
+                        logger.error("Collection error from %s: %s", source, exc)
 
         # Validate and deduplicate
         validated = [e for e in all_evidence if self._validate_evidence(e)]

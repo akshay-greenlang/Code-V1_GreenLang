@@ -1021,7 +1021,7 @@ class FleetCoordinator:
                 self._sequences[unit_id] = sequence
                 results[unit_id] = sequence
 
-                logger.info(f"Initiated startup sequence for unit {unit_id}")
+                logger.info("Initiated startup sequence for unit %s", unit_id)
 
             # Log deferred units
             deferred = units_to_start[available_slots:]
@@ -1062,7 +1062,7 @@ class FleetCoordinator:
                 sequence.failure_reason = (
                     f"Step {sequence.current_step.value} failed"
                 )
-                logger.error(f"Startup sequence failed for {unit_id}")
+                logger.error("Startup sequence failed for %s", unit_id)
                 return sequence
 
             # Get current step index
@@ -1081,10 +1081,10 @@ class FleetCoordinator:
                 sequence.step_timeout_seconds = self.DEFAULT_STEP_DURATIONS.get(
                     next_step, 300.0
                 )
-                logger.debug(f"Unit {unit_id} advanced to {next_step.value}")
+                logger.debug("Unit %s advanced to %s", unit_id, next_step.value)
             else:
                 sequence.is_complete = True
-                logger.info(f"Startup sequence complete for unit {unit_id}")
+                logger.info("Startup sequence complete for unit %s", unit_id)
 
             return sequence
 
@@ -1132,7 +1132,7 @@ class FleetCoordinator:
                 self._sequences[unit_id] = sequence
                 results[unit_id] = sequence
 
-                logger.info(f"Initiated shutdown sequence for unit {unit_id}")
+                logger.info("Initiated shutdown sequence for unit %s", unit_id)
 
             return results
 
@@ -1165,7 +1165,7 @@ class FleetCoordinator:
                 sequence.failure_reason = (
                     f"Step {sequence.current_step.value} failed"
                 )
-                logger.error(f"Shutdown sequence failed for {unit_id}")
+                logger.error("Shutdown sequence failed for %s", unit_id)
                 return sequence
 
             # Get current step index
@@ -1184,10 +1184,10 @@ class FleetCoordinator:
                 sequence.step_timeout_seconds = self.DEFAULT_STEP_DURATIONS.get(
                     next_step, 60.0
                 )
-                logger.debug(f"Unit {unit_id} advanced to {next_step.value}")
+                logger.debug("Unit %s advanced to %s", unit_id, next_step.value)
             else:
                 sequence.is_complete = True
-                logger.info(f"Shutdown sequence complete for unit {unit_id}")
+                logger.info("Shutdown sequence complete for unit %s", unit_id)
 
             return sequence
 
@@ -1243,7 +1243,7 @@ class FleetCoordinator:
                 try:
                     self._callback_on_trip(trip_event)
                 except Exception as e:
-                    logger.error(f"Trip callback error: {e}")
+                    logger.error("Trip callback error: %s", e)
 
             return trip_event
 
@@ -1362,7 +1362,7 @@ class FleetCoordinator:
             if unit_id in self._sequences:
                 self._sequences[unit_id].is_failed = True
                 self._sequences[unit_id].failure_reason = reason
-                logger.info(f"Sequence cancelled for {unit_id}: {reason}")
+                logger.info("Sequence cancelled for %s: %s", unit_id, reason)
                 return True
             return False
 

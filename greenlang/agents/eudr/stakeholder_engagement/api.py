@@ -236,7 +236,7 @@ async def map_stakeholder(request: MapStakeholderRequest) -> Dict[str, Any]:
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e))
     except Exception as e:
-        logger.error(f"map_stakeholder failed: {e}", exc_info=True)
+        logger.error("map_stakeholder failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -252,7 +252,7 @@ async def list_stakeholders(
         results = await service.list_stakeholders(operator_id=operator_id, stakeholder_type=stakeholder_type, country_code=country_code)
         return [r.model_dump(mode="json") if hasattr(r, "model_dump") else r for r in results]
     except Exception as e:
-        logger.error(f"list_stakeholders failed: {e}", exc_info=True)
+        logger.error("list_stakeholders failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -268,7 +268,7 @@ async def get_stakeholder(stakeholder_id: str) -> Dict[str, Any]:
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"get_stakeholder failed: {e}", exc_info=True)
+        logger.error("get_stakeholder failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -290,7 +290,7 @@ async def initiate_fpic(request: InitiateFPICRequest) -> Dict[str, Any]:
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e))
     except Exception as e:
-        logger.error(f"initiate_fpic failed: {e}", exc_info=True)
+        logger.error("initiate_fpic failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -306,7 +306,7 @@ async def advance_fpic_stage(fpic_id: str, request: AdvanceStageRequest) -> Dict
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e))
     except Exception as e:
-        logger.error(f"advance_fpic_stage failed: {e}", exc_info=True)
+        logger.error("advance_fpic_stage failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -323,7 +323,7 @@ async def record_fpic_consent(fpic_id: str, request: RecordConsentRequest) -> Di
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e))
     except Exception as e:
-        logger.error(f"record_fpic_consent failed: {e}", exc_info=True)
+        logger.error("record_fpic_consent failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -339,7 +339,7 @@ async def get_fpic_workflow(fpic_id: str) -> Dict[str, Any]:
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"get_fpic_workflow failed: {e}", exc_info=True)
+        logger.error("get_fpic_workflow failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -355,7 +355,7 @@ async def list_fpic_workflows(
         results = await service.list_fpic_workflows(operator_id=operator_id, stakeholder_id=stakeholder_id, current_stage=current_stage)
         return [r.model_dump(mode="json") if hasattr(r, "model_dump") else r for r in results]
     except Exception as e:
-        logger.error(f"list_fpic_workflows failed: {e}", exc_info=True)
+        logger.error("list_fpic_workflows failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -376,7 +376,7 @@ async def submit_grievance(request: SubmitGrievanceRequest) -> Dict[str, Any]:
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e))
     except Exception as e:
-        logger.error(f"submit_grievance failed: {e}", exc_info=True)
+        logger.error("submit_grievance failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -390,7 +390,7 @@ async def triage_grievance(grievance_id: str) -> Dict[str, Any]:
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
-        logger.error(f"triage_grievance failed: {e}", exc_info=True)
+        logger.error("triage_grievance failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -404,7 +404,7 @@ async def investigate_grievance(grievance_id: str, request: InvestigateRequest) 
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
-        logger.error(f"investigate_grievance failed: {e}", exc_info=True)
+        logger.error("investigate_grievance failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -418,7 +418,7 @@ async def resolve_grievance(grievance_id: str, request: ResolveGrievanceRequest)
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
-        logger.error(f"resolve_grievance failed: {e}", exc_info=True)
+        logger.error("resolve_grievance failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -432,7 +432,7 @@ async def appeal_grievance(grievance_id: str, appeal_reason: str = Query(...)) -
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
-        logger.error(f"appeal_grievance failed: {e}", exc_info=True)
+        logger.error("appeal_grievance failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -448,7 +448,7 @@ async def get_grievance(grievance_id: str) -> Dict[str, Any]:
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"get_grievance failed: {e}", exc_info=True)
+        logger.error("get_grievance failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -465,7 +465,7 @@ async def list_grievances(
         results = await service.list_grievances(operator_id=operator_id, severity=severity, status=status, category=category)
         return [r.model_dump(mode="json") if hasattr(r, "model_dump") else r for r in results]
     except Exception as e:
-        logger.error(f"list_grievances failed: {e}", exc_info=True)
+        logger.error("list_grievances failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -486,7 +486,7 @@ async def create_consultation(request: CreateConsultationRequest) -> Dict[str, A
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e))
     except Exception as e:
-        logger.error(f"create_consultation failed: {e}", exc_info=True)
+        logger.error("create_consultation failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -500,7 +500,7 @@ async def add_participants(consultation_id: str, participants: List[Dict[str, An
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e))
     except Exception as e:
-        logger.error(f"add_participants failed: {e}", exc_info=True)
+        logger.error("add_participants failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -514,7 +514,7 @@ async def record_outcomes(consultation_id: str, outcomes: List[str], commitments
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e))
     except Exception as e:
-        logger.error(f"record_outcomes failed: {e}", exc_info=True)
+        logger.error("record_outcomes failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -528,7 +528,7 @@ async def attach_evidence(consultation_id: str, evidence_files: List[str]) -> Di
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e))
     except Exception as e:
-        logger.error(f"attach_evidence failed: {e}", exc_info=True)
+        logger.error("attach_evidence failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -542,7 +542,7 @@ async def finalize_consultation(consultation_id: str) -> Dict[str, Any]:
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e))
     except Exception as e:
-        logger.error(f"finalize_consultation failed: {e}", exc_info=True)
+        logger.error("finalize_consultation failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -558,7 +558,7 @@ async def get_consultation(consultation_id: str) -> Dict[str, Any]:
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"get_consultation failed: {e}", exc_info=True)
+        logger.error("get_consultation failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -574,7 +574,7 @@ async def list_consultations(
         results = await service.list_consultations(operator_id=operator_id, consultation_type=consultation_type, is_finalized=is_finalized)
         return [r.model_dump(mode="json") if hasattr(r, "model_dump") else r for r in results]
     except Exception as e:
-        logger.error(f"list_consultations failed: {e}", exc_info=True)
+        logger.error("list_consultations failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -599,7 +599,7 @@ async def send_communication(request: SendCommunicationRequest) -> Dict[str, Any
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e))
     except Exception as e:
-        logger.error(f"send_communication failed: {e}", exc_info=True)
+        logger.error("send_communication failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -621,7 +621,7 @@ async def schedule_communication(request: ScheduleCommunicationRequest) -> Dict[
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e))
     except Exception as e:
-        logger.error(f"schedule_communication failed: {e}", exc_info=True)
+        logger.error("schedule_communication failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -633,7 +633,7 @@ async def send_campaign(request: SendCampaignRequest) -> List[Dict[str, Any]]:
         results = await service.send_campaign(request.model_dump(mode="json"))
         return [r.model_dump(mode="json") if hasattr(r, "model_dump") else r for r in results]
     except Exception as e:
-        logger.error(f"send_campaign failed: {e}", exc_info=True)
+        logger.error("send_campaign failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -649,7 +649,7 @@ async def get_communication(communication_id: str) -> Dict[str, Any]:
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"get_communication failed: {e}", exc_info=True)
+        logger.error("get_communication failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -665,7 +665,7 @@ async def list_communications(
         results = await service.list_communications(operator_id=operator_id, channel=channel, delivery_status=delivery_status)
         return [r.model_dump(mode="json") if hasattr(r, "model_dump") else r for r in results]
     except Exception as e:
-        logger.error(f"list_communications failed: {e}", exc_info=True)
+        logger.error("list_communications failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -686,7 +686,7 @@ async def assess_engagement(stakeholder_id: str, request: AssessEngagementReques
         )
         return result if isinstance(result, dict) else result.model_dump(mode="json")
     except Exception as e:
-        logger.error(f"assess_engagement failed: {e}", exc_info=True)
+        logger.error("assess_engagement failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -702,7 +702,7 @@ async def get_assessment(assessment_id: str) -> Dict[str, Any]:
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"get_assessment failed: {e}", exc_info=True)
+        logger.error("get_assessment failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -725,7 +725,7 @@ async def generate_report(request: GenerateReportRequest) -> Dict[str, Any]:
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e))
     except Exception as e:
-        logger.error(f"generate_report failed: {e}", exc_info=True)
+        logger.error("generate_report failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -741,7 +741,7 @@ async def get_report(report_id: str) -> Dict[str, Any]:
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"get_report failed: {e}", exc_info=True)
+        logger.error("get_report failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -760,7 +760,7 @@ async def export_report(
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
-        logger.error(f"export_report failed: {e}", exc_info=True)
+        logger.error("export_report failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -775,7 +775,7 @@ async def health_check() -> Dict[str, Any]:
         service = get_service()
         return await service.health_check()
     except Exception as e:
-        logger.error(f"health_check failed: {e}", exc_info=True)
+        logger.error("health_check failed: %s", e, exc_info=True)
         return {"agent_id": "GL-EUDR-SET-031", "status": "error", "error": str(e)[:200]}
 
 

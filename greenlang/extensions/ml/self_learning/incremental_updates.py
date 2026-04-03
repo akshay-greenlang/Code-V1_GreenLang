@@ -382,7 +382,7 @@ class IncrementalUpdater:
                 self._sliding_window_X.append(X[i])
                 self._sliding_window_y.append(y[i])
 
-        logger.debug(f"Added {len(X)} samples to buffer")
+        logger.debug("Added %s samples to buffer", len(X))
 
     def get_buffer_size(self) -> int:
         """Get current buffer size."""
@@ -500,7 +500,7 @@ class IncrementalUpdater:
                     mse = F.mse_loss(output.squeeze(), y_tensor.float())
                     return -mse.item()
         except Exception as e:
-            logger.error(f"Performance evaluation failed: {e}")
+            logger.error("Performance evaluation failed: %s", e)
             return 0.0
 
     def warm_start_fit(
@@ -807,7 +807,7 @@ class IncrementalUpdater:
         if self.checkpoint_dir:
             self._save_checkpoint_to_disk(info, self._current_weights)
 
-        logger.info(f"Created checkpoint: {checkpoint_id}")
+        logger.info("Created checkpoint: %s", checkpoint_id)
         return info
 
     def _save_checkpoint_to_disk(
@@ -872,9 +872,9 @@ class IncrementalUpdater:
                 if info.checkpoint_id == checkpoint_id:
                     self._restore_weights(weights)
                     self._current_performance = info.performance_metrics.get("current", 0.0)
-                    logger.info(f"Rolled back to checkpoint: {checkpoint_id}")
+                    logger.info("Rolled back to checkpoint: %s", checkpoint_id)
                     return True
-            logger.warning(f"Checkpoint not found: {checkpoint_id}")
+            logger.warning("Checkpoint not found: %s", checkpoint_id)
             return False
         else:
             # Rollback by steps
@@ -885,7 +885,7 @@ class IncrementalUpdater:
             info, weights = self._checkpoints[target_idx]
             self._restore_weights(weights)
             self._current_performance = info.performance_metrics.get("current", 0.0)
-            logger.info(f"Rolled back {steps} step(s) to: {info.checkpoint_id}")
+            logger.info("Rolled back %s step(s) to: %s", steps, info.checkpoint_id)
             return True
 
     def detect_degradation(

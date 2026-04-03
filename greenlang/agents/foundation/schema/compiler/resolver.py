@@ -51,6 +51,7 @@ from greenlang.agents.foundation.schema.constants import (
 )
 from greenlang.agents.foundation.schema.errors import ErrorCode, format_error_message
 from greenlang.schemas import GreenLangBase
+from greenlang.utilities.exceptions.agent import AgentException
 
 logger = logging.getLogger(__name__)
 
@@ -60,7 +61,7 @@ logger = logging.getLogger(__name__)
 # ============================================================================
 
 
-class CircularRefError(Exception):
+class CircularRefError(AgentException):
     """
     Raised when a circular reference is detected during resolution.
 
@@ -91,7 +92,7 @@ class CircularRefError(Exception):
         return f"CircularRefError(cycle={self.cycle!r})"
 
 
-class RefResolutionError(Exception):
+class RefResolutionError(AgentException):
     """
     Raised when a $ref cannot be resolved.
 
@@ -129,7 +130,7 @@ class RefResolutionError(Exception):
         return f"RefResolutionError(ref={self.ref!r}, reason={self.reason!r})"
 
 
-class MaxExpansionsExceededError(Exception):
+class MaxExpansionsExceededError(AgentException):
     """
     Raised when the maximum number of $ref expansions is exceeded.
 
@@ -540,7 +541,7 @@ def parse_ref(ref: str) -> ParsedRef:
         )
 
     # Unknown format - treat as local ref without #
-    logger.warning(f"Unknown $ref format: '{ref}', treating as local ref")
+    logger.warning("Unknown $ref format: '%s', treating as local ref", ref)
     return ParsedRef(
         ref_type=RefType.LOCAL,
         original=ref,
@@ -661,7 +662,7 @@ class RefResolver:
             >>> resolved
             {'type': 'object'}
         """
-        logger.debug(f"Resolving $ref: '{ref}' at path: '{context_path}'")
+        logger.debug("Resolving $ref: '%s' at path: '%s'", ref, context_path)
 
         # Check expansion limit
         self._check_expansion_limit()
@@ -669,13 +670,13 @@ class RefResolver:
         # Check for cycles
         cycle = self._detect_cycle(ref)
         if cycle is not None:
-            logger.error(f"Circular reference detected: {' -> '.join(cycle)}")
+            logger.error("Circular reference detected: %s", ' -> '.join(cycle))
             raise CircularRefError(cycle)
 
         # Check cache
         cache_key = self._compute_cache_key(ref, context_document)
         if cache_key in self._cache:
-            logger.debug(f"Cache hit for ref: '{ref}'")
+            logger.debug("Cache hit for ref: '%s'", ref)
             return self._cache[cache_key]
 
         # Push onto resolution stack
@@ -704,7 +705,7 @@ class RefResolver:
             # Cache the result
             self._cache[cache_key] = result
 
-            logger.debug(f"Successfully resolved $ref: '{ref}'")
+            logger.debug("Successfully resolved $ref: '%s'", ref)
             return result
 
         finally:
@@ -769,7 +770,7 @@ class RefResolver:
         # Recursively resolve any $ref in the result
         if "$ref" in result:
             nested_ref = result["$ref"]
-            logger.debug(f"Found nested $ref in result: '{nested_ref}'")
+            logger.debug("Found nested $ref in result: '%s'", nested_ref)
             return self.resolve(
                 ref=nested_ref,
                 context_document=document,
@@ -1130,7 +1131,7 @@ class LocalFileRegistry:
         self.base_path = Path(base_path)
 
         if not self.base_path.exists():
-            logger.warning(f"Schema base path does not exist: {base_path}")
+            logger.warning("Schema base path does not exist: %s", base_path)
 
     def resolve(self, schema_id: str, version: str) -> SchemaSource:
         """
@@ -1166,7 +1167,7 @@ class LocalFileRegistry:
 
         for candidate in candidates:
             if candidate.exists():
-                logger.debug(f"Found schema file: {candidate}")
+                logger.debug("Found schema file: %s", candidate)
 
                 # Determine content type
                 suffix = candidate.suffix.lower()
@@ -1252,7 +1253,7 @@ class LocalFileRegistry:
         # Sort versions (simple string sort - for proper semver, use packaging.version)
         sorted_versions = sorted(versions, reverse=True)
 
-        logger.debug(f"Found versions for {schema_id}: {sorted_versions}")
+        logger.debug("Found versions for %s: %s", schema_id, sorted_versions)
         return sorted_versions
 
 

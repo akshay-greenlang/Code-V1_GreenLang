@@ -535,7 +535,7 @@ class MonitoringAlertEngine:
         with self._lock:
             if action == "add":
                 if len(self._watchlist) >= _WATCHLIST_MAX_SIZE:
-                    logger.warning(f"Watchlist at maximum size {_WATCHLIST_MAX_SIZE}")
+                    logger.warning("Watchlist at maximum size %s", _WATCHLIST_MAX_SIZE)
                     return {
                         "action": "add",
                         "supplier_id": supplier_id,
@@ -544,11 +544,11 @@ class MonitoringAlertEngine:
                         "error": "Watchlist at maximum size",
                     }
                 self._watchlist.add(supplier_id)
-                logger.info(f"Added supplier {supplier_id} to watchlist")
+                logger.info("Added supplier %s to watchlist", supplier_id)
 
             elif action == "remove":
                 self._watchlist.discard(supplier_id)
-                logger.info(f"Removed supplier {supplier_id} from watchlist")
+                logger.info("Removed supplier %s from watchlist", supplier_id)
 
             elif action == "query":
                 pass  # Just return status
@@ -792,7 +792,7 @@ class MonitoringAlertEngine:
                 alert.metadata["acknowledged_by"] = acknowledged_by
 
         if alert:
-            logger.info(f"Alert {alert_id} acknowledged by {acknowledged_by}")
+            logger.info("Alert %s acknowledged by %s", alert_id, acknowledged_by)
 
         return alert
 
@@ -822,7 +822,7 @@ class MonitoringAlertEngine:
                     alert.metadata["resolution_notes"] = resolution_notes
 
         if alert:
-            logger.info(f"Alert {alert_id} resolved by {resolved_by}")
+            logger.info("Alert %s resolved by %s", alert_id, resolved_by)
 
         return alert
 

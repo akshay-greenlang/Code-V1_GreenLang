@@ -74,10 +74,14 @@ Status: Production Ready
 from __future__ import annotations
 
 import logging
-import os
-import threading
 from dataclasses import dataclass
-from typing import Any, Dict, Optional
+from typing import Any, Dict
+
+from greenlang.data_commons.config_base import (
+    BaseDataConfig,
+    EnvReader,
+    create_config_singleton,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -136,85 +140,42 @@ _VALID_REPORT_FORMATS = frozenset(
 
 
 @dataclass
-class ClimateHazardConfig:
-    """Complete configuration for the GreenLang Climate Hazard Connector Agent SDK.
+class ClimateHazardConfig(BaseDataConfig):
+    """Configuration for the GreenLang Climate Hazard Connector Agent SDK.
 
-    Attributes are grouped by concern: connections, logging, climate scenario
-    and time horizon defaults, hazard source capacity, asset capacity, risk
-    index weights, vulnerability weights, risk classification thresholds,
-    report format, pipeline processing limits, provenance tracking, metrics
-    export, and performance tuning.
+    Inherits shared connection, pool, batch, and logging fields from
+    ``BaseDataConfig``.  Only climate-hazard-specific fields are declared here.
 
     All attributes can be overridden via environment variables using the
     ``GL_CLIMATE_HAZARD_`` prefix (e.g. ``GL_CLIMATE_HAZARD_MAX_ASSETS=20000``).
 
     Attributes:
-        database_url: PostgreSQL connection URL for persistent hazard data
-            storage, risk index records, and pipeline run results.
-        redis_url: Redis connection URL for caching hazard lookups, risk
-            index computations, and distributed locks.
-        log_level: Logging verbosity level. Accepts DEBUG, INFO, WARNING,
-            ERROR, or CRITICAL.
-        default_scenario: Default IPCC climate scenario for hazard
-            projections. Supports SSP pathways (SSP1-1.9, SSP1-2.6,
-            SSP2-4.5, SSP3-7.0, SSP5-8.5) and legacy RCP pathways
-            (RCP2.6, RCP4.5, RCP6.0, RCP8.5).
+        default_scenario: Default IPCC climate scenario for hazard projections.
         default_time_horizon: Default temporal projection window.
-            SHORT_TERM (2030), MID_TERM (2050), or LONG_TERM (2100).
-        default_report_format: Default output format for generated
-            climate hazard reports (json, csv, pdf).
-        max_hazard_sources: Maximum number of external hazard data sources
-            (e.g. CMIP6 models, national climate services, reanalysis
-            datasets) that can be registered simultaneously.
-        max_assets: Maximum physical or financial assets that can be
-            analysed in a single pipeline run.
-        max_risk_indices: Maximum risk index records retained in
-            persistent storage.
-        risk_weight_probability: Weight assigned to hazard probability
-            in the composite risk index calculation (0.0-1.0).
-        risk_weight_intensity: Weight assigned to hazard intensity
-            in the composite risk index calculation (0.0-1.0).
-        risk_weight_frequency: Weight assigned to hazard frequency
-            in the composite risk index calculation (0.0-1.0).
-        risk_weight_duration: Weight assigned to hazard duration
-            in the composite risk index calculation (0.0-1.0).
-        vuln_weight_exposure: Weight assigned to exposure in the
-            vulnerability assessment calculation (0.0-1.0).
-        vuln_weight_sensitivity: Weight assigned to sensitivity in
-            the vulnerability assessment calculation (0.0-1.0).
-        vuln_weight_adaptive: Weight assigned to adaptive capacity
-            in the vulnerability assessment calculation (0.0-1.0).
-        threshold_extreme: Score threshold at or above which a risk
-            classification is EXTREME (0-100).
-        threshold_high: Score threshold at or above which a risk
-            classification is HIGH (0-100).
-        threshold_medium: Score threshold at or above which a risk
-            classification is MEDIUM (0-100).
-        threshold_low: Score threshold at or above which a risk
-            classification is LOW (0-100). Scores below this are
-            classified as NEGLIGIBLE.
-        max_pipeline_runs: Maximum concurrent or queued pipeline
-            execution runs.
-        max_reports: Maximum generated reports retained in persistent
-            storage before automatic purging.
-        enable_provenance: Compute and store SHA-256 provenance hashes for
-            hazard data ingestion, risk calculations, and report generation.
-        genesis_hash: Anchor string used as the root of every provenance
-            chain.
-        enable_metrics: When True, Prometheus metrics are exported under
-            the ``gl_chc_`` prefix.
-        pool_size: PostgreSQL connection pool size for the connector.
-        cache_ttl: TTL (seconds) for cached hazard lookups and computed
-            risk indices in Redis.
+        default_report_format: Default output format for generated reports.
+        max_hazard_sources: Maximum number of external hazard data sources.
+        max_assets: Maximum assets per single pipeline run.
+        max_risk_indices: Maximum risk index records in persistent storage.
+        risk_weight_probability: Weight for hazard probability (0.0-1.0).
+        risk_weight_intensity: Weight for hazard intensity (0.0-1.0).
+        risk_weight_frequency: Weight for hazard frequency (0.0-1.0).
+        risk_weight_duration: Weight for hazard duration (0.0-1.0).
+        vuln_weight_exposure: Weight for exposure (0.0-1.0).
+        vuln_weight_sensitivity: Weight for sensitivity (0.0-1.0).
+        vuln_weight_adaptive: Weight for adaptive capacity (0.0-1.0).
+        threshold_extreme: Score threshold for EXTREME risk (0-100).
+        threshold_high: Score threshold for HIGH risk (0-100).
+        threshold_medium: Score threshold for MEDIUM risk (0-100).
+        threshold_low: Score threshold for LOW risk (0-100).
+        max_pipeline_runs: Maximum concurrent or queued pipeline runs.
+        max_reports: Maximum generated reports retained.
+        enable_provenance: Whether SHA-256 provenance tracking is enabled.
+        genesis_hash: Anchor string for every provenance chain.
+        enable_metrics: Whether Prometheus metrics are exported.
+        pool_size: PostgreSQL connection pool size.
+        cache_ttl: TTL (seconds) for cached hazard lookups.
         rate_limit: Maximum inbound API requests per minute.
     """
-
-    # -- Connections ---------------------------------------------------------
-    database_url: str = ""
-    redis_url: str = ""
-
-    # -- Logging -------------------------------------------------------------
-    log_level: str = "INFO"
 
     # -- Climate scenario defaults -------------------------------------------
     default_scenario: str = "SSP2-4.5"
@@ -277,23 +238,13 @@ class ClimateHazardConfig:
     def __post_init__(self) -> None:
         """Validate configuration constraints after initialisation.
 
-        Performs range checks on all numeric fields, relational checks
-        between interdependent fields (e.g. risk weights must sum to 1.0,
-        thresholds must be strictly ordered), and normalisation of
-        enumerated values (e.g. log_level to uppercase, time_horizon
-        to uppercase).
-
         Raises:
             ValueError: If any configuration value is outside its valid
-                range or violates a relational constraint. The exception
-                message lists all detected errors, not just the first one.
+                range or violates a relational constraint.
         """
         errors: list[str] = []
 
         # -- Connections -----------------------------------------------------
-        # database_url and redis_url are allowed to be empty at construction
-        # time (they may be injected at runtime by the service mesh), so we
-        # only emit a WARNING rather than raising.
         if not self.database_url:
             logger.warning(
                 "ClimateHazardConfig: database_url is empty; "
@@ -560,7 +511,7 @@ class ClimateHazardConfig:
         )
 
     # ------------------------------------------------------------------
-    # Factory helpers
+    # Factory
     # ------------------------------------------------------------------
 
     @classmethod
@@ -569,10 +520,6 @@ class ClimateHazardConfig:
 
         Every field can be overridden via ``GL_CLIMATE_HAZARD_<FIELD_UPPER>``.
         Boolean values accept ``true/1/yes`` (case-insensitive).
-        Integer values are parsed via ``int()``.
-        Float values are parsed via ``float()``.
-        Unknown or malformed values fall back to the class-level default
-        and emit a WARNING log so the issue is visible in deployment logs.
 
         Returns:
             Populated ClimateHazardConfig instance, validated via
@@ -585,152 +532,102 @@ class ClimateHazardConfig:
             >>> cfg.max_assets
             20000
         """
-        prefix = _ENV_PREFIX
-
-        def _env(name: str, default: Any = None) -> Optional[str]:
-            return os.environ.get(f"{prefix}{name}", default)
-
-        def _bool(name: str, default: bool) -> bool:
-            val = _env(name)
-            if val is None:
-                return default
-            return val.strip().lower() in ("true", "1", "yes")
-
-        def _int(name: str, default: int) -> int:
-            val = _env(name)
-            if val is None:
-                return default
-            try:
-                return int(val.strip())
-            except ValueError:
-                logger.warning(
-                    "Invalid integer for %s%s=%r, using default %d",
-                    prefix,
-                    name,
-                    val,
-                    default,
-                )
-                return default
-
-        def _float(name: str, default: float) -> float:
-            val = _env(name)
-            if val is None:
-                return default
-            try:
-                return float(val.strip())
-            except ValueError:
-                logger.warning(
-                    "Invalid float for %s%s=%r, using default %f",
-                    prefix,
-                    name,
-                    val,
-                    default,
-                )
-                return default
-
-        def _str(name: str, default: str) -> str:
-            val = _env(name)
-            if val is None:
-                return default
-            return val.strip()
+        env = EnvReader(_ENV_PREFIX)
+        base_kwargs = cls._base_kwargs_from_env(env)
 
         config = cls(
-            # Connections
-            database_url=_str("DATABASE_URL", cls.database_url),
-            redis_url=_str("REDIS_URL", cls.redis_url),
-            # Logging
-            log_level=_str("LOG_LEVEL", cls.log_level),
+            **base_kwargs,
             # Climate scenario defaults
-            default_scenario=_str(
+            default_scenario=env.str(
                 "DEFAULT_SCENARIO",
                 cls.default_scenario,
             ),
-            default_time_horizon=_str(
+            default_time_horizon=env.str(
                 "DEFAULT_TIME_HORIZON",
                 cls.default_time_horizon,
             ),
             # Report format
-            default_report_format=_str(
+            default_report_format=env.str(
                 "DEFAULT_REPORT_FORMAT",
                 cls.default_report_format,
             ),
             # Hazard source capacity
-            max_hazard_sources=_int(
+            max_hazard_sources=env.int(
                 "MAX_HAZARD_SOURCES",
                 cls.max_hazard_sources,
             ),
             # Asset capacity
-            max_assets=_int("MAX_ASSETS", cls.max_assets),
+            max_assets=env.int("MAX_ASSETS", cls.max_assets),
             # Risk index capacity
-            max_risk_indices=_int(
+            max_risk_indices=env.int(
                 "MAX_RISK_INDICES",
                 cls.max_risk_indices,
             ),
             # Risk index weights
-            risk_weight_probability=_float(
+            risk_weight_probability=env.float(
                 "RISK_WEIGHT_PROBABILITY",
                 cls.risk_weight_probability,
             ),
-            risk_weight_intensity=_float(
+            risk_weight_intensity=env.float(
                 "RISK_WEIGHT_INTENSITY",
                 cls.risk_weight_intensity,
             ),
-            risk_weight_frequency=_float(
+            risk_weight_frequency=env.float(
                 "RISK_WEIGHT_FREQUENCY",
                 cls.risk_weight_frequency,
             ),
-            risk_weight_duration=_float(
+            risk_weight_duration=env.float(
                 "RISK_WEIGHT_DURATION",
                 cls.risk_weight_duration,
             ),
             # Vulnerability weights
-            vuln_weight_exposure=_float(
+            vuln_weight_exposure=env.float(
                 "VULN_WEIGHT_EXPOSURE",
                 cls.vuln_weight_exposure,
             ),
-            vuln_weight_sensitivity=_float(
+            vuln_weight_sensitivity=env.float(
                 "VULN_WEIGHT_SENSITIVITY",
                 cls.vuln_weight_sensitivity,
             ),
-            vuln_weight_adaptive=_float(
+            vuln_weight_adaptive=env.float(
                 "VULN_WEIGHT_ADAPTIVE",
                 cls.vuln_weight_adaptive,
             ),
             # Risk classification thresholds
-            threshold_extreme=_float(
+            threshold_extreme=env.float(
                 "THRESHOLD_EXTREME",
                 cls.threshold_extreme,
             ),
-            threshold_high=_float(
+            threshold_high=env.float(
                 "THRESHOLD_HIGH",
                 cls.threshold_high,
             ),
-            threshold_medium=_float(
+            threshold_medium=env.float(
                 "THRESHOLD_MEDIUM",
                 cls.threshold_medium,
             ),
-            threshold_low=_float(
+            threshold_low=env.float(
                 "THRESHOLD_LOW",
                 cls.threshold_low,
             ),
             # Pipeline processing limits
-            max_pipeline_runs=_int(
+            max_pipeline_runs=env.int(
                 "MAX_PIPELINE_RUNS",
                 cls.max_pipeline_runs,
             ),
-            max_reports=_int("MAX_REPORTS", cls.max_reports),
+            max_reports=env.int("MAX_REPORTS", cls.max_reports),
             # Provenance tracking
-            enable_provenance=_bool(
+            enable_provenance=env.bool(
                 "ENABLE_PROVENANCE",
                 cls.enable_provenance,
             ),
-            genesis_hash=_str("GENESIS_HASH", cls.genesis_hash),
+            genesis_hash=env.str("GENESIS_HASH", cls.genesis_hash),
             # Metrics export
-            enable_metrics=_bool("ENABLE_METRICS", cls.enable_metrics),
+            enable_metrics=env.bool("ENABLE_METRICS", cls.enable_metrics),
             # Performance tuning
-            pool_size=_int("POOL_SIZE", cls.pool_size),
-            cache_ttl=_int("CACHE_TTL", cls.cache_ttl),
-            rate_limit=_int("RATE_LIMIT", cls.rate_limit),
+            pool_size=env.int("POOL_SIZE", cls.pool_size),
+            cache_ttl=env.int("CACHE_TTL", cls.cache_ttl),
+            rate_limit=env.int("RATE_LIMIT", cls.rate_limit),
         )
 
         logger.info(
@@ -779,13 +676,8 @@ class ClimateHazardConfig:
     def to_dict(self) -> Dict[str, Any]:
         """Serialise the configuration to a plain Python dictionary.
 
-        The returned dictionary is safe to pass to ``json.dumps``,
-        ``yaml.dump``, or any structured logging framework.  All values
-        are JSON-serialisable primitives (str, int, float, bool).
-
         Sensitive connection strings (``database_url``, ``redis_url``) are
-        redacted to prevent accidental credential leakage in logs,
-        exception tracebacks, and monitoring dashboards.
+        redacted to prevent accidental credential leakage in logs.
 
         Returns:
             Dictionary representation of the configuration with sensitive
@@ -863,90 +755,9 @@ class ClimateHazardConfig:
 # Thread-safe singleton accessor
 # ---------------------------------------------------------------------------
 
-_config_instance: Optional[ClimateHazardConfig] = None
-_config_lock = threading.Lock()
-
-
-def get_config() -> ClimateHazardConfig:
-    """Return the singleton ClimateHazardConfig, creating from env if needed.
-
-    Uses double-checked locking for thread safety with minimal
-    contention on the hot path.  The instance is created on first call
-    by reading all ``GL_CLIMATE_HAZARD_*`` environment variables via
-    :meth:`ClimateHazardConfig.from_env`.
-
-    Returns:
-        ClimateHazardConfig singleton instance.
-
-    Example:
-        >>> cfg = get_config()
-        >>> cfg.max_assets
-        10000
-    """
-    global _config_instance
-    if _config_instance is None:
-        with _config_lock:
-            if _config_instance is None:
-                _config_instance = ClimateHazardConfig.from_env()
-    return _config_instance
-
-
-def set_config(config: ClimateHazardConfig) -> None:
-    """Replace the singleton ClimateHazardConfig.
-
-    Primarily intended for testing and dependency injection scenarios
-    where a custom configuration must be supplied without relying on
-    environment variables.
-
-    Args:
-        config: New :class:`ClimateHazardConfig` to install as the
-            singleton.
-
-    Example:
-        >>> cfg = ClimateHazardConfig(max_assets=500, default_scenario="SSP5-8.5")
-        >>> set_config(cfg)
-        >>> assert get_config().max_assets == 500
-    """
-    global _config_instance
-    with _config_lock:
-        _config_instance = config
-    logger.info(
-        "ClimateHazardConfig replaced programmatically: "
-        "scenario=%s, time_horizon=%s, "
-        "max_hazard_sources=%d, max_assets=%d, "
-        "risk_weights=(prob=%.2f, int=%.2f, freq=%.2f, dur=%.2f), "
-        "thresholds=(extreme=%.1f, high=%.1f, med=%.1f, low=%.1f)",
-        config.default_scenario,
-        config.default_time_horizon,
-        config.max_hazard_sources,
-        config.max_assets,
-        config.risk_weight_probability,
-        config.risk_weight_intensity,
-        config.risk_weight_frequency,
-        config.risk_weight_duration,
-        config.threshold_extreme,
-        config.threshold_high,
-        config.threshold_medium,
-        config.threshold_low,
-    )
-
-
-def reset_config() -> None:
-    """Reset the singleton ClimateHazardConfig to ``None``.
-
-    The next call to :func:`get_config` will re-read environment variables
-    and construct a fresh instance.  Intended for test teardown to prevent
-    state leakage between test cases.
-
-    Example:
-        >>> reset_config()
-        >>> cfg = get_config()  # re-reads GL_CLIMATE_HAZARD_* env vars
-    """
-    global _config_instance
-    with _config_lock:
-        _config_instance = None
-    logger.debug("ClimateHazardConfig singleton reset")
-
+get_config, set_config, reset_config = create_config_singleton(
+    ClimateHazardConfig, _ENV_PREFIX,
+)
 
 # ---------------------------------------------------------------------------
 # Public surface

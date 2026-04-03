@@ -32,13 +32,14 @@ import pybreaker
 from prometheus_client import Counter, Gauge, Histogram
 
 from greenlang.telemetry import get_logger, MetricsCollector
+from greenlang.utilities.exceptions.infrastructure import InfrastructureException
 
 
 # ============================================================================
 # EXCEPTIONS
 # ============================================================================
 
-class CircuitBreakerError(Exception):
+class CircuitBreakerError(InfrastructureException):
     """Base exception for circuit breaker errors."""
     pass
 

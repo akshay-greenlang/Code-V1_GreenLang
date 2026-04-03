@@ -482,7 +482,7 @@ class UncertaintyAPIService:
                 "last_calibrated": datetime.utcnow()
             }
 
-        logger.info(f"Registered model: {name}")
+        logger.info("Registered model: %s", name)
 
     def _calculate_provenance(
         self,
@@ -898,7 +898,7 @@ def create_uncertainty_router(service: Optional[UncertaintyAPIService] = None):
         try:
             return service.predict_with_uncertainty(request)
         except Exception as e:
-            logger.error(f"Prediction error: {e}")
+            logger.error("Prediction error: %s", e)
             raise HTTPException(status_code=500, detail=str(e))
 
     @router.post("/intervals", response_model=ConfidenceIntervalsResponse)
@@ -911,7 +911,7 @@ def create_uncertainty_router(service: Optional[UncertaintyAPIService] = None):
         try:
             return service.get_confidence_intervals(request)
         except Exception as e:
-            logger.error(f"Interval error: {e}")
+            logger.error("Interval error: %s", e)
             raise HTTPException(status_code=500, detail=str(e))
 
     @router.get("/calibration/{model_name}", response_model=CalibrationStatus)
@@ -925,7 +925,7 @@ def create_uncertainty_router(service: Optional[UncertaintyAPIService] = None):
         try:
             return service.get_calibration_status(model_name)
         except Exception as e:
-            logger.error(f"Calibration status error: {e}")
+            logger.error("Calibration status error: %s", e)
             raise HTTPException(status_code=500, detail=str(e))
 
     @router.post("/compare", response_model=ModelComparisonResponse)
@@ -939,7 +939,7 @@ def create_uncertainty_router(service: Optional[UncertaintyAPIService] = None):
         try:
             return service.compare_model_uncertainty(request)
         except Exception as e:
-            logger.error(f"Comparison error: {e}")
+            logger.error("Comparison error: %s", e)
             raise HTTPException(status_code=500, detail=str(e))
 
     @router.post("/batch", response_model=BatchPredictionResponse)
@@ -953,7 +953,7 @@ def create_uncertainty_router(service: Optional[UncertaintyAPIService] = None):
         try:
             return service.batch_predict_with_uncertainty(request)
         except Exception as e:
-            logger.error(f"Batch prediction error: {e}")
+            logger.error("Batch prediction error: %s", e)
             raise HTTPException(status_code=500, detail=str(e))
 
     @router.get("/health")

@@ -348,7 +348,7 @@ class BypassWorkflowManager:
         self.alarms: Dict[str, BypassAlarm] = {}
         self.user_authorizations: Dict[str, AuthorizationLevel] = {}
 
-        logger.info(f"BypassWorkflowManager initialized: {system_id}")
+        logger.info("BypassWorkflowManager initialized: %s", system_id)
 
     def register_user(
         self,
@@ -363,7 +363,7 @@ class BypassWorkflowManager:
             authorization_level: Authorization level
         """
         self.user_authorizations[user_id] = authorization_level
-        logger.info(f"User {user_id} registered with level {authorization_level.value}")
+        logger.info("User %s registered with level %s", user_id, authorization_level.value)
 
     def submit_bypass_request(
         self,
@@ -559,7 +559,7 @@ class BypassWorkflowManager:
 
         workflow.provenance_hash = self._calculate_provenance(workflow)
 
-        logger.info(f"Bypass rejected: {workflow_id} - {reason}")
+        logger.info("Bypass rejected: %s - %s", workflow_id, reason)
 
         return workflow
 
@@ -889,7 +889,7 @@ class BypassWorkflowManager:
         alarm.acknowledged_by = acknowledged_by
         alarm.acknowledged_at = datetime.utcnow()
 
-        logger.info(f"Alarm {alarm_id} acknowledged by {acknowledged_by}")
+        logger.info("Alarm %s acknowledged by %s", alarm_id, acknowledged_by)
 
         return alarm
 

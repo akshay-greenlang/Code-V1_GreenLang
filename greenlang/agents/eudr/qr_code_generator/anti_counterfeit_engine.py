@@ -83,6 +83,7 @@ from greenlang.agents.eudr.qr_code_generator.metrics import (
     record_signature_verification,
     record_api_error,
 )
+from greenlang.utilities.exceptions.compliance import ComplianceException
 
 logger = logging.getLogger(__name__)
 
@@ -144,7 +145,7 @@ def _generate_id(prefix: str) -> str:
 # Custom Exceptions
 # ---------------------------------------------------------------------------
 
-class AntiCounterfeitError(Exception):
+class AntiCounterfeitError(ComplianceException):
     """Base exception for anti-counterfeiting operations."""
     pass
 

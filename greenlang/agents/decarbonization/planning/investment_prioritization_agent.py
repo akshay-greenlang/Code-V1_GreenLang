@@ -262,7 +262,7 @@ class InvestmentPrioritizationAgent(DeterministicAgent):
         )
 
         self.logger = logging.getLogger(self.__class__.__name__)
-        self.logger.info(f"Initialized {self.AGENT_ID}: {self.AGENT_NAME}")
+        logger.info("Initialized %s: %s", self.AGENT_ID, self.AGENT_NAME)
 
     def execute(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
         """Execute investment prioritization operation."""
@@ -296,7 +296,7 @@ class InvestmentPrioritizationAgent(DeterministicAgent):
             return result
 
         except Exception as e:
-            self.logger.error(f"Investment prioritization failed: {str(e)}", exc_info=True)
+            logger.error("Investment prioritization failed: %s", e, exc_info=True)
             return {
                 "operation": inputs.get("operation", "unknown"),
                 "success": False,

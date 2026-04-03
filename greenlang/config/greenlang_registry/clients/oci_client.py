@@ -182,7 +182,7 @@ class OCIAuth:
             data = response.json()
             return data.get("token") or data.get("access_token")
         except Exception as e:
-            logger.warning(f"Bearer token request failed: {e}")
+            logger.warning("Bearer token request failed: %s", e)
             return None
 
 
@@ -275,7 +275,7 @@ class OCIClient:
                 return http_error.response.status_code, http_error.response.content, dict(http_error.response.headers)
 
             # Re-raise if not an HTTP error we can handle
-            logger.error(f"Secure request failed for {method} {url}: {http_error}")
+            logger.error("Secure request failed for %s %s: %s", method, url, http_error)
             raise RuntimeError(f"Request failed: {http_error}")
 
     def _calculate_digest(self, data: bytes) -> str:

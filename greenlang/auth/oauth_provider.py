@@ -35,6 +35,7 @@ from enum import Enum
 from urllib.parse import urlencode, parse_qs, urlparse
 import jwt
 from greenlang.utilities.determinism import DeterministicClock
+from greenlang.utilities.exceptions.security import AuthenticationError as _SecurityAuthError
 
 try:
     from authlib.integrations.requests_client import OAuth2Session
@@ -257,7 +258,7 @@ class OIDCDiscovery:
             response.raise_for_status()
             return response.json()
         except Exception as e:
-            logger.error(f"Failed to fetch OIDC configuration: {e}")
+            logger.error("Failed to fetch OIDC configuration: %s", e)
             raise OAuthError(f"Discovery failed: {e}")
 
     @staticmethod
@@ -342,7 +343,7 @@ class JWTValidator:
             return id_token_obj
 
         except jwt.InvalidTokenError as e:
-            logger.error(f"ID token validation failed: {e}")
+            logger.error("ID token validation failed: %s", e)
             raise OAuthError(f"Invalid ID token: {e}")
 
     def _get_jwks(self) -> Dict[str, Any]:
@@ -369,7 +370,7 @@ class JWTValidator:
             return jwks
 
         except Exception as e:
-            logger.error(f"Failed to fetch JWKS: {e}")
+            logger.error("Failed to fetch JWKS: %s", e)
             raise OAuthError(f"JWKS fetch failed: {e}")
 
     def _get_signing_key(self, token: str, jwks: Dict[str, Any]) -> str:
@@ -400,7 +401,7 @@ class JWTValidator:
                 from jwt.algorithms import RSAAlgorithm
                 return RSAAlgorithm.from_jwk(json.dumps(jwk))
         except Exception as e:
-            logger.error(f"Failed to convert JWK to PEM: {e}")
+            logger.error("Failed to convert JWK to PEM: %s", e)
             raise OAuthError(f"Key conversion failed: {e}")
 
 
@@ -423,7 +424,7 @@ class OAuthProvider:
         self.sessions: Dict[str, OAuthSession] = {}
         self._state_cache: Dict[str, Dict[str, Any]] = {}
 
-        logger.info(f"Initialized OAuth provider: {config.provider_name}")
+        logger.info("Initialized OAuth provider: %s", config.provider_name)
 
     def get_authorization_url(
         self,
@@ -483,7 +484,7 @@ class OAuthProvider:
             "created_at": DeterministicClock.utcnow(),
         }
 
-        logger.info(f"Generated authorization URL with state: {state}")
+        logger.info("Generated authorization URL with state: %s", state)
         return auth_url, state, code_verifier, nonce
 
     def exchange_code_for_tokens(
@@ -571,7 +572,7 @@ class OAuthProvider:
             return tokens
 
         except requests.RequestException as e:
-            logger.error(f"Token exchange failed: {e}")
+            logger.error("Token exchange failed: %s", e)
             raise OAuthError(f"Token exchange failed: {e}")
 
     def refresh_access_token(self, refresh_token: str) -> OAuthTokens:
@@ -613,7 +614,7 @@ class OAuthProvider:
             return tokens
 
         except requests.RequestException as e:
-            logger.error(f"Token refresh failed: {e}")
+            logger.error("Token refresh failed: %s", e)
             raise OAuthError(f"Token refresh failed: {e}")
 
     def get_user_info(self, access_token: str) -> Dict[str, Any]:
@@ -636,7 +637,7 @@ class OAuthProvider:
             return response.json()
 
         except requests.RequestException as e:
-            logger.error(f"Failed to get user info: {e}")
+            logger.error("Failed to get user info: %s", e)
             raise OAuthError(f"User info request failed: {e}")
 
     def create_user_from_tokens(self, tokens: OAuthTokens) -> OAuthUser:
@@ -715,7 +716,7 @@ class OAuthProvider:
         )
 
         self.sessions[session_id] = session
-        logger.info(f"Created session for user: {user.email}")
+        logger.info("Created session for user: %s", user.email)
 
         return session
 
@@ -733,7 +734,7 @@ class OAuthProvider:
                     new_tokens = self.refresh_access_token(session.tokens.refresh_token)
                     session.tokens = new_tokens
                     session.expires_at = new_tokens.expires_at
-                    logger.info(f"Refreshed session: {session_id}")
+                    logger.info("Refreshed session: %s", session_id)
                     return True
                 except OAuthError:
                     del self.sessions[session_id]
@@ -754,7 +755,7 @@ class OAuthProvider:
         """Revoke session"""
         if session_id in self.sessions:
             del self.sessions[session_id]
-            logger.info(f"Revoked session: {session_id}")
+            logger.info("Revoked session: %s", session_id)
             return True
         return False
 
@@ -769,11 +770,11 @@ class OAuthProvider:
         for sid in expired:
             del self.sessions[sid]
 
-        logger.info(f"Cleaned up {len(expired)} expired sessions")
+        logger.info("Cleaned up %s expired sessions", len(expired))
         return len(expired)
 
 
-class OAuthError(Exception):
+class OAuthError(_SecurityAuthError):
     """OAuth-specific error"""
     pass
 

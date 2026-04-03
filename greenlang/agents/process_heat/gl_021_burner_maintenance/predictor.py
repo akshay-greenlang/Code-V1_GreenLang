@@ -1177,7 +1177,7 @@ class BurnerMaintenancePredictor(IntelligenceMixin):
             return result
 
         except Exception as e:
-            logger.error(f"GL-021 analysis failed for {input_data.burner_id}: {str(e)}", exc_info=True)
+            logger.error("GL-021 analysis failed for %s: %s", input_data.burner_id, e, exc_info=True)
             raise
 
     # =========================================================================
@@ -1225,7 +1225,7 @@ class BurnerMaintenancePredictor(IntelligenceMixin):
         Returns:
             List of GL021Result for each burner
         """
-        logger.info(f"Starting batch analysis for {len(data_list)} burners")
+        logger.info("Starting batch analysis for %s burners", len(data_list))
         start_time = datetime.now(timezone.utc)
 
         if parallel and len(data_list) > 1:
@@ -1294,10 +1294,10 @@ class BurnerMaintenancePredictor(IntelligenceMixin):
 
         try:
             result = self.flame_analyzer.analyze(flame_input)
-            logger.debug(f"Flame analysis: FSI={result.stability.stability_index:.1f}, FQS={result.quality_score:.1f}")
+            logger.debug("Flame analysis: FSI=%.1f, FQS=%.1f", result.stability.stability_index, result.quality_score)
             return result
         except ValueError as e:
-            logger.warning(f"Flame analysis skipped: {str(e)}")
+            logger.warning("Flame analysis skipped: %s", e)
             return None
 
     def _assess_burner_health(
@@ -1354,10 +1354,10 @@ class BurnerMaintenancePredictor(IntelligenceMixin):
 
         try:
             result = self.health_analyzer.analyze(health_input)
-            logger.debug(f"Health analysis: Score={result.overall_health_score:.1f}, Limiting={result.limiting_component}")
+            logger.debug("Health analysis: Score=%.1f, Limiting=%s", result.overall_health_score, result.limiting_component)
             return result
         except ValueError as e:
-            logger.warning(f"Health analysis skipped: {str(e)}")
+            logger.warning("Health analysis skipped: %s", e)
             return None
 
     def _evaluate_fuel_impact(
@@ -1425,11 +1425,11 @@ class BurnerMaintenancePredictor(IntelligenceMixin):
             # Analyze degradation impact
             impact = self.fuel_analyzer.analyze_degradation_impact(fuel_props, fuel_conditions)
 
-            logger.debug(f"Fuel analysis: Quality={quality.overall_score:.1f}, LRF={impact.life_reduction_factor:.2f}")
+            logger.debug("Fuel analysis: Quality=%.1f, LRF=%.2f", quality.overall_score, impact.life_reduction_factor)
             return quality, impact
 
         except Exception as e:
-            logger.warning(f"Fuel analysis failed: {str(e)}")
+            logger.warning("Fuel analysis failed: %s", e)
             return None, None
 
     def _predict_maintenance(
@@ -1504,7 +1504,7 @@ class BurnerMaintenancePredictor(IntelligenceMixin):
             return rul_result, failure_predictions
 
         except Exception as e:
-            logger.warning(f"RUL prediction failed: {str(e)}")
+            logger.warning("RUL prediction failed: %s", e)
             return None, []
 
     def _plan_replacement(
@@ -1581,11 +1581,11 @@ class BurnerMaintenancePredictor(IntelligenceMixin):
                 params=econ_params,
                 include_sensitivity=True,
             )
-            logger.debug(f"Replacement analysis: NPV=${result.npv_replacement:,.0f}")
+            logger.debug("Replacement analysis: NPV=$%,.0f", result.npv_replacement)
             return result
 
         except Exception as e:
-            logger.warning(f"Replacement analysis failed: {str(e)}")
+            logger.warning("Replacement analysis failed: %s", e)
             return None
 
     def _generate_work_orders(
@@ -1645,7 +1645,7 @@ class BurnerMaintenancePredictor(IntelligenceMixin):
                 )
                 work_orders.append(wo)
             except Exception as e:
-                logger.warning(f"Work order generation failed: {str(e)}")
+                logger.warning("Work order generation failed: %s", e)
 
         return work_orders
 
@@ -1961,7 +1961,7 @@ class BurnerMaintenancePredictor(IntelligenceMixin):
             )
             return explanation
         except Exception as e:
-            logger.warning(f"Explanation generation failed: {str(e)}")
+            logger.warning("Explanation generation failed: %s", e)
             return None
 
     def _generate_natural_language_summary(

@@ -205,7 +205,7 @@ class MarketplaceAgent(BaseAgent):
         self._installed: Dict[str, str] = {}  # listing_id -> version
         self._total_downloads = 0
 
-        self.logger.info(f"Initialized {self.AGENT_ID}: {self.AGENT_NAME}")
+        logger.info("Initialized %s: %s", self.AGENT_ID, self.AGENT_NAME)
 
     def execute(self, input_data: Dict[str, Any]) -> AgentResult:
         start_time = time.time()
@@ -230,7 +230,7 @@ class MarketplaceAgent(BaseAgent):
             return AgentResult(success=True, data=output.model_dump())
 
         except Exception as e:
-            self.logger.error(f"Marketplace operation failed: {e}", exc_info=True)
+            logger.error("Marketplace operation failed: %s", e, exc_info=True)
             return AgentResult(success=False, error=str(e))
 
     def _route_operation(self, mp_input: MarketplaceInput) -> Dict[str, Any]:

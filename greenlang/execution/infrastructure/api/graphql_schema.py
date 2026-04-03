@@ -145,7 +145,7 @@ class DataLoaderRegistry:
             batch_load_fn: Batch loading function
         """
         self._loaders[name] = batch_load_fn
-        logger.debug(f"Registered DataLoader: {name}")
+        logger.debug("Registered DataLoader: %s", name)
 
     def get(self, name: str) -> Optional[Any]:
         """
@@ -220,7 +220,7 @@ class GraphQLSchemaBuilder:
             type_def: Type definition
         """
         self._types[type_def.name] = type_def
-        logger.debug(f"Added type: {type_def.name}")
+        logger.debug("Added type: %s", type_def.name)
 
     def add_type_from_pydantic(
         self,
@@ -323,7 +323,7 @@ class GraphQLSchemaBuilder:
             resolver=resolver,
         )
         self._resolvers[f"Query.{name}"] = resolver
-        logger.debug(f"Added query: {name}")
+        logger.debug("Added query: %s", name)
 
     def add_mutation(
         self,
@@ -351,7 +351,7 @@ class GraphQLSchemaBuilder:
             resolver=resolver,
         )
         self._resolvers[f"Mutation.{name}"] = resolver
-        logger.debug(f"Added mutation: {name}")
+        logger.debug("Added mutation: %s", name)
 
     def add_subscription(
         self,
@@ -379,7 +379,7 @@ class GraphQLSchemaBuilder:
             resolver=resolver,
         )
         self._resolvers[f"Subscription.{name}"] = resolver
-        logger.debug(f"Added subscription: {name}")
+        logger.debug("Added subscription: %s", name)
 
     def register_dataloader(
         self,
@@ -1083,7 +1083,7 @@ if STRAWBERRY_AVAILABLE and strawberry is not None:
                 agent_records = await agent_service.get_all_agents(status=status)
                 return [_convert_agent_to_graphql(a) for a in agent_records]
             except Exception as e:
-                logger.error(f"Error querying agents: {e}", exc_info=True)
+                logger.error("Error querying agents: %s", e, exc_info=True)
                 return []
 
         @strawberry.field
@@ -1103,7 +1103,7 @@ if STRAWBERRY_AVAILABLE and strawberry is not None:
                     return _convert_agent_to_graphql(agent_record)
                 return None
             except Exception as e:
-                logger.error(f"Error querying agent {id}: {e}", exc_info=True)
+                logger.error("Error querying agent %s: %s", id, e, exc_info=True)
                 return None
 
         @strawberry.field
@@ -1155,7 +1155,7 @@ if STRAWBERRY_AVAILABLE and strawberry is not None:
 
                 return emissions
             except Exception as e:
-                logger.error(f"Error querying emissions: {e}", exc_info=True)
+                logger.error("Error querying emissions: %s", e, exc_info=True)
                 return []
 
         @strawberry.field
@@ -1176,7 +1176,7 @@ if STRAWBERRY_AVAILABLE and strawberry is not None:
                 job_records = await calc_service.list_jobs(status=status)
                 return [_convert_job_to_graphql(j) for j in job_records]
             except Exception as e:
-                logger.error(f"Error querying jobs: {e}", exc_info=True)
+                logger.error("Error querying jobs: %s", e, exc_info=True)
                 return []
 
         @strawberry.field
@@ -1199,7 +1199,7 @@ if STRAWBERRY_AVAILABLE and strawberry is not None:
                 )
                 return [_convert_report_to_graphql(r) for r in report_records]
             except Exception as e:
-                logger.error(f"Error querying compliance reports: {e}", exc_info=True)
+                logger.error("Error querying compliance reports: %s", e, exc_info=True)
                 return []
 
     # ========================================================================
@@ -1259,7 +1259,7 @@ if STRAWBERRY_AVAILABLE and strawberry is not None:
                 return _convert_job_to_graphql(job_record)
 
             except Exception as e:
-                logger.error(f"Error running calculation: {e}", exc_info=True)
+                logger.error("Error running calculation: %s", e, exc_info=True)
                 # Return a failed job instead of raising
                 return CalculationJob(
                     id="error",
@@ -1316,7 +1316,7 @@ if STRAWBERRY_AVAILABLE and strawberry is not None:
                 return _convert_agent_to_graphql(agent_record)
 
             except Exception as e:
-                logger.error(f"Error updating agent config: {e}", exc_info=True)
+                logger.error("Error updating agent config: %s", e, exc_info=True)
                 # Return the existing agent or a placeholder
                 agent_service = _get_agent_service()
                 agent_record = await agent_service.get_agent(id)
@@ -1381,7 +1381,7 @@ if STRAWBERRY_AVAILABLE and strawberry is not None:
                 return _convert_report_to_graphql(report_record)
 
             except Exception as e:
-                logger.error(f"Error generating report: {e}", exc_info=True)
+                logger.error("Error generating report: %s", e, exc_info=True)
                 # Return an error report
                 return ComplianceReport(
                     id="error",

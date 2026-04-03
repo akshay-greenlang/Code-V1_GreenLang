@@ -458,7 +458,7 @@ class MigrationAnalyzer:
                 elif item.is_file():
                     self._scan_file(item)
         except PermissionError:
-            logger.warning(f"Permission denied accessing directory: {directory}")
+            logger.warning("Permission denied accessing directory: %s", directory)
 
     def _scan_file(self, file_path: Path) -> None:
         """
@@ -504,9 +504,9 @@ class MigrationAnalyzer:
             self._patterns.extend(patterns)
 
         except UnicodeDecodeError:
-            logger.warning(f"Could not decode file: {file_path}")
+            logger.warning("Could not decode file: %s", file_path)
         except IOError as e:
-            logger.warning(f"Could not read file {file_path}: {e}")
+            logger.warning("Could not read file %s: %s", file_path, e)
 
     def _detect_jsonschema(
         self,
@@ -687,7 +687,7 @@ class MigrationAnalyzer:
                 }
                 if schema_indicators & set(data.keys()):
                     self._json_schemas.append(str(file_path))
-                    logger.debug(f"Found potential JSON Schema: {file_path}")
+                    logger.debug("Found potential JSON Schema: %s", file_path)
 
         except (json.JSONDecodeError, IOError):
             pass  # Not a valid JSON file, skip
@@ -721,7 +721,7 @@ class MigrationAnalyzer:
                 }
                 if schema_indicators & set(data.keys()):
                     self._json_schemas.append(str(file_path))
-                    logger.debug(f"Found potential YAML Schema: {file_path}")
+                    logger.debug("Found potential YAML Schema: %s", file_path)
 
         except (yaml.YAMLError, IOError):
             pass  # Not a valid YAML file, skip
@@ -927,7 +927,7 @@ class SchemaConverter:
         # Detect original dialect
         original_dialect = self._detect_dialect(schema)
         if original_dialect:
-            logger.info(f"Detected JSON Schema dialect: {original_dialect}")
+            logger.info("Detected JSON Schema dialect: %s", original_dialect)
 
         # Upgrade to Draft 2020-12
         converted = self._upgrade_dialect(converted)

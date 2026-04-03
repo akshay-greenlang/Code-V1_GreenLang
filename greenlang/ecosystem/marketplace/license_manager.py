@@ -142,7 +142,7 @@ class LicenseGenerator:
             return parts[3].lower() == expected_sig[:4].lower()
 
         except Exception as e:
-            logger.error(f"Error verifying license signature: {e}")
+            logger.error("Error verifying license signature: %s", e)
             return False
 
 
@@ -365,7 +365,7 @@ class LicenseManager:
             return True, str(install.id), []
 
         except Exception as e:
-            logger.error(f"Error activating license: {e}", exc_info=True)
+            logger.error("Error activating license: %s", e, exc_info=True)
             self.session.rollback()
             errors.append(f"Activation failed: {str(e)}")
             return False, None, errors
@@ -421,7 +421,7 @@ class LicenseManager:
             return True, []
 
         except Exception as e:
-            logger.error(f"Error deactivating license: {e}", exc_info=True)
+            logger.error("Error deactivating license: %s", e, exc_info=True)
             self.session.rollback()
             errors.append(f"Deactivation failed: {str(e)}")
             return False, errors
@@ -505,12 +505,12 @@ class LicenseManager:
 
             self.session.commit()
 
-            logger.warning(f"Revoked license {license_key}: {reason}")
+            logger.warning("Revoked license %s: %s", license_key, reason)
 
             return True, []
 
         except Exception as e:
-            logger.error(f"Error revoking license: {e}", exc_info=True)
+            logger.error("Error revoking license: %s", e, exc_info=True)
             self.session.rollback()
             errors.append(f"Revocation failed: {str(e)}")
             return False, errors

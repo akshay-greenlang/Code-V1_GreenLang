@@ -356,7 +356,7 @@ class GreenInvestmentScreenerAgent(BaseAgent):
         self._audit_trail: List[AuditEntry] = []
         self._default_criteria = InvestmentCriteria()
         super().__init__(config)
-        logger.info(f"Initialized {self.AGENT_NAME} v{self.VERSION}")
+        logger.info("Initialized %s v%s", self.AGENT_NAME, self.VERSION)
 
     def execute(self, input_data: Dict[str, Any]) -> AgentResult:
         """Execute investment screening."""
@@ -380,7 +380,7 @@ class GreenInvestmentScreenerAgent(BaseAgent):
             )
 
         except Exception as e:
-            logger.error(f"Investment screening failed: {e}", exc_info=True)
+            logger.error("Investment screening failed: %s", e, exc_info=True)
             return AgentResult(success=False, error=str(e))
 
     def _screen_investment(

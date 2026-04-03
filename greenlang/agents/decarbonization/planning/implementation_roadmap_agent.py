@@ -152,7 +152,7 @@ class ImplementationRoadmapAgent(DeterministicAgent):
             return result
 
         except Exception as e:
-            self.logger.error(f"Roadmap generation failed: {str(e)}", exc_info=True)
+            logger.error("Roadmap generation failed: %s", e, exc_info=True)
             return {
                 "operation": inputs.get("operation", "unknown"),
                 "success": False,

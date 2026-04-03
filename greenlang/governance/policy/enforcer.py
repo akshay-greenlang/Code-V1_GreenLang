@@ -94,9 +94,9 @@ class PolicyEnforcer:
                 with open(policy_file) as f:
                     policy_content = f.read()
                 self.policies[policy_file.stem] = policy_content
-                logger.info(f"Loaded policy: {policy_file.stem}")
+                logger.info("Loaded policy: %s", policy_file.stem)
             except Exception as e:
-                logger.error(f"Failed to load policy {policy_file}: {e}")
+                logger.error("Failed to load policy %s: %s", policy_file, e)
 
     def check(self, policy_file: Path, input_data: Dict[str, Any]) -> bool:
         """
@@ -110,7 +110,7 @@ class PolicyEnforcer:
             True if policy check passes
         """
         if not policy_file.exists():
-            logger.error(f"Policy file not found: {policy_file}")
+            logger.error("Policy file not found: %s", policy_file)
             return False
 
         try:
@@ -125,7 +125,7 @@ class PolicyEnforcer:
                 return self._simple_rego_eval(policy_file, input_data)
 
         except Exception as e:
-            logger.error(f"Policy check failed: {e}")
+            logger.error("Policy check failed: %s", e)
             return False
 
     def _simple_rego_eval(self, policy_file: Path, input_data: Dict[str, Any]) -> bool:
@@ -161,7 +161,7 @@ class PolicyEnforcer:
         # Check license
         license = pack.get("license", "")
         if license not in ["MIT", "Apache-2.0", "Commercial"]:
-            logger.warning(f"Policy denied: License {license} not in allowlist")
+            logger.warning("Policy denied: License %s not in allowlist", license)
             return False
 
         # Check network policy for packs
@@ -174,7 +174,7 @@ class PolicyEnforcer:
         # Check EF vintage
         ef_vintage = pack.get("policy", {}).get("ef_vintage_min")
         if ef_vintage and ef_vintage < 2024:
-            logger.warning(f"Policy denied: EF vintage {ef_vintage} too old")
+            logger.warning("Policy denied: EF vintage %s too old", ef_vintage)
             return False
 
         # Check SBOM
@@ -323,7 +323,7 @@ class PolicyEnforcer:
             f.write(content)
 
         self.policies[policy_file.stem] = content
-        logger.info(f"Added policy: {policy_file.stem}")
+        logger.info("Added policy: %s", policy_file.stem)
 
     def remove_policy(self, policy_name: str):
         """Remove a policy"""
@@ -332,7 +332,7 @@ class PolicyEnforcer:
         if policy_file.exists():
             policy_file.unlink()
             del self.policies[policy_name]
-            logger.info(f"Removed policy: {policy_name}")
+            logger.info("Removed policy: %s", policy_name)
         else:
             raise ValueError(f"Policy not found: {policy_name}")
 

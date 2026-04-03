@@ -477,7 +477,7 @@ class HeatSchedulerAgent(
         except ValidationError:
             raise
         except Exception as e:
-            logger.error(f"Heat scheduling failed: {e}", exc_info=True)
+            logger.error("Heat scheduling failed: %s", e, exc_info=True)
             raise ProcessingError(f"Heat scheduling failed: {str(e)}") from e
 
     def validate_input(self, input_data: HeatSchedulerInput) -> bool:
@@ -503,7 +503,7 @@ class HeatSchedulerAgent(
             errors.append("Invalid current load")
 
         if errors:
-            logger.warning(f"Input validation errors: {errors}")
+            logger.warning("Input validation errors: %s", errors)
             return False
 
         return True
@@ -559,7 +559,7 @@ class HeatSchedulerAgent(
         try:
             return await self.weather_service.get_forecast()
         except Exception as e:
-            logger.warning(f"Weather forecast failed: {e}")
+            logger.warning("Weather forecast failed: %s", e)
             return None
 
     def _get_weather_forecast(

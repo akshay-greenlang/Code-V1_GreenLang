@@ -1,6 +1,13 @@
 # syntax=docker/dockerfile:1.7
 # Production-ready GreenLang CLI Docker image
 # This image provides a minimal, secure runtime for GreenLang CLI
+#
+# NOTE: For GL Agent, CLI variant, and API builds, use the parameterized
+# templates in deployment/docker/templates/ instead:
+#   - Dockerfile.agent  -- All GL Agent images (build with --build-arg AGENT_ID=...)
+#   - Dockerfile.cli    -- CLI runner images
+#   - Dockerfile.api    -- Application API images
+# Build via: deployment/docker/templates/build.sh
 
 # Multi-stage build for optimized layer caching and security
 ARG PYTHON_VERSION=3.11-slim

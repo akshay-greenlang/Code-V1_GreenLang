@@ -225,9 +225,9 @@ class PrometheusExporter:
                 daemon=True
             )
             self.server_thread.start()
-            logger.info(f"Prometheus metrics server started on port {self.port}")
+            logger.info("Prometheus metrics server started on port %s", self.port)
         except Exception as e:
-            logger.error(f"Failed to start Prometheus server: {e}")
+            logger.error("Failed to start Prometheus server: %s", e)
 
     def register_custom_metric(self, metric: CustomMetric) -> str:
         """Register a custom metric"""
@@ -254,7 +254,7 @@ class PrometheusExporter:
             raise ValueError(f"Unsupported metric type: {metric.type}")
 
         self.metrics['custom_metrics'][metric.name] = prom_metric
-        logger.info(f"Registered custom metric: {metric_name}")
+        logger.info("Registered custom metric: %s", metric_name)
         return metric_name
 
     def record_metric(self, name: str, value: Union[int, float], labels: Dict[str, str] = None):
@@ -304,7 +304,7 @@ class MetricsCollector:
                 self.prometheus = PrometheusExporter(port=prometheus_port)
                 self.prometheus.start_server()
             except Exception as e:
-                logger.error(f"Failed to setup Prometheus exporter: {e}")
+                logger.error("Failed to setup Prometheus exporter: %s", e)
 
         # System metrics collection
         self.system_metrics_thread = None
@@ -348,7 +348,7 @@ class MetricsCollector:
                     time.sleep(10)  # Collect every 10 seconds
 
                 except Exception as e:
-                    logger.error(f"Error collecting system metrics: {e}")
+                    logger.error("Error collecting system metrics: %s", e)
                     time.sleep(30)  # Retry after 30 seconds on error
 
         self.system_metrics_thread = threading.Thread(
@@ -526,7 +526,7 @@ class MetricsCollector:
         if output_file:
             with open(output_file, "w") as f:
                 json.dump(export_data, f, indent=2)
-            logger.info(f"Metrics exported to {output_file}")
+            logger.info("Metrics exported to %s", output_file)
 
         return json.dumps(export_data, indent=2)
 

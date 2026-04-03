@@ -588,7 +588,7 @@ class PermissionStore:
             self._pg_backend = PostgreSQLBackend(DatabaseConfig(**db_config))
             logger.info("Initialized PostgreSQL backend for PermissionStore")
 
-        logger.info(f"Initialized PermissionStore with backend: {storage_backend}")
+        logger.info("Initialized PermissionStore with backend: %s", storage_backend)
 
     def create(self, permission: Permission) -> Permission:
         """
@@ -612,7 +612,7 @@ class PermissionStore:
         else:
             raise ValueError(f"Unknown storage backend: {self.storage_backend}")
 
-        logger.info(f"Created permission: {permission.to_string()}")
+        logger.info("Created permission: %s", permission.to_string())
         return permission
 
     def get(self, permission_id: str) -> Optional[Permission]:
@@ -650,7 +650,7 @@ class PermissionStore:
         else:
             raise ValueError(f"Unknown storage backend: {self.storage_backend}")
 
-        logger.info(f"Updated permission: {permission.to_string()}")
+        logger.info("Updated permission: %s", permission.to_string())
         return permission
 
     def delete(self, permission_id: str) -> bool:
@@ -660,7 +660,7 @@ class PermissionStore:
                 perm = self._memory_store[permission_id]
                 self._remove_from_indices(perm)
                 del self._memory_store[permission_id]
-                logger.info(f"Deleted permission: {permission_id}")
+                logger.info("Deleted permission: %s", permission_id)
                 return True
             return False
         elif self.storage_backend == "postgresql":

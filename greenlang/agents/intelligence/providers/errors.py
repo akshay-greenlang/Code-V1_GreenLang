@@ -18,8 +18,10 @@ Enables:
 from __future__ import annotations
 from typing import Optional
 
+from greenlang.exceptions import IntegrationException
 
-class ProviderError(Exception):
+
+class ProviderError(IntegrationException):
     """
     Base class for all provider errors
 

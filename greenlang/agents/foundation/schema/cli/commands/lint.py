@@ -243,7 +243,7 @@ def lint_schema(schema_dict: Dict[str, Any], schema_path: str) -> LintResult:
             lint_nested_schema(schema_dict, "", result)
 
     except Exception as e:
-        logger.error(f"Error during compilation: {e}")
+        logger.error("Error during compilation: %s", e)
         result.errors.append(LintFinding(
             code="L999",
             severity="error",

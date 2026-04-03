@@ -245,7 +245,7 @@ class TCFDAlignmentAgent(BaseAgent):
             )
 
         super().__init__(config)
-        logger.info(f"Initialized {self.AGENT_NAME} v{self.VERSION}")
+        logger.info("Initialized %s v%s", self.AGENT_NAME, self.VERSION)
 
     def initialize(self):
         """Initialize agent resources."""
@@ -257,7 +257,7 @@ class TCFDAlignmentAgent(BaseAgent):
 
         try:
             tcfd_input = TCFDAlignmentInput(**input_data)
-            self.logger.info(
+            logger.info(
                 f"Starting TCFD alignment assessment: {tcfd_input.assessment_id}"
             )
 
@@ -331,7 +331,7 @@ class TCFDAlignmentAgent(BaseAgent):
 
             output.provenance_hash = self._calculate_provenance_hash(tcfd_input, output)
 
-            self.logger.info(
+            logger.info(
                 f"TCFD alignment assessment complete: {overall_level.value}, "
                 f"score: {overall_score:.2f}"
             )
@@ -347,7 +347,7 @@ class TCFDAlignmentAgent(BaseAgent):
             )
 
         except Exception as e:
-            self.logger.error(f"TCFD alignment assessment failed: {str(e)}", exc_info=True)
+            logger.error("TCFD alignment assessment failed: %s", e, exc_info=True)
             return AgentResult(
                 success=False,
                 error=str(e),

@@ -284,7 +284,7 @@ class BypassManager:
         # Store
         self.bypasses[record.record_id] = record
 
-        logger.info(f"Bypass request created: {record.record_id}")
+        logger.info("Bypass request created: %s", record.record_id)
 
         return record
 
@@ -337,7 +337,7 @@ class BypassManager:
 
         record.provenance_hash = self._calculate_provenance(record)
 
-        logger.info(f"Bypass {record_id} approved by {approved_by}")
+        logger.info("Bypass %s approved by %s", record_id, approved_by)
 
         return record
 
@@ -441,7 +441,7 @@ class BypassManager:
 
         record.provenance_hash = self._calculate_provenance(record)
 
-        logger.info(f"Bypass {record_id} deactivated by {deactivated_by}")
+        logger.info("Bypass %s deactivated by %s", record_id, deactivated_by)
 
         return record
 
@@ -614,7 +614,7 @@ class BypassManager:
 
     def _default_alarm(self, message: str, bypass_id: str) -> None:
         """Default alarm callback."""
-        logger.warning(f"ALARM: {message} (Bypass: {bypass_id})")
+        logger.warning("ALARM: %s (Bypass: %s)", message, bypass_id)
 
     def _calculate_provenance(self, record: BypassRecord) -> str:
         """Calculate SHA-256 provenance hash."""

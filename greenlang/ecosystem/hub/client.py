@@ -77,7 +77,7 @@ class HubClient:
         self.cache_dir = Path.home() / ".greenlang" / "cache"
         self.cache_dir.mkdir(parents=True, exist_ok=True)
 
-        logger.info(f"Hub client initialized for {self.registry_url}")
+        logger.info("Hub client initialized for %s", self.registry_url)
 
     @retry(
         stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10)
@@ -126,12 +126,12 @@ class HubClient:
                 )
                 logger.info("✓ Pack passed policy checks for publishing")
             except RuntimeError as e:
-                logger.error(f"Policy check failed: {e}")
+                logger.error("Policy check failed: %s", e)
                 raise ValueError(f"Publishing blocked by policy: {e}")
 
         # Create archive if directory
         if pack_path.is_dir():
-            logger.info(f"Creating archive for {pack_path}")
+            logger.info("Creating archive for %s", pack_path)
             archive_path = create_pack_archive(pack_path)
         else:
             archive_path = pack_path
@@ -156,7 +156,7 @@ class HubClient:
             with open(archive_path, "rb") as f:
                 files = {"pack": (archive_path.name, f, "application/x-tar")}
 
-                logger.info(f"Pushing {manifest.get('name', 'pack')} to registry")
+                logger.info("Pushing %s to registry", manifest.get('name', 'pack'))
                 # Note: files parameter handling needs adjustment for requests library
                 response = self.session.post(
                     f"{self.registry_url}/api/v1/packs",
@@ -166,7 +166,7 @@ class HubClient:
                 )
 
                 result = response.json()
-                logger.info(f"Successfully pushed pack: {result.get('id', 'unknown')}")
+                logger.info("Successfully pushed pack: %s", result.get('id', 'unknown'))
 
                 return result
 
@@ -176,7 +176,7 @@ class HubClient:
                     f"Failed to push pack: {e.response.status_code} - {e.response.text}"
                 )
             else:
-                logger.error(f"Error pushing pack: {e}")
+                logger.error("Error pushing pack: %s", e)
             raise
         finally:
             # Cleanup temporary archive if created
@@ -214,12 +214,12 @@ class HubClient:
         # Check cache first
         cached_path = self._check_cache(pack_ref)
         if cached_path and cached_path.exists():
-            logger.info(f"Using cached pack: {pack_ref}")
+            logger.info("Using cached pack: %s", pack_ref)
             return cached_path
 
         try:
             # Download pack
-            logger.info(f"Pulling pack: {pack_ref}")
+            logger.info("Pulling pack: %s", pack_ref)
             response = self.session.get(
                 f"{self.registry_url}/api/v1/packs/{pack_ref}",
                 headers=self.default_headers,
@@ -270,14 +270,14 @@ class HubClient:
                     )
                     logger.info("✓ Pack passed policy checks")
                 except RuntimeError as e:
-                    logger.error(f"Policy check failed: {e}")
+                    logger.error("Policy check failed: %s", e)
                     raise ValueError(f"Installation blocked by policy: {e}")
 
             # Extract pack
             pack_name = manifest.get("name", pack_ref.replace("@", "_"))
             pack_dir = output_dir / pack_name
 
-            logger.info(f"Extracting pack to {pack_dir}")
+            logger.info("Extracting pack to %s", pack_dir)
             extract_pack_archive(pack_content, pack_dir)
 
             # Save manifest
@@ -287,7 +287,7 @@ class HubClient:
             # Cache the pack
             self._cache_pack(pack_ref, pack_dir)
 
-            logger.info(f"Successfully pulled pack to {pack_dir}")
+            logger.info("Successfully pulled pack to %s", pack_dir)
             return pack_dir
 
         except Exception as e:
@@ -296,10 +296,10 @@ class HubClient:
                     f"Failed to pull pack: {e.response.status_code} - {e.response.text}"
                 )
             else:
-                logger.error(f"Failed to pull pack: {e}")
+                logger.error("Failed to pull pack: %s", e)
             raise
         except Exception as e:
-            logger.error(f"Error pulling pack: {e}")
+            logger.error("Error pulling pack: %s", e)
             raise
 
     def search(
@@ -335,7 +335,7 @@ class HubClient:
             params["author"] = author
 
         try:
-            logger.info(f"Searching registry with query: {query}")
+            logger.info("Searching registry with query: %s", query)
             response = self.session.get(
                 f"{self.registry_url}/api/v1/packs/search",
                 params=params,
@@ -343,7 +343,7 @@ class HubClient:
             )
 
             results = response.json()
-            logger.info(f"Found {len(results)} packs")
+            logger.info("Found %s packs", len(results))
 
             return results
 
@@ -353,10 +353,10 @@ class HubClient:
                     f"Search failed: {e.response.status_code} - {e.response.text}"
                 )
             else:
-                logger.error(f"Search failed: {e}")
+                logger.error("Search failed: %s", e)
             raise
         except Exception as e:
-            logger.error(f"Error searching packs: {e}")
+            logger.error("Error searching packs: %s", e)
             raise
 
     def list_packs(
@@ -387,7 +387,7 @@ class HubClient:
             )
 
             packs = response.json()
-            logger.info(f"Listed {len(packs)} packs")
+            logger.info("Listed %s packs", len(packs))
 
             return packs
 
@@ -397,10 +397,10 @@ class HubClient:
                     f"List failed: {e.response.status_code} - {e.response.text}"
                 )
             else:
-                logger.error(f"List failed: {e}")
+                logger.error("List failed: %s", e)
             raise
         except Exception as e:
-            logger.error(f"Error listing packs: {e}")
+            logger.error("Error listing packs: %s", e)
             raise
 
     def get_pack_info(self, pack_ref: str) -> Dict[str, Any]:
@@ -414,7 +414,7 @@ class HubClient:
             Pack metadata and details
         """
         try:
-            logger.info(f"Getting info for pack: {pack_ref}")
+            logger.info("Getting info for pack: %s", pack_ref)
             response = self.session.get(
                 f"{self.registry_url}/api/v1/packs/{pack_ref}/info",
                 headers=self.default_headers,
@@ -428,10 +428,10 @@ class HubClient:
                     f"Failed to get pack info: {e.response.status_code} - {e.response.text}"
                 )
             else:
-                logger.error(f"Failed to get pack info: {e}")
+                logger.error("Failed to get pack info: %s", e)
             raise
         except Exception as e:
-            logger.error(f"Error getting pack info: {e}")
+            logger.error("Error getting pack info: %s", e)
             raise
 
     def delete_pack(self, pack_ref: str) -> bool:
@@ -448,13 +448,13 @@ class HubClient:
             raise ValueError("Authentication required to delete packs")
 
         try:
-            logger.info(f"Deleting pack: {pack_ref}")
+            logger.info("Deleting pack: %s", pack_ref)
             response = self.session.delete(
                 f"{self.registry_url}/api/v1/packs/{pack_ref}",
                 headers=self.default_headers,
             )
 
-            logger.info(f"Successfully deleted pack: {pack_ref}")
+            logger.info("Successfully deleted pack: %s", pack_ref)
             return True
 
         except Exception as e:
@@ -463,10 +463,10 @@ class HubClient:
                     f"Failed to delete pack: {e.response.status_code} - {e.response.text}"
                 )
             else:
-                logger.error(f"Failed to delete pack: {e}")
+                logger.error("Failed to delete pack: %s", e)
             raise
         except Exception as e:
-            logger.error(f"Error deleting pack: {e}")
+            logger.error("Error deleting pack: %s", e)
             raise
 
     def _check_cache(self, pack_ref: str) -> Optional[Path]:
@@ -497,7 +497,7 @@ class HubClient:
 
         shutil.copytree(pack_path, cache_path)
 
-        logger.debug(f"Cached pack {pack_ref} at {cache_path}")
+        logger.debug("Cached pack %s at %s", pack_ref, cache_path)
 
     def _verify_signature(self, content: bytes, signature: Dict) -> bool:
         """
@@ -563,7 +563,7 @@ class HubClient:
         try:
             sig_bytes = base64.b64decode(sig_value)
         except Exception as e:
-            logger.error(f"Failed to decode signature: {e}")
+            logger.error("Failed to decode signature: %s", e)
             raise ValueError(f"Invalid base64 signature value: {e}")
 
         # Verify content hash if provided (additional integrity check)
@@ -631,10 +631,10 @@ class HubClient:
                 verifier.verify(
                     content, sig_bytes, public_key=public_key_pem, algorithm=algorithm
                 )
-                logger.info(f"{algorithm.upper()} signature verified successfully")
+                logger.info("%s signature verified successfully", algorithm.upper())
 
             else:
-                logger.error(f"Unsupported signature algorithm: {algorithm}")
+                logger.error("Unsupported signature algorithm: %s", algorithm)
                 raise ValueError(f"Unsupported signature algorithm: {algorithm}")
 
             return True
@@ -649,7 +649,7 @@ class HubClient:
                 logger.error("Signature verification failed: invalid signature")
                 raise ValueError("Signature verification failed: invalid signature")
             else:
-                logger.error(f"Signature verification error: {e}")
+                logger.error("Signature verification error: %s", e)
                 raise ValueError(f"Signature verification failed: {e}")
 
     def _fetch_public_key_from_hub(self, key_id: str) -> str:
@@ -666,7 +666,7 @@ class HubClient:
             ValueError: If key cannot be fetched
         """
         try:
-            logger.debug(f"Fetching public key {key_id} from hub")
+            logger.debug("Fetching public key %s from hub", key_id)
             response = self.session.get(
                 f"{self.registry_url}/api/v1/keys/{key_id}",
                 headers=self.default_headers,
@@ -678,11 +678,11 @@ class HubClient:
             if not public_key:
                 raise ValueError(f"No public key returned for key_id: {key_id}")
 
-            logger.debug(f"Successfully fetched public key {key_id}")
+            logger.debug("Successfully fetched public key %s", key_id)
             return public_key
 
         except Exception as e:
-            logger.error(f"Failed to fetch public key {key_id}: {e}")
+            logger.error("Failed to fetch public key %s: %s", key_id, e)
             raise ValueError(f"Failed to fetch public key from hub: {e}")
 
     def close(self):

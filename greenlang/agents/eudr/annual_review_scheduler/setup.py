@@ -120,7 +120,7 @@ class AnnualReviewSchedulerService:
                 )
                 await self._db_pool.open()
             except Exception as e:
-                logger.warning(f"PostgreSQL pool init failed: {e}")
+                logger.warning("PostgreSQL pool init failed: %s", e)
                 self._db_pool = None
 
         if REDIS_AVAILABLE:
@@ -129,13 +129,13 @@ class AnnualReviewSchedulerService:
                 self._redis = aioredis.from_url(redis_url, decode_responses=True)
                 await self._redis.ping()
             except Exception as e:
-                logger.warning(f"Redis init failed: {e}")
+                logger.warning("Redis init failed: %s", e)
                 self._redis = None
 
         self._init_engines()
         self._initialized = True
         elapsed = (time.monotonic() - start) * 1000
-        logger.info(f"AnnualReviewSchedulerService startup: {len(self._engines)}/7 engines in {elapsed:.1f}ms")
+        logger.info("AnnualReviewSchedulerService startup: %s/7 engines in %.1fms", len(self._engines), elapsed)
 
     def _init_engines(self) -> None:
         """Initialize all 7 processing engines."""
@@ -153,7 +153,7 @@ class AnnualReviewSchedulerService:
                 try:
                     self._engines[name] = cls(config=self.config)
                 except Exception as e:
-                    logger.warning(f"Engine '{name}' init failed: {e}")
+                    logger.warning("Engine '%s' init failed: %s", name, e)
 
     async def shutdown(self) -> None:
         """Shutdown all engines and connections."""

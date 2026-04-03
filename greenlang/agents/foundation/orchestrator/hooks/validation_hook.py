@@ -83,6 +83,7 @@ from greenlang.agents.foundation.schema.models.config import (
 )
 from greenlang.agents.foundation.schema.models.report import ValidationReport
 from greenlang.schemas import GreenLangBase
+from greenlang.utilities.exceptions.agent import AgentException
 
 logger = logging.getLogger(__name__)
 
@@ -483,7 +484,7 @@ class PreRunValidationResult(GreenLangBase):
 # =============================================================================
 
 
-class ValidationHookError(Exception):
+class ValidationHookError(AgentException):
     """
     Raised when pre-run validation fails.
 
@@ -755,7 +756,7 @@ class PreRunValidationHook:
         """
         start_time = time.perf_counter()
 
-        logger.debug(f"Validating input '{name}' against schema '{spec.schema}'")
+        logger.debug("Validating input '%s' against schema '%s'", name, spec.schema)
 
         # Check if required input is missing
         if value is None:
@@ -770,7 +771,7 @@ class PreRunValidationHook:
                 )
             else:
                 # Optional input not provided - valid
-                logger.debug(f"Optional input '{name}' not provided, skipping validation")
+                logger.debug("Optional input '%s' not provided, skipping validation", name)
                 return InputValidationResult(
                     input_name=name,
                     valid=True,
@@ -810,7 +811,7 @@ class PreRunValidationHook:
             )
 
         except Exception as e:
-            logger.error(f"Validation error for input '{name}': {e}", exc_info=True)
+            logger.error("Validation error for input '%s': %s", name, e, exc_info=True)
             return InputValidationResult(
                 input_name=name,
                 valid=False,
@@ -1022,7 +1023,7 @@ def create_validation_hook(
     try:
         profile = ValidationProfile(profile_str)
     except ValueError:
-        logger.warning(f"Invalid profile '{profile_str}', using standard")
+        logger.warning("Invalid profile '%s', using standard", profile_str)
         profile = ValidationProfile.STANDARD
 
     config = PipelineValidationConfig(

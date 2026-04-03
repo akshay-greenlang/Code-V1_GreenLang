@@ -304,7 +304,7 @@ class BuildingDecarbonizationBaseAgent(ABC, Generic[InputT, OutputT]):
         start_time = datetime.now(timezone.utc)
 
         try:
-            self.logger.info(
+            logger.info(
                 f"{self.AGENT_ID} analyzing: building={input_data.building_baseline.building_id}"
             )
 
@@ -320,12 +320,12 @@ class BuildingDecarbonizationBaseAgent(ABC, Generic[InputT, OutputT]):
             })
 
             duration_ms = (datetime.now(timezone.utc) - start_time).total_seconds() * 1000
-            self.logger.info(f"{self.AGENT_ID} completed in {duration_ms:.2f}ms")
+            logger.info("%s completed in %.2fms", self.AGENT_ID, duration_ms)
 
             return output
 
         except Exception as e:
-            self.logger.error(f"{self.AGENT_ID} failed: {str(e)}", exc_info=True)
+            logger.error("%s failed: %s", self.AGENT_ID, e, exc_info=True)
             raise
 
     # =========================================================================

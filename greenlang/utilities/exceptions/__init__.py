@@ -16,11 +16,56 @@ Exception Hierarchy:
     │   ├── PolicyViolation
     │   ├── ResourceError
     │   └── OrchestrationError
-    └── DataException
-        ├── InvalidSchema
-        ├── MissingData
-        ├── CorruptedData
-        └── DataAccessError
+    ├── DataException
+    │   ├── InvalidSchema
+    │   ├── MissingData
+    │   ├── CorruptedData
+    │   └── DataAccessError
+    ├── ConnectorException
+    │   ├── ConnectorConfigError
+    │   ├── ConnectorAuthError
+    │   ├── ConnectorNetworkError
+    │   ├── ConnectorTimeoutError
+    │   ├── ConnectorRateLimitError
+    │   ├── ConnectorNotFoundError
+    │   ├── ConnectorValidationError
+    │   ├── ConnectorSecurityError
+    │   └── ConnectorServerError
+    ├── SecurityException
+    │   ├── AuthenticationError
+    │   ├── AuthorizationError
+    │   ├── EncryptionError
+    │   ├── SecretAccessError
+    │   ├── PIIViolationError
+    │   ├── EgressBlockedError
+    │   └── CertificateError
+    ├── IntegrationException
+    │   ├── EmissionFactorError
+    │   ├── EntityResolutionError
+    │   ├── ExternalServiceError
+    │   ├── APIClientError
+    │   └── RateLimitError
+    ├── InfrastructureException
+    │   ├── DatabaseError
+    │   ├── CacheError
+    │   ├── StorageError
+    │   ├── QueueError
+    │   ├── CircuitBreakerOpenError
+    │   ├── BulkheadFullError
+    │   └── RetryExhaustedError
+    ├── ComplianceException
+    │   ├── EUDRViolationError
+    │   ├── CSRDViolationError
+    │   ├── CBAMViolationError
+    │   ├── RegulatoryDeadlineError
+    │   ├── AuditTrailError
+    │   └── ProvenanceError
+    └── CalculationException
+        ├── EmissionCalculationError
+        ├── UnitConversionError
+        ├── FactorNotFoundError
+        ├── MethodologyError
+        └── BoundaryError
 
 All exceptions include rich context:
 - error_code: Unique error identifier
@@ -34,6 +79,12 @@ Organization:
 - agent: Agent-related exceptions
 - workflow: Workflow orchestration exceptions
 - data: Data access and validation exceptions
+- connector: External connector exceptions
+- security: Authentication, authorization, and security exceptions
+- integration: External service integration exceptions
+- infrastructure: Database, cache, storage, and resilience exceptions
+- compliance: Regulatory compliance and audit trail exceptions
+- calculation: Emission calculation and measurement exceptions
 - utils: Exception utilities and helpers
 
 Example:
@@ -76,6 +127,69 @@ from greenlang.utilities.exceptions.data import (
     DataAccessError,
 )
 
+from greenlang.utilities.exceptions.connector import (
+    ConnectorException,
+    ConnectorConfigError,
+    ConnectorAuthError,
+    ConnectorNetworkError,
+    ConnectorTimeoutError,
+    ConnectorRateLimitError,
+    ConnectorNotFoundError,
+    ConnectorValidationError,
+    ConnectorSecurityError,
+    ConnectorServerError,
+)
+
+from greenlang.utilities.exceptions.security import (
+    SecurityException,
+    AuthenticationError,
+    AuthorizationError,
+    EncryptionError,
+    SecretAccessError,
+    PIIViolationError,
+    EgressBlockedError,
+    CertificateError,
+)
+
+from greenlang.utilities.exceptions.integration import (
+    IntegrationException,
+    EmissionFactorError,
+    EntityResolutionError,
+    ExternalServiceError,
+    APIClientError,
+    RateLimitError,
+)
+
+from greenlang.utilities.exceptions.infrastructure import (
+    InfrastructureException,
+    DatabaseError,
+    CacheError,
+    StorageError,
+    QueueError,
+    CircuitBreakerOpenError,
+    BulkheadFullError,
+    RetryExhaustedError,
+)
+
+from greenlang.utilities.exceptions.compliance import (
+    ComplianceException,
+    EUDRViolationError,
+    CSRDViolationError,
+    CBAMViolationError,
+    RegulatoryDeadlineError,
+    AuditTrailError,
+    ProvenanceError,
+)
+
+from greenlang.utilities.exceptions.calculation import (
+    CalculationException,
+    EmissionCalculationError,
+    UnitConversionError,
+    FactorNotFoundError,
+    MethodologyError,
+    BoundaryError,
+)
+
 from greenlang.utilities.exceptions.utils import (
     format_exception_chain,
     is_retriable,
@@ -106,6 +220,63 @@ __all__ = [
     'MissingData',
     'CorruptedData',
     'DataAccessError',
+
+    # Connector Exceptions
+    'ConnectorException',
+    'ConnectorConfigError',
+    'ConnectorAuthError',
+    'ConnectorNetworkError',
+    'ConnectorTimeoutError',
+    'ConnectorRateLimitError',
+    'ConnectorNotFoundError',
+    'ConnectorValidationError',
+    'ConnectorSecurityError',
+    'ConnectorServerError',
+
+    # Security Exceptions
+    'SecurityException',
+    'AuthenticationError',
+    'AuthorizationError',
+    'EncryptionError',
+    'SecretAccessError',
+    'PIIViolationError',
+    'EgressBlockedError',
+    'CertificateError',
+
+    # Integration Exceptions
+    'IntegrationException',
+    'EmissionFactorError',
+    'EntityResolutionError',
+    'ExternalServiceError',
+    'APIClientError',
+    'RateLimitError',
+
+    # Infrastructure Exceptions
+    'InfrastructureException',
+    'DatabaseError',
+    'CacheError',
+    'StorageError',
+    'QueueError',
+    'CircuitBreakerOpenError',
+    'BulkheadFullError',
+    'RetryExhaustedError',
+
+    # Compliance Exceptions
+    'ComplianceException',
+    'EUDRViolationError',
+    'CSRDViolationError',
+    'CBAMViolationError',
+    'RegulatoryDeadlineError',
+    'AuditTrailError',
+    'ProvenanceError',
+
+    # Calculation Exceptions
+    'CalculationException',
+    'EmissionCalculationError',
+    'UnitConversionError',
+    'FactorNotFoundError',
+    'MethodologyError',
+    'BoundaryError',
 
     # Utils
     'format_exception_chain',

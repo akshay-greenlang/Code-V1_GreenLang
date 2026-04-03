@@ -245,7 +245,7 @@ class AuditAnalyticsEngine:
             return response
 
         except Exception as e:
-            logger.error(f"Analytics calculation failed: {e}", exc_info=True)
+            logger.error("Analytics calculation failed: %s", e, exc_info=True)
             raise
 
     # -------------------------------------------------------------------

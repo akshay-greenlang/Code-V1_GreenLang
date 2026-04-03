@@ -206,7 +206,7 @@ class CodeGenerator:
             )
         else:
             # Fallback to inline templates
-            logger.warning(f"Template directory not found: {template_dir}")
+            logger.warning("Template directory not found: %s", template_dir)
             self.env = Environment(
                 trim_blocks=True,
                 lstrip_blocks=True,
@@ -237,7 +237,7 @@ class CodeGenerator:
         Returns:
             GeneratedCode with all generated components
         """
-        logger.info(f"Generating agent code for: {spec.name} v{spec.version}")
+        logger.info("Generating agent code for: %s v%s", spec.name, spec.version)
 
         # Build template context
         context = self._build_context(spec)
@@ -281,7 +281,7 @@ class CodeGenerator:
         if output_dir:
             self._write_files(result, Path(output_dir))
 
-        logger.info(f"Generated {result.total_lines} lines of code across {len(result.files)} files")
+        logger.info("Generated %s lines of code across %s files", result.total_lines, len(result.files))
         return result
 
     def _build_context(self, spec: ParsedAgentSpec) -> Dict[str, Any]:
@@ -325,7 +325,7 @@ class CodeGenerator:
             template = self.env.get_template("agent_class.py.j2")
             return template.render(**context)
         except Exception as e:
-            logger.warning(f"Template not found, using inline generation: {e}")
+            logger.warning("Template not found, using inline generation: %s", e)
             return self._generate_agent_inline(context)
 
     def _generate_tools(self, context: Dict[str, Any]) -> str:
@@ -334,7 +334,7 @@ class CodeGenerator:
             template = self.env.get_template("tools.py.j2")
             return template.render(**context)
         except Exception as e:
-            logger.warning(f"Template not found, using inline generation: {e}")
+            logger.warning("Template not found, using inline generation: %s", e)
             return self._generate_tools_inline(context)
 
     def _generate_tests(self, context: Dict[str, Any]) -> str:
@@ -343,7 +343,7 @@ class CodeGenerator:
             template = self.env.get_template("test_agent.py.j2")
             return template.render(**context)
         except Exception as e:
-            logger.warning(f"Template not found, using inline generation: {e}")
+            logger.warning("Template not found, using inline generation: %s", e)
             return self._generate_tests_inline(context)
 
     def _generate_readme(self, context: Dict[str, Any]) -> str:
@@ -1138,4 +1138,4 @@ class TestTools:
 
             # Write file
             file_path.write_text(file.content, encoding="utf-8")
-            logger.info(f"Wrote: {file_path}")
+            logger.info("Wrote: %s", file_path)

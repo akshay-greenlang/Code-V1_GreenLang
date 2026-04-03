@@ -618,7 +618,7 @@ def get_service() -> UpstreamTransportationService:
             _service_instance = UpstreamTransportationService()
             logger.info("UpstreamTransportationService initialized successfully")
         except Exception as e:
-            logger.error(f"Failed to initialize UpstreamTransportationService: {e}")
+            logger.error("Failed to initialize UpstreamTransportationService: %s", e)
             raise HTTPException(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
                 detail="Service initialization failed"
@@ -672,13 +672,13 @@ async def calculate_emissions(
         return CalculateResponse(**result)
 
     except ValueError as e:
-        logger.error(f"Validation error in calculate_emissions: {e}")
+        logger.error("Validation error in calculate_emissions: %s", e)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e)
         )
     except Exception as e:
-        logger.error(f"Error in calculate_emissions: {e}", exc_info=True)
+        logger.error("Error in calculate_emissions: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Calculation failed"
@@ -724,13 +724,13 @@ async def calculate_batch_emissions(
         return BatchCalculateResponse(**result)
 
     except ValueError as e:
-        logger.error(f"Validation error in calculate_batch_emissions: {e}")
+        logger.error("Validation error in calculate_batch_emissions: %s", e)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e)
         )
     except Exception as e:
-        logger.error(f"Error in calculate_batch_emissions: {e}", exc_info=True)
+        logger.error("Error in calculate_batch_emissions: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Batch calculation failed"
@@ -777,7 +777,7 @@ async def list_calculations(
         HTTPException: If listing fails
     """
     try:
-        logger.info(f"Listing calculations for tenant {tenant_id}")
+        logger.info("Listing calculations for tenant %s", tenant_id)
 
         filters = {
             "tenant_id": tenant_id,
@@ -794,7 +794,7 @@ async def list_calculations(
         return CalculationListResponse(**result)
 
     except Exception as e:
-        logger.error(f"Error in list_calculations: {e}", exc_info=True)
+        logger.error("Error in list_calculations: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to list calculations"
@@ -830,7 +830,7 @@ async def get_calculation_detail(
         HTTPException: If calculation not found or access denied
     """
     try:
-        logger.info(f"Getting calculation detail {calculation_id} for tenant {tenant_id}")
+        logger.info("Getting calculation detail %s for tenant %s", calculation_id, tenant_id)
 
         result = await service.get_calculation(calculation_id, tenant_id)
 
@@ -845,7 +845,7 @@ async def get_calculation_detail(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error in get_calculation_detail: {e}", exc_info=True)
+        logger.error("Error in get_calculation_detail: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to retrieve calculation"
@@ -881,7 +881,7 @@ async def delete_calculation(
         HTTPException: If calculation not found or deletion fails
     """
     try:
-        logger.info(f"Deleting calculation {calculation_id} for tenant {tenant_id}")
+        logger.info("Deleting calculation %s for tenant %s", calculation_id, tenant_id)
 
         deleted = await service.delete_calculation(calculation_id, tenant_id)
 
@@ -900,7 +900,7 @@ async def delete_calculation(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error in delete_calculation: {e}", exc_info=True)
+        logger.error("Error in delete_calculation: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to delete calculation"
@@ -950,13 +950,13 @@ async def create_transport_chain(
         return TransportChainResponse(**result)
 
     except ValueError as e:
-        logger.error(f"Validation error in create_transport_chain: {e}")
+        logger.error("Validation error in create_transport_chain: %s", e)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e)
         )
     except Exception as e:
-        logger.error(f"Error in create_transport_chain: {e}", exc_info=True)
+        logger.error("Error in create_transport_chain: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Transport chain creation failed"
@@ -994,14 +994,14 @@ async def list_transport_chains(
         HTTPException: If listing fails
     """
     try:
-        logger.info(f"Listing transport chains for tenant {tenant_id}")
+        logger.info("Listing transport chains for tenant %s", tenant_id)
 
         result = await service.list_transport_chains(tenant_id, limit, offset)
 
         return TransportChainListResponse(**result)
 
     except Exception as e:
-        logger.error(f"Error in list_transport_chains: {e}", exc_info=True)
+        logger.error("Error in list_transport_chains: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to list transport chains"
@@ -1037,7 +1037,7 @@ async def get_transport_chain_detail(
         HTTPException: If chain not found or access denied
     """
     try:
-        logger.info(f"Getting transport chain detail {chain_id} for tenant {tenant_id}")
+        logger.info("Getting transport chain detail %s for tenant %s", chain_id, tenant_id)
 
         result = await service.get_transport_chain(chain_id, tenant_id)
 
@@ -1052,7 +1052,7 @@ async def get_transport_chain_detail(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error in get_transport_chain_detail: {e}", exc_info=True)
+        logger.error("Error in get_transport_chain_detail: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to retrieve transport chain"
@@ -1100,7 +1100,7 @@ async def list_emission_factors(
         HTTPException: If listing fails
     """
     try:
-        logger.info(f"Listing emission factors for tenant {tenant_id}")
+        logger.info("Listing emission factors for tenant %s", tenant_id)
 
         filters = {
             "tenant_id": tenant_id,
@@ -1115,7 +1115,7 @@ async def list_emission_factors(
         return EmissionFactorListResponse(**result)
 
     except Exception as e:
-        logger.error(f"Error in list_emission_factors: {e}", exc_info=True)
+        logger.error("Error in list_emission_factors: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to list emission factors"
@@ -1151,7 +1151,7 @@ async def get_emission_factor_detail(
         HTTPException: If factor not found or access denied
     """
     try:
-        logger.info(f"Getting emission factor detail {factor_id} for tenant {tenant_id}")
+        logger.info("Getting emission factor detail %s for tenant %s", factor_id, tenant_id)
 
         result = await service.get_emission_factor(factor_id, tenant_id)
 
@@ -1166,7 +1166,7 @@ async def get_emission_factor_detail(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error in get_emission_factor_detail: {e}", exc_info=True)
+        logger.error("Error in get_emission_factor_detail: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to retrieve emission factor"
@@ -1211,13 +1211,13 @@ async def create_custom_emission_factor(
         return EmissionFactorResponse(**result)
 
     except ValueError as e:
-        logger.error(f"Validation error in create_custom_emission_factor: {e}")
+        logger.error("Validation error in create_custom_emission_factor: %s", e)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e)
         )
     except Exception as e:
-        logger.error(f"Error in create_custom_emission_factor: {e}", exc_info=True)
+        logger.error("Error in create_custom_emission_factor: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Emission factor creation failed"
@@ -1257,14 +1257,14 @@ async def classify_activity(
         HTTPException: If classification fails
     """
     try:
-        logger.info(f"Classifying activity for tenant {request.tenant_id}")
+        logger.info("Classifying activity for tenant %s", request.tenant_id)
 
         result = await service.classify_activity(request.dict())
 
         return ClassificationResponse(**result)
 
     except Exception as e:
-        logger.error(f"Error in classify_activity: {e}", exc_info=True)
+        logger.error("Error in classify_activity: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Classification failed"
@@ -1314,13 +1314,13 @@ async def check_compliance(
         return ComplianceCheckResponse(**result)
 
     except ValueError as e:
-        logger.error(f"Validation error in check_compliance: {e}")
+        logger.error("Validation error in check_compliance: %s", e)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e)
         )
     except Exception as e:
-        logger.error(f"Error in check_compliance: {e}", exc_info=True)
+        logger.error("Error in check_compliance: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Compliance check failed"
@@ -1356,7 +1356,7 @@ async def get_compliance_detail(
         HTTPException: If check not found or access denied
     """
     try:
-        logger.info(f"Getting compliance detail {check_id} for tenant {tenant_id}")
+        logger.info("Getting compliance detail %s for tenant %s", check_id, tenant_id)
 
         result = await service.get_compliance_check(check_id, tenant_id)
 
@@ -1371,7 +1371,7 @@ async def get_compliance_detail(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error in get_compliance_detail: {e}", exc_info=True)
+        logger.error("Error in get_compliance_detail: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to retrieve compliance check"
@@ -1422,13 +1422,13 @@ async def analyze_uncertainty(
         return UncertaintyResponse(**result)
 
     except ValueError as e:
-        logger.error(f"Validation error in analyze_uncertainty: {e}")
+        logger.error("Validation error in analyze_uncertainty: %s", e)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e)
         )
     except Exception as e:
-        logger.error(f"Error in analyze_uncertainty: {e}", exc_info=True)
+        logger.error("Error in analyze_uncertainty: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Uncertainty analysis failed"
@@ -1474,7 +1474,7 @@ async def get_aggregations(
         HTTPException: If aggregation fails
     """
     try:
-        logger.info(f"Getting aggregations for tenant {tenant_id}, group_by {group_by}")
+        logger.info("Getting aggregations for tenant %s, group_by %s", tenant_id, group_by)
 
         filters = {
             "tenant_id": tenant_id,
@@ -1488,7 +1488,7 @@ async def get_aggregations(
         return AggregationResponse(**result)
 
     except Exception as e:
-        logger.error(f"Error in get_aggregations: {e}", exc_info=True)
+        logger.error("Error in get_aggregations: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Aggregation failed"
@@ -1549,7 +1549,7 @@ async def get_hot_spots(
         return HotSpotResponse(**result)
 
     except Exception as e:
-        logger.error(f"Error in get_hot_spots: {e}", exc_info=True)
+        logger.error("Error in get_hot_spots: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Hot-spot analysis failed"
@@ -1599,13 +1599,13 @@ async def export_calculations(
         return ExportResponse(**result)
 
     except ValueError as e:
-        logger.error(f"Validation error in export_calculations: {e}")
+        logger.error("Validation error in export_calculations: %s", e)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e)
         )
     except Exception as e:
-        logger.error(f"Error in export_calculations: {e}", exc_info=True)
+        logger.error("Error in export_calculations: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Export failed"
@@ -1645,7 +1645,7 @@ async def health_check(
         return HealthResponse(**health_data)
 
     except Exception as e:
-        logger.error(f"Error in health_check: {e}", exc_info=True)
+        logger.error("Error in health_check: %s", e, exc_info=True)
         return HealthResponse(
             status="unhealthy",
             service="upstream-transportation",
@@ -1684,14 +1684,14 @@ async def get_stats(
         HTTPException: If stats retrieval fails
     """
     try:
-        logger.info(f"Getting stats for tenant {tenant_id or 'all'}")
+        logger.info("Getting stats for tenant %s", tenant_id or 'all')
 
         stats_data = await service.get_stats(tenant_id)
 
         return StatsResponse(**stats_data)
 
     except Exception as e:
-        logger.error(f"Error in get_stats: {e}", exc_info=True)
+        logger.error("Error in get_stats: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to retrieve statistics"

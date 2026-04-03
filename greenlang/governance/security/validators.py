@@ -24,8 +24,10 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 from urllib.parse import quote, urlparse
 
+from greenlang.utilities.exceptions.security import SecurityException
 
-class ValidationError(Exception):
+
+class ValidationError(SecurityException):
     """Raised when input validation fails."""
 
     pass

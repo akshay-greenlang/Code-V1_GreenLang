@@ -127,7 +127,7 @@ class WaterQualityMonitorAgent(BaseAgent):
                 version=self.VERSION,
             )
         super().__init__(config)
-        self.logger.info(f"Initialized {self.AGENT_ID}")
+        logger.info("Initialized %s", self.AGENT_ID)
 
     def execute(self, input_data: Dict[str, Any]) -> AgentResult:
         start_time = time.time()
@@ -238,5 +238,5 @@ class WaterQualityMonitorAgent(BaseAgent):
             return AgentResult(success=True, data=output.model_dump())
 
         except Exception as e:
-            self.logger.error(f"Water quality monitoring failed: {e}", exc_info=True)
+            logger.error("Water quality monitoring failed: %s", e, exc_info=True)
             return AgentResult(success=False, error=str(e))

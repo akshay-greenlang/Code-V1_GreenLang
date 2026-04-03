@@ -1122,7 +1122,7 @@ class LEIResolver:
         """
         # This would make an actual API call in production
         # For now, return structure for documentation
-        logger.info(f"LEI lookup requested for: {lei}")
+        logger.info("LEI lookup requested for: %s", lei)
         return None
 
 

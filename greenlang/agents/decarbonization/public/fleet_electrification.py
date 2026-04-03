@@ -412,7 +412,7 @@ class PublicFleetElectrificationAgent(BaseAgent):
         super().__init__(config)
 
         self._plans: Dict[str, ElectrificationPlan] = {}
-        self.logger.info(f"Initialized {self.AGENT_NAME} v{self.VERSION}")
+        logger.info("Initialized %s v%s", self.AGENT_NAME, self.VERSION)
 
     def execute(self, input_data: Dict[str, Any]) -> AgentResult:
         """Execute fleet electrification operation."""
@@ -451,7 +451,7 @@ class PublicFleetElectrificationAgent(BaseAgent):
             )
 
         except Exception as e:
-            self.logger.error(f"Fleet electrification operation failed: {str(e)}", exc_info=True)
+            logger.error("Fleet electrification operation failed: %s", e, exc_info=True)
             return AgentResult(success=False, error=str(e))
 
     def _handle_create_plan(

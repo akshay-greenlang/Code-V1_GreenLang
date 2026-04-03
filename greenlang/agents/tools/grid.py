@@ -305,7 +305,7 @@ class GridIntegrationTool(BaseTool):
             )
 
         except Exception as e:
-            self.logger.error(f"Grid integration analysis failed: {e}", exc_info=True)
+            logger.error("Grid integration analysis failed: %s", e, exc_info=True)
             return ToolResult(
                 success=False,
                 error=f"Grid integration analysis failed: {str(e)}"

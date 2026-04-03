@@ -279,7 +279,7 @@ class CircuitBreaker:
                 self.state = CircuitState.CLOSED
                 self.failure_count = 0
                 self.success_count = 0
-                logger.info(f"Circuit {self.name} closed after recovery")
+                logger.info("Circuit %s closed after recovery", self.name)
 
         elif self.state == CircuitState.CLOSED:
             self.failure_count = 0
@@ -292,7 +292,7 @@ class CircuitBreaker:
         if self.state == CircuitState.HALF_OPEN:
             self.state = CircuitState.OPEN
             self.success_count = 0
-            logger.warning(f"Circuit {self.name} opened after half-open failure")
+            logger.warning("Circuit %s opened after half-open failure", self.name)
 
         elif self.state == CircuitState.CLOSED:
             if self.failure_count >= self.failure_threshold:
@@ -316,7 +316,7 @@ class CircuitBreaker:
                 if elapsed >= self.timeout_seconds:
                     self.state = CircuitState.HALF_OPEN
                     self.success_count = 0
-                    logger.info(f"Circuit {self.name} entering half-open state")
+                    logger.info("Circuit %s entering half-open state", self.name)
                     return True
             return False
 
@@ -528,7 +528,7 @@ class SafetyMonitor:
             constraint: Constraint to add
         """
         self._constraints[constraint.constraint_id] = constraint
-        logger.debug(f"Added constraint: {constraint.name}")
+        logger.debug("Added constraint: %s", constraint.name)
 
     def remove_constraint(self, constraint_id: str) -> bool:
         """
@@ -860,13 +860,13 @@ class SafetyMonitor:
 
         if violation.severity == ViolationSeverity.CRITICAL:
             self._metrics.violations_critical += 1
-            logger.critical(f"CRITICAL VIOLATION: {violation.message}")
+            logger.critical("CRITICAL VIOLATION: %s", violation.message)
         elif violation.severity == ViolationSeverity.MAJOR:
             self._metrics.violations_major += 1
-            logger.error(f"MAJOR VIOLATION: {violation.message}")
+            logger.error("MAJOR VIOLATION: %s", violation.message)
         else:
             self._metrics.violations_minor += 1
-            logger.warning(f"MINOR VIOLATION: {violation.message}")
+            logger.warning("MINOR VIOLATION: %s", violation.message)
 
     def _update_validation_metrics(
         self,

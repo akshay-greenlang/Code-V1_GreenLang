@@ -281,7 +281,7 @@ class DiagnosticCoverageCalculator:
         Raises:
             ValueError: If input parameters are invalid
         """
-        logger.info(f"Calculating DC for {input_data.component_id}")
+        logger.info("Calculating DC for %s", input_data.component_id)
 
         try:
             # Calculate total dangerous failure rate
@@ -352,7 +352,7 @@ class DiagnosticCoverageCalculator:
             return result
 
         except Exception as e:
-            logger.error(f"DC calculation failed: {str(e)}", exc_info=True)
+            logger.error("DC calculation failed: %s", e, exc_info=True)
             raise
 
     def calculate_combined_dc(

@@ -116,7 +116,7 @@ class ComplianceCheckerEngine:
         }
 
         self._initialized = True
-        logger.info(f"{AGENT_ID} v{VERSION}: ComplianceCheckerEngine initialized")
+        logger.info("%s v%s: ComplianceCheckerEngine initialized", AGENT_ID, VERSION)
 
     @classmethod
     def reset(cls) -> None:
@@ -188,7 +188,7 @@ class ComplianceCheckerEngine:
             return check_results
 
         except Exception as e:
-            logger.error(f"Compliance check failed: {e}", exc_info=True)
+            logger.error("Compliance check failed: %s", e, exc_info=True)
             self.metrics.record_error("compliance_check_all", str(e))
             raise
 
@@ -234,7 +234,7 @@ class ComplianceCheckerEngine:
             return check_result
 
         except Exception as e:
-            logger.error(f"Framework check failed for {framework.value}: {e}", exc_info=True)
+            logger.error("Framework check failed for %s: %s", framework.value, e, exc_info=True)
             self.metrics.record_error(f"compliance_check_{framework.value}", str(e))
             raise
 
@@ -1627,7 +1627,7 @@ class ComplianceCheckerEngine:
             }
 
         except Exception as e:
-            logger.error(f"Health check failed: {e}", exc_info=True)
+            logger.error("Health check failed: %s", e, exc_info=True)
             return {
                 "status": "unhealthy",
                 "error": str(e),

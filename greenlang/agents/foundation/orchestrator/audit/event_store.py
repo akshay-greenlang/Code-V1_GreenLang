@@ -53,6 +53,7 @@ from uuid import uuid4
 
 from pydantic import Field, field_validator
 from greenlang.schemas import GreenLangBase
+from greenlang.utilities.exceptions.compliance import AuditTrailError
 
 # Use canonical serialization for deterministic hashing
 try:
@@ -420,7 +421,7 @@ class EventStore(Protocol):
 # CUSTOM EXCEPTIONS
 # ============================================================================
 
-class EventStoreError(Exception):
+class EventStoreError(AuditTrailError):
     """Base exception for event store errors."""
     pass
 
@@ -577,7 +578,7 @@ class InMemoryEventStore:
 
             prev_hash = event.event_hash
 
-        logger.debug(f"Chain verification passed for run {run_id}: {len(events)} events")
+        logger.debug("Chain verification passed for run %s: %s events", run_id, len(events))
         return True
 
     async def export_audit_package(self, run_id: str) -> AuditPackage:
@@ -778,7 +779,7 @@ class PostgresEventStore:
             logger.info("PostgresEventStore initialized successfully")
 
         except Exception as e:
-            logger.error(f"Failed to initialize PostgresEventStore: {e}")
+            logger.error("Failed to initialize PostgresEventStore: %s", e)
             raise
 
     async def close(self) -> None:
@@ -858,7 +859,7 @@ class PostgresEventStore:
                 return event.event_hash
 
             except Exception as e:
-                logger.error(f"Failed to insert event: {e}")
+                logger.error("Failed to insert event: %s", e)
                 raise EventStoreError(f"Database insert failed: {e}") from e
 
     async def get_events(self, run_id: str) -> List[RunEvent]:
@@ -943,7 +944,7 @@ class PostgresEventStore:
 
             prev_hash = event.event_hash
 
-        logger.debug(f"Chain verification passed for run {run_id}: {len(events)} events")
+        logger.debug("Chain verification passed for run %s: %s events", run_id, len(events))
         return True
 
     async def export_audit_package(self, run_id: str) -> AuditPackage:

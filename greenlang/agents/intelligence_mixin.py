@@ -230,10 +230,10 @@ class IntelligenceMixin:
             return response.text or ""
 
         except BudgetExceeded as e:
-            logger.warning(f"Intelligence budget exceeded for {task}: {e}")
+            logger.warning("Intelligence budget exceeded for %s: %s", task, e)
             return f"[Budget exceeded: {e}]"
         except Exception as e:
-            logger.error(f"Intelligence error for {task}: {e}")
+            logger.error("Intelligence error for %s: %s", task, e)
             return f"[Error: {str(e)}]"
 
     def _run_intel_async(self, coro):
@@ -348,7 +348,7 @@ class IntelligenceMixin:
             self._intel_metrics.recommendations_generated += len(recommendations)
             return recommendations
         except Exception as e:
-            logger.error(f"Failed to parse recommendations: {e}")
+            logger.error("Failed to parse recommendations: %s", e)
             return []
 
     def detect_anomalies(
@@ -401,7 +401,7 @@ class IntelligenceMixin:
             self._intel_metrics.anomalies_detected += len(anomalies)
             return anomalies
         except Exception as e:
-            logger.error(f"Failed to parse anomalies: {e}")
+            logger.error("Failed to parse anomalies: %s", e)
             return []
 
     def reason_about(
@@ -644,7 +644,7 @@ def retrofit_all_agents_in_module(
         # Check if it's a BaseAgent subclass
         if isinstance(obj, type) and issubclass(obj, BaseAgent) and obj is not BaseAgent:
             retrofitted[name] = retrofit_agent_class(obj, intelligence_config)
-            logger.info(f"Retrofitted agent: {name}")
+            logger.info("Retrofitted agent: %s", name)
 
     return retrofitted
 
@@ -667,7 +667,7 @@ def requires_intelligence(method: Callable) -> Callable:
     """
     def wrapper(self, *args, **kwargs):
         if hasattr(self, '_intel_config') and not self._intel_config.enabled:
-            logger.warning(f"Intelligence disabled, skipping {method.__name__}")
+            logger.warning("Intelligence disabled, skipping %s", method.__name__)
             return None
         return method(self, *args, **kwargs)
 

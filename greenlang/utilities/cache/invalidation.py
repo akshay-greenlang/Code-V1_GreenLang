@@ -145,7 +145,7 @@ class TTLInvalidationManager:
             except asyncio.CancelledError:
                 break
             except Exception as e:
-                logger.error(f"Error in TTL cleanup loop: {e}", exc_info=True)
+                logger.error("Error in TTL cleanup loop: %s", e, exc_info=True)
 
     async def _cleanup_expired(self) -> None:
         """Remove expired entries."""
@@ -165,9 +165,9 @@ class TTLInvalidationManager:
                 try:
                     await self._invalidation_callback(expired_keys)
                 except Exception as e:
-                    logger.error(f"Error in invalidation callback: {e}")
+                    logger.error("Error in invalidation callback: %s", e)
 
-            logger.debug(f"Cleaned up {len(expired_keys)} expired entries")
+            logger.debug("Cleaned up %s expired entries", len(expired_keys))
 
 
 class EventBasedInvalidationManager:
@@ -209,7 +209,7 @@ class EventBasedInvalidationManager:
             rule: InvalidationRule to add
         """
         self._rules.append(rule)
-        logger.info(f"Added invalidation rule: {rule.event.value} -> {rule.key_pattern}")
+        logger.info("Added invalidation rule: %s -> %s", rule.event.value, rule.key_pattern)
 
     def remove_rule(self, event: InvalidationEvent, key_pattern: str) -> None:
         """
@@ -274,7 +274,7 @@ class EventBasedInvalidationManager:
                 # In production, you'd resolve pattern to actual keys
                 await self._invalidation_callback([pattern])
             except Exception as e:
-                logger.error(f"Error invalidating pattern {pattern}: {e}")
+                logger.error("Error invalidating pattern %s: %s", pattern, e)
 
     async def _flush_loop(self) -> None:
         """Background task to flush pending invalidations."""
@@ -295,7 +295,7 @@ class EventBasedInvalidationManager:
             except asyncio.CancelledError:
                 break
             except Exception as e:
-                logger.error(f"Error in flush loop: {e}", exc_info=True)
+                logger.error("Error in flush loop: %s", e, exc_info=True)
 
 
 class VersionBasedInvalidationManager:
@@ -550,9 +550,9 @@ class UnifiedInvalidationManager:
         if self._invalidation_callback:
             try:
                 await self._invalidation_callback(keys)
-                logger.info(f"Invalidated {len(keys)} keys")
+                logger.info("Invalidated %s keys", len(keys))
             except Exception as e:
-                logger.error(f"Error in invalidation callback: {e}")
+                logger.error("Error in invalidation callback: %s", e)
 
     def get_stats(self) -> Dict[str, Any]:
         """Get invalidation statistics."""

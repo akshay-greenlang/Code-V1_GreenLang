@@ -331,7 +331,7 @@ class CacheWarmer:
             use_llm: If True, use LLM callback to generate responses (costs $)
                      If False, use expected_response from query (free)
         """
-        logger.info(f"Warming cache with {len(queries)} queries...")
+        logger.info("Warming cache with %s queries...", len(queries))
 
         for query in queries:
             # Use expected response (free) or generate with LLM (costs $)
@@ -350,9 +350,9 @@ class CacheWarmer:
                 agent_id=query.agent_id,
             )
 
-            logger.debug(f"Cached: {query.prompt[:60]}...")
+            logger.debug("Cached: %s...", query.prompt[:50])
 
-        logger.info(f"Cache warming complete. Cache size: {self.cache.faiss_index.size}")
+        logger.info("Cache warming complete. Cache size: %s", self.cache.faiss_index.size)
 
     async def warm_with_queries_async(
         self,
@@ -366,7 +366,7 @@ class CacheWarmer:
             queries: List of warming queries
             use_llm: If True, use LLM callback to generate responses
         """
-        logger.info(f"Warming cache with {len(queries)} queries (async)...")
+        logger.info("Warming cache with %s queries (async)...", len(queries))
 
         for query in queries:
             # Use LLM or expected response
@@ -374,7 +374,7 @@ class CacheWarmer:
                 try:
                     response = await self.llm_callback(query.prompt, query.metadata)
                 except Exception as e:
-                    logger.error(f"LLM callback failed: {e}. Using expected response.")
+                    logger.error("LLM callback failed: %s. Using expected response.", e)
                     response = query.expected_response
             else:
                 response = query.expected_response
@@ -387,9 +387,9 @@ class CacheWarmer:
                 agent_id=query.agent_id,
             )
 
-            logger.debug(f"Cached: {query.prompt[:60]}...")
+            logger.debug("Cached: %s...", query.prompt[:50])
 
-        logger.info(f"Cache warming complete. Cache size: {self.cache.faiss_index.size}")
+        logger.info("Cache warming complete. Cache size: %s", self.cache.faiss_index.size)
 
     def warm_common_queries(self, use_llm: bool = False):
         """
@@ -475,7 +475,7 @@ class CacheWarmer:
         Args:
             interval_seconds: Refresh interval (default: 1 hour)
         """
-        logger.info(f"Starting background refresh (interval: {interval_seconds}s)")
+        logger.info("Starting background refresh (interval: %ss)", interval_seconds)
 
         while True:
             try:
@@ -489,7 +489,7 @@ class CacheWarmer:
                 logger.info("Cache refresh complete")
 
             except Exception as e:
-                logger.error(f"Background refresh failed: {e}")
+                logger.error("Background refresh failed: %s", e)
 
     def get_stats(self) -> Dict[str, Any]:
         """Get cache warming statistics"""

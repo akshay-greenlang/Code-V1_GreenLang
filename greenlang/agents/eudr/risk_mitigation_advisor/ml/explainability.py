@@ -91,7 +91,7 @@ class ShapExplainer:
                 self.is_initialized = True
                 logger.info("SHAP TreeExplainer initialized")
             except Exception as e:
-                logger.warning(f"SHAP explainer init failed: {e}")
+                logger.warning("SHAP explainer init failed: %s", e)
 
     def explain(
         self, features: Any,
@@ -117,7 +117,7 @@ class ShapExplainer:
                 }
             return self._deterministic_explanation(features)
         except Exception as e:
-            logger.warning(f"SHAP computation failed: {e}")
+            logger.warning("SHAP computation failed: %s", e)
             return self._deterministic_explanation(features)
 
     def _deterministic_explanation(

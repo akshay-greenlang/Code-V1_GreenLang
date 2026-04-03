@@ -499,7 +499,7 @@ class VersionManager:
 
         self.session.commit()
 
-        logger.info(f"Deprecated version {version_id}: {reason}")
+        logger.info("Deprecated version %s: %s", version_id, reason)
 
         return True
 

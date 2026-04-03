@@ -26,6 +26,8 @@ import os
 
 import numpy as np
 
+from greenlang.utilities.exceptions.base import GreenLangException
+
 logger = logging.getLogger(__name__)
 
 
@@ -171,7 +173,7 @@ class SearchResult:
     file_size_mb: float
 
 
-class LandsatClientError(Exception):
+class LandsatClientError(GreenLangException):
     """Base exception for Landsat client errors."""
     pass
 
@@ -384,7 +386,7 @@ class LandsatClient:
 
                 current_date += timedelta(days=8)
 
-        logger.info(f"Found {len(results)} Landsat images")
+        logger.info("Found %s Landsat images", len(results))
         return results
 
     def download_image(
@@ -417,7 +419,7 @@ class LandsatClient:
 
         self.authenticate()
 
-        logger.info(f"Downloading image {search_result.scene_id}, bands: {bands}")
+        logger.info("Downloading image %s, bands: %s", search_result.scene_id, bands)
 
         raise DownloadError(
             "Real API download not implemented. Use use_mock=True for testing."
@@ -526,7 +528,7 @@ class LandsatClient:
 
             image.qa_pixel = qa_data
 
-        logger.info(f"Downloaded mock image: {image.scene_id}, shape: {height}x{width}")
+        logger.info("Downloaded mock image: %s, shape: %sx%s", image.scene_id, height, width)
         return image
 
     def get_time_series(
@@ -558,7 +560,7 @@ class LandsatClient:
                 image = self.download_image(result, bands)
                 images.append(image)
             except DownloadError as e:
-                logger.warning(f"Failed to download {result.scene_id}: {e}")
+                logger.warning("Failed to download %s: %s", result.scene_id, e)
 
         images.sort(key=lambda x: x.acquisition_date)
         return images
@@ -628,7 +630,7 @@ class HarmonizedSatelliteClient:
                     image = self.sentinel2_client.download_image(results[0])
                     return image, "sentinel2"
             except Exception as e:
-                logger.warning(f"Sentinel-2 search failed: {e}")
+                logger.warning("Sentinel-2 search failed: %s", e)
 
         # Fall back to Landsat
         try:
@@ -637,7 +639,7 @@ class HarmonizedSatelliteClient:
                 image = self.landsat_client.download_image(results[0])
                 return image, "landsat"
         except Exception as e:
-            logger.warning(f"Landsat search failed: {e}")
+            logger.warning("Landsat search failed: %s", e)
 
         raise QueryError(f"No imagery found for {target_date} within {date_tolerance_days} days")
 

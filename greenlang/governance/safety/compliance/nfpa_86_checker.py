@@ -125,7 +125,7 @@ class NFPA86Checker:
         Returns:
             NFPA86CheckResult
         """
-        logger.info(f"Checking NFPA 86 compliance for {equipment_id}")
+        logger.info("Checking NFPA 86 compliance for %s", equipment_id)
 
         requirements = self.CLASS_REQUIREMENTS.get(classification, {})
         findings = []

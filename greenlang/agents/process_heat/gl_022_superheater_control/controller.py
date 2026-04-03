@@ -1477,7 +1477,7 @@ class SuperheaterController(IntelligenceMixin, BaseProcessHeatAgent[SuperheaterC
                 return output
 
         except Exception as e:
-            logger.error(f"Superheater control failed: {e}", exc_info=True)
+            logger.error("Superheater control failed: %s", e, exc_info=True)
             raise ProcessingError(f"Superheater control failed: {str(e)}") from e
 
     def validate_input(self, input_data: SuperheaterControlInput) -> bool:
@@ -1623,7 +1623,7 @@ class SuperheaterController(IntelligenceMixin, BaseProcessHeatAgent[SuperheaterC
             )
 
         except ValueError as e:
-            logger.warning(f"Spray calculation issue: {e}")
+            logger.warning("Spray calculation issue: %s", e)
             return SpraySetpoint(
                 target_flow_kg_s=0.0,
                 valve_position_pct=0.0,

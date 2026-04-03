@@ -653,7 +653,7 @@ class RecommendationAgentAI(BaseAgent):
             return result
 
         except Exception as e:
-            self.logger.error(f"Error in AI recommendation generation: {e}")
+            logger.error("Error in AI recommendation generation: %s", e)
             return AgentResult(
                 success=False,
                 error=f"Failed to generate recommendations: {str(e)}",
@@ -743,7 +743,7 @@ class RecommendationAgentAI(BaseAgent):
             )
 
         except BudgetExceeded as e:
-            self.logger.error(f"Budget exceeded: {e}")
+            logger.error("Budget exceeded: %s", e)
             return AgentResult(
                 success=False,
                 error=f"AI budget exceeded: {str(e)}",

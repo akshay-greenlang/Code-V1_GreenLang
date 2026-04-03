@@ -268,13 +268,13 @@ class ErrorHandler:
 
         # Log at appropriate level
         if isinstance(exception, ValidationError):
-            self.logger.warning("Validation error: %s", log_data)
+            logger.warning("Validation error: %s", log_data)
         elif isinstance(exception, (TimeoutError, ResourceError)):
-            self.logger.warning("Retriable error: %s", log_data)
+            logger.warning("Retriable error: %s", log_data)
         elif isinstance(exception, (AgentException, WorkflowException, DataException)):
-            self.logger.error("GreenLang error: %s", log_data)
+            logger.error("GreenLang error: %s", log_data)
         else:
-            self.logger.error("Unknown error: %s", log_data)
+            logger.error("Unknown error: %s", log_data)
 
     def _is_critical(self, exception: Exception) -> bool:
         """Check if exception is critical and requires alerting.
@@ -309,7 +309,7 @@ class ErrorHandler:
         if request_id:
             alert_message += f" (Request ID: {request_id})"
 
-        self.logger.critical(alert_message)
+        logger.critical(alert_message)
 
     def with_error_handling(
         self,

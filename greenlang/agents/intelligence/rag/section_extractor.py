@@ -135,7 +135,7 @@ class SectionPathExtractor:
             >>> print(path)  # "Chapter 6 > Section 6.3 > Box 6.2"
         """
         if doc_type not in self.PATTERNS:
-            logger.warning(f"Unknown doc_type '{doc_type}', using 'generic'")
+            logger.warning("Unknown doc_type '%s', using 'generic'", doc_type)
             doc_type = 'generic'
 
         patterns = self.PATTERNS[doc_type]
@@ -233,7 +233,7 @@ class SectionPathExtractor:
             ...     print(f"Page {page}: {header}")
         """
         if not pdf_path.exists():
-            logger.error(f"PDF not found: {pdf_path}")
+            logger.error("PDF not found: %s", pdf_path)
             return {}
 
         headers = {}
@@ -294,11 +294,11 @@ class SectionPathExtractor:
                         header_text = re.sub(r'\s+', ' ', header_text)
                         headers[page_num] = header_text
 
-            logger.info(f"Extracted headers from {len(headers)} pages using pdfplumber")
+            logger.info("Extracted headers from %s pages using pdfplumber", len(headers))
             return headers
 
         except Exception as e:
-            logger.error(f"pdfplumber header extraction failed: {e}")
+            logger.error("pdfplumber header extraction failed: %s", e)
             return {}
 
     def _extract_headers_pypdf2(
@@ -339,11 +339,11 @@ class SectionPathExtractor:
                     if header_text:
                         headers[page_num + 1] = header_text
 
-            logger.info(f"Extracted headers from {len(headers)} pages using PyPDF2")
+            logger.info("Extracted headers from %s pages using PyPDF2", len(headers))
             return headers
 
         except Exception as e:
-            logger.error(f"PyPDF2 header extraction failed: {e}")
+            logger.error("PyPDF2 header extraction failed: %s", e)
             return {}
 
     def detect_section_type(self, text: str) -> str:

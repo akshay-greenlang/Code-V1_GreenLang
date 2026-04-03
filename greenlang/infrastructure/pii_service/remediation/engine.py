@@ -140,7 +140,10 @@ class RemediationConfig(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-class RemediationError(Exception):
+from greenlang.utilities.exceptions.security import PIIViolationError as _PIIViolationError
+
+
+class RemediationError(_PIIViolationError):
     """Base exception for remediation operations."""
 
     pass

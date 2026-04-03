@@ -69,7 +69,7 @@ class MonteCarloSimulator:
 
         if self.seed is not None:
             np.random.seed(self.seed)
-            logger.info(f"Initialized MonteCarloSimulator with seed={self.seed}")
+            logger.info("Initialized MonteCarloSimulator with seed=%s", self.seed)
         else:
             logger.info("Initialized MonteCarloSimulator with random seed")
 

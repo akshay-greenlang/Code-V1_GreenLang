@@ -59,7 +59,7 @@ class ChatSession:
         self.created_at = datetime.now()
         self.last_activity = datetime.now()
 
-        logger.info(f"Created chat session: {self.session_id}")
+        logger.info("Created chat session: %s", self.session_id)
 
     def add_message(self, role: str, content: str, metadata: Optional[Dict] = None) -> None:
         """Add a message to the session history."""
@@ -96,7 +96,7 @@ class ChatSession:
         """Clear all messages from the session."""
         self.messages.clear()
         self.last_activity = datetime.now()
-        logger.info(f"Cleared history for session: {self.session_id}")
+        logger.info("Cleared history for session: %s", self.session_id)
 
     def set_context(self, key: str, value: Any) -> None:
         """Set a context value."""

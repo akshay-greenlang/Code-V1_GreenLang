@@ -271,7 +271,7 @@ class ClimateFinanceTrackerAgent(BaseAgent):
 
         self._tracked_flows: Dict[str, ClimateFinanceFlow] = {}
         super().__init__(config)
-        logger.info(f"Initialized {self.AGENT_NAME} v{self.VERSION}")
+        logger.info("Initialized %s v%s", self.AGENT_NAME, self.VERSION)
 
     def execute(self, input_data: Dict[str, Any]) -> AgentResult:
         """Execute climate finance tracking."""
@@ -297,7 +297,7 @@ class ClimateFinanceTrackerAgent(BaseAgent):
             )
 
         except Exception as e:
-            logger.error(f"Climate finance tracking failed: {e}", exc_info=True)
+            logger.error("Climate finance tracking failed: %s", e, exc_info=True)
             return AgentResult(success=False, error=str(e))
 
     def _track_flow(self, input_data: ClimateFinanceInput) -> ClimateFinanceOutput:

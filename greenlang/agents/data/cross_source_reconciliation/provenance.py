@@ -2,16 +2,11 @@
 """
 Provenance Tracking for Cross-Source Reconciliation Agent - AGENT-DATA-015
 
-Provides SHA-256 based audit trail tracking for all cross-source
-reconciliation operations. Maintains an in-memory chain-hashed operation
-log for tamper-evident provenance.
-
-Zero-Hallucination Guarantees:
-    - All hashes are deterministic SHA-256
-    - Chain hashing links operations in sequence
-    - Float normalization ensures reproducible hashing
-    - JSON export for external audit systems
-    - Complete provenance for every reconciliation step
+Thin shim that delegates core hashing to the shared
+``greenlang.data_commons.provenance`` base class while preserving the
+extended cross-source-reconciliation API (``ProvenanceEntry`` dataclass,
+float-normalized hashing, ``add_entry``, ``add_to_chain``,
+``get_current_hash``, ``get_entry``, ``clear``/``reset``, and singleton).
 
 Example:
     >>> from greenlang.agents.data.cross_source_reconciliation.provenance import ProvenanceTracker
@@ -34,13 +29,14 @@ import logging
 import math
 import threading
 from dataclasses import asdict, dataclass, field
-from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
 from uuid import uuid4
 
+from greenlang.data_commons.provenance import ProvenanceTracker as _BaseProvenanceTracker
 from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
+
 
 def _normalize_value(value: Any) -> Any:
     """Normalize a value for deterministic serialization.
@@ -65,6 +61,7 @@ def _normalize_value(value: Any) -> Any:
     if isinstance(value, (list, tuple)):
         return [_normalize_value(v) for v in value]
     return value
+
 
 @dataclass
 class ProvenanceEntry:
@@ -91,64 +88,30 @@ class ProvenanceEntry:
     metadata: Dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
-        """Convert entry to a dictionary for serialization.
-
-        Returns:
-            Dictionary representation of the entry.
-        """
+        """Convert entry to a dictionary for serialization."""
         return asdict(self)
 
-class ProvenanceTracker:
-    """Tracks provenance for cross-source reconciliation with SHA-256 chain hashing.
 
-    Maintains an ordered log of operations with SHA-256 hashes that chain
-    together to provide tamper-evident audit trails, grouped by entity type
-    and entity ID.
+class ProvenanceTracker(_BaseProvenanceTracker):
+    """Provenance tracker for cross-source reconciliation operations.
 
-    Attributes:
-        _chain_store: In-memory chain storage grouped by entity key.
-        _global_chain: Flat list of all entries in order.
-        _last_chain_hash: Most recent chain hash for linking.
-        _lock: Thread-safety lock.
-
-    Example:
-        >>> tracker = ProvenanceTracker()
-        >>> entry_id = tracker.record(
-        ...     "reconciliation_job", "job_001", "match", "abc123"
-        ... )
-        >>> valid, chain = tracker.verify_chain(
-        ...     "reconciliation_job", "job_001"
-        ... )
-        >>> assert valid is True
+    Extends the shared base class with float-normalized hashing,
+    ``ProvenanceEntry`` dataclass support, ``add_entry``/``add_to_chain``
+    methods, and entity-scoped chain verification.
     """
 
-    # Initial chain hash (genesis)
-    GENESIS_HASH = hashlib.sha256(
-        b"greenlang-cross-source-reconciliation-genesis"
-    ).hexdigest()
-
     def __init__(self) -> None:
-        """Initialize ProvenanceTracker with genesis hash."""
-        self._chain_store: Dict[str, List[Dict[str, Any]]] = {}
-        self._global_chain: List[Dict[str, Any]] = []
-        self._last_chain_hash: str = self.GENESIS_HASH
+        """Initialize with cross-source-reconciliation genesis hash."""
+        super().__init__(agent_name="cross-source-reconciliation")
         self._lock = threading.Lock()
-        logger.info(
-            "ProvenanceTracker initialized (cross-source reconciliation)"
-        )
 
-    # ------------------------------------------------------------------
-    # Hashing helpers
-    # ------------------------------------------------------------------
+    # -- Hashing helpers ---------------------------------------------------
 
     def _compute_hash(self, data: Any) -> str:
         """Compute a deterministic SHA-256 hash with float normalization.
 
-        Normalizes floats to 10 decimal places, sorts dictionary keys,
-        and handles NaN/Inf edge cases for reproducible hashing.
-
         Args:
-            data: Data to hash (dict, list, str, number, or other).
+            data: Data to hash.
 
         Returns:
             Hex-encoded SHA-256 hash string.
@@ -159,9 +122,6 @@ class ProvenanceTracker:
 
     def hash_record(self, data: Dict[str, Any]) -> str:
         """Compute a deterministic SHA-256 hash of a data record.
-
-        Sorts keys and normalizes values to ensure deterministic hashing
-        regardless of insertion order.
 
         Args:
             data: Dictionary to hash.
@@ -175,48 +135,14 @@ class ProvenanceTracker:
         """Build a SHA-256 hash for arbitrary data.
 
         Args:
-            data: Data to hash (dict, list, or other).
+            data: Data to hash.
 
         Returns:
             Hex-encoded SHA-256 hash.
         """
         return self._compute_hash(data)
 
-    def _compute_chain_hash(
-        self,
-        previous_hash: str,
-        input_hash: str,
-        output_hash: str,
-        operation: str,
-        timestamp: str,
-    ) -> str:
-        """Compute the next chain hash linking to the previous.
-
-        Args:
-            previous_hash: Previous chain hash.
-            input_hash: Hash of the operation input.
-            output_hash: Hash of the operation output.
-            operation: Operation or action name.
-            timestamp: ISO-formatted timestamp.
-
-        Returns:
-            New SHA-256 chain hash.
-        """
-        combined = json.dumps(
-            {
-                "previous": previous_hash,
-                "input": input_hash,
-                "output": output_hash,
-                "operation": operation,
-                "timestamp": timestamp,
-            },
-            sort_keys=True,
-        )
-        return hashlib.sha256(combined.encode("utf-8")).hexdigest()
-
-    # ------------------------------------------------------------------
-    # Chain entry methods
-    # ------------------------------------------------------------------
+    # -- Chain entry methods -----------------------------------------------
 
     def add_entry(
         self,
@@ -226,9 +152,6 @@ class ProvenanceTracker:
         metadata: Optional[Dict[str, Any]] = None,
     ) -> ProvenanceEntry:
         """Add a provenance entry to the chain.
-
-        Creates a ProvenanceEntry linking the previous chain hash to new
-        input and output hashes for the given operation.
 
         Args:
             operation: Name of the operation (match_records,
@@ -247,14 +170,9 @@ class ProvenanceTracker:
 
         with self._lock:
             parent_hash = self._last_chain_hash
-            chain_hash = self._compute_chain_hash(
-                parent_hash,
-                input_hash,
-                output_hash,
-                operation,
-                timestamp,
+            chain_hash = self._compute_csr_chain_hash(
+                parent_hash, input_hash, output_hash, operation, timestamp,
             )
-
             entry = ProvenanceEntry(
                 entry_id=entry_id,
                 operation=operation,
@@ -265,17 +183,12 @@ class ProvenanceTracker:
                 chain_hash=chain_hash,
                 metadata=meta,
             )
-
-            entry_dict = entry.to_dict()
-            self._global_chain.append(entry_dict)
+            self._global_chain.append(entry.to_dict())
             self._last_chain_hash = chain_hash
 
         logger.debug(
             "Chain entry added: op=%s in=%s out=%s chain=%s",
-            operation,
-            input_hash[:16],
-            output_hash[:16],
-            chain_hash[:16],
+            operation, input_hash[:16], output_hash[:16], chain_hash[:16],
         )
         return entry
 
@@ -286,15 +199,10 @@ class ProvenanceTracker:
         output_hash: str,
         metadata: Optional[Dict[str, Any]] = None,
     ) -> str:
-        """Add a chain link recording an operation with input/output hashes.
-
-        Convenience method that returns only the chain hash string.
-        Delegates to add_entry internally.
+        """Add a chain link, returning only the chain hash string.
 
         Args:
-            operation: Name of the operation (match_records,
-                compare_fields, detect_discrepancy, resolve_conflict,
-                create_golden_record, reconcile, validate, report).
+            operation: Name of the operation.
             input_hash: SHA-256 hash of the operation input.
             output_hash: SHA-256 hash of the operation output.
             metadata: Optional additional metadata to include.
@@ -316,12 +224,9 @@ class ProvenanceTracker:
         """Record a provenance entry for an entity operation.
 
         Args:
-            entity_type: Type of entity (reconciliation_job, record_match,
-                field_comparison, discrepancy, resolution, golden_record,
-                validation, report, pipeline).
+            entity_type: Type of entity.
             entity_id: Unique entity identifier.
-            action: Action performed (match, compare, detect, resolve,
-                create, merge, validate, report, reconcile, cancel).
+            action: Action performed.
             data_hash: SHA-256 hash of the operation data.
             user_id: User who performed the operation.
 
@@ -330,8 +235,7 @@ class ProvenanceTracker:
         """
         timestamp = utcnow().isoformat()
         store_key = f"{entity_type}:{entity_id}"
-
-        entry = {
+        entry: Dict[str, Any] = {
             "entity_type": entity_type,
             "entity_id": entity_id,
             "action": action,
@@ -340,38 +244,20 @@ class ProvenanceTracker:
             "timestamp": timestamp,
             "chain_hash": "",
         }
-
         with self._lock:
-            chain_hash = self._compute_chain_hash(
-                self._last_chain_hash,
-                data_hash,
-                data_hash,
-                action,
-                timestamp,
+            chain_hash = self._compute_csr_chain_hash(
+                self._last_chain_hash, data_hash, data_hash,
+                action, timestamp,
             )
             entry["chain_hash"] = chain_hash
-
-            # Store in entity chain
             if store_key not in self._chain_store:
                 self._chain_store[store_key] = []
             self._chain_store[store_key].append(entry)
-
-            # Store in global chain
             self._global_chain.append(entry)
             self._last_chain_hash = chain_hash
-
-        logger.debug(
-            "Recorded provenance: %s/%s action=%s hash=%s",
-            entity_type,
-            entity_id[:8],
-            action,
-            chain_hash[:16],
-        )
         return chain_hash
 
-    # ------------------------------------------------------------------
-    # Chain verification and retrieval
-    # ------------------------------------------------------------------
+    # -- Verification / retrieval ------------------------------------------
 
     def verify_chain(
         self,
@@ -380,15 +266,12 @@ class ProvenanceTracker:
     ) -> Tuple[bool, List[Dict[str, Any]]]:
         """Verify the integrity of the provenance chain.
 
-        When entity_type and entity_id are provided, verifies only the
-        entity-scoped chain. Otherwise verifies the full global chain.
-
         Args:
             entity_type: Optional type of entity to verify.
             entity_id: Optional entity ID whose chain to verify.
 
         Returns:
-            Tuple of (is_valid: bool, chain_entries: list).
+            Tuple of (is_valid, chain_entries).
         """
         if entity_type and entity_id:
             store_key = f"{entity_type}:{entity_id}"
@@ -397,40 +280,31 @@ class ProvenanceTracker:
         else:
             with self._lock:
                 chain = list(self._global_chain)
-
         if not chain:
             return True, []
-
         is_valid = True
         for i, entry in enumerate(chain):
-            if i == 0:
-                if not entry.get("chain_hash"):
-                    is_valid = False
-                    break
+            if i == 0 and not entry.get("chain_hash"):
+                is_valid = False
+                break
             required = [
                 "action" if "action" in entry else "operation",
-                "timestamp",
-                "chain_hash",
+                "timestamp", "chain_hash",
             ]
-            # Validate entity entries have entity fields
             if "entity_type" in entry:
                 required.extend(["entity_type", "entity_id", "data_hash"])
             else:
                 required.extend(["input_hash", "output_hash"])
-
             for field_name in required:
                 if field_name not in entry:
                     is_valid = False
                     logger.warning(
                         "Chain verification failed at entry %d: "
-                        "missing field %s",
-                        i,
-                        field_name,
+                        "missing field %s", i, field_name,
                     )
                     break
             if not is_valid:
                 break
-
         return is_valid, chain
 
     def get_chain(
@@ -438,10 +312,7 @@ class ProvenanceTracker:
         entity_type: Optional[str] = None,
         entity_id: Optional[str] = None,
     ) -> List[Dict[str, Any]]:
-        """Get the provenance chain.
-
-        When entity_type and entity_id are provided, returns only the
-        entity-scoped chain. Otherwise returns the full global chain.
+        """Get the provenance chain, optionally scoped to an entity.
 
         Args:
             entity_type: Optional type of entity.
@@ -497,43 +368,19 @@ class ProvenanceTracker:
         with self._lock:
             return len(self._global_chain)
 
-    # ------------------------------------------------------------------
-    # Reset and export
-    # ------------------------------------------------------------------
-
     def clear(self) -> None:
-        """Clear the provenance tracker, resetting to genesis state.
-
-        Removes all stored chains and resets the last chain hash
-        back to the genesis hash. Alias for reset().
-        """
+        """Clear the provenance tracker. Alias for reset()."""
         self.reset()
 
     def reset(self) -> None:
-        """Reset the provenance tracker to genesis state.
-
-        Clears all stored chains and resets the last chain hash
-        back to the genesis hash.
-        """
+        """Reset the provenance tracker to genesis state."""
         with self._lock:
             self._chain_store.clear()
             self._global_chain.clear()
-            self._last_chain_hash = self.GENESIS_HASH
+            self._last_chain_hash = self._GENESIS_HASH
         logger.info("ProvenanceTracker reset to genesis")
 
-    def export_json(self) -> str:
-        """Export all provenance records as JSON string.
-
-        Returns:
-            JSON string of provenance records.
-        """
-        with self._lock:
-            data = list(self._global_chain)
-        return json.dumps(data, indent=2, default=str)
-
-    # ------------------------------------------------------------------
-    # Properties
-    # ------------------------------------------------------------------
+    # -- Properties --------------------------------------------------------
 
     @property
     def entry_count(self) -> int:
@@ -547,6 +394,44 @@ class ProvenanceTracker:
         with self._lock:
             return len(self._chain_store)
 
+    def export_json(self) -> str:
+        """Export all provenance records as JSON string."""
+        with self._lock:
+            data = list(self._global_chain)
+        return json.dumps(data, indent=2, default=str)
+
+    # -- Internal ----------------------------------------------------------
+
+    @staticmethod
+    def _compute_csr_chain_hash(
+        previous_hash: str,
+        input_hash: str,
+        output_hash: str,
+        operation: str,
+        timestamp: str,
+    ) -> str:
+        """Compute the next chain hash (5-arg variant for cross-source reconciliation).
+
+        Args:
+            previous_hash: Previous chain hash.
+            input_hash: Hash of the operation input.
+            output_hash: Hash of the operation output.
+            operation: Operation or action name.
+            timestamp: ISO-formatted timestamp.
+
+        Returns:
+            New SHA-256 chain hash.
+        """
+        combined = json.dumps({
+            "previous": previous_hash,
+            "input": input_hash,
+            "output": output_hash,
+            "operation": operation,
+            "timestamp": timestamp,
+        }, sort_keys=True)
+        return hashlib.sha256(combined.encode("utf-8")).hexdigest()
+
+
 # ---------------------------------------------------------------------------
 # Thread-safe singleton
 # ---------------------------------------------------------------------------
@@ -554,18 +439,14 @@ class ProvenanceTracker:
 _tracker_instance: Optional[ProvenanceTracker] = None
 _tracker_lock = threading.Lock()
 
+
 def get_provenance_tracker() -> ProvenanceTracker:
     """Return the singleton ProvenanceTracker instance.
 
-    Thread-safe lazy initialization. Returns the same instance on
-    every call within the process.
+    Thread-safe lazy initialization.
 
     Returns:
         The global ProvenanceTracker singleton.
-
-    Example:
-        >>> tracker = get_provenance_tracker()
-        >>> tracker.record("reconciliation_job", "j1", "match", "abc123")
     """
     global _tracker_instance
     if _tracker_instance is None:
@@ -577,6 +458,7 @@ def get_provenance_tracker() -> ProvenanceTracker:
                     "(cross-source reconciliation)"
                 )
     return _tracker_instance
+
 
 __all__ = [
     "ProvenanceEntry",

@@ -290,7 +290,7 @@ class SupplyChainGraph:
         self._suppliers_by_country: Dict[str, Set[str]] = defaultdict(set)
         self._suppliers_by_commodity: Dict[CommodityType, Set[str]] = defaultdict(set)
 
-        logger.info(f"SupplyChainGraph initialized for company: {company_id}")
+        logger.info("SupplyChainGraph initialized for company: %s", company_id)
 
     @property
     def graph(self) -> nx.DiGraph:
@@ -339,7 +339,7 @@ class SupplyChainGraph:
         for commodity in supplier.commodities:
             self._suppliers_by_commodity[commodity].add(supplier.id)
 
-        logger.debug(f"Added supplier: {supplier.id} - {supplier.name}")
+        logger.debug("Added supplier: %s - %s", supplier.id, supplier.name)
 
     def add_facility(self, facility: Facility) -> None:
         """
@@ -369,7 +369,7 @@ class SupplyChainGraph:
                 relationship_type="belongs_to",
             )
 
-        logger.debug(f"Added facility: {facility.id} - {facility.name}")
+        logger.debug("Added facility: %s - %s", facility.id, facility.name)
 
     def add_material(self, material: Material) -> None:
         """
@@ -379,7 +379,7 @@ class SupplyChainGraph:
             material: Material entity to add
         """
         self._materials[material.id] = material
-        logger.debug(f"Added material: {material.id} - {material.name}")
+        logger.debug("Added material: %s - %s", material.id, material.name)
 
     def add_product(self, product: Product) -> None:
         """
@@ -389,7 +389,7 @@ class SupplyChainGraph:
             product: Product entity to add
         """
         self._products[product.id] = product
-        logger.debug(f"Added product: {product.id} - {product.name}")
+        logger.debug("Added product: %s - %s", product.id, product.name)
 
     def add_relationship(self, relationship: SupplierRelationship) -> None:
         """
@@ -602,7 +602,7 @@ class SupplyChainGraph:
             return paths
 
         except nx.NetworkXError as e:
-            logger.warning(f"Path finding error: {e}")
+            logger.warning("Path finding error: %s", e)
             return []
 
     def find_traceability_paths(

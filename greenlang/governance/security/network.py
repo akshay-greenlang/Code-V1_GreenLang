@@ -48,9 +48,9 @@ def create_secure_ssl_context() -> ssl.SSLContext:
     if ca_bundle:
         if os.path.exists(ca_bundle):
             context.load_verify_locations(ca_bundle)
-            logger.info(f"Loaded custom CA bundle from: {ca_bundle}")
+            logger.info("Loaded custom CA bundle from: %s", ca_bundle)
         else:
-            logger.warning(f"GL_CA_BUNDLE specified but file not found: {ca_bundle}")
+            logger.warning("GL_CA_BUNDLE specified but file not found: %s", ca_bundle)
 
     return context
 
@@ -126,7 +126,7 @@ def validate_url(url: str, allow_http: bool = False) -> None:
             or hostname.startswith("192.168.")
             or hostname.startswith("10.")
         ):
-            logger.warning(f"Private/local hostname detected: {hostname}")
+            logger.warning("Private/local hostname detected: %s", hostname)
 
 
 def validate_git_url(url: str) -> None:
@@ -151,7 +151,7 @@ def validate_git_url(url: str) -> None:
     allowed_hosts = ["github.com", "gitlab.com", "bitbucket.org"]
 
     if parsed.hostname and parsed.hostname.lower() not in allowed_hosts:
-        logger.warning(f"Non-standard Git host: {parsed.hostname}")
+        logger.warning("Non-standard Git host: %s", parsed.hostname)
 
 
 def safe_download(
@@ -216,4 +216,4 @@ def safe_download(
                 f"Got: {actual_checksum}"
             )
 
-    logger.info(f"Successfully downloaded: {url} -> {dest_path}")
+    logger.info("Successfully downloaded: %s -> %s", url, dest_path)

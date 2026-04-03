@@ -630,7 +630,7 @@ class DemandChargeOptimizer:
             if storage_reduction > 0:
                 optimized_peak_kw -= storage_reduction
                 peak_reduction_kw += storage_reduction
-                logger.debug(f"Storage reduction: {storage_reduction:.0f}kW")
+                logger.debug("Storage reduction: %.0fkW", storage_reduction)
 
         # Strategy 2: Load shifting
         if self._config.enable_load_shifting and optimized_peak_kw > self._config.peak_demand_limit_kw:

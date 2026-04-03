@@ -140,21 +140,21 @@ class CSRFProtect:
         """
         # Check if token exists in cache
         if token not in self._token_cache:
-            logger.warning(f"CSRF token not found in cache: {token[:8]}...")
+            logger.warning("CSRF token not found in cache: %s...", token[)
             return False
 
         timestamp = self._token_cache[token]
 
         # Check token expiry
         if time.time() - timestamp > self.config.token_expiry_seconds:
-            logger.warning(f"CSRF token expired: {token[:8]}...")
+            logger.warning("CSRF token expired: %s...", token[)
             del self._token_cache[token]
             return False
 
         # Verify signature
         expected_signature = self._sign_token(token, timestamp)
         if not hmac.compare_digest(signature, expected_signature):
-            logger.warning(f"CSRF signature mismatch for token: {token[:8]}...")
+            logger.warning("CSRF signature mismatch for token: %s...", token[)
             return False
 
         return True
@@ -177,7 +177,7 @@ class CSRFProtect:
             del self._token_cache[token]
 
         if expired_tokens:
-            logger.info(f"Cleaned up {len(expired_tokens)} expired CSRF tokens")
+            logger.info("Cleaned up %s expired CSRF tokens", len(expired_tokens))
 
         self._last_cleanup = current_time
 
@@ -251,7 +251,7 @@ class CSRFProtect:
         # Get token from request
         token = self._get_token_from_request(request)
         if not token:
-            logger.error(f"CSRF token missing for {request.method} {request.url.path}")
+            logger.error("CSRF token missing for %s %s", request.method, request.url.path)
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="CSRF token missing"
@@ -264,7 +264,7 @@ class CSRFProtect:
                 raise ValueError("Invalid token format")
             token_value, signature = token_parts
         except (ValueError, IndexError) as e:
-            logger.error(f"Invalid CSRF token format: {str(e)}")
+            logger.error("Invalid CSRF token format: %s", e)
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Invalid CSRF token format"
@@ -272,13 +272,13 @@ class CSRFProtect:
 
         # Validate token
         if not self.validate_token(token_value, signature):
-            logger.error(f"CSRF validation failed for {request.method} {request.url.path}")
+            logger.error("CSRF validation failed for %s %s", request.method, request.url.path)
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="CSRF validation failed"
             )
 
-        logger.debug(f"CSRF validation successful for {request.method} {request.url.path}")
+        logger.debug("CSRF validation successful for %s %s", request.method, request.url.path)
 
         # Process request
         response = await call_next(request)

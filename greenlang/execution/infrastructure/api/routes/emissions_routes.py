@@ -510,7 +510,7 @@ if FASTAPI_AVAILABLE:
         Returns:
             Paginated list of emission calculations
         """
-        logger.info(f"Listing emissions: page={page}, page_size={page_size}")
+        logger.info("Listing emissions: page=%s, page_size=%s", page, page_size)
 
         # Filter calculations
         items = list(_emission_calculations.values())
@@ -611,7 +611,7 @@ if FASTAPI_AVAILABLE:
             return result
 
         except ValueError as e:
-            logger.warning(f"Validation error in calculation: {e}")
+            logger.warning("Validation error in calculation: %s", e)
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail={
@@ -620,7 +620,7 @@ if FASTAPI_AVAILABLE:
                 }
             )
         except Exception as e:
-            logger.error(f"Calculation error: {e}", exc_info=True)
+            logger.error("Calculation error: %s", e, exc_info=True)
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail={
@@ -671,12 +671,12 @@ if FASTAPI_AVAILABLE:
         Raises:
             HTTPException: If calculation not found
         """
-        logger.info(f"Getting emission calculation: {calculation_id}")
+        logger.info("Getting emission calculation: %s", calculation_id)
 
         calculation = _emission_calculations.get(calculation_id)
 
         if not calculation:
-            logger.warning(f"Calculation not found: {calculation_id}")
+            logger.warning("Calculation not found: %s", calculation_id)
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail={

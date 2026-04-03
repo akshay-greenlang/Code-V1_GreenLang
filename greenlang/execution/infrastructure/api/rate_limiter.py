@@ -715,7 +715,7 @@ class RateLimiter:
             return await leaky_bucket.acquire(float(tokens))
 
         # Unknown strategy - allow (fail open)
-        logger.warning(f"Unknown rate limit strategy: {self.config.strategy}")
+        logger.warning("Unknown rate limit strategy: %s", self.config.strategy)
         return True
 
     async def check(
@@ -831,7 +831,7 @@ class RateLimiter:
                     leak_rate=self.config.tokens_per_second
                 )
 
-        logger.info(f"Reset rate limit for key: {key}")
+        logger.info("Reset rate limit for key: %s", key)
 
     def add_rate_limit_headers(
         self,

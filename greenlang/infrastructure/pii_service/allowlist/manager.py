@@ -112,7 +112,10 @@ class AllowlistConfig(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-class AllowlistError(Exception):
+from greenlang.utilities.exceptions.security import PIIViolationError as _PIIViolationError
+
+
+class AllowlistError(_PIIViolationError):
     """Base exception for allowlist operations."""
 
     pass

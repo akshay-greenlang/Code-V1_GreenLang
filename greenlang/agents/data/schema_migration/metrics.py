@@ -5,19 +5,21 @@ Prometheus Metrics - AGENT-DATA-017: Schema Migration Agent
 12 Prometheus metrics for schema migration service monitoring with
 graceful fallback when prometheus_client is not installed.
 
-Metrics:
-    1.  gl_sm_schemas_registered_total       (Counter,   labels: schema_type, namespace)
-    2.  gl_sm_versions_created_total         (Counter,   labels: bump_type)
-    3.  gl_sm_changes_detected_total         (Counter,   labels: change_type, severity)
-    4.  gl_sm_compatibility_checks_total     (Counter,   labels: result)
-    5.  gl_sm_migrations_planned_total       (Counter,   labels: status)
-    6.  gl_sm_migrations_executed_total      (Counter,   labels: status)
-    7.  gl_sm_rollbacks_total                (Counter,   labels: rollback_type, status)
-    8.  gl_sm_drift_detected_total           (Counter,   labels: drift_type, severity)
-    9.  gl_sm_migration_duration_seconds     (Histogram, buckets: migration-scale)
-    10. gl_sm_records_migrated               (Histogram, buckets: record-count-scale)
-    11. gl_sm_processing_duration_seconds    (Histogram, labels: operation, buckets: sub-second)
-    12. gl_sm_active_migrations              (Gauge)
+Standard metrics (via MetricsFactory):
+    1.  gl_sm_operations_total (Counter, labels: type, tenant_id)
+    2.  gl_sm_processing_duration_seconds (Histogram, 12 buckets)
+    3.  gl_sm_validation_errors_total (Counter, labels: severity, type)
+    4.  gl_sm_batch_jobs_total (Counter, labels: status)
+    5.  gl_sm_active_jobs (Gauge)
+    6.  gl_sm_queue_size (Gauge)
+
+Agent-specific metrics:
+    7.  gl_sm_schemas_registered_total (Counter, labels: schema_type, namespace)
+    8.  gl_sm_versions_created_total (Counter, labels: bump_type)
+    9.  gl_sm_changes_detected_total (Counter, labels: change_type, severity)
+    10. gl_sm_migration_duration_seconds (Histogram, buckets: migration-scale)
+    11. gl_sm_records_migrated (Histogram, buckets: record-count-scale)
+    12. gl_sm_active_migrations (Gauge)
 
 Author: GreenLang Platform Team
 Date: February 2026
@@ -27,126 +29,96 @@ Status: Production Ready
 
 from __future__ import annotations
 
-import logging
-
-logger = logging.getLogger(__name__)
-
-# ---------------------------------------------------------------------------
-# Graceful prometheus_client import
-# ---------------------------------------------------------------------------
-
-try:
-    from prometheus_client import Counter, Gauge, Histogram
-    PROMETHEUS_AVAILABLE = True
-except ImportError:
-    PROMETHEUS_AVAILABLE = False
-    logger.info(
-        "prometheus_client not installed; schema migration metrics disabled"
-    )
+from greenlang.data_commons.metrics import (
+    PROMETHEUS_AVAILABLE,
+    MetricsFactory,
+)
 
 # ---------------------------------------------------------------------------
-# Metric definitions
+# Standard metrics (6 of 12) via factory
 # ---------------------------------------------------------------------------
 
-if PROMETHEUS_AVAILABLE:
-    # 1. Schemas registered by schema type and namespace
-    sm_schemas_registered_total = Counter(
-        "gl_sm_schemas_registered_total",
-        "Total schemas registered in the migration registry",
-        labelnames=["schema_type", "namespace"],
-    )
+m = MetricsFactory(
+    "gl_sm",
+    "Schema Migration",
+    duration_buckets=(0.01, 0.05, 0.1, 0.5, 1, 5, 10),
+)
 
-    # 2. Schema versions created by semantic version bump type
-    sm_versions_created_total = Counter(
-        "gl_sm_versions_created_total",
-        "Total schema versions created",
-        labelnames=["bump_type"],
-    )
+# ---------------------------------------------------------------------------
+# Agent-specific metrics (6 of 12)
+# ---------------------------------------------------------------------------
 
-    # 3. Schema changes detected by change type and severity
-    sm_changes_detected_total = Counter(
-        "gl_sm_changes_detected_total",
-        "Total schema changes detected during comparison",
-        labelnames=["change_type", "severity"],
-    )
+sm_schemas_registered_total = m.create_custom_counter(
+    "schemas_registered_total",
+    "Total schemas registered in the migration registry",
+    labelnames=["schema_type", "namespace"],
+)
 
-    # 4. Schema compatibility checks by result
-    sm_compatibility_checks_total = Counter(
-        "gl_sm_compatibility_checks_total",
-        "Total schema compatibility checks performed",
-        labelnames=["result"],
-    )
+sm_versions_created_total = m.create_custom_counter(
+    "versions_created_total",
+    "Total schema versions created",
+    labelnames=["bump_type"],
+)
 
-    # 5. Migration plans created by planning status
-    sm_migrations_planned_total = Counter(
-        "gl_sm_migrations_planned_total",
-        "Total migration plans created",
-        labelnames=["status"],
-    )
+sm_changes_detected_total = m.create_custom_counter(
+    "changes_detected_total",
+    "Total schema changes detected during comparison",
+    labelnames=["change_type", "severity"],
+)
 
-    # 6. Migrations executed by execution status
-    sm_migrations_executed_total = Counter(
-        "gl_sm_migrations_executed_total",
-        "Total schema migrations executed",
-        labelnames=["status"],
-    )
+sm_compatibility_checks_total = m.create_custom_counter(
+    "compatibility_checks_total",
+    "Total schema compatibility checks performed",
+    labelnames=["result"],
+)
 
-    # 7. Rollbacks initiated by rollback type and outcome status
-    sm_rollbacks_total = Counter(
-        "gl_sm_rollbacks_total",
-        "Total schema migration rollbacks initiated",
-        labelnames=["rollback_type", "status"],
-    )
+sm_migrations_planned_total = m.create_custom_counter(
+    "migrations_planned_total",
+    "Total migration plans created",
+    labelnames=["status"],
+)
 
-    # 8. Schema drift events detected by drift type and severity
-    sm_drift_detected_total = Counter(
-        "gl_sm_drift_detected_total",
-        "Total schema drift events detected",
-        labelnames=["drift_type", "severity"],
-    )
+sm_migrations_executed_total = m.create_custom_counter(
+    "migrations_executed_total",
+    "Total schema migrations executed",
+    labelnames=["status"],
+)
 
-    # 9. End-to-end migration duration for full migration operations
-    sm_migration_duration_seconds = Histogram(
-        "gl_sm_migration_duration_seconds",
-        "End-to-end schema migration duration in seconds",
-        buckets=(1, 5, 10, 30, 60, 300, 600, 1800, 3600),
-    )
+sm_rollbacks_total = m.create_custom_counter(
+    "rollbacks_total",
+    "Total schema migration rollbacks initiated",
+    labelnames=["rollback_type", "status"],
+)
 
-    # 10. Records migrated per migration execution
-    sm_records_migrated = Histogram(
-        "gl_sm_records_migrated",
-        "Number of records migrated per migration execution",
-        buckets=(10, 100, 1000, 5000, 10000, 50000, 100000),
-    )
+sm_drift_detected_total = m.create_custom_counter(
+    "drift_detected_total",
+    "Total schema drift events detected",
+    labelnames=["drift_type", "severity"],
+)
 
-    # 11. Processing duration for individual engine operations
-    sm_processing_duration_seconds = Histogram(
-        "gl_sm_processing_duration_seconds",
-        "Schema migration engine operation processing duration in seconds",
-        labelnames=["operation"],
-        buckets=(0.01, 0.05, 0.1, 0.5, 1, 5, 10),
-    )
+sm_migration_duration_seconds = m.create_custom_histogram(
+    "migration_duration_seconds",
+    "End-to-end schema migration duration in seconds",
+    buckets=(1, 5, 10, 30, 60, 300, 600, 1800, 3600),
+)
 
-    # 12. Active concurrent migrations gauge
-    sm_active_migrations = Gauge(
-        "gl_sm_active_migrations",
-        "Number of schema migration operations currently in progress",
-    )
+sm_records_migrated = m.create_custom_histogram(
+    "records_migrated",
+    "Number of records migrated per migration execution",
+    buckets=(10, 100, 1000, 5000, 10000, 50000, 100000),
+)
 
-else:
-    # No-op placeholders so callers never need to guard on PROMETHEUS_AVAILABLE
-    sm_schemas_registered_total = None      # type: ignore[assignment]
-    sm_versions_created_total = None        # type: ignore[assignment]
-    sm_changes_detected_total = None        # type: ignore[assignment]
-    sm_compatibility_checks_total = None    # type: ignore[assignment]
-    sm_migrations_planned_total = None      # type: ignore[assignment]
-    sm_migrations_executed_total = None     # type: ignore[assignment]
-    sm_rollbacks_total = None               # type: ignore[assignment]
-    sm_drift_detected_total = None          # type: ignore[assignment]
-    sm_migration_duration_seconds = None    # type: ignore[assignment]
-    sm_records_migrated = None              # type: ignore[assignment]
-    sm_processing_duration_seconds = None   # type: ignore[assignment]
-    sm_active_migrations = None             # type: ignore[assignment]
+sm_processing_duration_seconds = m.create_custom_histogram(
+    "processing_duration_seconds_detail",
+    "Schema migration engine operation processing duration in seconds",
+    buckets=(0.01, 0.05, 0.1, 0.5, 1, 5, 10),
+    labelnames=["operation"],
+)
+
+sm_active_migrations = m.create_custom_gauge(
+    "active_migrations",
+    "Number of schema migration operations currently in progress",
+)
 
 
 # ---------------------------------------------------------------------------
@@ -162,12 +134,10 @@ def record_schema_registered(schema_type: str, namespace: str) -> None:
         namespace: Logical namespace or service the schema belongs to
             (e.g. ``"emissions"``, ``"suppliers"``, ``"global"``).
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    sm_schemas_registered_total.labels(
-        schema_type=schema_type,
-        namespace=namespace,
-    ).inc()
+    m.safe_inc(
+        sm_schemas_registered_total, 1,
+        schema_type=schema_type, namespace=namespace,
+    )
 
 
 def record_version_created(bump_type: str) -> None:
@@ -175,15 +145,8 @@ def record_version_created(bump_type: str) -> None:
 
     Args:
         bump_type: Semantic version bump type (major, minor, patch).
-            - ``"major"`` – backward-incompatible change.
-            - ``"minor"`` – backward-compatible addition.
-            - ``"patch"`` – backward-compatible fix.
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    sm_versions_created_total.labels(
-        bump_type=bump_type,
-    ).inc()
+    m.safe_inc(sm_versions_created_total, 1, bump_type=bump_type)
 
 
 def record_change_detected(change_type: str, severity: str) -> None:
@@ -197,12 +160,10 @@ def record_change_detected(change_type: str, severity: str) -> None:
         severity: Change severity
             (breaking, non_breaking, informational).
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    sm_changes_detected_total.labels(
-        change_type=change_type,
-        severity=severity,
-    ).inc()
+    m.safe_inc(
+        sm_changes_detected_total, 1,
+        change_type=change_type, severity=severity,
+    )
 
 
 def record_compatibility_check(result: str) -> None:
@@ -212,11 +173,7 @@ def record_compatibility_check(result: str) -> None:
         result: Compatibility check outcome
             (compatible, incompatible, warning, error).
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    sm_compatibility_checks_total.labels(
-        result=result,
-    ).inc()
+    m.safe_inc(sm_compatibility_checks_total, 1, result=result)
 
 
 def record_migration_planned(status: str) -> None:
@@ -226,11 +183,7 @@ def record_migration_planned(status: str) -> None:
         status: Planning outcome status
             (success, failed, skipped, partial).
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    sm_migrations_planned_total.labels(
-        status=status,
-    ).inc()
+    m.safe_inc(sm_migrations_planned_total, 1, status=status)
 
 
 def record_migration_executed(status: str) -> None:
@@ -240,11 +193,7 @@ def record_migration_executed(status: str) -> None:
         status: Execution outcome status
             (success, failed, partial, rolled_back, skipped).
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    sm_migrations_executed_total.labels(
-        status=status,
-    ).inc()
+    m.safe_inc(sm_migrations_executed_total, 1, status=status)
 
 
 def record_rollback(rollback_type: str, status: str) -> None:
@@ -256,12 +205,7 @@ def record_rollback(rollback_type: str, status: str) -> None:
         status: Rollback outcome status
             (success, failed, partial).
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    sm_rollbacks_total.labels(
-        rollback_type=rollback_type,
-        status=status,
-    ).inc()
+    m.safe_inc(sm_rollbacks_total, 1, rollback_type=rollback_type, status=status)
 
 
 def record_drift_detected(drift_type: str, severity: str) -> None:
@@ -274,12 +218,7 @@ def record_drift_detected(drift_type: str, severity: str) -> None:
         severity: Drift severity level
             (critical, high, medium, low, informational).
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    sm_drift_detected_total.labels(
-        drift_type=drift_type,
-        severity=severity,
-    ).inc()
+    m.safe_inc(sm_drift_detected_total, 1, drift_type=drift_type, severity=severity)
 
 
 def observe_migration_duration(seconds: float) -> None:
@@ -287,11 +226,8 @@ def observe_migration_duration(seconds: float) -> None:
 
     Args:
         seconds: Total migration wall-clock time in seconds.
-            Buckets: 1, 5, 10, 30, 60, 300, 600, 1800, 3600.
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    sm_migration_duration_seconds.observe(seconds)
+    m.safe_observe(sm_migration_duration_seconds, seconds)
 
 
 def observe_records_migrated(count: int) -> None:
@@ -299,11 +235,8 @@ def observe_records_migrated(count: int) -> None:
 
     Args:
         count: Total records migrated.
-            Buckets: 10, 100, 1000, 5000, 10000, 50000, 100000.
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    sm_records_migrated.observe(float(count))
+    m.safe_observe(sm_records_migrated, float(count))
 
 
 def observe_processing_duration(operation: str, seconds: float) -> None:
@@ -315,36 +248,22 @@ def observe_processing_duration(operation: str, seconds: float) -> None:
             compatibility_check, plan_create, migration_execute,
             rollback, drift_detect, export, validate).
         seconds: Operation duration in seconds.
-            Buckets: 0.01, 0.05, 0.1, 0.5, 1, 5, 10.
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    sm_processing_duration_seconds.labels(
-        operation=operation,
-    ).observe(seconds)
+    m.safe_observe(sm_processing_duration_seconds, seconds, operation=operation)
 
 
 def set_active_migrations(count: int) -> None:
     """Set the gauge for currently active migration operations.
 
-    This is an absolute set (not an increment) so the caller is
-    responsible for computing the correct current count.
-
     Args:
         count: Number of migrations currently in progress.
-            Must be >= 0.
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    sm_active_migrations.set(count)
+    m.safe_set(sm_active_migrations, count)
 
-
-# ---------------------------------------------------------------------------
-# Public API
-# ---------------------------------------------------------------------------
 
 __all__ = [
     "PROMETHEUS_AVAILABLE",
+    "m",
     # Metric objects
     "sm_schemas_registered_total",
     "sm_versions_created_total",

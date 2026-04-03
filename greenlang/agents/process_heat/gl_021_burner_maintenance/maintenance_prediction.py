@@ -529,7 +529,7 @@ class WeibullAnalyzer:
             # Check convergence
             if abs(beta_new - beta) < self.config.convergence_tolerance:
                 beta = beta_new
-                logger.debug(f"MLE converged at iteration {iteration}")
+                logger.debug("MLE converged at iteration %s", iteration)
                 break
 
             beta = beta_new
@@ -541,7 +541,7 @@ class WeibullAnalyzer:
         # Calculate R-squared for fit quality
         r_squared = self._calculate_r_squared(data, beta, eta)
 
-        logger.info(f"MLE complete: beta={beta:.3f}, eta={eta:.1f}, R2={r_squared:.3f}")
+        logger.info("MLE complete: beta=%.3f, eta=%.1f, R2=%.3f", beta, eta, r_squared)
 
         return WeibullParameters(
             beta=beta,
@@ -664,7 +664,7 @@ class WeibullAnalyzer:
             beta = 2.5  # Typical wear-out pattern
             eta = 40000  # Default characteristic life
 
-        logger.info(f"Using default parameters: beta={beta}, eta={eta}")
+        logger.info("Using default parameters: beta=%s, eta=%s", beta, eta)
 
         return WeibullParameters(
             beta=beta,
@@ -1005,7 +1005,7 @@ class ProportionalHazardsModel:
         self.coefficients = coefficients or self.DEFAULT_COEFFICIENTS.copy()
         self.reference = self.REFERENCE_CONDITIONS.copy()
 
-        logger.info(f"ProportionalHazardsModel initialized with {len(self.coefficients)} covariates")
+        logger.info("ProportionalHazardsModel initialized with %s covariates", len(self.coefficients))
 
     def calculate_hazard_ratio(
         self,
@@ -1062,7 +1062,7 @@ class ProportionalHazardsModel:
         # Clamp to reasonable range [0.5, 5.0]
         hazard_ratio = max(0.5, min(5.0, hazard_ratio))
 
-        logger.debug(f"Hazard ratio: {hazard_ratio:.3f} (log_HR: {log_hr:.3f})")
+        logger.debug("Hazard ratio: %.3f (log_HR: %.3f)", hazard_ratio, log_hr)
 
         return hazard_ratio
 
@@ -1560,7 +1560,7 @@ class EnsemblePrediction:
         if abs(total - 1.0) > 0.01:
             self.weights = {k: v/total for k, v in self.weights.items()}
 
-        logger.info(f"EnsemblePrediction initialized: weights={self.weights}")
+        logger.info("EnsemblePrediction initialized: weights=%s", self.weights)
 
     def combine_rul_predictions(
         self,
@@ -2090,7 +2090,7 @@ class MaintenancePredictionEngine:
                 ),
             }
         except (ValueError, ZeroDivisionError) as e:
-            logger.warning(f"Could not calculate optimal time: {e}")
+            logger.warning("Could not calculate optimal time: %s", e)
             return {
                 "optimal_interval_hours": None,
                 "recommendation": "Unable to calculate optimal interval",

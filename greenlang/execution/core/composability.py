@@ -257,7 +257,7 @@ class AgentRunnable(BaseRunnable[Dict[str, Any], Dict[str, Any]]):
             return result
 
         except Exception as e:
-            logger.error(f"Agent {self.name} failed: {str(e)}", exc_info=True)
+            logger.error("Agent %s failed: %s", self.name, e, exc_info=True)
             if config.max_retries > 0:
                 return self.with_retry(config.max_retries).invoke(input, config)
             raise
@@ -288,7 +288,7 @@ class AgentRunnable(BaseRunnable[Dict[str, Any], Dict[str, Any]]):
             return result
 
         except Exception as e:
-            logger.error(f"Agent {self.name} async failed: {str(e)}", exc_info=True)
+            logger.error("Agent %s async failed: %s", self.name, e, exc_info=True)
             if config.max_retries > 0:
                 return await self.with_retry(config.max_retries).ainvoke(input, config)
             raise
@@ -423,7 +423,7 @@ class RunnableParallel(BaseRunnable[T, Dict[str, Any]]):
                 try:
                     results[name] = future.result(timeout=config.timeout_seconds)
                 except Exception as e:
-                    logger.error(f"Parallel branch {name} failed: {str(e)}")
+                    logger.error("Parallel branch %s failed: %s", name, e)
                     results[name] = {"error": str(e), "traceback": traceback.format_exc()}
                     context.errors.append({"branch": name, "error": str(e)})
 
@@ -455,7 +455,7 @@ class RunnableParallel(BaseRunnable[T, Dict[str, Any]]):
             try:
                 results[name] = await task
             except Exception as e:
-                logger.error(f"Parallel branch {name} failed: {str(e)}")
+                logger.error("Parallel branch %s failed: %s", name, e)
                 results[name] = {"error": str(e), "traceback": traceback.format_exc()}
                 context.errors.append({"branch": name, "error": str(e)})
 
@@ -512,11 +512,11 @@ class RetryRunnable(BaseRunnable[T, U]):
             except Exception as e:
                 last_error = e
                 if attempt < self.max_retries:
-                    logger.warning(f"Attempt {attempt + 1} failed for {self.runnable.name}: {str(e)}")
+                    logger.warning("Attempt %s failed for %s: %s", attempt + 1, self.runnable.name, e)
                     import time
                     time.sleep(self.delay_ms / 1000)
                 else:
-                    logger.error(f"All {self.max_retries + 1} attempts failed for {self.runnable.name}")
+                    logger.error("All %s attempts failed for %s", self.max_retries + 1, self.runnable.name)
 
         raise last_error
 
@@ -530,10 +530,10 @@ class RetryRunnable(BaseRunnable[T, U]):
             except Exception as e:
                 last_error = e
                 if attempt < self.max_retries:
-                    logger.warning(f"Attempt {attempt + 1} failed for {self.runnable.name}: {str(e)}")
+                    logger.warning("Attempt %s failed for %s: %s", attempt + 1, self.runnable.name, e)
                     await asyncio.sleep(self.delay_ms / 1000)
                 else:
-                    logger.error(f"All {self.max_retries + 1} attempts failed for {self.runnable.name}")
+                    logger.error("All %s attempts failed for %s", self.max_retries + 1, self.runnable.name)
 
         raise last_error
 
@@ -552,7 +552,7 @@ class FallbackRunnable(BaseRunnable[T, U]):
         try:
             return self.primary.invoke(input, config)
         except Exception as e:
-            logger.warning(f"Primary {self.primary.name} failed, using fallback: {str(e)}")
+            logger.warning("Primary %s failed, using fallback: %s", self.primary.name, e)
             return self.fallback.invoke(input, config)
 
     async def ainvoke(self, input: T, config: Optional[RunnableConfig] = None) -> U:
@@ -560,7 +560,7 @@ class FallbackRunnable(BaseRunnable[T, U]):
         try:
             return await self.primary.ainvoke(input, config)
         except Exception as e:
-            logger.warning(f"Primary {self.primary.name} failed, using fallback: {str(e)}")
+            logger.warning("Primary %s failed, using fallback: %s", self.primary.name, e)
             return await self.fallback.ainvoke(input, config)
 
 
@@ -647,11 +647,11 @@ class RunnableBranch(BaseRunnable[T, U]):
         """Invoke based on conditions."""
         for condition, runnable in self.branches:
             if condition(input):
-                logger.info(f"Branch matched: {runnable.name}")
+                logger.info("Branch matched: %s", runnable.name)
                 return runnable.invoke(input, config)
 
         if self.default:
-            logger.info(f"Using default branch: {self.default.name}")
+            logger.info("Using default branch: %s", self.default.name)
             return self.default.invoke(input, config)
 
         raise ValueError(f"No branch matched for input and no default provided")
@@ -660,11 +660,11 @@ class RunnableBranch(BaseRunnable[T, U]):
         """Async invoke based on conditions."""
         for condition, runnable in self.branches:
             if condition(input):
-                logger.info(f"Branch matched: {runnable.name}")
+                logger.info("Branch matched: %s", runnable.name)
                 return await runnable.ainvoke(input, config)
 
         if self.default:
-            logger.info(f"Using default branch: {self.default.name}")
+            logger.info("Using default branch: %s", self.default.name)
             return await self.default.ainvoke(input, config)
 
         raise ValueError(f"No branch matched for input and no default provided")
@@ -729,7 +729,7 @@ class ZeroHallucinationWrapper(BaseRunnable[T, U]):
             if isinstance(value, (int, float)) and not key.startswith('_'):
                 # Ensure there's provenance for this calculation
                 if '_provenance' not in result and '_calculation_method' not in result:
-                    logger.warning(f"Numeric value {key}={value} lacks provenance tracking")
+                    logger.warning("Numeric value %s=%s lacks provenance tracking", key, value)
 
             # Recursively check nested dicts
             if isinstance(value, dict):

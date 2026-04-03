@@ -146,7 +146,7 @@ class Agent(ABC, Generic[TInput, TOutput]):
             )
 
         except Exception as e:
-            self.logger.error(f"Agent execution failed: {e}")
+            logger.error("Agent execution failed: %s", e)
             return Result(success=False, error=str(e))
 
     def describe(self) -> Dict[str, Any]:

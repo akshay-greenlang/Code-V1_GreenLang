@@ -930,7 +930,7 @@ class NetworkAnalyzer:
             if metadata:
                 self._supplier_metadata[sub_supplier_id] = metadata
 
-        logger.debug(f"Added relationship: {supplier_id} -> {sub_supplier_id}")
+        logger.debug("Added relationship: %s -> %s", supplier_id, sub_supplier_id)
 
     def remove_relationship(
         self,
@@ -947,4 +947,4 @@ class NetworkAnalyzer:
             if supplier_id in self._supplier_graph:
                 self._supplier_graph[supplier_id].discard(sub_supplier_id)
 
-        logger.debug(f"Removed relationship: {supplier_id} -> {sub_supplier_id}")
+        logger.debug("Removed relationship: %s -> %s", supplier_id, sub_supplier_id)

@@ -100,9 +100,9 @@ def _validate_jwt_secret() -> str:
 
     # Log the validation status (without revealing the secret)
     if JWT_SECRET and not is_insecure and not is_too_short:
-        logger.info(f"JWT_SECRET configured and validated (length: {len(JWT_SECRET)} chars)")
+        logger.info("JWT_SECRET configured and validated (length: %s chars)", len(JWT_SECRET))
     elif JWT_SECRET:
-        logger.warning(f"JWT_SECRET configured but INSECURE (length: {len(JWT_SECRET)} chars)")
+        logger.warning("JWT_SECRET configured but INSECURE (length: %s chars)", len(JWT_SECRET))
 
     return JWT_SECRET
 
@@ -131,7 +131,7 @@ def init_database(database_url: Optional[str] = None) -> None:
         class_=AsyncSession,
         expire_on_commit=False
     )
-    logger.info(f"Initialized database connection: {url.split('@')[-1] if '@' in url else url}")
+    logger.info("Initialized database connection: %s", url.split('@')[-1] if '@' in url else url)
 
 
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
@@ -152,7 +152,7 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
             yield session
         except Exception as e:
             await session.rollback()
-            logger.error(f"Database session error: {e}")
+            logger.error("Database session error: %s", e)
             raise
         finally:
             await session.close()
@@ -204,7 +204,7 @@ async def get_current_user(
                 headers={"WWW-Authenticate": "Bearer"}
             )
 
-        logger.debug(f"Authenticated user: {user['user_id']}")
+        logger.debug("Authenticated user: %s", user['user_id'])
         return user
 
     except jwt.ExpiredSignatureError:
@@ -214,7 +214,7 @@ async def get_current_user(
             headers={"WWW-Authenticate": "Bearer"}
         )
     except jwt.InvalidTokenError as e:
-        logger.warning(f"Invalid token: {e}")
+        logger.warning("Invalid token: %s", e)
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid authentication token",

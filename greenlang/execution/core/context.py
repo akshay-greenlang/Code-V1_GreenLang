@@ -61,7 +61,7 @@ class ExecutionContext:
     def set_variable(self, key: str, value: Any) -> None:
         """Set a context variable."""
         self.variables[key] = value
-        logger.debug(f"Set context variable: {key}")
+        logger.debug("Set context variable: %s", key)
 
     def get_variable(self, key: str, default: Any = None) -> Any:
         """Get a context variable."""
@@ -85,7 +85,7 @@ class ExecutionContext:
             "details": details or {}
         }
         self.errors.append(error_info)
-        logger.warning(f"Recorded error in context: {error_info['type']}")
+        logger.warning("Recorded error in context: %s", error_info['type'])
 
     def is_feature_enabled(self, feature: str) -> bool:
         """Check if a feature is enabled."""
@@ -137,7 +137,7 @@ def get_current_context() -> Optional[ExecutionContext]:
 def set_current_context(context: ExecutionContext) -> None:
     """Set the current execution context."""
     _context_var.set(context)
-    logger.debug(f"Set execution context: {context.request_id}")
+    logger.debug("Set execution context: %s", context.request_id)
 
 
 def create_context(**kwargs) -> ExecutionContext:

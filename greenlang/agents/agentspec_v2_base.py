@@ -201,11 +201,11 @@ class AgentSpecV2Base(ABC, Generic[InT, OutT]):
             self.initialize_impl()
 
             self._state = AgentLifecycleState.INITIALIZED
-            self.logger.info(f"{self.agent_id} initialized successfully")
+            logger.info("%s initialized successfully", self.agent_id)
 
         except Exception as e:
             self._state = AgentLifecycleState.FAILED
-            self.logger.error(f"Initialization failed: {e}", exc_info=True)
+            logger.error("Initialization failed: %s", e, exc_info=True)
             raise
 
         self._run_hooks("post_initialize")
@@ -241,7 +241,7 @@ class AgentSpecV2Base(ABC, Generic[InT, OutT]):
             # Custom validation
             validated_input = self.validate_input_impl(input_data, context)
 
-            self.logger.debug(f"Input validation passed for {self.agent_id}")
+            logger.debug("Input validation passed for %s", self.agent_id)
             return validated_input
 
         except Exception as e:
@@ -286,7 +286,7 @@ class AgentSpecV2Base(ABC, Generic[InT, OutT]):
                 self._total_execution_time_ms += execution_time_ms
                 context.metadata["execution_time_ms"] = execution_time_ms
 
-            self.logger.info(
+            logger.info(
                 f"{self.agent_id} executed successfully "
                 f"(took {context.metadata.get('execution_time_ms', 0):.2f}ms)"
             )
@@ -296,7 +296,7 @@ class AgentSpecV2Base(ABC, Generic[InT, OutT]):
         except Exception as e:
             context.errors.append(f"Execution failed: {str(e)}")
             context.state = AgentLifecycleState.FAILED
-            self.logger.error(f"Execution failed: {e}", exc_info=True)
+            logger.error("Execution failed: %s", e, exc_info=True)
             raise
 
         finally:
@@ -324,7 +324,7 @@ class AgentSpecV2Base(ABC, Generic[InT, OutT]):
             # Custom output validation
             validated_output = self.validate_output_impl(output, context)
 
-            self.logger.debug(f"Output validation passed for {self.agent_id}")
+            logger.debug("Output validation passed for %s", self.agent_id)
             return validated_output
 
         except Exception as e:
@@ -369,7 +369,7 @@ class AgentSpecV2Base(ABC, Generic[InT, OutT]):
             result = self.finalize_impl(result, context)
 
             context.state = AgentLifecycleState.COMPLETED
-            self.logger.info(f"{self.agent_id} finalized successfully")
+            logger.info("%s finalized successfully", self.agent_id)
 
             return result
 
@@ -436,7 +436,7 @@ class AgentSpecV2Base(ABC, Generic[InT, OutT]):
 
         except GLValidationError as e:
             # Handle validation errors
-            self.logger.error(f"Validation error: {e.message}")
+            logger.error("Validation error: %s", e.message)
             return AgentResult(
                 success=False,
                 error=f"Validation error ({e.code}): {e.message}",
@@ -446,7 +446,7 @@ class AgentSpecV2Base(ABC, Generic[InT, OutT]):
 
         except Exception as e:
             # Handle other errors
-            self.logger.error(f"Agent execution failed: {e}", exc_info=True)
+            logger.error("Agent execution failed: %s", e, exc_info=True)
             return AgentResult(
                 success=False,
                 error=str(e),
@@ -509,7 +509,7 @@ class AgentSpecV2Base(ABC, Generic[InT, OutT]):
             try:
                 callback(self)
             except Exception as e:
-                self.logger.warning(f"Hook {hook_name} failed: {e}")
+                logger.warning("Hook %s failed: %s", hook_name, e)
 
     # ==========================================================================
     # Private Helper Methods
@@ -531,7 +531,7 @@ class AgentSpecV2Base(ABC, Generic[InT, OutT]):
         try:
             self.spec = AgentSpecV2(**pack_data)
             self.agent_id = self.spec.id
-            self.logger.info(f"Loaded pack.yaml for {self.agent_id} (v{self.spec.version})")
+            logger.info("Loaded pack.yaml for %s (v%s)", self.agent_id, self.spec.version)
         except ValidationError as e:
             raise GLValidationError(
                 GLVErr.AI_SCHEMA_INVALID,

@@ -191,10 +191,10 @@ class RuntimeGuard:
             if apparmor_profile_path.exists():
                 self.os_sandbox_config.filesystem.apparmor_profile = "greenlang-sandbox"
 
-            logger.info(f"OS sandbox configured with {self.os_sandbox_config.isolation_type.value} isolation")
+            logger.info("OS sandbox configured with %s isolation", self.os_sandbox_config.isolation_type.value)
 
         except Exception as e:
-            logger.warning(f"Failed to setup OS sandbox: {e}")
+            logger.warning("Failed to setup OS sandbox: %s", e)
             self.enable_os_sandbox = False
 
     def _configure_sandbox_from_capabilities(self):
@@ -262,7 +262,7 @@ class RuntimeGuard:
                 # Use OS-level sandbox
                 return execute_sandboxed(func, self.os_sandbox_config, *args, **kwargs)
             except Exception as e:
-                logger.warning(f"OS sandbox execution failed: {e}")
+                logger.warning("OS sandbox execution failed: %s", e)
                 # Fallback to Python-level patching
                 if not hasattr(self, '_patches_applied'):
                     self._patch_all()
@@ -315,7 +315,7 @@ class RuntimeGuard:
             "run_id": os.environ.get("GL_RUN_ID", "unknown"),
         }
         self.audit_log.append(event)
-        logger.info(f"Capability audit: {capability}/{operation} -> {result}")
+        logger.info("Capability audit: %s/%s -> %s", capability, operation, result)
 
     def _check_capability(self, capability: str) -> bool:
         """Check if a capability is allowed"""

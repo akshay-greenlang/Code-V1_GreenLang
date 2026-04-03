@@ -657,7 +657,7 @@ class TemplateRegistry:
 
         self._templates[name][version] = template
         self._load_count += 1
-        logger.info(f"Registered template: {name}@{version}")
+        logger.info("Registered template: %s@%s", name, version)
 
     def register_from_yaml(self, yaml_content: str) -> PipelineTemplate:
         """
@@ -704,16 +704,16 @@ class TemplateRegistry:
                 self.register_from_file(yaml_file)
                 loaded += 1
             except Exception as e:
-                logger.warning(f"Failed to load template from {yaml_file}: {e}")
+                logger.warning("Failed to load template from %s: %s", yaml_file, e)
 
         for yml_file in dir_path.glob("*.yml"):
             try:
                 self.register_from_file(yml_file)
                 loaded += 1
             except Exception as e:
-                logger.warning(f"Failed to load template from {yml_file}: {e}")
+                logger.warning("Failed to load template from %s: %s", yml_file, e)
 
-        logger.info(f"Loaded {loaded} templates from {directory}")
+        logger.info("Loaded %s templates from %s", loaded, directory)
         return loaded
 
     def get(self, name: str, version: Optional[str] = None) -> Optional[PipelineTemplate]:
@@ -758,14 +758,14 @@ class TemplateRegistry:
 
         if version is None:
             del self._templates[name]
-            logger.info(f"Unregistered all versions of template: {name}")
+            logger.info("Unregistered all versions of template: %s", name)
             return True
 
         if version in self._templates[name]:
             del self._templates[name][version]
             if not self._templates[name]:
                 del self._templates[name]
-            logger.info(f"Unregistered template: {name}@{version}")
+            logger.info("Unregistered template: %s@%s", name, version)
             return True
 
         return False
@@ -837,7 +837,7 @@ class TemplateResolver:
                 raise ValueError(f"Duplicate template alias: '{imp.as_}'")
 
             resolved[imp.as_] = template
-            logger.debug(f"Resolved import: {imp.as_} -> {imp.name}@{imp.version}")
+            logger.debug("Resolved import: %s -> %s@%s", imp.as_, imp.name, imp.version)
 
         return resolved
 
@@ -885,7 +885,7 @@ class TemplateResolver:
 
             cache_key = self._compute_cache_key(template, effective_params, step_prefix)
             if cache_key in self._expansion_cache:
-                logger.debug(f"Cache hit for template expansion: {template.name}")
+                logger.debug("Cache hit for template expansion: %s", template.name)
                 return self._expansion_cache[cache_key]
 
             expanded_steps: List[ExpandedStep] = []

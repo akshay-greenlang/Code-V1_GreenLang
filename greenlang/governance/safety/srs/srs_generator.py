@@ -359,7 +359,7 @@ class SRSGenerator:
         Raises:
             ValueError: If requirements are invalid
         """
-        logger.info(f"Creating SRS: {title}")
+        logger.info("Creating SRS: %s", title)
 
         # Validate requirements
         self._validate_requirements(requirements)
@@ -399,7 +399,7 @@ class SRSGenerator:
             "description": "Initial release"
         })
 
-        logger.info(f"SRS created: {srs.document_id}")
+        logger.info("SRS created: %s", srs.document_id)
 
         return srs
 
@@ -648,7 +648,7 @@ class SRSGenerator:
         if filepath:
             with open(filepath, 'w', encoding='utf-8') as f:
                 f.write(markdown)
-            logger.info(f"SRS exported to {filepath}")
+            logger.info("SRS exported to %s", filepath)
 
         return markdown
 
@@ -685,7 +685,7 @@ class SRSGenerator:
         # Recalculate provenance hash
         srs.provenance_hash = self._calculate_provenance(srs)
 
-        logger.info(f"SRS updated to revision {new_revision}")
+        logger.info("SRS updated to revision %s", new_revision)
 
         return srs
 
@@ -711,7 +711,7 @@ class SRSGenerator:
         # Recalculate provenance hash
         srs.provenance_hash = self._calculate_provenance(srs)
 
-        logger.info(f"SRS {srs.document_id} approved by {approved_by}")
+        logger.info("SRS %s approved by %s", srs.document_id, approved_by)
 
         return srs
 

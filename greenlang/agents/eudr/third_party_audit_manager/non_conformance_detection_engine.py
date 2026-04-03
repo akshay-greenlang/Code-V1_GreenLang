@@ -416,7 +416,7 @@ class NonConformanceDetectionEngine:
             return response
 
         except Exception as e:
-            logger.error(f"NC classification failed: {e}", exc_info=True)
+            logger.error("NC classification failed: %s", e, exc_info=True)
             raise
 
     def create_root_cause_analysis(

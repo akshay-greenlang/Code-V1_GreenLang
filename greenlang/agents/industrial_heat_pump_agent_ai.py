@@ -1356,40 +1356,40 @@ class IndustrialHeatPumpAgent_AI(Agent[IndustrialHeatPumpInput, IndustrialHeatPu
 
         for field in required_fields:
             if field not in payload:
-                self.logger.error(f"Missing required field: {field}")
+                logger.error("Missing required field: %s", field)
                 return False
 
         # Validate ranges
         if not (80 <= payload["process_temperature_f"] <= 250):
-            self.logger.error("process_temperature_f must be between 80 and 250°F")
+            logger.error("process_temperature_f must be between 80 and 250°F")
             return False
 
         if payload["annual_heating_load_mmbtu"] <= 0:
-            self.logger.error("annual_heating_load_mmbtu must be positive")
+            logger.error("annual_heating_load_mmbtu must be positive")
             return False
 
         if not (0.5 <= payload["baseline_efficiency"] <= 0.98):
-            self.logger.error("baseline_efficiency must be between 0.5 and 0.98")
+            logger.error("baseline_efficiency must be between 0.5 and 0.98")
             return False
 
         if payload["electricity_rate_usd_per_kwh"] <= 0:
-            self.logger.error("electricity_rate_usd_per_kwh must be positive")
+            logger.error("electricity_rate_usd_per_kwh must be positive")
             return False
 
         # Validate enums
         valid_load_profiles = ["continuous_24x7", "daytime_only", "batch_intermittent", "seasonal"]
         if payload["load_profile_type"] not in valid_load_profiles:
-            self.logger.error(f"Invalid load_profile_type: {payload['load_profile_type']}")
+            logger.error("Invalid load_profile_type: %s", payload['load_profile_type'])
             return False
 
         valid_climate_zones = ["hot_humid", "hot_dry", "mixed_humid", "mixed_dry", "cold", "very_cold"]
         if payload["climate_zone"] not in valid_climate_zones:
-            self.logger.error(f"Invalid climate_zone: {payload['climate_zone']}")
+            logger.error("Invalid climate_zone: %s", payload['climate_zone'])
             return False
 
         valid_rate_structures = ["flat_rate", "time_of_use", "demand_charge", "tou_plus_demand"]
         if payload["electricity_rate_structure"] not in valid_rate_structures:
-            self.logger.error(f"Invalid electricity_rate_structure: {payload['electricity_rate_structure']}")
+            logger.error("Invalid electricity_rate_structure: %s", payload['electricity_rate_structure'])
             return False
 
         return True
@@ -1455,7 +1455,7 @@ class IndustrialHeatPumpAgent_AI(Agent[IndustrialHeatPumpInput, IndustrialHeatPu
             return result
 
         except Exception as e:
-            self.logger.error(f"Error in industrial heat pump analysis: {e}")
+            logger.error("Error in industrial heat pump analysis: %s", e)
             error_info: ErrorInfo = {
                 "type": "CalculationError",
                 "message": f"Failed to analyze heat pump: {str(e)}",
@@ -1562,7 +1562,7 @@ class IndustrialHeatPumpAgent_AI(Agent[IndustrialHeatPumpInput, IndustrialHeatPu
             }
 
         except BudgetExceeded as e:
-            self.logger.error(f"Budget exceeded: {e}")
+            logger.error("Budget exceeded: %s", e)
             error_info: ErrorInfo = {
                 "type": "BudgetError",
                 "message": f"AI budget exceeded: {str(e)}",
@@ -1690,7 +1690,7 @@ IMPORTANT:
                 elif name == "generate_performance_curve":
                     results["performance_curve"] = self._generate_performance_curve_impl(**args)
             except Exception as e:
-                self.logger.warning(f"Tool call {name} failed: {e}")
+                logger.warning("Tool call %s failed: %s", name, e)
                 # Continue processing other tools
 
         return results

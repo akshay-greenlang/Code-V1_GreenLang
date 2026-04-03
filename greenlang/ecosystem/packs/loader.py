@@ -83,7 +83,7 @@ class PackLoader:
         """
         # Check if already loaded
         if pack_ref in self.loaded_packs:
-            logger.info(f"Pack already loaded: {pack_ref}")
+            logger.info("Pack already loaded: %s", pack_ref)
             return self.loaded_packs[pack_ref]
 
         # Parse pack reference
@@ -101,7 +101,7 @@ class PackLoader:
         # Cache it
         self.loaded_packs[pack_name] = loaded_pack
 
-        logger.info(f"Loaded pack: {pack_name} from {pack_path}")
+        logger.info("Loaded pack: %s from %s", pack_name, pack_path)
         return loaded_pack
 
     def _resolve_pack_path(
@@ -182,7 +182,7 @@ class PackLoader:
         extract_dir = self.cache_dir / archive_path.stem
 
         if not extract_dir.exists():
-            logger.info(f"Extracting {archive_path} to {extract_dir}")
+            logger.info("Extracting %s to %s", archive_path, extract_dir)
 
             with tarfile.open(archive_path, "r:gz") as tar:
                 tar.extractall(extract_dir)
@@ -384,10 +384,10 @@ class LoadedPack:
                             # Try to get the agent class
                             if hasattr(module, agent_entry):
                                 self.agents[agent_entry] = getattr(module, agent_entry)
-                                logger.info(f"Loaded agent: {agent_entry}")
+                                logger.info("Loaded agent: %s", agent_entry)
 
             except Exception as e:
-                logger.error(f"Failed to load agent {agent_entry}: {e}")
+                logger.error("Failed to load agent %s: %s", agent_entry, e)
 
     def _load_connectors(self):
         """Load connector classes"""
@@ -448,10 +448,10 @@ class LoadedPack:
                             # Try to get the connector class
                             if hasattr(module, connector_entry):
                                 self.connectors[connector_entry] = getattr(module, connector_entry)
-                                logger.info(f"Loaded connector: {connector_entry}")
+                                logger.info("Loaded connector: %s", connector_entry)
 
             except Exception as e:
-                logger.error(f"Failed to load connector {connector_entry}: {e}")
+                logger.error("Failed to load connector %s: %s", connector_entry, e)
 
     def _load_pipelines(self):
         """Load pipeline definitions"""
@@ -469,10 +469,10 @@ class LoadedPack:
                     # Store pipeline data
                     pipeline_name = pipeline_path.stem
                     self.pipelines[pipeline_name] = pipeline_data
-                    logger.info(f"Loaded pipeline: {pipeline_name}")
+                    logger.info("Loaded pipeline: %s", pipeline_name)
 
             except Exception as e:
-                logger.error(f"Failed to load pipeline {pipeline_file}: {e}")
+                logger.error("Failed to load pipeline %s: %s", pipeline_file, e)
 
     def _load_datasets(self):
         """Load dataset metadata"""
@@ -505,10 +505,10 @@ class LoadedPack:
                             dataset_info["card"] = f.read()
 
                     self.datasets[dataset_name] = dataset_info
-                    logger.info(f"Loaded dataset: {dataset_name}")
+                    logger.info("Loaded dataset: %s", dataset_name)
 
             except Exception as e:
-                logger.error(f"Failed to load dataset {dataset_name}: {e}")
+                logger.error("Failed to load dataset %s: %s", dataset_name, e)
 
     def _load_reports(self):
         """Load report templates"""
@@ -528,10 +528,10 @@ class LoadedPack:
                         "template": template_content,
                         "name": report_name,
                     }
-                    logger.info(f"Loaded report template: {report_name}")
+                    logger.info("Loaded report template: %s", report_name)
 
             except Exception as e:
-                logger.error(f"Failed to load report {report_name}: {e}")
+                logger.error("Failed to load report %s: %s", report_name, e)
 
     def get_agent(self, agent_name: str) -> Optional[Any]:
         """Get an agent class by name"""
@@ -593,10 +593,10 @@ def discover_installed() -> Dict[str, PackManifest]:
                     )
 
             except Exception as e:
-                logger.error(f"Failed to load entry point {ep.name}: {e}")
+                logger.error("Failed to load entry point %s: %s", ep.name, e)
 
     except Exception as e:
-        logger.debug(f"No entry points found: {e}")
+        logger.debug("No entry points found: %s", e)
 
     return found
 
@@ -626,10 +626,10 @@ def discover_local_packs(base_dir: Path) -> Dict[str, PackManifest]:
             manifest._location = str(pack_dir)
 
             found[manifest.name] = manifest
-            logger.info(f"Discovered local pack: {manifest.name} v{manifest.version}")
+            logger.info("Discovered local pack: %s v%s", manifest.name, manifest.version)
 
         except Exception as e:
-            logger.error(f"Failed to load pack from {pack_yaml}: {e}")
+            logger.error("Failed to load pack from %s: %s", pack_yaml, e)
 
     return found
 
@@ -744,5 +744,5 @@ def version_matches(actual: str, constraint: str) -> bool:
         # Default: accept
         return True
     except Exception as e:
-        logger.warning(f"Error parsing version constraint '{constraint}': {e}")
+        logger.warning("Error parsing version constraint '%s': %s", constraint, e)
         return True

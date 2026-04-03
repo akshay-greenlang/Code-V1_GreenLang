@@ -157,7 +157,7 @@ class BoilerWaterAnalyzer:
             ValueError: If input data is invalid
         """
         start_time = datetime.now(timezone.utc)
-        logger.debug(f"Analyzing boiler water sample: {input_data.sample_id}")
+        logger.debug("Analyzing boiler water sample: %s", input_data.sample_id)
 
         # Determine pressure class from operating pressure
         actual_pressure_class = determine_pressure_class(input_data.operating_pressure_psig)

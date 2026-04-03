@@ -230,7 +230,7 @@ class SatelliteRemoteSensingAgent(BaseAgent):
         self._connections: Dict[str, SatelliteConnectionConfig] = {}
         self._aois: Dict[str, AreaOfInterest] = {}
 
-        self.logger.info(f"Initialized {self.AGENT_NAME} v{self.VERSION}")
+        logger.info("Initialized %s v%s", self.AGENT_NAME, self.VERSION)
 
     def execute(self, input_data: Dict[str, Any]) -> AgentResult:
         """Execute satellite data operation."""
@@ -253,7 +253,7 @@ class SatelliteRemoteSensingAgent(BaseAgent):
                 return AgentResult(success=False, error=f"Unknown operation: {operation}")
 
         except Exception as e:
-            self.logger.error(f"Satellite operation failed: {str(e)}", exc_info=True)
+            logger.error("Satellite operation failed: %s", e, exc_info=True)
             return AgentResult(success=False, error=str(e))
 
     def _handle_query(self, input_data: Dict[str, Any], start_time: datetime) -> AgentResult:

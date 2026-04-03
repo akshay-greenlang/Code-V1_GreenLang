@@ -702,7 +702,7 @@ class SchemaValidator:
             for name in schema["definitions"]:
                 self._known_definitions.add(f"#/definitions/{name}")
 
-        logger.debug(f"Indexed {len(self._known_definitions)} definitions")
+        logger.debug("Indexed %s definitions", len(self._known_definitions))
 
     def _validate_structure(self, schema: Dict[str, Any]) -> None:
         """

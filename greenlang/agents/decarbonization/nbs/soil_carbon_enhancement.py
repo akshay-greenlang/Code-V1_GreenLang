@@ -162,7 +162,7 @@ class SoilCarbonEnhancementAgent(BaseAgent):
             return AgentResult(success=True, data=output.model_dump())
 
         except Exception as e:
-            logger.error(f"Soil carbon planning failed: {str(e)}", exc_info=True)
+            logger.error("Soil carbon planning failed: %s", e, exc_info=True)
             return AgentResult(success=False, error=str(e))
 
     def _create_strategy(

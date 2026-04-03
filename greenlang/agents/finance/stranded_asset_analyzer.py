@@ -316,7 +316,7 @@ class StrandedAssetAnalyzerAgent(BaseAgent):
             )
 
         super().__init__(config)
-        logger.info(f"Initialized {self.AGENT_NAME} v{self.VERSION}")
+        logger.info("Initialized %s v%s", self.AGENT_NAME, self.VERSION)
 
     def execute(self, input_data: Dict[str, Any]) -> AgentResult:
         """Execute stranded asset analysis."""
@@ -340,7 +340,7 @@ class StrandedAssetAnalyzerAgent(BaseAgent):
             )
 
         except Exception as e:
-            logger.error(f"Stranded asset analysis failed: {e}", exc_info=True)
+            logger.error("Stranded asset analysis failed: %s", e, exc_info=True)
             return AgentResult(success=False, error=str(e))
 
     def _assess_risk(self, input_data: StrandedAssetInput) -> StrandedAssetOutput:

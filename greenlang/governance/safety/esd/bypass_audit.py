@@ -313,7 +313,7 @@ class BypassAuditLogger:
             f"{system_id}|{datetime.utcnow().isoformat()}|GENESIS".encode()
         ).hexdigest()
 
-        logger.info(f"BypassAuditLogger initialized: {system_id}")
+        logger.info("BypassAuditLogger initialized: %s", system_id)
 
     def log_event(
         self,

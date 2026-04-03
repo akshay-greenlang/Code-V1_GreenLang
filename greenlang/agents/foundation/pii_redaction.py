@@ -413,7 +413,7 @@ class PIIRedactionAgent(BaseAgent):
             "token_secret_key", secrets.token_hex(32)
         ).encode()
 
-        self.logger.info(f"Initialized {self.AGENT_ID}: {self.AGENT_NAME}")
+        logger.info("Initialized %s: %s", self.AGENT_ID, self.AGENT_NAME)
 
     def _init_default_policies(self) -> Dict[PIIType, RedactionPolicy]:
         """Initialize default redaction policies for all PII types."""
@@ -498,7 +498,7 @@ class PIIRedactionAgent(BaseAgent):
             )
 
         except Exception as e:
-            self.logger.error(f"PII redaction operation failed: {e}", exc_info=True)
+            logger.error("PII redaction operation failed: %s", e, exc_info=True)
             processing_time_ms = (time.time() - start_time) * 1000
 
             return AgentResult(

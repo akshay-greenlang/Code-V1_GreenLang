@@ -71,14 +71,14 @@ class RollbackManager:
         backup_name = f"backup_{job_id}_{timestamp}.db"
         backup_path = self.backup_dir / backup_name
 
-        logger.info(f"Creating backup: {backup_path}")
+        logger.info("Creating backup: %s", backup_path)
 
         # Copy database file
         if self.db_path.exists():
             shutil.copy2(self.db_path, backup_path)
-            logger.info(f"Backup created: {backup_path} ({backup_path.stat().st_size / 1024:.1f} KB)")
+            logger.info("Backup created: %s (%.1f KB)", backup_path, backup_path.stat().st_size / 1024)
         else:
-            logger.warning(f"Database {self.db_path} does not exist, creating empty backup")
+            logger.warning("Database %s does not exist, creating empty backup", self.db_path)
             backup_path.touch()
 
         return str(backup_path)
@@ -96,11 +96,11 @@ class RollbackManager:
         backup_file = Path(backup_path)
 
         if not backup_file.exists():
-            logger.error(f"Backup file not found: {backup_path}")
+            logger.error("Backup file not found: %s", backup_path)
             return False
 
         try:
-            logger.warning(f"Rolling back database to: {backup_path}")
+            logger.warning("Rolling back database to: %s", backup_path)
 
             # Close any open connections first
             # Copy backup over current database
@@ -110,7 +110,7 @@ class RollbackManager:
             return True
 
         except Exception as e:
-            logger.error(f"Rollback failed: {e}")
+            logger.error("Rollback failed: %s", e)
             return False
 
     def cleanup_old_backups(self, keep_days: int = 30) -> int:
@@ -130,11 +130,11 @@ class RollbackManager:
             file_time = datetime.fromtimestamp(backup_file.stat().st_mtime)
 
             if file_time < cutoff_time:
-                logger.info(f"Deleting old backup: {backup_file}")
+                logger.info("Deleting old backup: %s", backup_file)
                 backup_file.unlink()
                 deleted_count += 1
 
-        logger.info(f"Cleaned up {deleted_count} old backups")
+        logger.info("Cleaned up %s old backups", deleted_count)
         return deleted_count
 
 
@@ -188,7 +188,7 @@ class AutomatedImportPipeline:
         Returns:
             Updated ImportJob with results
         """
-        logger.info(f"Starting import job: {job.job_id} - {job.job_name}")
+        logger.info("Starting import job: %s - %s", job.job_id, job.job_name)
         job.status = ImportStatus.RUNNING
         job.started_at = DeterministicClock.now()
 
@@ -237,16 +237,16 @@ class AutomatedImportPipeline:
             job.completed_at = DeterministicClock.now()
             job.duration_seconds = (job.completed_at - job.started_at).total_seconds()
 
-            logger.info(f"Import job completed successfully: {job.job_id}")
-            logger.info(f"  Processed: {job.total_factors_processed}")
-            logger.info(f"  Successful: {job.successful_imports}")
-            logger.info(f"  Failed: {job.failed_imports}")
-            logger.info(f"  Duration: {job.duration_seconds:.2f}s")
+            logger.info("Import job completed successfully: %s", job.job_id)
+            logger.info("  Processed: %s", job.total_factors_processed)
+            logger.info("  Successful: %s", job.successful_imports)
+            logger.info("  Failed: %s", job.failed_imports)
+            logger.info("  Duration: %.2fs", job.duration_seconds)
 
             return job
 
         except Exception as e:
-            logger.error(f"Import job failed: {e}", exc_info=True)
+            logger.error("Import job failed: %s", e, exc_info=True)
 
             job.status = ImportStatus.FAILED
             job.completed_at = DeterministicClock.now()
@@ -279,15 +279,15 @@ class AutomatedImportPipeline:
         all_results = []
 
         for yaml_path in job.source_files:
-            logger.info(f"Validating file: {yaml_path}")
+            logger.info("Validating file: %s", yaml_path)
 
             result = await self.validator.validate_file(yaml_path)
             all_results.append(result)
 
-            logger.info(f"  Valid: {result.is_valid}")
-            logger.info(f"  Quality Score: {result.quality_score}")
-            logger.info(f"  Errors: {len(result.errors)}")
-            logger.info(f"  Warnings: {len(result.warnings)}")
+            logger.info("  Valid: %s", result.is_valid)
+            logger.info("  Quality Score: %s", result.quality_score)
+            logger.info("  Errors: %s", len(result.errors))
+            logger.info("  Warnings: %s", len(result.warnings))
 
         # Aggregate results
         total_records = sum(r.total_records for r in all_results)
@@ -343,7 +343,7 @@ class AutomatedImportPipeline:
 
     async def _import_yaml_file(self, yaml_path: str, job: ImportJob):
         """Import single YAML file."""
-        logger.info(f"Importing file: {yaml_path}")
+        logger.info("Importing file: %s", yaml_path)
 
         with open(yaml_path, 'r', encoding='utf-8') as f:
             data = yaml.safe_load(f)
@@ -396,7 +396,7 @@ class AutomatedImportPipeline:
                     job.progress_percent = (job.successful_imports / job.total_factors_processed) * 100
 
                 except Exception as e:
-                    logger.error(f"Failed to import {factor_id}: {e}")
+                    logger.error("Failed to import %s: %s", factor_id, e)
                     job.failed_imports += 1
                     job.errors.append({
                         'factor_id': factor_id,
@@ -412,7 +412,7 @@ class AutomatedImportPipeline:
         job: ImportJob
     ):
         """Handle duplicate factor (update or skip)."""
-        logger.debug(f"Duplicate factor detected: {factor_id}")
+        logger.debug("Duplicate factor detected: %s", factor_id)
 
         # For now, skip duplicates (could implement update logic)
         job.duplicate_factors += 1
@@ -456,7 +456,7 @@ class AutomatedImportPipeline:
             last_updated
         ))
 
-        logger.debug(f"Inserted factor: {factor_id}")
+        logger.debug("Inserted factor: %s", factor_id)
 
     def _extract_primary_value(self, factor_data: Dict[str, Any]) -> float:
         """Extract primary emission factor value."""
@@ -496,11 +496,11 @@ class AutomatedImportPipeline:
                 logger.error("Verification failed: No records in database")
                 return False
 
-            logger.info(f"Verification passed: {count} factors in database")
+            logger.info("Verification passed: %s factors in database", count)
             return True
 
         except Exception as e:
-            logger.error(f"Verification error: {e}")
+            logger.error("Verification error: %s", e)
             return False
 
 
@@ -537,7 +537,7 @@ class ScheduledImporter:
         Args:
             time_str: Time to run (HH:MM format)
         """
-        logger.info(f"Scheduling daily import at {time_str}")
+        logger.info("Scheduling daily import at %s", time_str)
 
         schedule.every().day.at(time_str).do(self._run_scheduled_import)
 
@@ -549,7 +549,7 @@ class ScheduledImporter:
             day: Day of week (monday, tuesday, etc)
             time_str: Time to run (HH:MM format)
         """
-        logger.info(f"Scheduling weekly import on {day} at {time_str}")
+        logger.info("Scheduling weekly import on %s at %s", day, time_str)
 
         getattr(schedule.every(), day.lower()).at(time_str).do(self._run_scheduled_import)
 
@@ -567,7 +567,7 @@ class ScheduledImporter:
             trigger_type="scheduled"
         )
 
-        logger.info(f"Running scheduled import: {job_id}")
+        logger.info("Running scheduled import: %s", job_id)
 
         # Run import asynchronously
         result = asyncio.run(self.pipeline.execute_import(job))
@@ -576,9 +576,9 @@ class ScheduledImporter:
 
         # Log results
         if result.status == ImportStatus.COMPLETED:
-            logger.info(f"Scheduled import completed: {result.success_rate:.1f}% success rate")
+            logger.info("Scheduled import completed: %.1f% success rate", result.success_rate)
         else:
-            logger.error(f"Scheduled import failed: {result.status}")
+            logger.error("Scheduled import failed: %s", result.status)
 
         return result
 

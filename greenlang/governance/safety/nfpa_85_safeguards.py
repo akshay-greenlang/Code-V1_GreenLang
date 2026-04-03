@@ -486,7 +486,7 @@ class CombustionSafetyInterlock:
     def _clear_bypass(self) -> None:
         """Internal bypass clear (must hold lock)."""
         if self._is_bypassed:
-            logger.info(f"Bypass cleared for {self.interlock_type.value}")
+            logger.info("Bypass cleared for %s", self.interlock_type.value)
         self._is_bypassed = False
         self._bypass_record = None
         if self._status == InterlockStatus.BYPASSED:
@@ -1049,7 +1049,7 @@ class BMSStateMachine:
             if not all_conditions_clear:
                 return False, "All trip conditions must be cleared before reset"
 
-        logger.info(f"BMS manual reset by {authorized_by}")
+        logger.info("BMS manual reset by %s", authorized_by)
 
         if self.transition_to(BMSState.IDLE, f"Manual reset by {authorized_by}"):
             return True, "Reset successful"
@@ -1252,7 +1252,7 @@ class NFPA85SafeguardManager:
 
         with self._lock:
             if interlock_type not in self._interlocks:
-                logger.error(f"Unknown interlock type: {interlock_type}")
+                logger.error("Unknown interlock type: %s", interlock_type)
                 return False, None
 
             interlock = self._interlocks[interlock_type]

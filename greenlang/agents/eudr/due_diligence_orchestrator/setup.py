@@ -357,7 +357,7 @@ class DueDiligenceOrchestratorService:
         workflow_id = request.workflow_id
         start_time = utcnow()
 
-        logger.info(f"Starting workflow {workflow_id}")
+        logger.info("Starting workflow %s", workflow_id)
 
         # Transition: CREATED -> VALIDATING
         self._state_manager.transition(
@@ -417,7 +417,7 @@ class DueDiligenceOrchestratorService:
         Returns:
             WorkflowStatusResponse with paused status.
         """
-        logger.info(f"Pausing workflow {workflow_id}")
+        logger.info("Pausing workflow %s", workflow_id)
 
         # Transition: RUNNING -> PAUSED
         self._state_manager.transition(
@@ -458,7 +458,7 @@ class DueDiligenceOrchestratorService:
         """
         workflow_id = request.workflow_id
 
-        logger.info(f"Resuming workflow {workflow_id}")
+        logger.info("Resuming workflow %s", workflow_id)
 
         # Transition: PAUSED/GATE_FAILED -> RESUMING -> RUNNING
         self._state_manager.transition(
@@ -500,7 +500,7 @@ class DueDiligenceOrchestratorService:
         Returns:
             WorkflowStatusResponse with cancelled status.
         """
-        logger.info(f"Cancelling workflow {workflow_id}: {reason}")
+        logger.info("Cancelling workflow %s: %s", workflow_id, reason)
 
         # Transition: any -> CANCELLED
         self._state_manager.transition(

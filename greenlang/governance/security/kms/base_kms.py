@@ -16,6 +16,8 @@ from typing import Dict, List, Optional, Any, TypedDict, Tuple
 from threading import Lock
 import time
 
+from greenlang.utilities.exceptions.security import SecurityException
+
 logger = logging.getLogger(__name__)
 
 
@@ -92,7 +94,7 @@ class KMSConfig:
     gcp_keyring_id: Optional[str] = None
 
 
-class KMSProviderError(Exception):
+class KMSProviderError(SecurityException):
     """Base exception for KMS provider errors"""
     pass
 
@@ -126,25 +128,25 @@ class KeyCache:
             if key_id in self._cache:
                 key_info, timestamp = self._cache[key_id]
                 if time.time() - timestamp < self.ttl_seconds:
-                    logger.debug(f"Cache hit for key {key_id}")
+                    logger.debug("Cache hit for key %s", key_id)
                     return key_info
                 else:
                     del self._cache[key_id]
-                    logger.debug(f"Cache expired for key {key_id}")
+                    logger.debug("Cache expired for key %s", key_id)
             return None
 
     def set(self, key_id: str, key_info: KMSKeyInfo):
         """Add or update key in cache"""
         with self._lock:
             self._cache[key_id] = (key_info, time.time())
-            logger.debug(f"Cached key {key_id}")
+            logger.debug("Cached key %s", key_id)
 
     def invalidate(self, key_id: Optional[str] = None):
         """Invalidate specific key or entire cache"""
         with self._lock:
             if key_id:
                 self._cache.pop(key_id, None)
-                logger.debug(f"Invalidated cache for key {key_id}")
+                logger.debug("Invalidated cache for key %s", key_id)
             else:
                 self._cache.clear()
                 logger.debug("Invalidated entire cache")
@@ -167,7 +169,7 @@ class BaseKMSProvider(ABC):
         self.cache = KeyCache(ttl_seconds=config.cache_ttl_seconds)
         self._client = None
         self._async_client = None
-        logger.info(f"Initialized {self.__class__.__name__} with key {config.key_id}")
+        logger.info("Initialized %s with key %s", self.__class__.__name__, config.key_id)
 
     @abstractmethod
     def _create_client(self) -> Any:
@@ -298,7 +300,7 @@ class BaseKMSProvider(ABC):
                     result = self.sign(data, key_id, algorithm)
                     results.append(result)
                 except KMSSigningError as e:
-                    logger.error(f"Failed to sign item in batch: {e}")
+                    logger.error("Failed to sign item in batch: %s", e)
                     # Add error result
                     results.append(KMSSignResult(
                         signature=b"",
@@ -343,7 +345,7 @@ class BaseKMSProvider(ABC):
         processed_results = []
         for i, result in enumerate(results):
             if isinstance(result, Exception):
-                logger.error(f"Failed to sign item {i} in batch: {result}")
+                logger.error("Failed to sign item %s in batch: %s", i, result)
                 # Add error result
                 processed_results.append(KMSSignResult(
                     signature=b"",
@@ -382,11 +384,11 @@ class BaseKMSProvider(ABC):
             except Exception as e:
                 last_exception = e
                 if attempt < self.config.max_retries - 1:
-                    logger.warning(f"Attempt {attempt + 1} failed: {e}. Retrying in {delay}s...")
+                    logger.warning("Attempt %s failed: %s. Retrying in %ss...", attempt + 1, e, delay)
                     time.sleep(min(delay, self.config.retry_max_delay))
                     delay *= 2  # Exponential backoff
                 else:
-                    logger.error(f"All {self.config.max_retries} attempts failed")
+                    logger.error("All %s attempts failed", self.config.max_retries)
 
         raise last_exception
 

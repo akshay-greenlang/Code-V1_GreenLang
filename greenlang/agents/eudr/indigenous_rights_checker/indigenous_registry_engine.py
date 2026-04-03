@@ -388,7 +388,7 @@ class IndigenousRegistryEngine:
         """
         existing = await self.get_community(community_id)
         if existing is None:
-            logger.warning(f"Community not found for update: {community_id}")
+            logger.warning("Community not found for update: %s", community_id)
             return None
 
         # Apply updates

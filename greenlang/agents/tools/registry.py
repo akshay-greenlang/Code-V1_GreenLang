@@ -128,7 +128,7 @@ class ToolRegistry:
             self._categories[category] = []
         self._categories[category].append(tool.name)
 
-        self.logger.info(f"Registered tool: {tool.name} (category={category}, version={version})")
+        logger.info("Registered tool: %s (category=%s, version=%s)", tool.name, category, version)
 
     def unregister(self, tool_name: str) -> None:
         """
@@ -153,7 +153,7 @@ class ToolRegistry:
         del self._tools[tool_name]
         del self._tool_metadata[tool_name]
 
-        self.logger.info(f"Unregistered tool: {tool_name}")
+        logger.info("Unregistered tool: %s", tool_name)
 
     def get(self, tool_name: str) -> BaseTool:
         """
@@ -312,10 +312,10 @@ class ToolRegistry:
 
                         self.register(tool, category=category)
                         discovered.append(tool.name)
-                        self.logger.info(f"Discovered tool: {tool.name} from {module_name}")
+                        logger.info("Discovered tool: %s from %s", tool.name, module_name)
 
                 except Exception as e:
-                    self.logger.warning(
+                    logger.warning(
                         f"Cannot instantiate tool {name} from {module_name}: {e}"
                     )
 
@@ -338,7 +338,7 @@ class ToolRegistry:
             module = importlib.import_module(base_module)
             base_path = Path(module.__file__).parent
         except (ImportError, AttributeError) as e:
-            self.logger.error(f"Cannot discover tools in {base_module}: {e}")
+            logger.error("Cannot discover tools in %s: %s", base_module, e)
             return discovered
 
         # Scan all Python files in the directory
@@ -352,7 +352,7 @@ class ToolRegistry:
                 tools = self.discover(module_name)
                 discovered.extend(tools)
             except Exception as e:
-                self.logger.warning(f"Cannot discover tools in {module_name}: {e}")
+                logger.warning("Cannot discover tools in %s: %s", module_name, e)
 
         return discovered
 
@@ -382,7 +382,7 @@ class ToolRegistry:
         self._tools.clear()
         self._tool_metadata.clear()
         self._categories.clear()
-        self.logger.info("Cleared all tools from registry")
+        logger.info("Cleared all tools from registry")
 
     def __len__(self) -> int:
         """Get number of registered tools."""

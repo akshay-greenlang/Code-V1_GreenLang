@@ -14,12 +14,31 @@ Design principles:
 - Machine-readable error codes
 - Remediation hints for common issues
 - Integration with policy/security errors
+
+Migration (2026-04-02):
+- All classes now inherit from the centralized greenlang.exceptions hierarchy
+- isinstance(error, GreenLangException) is now True for all connector errors
+- Full backward compatibility: same class names, same public APIs, same attributes
 """
 
 from typing import Optional, Dict, Any, List
 
+from greenlang.utilities.exceptions.base import GreenLangException
+from greenlang.utilities.exceptions.connector import (
+    ConnectorException as _CentralConnectorException,
+    ConnectorConfigError as _CentralConnectorConfigError,
+    ConnectorAuthError as _CentralConnectorAuthError,
+    ConnectorNetworkError as _CentralConnectorNetworkError,
+    ConnectorTimeoutError as _CentralConnectorTimeoutError,
+    ConnectorRateLimitError as _CentralConnectorRateLimitError,
+    ConnectorNotFoundError as _CentralConnectorNotFoundError,
+    ConnectorValidationError as _CentralConnectorValidationError,
+    ConnectorSecurityError as _CentralConnectorSecurityError,
+    ConnectorServerError as _CentralConnectorServerError,
+)
 
-class ConnectorError(Exception):
+
+class ConnectorError(_CentralConnectorException):
     """
     Base exception for all connector errors
 
@@ -31,6 +50,9 @@ class ConnectorError(Exception):
     - url: Target URL (if applicable)
     - context: Additional error context
     - original_error: Wrapped exception (if any)
+
+    Inherits from greenlang.utilities.exceptions.connector.ConnectorException
+    so that isinstance(error, GreenLangException) returns True.
     """
 
     def __init__(
@@ -51,7 +73,7 @@ class ConnectorError(Exception):
         self.context = context or {}
         self.original_error = original_error
 
-        # Format detailed message
+        # Format detailed message for str(error)
         parts = [f"[{connector}] {message}"]
 
         if status_code:
@@ -61,7 +83,36 @@ class ConnectorError(Exception):
         if url:
             parts.append(f"(URL: {url})")
 
-        super().__init__(" ".join(parts))
+        formatted_message = " ".join(parts)
+
+        # Build context for the centralized parent
+        central_context = dict(self.context)
+        if connector:
+            central_context["connector"] = connector
+        if status_code is not None:
+            central_context["status_code"] = status_code
+        if url:
+            central_context["url"] = url
+        if request_id:
+            central_context["request_id"] = request_id
+        if original_error:
+            central_context["original_error"] = str(original_error)
+            central_context["original_error_type"] = type(original_error).__name__
+
+        # Initialize the centralized parent with connector_name mapped from connector
+        _CentralConnectorException.__init__(
+            self,
+            message=formatted_message,
+            connector_name=connector,
+            status_code=status_code,
+            url=url,
+            request_id=request_id,
+            original_error=original_error,
+            context=central_context,
+        )
+
+        # Restore the original message attribute (parent may have overwritten it)
+        self.message = message
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert error to dictionary for serialization"""
@@ -77,7 +128,7 @@ class ConnectorError(Exception):
         }
 
 
-class ConnectorConfigError(ConnectorError):
+class ConnectorConfigError(ConnectorError, _CentralConnectorConfigError):
     """
     Configuration error
 
@@ -90,10 +141,25 @@ class ConnectorConfigError(ConnectorError):
             context={"required_env": "ELECTRICITYMAPS_API_KEY"}
         )
     """
-    pass
+
+    def __init__(
+        self,
+        message: str,
+        connector: str,
+        status_code: Optional[int] = None,
+        request_id: Optional[str] = None,
+        url: Optional[str] = None,
+        context: Optional[Dict[str, Any]] = None,
+        original_error: Optional[Exception] = None
+    ):
+        ConnectorError.__init__(
+            self, message, connector,
+            status_code=status_code, request_id=request_id,
+            url=url, context=context, original_error=original_error
+        )
 
 
-class ConnectorAuthError(ConnectorError):
+class ConnectorAuthError(ConnectorError, _CentralConnectorAuthError):
     """
     Authentication/authorization error
 
@@ -105,10 +171,25 @@ class ConnectorAuthError(ConnectorError):
     - Insufficient permissions
     - Rate limit exceeded (can also use ConnectorRateLimit)
     """
-    pass
+
+    def __init__(
+        self,
+        message: str,
+        connector: str,
+        status_code: Optional[int] = None,
+        request_id: Optional[str] = None,
+        url: Optional[str] = None,
+        context: Optional[Dict[str, Any]] = None,
+        original_error: Optional[Exception] = None
+    ):
+        ConnectorError.__init__(
+            self, message, connector,
+            status_code=status_code, request_id=request_id,
+            url=url, context=context, original_error=original_error
+        )
 
 
-class ConnectorNetworkError(ConnectorError):
+class ConnectorNetworkError(ConnectorError, _CentralConnectorNetworkError):
     """
     Network communication error
 
@@ -120,19 +201,49 @@ class ConnectorNetworkError(ConnectorError):
     - TLS/SSL errors
     - Network unreachable
     """
-    pass
+
+    def __init__(
+        self,
+        message: str,
+        connector: str,
+        status_code: Optional[int] = None,
+        request_id: Optional[str] = None,
+        url: Optional[str] = None,
+        context: Optional[Dict[str, Any]] = None,
+        original_error: Optional[Exception] = None
+    ):
+        ConnectorError.__init__(
+            self, message, connector,
+            status_code=status_code, request_id=request_id,
+            url=url, context=context, original_error=original_error
+        )
 
 
-class ConnectorTimeoutError(ConnectorError):
+class ConnectorTimeoutError(ConnectorError, _CentralConnectorTimeoutError):
     """
     Request timeout error
 
     Raised when request exceeds timeout threshold.
     """
-    pass
+
+    def __init__(
+        self,
+        message: str,
+        connector: str,
+        status_code: Optional[int] = None,
+        request_id: Optional[str] = None,
+        url: Optional[str] = None,
+        context: Optional[Dict[str, Any]] = None,
+        original_error: Optional[Exception] = None
+    ):
+        ConnectorError.__init__(
+            self, message, connector,
+            status_code=status_code, request_id=request_id,
+            url=url, context=context, original_error=original_error
+        )
 
 
-class ConnectorRateLimit(ConnectorError):
+class ConnectorRateLimit(ConnectorError, _CentralConnectorRateLimitError):
     """
     Rate limit exceeded
 
@@ -149,7 +260,7 @@ class ConnectorRateLimit(ConnectorError):
         limit: Optional[int] = None,  # Rate limit value
         **kwargs
     ):
-        super().__init__(message, connector, **kwargs)
+        ConnectorError.__init__(self, message, connector, **kwargs)
         self.retry_after = retry_after
         self.limit = limit
 
@@ -159,7 +270,7 @@ class ConnectorRateLimit(ConnectorError):
             self.context["limit"] = limit
 
 
-class ConnectorNotFound(ConnectorError):
+class ConnectorNotFound(ConnectorError, _CentralConnectorNotFoundError):
     """
     Resource not found error
 
@@ -170,7 +281,22 @@ class ConnectorNotFound(ConnectorError):
     - Non-existent data for date range
     - Missing dataset
     """
-    pass
+
+    def __init__(
+        self,
+        message: str,
+        connector: str,
+        status_code: Optional[int] = None,
+        request_id: Optional[str] = None,
+        url: Optional[str] = None,
+        context: Optional[Dict[str, Any]] = None,
+        original_error: Optional[Exception] = None
+    ):
+        ConnectorError.__init__(
+            self, message, connector,
+            status_code=status_code, request_id=request_id,
+            url=url, context=context, original_error=original_error
+        )
 
 
 class ConnectorBadRequest(ConnectorError):
@@ -185,10 +311,25 @@ class ConnectorBadRequest(ConnectorError):
     - Unsupported region code
     - Schema validation failure
     """
-    pass
+
+    def __init__(
+        self,
+        message: str,
+        connector: str,
+        status_code: Optional[int] = None,
+        request_id: Optional[str] = None,
+        url: Optional[str] = None,
+        context: Optional[Dict[str, Any]] = None,
+        original_error: Optional[Exception] = None
+    ):
+        ConnectorError.__init__(
+            self, message, connector,
+            status_code=status_code, request_id=request_id,
+            url=url, context=context, original_error=original_error
+        )
 
 
-class ConnectorServerError(ConnectorError):
+class ConnectorServerError(ConnectorError, _CentralConnectorServerError):
     """
     Server error (5xx)
 
@@ -196,7 +337,22 @@ class ConnectorServerError(ConnectorError):
 
     Usually retryable.
     """
-    pass
+
+    def __init__(
+        self,
+        message: str,
+        connector: str,
+        status_code: Optional[int] = None,
+        request_id: Optional[str] = None,
+        url: Optional[str] = None,
+        context: Optional[Dict[str, Any]] = None,
+        original_error: Optional[Exception] = None
+    ):
+        ConnectorError.__init__(
+            self, message, connector,
+            status_code=status_code, request_id=request_id,
+            url=url, context=context, original_error=original_error
+        )
 
 
 class ConnectorReplayRequired(ConnectorError):
@@ -220,7 +376,7 @@ class ConnectorReplayRequired(ConnectorError):
         query_hash: Optional[str] = None,
         **kwargs
     ):
-        super().__init__(message, connector, **kwargs)
+        ConnectorError.__init__(self, message, connector, **kwargs)
         self.query_hash = query_hash
 
         # Add remediation hint
@@ -245,7 +401,7 @@ class ConnectorSnapshotNotFound(ConnectorError):
         snapshot_path: str,
         **kwargs
     ):
-        super().__init__(message, connector, **kwargs)
+        ConnectorError.__init__(self, message, connector, **kwargs)
         self.snapshot_path = snapshot_path
         self.context["snapshot_path"] = snapshot_path
 
@@ -262,10 +418,25 @@ class ConnectorSnapshotCorrupt(ConnectorError):
     - Missing required fields
     - Version incompatibility
     """
-    pass
+
+    def __init__(
+        self,
+        message: str,
+        connector: str,
+        status_code: Optional[int] = None,
+        request_id: Optional[str] = None,
+        url: Optional[str] = None,
+        context: Optional[Dict[str, Any]] = None,
+        original_error: Optional[Exception] = None
+    ):
+        ConnectorError.__init__(
+            self, message, connector,
+            status_code=status_code, request_id=request_id,
+            url=url, context=context, original_error=original_error
+        )
 
 
-class ConnectorSecurityError(ConnectorError):
+class ConnectorSecurityError(ConnectorError, _CentralConnectorSecurityError):
     """
     Security policy violation
 
@@ -285,14 +456,14 @@ class ConnectorSecurityError(ConnectorError):
         policy_violated: Optional[str] = None,
         **kwargs
     ):
-        super().__init__(message, connector, **kwargs)
+        ConnectorError.__init__(self, message, connector, **kwargs)
         self.policy_violated = policy_violated
 
         if policy_violated:
             self.context["policy_violated"] = policy_violated
 
 
-class ConnectorValidationError(ConnectorError):
+class ConnectorValidationError(ConnectorError, _CentralConnectorValidationError):
     """
     Data validation error
 
@@ -312,7 +483,7 @@ class ConnectorValidationError(ConnectorError):
         validation_errors: Optional[List[Dict[str, Any]]] = None,
         **kwargs
     ) -> None:
-        super().__init__(message, connector, **kwargs)
+        ConnectorError.__init__(self, message, connector, **kwargs)
         self.validation_errors = validation_errors or []
 
         if validation_errors:

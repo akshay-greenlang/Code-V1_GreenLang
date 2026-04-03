@@ -221,7 +221,7 @@ class FactorReconciler:
         run_id = self._generate_run_id()
         started_at = datetime.utcnow()
 
-        logger.info(f"Starting reconciliation run {run_id} with {len(factors)} factors")
+        logger.info("Starting reconciliation run %s with %s factors", run_id, len(factors))
 
         # Step 1: Group factors by matching key
         factor_groups = self._group_factors(factors)
@@ -385,7 +385,7 @@ class FactorReconciler:
                 )
 
                 conflicts.append(conflict)
-                logger.debug(f"Conflict detected: {key}, {percent_diff:.1f}% difference")
+                logger.debug("Conflict detected: %s, %.1f% difference", key, percent_diff)
 
         return conflicts
 

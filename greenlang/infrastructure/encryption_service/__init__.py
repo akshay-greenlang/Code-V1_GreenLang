@@ -130,7 +130,10 @@ class DecryptedData:
 # ---------------------------------------------------------------------------
 
 
-class EncryptionError(Exception):
+from greenlang.utilities.exceptions.security import EncryptionError as _CentralEncryptionError
+
+
+class EncryptionError(_CentralEncryptionError):
     """Base exception for encryption service errors."""
 
     pass

@@ -134,7 +134,7 @@ class BoilerOptimizerAgent(BaseProcessHeatAgent[BoilerInput, BoilerOutput]):
             ValueError: If input validation fails
         """
         start_time = datetime.now(timezone.utc)
-        logger.info(f"Processing boiler data for {input_data.boiler_id}")
+        logger.info("Processing boiler data for %s", input_data.boiler_id)
 
         try:
             with self.safety_guard():
@@ -223,7 +223,7 @@ class BoilerOptimizerAgent(BaseProcessHeatAgent[BoilerInput, BoilerOutput]):
                 return output
 
         except Exception as e:
-            logger.error(f"Boiler optimization failed: {e}", exc_info=True)
+            logger.error("Boiler optimization failed: %s", e, exc_info=True)
             raise
 
     def validate_input(self, input_data: BoilerInput) -> bool:
@@ -253,7 +253,7 @@ class BoilerOptimizerAgent(BaseProcessHeatAgent[BoilerInput, BoilerOutput]):
             errors.append("Steam pressure unusually high (>2500 psig)")
 
         if errors:
-            logger.warning(f"Validation errors: {errors}")
+            logger.warning("Validation errors: %s", errors)
             return False
 
         return True

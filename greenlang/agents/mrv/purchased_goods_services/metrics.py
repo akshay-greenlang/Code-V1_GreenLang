@@ -400,12 +400,12 @@ class PurchasedGoodsServicesMetrics:
         try:
             # Validate method
             if method not in [m.value for m in CalculationMethod]:
-                logger.warning(f"Invalid calculation method: {method}")
+                logger.warning("Invalid calculation method: %s", method)
                 method = CalculationMethod.SPEND_BASED.value
 
             # Validate status
             if status not in [s.value for s in CalculationStatus]:
-                logger.warning(f"Invalid calculation status: {status}")
+                logger.warning("Invalid calculation status: %s", status)
                 status = CalculationStatus.FAILED.value
 
             # Record calculation count
@@ -426,7 +426,7 @@ class PurchasedGoodsServicesMetrics:
                 if material_category is None:
                     material_category = MaterialCategory.OTHER.value
                 elif material_category not in [c.value for c in MaterialCategory]:
-                    logger.warning(f"Invalid material category: {material_category}")
+                    logger.warning("Invalid material category: %s", material_category)
                     material_category = MaterialCategory.OTHER.value
 
                 self.emissions_kgco2e_total.labels(
@@ -451,7 +451,7 @@ class PurchasedGoodsServicesMetrics:
             )
 
         except Exception as e:
-            logger.error(f"Failed to record calculation metrics: {e}", exc_info=True)
+            logger.error("Failed to record calculation metrics: %s", e, exc_info=True)
 
     def record_spend_processed(
         self,
@@ -477,12 +477,12 @@ class PurchasedGoodsServicesMetrics:
         try:
             # Validate method
             if method not in [m.value for m in CalculationMethod]:
-                logger.warning(f"Invalid calculation method: {method}")
+                logger.warning("Invalid calculation method: %s", method)
                 method = CalculationMethod.SPEND_BASED.value
 
             # Validate classification
             if classification not in [c.value for c in SpendClassification]:
-                logger.warning(f"Invalid spend classification: {classification}")
+                logger.warning("Invalid spend classification: %s", classification)
                 classification = SpendClassification.GOODS.value
 
             # Record spend
@@ -497,7 +497,7 @@ class PurchasedGoodsServicesMetrics:
             )
 
         except Exception as e:
-            logger.error(f"Failed to record spend metrics: {e}", exc_info=True)
+            logger.error("Failed to record spend metrics: %s", e, exc_info=True)
 
     def record_items_processed(
         self,
@@ -523,12 +523,12 @@ class PurchasedGoodsServicesMetrics:
         try:
             # Validate method
             if method not in [m.value for m in CalculationMethod]:
-                logger.warning(f"Invalid calculation method: {method}")
+                logger.warning("Invalid calculation method: %s", method)
                 method = CalculationMethod.SPEND_BASED.value
 
             # Validate procurement type
             if procurement_type not in [p.value for p in ProcurementType]:
-                logger.warning(f"Invalid procurement type: {procurement_type}")
+                logger.warning("Invalid procurement type: %s", procurement_type)
                 procurement_type = ProcurementType.PURCHASE_ORDER.value
 
             # Record items
@@ -545,7 +545,7 @@ class PurchasedGoodsServicesMetrics:
             )
 
         except Exception as e:
-            logger.error(f"Failed to record items metrics: {e}", exc_info=True)
+            logger.error("Failed to record items metrics: %s", e, exc_info=True)
 
     def record_supplier_assessed(
         self,
@@ -568,7 +568,7 @@ class PurchasedGoodsServicesMetrics:
         try:
             # Validate data source
             if data_source not in [s.value for s in DataSource]:
-                logger.warning(f"Invalid data source: {data_source}")
+                logger.warning("Invalid data source: %s", data_source)
                 data_source = DataSource.SUPPLIER_SURVEY.value
 
             # Record supplier assessment
@@ -584,7 +584,7 @@ class PurchasedGoodsServicesMetrics:
             )
 
         except Exception as e:
-            logger.error(f"Failed to record supplier assessment metrics: {e}", exc_info=True)
+            logger.error("Failed to record supplier assessment metrics: %s", e, exc_info=True)
 
     def record_dqi_score(
         self,
@@ -607,7 +607,7 @@ class PurchasedGoodsServicesMetrics:
         try:
             # Validate dimension
             if dimension not in [d.value for d in QualityDimension]:
-                logger.warning(f"Invalid quality dimension: {dimension}")
+                logger.warning("Invalid quality dimension: %s", dimension)
                 dimension = QualityDimension.OVERALL.value
 
             # Clamp score to valid range (1.0-5.0)
@@ -623,7 +623,7 @@ class PurchasedGoodsServicesMetrics:
             )
 
         except Exception as e:
-            logger.error(f"Failed to record DQI score metrics: {e}", exc_info=True)
+            logger.error("Failed to record DQI score metrics: %s", e, exc_info=True)
 
     def update_coverage(
         self,
@@ -649,7 +649,7 @@ class PurchasedGoodsServicesMetrics:
         try:
             # Validate method
             if method not in [m.value for m in CalculationMethod]:
-                logger.warning(f"Invalid calculation method: {method}")
+                logger.warning("Invalid calculation method: %s", method)
                 method = CalculationMethod.SPEND_BASED.value
 
             # Clamp percentage to valid range
@@ -667,7 +667,7 @@ class PurchasedGoodsServicesMetrics:
             )
 
         except Exception as e:
-            logger.error(f"Failed to update coverage metrics: {e}", exc_info=True)
+            logger.error("Failed to update coverage metrics: %s", e, exc_info=True)
 
     def record_compliance_check(
         self,
@@ -690,12 +690,12 @@ class PurchasedGoodsServicesMetrics:
         try:
             # Validate framework
             if framework not in [f.value for f in Framework]:
-                logger.warning(f"Invalid framework: {framework}")
+                logger.warning("Invalid framework: %s", framework)
                 framework = Framework.GHG_PROTOCOL.value
 
             # Validate status
             if status not in [s.value for s in ComplianceStatus]:
-                logger.warning(f"Invalid compliance status: {status}")
+                logger.warning("Invalid compliance status: %s", status)
                 status = ComplianceStatus.NOT_APPLICABLE.value
 
             # Record compliance check
@@ -712,7 +712,7 @@ class PurchasedGoodsServicesMetrics:
             )
 
         except Exception as e:
-            logger.error(f"Failed to record compliance check metrics: {e}", exc_info=True)
+            logger.error("Failed to record compliance check metrics: %s", e, exc_info=True)
 
     def record_batch_job(
         self,
@@ -735,7 +735,7 @@ class PurchasedGoodsServicesMetrics:
         try:
             # Validate status
             if status not in [s.value for s in BatchStatus]:
-                logger.warning(f"Invalid batch status: {status}")
+                logger.warning("Invalid batch status: %s", status)
                 status = BatchStatus.FAILED.value
 
             # Record batch job
@@ -752,7 +752,7 @@ class PurchasedGoodsServicesMetrics:
             )
 
         except Exception as e:
-            logger.error(f"Failed to record batch job metrics: {e}", exc_info=True)
+            logger.error("Failed to record batch job metrics: %s", e, exc_info=True)
 
     def record_hotspot_item(
         self,
@@ -775,7 +775,7 @@ class PurchasedGoodsServicesMetrics:
         try:
             # Validate materiality level
             if materiality_level not in [m.value for m in MaterialityLevel]:
-                logger.warning(f"Invalid materiality level: {materiality_level}")
+                logger.warning("Invalid materiality level: %s", materiality_level)
                 materiality_level = MaterialityLevel.MEDIUM.value
 
             # Record hotspot items
@@ -791,7 +791,7 @@ class PurchasedGoodsServicesMetrics:
             )
 
         except Exception as e:
-            logger.error(f"Failed to record hotspot item metrics: {e}", exc_info=True)
+            logger.error("Failed to record hotspot item metrics: %s", e, exc_info=True)
 
     def record_error(
         self,
@@ -814,7 +814,7 @@ class PurchasedGoodsServicesMetrics:
         try:
             # Validate error type
             if error_type not in [e.value for e in ErrorType]:
-                logger.warning(f"Invalid error type: {error_type}")
+                logger.warning("Invalid error type: %s", error_type)
                 error_type = ErrorType.VALIDATION_ERROR.value
 
             # Record error
@@ -826,10 +826,10 @@ class PurchasedGoodsServicesMetrics:
             # Update in-memory stats
             self._in_memory_stats['errors'] += 1
 
-            logger.debug(f"Recorded error: type={error_type}, operation={operation}")
+            logger.debug("Recorded error: type=%s, operation=%s", error_type, operation)
 
         except Exception as e:
-            logger.error(f"Failed to record error metrics: {e}", exc_info=True)
+            logger.error("Failed to record error metrics: %s", e, exc_info=True)
 
     def get_metrics_summary(self) -> Dict[str, Any]:
         """
@@ -877,11 +877,11 @@ class PurchasedGoodsServicesMetrics:
                 }
             }
 
-            logger.debug(f"Generated metrics summary: {summary}")
+            logger.debug("Generated metrics summary: %s", summary)
             return summary
 
         except Exception as e:
-            logger.error(f"Failed to generate metrics summary: {e}", exc_info=True)
+            logger.error("Failed to generate metrics summary: %s", e, exc_info=True)
             return {
                 'error': str(e),
                 'prometheus_available': PROMETHEUS_AVAILABLE,
@@ -970,7 +970,7 @@ class PurchasedGoodsServicesMetrics:
             )
 
         except Exception as e:
-            logger.error(f"Failed to record batch calculation metrics: {e}", exc_info=True)
+            logger.error("Failed to record batch calculation metrics: %s", e, exc_info=True)
 
     def reset_stats(self) -> None:
         """
@@ -999,7 +999,7 @@ class PurchasedGoodsServicesMetrics:
             logger.info("Reset in-memory statistics")
 
         except Exception as e:
-            logger.error(f"Failed to reset statistics: {e}", exc_info=True)
+            logger.error("Failed to reset statistics: %s", e, exc_info=True)
 
 
 # Singleton instance for module-level access

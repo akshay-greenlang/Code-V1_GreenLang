@@ -414,11 +414,11 @@ class FlamescannerInterface:
         self._connected = False
         self._scanners: Dict[str, Dict[str, Any]] = {}
 
-        logger.info(f"FlamescannerInterface initialized: {config.protocol.value}")
+        logger.info("FlamescannerInterface initialized: %s", config.protocol.value)
 
     async def connect(self) -> bool:
         """Establish connection to flame scanner system."""
-        logger.info(f"Connecting to flame scanner system at {self.config.host}:{self.config.port}")
+        logger.info("Connecting to flame scanner system at %s:%s", self.config.host, self.config.port)
 
         try:
             # In production, establish actual connection
@@ -429,7 +429,7 @@ class FlamescannerInterface:
             return True
 
         except Exception as e:
-            logger.error(f"Failed to connect to flame scanner system: {e}")
+            logger.error("Failed to connect to flame scanner system: %s", e)
             self._connected = False
             return False
 
@@ -456,7 +456,7 @@ class FlamescannerInterface:
         if not self._connected:
             raise ConnectionError("Not connected to flame scanner system")
 
-        logger.debug(f"Getting flame scanner reading: {scanner_id}")
+        logger.debug("Getting flame scanner reading: %s", scanner_id)
 
         # In production, read from actual scanner via protocol
         # Simulated reading for demonstration
@@ -503,7 +503,7 @@ class FlamescannerInterface:
                 reading = await self.get_reading(scanner_id)
                 readings.append(reading)
             except Exception as e:
-                logger.error(f"Failed to read scanner {scanner_id}: {e}")
+                logger.error("Failed to read scanner %s: %s", scanner_id, e)
         return readings
 
     async def stream_readings(
@@ -527,7 +527,7 @@ class FlamescannerInterface:
                 yield reading
                 await asyncio.sleep(interval_ms / 1000)
             except Exception as e:
-                logger.error(f"Streaming error for {scanner_id}: {e}")
+                logger.error("Streaming error for %s: %s", scanner_id, e)
                 await asyncio.sleep(1.0)
 
     def _calculate_provenance(self, reading: FlamescannerReading) -> str:
@@ -584,11 +584,11 @@ class BMSInterface:
         self.config = config
         self._connected = False
 
-        logger.info(f"BMSInterface initialized: {config.protocol.value}")
+        logger.info("BMSInterface initialized: %s", config.protocol.value)
 
     async def connect(self) -> bool:
         """Establish connection to BMS."""
-        logger.info(f"Connecting to BMS at {self.config.host}:{self.config.port}")
+        logger.info("Connecting to BMS at %s:%s", self.config.host, self.config.port)
 
         try:
             await asyncio.sleep(0.1)
@@ -597,7 +597,7 @@ class BMSInterface:
             return True
 
         except Exception as e:
-            logger.error(f"Failed to connect to BMS: {e}")
+            logger.error("Failed to connect to BMS: %s", e)
             self._connected = False
             return False
 
@@ -624,7 +624,7 @@ class BMSInterface:
         if not self._connected:
             raise ConnectionError("Not connected to BMS")
 
-        logger.debug(f"Getting BMS status: {bms_id}")
+        logger.debug("Getting BMS status: %s", bms_id)
 
         # In production, read from actual BMS via protocol
         # Simulated status
@@ -727,11 +727,11 @@ class AnalyzerInterface:
         self.config = config
         self._connected = False
 
-        logger.info(f"AnalyzerInterface initialized: {config.protocol.value}")
+        logger.info("AnalyzerInterface initialized: %s", config.protocol.value)
 
     async def connect(self) -> bool:
         """Establish connection to analyzer system."""
-        logger.info(f"Connecting to analyzer system at {self.config.host}:{self.config.port}")
+        logger.info("Connecting to analyzer system at %s:%s", self.config.host, self.config.port)
 
         try:
             await asyncio.sleep(0.1)
@@ -740,7 +740,7 @@ class AnalyzerInterface:
             return True
 
         except Exception as e:
-            logger.error(f"Failed to connect to analyzer system: {e}")
+            logger.error("Failed to connect to analyzer system: %s", e)
             return False
 
     async def disconnect(self) -> None:
@@ -766,7 +766,7 @@ class AnalyzerInterface:
         if not self._connected:
             raise ConnectionError("Not connected to analyzer system")
 
-        logger.debug(f"Getting analyzer reading: {analyzer_id}")
+        logger.debug("Getting analyzer reading: %s", analyzer_id)
 
         # Simulated reading
         import random
@@ -871,11 +871,11 @@ class HistorianInterface:
         self._connected = False
         self._tag_cache: Dict[str, HistorianTag] = {}
 
-        logger.info(f"HistorianInterface initialized: {config.historian_type.value}")
+        logger.info("HistorianInterface initialized: %s", config.historian_type.value)
 
     async def connect(self) -> bool:
         """Establish connection to historian."""
-        logger.info(f"Connecting to historian at {self.config.historian_host}")
+        logger.info("Connecting to historian at %s", self.config.historian_host)
 
         try:
             await asyncio.sleep(0.1)
@@ -884,7 +884,7 @@ class HistorianInterface:
             return True
 
         except Exception as e:
-            logger.error(f"Failed to connect to historian: {e}")
+            logger.error("Failed to connect to historian: %s", e)
             return False
 
     async def disconnect(self) -> None:
@@ -925,7 +925,7 @@ class HistorianInterface:
         if not self._connected:
             raise ConnectionError("Not connected to historian")
 
-        logger.debug(f"Querying historian: {query.tags}")
+        logger.debug("Querying historian: %s", query.tags)
 
         results = []
         current_time = query.start_time
@@ -1200,7 +1200,7 @@ class BurnerMonitoringInterface:
         Returns:
             Dictionary with flame, BMS, and analyzer data
         """
-        logger.info(f"Getting complete status for {burner_id}")
+        logger.info("Getting complete status for %s", burner_id)
 
         # Gather data from all sources concurrently
         flame_task = self.get_flame_scanner_data(burner_id)
@@ -1287,7 +1287,7 @@ class BurnerMonitoringInterface:
         Yields:
             Dictionary with current burner status
         """
-        logger.info(f"Starting data stream for {burner_id}")
+        logger.info("Starting data stream for %s", burner_id)
 
         while True:
             try:
@@ -1295,7 +1295,7 @@ class BurnerMonitoringInterface:
                 yield status
                 await asyncio.sleep(interval_ms / 1000)
             except Exception as e:
-                logger.error(f"Streaming error for {burner_id}: {e}")
+                logger.error("Streaming error for %s: %s", burner_id, e)
                 await asyncio.sleep(1.0)
 
     # =========================================================================

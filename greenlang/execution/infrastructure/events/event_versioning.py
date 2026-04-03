@@ -392,7 +392,7 @@ class SchemaRegistry:
                         )
 
             self._schemas[event_type][schema.version] = schema
-            logger.info(f"Registered schema: {event_type} v{schema.version}")
+            logger.info("Registered schema: %s v%s", event_type, schema.version)
 
             return True
 
@@ -474,13 +474,13 @@ class SchemaRegistry:
             # All old required fields must exist in new schema
             for name, field in old_fields.items():
                 if field.required and name not in new_fields:
-                    logger.warning(f"Backward incompatible: required field '{name}' removed")
+                    logger.warning("Backward incompatible: required field '%s' removed", name)
                     return False
 
                 # Type changes are breaking
                 if name in new_fields:
                     if field.field_type != new_fields[name].field_type:
-                        logger.warning(f"Backward incompatible: field '{name}' type changed")
+                        logger.warning("Backward incompatible: field '%s' type changed", name)
                         return False
 
         # Check forward compatibility
@@ -529,7 +529,7 @@ class SchemaRegistry:
                 del self._schemas[event_type]
                 del self._compatibility_modes[event_type]
 
-            logger.info(f"Deleted schema: {event_type} v{version}")
+            logger.info("Deleted schema: %s v%s", event_type, version)
             return True
 
 

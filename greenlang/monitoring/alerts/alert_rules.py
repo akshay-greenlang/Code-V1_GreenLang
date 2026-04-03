@@ -324,9 +324,9 @@ class AlertRuleEngine:
         try:
             with open(output_path, 'w') as f:
                 json.dump(prometheus_rules, f, indent=2)
-            logger.info(f"Prometheus alert rules exported to {output_path}")
+            logger.info("Prometheus alert rules exported to %s", output_path)
         except Exception as e:
-            logger.error(f"Failed to export alert rules: {e}")
+            logger.error("Failed to export alert rules: %s", e)
             raise
 
     def export_grafana_alerts(self, output_path: str) -> None:
@@ -373,9 +373,9 @@ class AlertRuleEngine:
         try:
             with open(output_path, 'w') as f:
                 json.dump(grafana_alerts, f, indent=2)
-            logger.info(f"Grafana alert rules exported to {output_path}")
+            logger.info("Grafana alert rules exported to %s", output_path)
         except Exception as e:
-            logger.error(f"Failed to export Grafana alerts: {e}")
+            logger.error("Failed to export Grafana alerts: %s", e)
             raise
 
 
@@ -440,9 +440,9 @@ class NotificationHandler:
         try:
             response = requests.post(self.slack_webhook, json=payload)
             response.raise_for_status()
-            logger.info(f"Slack notification sent for alert: {alert['name']}")
+            logger.info("Slack notification sent for alert: %s", alert['name'])
         except requests.exceptions.RequestException as e:
-            logger.error(f"Failed to send Slack notification: {e}")
+            logger.error("Failed to send Slack notification: %s", e)
 
     def send_email_notification(self, alert: Dict[str, Any]) -> None:
         """Send alert via email"""
@@ -487,9 +487,9 @@ class NotificationHandler:
                 if self.email_config.get('username'):
                     server.login(self.email_config['username'], self.email_config['password'])
                 server.send_message(msg)
-            logger.info(f"Email notification sent for alert: {alert['name']}")
+            logger.info("Email notification sent for alert: %s", alert['name'])
         except Exception as e:
-            logger.error(f"Failed to send email notification: {e}")
+            logger.error("Failed to send email notification: %s", e)
 
     def send_pagerduty_alert(self, alert: Dict[str, Any]) -> None:
         """Send critical alert to PagerDuty"""
@@ -518,9 +518,9 @@ class NotificationHandler:
                 json=payload
             )
             response.raise_for_status()
-            logger.info(f"PagerDuty alert sent for: {alert['name']}")
+            logger.info("PagerDuty alert sent for: %s", alert['name'])
         except requests.exceptions.RequestException as e:
-            logger.error(f"Failed to send PagerDuty alert: {e}")
+            logger.error("Failed to send PagerDuty alert: %s", e)
 
 
 def main():

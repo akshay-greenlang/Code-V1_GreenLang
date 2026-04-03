@@ -172,7 +172,7 @@ async def create_declaration(request: CreateDeclarationRequest) -> Any:
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e))
     except Exception as e:
-        logger.error(f"create_declaration failed: {e}", exc_info=True)
+        logger.error("create_declaration failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -189,7 +189,7 @@ async def list_declarations(
         )
         return [r.model_dump(mode="json") if hasattr(r, "model_dump") else r for r in results]
     except Exception as e:
-        logger.error(f"list_declarations failed: {e}", exc_info=True)
+        logger.error("list_declarations failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -205,7 +205,7 @@ async def get_declaration(declaration_id: str) -> Any:
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"get_declaration failed: {e}", exc_info=True)
+        logger.error("get_declaration failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -221,7 +221,7 @@ async def update_declaration_status(
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e))
     except Exception as e:
-        logger.error(f"update_status failed: {e}", exc_info=True)
+        logger.error("update_status failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -234,7 +234,7 @@ async def cancel_declaration(declaration_id: str) -> Any:
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
-        logger.error(f"cancel_declaration failed: {e}", exc_info=True)
+        logger.error("cancel_declaration failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -252,7 +252,7 @@ async def map_cn_codes(request: MapCNCodesRequest) -> Any:
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e))
     except Exception as e:
-        logger.error(f"map_cn_codes failed: {e}", exc_info=True)
+        logger.error("map_cn_codes failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -268,7 +268,7 @@ async def get_cn_code(cn_code: str) -> Any:
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"get_cn_code failed: {e}", exc_info=True)
+        logger.error("get_cn_code failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -286,7 +286,7 @@ async def validate_hs_code(request: ValidateHSCodeRequest) -> Any:
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e))
     except Exception as e:
-        logger.error(f"validate_hs_code failed: {e}", exc_info=True)
+        logger.error("validate_hs_code failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -298,7 +298,7 @@ async def batch_validate_hs_codes(hs_codes: List[str]) -> Any:
         results = await service.validate_hs_codes_batch(hs_codes)
         return [r.model_dump(mode="json") if hasattr(r, "model_dump") else r for r in results]
     except Exception as e:
-        logger.error(f"batch_validate_hs_codes failed: {e}", exc_info=True)
+        logger.error("batch_validate_hs_codes failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -324,7 +324,7 @@ async def calculate_tariff(
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e))
     except Exception as e:
-        logger.error(f"calculate_tariff failed: {e}", exc_info=True)
+        logger.error("calculate_tariff failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -346,7 +346,7 @@ async def calculate_customs_value(
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e))
     except Exception as e:
-        logger.error(f"calculate_customs_value failed: {e}", exc_info=True)
+        logger.error("calculate_customs_value failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -362,7 +362,7 @@ async def get_tariff_summary(declaration_id: str) -> Any:
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"get_tariff_summary failed: {e}", exc_info=True)
+        logger.error("get_tariff_summary failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -388,7 +388,7 @@ async def convert_currency(request: ConvertCurrencyRequest) -> Any:
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e))
     except Exception as e:
-        logger.error(f"convert_currency failed: {e}", exc_info=True)
+        logger.error("convert_currency failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -411,7 +411,7 @@ async def verify_origin(declaration_id: str, request: VerifyOriginRequest) -> An
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e))
     except Exception as e:
-        logger.error(f"verify_origin failed: {e}", exc_info=True)
+        logger.error("verify_origin failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -423,7 +423,7 @@ async def batch_verify_origins(declaration_id: str, origins: List[Dict[str, Any]
         results = await service.verify_origin_batch(origins)
         return [r.model_dump(mode="json") if hasattr(r, "model_dump") else r for r in results]
     except Exception as e:
-        logger.error(f"batch_verify_origins failed: {e}", exc_info=True)
+        logger.error("batch_verify_origins failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -452,7 +452,7 @@ async def run_compliance_check(
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e))
     except Exception as e:
-        logger.error(f"run_compliance_check failed: {e}", exc_info=True)
+        logger.error("run_compliance_check failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -468,7 +468,7 @@ async def get_compliance_report(declaration_id: str) -> Any:
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"get_compliance_report failed: {e}", exc_info=True)
+        logger.error("get_compliance_report failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -486,7 +486,7 @@ async def check_dds_reference(declaration_id: str, request: dict) -> Any:
         )
         return result if isinstance(result, dict) else result.model_dump(mode="json")
     except Exception as e:
-        logger.error(f"check_dds_reference failed: {e}", exc_info=True)
+        logger.error("check_dds_reference failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -504,7 +504,7 @@ async def generate_sad_form(declaration_id: str) -> Any:
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
-        logger.error(f"generate_sad_form failed: {e}", exc_info=True)
+        logger.error("generate_sad_form failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -527,7 +527,7 @@ async def submit_declaration(
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e))
     except Exception as e:
-        logger.error(f"submit_declaration failed: {e}", exc_info=True)
+        logger.error("submit_declaration failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -539,7 +539,7 @@ async def check_submission_status(declaration_id: str) -> Any:
         result = await service.check_submission_status(mrn="", system="ncts")
         return result if isinstance(result, dict) else result
     except Exception as e:
-        logger.error(f"check_submission_status failed: {e}", exc_info=True)
+        logger.error("check_submission_status failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -555,7 +555,7 @@ async def get_mrn_status(mrn: str) -> Any:
         result = await service.get_mrn_status(mrn=mrn)
         return result if isinstance(result, dict) else result
     except Exception as e:
-        logger.error(f"get_mrn_status failed: {e}", exc_info=True)
+        logger.error("get_mrn_status failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 
@@ -570,7 +570,7 @@ async def health_check() -> Any:
         service = get_service()
         return await service.health_check()
     except Exception as e:
-        logger.error(f"health_check failed: {e}", exc_info=True)
+        logger.error("health_check failed: %s", e, exc_info=True)
         return {"agent_id": "GL-EUDR-CDS-039", "status": "error", "error": str(e)[:200]}
 
 

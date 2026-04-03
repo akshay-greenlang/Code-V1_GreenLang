@@ -855,6 +855,6 @@ def compare_fluids(
                 "max_bulk_temp_f": props.max_bulk_temp_f,
             }
         except Exception as e:
-            logger.warning(f"Could not get properties for {fluid_type}: {e}")
+            logger.warning("Could not get properties for %s: %s", fluid_type, e)
 
     return comparison

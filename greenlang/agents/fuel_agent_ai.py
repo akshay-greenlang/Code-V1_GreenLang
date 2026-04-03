@@ -489,7 +489,7 @@ class FuelAgentAI(Agent[FuelInput, FuelOutput]):
             return result
 
         except Exception as e:
-            self.logger.error(f"Error in AI fuel calculation: {e}")
+            logger.error("Error in AI fuel calculation: %s", e)
             error_info: ErrorInfo = {
                 "type": "CalculationError",
                 "message": f"Failed to calculate fuel emissions: {str(e)}",
@@ -580,7 +580,7 @@ class FuelAgentAI(Agent[FuelInput, FuelOutput]):
             }
 
         except BudgetExceeded as e:
-            self.logger.error(f"Budget exceeded: {e}")
+            logger.error("Budget exceeded: %s", e)
             error_info: ErrorInfo = {
                 "type": "BudgetError",
                 "message": f"AI budget exceeded: {str(e)}",

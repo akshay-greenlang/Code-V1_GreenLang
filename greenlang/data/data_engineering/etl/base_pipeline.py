@@ -132,7 +132,7 @@ class PipelineCheckpoint:
         }
         with open(self.checkpoint_file, 'w') as f:
             json.dump(checkpoint, f, indent=2, default=str)
-        logger.debug(f"Checkpoint saved at stage {stage}")
+        logger.debug("Checkpoint saved at stage %s", stage)
 
     def load(self) -> Optional[Dict[str, Any]]:
         """Load checkpoint data."""
@@ -174,7 +174,7 @@ class BasePipeline(ABC, Generic[T]):
                 config.pipeline_name
             )
 
-        logger.info(f"Pipeline {config.pipeline_name} initialized with run_id={self.run_id}")
+        logger.info("Pipeline %s initialized with run_id=%s", config.pipeline_name, self.run_id)
 
     def _generate_run_id(self) -> str:
         """Generate unique run ID."""
@@ -202,16 +202,16 @@ class BasePipeline(ABC, Generic[T]):
             if self.checkpoint:
                 checkpoint_data = self.checkpoint.load()
                 if checkpoint_data:
-                    logger.info(f"Resuming from checkpoint: {checkpoint_data['stage']}")
+                    logger.info("Resuming from checkpoint: %s", checkpoint_data['stage'])
                     # Resume logic would go here
 
             # Stage 1: Extract
             self.current_stage = PipelineStage.EXTRACT
             result.stage = self.current_stage
-            logger.info(f"[{self.run_id}] Starting extraction")
+            logger.info("[%s] Starting extraction", self.run_id)
             raw_data = await self._extract_with_retry()
             self.metrics.records_extracted = len(raw_data)
-            logger.info(f"[{self.run_id}] Extracted {len(raw_data)} records")
+            logger.info("[%s] Extracted %s records", self.run_id, len(raw_data))
 
             if self.checkpoint:
                 self.checkpoint.save(self.current_stage, {"records_extracted": len(raw_data)})
@@ -220,7 +220,7 @@ class BasePipeline(ABC, Generic[T]):
             if self.config.enable_validation:
                 self.current_stage = PipelineStage.VALIDATE_SOURCE
                 result.stage = self.current_stage
-                logger.info(f"[{self.run_id}] Validating source data")
+                logger.info("[%s] Validating source data", self.run_id)
                 valid_data, invalid_data = await self.validate_source(raw_data)
                 self.metrics.records_valid = len(valid_data)
                 self.metrics.records_invalid = len(invalid_data)
@@ -234,17 +234,17 @@ class BasePipeline(ABC, Generic[T]):
                             f"{self.config.error_threshold_percent}%"
                         )
 
-                logger.info(f"[{self.run_id}] Validation: {len(valid_data)} valid, {len(invalid_data)} invalid")
+                logger.info("[%s] Validation: %s valid, %s invalid", self.run_id, len(valid_data), len(invalid_data))
             else:
                 valid_data = raw_data
 
             # Stage 3: Transform
             self.current_stage = PipelineStage.TRANSFORM
             result.stage = self.current_stage
-            logger.info(f"[{self.run_id}] Transforming data")
+            logger.info("[%s] Transforming data", self.run_id)
             transformed_data = await self.transform(valid_data)
             self.metrics.records_transformed = len(transformed_data)
-            logger.info(f"[{self.run_id}] Transformed {len(transformed_data)} records")
+            logger.info("[%s] Transformed %s records", self.run_id, len(transformed_data))
 
             if self.checkpoint:
                 self.checkpoint.save(self.current_stage, {"records_transformed": len(transformed_data)})
@@ -253,7 +253,7 @@ class BasePipeline(ABC, Generic[T]):
             if self.config.enable_validation:
                 self.current_stage = PipelineStage.VALIDATE_TARGET
                 result.stage = self.current_stage
-                logger.info(f"[{self.run_id}] Validating transformed data")
+                logger.info("[%s] Validating transformed data", self.run_id)
                 final_data, rejected_data = await self.validate_target(transformed_data)
                 self.metrics.records_skipped += len(rejected_data)
             else:
@@ -263,13 +263,13 @@ class BasePipeline(ABC, Generic[T]):
             if self.config.staging_table:
                 self.current_stage = PipelineStage.LOAD_STAGING
                 result.stage = self.current_stage
-                logger.info(f"[{self.run_id}] Loading to staging table")
+                logger.info("[%s] Loading to staging table", self.run_id)
                 await self.load_staging(final_data)
 
             # Stage 6: Load to production
             self.current_stage = PipelineStage.LOAD_PRODUCTION
             result.stage = self.current_stage
-            logger.info(f"[{self.run_id}] Loading to production table")
+            logger.info("[%s] Loading to production table", self.run_id)
             load_result = await self.load_production(final_data)
             self.metrics.records_loaded = load_result.get("inserted", 0)
             self.metrics.records_updated = load_result.get("updated", 0)
@@ -297,7 +297,7 @@ class BasePipeline(ABC, Generic[T]):
             result.status = "failed"
             result.errors.append(str(e))
             self.metrics.errors.append(str(e))
-            logger.error(f"[{self.run_id}] Pipeline failed: {e}")
+            logger.error("[%s] Pipeline failed: %s", self.run_id, e)
             raise
 
         finally:
@@ -472,7 +472,7 @@ class DeadLetterQueue:
         with open(filepath, 'w') as f:
             json.dump(dlq_entry, f, indent=2, default=str)
 
-        logger.warning(f"Record written to DLQ: {filepath}")
+        logger.warning("Record written to DLQ: %s", filepath)
 
     def read_all(self) -> List[Dict[str, Any]]:
         """Read all records from DLQ."""

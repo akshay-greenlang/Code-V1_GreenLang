@@ -98,7 +98,7 @@ class EUIED:
         self.installation_id = installation_id
         self.operator = operator
         self.assessments: List[BATAssessment] = []
-        logger.info(f"EUIED manager initialized for {installation_id}")
+        logger.info("EUIED manager initialized for %s", installation_id)
 
     def assess_bat_compliance(
         self,
@@ -119,7 +119,7 @@ class EUIED:
         Returns:
             BATAssessment result
         """
-        logger.info(f"Assessing BAT compliance for {self.installation_id}")
+        logger.info("Assessing BAT compliance for %s", self.installation_id)
 
         aels = self.BAT_AELS.get(activity, {})
         aels_met = {}

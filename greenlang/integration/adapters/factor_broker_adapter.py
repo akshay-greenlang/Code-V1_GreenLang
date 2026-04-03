@@ -75,7 +75,7 @@ class FactorBrokerAdapter:
                 self.ef_client = EmissionFactorClient(db_path=db_path)
                 logger.info("FactorBrokerAdapter initialized with new EmissionFactorClient")
             except DatabaseConnectionError as e:
-                logger.error(f"Failed to initialize EmissionFactorClient: {e}")
+                logger.error("Failed to initialize EmissionFactorClient: %s", e)
                 raise
         else:
             self.ef_client = ef_client
@@ -126,11 +126,11 @@ class FactorBrokerAdapter:
 
         except EmissionFactorNotFoundError:
             # Try fuzzy matching for backward compatibility
-            logger.warning(f"Factor not found: {factor_id}, attempting fuzzy match")
+            logger.warning("Factor not found: %s, attempting fuzzy match", factor_id)
             return self._fuzzy_match_factor(factor_id, unit, region)
 
         except UnitNotAvailableError as e:
-            logger.error(f"Unit not available: {e}")
+            logger.error("Unit not available: %s", e)
             raise
 
     def calculate(
@@ -227,7 +227,7 @@ class FactorBrokerAdapter:
             return factor.get_factor_for_unit(unit)
         except EmissionFactorNotFoundError:
             # Try fallback to national average
-            logger.warning(f"Grid factor not found for {region}, falling back to national average")
+            logger.warning("Grid factor not found for %s, falling back to national average", region)
             return self.get_grid_factor("US_NATIONAL", unit=unit, year=year)
 
     def get_fuel_factor(
@@ -327,7 +327,7 @@ class FactorBrokerAdapter:
 
         # Use first match (could enhance with better scoring)
         factor = factors[0]
-        logger.info(f"Fuzzy matched '{factor_id}' to '{factor.factor_id}'")
+        logger.info("Fuzzy matched '%s' to '%s'", factor_id, factor.factor_id)
 
         if unit:
             return factor.get_factor_for_unit(unit)

@@ -216,7 +216,7 @@ class RatingSystem:
         ).first()
 
         if not agent:
-            logger.error(f"Agent {agent_id} not found")
+            logger.error("Agent %s not found", agent_id)
             return
 
         distribution = self.calculate_agent_ratings(agent_id)
@@ -232,7 +232,7 @@ class RatingSystem:
         agent.rating_5_count = distribution.ratings.get(5, 0)
 
         self.session.commit()
-        logger.info(f"Updated ratings for agent {agent_id}: avg={distribution.average:.2f}, wilson={distribution.wilson:.2f}")
+        logger.info("Updated ratings for agent %s: avg=%.2f, wilson=%.2f", agent_id, distribution.average, distribution.wilson)
 
     def get_trending_agents(self, days: int = 7, limit: int = 10) -> List[MarketplaceAgent]:
         """
@@ -482,7 +482,7 @@ class ReviewModerator:
         rating_system = RatingSystem(self.session)
         rating_system.update_agent_ratings(agent_id)
 
-        logger.info(f"Review submitted by {user_id} for agent {agent_id}: {rating} stars")
+        logger.info("Review submitted by %s for agent %s: %s stars", user_id, agent_id, rating)
 
         return True, review, []
 
@@ -510,7 +510,7 @@ class ReviewModerator:
         ).first()
 
         if not review:
-            logger.error(f"Review {review_id} not found")
+            logger.error("Review %s not found", review_id)
             return False
 
         # Increment flag count
@@ -529,7 +529,7 @@ class ReviewModerator:
         # Auto-hide if too many flags
         if review.flagged_count >= 5:
             review.status = ReviewStatus.FLAGGED.value
-            logger.warning(f"Review {review_id} auto-flagged after {review.flagged_count} reports")
+            logger.warning("Review %s auto-flagged after %s reports", review_id, review.flagged_count)
 
         self.session.commit()
         return True
@@ -640,14 +640,14 @@ class ReviewModerator:
         ).first()
 
         if not review:
-            logger.error(f"Review {review_id} not found or author {author_id} not authorized")
+            logger.error("Review %s not found or author %s not authorized", review_id, author_id)
             return False
 
         review.author_response = response
         review.author_response_at = DeterministicClock.utcnow()
 
         self.session.commit()
-        logger.info(f"Author response added to review {review_id}")
+        logger.info("Author response added to review %s", review_id)
         return True
 
 

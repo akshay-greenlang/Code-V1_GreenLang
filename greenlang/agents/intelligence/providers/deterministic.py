@@ -579,7 +579,7 @@ class DeterministicProvider(LLMProvider):
                         "regulatory_references": rule.regulatory_refs,
                     })
             except Exception as e:
-                logger.debug(f"Rule {rule.id} evaluation error: {e}")
+                logger.debug("Rule %s evaluation error: %s", rule.id, e)
                 continue
 
         # Sort by priority

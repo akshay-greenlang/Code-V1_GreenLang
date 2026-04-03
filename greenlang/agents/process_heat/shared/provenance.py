@@ -234,7 +234,7 @@ class ProvenanceTracker:
         self._merkle_leaves: List[str] = []
         self._lock = threading.RLock()
 
-        logger.info(f"ProvenanceTracker initialized for agent {agent_id}")
+        logger.info("ProvenanceTracker initialized for agent %s", agent_id)
 
     # =========================================================================
     # PUBLIC METHODS
@@ -304,7 +304,7 @@ class ProvenanceTracker:
             self._records[record.record_id] = record
             self._merkle_leaves.append(record.provenance_hash)
 
-            logger.debug(f"Provenance recorded: {record.record_id[:8]}...")
+            logger.debug("Provenance recorded: %s...", record.record_id[)
 
             return record
 

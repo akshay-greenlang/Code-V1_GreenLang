@@ -1343,13 +1343,13 @@ async def record_event(
         )
 
     except ValueError as e:
-        logger.error(f"Validation error in record_event: {e}")
+        logger.error("Validation error in record_event: %s", e)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e),
         )
     except Exception as e:
-        logger.error(f"Error in record_event: {e}", exc_info=True)
+        logger.error("Error in record_event: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to record audit event",
@@ -1409,7 +1409,7 @@ async def record_events_batch(
         )
 
     except ValueError as e:
-        logger.error(f"Validation error in record_events_batch: {e}")
+        logger.error("Validation error in record_events_batch: %s", e)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e),
@@ -1484,7 +1484,7 @@ async def get_event(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error in get_event: {e}", exc_info=True)
+        logger.error("Error in get_event: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to retrieve audit event",
@@ -1588,7 +1588,7 @@ async def list_events(
         ]
 
     except Exception as e:
-        logger.error(f"Error in list_events: {e}", exc_info=True)
+        logger.error("Error in list_events: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to list audit events",
@@ -1646,7 +1646,7 @@ async def delete_event(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error in delete_event: {e}", exc_info=True)
+        logger.error("Error in delete_event: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to delete audit event",
@@ -1721,13 +1721,13 @@ async def verify_chain(
         )
 
     except ValueError as e:
-        logger.error(f"Validation error in verify_chain: {e}")
+        logger.error("Validation error in verify_chain: %s", e)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e),
         )
     except Exception as e:
-        logger.error(f"Error in verify_chain: {e}", exc_info=True)
+        logger.error("Error in verify_chain: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Hash chain verification failed",
@@ -1800,7 +1800,7 @@ async def get_chain(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error in get_chain: {e}", exc_info=True)
+        logger.error("Error in get_chain: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to retrieve hash chain",
@@ -1874,7 +1874,7 @@ async def create_lineage_node(
         )
 
     except ValueError as e:
-        logger.error(f"Validation error in create_lineage_node: {e}")
+        logger.error("Validation error in create_lineage_node: %s", e)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e),
@@ -1949,7 +1949,7 @@ async def create_lineage_edge(
         )
 
     except ValueError as e:
-        logger.error(f"Validation error in create_lineage_edge: {e}")
+        logger.error("Validation error in create_lineage_edge: %s", e)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e),
@@ -2160,7 +2160,7 @@ async def trace_lineage(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error in trace_lineage: {e}", exc_info=True)
+        logger.error("Error in trace_lineage: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Lineage trace failed",
@@ -2810,7 +2810,7 @@ async def detect_change(
         )
 
     except ValueError as e:
-        logger.error(f"Validation error in detect_change: {e}")
+        logger.error("Validation error in detect_change: %s", e)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e),
@@ -2891,7 +2891,7 @@ async def get_change(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error in get_change: {e}", exc_info=True)
+        logger.error("Error in get_change: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to retrieve change details",
@@ -3344,7 +3344,7 @@ async def health_check() -> HealthResponse:
         )
 
     except Exception as e:
-        logger.error(f"Error in health_check: {e}", exc_info=True)
+        logger.error("Error in health_check: %s", e, exc_info=True)
         return HealthResponse(
             status="unhealthy",
             agent_id="GL-MRV-X-042",

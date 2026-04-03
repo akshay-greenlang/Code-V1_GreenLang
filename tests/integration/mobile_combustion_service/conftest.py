@@ -22,24 +22,6 @@ from greenlang.agents.mrv.mobile_combustion.setup import MobileCombustionService
 
 
 # ---------------------------------------------------------------------------
-# Override parent conftest autouse fixtures that are not relevant to
-# mobile combustion tests and may cause import/patching errors.
-# ---------------------------------------------------------------------------
-
-
-@pytest.fixture(autouse=True)
-def mock_agents():
-    """Override parent mock_agents fixture (no-op for mobile combustion).
-
-    The parent ``tests/integration/conftest.py`` defines an autouse
-    ``mock_agents`` fixture that patches ``greenlang.agents.registry.get_agent``.
-    That fixture is irrelevant here and may fail if the module path does not
-    exist.  Defining the same fixture name in a child conftest overrides it.
-    """
-    yield {}
-
-
-# ---------------------------------------------------------------------------
 # Environment variable cleanup
 # ---------------------------------------------------------------------------
 

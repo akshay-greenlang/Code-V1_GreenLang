@@ -235,7 +235,7 @@ class CapabilityValidator:
             ),
         }
         self.violations.append(violation)
-        logger.warning(f"Capability violation: {capability.name} - {reason}")
+        logger.warning("Capability violation: %s - %s", capability.name, reason)
 
     def get_violations(self) -> List[Dict[str, Any]]:
         """Get all recorded violations"""

@@ -499,7 +499,7 @@ class SoilCarbonMRVAgent(DeterministicAgent):
     def __init__(self, enable_audit_trail: bool = True):
         """Initialize Soil Carbon MRV Agent."""
         super().__init__(enable_audit_trail=enable_audit_trail)
-        logger.info(f"Initialized {self.AGENT_NAME} v{self.VERSION}")
+        logger.info("Initialized %s v%s", self.AGENT_NAME, self.VERSION)
 
     def execute(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
         """Execute soil carbon calculation."""
@@ -611,7 +611,7 @@ class SoilCarbonMRVAgent(DeterministicAgent):
             return output.model_dump()
 
         except Exception as e:
-            logger.error(f"Soil carbon calculation failed: {str(e)}", exc_info=True)
+            logger.error("Soil carbon calculation failed: %s", e, exc_info=True)
             raise
 
     def _determine_tier(

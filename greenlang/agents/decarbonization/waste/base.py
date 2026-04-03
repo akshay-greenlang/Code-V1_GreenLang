@@ -342,7 +342,7 @@ class BaseWasteDecarbAgent(ABC, Generic[InputT, OutputT]):
         self.logger = logging.getLogger(self.__class__.__name__)
         self._reduction_potentials = REDUCTION_POTENTIALS
         self._abatement_costs = ABATEMENT_COSTS
-        self.logger.info(f"Initialized {self.AGENT_ID} v{self.AGENT_VERSION}")
+        logger.info("Initialized %s v%s", self.AGENT_ID, self.AGENT_VERSION)
 
     @abstractmethod
     def plan(self, input_data: InputT) -> OutputT:

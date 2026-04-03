@@ -701,7 +701,7 @@ class DeforestationAlertSystemSetup:
                 )
 
             except Exception as e:
-                logger.error(f"Startup failed: {e}", exc_info=True)
+                logger.error("Startup failed: %s", e, exc_info=True)
                 record_api_error("startup", str(e))
                 raise RuntimeError(f"Service startup failed: {e}") from e
 
@@ -731,7 +731,7 @@ class DeforestationAlertSystemSetup:
                         await self._redis_client.close()
                         logger.debug("Redis client closed")
                     except Exception as e:
-                        logger.warning(f"Error closing Redis client: {e}")
+                        logger.warning("Error closing Redis client: %s", e)
 
                 # 3. Close database pool
                 if self._db_pool is not None:
@@ -739,7 +739,7 @@ class DeforestationAlertSystemSetup:
                         await self._db_pool.close()
                         logger.debug("PostgreSQL pool closed")
                     except Exception as e:
-                        logger.warning(f"Error closing PostgreSQL pool: {e}")
+                        logger.warning("Error closing PostgreSQL pool: %s", e)
 
                 # 4. Mark as shutdown
                 self._started = False
@@ -749,7 +749,7 @@ class DeforestationAlertSystemSetup:
                 )
 
             except Exception as e:
-                logger.error(f"Shutdown error: {e}", exc_info=True)
+                logger.error("Shutdown error: %s", e, exc_info=True)
 
     async def initialize(self) -> Dict[str, Any]:
         """
@@ -797,10 +797,10 @@ class DeforestationAlertSystemSetup:
             try:
                 await init_method()
                 init_results["engines"][engine_name] = "initialized"
-                logger.info(f"Engine {engine_name} initialized successfully")
+                logger.info("Engine %s initialized successfully", engine_name)
             except Exception as e:
                 init_results["engines"][engine_name] = f"failed: {str(e)}"
-                logger.warning(f"Engine {engine_name} initialization failed: {e}")
+                logger.warning("Engine %s initialization failed: %s", engine_name, e)
 
         # Load and validate reference data
         try:
@@ -816,7 +816,7 @@ class DeforestationAlertSystemSetup:
             init_results["reference_data"] = validation
         except ImportError as e:
             init_results["reference_data"]["status"] = f"partial: {str(e)}"
-            logger.warning(f"Reference data import failed: {e}")
+            logger.warning("Reference data import failed: %s", e)
 
         # Verify data integrity
         integrity_errors = self._validate_data_integrity()
@@ -919,19 +919,19 @@ class DeforestationAlertSystemSetup:
             # Validate each database loads correctly
             sat_db = SatelliteSourceDatabase()
             sat_count = sat_db.get_source_count()
-            logger.info(f"Satellite sources loaded: {sat_count} sources")
+            logger.info("Satellite sources loaded: %s sources", sat_count)
 
             hotspot_db = DeforestationHotspotsDatabase()
             hotspot_count = hotspot_db.get_hotspot_count()
-            logger.info(f"Deforestation hotspots loaded: {hotspot_count} regions")
+            logger.info("Deforestation hotspots loaded: %s regions", hotspot_count)
 
             protected_db = ProtectedAreasDatabase()
             protected_count = protected_db.get_area_count()
-            logger.info(f"Protected areas loaded: {protected_count} areas")
+            logger.info("Protected areas loaded: %s areas", protected_count)
 
             forest_db = CountryForestDatabase()
             forest_count = forest_db.get_country_count()
-            logger.info(f"Country forest data loaded: {forest_count} countries")
+            logger.info("Country forest data loaded: %s countries", forest_count)
 
             self._reference_data_loaded = True
             duration_ms = (time.monotonic() - start_time) * 1000
@@ -945,7 +945,7 @@ class DeforestationAlertSystemSetup:
                 f"Reference data partially loaded (import error): {e}"
             )
         except Exception as e:
-            logger.warning(f"Reference data loading failed: {e}")
+            logger.warning("Reference data loading failed: %s", e)
 
     def _initialize_engines(self) -> Dict[str, str]:
         """Create all 8 engine instances synchronously (for diagnostics).
@@ -1019,7 +1019,7 @@ class DeforestationAlertSystemSetup:
             set_detection_backlog(0)
             logger.info("Prometheus metrics registered")
         except Exception as e:
-            logger.warning(f"Metrics registration failed: {e}")
+            logger.warning("Metrics registration failed: %s", e)
 
     async def _shutdown_engines(self) -> None:
         """Shutdown all initialized engines gracefully."""
@@ -1039,9 +1039,9 @@ class DeforestationAlertSystemSetup:
                 try:
                     if hasattr(engine, "shutdown"):
                         await engine.shutdown()
-                    logger.debug(f"{engine_name} shutdown complete")
+                    logger.debug("%s shutdown complete", engine_name)
                 except Exception as e:
-                    logger.warning(f"Error shutting down {engine_name}: {e}")
+                    logger.warning("Error shutting down %s: %s", engine_name, e)
 
     # -----------------------------------------------------------------------
     # Engine lazy initialization
@@ -1305,7 +1305,7 @@ class DeforestationAlertSystemSetup:
         except Exception as e:
             self._stats["errors"] += 1
             record_api_error("detect_changes", str(e))
-            logger.error(f"detect_changes failed: {e}", exc_info=True)
+            logger.error("detect_changes failed: %s", e, exc_info=True)
             raise
 
     async def generate_alerts(
@@ -1329,7 +1329,7 @@ class DeforestationAlertSystemSetup:
         """
         start_time = time.monotonic()
         detection_count = len(detections) if detections else 0
-        logger.info(f"Generating alerts from {detection_count} detections")
+        logger.info("Generating alerts from %s detections", detection_count)
 
         try:
             engine = await self._ensure_alert_generator()
@@ -1367,7 +1367,7 @@ class DeforestationAlertSystemSetup:
         except Exception as e:
             self._stats["errors"] += 1
             record_api_error("generate_alerts", str(e))
-            logger.error(f"generate_alerts failed: {e}", exc_info=True)
+            logger.error("generate_alerts failed: %s", e, exc_info=True)
             raise
 
     async def classify_severity(
@@ -1390,7 +1390,7 @@ class DeforestationAlertSystemSetup:
             RuntimeError: If SeverityClassifier is not available.
         """
         start_time = time.monotonic()
-        logger.info(f"Classifying severity for alert {alert_id}")
+        logger.info("Classifying severity for alert %s", alert_id)
 
         try:
             engine = await self._ensure_severity_classifier()
@@ -1428,7 +1428,7 @@ class DeforestationAlertSystemSetup:
         except Exception as e:
             self._stats["errors"] += 1
             record_api_error("classify_severity", str(e))
-            logger.error(f"classify_severity failed: {e}", exc_info=True)
+            logger.error("classify_severity failed: %s", e, exc_info=True)
             raise
 
     async def check_buffer(
@@ -1507,7 +1507,7 @@ class DeforestationAlertSystemSetup:
         except Exception as e:
             self._stats["errors"] += 1
             record_api_error("check_buffer", str(e))
-            logger.error(f"check_buffer failed: {e}", exc_info=True)
+            logger.error("check_buffer failed: %s", e, exc_info=True)
             raise
 
     async def verify_cutoff_date(
@@ -1530,7 +1530,7 @@ class DeforestationAlertSystemSetup:
             RuntimeError: If CutoffDateVerifier is not available.
         """
         start_time = time.monotonic()
-        logger.info(f"Verifying cutoff date for detection: {detection_date}")
+        logger.info("Verifying cutoff date for detection: %s", detection_date)
 
         try:
             engine = await self._ensure_cutoff_date_verifier()
@@ -1567,7 +1567,7 @@ class DeforestationAlertSystemSetup:
         except Exception as e:
             self._stats["errors"] += 1
             record_api_error("verify_cutoff_date", str(e))
-            logger.error(f"verify_cutoff_date failed: {e}", exc_info=True)
+            logger.error("verify_cutoff_date failed: %s", e, exc_info=True)
             raise
 
     async def compare_baseline(
@@ -1635,7 +1635,7 @@ class DeforestationAlertSystemSetup:
         except Exception as e:
             self._stats["errors"] += 1
             record_api_error("compare_baseline", str(e))
-            logger.error(f"compare_baseline failed: {e}", exc_info=True)
+            logger.error("compare_baseline failed: %s", e, exc_info=True)
             raise
 
     async def transition_workflow(
@@ -1660,7 +1660,7 @@ class DeforestationAlertSystemSetup:
             RuntimeError: If AlertWorkflowEngine is not available.
         """
         start_time = time.monotonic()
-        logger.info(f"Transitioning workflow: alert={alert_id}, action={action}")
+        logger.info("Transitioning workflow: alert=%s, action=%s", alert_id, action)
 
         try:
             engine = await self._ensure_alert_workflow_engine()
@@ -1698,7 +1698,7 @@ class DeforestationAlertSystemSetup:
         except Exception as e:
             self._stats["errors"] += 1
             record_api_error("transition_workflow", str(e))
-            logger.error(f"transition_workflow failed: {e}", exc_info=True)
+            logger.error("transition_workflow failed: %s", e, exc_info=True)
             raise
 
     async def assess_compliance_impact(
@@ -1724,7 +1724,7 @@ class DeforestationAlertSystemSetup:
             RuntimeError: If ComplianceImpactAssessor is not available.
         """
         start_time = time.monotonic()
-        logger.info(f"Assessing compliance impact for alert {alert_id}")
+        logger.info("Assessing compliance impact for alert %s", alert_id)
 
         try:
             engine = await self._ensure_compliance_impact_assessor()
@@ -1834,7 +1834,7 @@ class DeforestationAlertSystemSetup:
                     provenance_chain.append(detections["provenance_hash"])
             except Exception as e:
                 results["satellite_detections"] = {"error": str(e)}
-                logger.warning(f"Satellite detection failed: {e}")
+                logger.warning("Satellite detection failed: %s", e)
 
             # 2. Alert Generation (always included)
             try:
@@ -1851,7 +1851,7 @@ class DeforestationAlertSystemSetup:
                     provenance_chain.append(alerts["provenance_hash"])
             except Exception as e:
                 results["generated_alerts"] = {"error": str(e)}
-                logger.warning(f"Alert generation failed: {e}")
+                logger.warning("Alert generation failed: %s", e)
 
             # 3. Cutoff Date Verification (always included)
             try:
@@ -1866,7 +1866,7 @@ class DeforestationAlertSystemSetup:
                     provenance_chain.append(cutoff["provenance_hash"])
             except Exception as e:
                 results["cutoff_verification"] = {"error": str(e)}
-                logger.warning(f"Cutoff verification failed: {e}")
+                logger.warning("Cutoff verification failed: %s", e)
 
             # 4. Compliance Impact Assessment (always included)
             try:
@@ -1878,7 +1878,7 @@ class DeforestationAlertSystemSetup:
                     provenance_chain.append(compliance["provenance_hash"])
             except Exception as e:
                 results["compliance_impact"] = {"error": str(e)}
-                logger.warning(f"Compliance impact assessment failed: {e}")
+                logger.warning("Compliance impact assessment failed: %s", e)
 
             # Calculate comprehensive provenance
             comprehensive_provenance = _calculate_sha256({
@@ -1976,7 +1976,7 @@ class DeforestationAlertSystemSetup:
                     await conn.execute("SELECT 1")
                 db_healthy = True
             except Exception as e:
-                logger.warning(f"Database health check failed: {e}")
+                logger.warning("Database health check failed: %s", e)
                 overall_healthy = False
 
         # Check Redis connection
@@ -1986,7 +1986,7 @@ class DeforestationAlertSystemSetup:
                 await self._redis_client.ping()
                 redis_healthy = True
             except Exception as e:
-                logger.warning(f"Redis health check failed: {e}")
+                logger.warning("Redis health check failed: %s", e)
 
         # Check reference data
         ref_data_healthy = True
@@ -1998,7 +1998,7 @@ class DeforestationAlertSystemSetup:
             ref_data_healthy = validation.get("overall_status") == "valid"
         except Exception as e:
             ref_data_healthy = False
-            logger.warning(f"Reference data validation failed: {e}")
+            logger.warning("Reference data validation failed: %s", e)
 
         # Calculate uptime
         uptime_seconds = 0.0

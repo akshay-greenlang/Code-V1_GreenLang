@@ -387,7 +387,7 @@ class MatchingModel:
                     else:
                         patience_counter += 1
                         if patience_counter >= self.training_config.early_stopping_patience:
-                            logger.info(f"Early stopping at epoch {epoch + 1}")
+                            logger.info("Early stopping at epoch %s", epoch + 1)
                             break
                 else:
                     logger.info(
@@ -579,7 +579,7 @@ class MatchingModel:
             }
 
             torch.save(checkpoint, path)
-            logger.info(f"Saved model checkpoint to {path}")
+            logger.info("Saved model checkpoint to %s", path)
 
         except Exception as e:
             raise MatchingException(
@@ -608,7 +608,7 @@ class MatchingModel:
             self.model.load_state_dict(checkpoint["model_state_dict"])
             self.is_trained = checkpoint["is_trained"]
 
-            logger.info(f"Loaded model checkpoint from {path}")
+            logger.info("Loaded model checkpoint from %s", path)
 
         except Exception as e:
             raise MatchingException(

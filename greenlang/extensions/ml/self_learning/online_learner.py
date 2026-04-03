@@ -265,7 +265,7 @@ class OnlineLearner:
             self._drift_detector = drift.ADWIN()
 
         self._initialized = True
-        logger.info(f"Model initialized: {type(self.model).__name__}")
+        logger.info("Model initialized: %s", type(self.model).__name__)
 
     def _calculate_provenance(
         self,

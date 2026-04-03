@@ -262,7 +262,7 @@ class BaseAgent(ABC):
             processed_input = self.preprocess(input_data)
 
             # Execute
-            self.logger.info(f"Executing {self.config.name}")
+            logger.info("Executing %s", self.config.name)
             result = self.execute(processed_input)
 
             # Postprocess
@@ -287,7 +287,7 @@ class BaseAgent(ABC):
             return result
 
         except Exception as e:
-            self.logger.error(f"Agent execution failed: {str(e)}", exc_info=True)
+            logger.error("Agent execution failed: %s", e, exc_info=True)
             duration_ms = (time.time() - start_time) * 1000
             self.stats.record_execution(False, duration_ms)
 
@@ -303,7 +303,7 @@ class BaseAgent(ABC):
             try:
                 self.cleanup()
             except Exception as e:
-                self.logger.warning(f"Cleanup failed: {str(e)}")
+                logger.warning("Cleanup failed: %s", e)
 
     def get_stats(self) -> Dict[str, Any]:
         """Get execution statistics."""

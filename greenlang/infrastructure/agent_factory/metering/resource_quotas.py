@@ -85,7 +85,10 @@ class QuotaCheckResult:
 # ---------------------------------------------------------------------------
 
 
-class QuotaExceededError(Exception):
+from greenlang.utilities.exceptions.infrastructure import InfrastructureException as _InfrastructureException
+
+
+class QuotaExceededError(_InfrastructureException):
     """Raised when an execution quota is exceeded.
 
     Attributes:

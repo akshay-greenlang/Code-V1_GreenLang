@@ -308,7 +308,7 @@ class GLIPOrchestrator(GreenLangOrchestrator):
         # Concurrency control tracking
         self._concurrency_slots: Dict[str, Dict[str, Any]] = {}
 
-        logger.info(f"Initialized GLIPOrchestrator v{self.VERSION}")
+        logger.info("Initialized GLIPOrchestrator v%s", self.VERSION)
 
     async def initialize(self):
         """Initialize all backends and stores."""
@@ -326,7 +326,7 @@ class GLIPOrchestrator(GreenLangOrchestrator):
             await self._k8s_executor.initialize()
             logger.info("K8s executor initialized")
         except Exception as e:
-            logger.warning(f"K8s executor initialization failed: {e}")
+            logger.warning("K8s executor initialization failed: %s", e)
 
         # Initialize S3 artifact store
         try:
@@ -339,7 +339,7 @@ class GLIPOrchestrator(GreenLangOrchestrator):
             await self._artifact_store.initialize()
             logger.info("S3 artifact store initialized")
         except Exception as e:
-            logger.warning(f"S3 artifact store initialization failed: {e}")
+            logger.warning("S3 artifact store initialization failed: %s", e)
 
         # Initialize policy engine
         if self.glip_config.opa_url or self.glip_config.policy_bundle_path:
@@ -352,7 +352,7 @@ class GLIPOrchestrator(GreenLangOrchestrator):
                 await self._policy_engine.initialize()
                 logger.info("Policy engine initialized")
             except Exception as e:
-                logger.warning(f"Policy engine initialization failed: {e}")
+                logger.warning("Policy engine initialization failed: %s", e)
 
         # Initialize audit store
         if self.glip_config.audit_db_url:
@@ -364,7 +364,7 @@ class GLIPOrchestrator(GreenLangOrchestrator):
                 await self._audit_store.initialize()
                 logger.info("Audit event store initialized")
             except Exception as e:
-                logger.warning(f"Audit store initialization failed: {e}")
+                logger.warning("Audit store initialization failed: %s", e)
 
         logger.info("GLIP v1 backends initialized")
 
@@ -415,7 +415,7 @@ class GLIPOrchestrator(GreenLangOrchestrator):
         run_id = str(uuid.uuid4())
         started_at = DeterministicClock.now()
 
-        logger.info(f"Starting GLIP v1 pipeline run: {run_id}")
+        logger.info("Starting GLIP v1 pipeline run: %s", run_id)
 
         # Emit run submitted event
         await self._emit_audit_event(
@@ -517,7 +517,7 @@ class GLIPOrchestrator(GreenLangOrchestrator):
             return result
 
         except Exception as e:
-            logger.error(f"GLIP pipeline execution failed: {e}", exc_info=True)
+            logger.error("GLIP pipeline execution failed: %s", e, exc_info=True)
 
             await self._emit_audit_event(
                 run_id=run_id,
@@ -751,7 +751,7 @@ class GLIPOrchestrator(GreenLangOrchestrator):
         step_id = step["step_id"]
         exec_mode = GLIPExecutionMode(step["execution_mode"])
 
-        logger.info(f"Executing step {step_id} via {exec_mode.value}")
+        logger.info("Executing step %s via %s", step_id, exec_mode.value)
 
         # Emit step started event
         await self._emit_audit_event(
@@ -829,7 +829,7 @@ class GLIPOrchestrator(GreenLangOrchestrator):
                 )
 
         except Exception as e:
-            logger.error(f"Step execution failed: {e}", exc_info=True)
+            logger.error("Step execution failed: %s", e, exc_info=True)
             node.status = AgentStatus.FAILED
             node.result = AgentResult(success=False, error=str(e))
 
@@ -987,9 +987,9 @@ class GLIPOrchestrator(GreenLangOrchestrator):
                     payload=payload,
                 )
             except Exception as e:
-                logger.warning(f"Failed to emit audit event: {e}")
+                logger.warning("Failed to emit audit event: %s", e)
         else:
-            logger.debug(f"Audit event (no store): {event_type.value} - {payload}")
+            logger.debug("Audit event (no store): %s - %s", event_type.value, payload)
 
     def get_run_status(self, run_id: str) -> Optional[Dict[str, Any]]:
         """Get status of an active GLIP run."""
@@ -1073,7 +1073,7 @@ class GLIPOrchestrator(GreenLangOrchestrator):
         if run_config.approval_callback_url:
             await self._send_approval_callback(request, run_config.approval_callback_url)
 
-        logger.info(f"Approval requested: {request_id} for step {step_id}")
+        logger.info("Approval requested: %s for step %s", request_id, step_id)
 
         return request
 
@@ -1131,7 +1131,7 @@ class GLIPOrchestrator(GreenLangOrchestrator):
             }
         )
 
-        logger.info(f"Approval processed: {request_id} = {request.status.value}")
+        logger.info("Approval processed: %s = %s", request_id, request.status.value)
 
         return request
 
@@ -1182,7 +1182,7 @@ class GLIPOrchestrator(GreenLangOrchestrator):
                     timeout=10.0,
                 )
         except Exception as e:
-            logger.warning(f"Failed to send approval callback: {e}")
+            logger.warning("Failed to send approval callback: %s", e)
 
     # =========================================================================
     # DYNAMIC FAN-OUT (P1 Feature)
@@ -1226,7 +1226,7 @@ class GLIPOrchestrator(GreenLangOrchestrator):
                 error=f"Fan-out exceeds limit: {len(source_data)} > {run_config.max_fan_out_items}"
             )
 
-        logger.info(f"Fan-out: {len(source_data)} items for step {step['step_id']}")
+        logger.info("Fan-out: %s items for step %s", len(source_data), step['step_id'])
 
         # Create tasks for each item
         results = []
@@ -1335,7 +1335,7 @@ class GLIPOrchestrator(GreenLangOrchestrator):
         """
         # Check global concurrent runs
         if len(self._active_runs) >= concurrency_config.max_concurrent_runs:
-            logger.warning(f"At max concurrent runs: {concurrency_config.max_concurrent_runs}")
+            logger.warning("At max concurrent runs: %s", concurrency_config.max_concurrent_runs)
             return False
 
         # Check per-agent limit
@@ -1349,7 +1349,7 @@ class GLIPOrchestrator(GreenLangOrchestrator):
                 )
             )
             if current_agent_runs >= agent_limit:
-                logger.warning(f"Agent {agent_id} at concurrency limit: {agent_limit}")
+                logger.warning("Agent %s at concurrency limit: %s", agent_id, agent_limit)
                 return False
 
         # Fair scheduling: check tenant quota
@@ -1365,7 +1365,7 @@ class GLIPOrchestrator(GreenLangOrchestrator):
             ))
             fair_share = max(1, concurrency_config.max_concurrent_runs // max(1, active_tenants + 1))
             if tenant_runs >= fair_share * 2:  # Allow some burst
-                logger.warning(f"Tenant {tenant_id} exceeds fair share: {tenant_runs} >= {fair_share * 2}")
+                logger.warning("Tenant %s exceeds fair share: %s >= %s", tenant_id, tenant_runs, fair_share * 2)
                 return False
 
         # Track slot
@@ -1382,7 +1382,7 @@ class GLIPOrchestrator(GreenLangOrchestrator):
         """Release a concurrency slot."""
         if run_id in self._concurrency_slots:
             del self._concurrency_slots[run_id]
-            logger.debug(f"Released concurrency slot for run {run_id}")
+            logger.debug("Released concurrency slot for run %s", run_id)
 
     async def wait_for_concurrency_slot(
         self,
@@ -1413,7 +1413,7 @@ class GLIPOrchestrator(GreenLangOrchestrator):
                 return True
             await asyncio.sleep(poll_interval_seconds)
 
-        logger.warning(f"Concurrency slot timeout for run {run_id}")
+        logger.warning("Concurrency slot timeout for run %s", run_id)
         return False
 
     def get_concurrency_stats(self) -> Dict[str, Any]:

@@ -250,7 +250,7 @@ class SAPAribaConnector:
         self._access_token: Optional[str] = None
         self._token_expiry: Optional[datetime] = None
 
-        logger.info(f"SAPAribaConnector initialized for realm: {realm}")
+        logger.info("SAPAribaConnector initialized for realm: %s", realm)
 
     def _get_access_token(self) -> str:
         """
@@ -316,7 +316,7 @@ class SAPAribaConnector:
         if self.api_key:
             headers["APIKey"] = self.api_key
 
-        logger.debug(f"Making {method} request to {url}")
+        logger.debug("Making %s request to %s", method, url)
 
         # In production, this would use requests/httpx
         # Returning placeholder structure
@@ -590,7 +590,7 @@ class SAPAribaConnector:
             supply_chain_graph.add_supplier(supplier)
             count += 1
 
-        logger.info(f"Synced {count} suppliers from SAP Ariba")
+        logger.info("Synced %s suppliers from SAP Ariba", count)
         return count
 
     def export_for_scope3(

@@ -74,6 +74,7 @@ from greenlang.agents.eudr.qr_code_generator.models import (
 from greenlang.agents.eudr.qr_code_generator.provenance import (
     get_provenance_tracker,
 )
+from greenlang.utilities.exceptions.compliance import ComplianceException
 
 logger = logging.getLogger(__name__)
 
@@ -83,7 +84,7 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 
-class BatchCodeError(Exception):
+class BatchCodeError(ComplianceException):
     """Base exception for batch code generation operations."""
 
 

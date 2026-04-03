@@ -217,7 +217,7 @@ class DeadLetterQueueHandler:
                     )
                     logger.info("Redis connected for DLQ retry tracking")
                 except Exception as e:
-                    logger.warning(f"Redis connection failed: {e}, using local storage")
+                    logger.warning("Redis connection failed: %s, using local storage", e)
                     self.redis_client = None
 
             # Initialize Kafka producer
@@ -231,7 +231,7 @@ class DeadLetterQueueHandler:
                     await self.kafka_producer.start()
                     logger.info("Kafka producer started for DLQ topics")
                 except Exception as e:
-                    logger.warning(f"Kafka producer failed: {e}, using local storage")
+                    logger.warning("Kafka producer failed: %s, using local storage", e)
                     self.kafka_producer = None
 
             # Start background tasks
@@ -245,7 +245,7 @@ class DeadLetterQueueHandler:
             logger.info("DLQ handler started successfully")
 
         except Exception as e:
-            logger.error(f"Failed to start DLQ handler: {e}", exc_info=True)
+            logger.error("Failed to start DLQ handler: %s", e, exc_info=True)
             raise
 
     async def stop(self) -> None:
@@ -305,7 +305,7 @@ class DeadLetterQueueHandler:
                 expire=86400 * 30  # 30 days
             )
 
-        logger.info(f"DLQ configured for {queue_name}: max_retries={max_retries}")
+        logger.info("DLQ configured for %s: max_retries=%s", queue_name, max_retries)
 
     async def send_to_dlq(
         self,
@@ -359,9 +359,9 @@ class DeadLetterQueueHandler:
                     dlq_msg.json().encode('utf-8'),
                     key=dlq_msg.message_id.encode('utf-8')
                 )
-                logger.info(f"Message sent to Kafka DLQ: {dlq_topic}")
+                logger.info("Message sent to Kafka DLQ: %s", dlq_topic)
             except Exception as e:
-                logger.error(f"Failed to send to Kafka DLQ: {e}")
+                logger.error("Failed to send to Kafka DLQ: %s", e)
 
         # Store in Redis for tracking
         if self.redis_client:
@@ -371,7 +371,7 @@ class DeadLetterQueueHandler:
                 dlq_msg.json(),
                 expire=86400 * self.config.retention_days
             )
-            logger.info(f"Message stored in Redis: {dlq_msg.message_id}")
+            logger.info("Message stored in Redis: %s", dlq_msg.message_id)
 
         # Store in local memory
         self._local_storage[dlq_msg.message_id] = dlq_msg
@@ -391,7 +391,7 @@ class DeadLetterQueueHandler:
         if self._stats.total_pending >= self.config.dlq_depth_threshold:
             await self._trigger_alert(dlq_msg)
 
-        logger.info(f"Message sent to DLQ: {dlq_msg.message_id}")
+        logger.info("Message sent to DLQ: %s", dlq_msg.message_id)
         return dlq_msg.message_id
 
     async def process_dlq(
@@ -439,21 +439,21 @@ class DeadLetterQueueHandler:
                     msg.resolved_at = datetime.utcnow()
                     self._stats.total_resolved += 1
                     processed += 1
-                    logger.info(f"DLQ message resolved: {msg.message_id}")
+                    logger.info("DLQ message resolved: %s", msg.message_id)
                 else:
                     # Update retry count and next retry time
                     msg.retry_count += 1
                     if msg.retry_count >= msg.max_retries:
                         msg.status = DLQMessageStatus.ESCALATED
                         self._stats.total_escalated += 1
-                        logger.warning(f"Message escalated (max retries): {msg.message_id}")
+                        logger.warning("Message escalated (max retries): %s", msg.message_id)
                     else:
                         msg.next_retry_at = msg.calculate_next_retry(
                             self.config.initial_backoff_seconds,
                             self.config.backoff_multiplier,
                             self.config.max_backoff_seconds
                         )
-                        logger.info(f"Message requeued: {msg.message_id}")
+                        logger.info("Message requeued: %s", msg.message_id)
 
                 # Update in Redis if available
                 if self.redis_client:
@@ -465,7 +465,7 @@ class DeadLetterQueueHandler:
                     )
 
             except Exception as e:
-                logger.error(f"Error processing DLQ message {msg.message_id}: {e}")
+                logger.error("Error processing DLQ message %s: %s", msg.message_id, e)
 
         return processed
 
@@ -546,7 +546,7 @@ class DeadLetterQueueHandler:
                 msg_key = f"{self.config.redis_key_prefix}{msg_id}"
                 await self.redis_client.delete(msg_key)
 
-        logger.info(f"Purged {purged_count} old DLQ messages")
+        logger.info("Purged %s old DLQ messages", purged_count)
         return purged_count
 
     def register_handler(
@@ -562,7 +562,7 @@ class DeadLetterQueueHandler:
             handler: Handler function
         """
         self._retry_handlers[queue_name] = handler
-        logger.info(f"Handler registered for queue: {queue_name}")
+        logger.info("Handler registered for queue: %s", queue_name)
 
     def add_alert_callback(self, callback: Callable[[DLQStats], None]) -> None:
         """
@@ -587,7 +587,7 @@ class DeadLetterQueueHandler:
             else:
                 return handler(msg)
         except Exception as e:
-            logger.error(f"Handler failed: {e}")
+            logger.error("Handler failed: %s", e)
             return False
 
     async def _retry_loop(self) -> None:
@@ -604,7 +604,7 @@ class DeadLetterQueueHandler:
             except asyncio.CancelledError:
                 break
             except Exception as e:
-                logger.error(f"Retry loop error: {e}")
+                logger.error("Retry loop error: %s", e)
 
     async def _cleanup_loop(self) -> None:
         """Background loop for cleanup."""
@@ -616,7 +616,7 @@ class DeadLetterQueueHandler:
             except asyncio.CancelledError:
                 break
             except Exception as e:
-                logger.error(f"Cleanup loop error: {e}")
+                logger.error("Cleanup loop error: %s", e)
 
     async def _metrics_loop(self) -> None:
         """Background loop for metrics collection."""
@@ -626,13 +626,13 @@ class DeadLetterQueueHandler:
                 stats = await self.get_dlq_stats()
 
                 # Prometheus metrics would be published here
-                logger.debug(f"DLQ metrics - pending: {stats.total_pending}, "
-                           f"escalated: {stats.total_escalated}")
+                logger.debug("DLQ metrics - pending: %s, escalated: %s",
+                           stats.total_pending, stats.total_escalated)
 
             except asyncio.CancelledError:
                 break
             except Exception as e:
-                logger.error(f"Metrics loop error: {e}")
+                logger.error("Metrics loop error: %s", e)
 
     async def _trigger_alert(self, msg: DLQMessage) -> None:
         """Trigger alert callbacks."""
@@ -645,7 +645,7 @@ class DeadLetterQueueHandler:
                 else:
                     callback(stats)
             except Exception as e:
-                logger.error(f"Alert callback failed: {e}")
+                logger.error("Alert callback failed: %s", e)
 
     def _ensure_started(self) -> None:
         """Ensure handler is started."""

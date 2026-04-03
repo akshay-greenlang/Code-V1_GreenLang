@@ -331,7 +331,7 @@ class ThermalStorageOptimizer:
             ThermalStorageResult with dispatch schedules
         """
         start_time = datetime.now(timezone.utc)
-        logger.info(f"Optimizing storage dispatch for {horizon_hours}h horizon")
+        logger.info("Optimizing storage dispatch for %sh horizon", horizon_hours)
 
         unit_schedules: List[StorageDispatchSchedule] = []
 

@@ -542,7 +542,7 @@ class QueryOptimizer:
                 return QueryPlan.from_explain(query_text, plan_json)
 
         except Exception as e:
-            logger.error(f"Error analyzing query: {e}")
+            logger.error("Error analyzing query: %s", e)
 
         return None
 

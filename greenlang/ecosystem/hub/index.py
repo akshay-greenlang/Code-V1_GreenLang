@@ -123,12 +123,12 @@ class HubIndex:
                     return self._index_data
 
             except (json.JSONDecodeError, ValueError, KeyError) as e:
-                logger.warning(f"Invalid cache file, will refresh: {e}")
+                logger.warning("Invalid cache file, will refresh: %s", e)
 
         # Fetch from remote
         for url in self.index_urls:
             try:
-                logger.info(f"Fetching index from {url}")
+                logger.info("Fetching index from %s", url)
                 from greenlang.governance.security.network import (
                     create_secure_session,
                     validate_url,
@@ -143,7 +143,7 @@ class HubIndex:
 
                 # Validate index structure
                 if not self._validate_index(index_data):
-                    logger.warning(f"Invalid index structure from {url}")
+                    logger.warning("Invalid index structure from %s", url)
                     continue
 
                 # Cache the data
@@ -157,7 +157,7 @@ class HubIndex:
                 return self._index_data
 
             except Exception as e:
-                logger.warning(f"Failed to fetch from {url}: {e}")
+                logger.warning("Failed to fetch from %s: %s", url, e)
                 continue
 
         # If all remote sources failed, try stale cache
@@ -168,7 +168,7 @@ class HubIndex:
                     self._index_data = json.load(f)
                 return self._index_data
             except Exception as e:
-                logger.error(f"Failed to load stale cache: {e}")
+                logger.error("Failed to load stale cache: %s", e)
 
         # Return empty index as last resort
         logger.error("Could not load index from any source")
@@ -318,7 +318,7 @@ class HubIndex:
         with open(self.cache_file, "w") as f:
             json.dump(self._index_data, f, indent=2)
 
-        logger.info(f"Updated index entry: {pack_key}")
+        logger.info("Updated index entry: %s", pack_key)
 
     def create_local_index(self, output_path: Path, packs_dir: Path) -> None:
         """
@@ -379,10 +379,10 @@ class HubIndex:
                 pack_key = f"{org}/{slug}"
                 index_data["packs"][pack_key] = asdict(entry)
 
-                logger.info(f"Added to index: {pack_key}")
+                logger.info("Added to index: %s", pack_key)
 
             except Exception as e:
-                logger.error(f"Failed to process {pack_yaml}: {e}")
+                logger.error("Failed to process %s: %s", pack_yaml, e)
                 continue
 
         # Save index

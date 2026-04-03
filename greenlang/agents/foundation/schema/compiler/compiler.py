@@ -155,7 +155,7 @@ class SchemaCompiler:
         """
         self.resolver = resolver or RefResolver()
         self._warnings: List[str] = []
-        logger.debug(f"SchemaCompiler initialized with compiler version {COMPILER_VERSION}")
+        logger.debug("SchemaCompiler initialized with compiler version %s", COMPILER_VERSION)
 
     def compile(
         self,
@@ -196,24 +196,24 @@ class SchemaCompiler:
         self._warnings = []
         errors: List[str] = []
 
-        logger.info(f"Compiling schema: {schema_id}@{version}")
+        logger.info("Compiling schema: %s@%s", schema_id, version)
 
         try:
             # Step 1: Parse schema source if string
             schema_dict = self._parse_schema(schema_source)
-            logger.debug(f"Parsed schema with {len(schema_dict)} top-level keys")
+            logger.debug("Parsed schema with %s top-level keys", len(schema_dict))
 
             # Step 2: Compute stable schema hash
             schema_hash = self._compute_schema_hash(schema_dict)
-            logger.debug(f"Computed schema hash: {schema_hash[:16]}...")
+            logger.debug("Computed schema hash: %s...", schema_hash[)
 
             # Step 3: Flatten properties
             properties = self._flatten_properties(schema_dict, "")
-            logger.debug(f"Flattened {len(properties)} properties")
+            logger.debug("Flattened %s properties", len(properties))
 
             # Step 4: Collect required paths
             required_paths = self._collect_required_paths(schema_dict, "")
-            logger.debug(f"Collected {len(required_paths)} required paths")
+            logger.debug("Collected %s required paths", len(required_paths))
 
             # Step 5: Compile constraints
             numeric_constraints, string_constraints, array_constraints = \
@@ -225,15 +225,15 @@ class SchemaCompiler:
 
             # Step 6: Compile patterns
             patterns = self._compile_patterns(schema_dict, "")
-            logger.debug(f"Compiled {len(patterns)} patterns")
+            logger.debug("Compiled %s patterns", len(patterns))
 
             # Step 7: Extract unit specs
             unit_specs = self._extract_unit_specs(schema_dict, "")
-            logger.debug(f"Extracted {len(unit_specs)} unit specs")
+            logger.debug("Extracted %s unit specs", len(unit_specs))
 
             # Step 8: Extract rule bindings
             rule_bindings = self._extract_rule_bindings(schema_dict)
-            logger.debug(f"Extracted {len(rule_bindings)} rule bindings")
+            logger.debug("Extracted %s rule bindings", len(rule_bindings))
 
             # Step 9: Extract deprecations
             deprecated_fields, renamed_fields = self._extract_deprecations(
@@ -246,7 +246,7 @@ class SchemaCompiler:
 
             # Step 10: Extract enums
             enums = self._extract_enums(schema_dict, "")
-            logger.debug(f"Extracted {len(enums)} enums")
+            logger.debug("Extracted %s enums", len(enums))
 
             # Create SchemaIR
             ir = SchemaIR(
@@ -282,13 +282,13 @@ class SchemaCompiler:
             )
 
         except ParseError as e:
-            logger.error(f"Schema parsing failed: {e}")
+            logger.error("Schema parsing failed: %s", e)
             errors.append(f"Parse error: {e.message}")
         except CompilationError as e:
-            logger.error(f"Schema compilation failed: {e}")
+            logger.error("Schema compilation failed: %s", e)
             errors.append(str(e))
         except Exception as e:
-            logger.error(f"Unexpected compilation error: {e}", exc_info=True)
+            logger.error("Unexpected compilation error: %s", e, exc_info=True)
             errors.append(f"Unexpected error: {str(e)}")
 
         compile_time_ms = (time.perf_counter() - start_time) * 1000

@@ -375,7 +375,7 @@ class Calibrator:
         Example:
             >>> calibrator.fit(logits_val, y_val)
         """
-        logger.info(f"Fitting calibrator with {len(labels)} samples")
+        logger.info("Fitting calibrator with %s samples", len(labels))
 
         if is_logits:
             logits = logits_or_proba
@@ -404,7 +404,7 @@ class Calibrator:
             self._fit_temperature_scaling(logits, labels)
 
         self._is_fitted = True
-        logger.info(f"Calibrator fitted: temperature={self.temperature:.4f}")
+        logger.info("Calibrator fitted: temperature=%.4f", self.temperature)
 
         return self
 

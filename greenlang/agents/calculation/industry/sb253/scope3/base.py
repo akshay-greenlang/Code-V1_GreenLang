@@ -333,7 +333,7 @@ class Scope3CategoryCalculator(ABC):
         """Initialize the calculator."""
         self.logger = logging.getLogger(self.__class__.__name__)
         self._eeio_factors = EPA_EEIO_FACTORS
-        self.logger.info(f"Initialized {self.__class__.__name__} v1.0.0")
+        logger.info("Initialized %s v1.0.0", self.__class__.__name__)
 
     @abstractmethod
     def calculate(self, input_data: Scope3CalculationInput) -> Scope3CalculationResult:
@@ -389,7 +389,7 @@ class Scope3CategoryCalculator(ABC):
         # Fallback to default
         if factor_data is None:
             factor_data = self._eeio_factors["default"]
-            self.logger.warning(
+            logger.warning(
                 f"Using default EEIO factor for NAICS {naics_code}. "
                 "Consider using more specific sector data."
             )

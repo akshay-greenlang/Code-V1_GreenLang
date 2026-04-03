@@ -338,7 +338,7 @@ class ValidationRulesEngine:
                 if violation:
                     violations.append(violation)
             except Exception as e:
-                logger.error(f"Error checking rule {rule_id}: {e}")
+                logger.error("Error checking rule %s: %s", rule_id, e)
 
         return violations
 

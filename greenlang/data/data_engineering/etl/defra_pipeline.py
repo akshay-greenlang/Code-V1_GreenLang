@@ -156,17 +156,17 @@ class DEFRAPipeline(BasePipeline[DEFRARecord]):
             if not self.file_path.exists():
                 raise FileNotFoundError(f"DEFRA file not found: {self.file_path}")
 
-            logger.info(f"Reading DEFRA file: {self.file_path}")
+            logger.info("Reading DEFRA file: %s", self.file_path)
 
             # Read Excel file
             xlsx = pd.ExcelFile(self.file_path)
 
             for sheet_name in self.defra_config.sheets_to_process:
                 if sheet_name not in xlsx.sheet_names:
-                    logger.warning(f"Sheet '{sheet_name}' not found in DEFRA file")
+                    logger.warning("Sheet '%s' not found in DEFRA file", sheet_name)
                     continue
 
-                logger.debug(f"Processing sheet: {sheet_name}")
+                logger.debug("Processing sheet: %s", sheet_name)
 
                 try:
                     # Read sheet with header row detection
@@ -179,13 +179,13 @@ class DEFRAPipeline(BasePipeline[DEFRARecord]):
                     # Parse sheet and extract records
                     sheet_records = self._parse_defra_sheet(df, sheet_name)
                     records.extend(sheet_records)
-                    logger.info(f"Extracted {len(sheet_records)} records from '{sheet_name}'")
+                    logger.info("Extracted %s records from '%s'", len(sheet_records), sheet_name)
 
                 except Exception as e:
-                    logger.error(f"Error processing sheet '{sheet_name}': {e}")
+                    logger.error("Error processing sheet '%s': %s", sheet_name, e)
                     self.metrics.warnings.append(f"Sheet '{sheet_name}' processing error: {e}")
 
-            logger.info(f"Total records extracted from DEFRA: {len(records)}")
+            logger.info("Total records extracted from DEFRA: %s", len(records))
             return records
 
         except ImportError:
@@ -214,7 +214,7 @@ class DEFRAPipeline(BasePipeline[DEFRARecord]):
                 break
 
         if header_row is None:
-            logger.warning(f"Could not find header row in sheet '{sheet_name}'")
+            logger.warning("Could not find header row in sheet '%s'", sheet_name)
             return records
 
         # Set headers and process data rows
@@ -226,7 +226,7 @@ class DEFRAPipeline(BasePipeline[DEFRARecord]):
         col_mapping = self._get_column_mapping(headers)
 
         if not col_mapping.get('activity') or not col_mapping.get('co2e'):
-            logger.warning(f"Missing required columns in sheet '{sheet_name}'")
+            logger.warning("Missing required columns in sheet '%s'", sheet_name)
             return records
 
         # Determine scope from sheet name
@@ -270,7 +270,7 @@ class DEFRAPipeline(BasePipeline[DEFRARecord]):
                 records.append(record)
 
             except Exception as e:
-                logger.debug(f"Error parsing row {idx}: {e}")
+                logger.debug("Error parsing row %s: %s", idx, e)
                 continue
 
         return records
@@ -459,7 +459,7 @@ class DEFRAPipeline(BasePipeline[DEFRARecord]):
                 transformed.append(factor_dict)
 
             except Exception as e:
-                logger.warning(f"Error transforming record: {e}")
+                logger.warning("Error transforming record: %s", e)
                 self.metrics.warnings.append(f"Transform error: {e}")
                 continue
 
@@ -494,7 +494,7 @@ class DEFRAPipeline(BasePipeline[DEFRARecord]):
                 inserted += 1
 
             except Exception as e:
-                logger.error(f"Error loading record: {e}")
+                logger.error("Error loading record: %s", e)
                 errors += 1
 
         return {

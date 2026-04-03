@@ -21,11 +21,12 @@ from pathlib import Path
 from typing import Optional, Dict, Any, Tuple, List
 from datetime import datetime
 from greenlang.utilities.determinism import DeterministicClock
+from greenlang.utilities.exceptions.security import SecurityException
 
 logger = logging.getLogger(__name__)
 
 
-class SignatureVerificationError(Exception):
+class SignatureVerificationError(SecurityException):
     """Raised when signature verification fails"""
 
 
@@ -76,7 +77,7 @@ class PackVerifier:
                 with open(keys_path, 'r') as f:
                     return json.load(f)
             except Exception as e:
-                logger.warning(f"Failed to load trusted keys from {keys_path}: {e}")
+                logger.warning("Failed to load trusted keys from %s: %s", keys_path, e)
 
         # Load default production keys - These are real ECDSA P-256 public keys
         # Generated specifically for GreenLang pack verification
@@ -194,7 +195,7 @@ class PackVerifier:
                             "Install with: pip install greenlang-cli[security]"
                         )
 
-                logger.info(f"Pack signature verified: {pack_path.name}")
+                logger.info("Pack signature verified: %s", pack_path.name)
                 return True, metadata
 
             except Exception as e:
@@ -203,7 +204,7 @@ class PackVerifier:
                         f"Signature verification failed: {e}"
                     )
                 else:
-                    logger.warning(f"Signature verification failed: {e}")
+                    logger.warning("Signature verification failed: %s", e)
                     return False, metadata
         else:
             # No signature found
@@ -213,7 +214,7 @@ class PackVerifier:
                     f"Unsigned packs are not allowed."
                 )
             else:
-                logger.warning(f"Pack is not signed: {pack_path.name}")
+                logger.warning("Pack is not signed: %s", pack_path.name)
                 return False, metadata
 
     def _verify_with_cosign(
@@ -382,7 +383,7 @@ class PackVerifier:
             metadata["publisher_verified"] = True
         else:
             metadata["publisher_verified"] = False
-            logger.warning(f"Publisher not in trusted list: {metadata['publisher']}")
+            logger.warning("Publisher not in trusted list: %s", metadata['publisher'])
 
         return metadata
 
@@ -505,7 +506,7 @@ class PackVerifier:
             with open(sig_path, "w") as f:
                 f.write(result.stdout)
 
-            logger.info(f"Pack signed with cosign: {sig_path}")
+            logger.info("Pack signed with cosign: %s", sig_path)
             return sig_path
 
         except subprocess.CalledProcessError as e:
@@ -549,7 +550,7 @@ class PackVerifier:
             with open(sig_path, "w") as f:
                 f.write(bundle.to_json())
 
-            logger.info(f"Pack signed with Sigstore: {sig_path}")
+            logger.info("Pack signed with Sigstore: %s", sig_path)
             return sig_path
 
         except ImportError as e:
@@ -590,7 +591,7 @@ class PackVerifier:
         with open(sig_path, "w") as f:
             json.dump(sig_data, f, indent=2)
 
-        logger.info(f"Created stub signature: {sig_path}")
+        logger.info("Created stub signature: %s", sig_path)
         return sig_path
 
 
@@ -622,5 +623,5 @@ def verify_pack_integrity(
             )
             return False
 
-    logger.info(f"Pack integrity verified. Checksum: {actual_checksum}")
+    logger.info("Pack integrity verified. Checksum: %s", actual_checksum)
     return True

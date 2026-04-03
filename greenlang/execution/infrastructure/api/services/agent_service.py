@@ -29,6 +29,8 @@ from uuid import uuid4
 
 from pydantic import BaseModel, Field, validator
 
+from greenlang.utilities.exceptions.agent import AgentException
+
 logger = logging.getLogger(__name__)
 
 
@@ -97,7 +99,7 @@ class AgentConfigUpdate(BaseModel):
         return v
 
 
-class AgentServiceError(Exception):
+class AgentServiceError(AgentException):
     """Base exception for agent service errors."""
     pass
 
@@ -282,15 +284,15 @@ class AgentService:
                     status_enum = AgentStatusEnum(status.lower())
                     agents = [a for a in agents if a.status == status_enum]
                 except ValueError:
-                    logger.warning(f"Invalid status filter: {status}")
+                    logger.warning("Invalid status filter: %s", status)
                     # Return empty list for invalid status
                     return []
 
-            logger.debug(f"Retrieved {len(agents)} agents (status={status})")
+            logger.debug("Retrieved %s agents (status=%s)", len(agents), status)
             return agents
 
         except Exception as e:
-            logger.error(f"Failed to get agents: {e}", exc_info=True)
+            logger.error("Failed to get agents: %s", e, exc_info=True)
             raise AgentServiceError(f"Failed to retrieve agents: {str(e)}") from e
 
     async def get_agent(self, agent_id: str) -> Optional[AgentRecord]:
@@ -311,14 +313,14 @@ class AgentService:
                 agent = self._agents.get(agent_id)
 
             if agent:
-                logger.debug(f"Retrieved agent: {agent_id}")
+                logger.debug("Retrieved agent: %s", agent_id)
             else:
-                logger.debug(f"Agent not found: {agent_id}")
+                logger.debug("Agent not found: %s", agent_id)
 
             return agent
 
         except Exception as e:
-            logger.error(f"Failed to get agent {agent_id}: {e}", exc_info=True)
+            logger.error("Failed to get agent %s: %s", agent_id, e, exc_info=True)
             raise AgentServiceError(f"Failed to retrieve agent: {str(e)}") from e
 
     async def update_agent_config(
@@ -351,7 +353,7 @@ class AgentService:
                 # Apply configuration updates
                 if config.enabled is not None:
                     agent.enabled = config.enabled
-                    logger.info(f"Agent {agent_id} enabled={config.enabled}")
+                    logger.info("Agent %s enabled=%s", agent_id, config.enabled)
 
                 if config.execution_interval_minutes is not None:
                     agent.config["execution_interval_minutes"] = config.execution_interval_minutes
@@ -361,20 +363,20 @@ class AgentService:
 
                 if config.parameters is not None:
                     agent.config.update(config.parameters)
-                    logger.info(f"Agent {agent_id} parameters updated")
+                    logger.info("Agent %s parameters updated", agent_id)
 
                 agent.updated_at = now
 
                 # Calculate provenance hash for audit trail
                 provenance_hash = self._calculate_config_hash(agent)
-                logger.debug(f"Config update hash: {provenance_hash[:16]}...")
+                logger.debug("Config update hash: %s...", provenance_hash[)
 
                 return agent
 
         except AgentNotFoundError:
             raise
         except Exception as e:
-            logger.error(f"Failed to update agent {agent_id}: {e}", exc_info=True)
+            logger.error("Failed to update agent %s: %s", agent_id, e, exc_info=True)
             raise AgentConfigurationError(
                 f"Failed to update agent configuration: {str(e)}"
             ) from e
@@ -404,20 +406,20 @@ class AgentService:
                     raise AgentServiceError(f"Agent {agent_id} is disabled")
 
                 if agent.status == AgentStatusEnum.RUNNING:
-                    logger.warning(f"Agent {agent_id} is already running")
+                    logger.warning("Agent %s is already running", agent_id)
                     return agent
 
                 agent.status = AgentStatusEnum.RUNNING
                 agent.updated_at = datetime.utcnow()
                 agent.error_message = None
 
-                logger.info(f"Agent {agent_id} started")
+                logger.info("Agent %s started", agent_id)
                 return agent
 
         except (AgentNotFoundError, AgentServiceError):
             raise
         except Exception as e:
-            logger.error(f"Failed to start agent {agent_id}: {e}", exc_info=True)
+            logger.error("Failed to start agent %s: %s", agent_id, e, exc_info=True)
             raise AgentServiceError(f"Failed to start agent: {str(e)}") from e
 
     async def stop_agent(self, agent_id: str) -> AgentRecord:
@@ -444,13 +446,13 @@ class AgentService:
                 agent.last_run = datetime.utcnow()
                 agent.updated_at = agent.last_run
 
-                logger.info(f"Agent {agent_id} stopped")
+                logger.info("Agent %s stopped", agent_id)
                 return agent
 
         except AgentNotFoundError:
             raise
         except Exception as e:
-            logger.error(f"Failed to stop agent {agent_id}: {e}", exc_info=True)
+            logger.error("Failed to stop agent %s: %s", agent_id, e, exc_info=True)
             raise AgentServiceError(f"Failed to stop agent: {str(e)}") from e
 
     async def get_agent_metrics(self, agent_id: str) -> Optional[AgentMetrics]:
@@ -492,7 +494,7 @@ class AgentService:
             agent.metrics = metrics
             agent.updated_at = datetime.utcnow()
 
-            logger.debug(f"Agent {agent_id} metrics updated")
+            logger.debug("Agent %s metrics updated", agent_id)
             return agent
 
     def _calculate_config_hash(self, agent: AgentRecord) -> str:

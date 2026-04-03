@@ -111,11 +111,11 @@ def create_ab_testing_routes(app, manager: ABTestManager) -> None:
                 test_type=TestType(request.test_type),
             )
 
-            logger.info(f"Created experiment: {exp_id}")
+            logger.info("Created experiment: %s", exp_id)
             return {"experiment_id": exp_id}
 
         except Exception as e:
-            logger.error(f"Error creating experiment: {str(e)}")
+            logger.error("Error creating experiment: %s", e)
             raise HTTPException(status_code=400, detail=str(e))
 
     @router.get("/{experiment_id}/assign", response_model=AssignVariantResponse)
@@ -130,7 +130,7 @@ def create_ab_testing_routes(app, manager: ABTestManager) -> None:
         except ValueError as e:
             raise HTTPException(status_code=404, detail=str(e))
         except Exception as e:
-            logger.error(f"Error assigning variant: {str(e)}")
+            logger.error("Error assigning variant: %s", e)
             raise HTTPException(status_code=400, detail=str(e))
 
     @router.post("/{experiment_id}/metrics", response_model=Dict[str, str])
@@ -151,7 +151,7 @@ def create_ab_testing_routes(app, manager: ABTestManager) -> None:
             return {"status": "recorded"}
 
         except Exception as e:
-            logger.error(f"Error recording metric: {str(e)}")
+            logger.error("Error recording metric: %s", e)
             raise HTTPException(status_code=400, detail=str(e))
 
     @router.get("/{experiment_id}/results", response_model=Dict[str, Any])
@@ -164,7 +164,7 @@ def create_ab_testing_routes(app, manager: ABTestManager) -> None:
         except ValueError as e:
             raise HTTPException(status_code=404, detail=str(e))
         except Exception as e:
-            logger.error(f"Error analyzing results: {str(e)}")
+            logger.error("Error analyzing results: %s", e)
             raise HTTPException(status_code=400, detail=str(e))
 
     @router.get("/{experiment_id}/status", response_model=ExperimentStatusResponse)
@@ -177,7 +177,7 @@ def create_ab_testing_routes(app, manager: ABTestManager) -> None:
         except ValueError as e:
             raise HTTPException(status_code=404, detail=str(e))
         except Exception as e:
-            logger.error(f"Error getting status: {str(e)}")
+            logger.error("Error getting status: %s", e)
             raise HTTPException(status_code=400, detail=str(e))
 
     @router.get("/{experiment_id}/prometheus")
@@ -190,7 +190,7 @@ def create_ab_testing_routes(app, manager: ABTestManager) -> None:
         except ValueError as e:
             raise HTTPException(status_code=404, detail=str(e))
         except Exception as e:
-            logger.error(f"Error exporting metrics: {str(e)}")
+            logger.error("Error exporting metrics: %s", e)
             raise HTTPException(status_code=400, detail=str(e))
 
     app.include_router(router)

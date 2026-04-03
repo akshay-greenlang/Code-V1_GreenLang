@@ -94,7 +94,7 @@ class HubAuth:
             True if successful
         """
         try:
-            logger.info(f"Logging in as {username}")
+            logger.info("Logging in as %s", username)
 
             with SecureHTTPSession() as session:
                 response = session.post(
@@ -115,10 +115,10 @@ class HubAuth:
             return True
 
         except Exception as e:
-            logger.error(f"Login failed: {e.response.status_code} - {e.response.text}")
+            logger.error("Login failed: %s - %s", e.response.status_code, e.response.text)
             return False
         except Exception as e:
-            logger.error(f"Login error: {e}")
+            logger.error("Login error: %s", e)
             return False
 
     def logout(self):
@@ -168,10 +168,10 @@ class HubAuth:
             return True
 
         except Exception as e:
-            logger.error(f"Token refresh failed: {e.response.status_code}")
+            logger.error("Token refresh failed: %s", e.response.status_code)
             return False
         except Exception as e:
-            logger.error(f"Token refresh error: {e}")
+            logger.error("Token refresh error: %s", e)
             return False
 
     def register(
@@ -194,7 +194,7 @@ class HubAuth:
             True if successful
         """
         try:
-            logger.info(f"Registering new account: {username}")
+            logger.info("Registering new account: %s", username)
 
             with SecureHTTPSession() as session:
                 response = session.post(
@@ -215,7 +215,7 @@ class HubAuth:
             )
             return False
         except Exception as e:
-            logger.error(f"Registration error: {e}")
+            logger.error("Registration error: %s", e)
             return False
 
     def create_api_key(
@@ -236,7 +236,7 @@ class HubAuth:
             return None
 
         try:
-            logger.info(f"Creating API key: {name}")
+            logger.info("Creating API key: %s", name)
 
             with SecureHTTPSession() as session:
                 response = session.post(
@@ -254,10 +254,10 @@ class HubAuth:
             return api_key
 
         except Exception as e:
-            logger.error(f"API key creation failed: {e.response.status_code}")
+            logger.error("API key creation failed: %s", e.response.status_code)
             return None
         except Exception as e:
-            logger.error(f"API key creation error: {e}")
+            logger.error("API key creation error: %s", e)
             return None
 
     def verify_token(self) -> bool:
@@ -295,7 +295,7 @@ class HubAuth:
             return True
 
         except Exception as e:
-            logger.error(f"Token verification failed: {e}")
+            logger.error("Token verification failed: %s", e)
             return False
 
     def _save_credentials(self):
@@ -317,7 +317,7 @@ class HubAuth:
             logger.debug("Credentials saved securely")
 
         except Exception as e:
-            logger.warning(f"Failed to save to keyring, using file: {e}")
+            logger.warning("Failed to save to keyring, using file: %s", e)
 
             # Fallback to file storage
             creds_file = self.config_dir / "credentials.json"
@@ -352,7 +352,7 @@ class HubAuth:
                 return
 
         except Exception as e:
-            logger.debug(f"Keyring not available: {e}")
+            logger.debug("Keyring not available: %s", e)
 
         # Fallback to file
         creds_file = self.config_dir / "credentials.json"
@@ -368,7 +368,7 @@ class HubAuth:
                 logger.debug("Credentials loaded from file")
 
             except Exception as e:
-                logger.error(f"Failed to load credentials: {e}")
+                logger.error("Failed to load credentials: %s", e)
 
     def _clear_credentials(self):
         """Clear saved credentials"""
@@ -416,7 +416,7 @@ class PackSigner:
         Returns:
             Tuple of (private_key, public_key)
         """
-        logger.info(f"Generating {key_size}-bit RSA key pair")
+        logger.info("Generating %s-bit RSA key pair", key_size)
 
         self.private_key = rsa.generate_private_key(
             public_exponent=65537, key_size=key_size
@@ -452,7 +452,7 @@ class PackSigner:
 
         os.chmod(private_path, 0o600)
 
-        logger.info(f"Private key saved to {private_path}")
+        logger.info("Private key saved to %s", private_path)
 
         # Save public key if path provided
         if public_path:
@@ -464,7 +464,7 @@ class PackSigner:
             with open(public_path, "wb") as f:
                 f.write(public_pem)
 
-            logger.info(f"Public key saved to {public_path}")
+            logger.info("Public key saved to %s", public_path)
 
     def sign_pack(self, pack_data: bytes) -> Dict[str, Any]:
         """
@@ -549,7 +549,7 @@ class PackSigner:
             return True
 
         except Exception as e:
-            logger.error(f"Signature verification failed: {e}")
+            logger.error("Signature verification failed: %s", e)
             return False
 
     def _load_keys(self):
@@ -564,5 +564,5 @@ class PackSigner:
             logger.info("Keys loaded successfully")
 
         except Exception as e:
-            logger.error(f"Failed to load keys: {e}")
+            logger.error("Failed to load keys: %s", e)
             raise

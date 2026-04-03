@@ -34,6 +34,8 @@ from typing import (
     Union,
 )
 
+from greenlang.utilities.exceptions.infrastructure import InfrastructureException
+
 logger = logging.getLogger(__name__)
 
 # Type variables for decorators
@@ -46,12 +48,12 @@ T = TypeVar("T")
 # ==============================================================================
 
 
-class RetryableError(Exception):
+class RetryableError(InfrastructureException):
     """Base exception for retryable errors."""
     pass
 
 
-class MaxRetriesExceeded(Exception):
+class MaxRetriesExceeded(InfrastructureException):
     """Raised when max retries exceeded."""
 
     def __init__(self, attempts: int, last_error: Exception):
@@ -281,7 +283,7 @@ def retry(
                     attempt += 1
 
             # Should never reach here, but just in case
-            logger.error(f"Unexpected retry loop exit for {func.__name__}")
+            logger.error("Unexpected retry loop exit for %s", func.__name__)
             if config.on_failure and last_error:
                 config.on_failure(attempt, last_error)
             raise MaxRetriesExceeded(attempt, last_error or Exception("Unknown error"))
@@ -400,7 +402,7 @@ def async_retry(
                     attempt += 1
 
             # Should never reach here, but just in case
-            logger.error(f"Unexpected retry loop exit for {func.__name__}")
+            logger.error("Unexpected retry loop exit for %s", func.__name__)
             if config.on_failure and last_error:
                 config.on_failure(attempt, last_error)
             raise MaxRetriesExceeded(attempt, last_error or Exception("Unknown error"))

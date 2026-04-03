@@ -197,7 +197,7 @@ class LLMClient:
                 response = self.provider.complete(messages, options)
                 break
             except Exception as e:
-                logger.warning(f"LLM request failed (attempt {attempt + 1}): {str(e)}")
+                logger.warning("LLM request failed (attempt %s): %s", attempt + 1, e)
                 if attempt < self.config.max_retries - 1:
                     time.sleep(2 ** attempt)  # Exponential backoff
                 else:
@@ -215,7 +215,7 @@ class LLMClient:
         if self.config.cache_enabled:
             self._cache[cache_key] = response
 
-        logger.info(f"LLM completion: {response.usage['total_tokens']} tokens, {response.latency_ms:.0f}ms")
+        logger.info("LLM completion: %s tokens, %.0fms", response.usage['total_tokens'], response.latency_ms)
 
         return response
 
@@ -252,7 +252,7 @@ Return only the category name, nothing else."""
             if category.lower() == response_clean:
                 return category
 
-        logger.warning(f"Classification response '{response}' not in categories")
+        logger.warning("Classification response '%s' not in categories", response)
         return None
 
     def extract_entities(
@@ -287,7 +287,7 @@ Return as JSON with entity types as keys and lists of entities as values."""
             entities = json.loads(response)
             return entities
         except json.JSONDecodeError:
-            logger.error(f"Failed to parse entity extraction response: {response}")
+            logger.error("Failed to parse entity extraction response: %s", response)
             return {entity_type: [] for entity_type in entity_types}
 
     def summarize(

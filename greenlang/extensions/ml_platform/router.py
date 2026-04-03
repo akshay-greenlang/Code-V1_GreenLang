@@ -178,7 +178,7 @@ class ModelRouter:
         Raises:
             ValueError: If no suitable model found
         """
-        logger.info(f"Routing request with strategy: {criteria.strategy}")
+        logger.info("Routing request with strategy: %s", criteria.strategy)
 
         # Get candidate models
         candidates = self._get_candidate_models(criteria)
@@ -188,7 +188,7 @@ class ModelRouter:
                 f"No models found matching criteria: {criteria.dict()}"
             )
 
-        logger.info(f"Found {len(candidates)} candidate models")
+        logger.info("Found %s candidate models", len(candidates))
 
         # Select primary model based on strategy
         primary_model = self._select_by_strategy(candidates, criteria.strategy)
@@ -265,7 +265,7 @@ class ModelRouter:
 
         for attempt, model in enumerate(models_to_try, 1):
             try:
-                logger.info(f"Attempt {attempt}: Invoking {model.name}")
+                logger.info("Attempt %s: Invoking %s", attempt, model.name)
 
                 result = await self._invoke_model(
                     model_id=model.id,
@@ -290,7 +290,7 @@ class ModelRouter:
             except Exception as e:
                 error_msg = f"{model.name}: {str(e)}"
                 errors.append(error_msg)
-                logger.warning(f"Invocation failed: {error_msg}")
+                logger.warning("Invocation failed: %s", error_msg)
 
                 if attempt >= len(models_to_try):
                     # All attempts exhausted

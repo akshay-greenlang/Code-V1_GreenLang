@@ -118,10 +118,10 @@ class IndustrialFinanceBaseAgent(ABC):
     def process(self, input_data: FinanceInput) -> FinanceOutput:
         """Main processing method."""
         try:
-            self.logger.info(f"{self.AGENT_ID} analyzing: {input_data.facility_id}")
+            logger.info("%s analyzing: %s", self.AGENT_ID, input_data.facility_id)
             return self.analyze(input_data)
         except Exception as e:
-            self.logger.error(f"{self.AGENT_ID} failed: {str(e)}", exc_info=True)
+            logger.error("%s failed: %s", self.AGENT_ID, e, exc_info=True)
             raise
 
     def _calculate_npv(

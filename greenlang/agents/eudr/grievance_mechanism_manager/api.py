@@ -171,7 +171,7 @@ async def analyze_patterns(request: AnalyzePatternsRequest) -> Dict[str, Any]:
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e))
     except Exception as e:
-        logger.error(f"analyze_patterns failed: {e}", exc_info=True)
+        logger.error("analyze_patterns failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 @router.get("/analytics", response_model=List[Dict[str, Any]], summary="List analytics")

@@ -23,6 +23,8 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Any, Callable, Dict, Optional, TypeVar
 
+from greenlang.utilities.exceptions.infrastructure import InfrastructureException
+
 logger = logging.getLogger(__name__)
 
 F = TypeVar("F", bound=Callable[..., Any])
@@ -33,7 +35,7 @@ F = TypeVar("F", bound=Callable[..., Any])
 # ==============================================================================
 
 
-class TimeoutError(Exception):
+class TimeoutError(InfrastructureException):
     """Raised when operation times out."""
 
     def __init__(self, operation: str, timeout_seconds: float):

@@ -329,7 +329,7 @@ class CarbonCreditValuationAgent(BaseAgent):
 
         self._audit_trail: List[AuditEntry] = []
         super().__init__(config)
-        logger.info(f"Initialized {self.AGENT_NAME} v{self.VERSION}")
+        logger.info("Initialized %s v%s", self.AGENT_NAME, self.VERSION)
 
     def execute(self, input_data: Dict[str, Any]) -> AgentResult:
         """Execute credit valuation."""
@@ -353,7 +353,7 @@ class CarbonCreditValuationAgent(BaseAgent):
             )
 
         except Exception as e:
-            logger.error(f"Credit valuation failed: {e}", exc_info=True)
+            logger.error("Credit valuation failed: %s", e, exc_info=True)
             return AgentResult(success=False, error=str(e))
 
     def _value_credit(self, input_data: CreditValuationInput) -> CreditValuationOutput:

@@ -101,7 +101,7 @@ class ComplexityValidationExtension:
             )
 
         except ValueError as e:
-            logger.warning(f"Query validation failed: {e}")
+            logger.warning("Query validation failed: %s", e)
             # Re-raise to prevent execution
             raise
 
@@ -285,10 +285,10 @@ def create_graphql_app(
     async def startup():
         """Startup event handler"""
         logger.info("Starting GreenLang GraphQL API...")
-        logger.info(f"Playground enabled: {enable_playground}")
-        logger.info(f"Subscriptions enabled: {enable_subscriptions}")
-        logger.info(f"Introspection enabled: {enable_introspection}")
-        logger.info(f"Debug mode: {debug}")
+        logger.info("Playground enabled: %s", enable_playground)
+        logger.info("Subscriptions enabled: %s", enable_subscriptions)
+        logger.info("Introspection enabled: %s", enable_introspection)
+        logger.info("Debug mode: %s", debug)
 
     # Add shutdown event
     @app.on_event("shutdown")
@@ -359,9 +359,9 @@ def run_dev_server(
         debug=True,
     )
 
-    logger.info(f"Starting development server on {host}:{port}")
-    logger.info(f"GraphQL endpoint: http://{host}:{port}/graphql")
-    logger.info(f"Playground: http://{host}:{port}/playground")
+    logger.info("Starting development server on %s:%s", host, port)
+    logger.info("GraphQL endpoint: http://%s:%s/graphql", host, port)
+    logger.info("Playground: http://%s:%s/playground", host, port)
 
     uvicorn.run(
         app,

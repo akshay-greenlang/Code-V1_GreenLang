@@ -406,7 +406,7 @@ class MessageBus:
             )
 
         subscription_id = f"{subscriber_id}:{topic}:{len(self._subscriptions[topic])}"
-        logger.debug(f"Subscription created: {subscription_id}")
+        logger.debug("Subscription created: %s", subscription_id)
         return subscription_id
 
     async def unsubscribe(self, topic: str, subscriber_id: str) -> bool:
@@ -440,7 +440,7 @@ class MessageBus:
             )
 
         if removed:
-            logger.debug(f"Unsubscribed {subscriber_id} from {topic}")
+            logger.debug("Unsubscribed %s from %s", subscriber_id, topic)
         return removed
 
     async def publish(self, message: Message) -> bool:
@@ -455,7 +455,7 @@ class MessageBus:
         """
         if message.is_expired():
             self._metrics.messages_expired += 1
-            logger.warning(f"Message {message.message_id} expired before publishing")
+            logger.warning("Message %s expired before publishing", message.message_id)
             return False
 
         try:
@@ -480,7 +480,7 @@ class MessageBus:
             return True
 
         except asyncio.QueueFull:
-            logger.error(f"Queue full, message {message.message_id} dropped")
+            logger.error("Queue full, message %s dropped", message.message_id)
             return False
 
     async def publish_sync(self, message: Message) -> int:
@@ -538,7 +538,7 @@ class MessageBus:
             response = await asyncio.wait_for(response_future, timeout=timeout_seconds)
             return response
         except asyncio.TimeoutError:
-            logger.warning(f"Request {message.message_id} timed out after {timeout_seconds}s")
+            logger.warning("Request %s timed out after %ss", message.message_id, timeout_seconds)
             return None
         finally:
             await self.unsubscribe(reply_topic, f"requester-{message.message_id}")
@@ -559,7 +559,7 @@ class MessageBus:
 
                 if message.is_expired():
                     self._metrics.messages_expired += 1
-                    logger.debug(f"Message {message.message_id} expired, skipping")
+                    logger.debug("Message %s expired, skipping", message.message_id)
                     continue
 
                 await self._deliver_message(message)
@@ -567,7 +567,7 @@ class MessageBus:
             except asyncio.CancelledError:
                 break
             except Exception as e:
-                logger.error(f"Error processing message: {e}", exc_info=True)
+                logger.error("Error processing message: %s", e, exc_info=True)
 
     async def _deliver_message(self, message: Message) -> int:
         """
@@ -656,7 +656,7 @@ class MessageBus:
             if msg.message_id == message_id:
                 del self._dead_letter_queue[i]
                 await self.publish(msg)
-                logger.info(f"Replayed dead-lettered message: {message_id}")
+                logger.info("Replayed dead-lettered message: %s", message_id)
                 return True
         return False
 

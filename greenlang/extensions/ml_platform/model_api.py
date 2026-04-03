@@ -317,11 +317,11 @@ async def get_token(api_key: str = Header(...)):
     # Full pattern validation for production
     if os.getenv("GL_ENV") == "production":
         if not re.match(api_key_pattern, api_key):
-            logger.warning(f"Invalid API key format attempted: {api_key[:10]}...")
+            logger.warning("Invalid API key format attempted: %s...", api_key[)
             raise HTTPException(status_code=401, detail="Invalid API key format")
 
     # Log successful authentication (truncated key for security)
-    logger.info(f"API key validated: {api_key[:12]}...{api_key[-4:]}")
+    logger.info("API key validated: %s...%s", api_key[, api_key[-4)
 
     token = create_access_token(data={"sub": api_key})
     return AuthToken(access_token=token)
@@ -357,7 +357,7 @@ async def invoke_model(
                 detail=f"Model not found: {request.model_id}"
             )
 
-        logger.info(f"Invoking model {request.model_id} (request_id={request_id})")
+        logger.info("Invoking model %s (request_id=%s)", request.model_id, request_id)
 
         # Invoke model (mock for now)
         response_text, input_tokens, output_tokens = mock_model_invocation(request)
@@ -400,7 +400,7 @@ async def invoke_model(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Model invocation failed: {str(e)}", exc_info=True)
+        logger.error("Model invocation failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=f"Model invocation failed: {str(e)}")
 
 
@@ -461,7 +461,7 @@ async def evaluate_response(
         )
 
     except Exception as e:
-        logger.error(f"Evaluation failed: {str(e)}", exc_info=True)
+        logger.error("Evaluation failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=f"Evaluation failed: {str(e)}")
 
 
@@ -494,7 +494,7 @@ async def get_model_metrics(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Failed to get metrics: {str(e)}", exc_info=True)
+        logger.error("Failed to get metrics: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=f"Failed to get metrics: {str(e)}")
 
 
@@ -521,7 +521,7 @@ async def list_models(
         )
         return models
     except Exception as e:
-        logger.error(f"Failed to list models: {str(e)}", exc_info=True)
+        logger.error("Failed to list models: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=f"Failed to list models: {str(e)}")
 
 

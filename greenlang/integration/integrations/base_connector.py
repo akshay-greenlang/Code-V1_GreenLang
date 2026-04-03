@@ -58,6 +58,9 @@ from tenacity import (
     after_log,
 )
 
+# Import centralized exception
+from greenlang.exceptions import InfrastructureException
+
 # Circuit breaker pattern
 try:
     from pybreaker import CircuitBreaker, CircuitBreakerError
@@ -70,7 +73,7 @@ except ImportError:
         def __call__(self, func):
             return func
 
-    class CircuitBreakerError(Exception):
+    class CircuitBreakerError(InfrastructureException):
         pass
 
 # Type variables for generic connector
@@ -306,7 +309,7 @@ class BaseConnector(ABC, Generic[TQuery, TPayload, TConfig]):
         # Start time for uptime tracking
         self._start_time: Optional[datetime] = None
 
-        self.logger.info(
+        logger.info(
             f"Initialized connector: {config.connector_id} "
             f"(type={config.connector_type}, version={self.connector_version})"
         )
@@ -416,7 +419,7 @@ class BaseConnector(ABC, Generic[TQuery, TPayload, TConfig]):
 
             # Check health before fetching
             if not await self.health_check():
-                self.logger.warning(f"Health check failed for {self.config.connector_id}")
+                logger.warning("Health check failed for %s", self.config.connector_id)
 
             # Execute fetch with timeout (circuit breaker applied in retry method)
             payload = await asyncio.wait_for(
@@ -437,7 +440,7 @@ class BaseConnector(ABC, Generic[TQuery, TPayload, TConfig]):
             # Generate provenance
             provenance = self._generate_provenance(query, payload, start_time)
 
-            self.logger.info(
+            logger.info(
                 f"Successfully fetched data from {self.config.connector_id} "
                 f"in {response_time:.2f}ms"
             )
@@ -448,14 +451,14 @@ class BaseConnector(ABC, Generic[TQuery, TPayload, TConfig]):
             self.metrics.failed_requests += 1
             self.metrics.circuit_breaker_opens += 1
             self._record_failure_for_circuit()
-            self.logger.error(f"Circuit breaker open for {self.config.connector_id}: {e}")
+            logger.error("Circuit breaker open for %s: %s", self.config.connector_id, e)
             raise
 
         except asyncio.TimeoutError as e:
             self.metrics.failed_requests += 1
             self.metrics.last_failure_time = datetime.now(timezone.utc)
             self._record_failure_for_circuit()
-            self.logger.error(f"Request timeout for {self.config.connector_id} after {timeout}s")
+            logger.error("Request timeout for %s after %ss", self.config.connector_id, timeout)
             raise TimeoutError(f"Request timed out after {timeout}s") from e
 
         except Exception as e:
@@ -463,7 +466,7 @@ class BaseConnector(ABC, Generic[TQuery, TPayload, TConfig]):
             self.metrics.last_failure_time = datetime.now(timezone.utc)
             self._record_failure_for_circuit()
             error_class = classify_connector_error(e).value
-            self.logger.error(
+            logger.error(
                 f"Failed to fetch data from {self.config.connector_id}: {e} "
                 f"(error_class={error_class})",
                 exc_info=True
@@ -492,8 +495,8 @@ class BaseConnector(ABC, Generic[TQuery, TPayload, TConfig]):
                 max=self.config.retry_max_wait
             ),
             retry=retry_if_exception_type((ConnectionError, TimeoutError)),
-            before_sleep=before_sleep_log(self.logger, logging.WARNING),
-            after=after_log(self.logger, logging.DEBUG)
+            before_sleep=before_sleep_log(logger, logging.WARNING),
+            after=after_log(logger, logging.DEBUG)
         )
         async def _fetch_with_tenacity():
             self.metrics.retry_count += 1
@@ -537,7 +540,7 @@ class BaseConnector(ABC, Generic[TQuery, TPayload, TConfig]):
             return is_healthy
 
         except Exception as e:
-            self.logger.error(f"Health check failed for {self.config.connector_id}: {e}")
+            logger.error("Health check failed for %s: %s", self.config.connector_id, e)
             self.metrics.health_status = HealthStatus.UNHEALTHY
             return False
 
@@ -551,7 +554,7 @@ class BaseConnector(ABC, Generic[TQuery, TPayload, TConfig]):
 
         if not self._health_check_task:
             self._health_check_task = asyncio.create_task(_health_check_loop())
-            self.logger.info(f"Started health monitoring for {self.config.connector_id}")
+            logger.info("Started health monitoring for %s", self.config.connector_id)
 
     async def stop_health_monitoring(self):
         """Stop health check monitoring."""
@@ -562,7 +565,7 @@ class BaseConnector(ABC, Generic[TQuery, TPayload, TConfig]):
             except asyncio.CancelledError:
                 pass
             self._health_check_task = None
-            self.logger.info(f"Stopped health monitoring for {self.config.connector_id}")
+            logger.info("Stopped health monitoring for %s", self.config.connector_id)
 
     def _generate_provenance(
         self,
@@ -648,7 +651,7 @@ class BaseConnector(ABC, Generic[TQuery, TPayload, TConfig]):
             health_status=self.metrics.health_status,
             connection_state=self.metrics.connection_state
         )
-        self.logger.info(f"Reset metrics for {self.config.connector_id}")
+        logger.info("Reset metrics for %s", self.config.connector_id)
 
     # Async context manager support
     async def __aenter__(self):
@@ -702,12 +705,12 @@ class MockConnector(BaseConnector[TQuery, TPayload, TConfig]):
 
     async def connect(self) -> bool:
         """Mock connect - always succeeds."""
-        self.logger.info(f"Mock connect: {self.config.connector_id}")
+        logger.info("Mock connect: %s", self.config.connector_id)
         return True
 
     async def disconnect(self) -> bool:
         """Mock disconnect - always succeeds."""
-        self.logger.info(f"Mock disconnect: {self.config.connector_id}")
+        logger.info("Mock disconnect: %s", self.config.connector_id)
         return True
 
     async def _health_check_impl(self) -> bool:

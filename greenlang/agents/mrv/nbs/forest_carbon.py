@@ -424,7 +424,7 @@ class ForestCarbonMRVAgent(DeterministicAgent):
     def __init__(self, enable_audit_trail: bool = True):
         """Initialize Forest Carbon MRV Agent."""
         super().__init__(enable_audit_trail=enable_audit_trail)
-        logger.info(f"Initialized {self.AGENT_NAME} v{self.VERSION}")
+        logger.info("Initialized %s v%s", self.AGENT_NAME, self.VERSION)
 
     def execute(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -541,7 +541,7 @@ class ForestCarbonMRVAgent(DeterministicAgent):
             return output.model_dump()
 
         except Exception as e:
-            logger.error(f"Forest carbon calculation failed: {str(e)}", exc_info=True)
+            logger.error("Forest carbon calculation failed: %s", e, exc_info=True)
             raise
 
     def _determine_achievable_tier(

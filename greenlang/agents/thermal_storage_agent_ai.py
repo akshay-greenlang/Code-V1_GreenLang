@@ -1226,7 +1226,7 @@ class ThermalStorageAgent_AI(Agent[Dict[str, Any], Dict[str, Any]]):
             return result
 
         except Exception as e:
-            self.logger.error(f"Error in thermal storage analysis: {e}")
+            logger.error("Error in thermal storage analysis: %s", e)
             error_info: ErrorInfo = {
                 "type": "CalculationError",
                 "message": f"Failed to analyze thermal storage: {str(e)}",
@@ -1336,7 +1336,7 @@ class ThermalStorageAgent_AI(Agent[Dict[str, Any], Dict[str, Any]]):
             }
 
         except BudgetExceeded as e:
-            self.logger.error(f"Budget exceeded: {e}")
+            logger.error("Budget exceeded: %s", e)
             error_info: ErrorInfo = {
                 "type": "BudgetError",
                 "message": f"AI budget exceeded: {str(e)}",

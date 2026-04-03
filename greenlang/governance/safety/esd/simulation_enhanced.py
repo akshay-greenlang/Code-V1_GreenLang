@@ -592,7 +592,7 @@ class ESDSimulationEngine:
 
         self._components[component_id] = state
 
-        logger.debug(f"Registered simulation component: {component_id}")
+        logger.debug("Registered simulation component: %s", component_id)
 
         return state
 
@@ -638,7 +638,7 @@ class ESDSimulationEngine:
 
         self.scenarios[scenario.scenario_id] = scenario
 
-        logger.info(f"Created shutdown scenario: {scenario.scenario_id}")
+        logger.info("Created shutdown scenario: %s", scenario.scenario_id)
 
         return scenario
 
@@ -702,7 +702,7 @@ class ESDSimulationEngine:
 
         self.scenarios[scenario.scenario_id] = scenario
 
-        logger.info(f"Created fault scenario: {scenario.scenario_id}")
+        logger.info("Created fault scenario: %s", scenario.scenario_id)
 
         return scenario
 
@@ -883,7 +883,7 @@ class ESDSimulationEngine:
         if base_scenario_id not in self.scenarios:
             raise ValueError(f"Scenario not found: {base_scenario_id}")
 
-        logger.info(f"Starting what-if analysis: {question}")
+        logger.info("Starting what-if analysis: %s", question)
 
         base_scenario = self.scenarios[base_scenario_id]
 
@@ -1132,7 +1132,7 @@ class ESDSimulationEngine:
             comp.fault_type = fault_type
             comp.is_healthy = False
 
-            logger.info(f"Fault injected: {component_id} - {fault_type}")
+            logger.info("Fault injected: %s - %s", component_id, fault_type)
 
     def _execute_step(
         self,

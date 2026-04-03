@@ -137,7 +137,7 @@ class SurfaceTemperatureCalculator:
             SurfaceTemperatureResult with compliance status
         """
         self._calculation_count += 1
-        logger.debug(f"Checking surface temperature for {input_data.item_id}")
+        logger.debug("Checking surface temperature for %s", input_data.item_id)
 
         # Calculate current heat loss and surface temperature
         heat_loss_result = self.heat_loss_calc.calculate_heat_loss(input_data)

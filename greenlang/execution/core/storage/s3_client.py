@@ -184,7 +184,7 @@ class S3StorageClient:
         except ClientError as e:
             if e.response["Error"]["Code"] == "404":
                 return False
-            logger.error(f"Error checking object existence: {e}")
+            logger.error("Error checking object existence: %s", e)
             raise
 
     def upload(
@@ -253,11 +253,11 @@ class S3StorageClient:
                     **extra_args,
                 )
 
-            logger.info(f"Successfully uploaded {key} to S3")
+            logger.info("Successfully uploaded %s to S3", key)
             return True
 
         except (BotoCoreError, ClientError) as e:
-            logger.error(f"Failed to upload {key} to S3: {e}")
+            logger.error("Failed to upload %s to S3: %s", key, e)
             raise
 
     def _multipart_upload(
@@ -315,7 +315,7 @@ class S3StorageClient:
                 MultipartUpload={"Parts": parts},
             )
 
-            logger.info(f"Successfully completed multipart upload for {key}")
+            logger.info("Successfully completed multipart upload for %s", key)
             return True
 
         except (BotoCoreError, ClientError) as e:
@@ -328,7 +328,7 @@ class S3StorageClient:
                 )
             except Exception:
                 pass
-            logger.error(f"Failed multipart upload for {key}: {e}")
+            logger.error("Failed multipart upload for %s: %s", key, e)
             raise
 
     def download(self, key: str) -> bytes:
@@ -347,11 +347,11 @@ class S3StorageClient:
                 Key=key,
             )
             content = response["Body"].read()
-            logger.info(f"Successfully downloaded {key} from S3")
+            logger.info("Successfully downloaded %s from S3", key)
             return content
 
         except (BotoCoreError, ClientError) as e:
-            logger.error(f"Failed to download {key} from S3: {e}")
+            logger.error("Failed to download %s from S3: %s", key, e)
             raise
 
     def download_to_file(self, key: str, file_path: Path) -> bool:
@@ -372,11 +372,11 @@ class S3StorageClient:
                 Key=key,
                 Filename=str(file_path),
             )
-            logger.info(f"Successfully downloaded {key} to {file_path}")
+            logger.info("Successfully downloaded %s to %s", key, file_path)
             return True
 
         except (BotoCoreError, ClientError) as e:
-            logger.error(f"Failed to download {key} to {file_path}: {e}")
+            logger.error("Failed to download %s to %s: %s", key, file_path, e)
             raise
 
     def delete(self, key: str) -> bool:
@@ -394,11 +394,11 @@ class S3StorageClient:
                 Bucket=self.config.bucket_name,
                 Key=key,
             )
-            logger.info(f"Successfully deleted {key} from S3")
+            logger.info("Successfully deleted %s from S3", key)
             return True
 
         except (BotoCoreError, ClientError) as e:
-            logger.error(f"Failed to delete {key} from S3: {e}")
+            logger.error("Failed to delete %s from S3: %s", key, e)
             raise
 
     def delete_many(self, keys: List[str]) -> Dict[str, Any]:
@@ -420,11 +420,11 @@ class S3StorageClient:
             deleted = response.get("Deleted", [])
             errors = response.get("Errors", [])
 
-            logger.info(f"Deleted {len(deleted)} objects, {len(errors)} errors")
+            logger.info("Deleted %s objects, %s errors", len(deleted), len(errors))
             return {"Deleted": deleted, "Errors": errors}
 
         except (BotoCoreError, ClientError) as e:
-            logger.error(f"Failed to delete multiple objects: {e}")
+            logger.error("Failed to delete multiple objects: %s", e)
             raise
 
     def list_objects(
@@ -463,7 +463,7 @@ class S3StorageClient:
             }
 
         except (BotoCoreError, ClientError) as e:
-            logger.error(f"Failed to list objects with prefix {prefix}: {e}")
+            logger.error("Failed to list objects with prefix %s: %s", prefix, e)
             raise
 
     def get_object_metadata(self, key: str) -> Dict[str, Any]:
@@ -490,7 +490,7 @@ class S3StorageClient:
             }
 
         except (BotoCoreError, ClientError) as e:
-            logger.error(f"Failed to get metadata for {key}: {e}")
+            logger.error("Failed to get metadata for %s: %s", key, e)
             raise
 
     def generate_presigned_url(
@@ -519,11 +519,11 @@ class S3StorageClient:
                 },
                 ExpiresIn=expires_in,
             )
-            logger.info(f"Generated presigned URL for {key}")
+            logger.info("Generated presigned URL for %s", key)
             return url
 
         except (BotoCoreError, ClientError) as e:
-            logger.error(f"Failed to generate presigned URL for {key}: {e}")
+            logger.error("Failed to generate presigned URL for %s: %s", key, e)
             raise
 
     def copy(self, source_key: str, dest_key: str) -> bool:
@@ -550,11 +550,11 @@ class S3StorageClient:
                 CopySource=copy_source,
                 **extra_args,
             )
-            logger.info(f"Successfully copied {source_key} to {dest_key}")
+            logger.info("Successfully copied %s to %s", source_key, dest_key)
             return True
 
         except (BotoCoreError, ClientError) as e:
-            logger.error(f"Failed to copy {source_key} to {dest_key}: {e}")
+            logger.error("Failed to copy %s to %s: %s", source_key, dest_key, e)
             raise
 
     def get_bucket_size(self, prefix: str = "") -> int:

@@ -11,11 +11,12 @@ import logging
 from .framework import ValidationFramework, ValidationResult
 from .schema import SchemaValidator
 from .rules import RulesEngine
+from greenlang.utilities.exceptions.agent import AgentException
 
 logger = logging.getLogger(__name__)
 
 
-class ValidationException(Exception):
+class ValidationException(AgentException):
     """Exception raised when validation fails."""
 
     def __init__(self, result: ValidationResult):
@@ -76,7 +77,7 @@ def validate(
 
             # Handle result
             if not result.valid:
-                logger.error(f"Validation failed in {func.__name__}: {result.get_summary()}")
+                logger.error("Validation failed in %s: %s", func.__name__, result.get_summary())
 
                 if raise_on_error:
                     raise ValidationException(result)
@@ -154,7 +155,7 @@ def validate_output(schema: Optional[Dict[str, Any]] = None):
                 validation_result = validator.validate(result)
 
                 if not validation_result.valid:
-                    logger.error(f"Output validation failed in {func.__name__}: {validation_result.get_summary()}")
+                    logger.error("Output validation failed in %s: %s", func.__name__, validation_result.get_summary())
                     raise ValidationException(validation_result)
 
             return result

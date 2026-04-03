@@ -117,7 +117,7 @@ class Scope3BaseAgent(BaseAgent):
                         data = yaml.safe_load(f)
                         factors.update(data)
                 except Exception as e:
-                    self.logger.warning(f"Failed to load {factor_file}: {e}")
+                    logger.warning("Failed to load %s: %s", factor_file, e)
 
         return factors
 
@@ -300,7 +300,7 @@ class Scope3BaseAgent(BaseAgent):
             )
 
         except Exception as e:
-            self.logger.error(f"Calculation failed: {e}")
+            logger.error("Calculation failed: %s", e)
             return AgentResult(
                 success=False,
                 error=str(e),

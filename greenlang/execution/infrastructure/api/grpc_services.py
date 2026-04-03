@@ -136,17 +136,17 @@ class LoggingInterceptor(GRPCInterceptor):
         method = client_call_details.method
         start_time = datetime.utcnow()
 
-        logger.info(f"gRPC request: {method}")
+        logger.info("gRPC request: %s", method)
 
         try:
             response = await continuation(client_call_details, request)
             duration = (datetime.utcnow() - start_time).total_seconds() * 1000
-            logger.info(f"gRPC response: {method} duration={duration:.2f}ms")
+            logger.info("gRPC response: %s duration=%.2fms", method, duration)
             return response
 
         except Exception as e:
             duration = (datetime.utcnow() - start_time).total_seconds() * 1000
-            logger.error(f"gRPC error: {method} error={e} duration={duration:.2f}ms")
+            logger.error("gRPC error: %s error=%s duration=%.2fms", method, e, duration)
             raise
 
 
@@ -264,7 +264,7 @@ class GRPCServiceRegistry:
 
         self._health_status[service_name] = ServiceStatus.SERVING
 
-        logger.info(f"Registered gRPC service: {service_name}")
+        logger.info("Registered gRPC service: %s", service_name)
 
     def add_interceptor(self, interceptor: GRPCInterceptor) -> None:
         """
@@ -274,7 +274,7 @@ class GRPCServiceRegistry:
             interceptor: Interceptor to add
         """
         self._interceptors.append(interceptor)
-        logger.debug(f"Added interceptor: {type(interceptor).__name__}")
+        logger.debug("Added interceptor: %s", type(interceptor).__name__)
 
     async def start(self) -> Any:
         """
@@ -302,7 +302,7 @@ class GRPCServiceRegistry:
             # Add services
             for service_name, (servicer, add_func) in self._services.items():
                 add_func(servicer, self._server)
-                logger.debug(f"Added service to server: {service_name}")
+                logger.debug("Added service to server: %s", service_name)
 
             # Add health check
             if self.config.enable_health_check:
@@ -336,7 +336,7 @@ class GRPCServiceRegistry:
             return self._server
 
         except Exception as e:
-            logger.error(f"Failed to start gRPC server: {e}", exc_info=True)
+            logger.error("Failed to start gRPC server: %s", e, exc_info=True)
             raise
 
     async def stop(self, grace_period: float = 5.0) -> None:
@@ -361,7 +361,7 @@ class GRPCServiceRegistry:
             logger.info("gRPC server stopped")
 
         except Exception as e:
-            logger.error(f"Error stopping gRPC server: {e}")
+            logger.error("Error stopping gRPC server: %s", e)
 
     def _add_health_service(self) -> None:
         """Add health check service."""
@@ -408,7 +408,7 @@ class GRPCServiceRegistry:
             status: Health status
         """
         self._health_status[service_name] = status
-        logger.info(f"Service {service_name} status: {status.value}")
+        logger.info("Service %s status: %s", service_name, status.value)
 
     def get_service_status(self, service_name: str) -> ServiceStatus:
         """
@@ -505,5 +505,5 @@ service {service_def.name} {{
     with open(proto_path, "w") as f:
         f.write(proto_content)
 
-    logger.info(f"Generated proto file: {proto_path}")
+    logger.info("Generated proto file: %s", proto_path)
     return proto_path

@@ -272,7 +272,7 @@ class ProofTestScheduler:
         Raises:
             ValueError: If parameters are invalid
         """
-        logger.info(f"Creating proof test schedule for {equipment_id}")
+        logger.info("Creating proof test schedule for %s", equipment_id)
 
         # Validate SIL-specific constraints
         max_interval = self.MAX_INTERVALS_BY_SIL.get(target_sil, 87600)
@@ -359,7 +359,7 @@ class ProofTestScheduler:
         Raises:
             ValueError: If equipment_id not found in schedules
         """
-        logger.info(f"Recording {test_type.value} for {equipment_id}")
+        logger.info("Recording %s for %s", test_type.value, equipment_id)
 
         if equipment_id not in self.schedules:
             raise ValueError(f"No schedule found for equipment: {equipment_id}")

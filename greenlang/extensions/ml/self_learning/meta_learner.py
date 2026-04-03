@@ -426,7 +426,7 @@ class MetaLearner:
         start_time = datetime.utcnow()
         task_id = task_id or f"task_{len(self._task_history)}"
 
-        logger.info(f"Adapting to task {task_id} with {len(support_X)} samples")
+        logger.info("Adapting to task %s with %s samples", task_id, len(support_X))
 
         # Perform inner loop
         adapted_model, losses = self._inner_loop(
@@ -595,7 +595,7 @@ class MetaLearner:
         start_time = datetime.utcnow()
         training_history = []
 
-        logger.info(f"Starting REPTILE training with {len(tasks)} tasks")
+        logger.info("Starting REPTILE training with %s tasks", len(tasks))
 
         for iteration in range(n_iterations):
             # Sample a task

@@ -458,7 +458,7 @@ class RiskRegister:
             "updates": updates
         })
 
-        logger.info(f"Risk updated: {risk_id} (Status: {old_status.value} -> {risk.status.value})")
+        logger.info("Risk updated: %s (Status: %s -> %s)", risk_id, old_status.value, risk.status.value)
         return risk
 
     def get_open_risks(self, category: Optional[RiskCategory] = None) -> List[RiskData]:
@@ -543,7 +543,7 @@ class RiskRegister:
 
             created_risks.append(self.add_risk(risk))
 
-        logger.info(f"Imported {len(created_risks)} risks from HAZOP")
+        logger.info("Imported %s risks from HAZOP", len(created_risks))
         return created_risks
 
     def import_from_fmea(self, failure_modes: List[Dict[str, Any]]) -> List[RiskData]:
@@ -585,7 +585,7 @@ class RiskRegister:
 
             created_risks.append(self.add_risk(risk))
 
-        logger.info(f"Imported {len(created_risks)} risks from FMEA")
+        logger.info("Imported %s risks from FMEA", len(created_risks))
         return created_risks
 
     def generate_report(self, as_json: bool = False) -> Dict[str, Any]:

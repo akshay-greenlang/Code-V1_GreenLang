@@ -164,7 +164,7 @@ class AvroSchemaRegistry:
             schema_id = len(self._schemas)
 
         self._schema_ids[subject] = schema_id
-        logger.info(f"Registered schema '{subject}' with ID {schema_id}")
+        logger.info("Registered schema '%s' with ID %s", subject, schema_id)
         return schema_id
 
     def get_schema(self, subject: str) -> Optional[Dict]:
@@ -309,7 +309,7 @@ class KafkaAvroProducer:
             logger.info("Kafka producer started successfully")
 
         except Exception as e:
-            logger.error(f"Failed to start producer: {e}", exc_info=True)
+            logger.error("Failed to start producer: %s", e, exc_info=True)
             raise ConnectionError(f"Failed to connect to Kafka: {e}") from e
 
     async def stop(self) -> None:
@@ -331,7 +331,7 @@ class KafkaAvroProducer:
             logger.info("Kafka producer stopped")
 
         except Exception as e:
-            logger.error(f"Error stopping producer: {e}")
+            logger.error("Error stopping producer: %s", e)
 
     def _create_ssl_context(self) -> Optional[Any]:
         """Create SSL context if configured."""
@@ -435,7 +435,7 @@ class KafkaAvroProducer:
 
         except Exception as e:
             self._metrics["errors"] += 1
-            logger.error(f"Failed to send message: {e}")
+            logger.error("Failed to send message: %s", e)
             raise
 
     async def send_batch(
@@ -465,7 +465,7 @@ class KafkaAvroProducer:
             )
             results.append(result)
 
-        logger.info(f"Sent batch of {len(records)} messages")
+        logger.info("Sent batch of %s messages", len(records))
         return results
 
     async def begin_transaction(self) -> None:

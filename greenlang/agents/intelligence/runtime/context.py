@@ -124,7 +124,7 @@ class ContextManager:
                 return limit
 
         # Default fallback (conservative)
-        logger.warning(f"Unknown model {model}, using conservative limit: 8192")
+        logger.warning("Unknown model %s, using conservative limit: 8192", model)
         return 8_192
 
     def estimate_tokens(self, messages: List[ChatMessage]) -> int:

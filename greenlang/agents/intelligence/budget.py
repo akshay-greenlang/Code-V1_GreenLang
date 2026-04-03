@@ -33,6 +33,7 @@ from datetime import datetime, timedelta
 from enum import Enum
 from typing import Any, Dict, List, Optional
 from greenlang.utilities.determinism import deterministic_uuid, DeterministicClock
+from greenlang.exceptions import AgentException
 
 logger = logging.getLogger(__name__)
 
@@ -45,7 +46,7 @@ class BudgetPeriod(Enum):
     MONTH = "month"
 
 
-class BudgetExceededError(Exception):
+class BudgetExceededError(AgentException):
     """Raised when budget is exceeded"""
 
     def __init__(self, message: str, budget_type: BudgetPeriod, limit: float, current: float):
@@ -266,7 +267,7 @@ class BudgetTracker:
         """
         pricing = self.pricing.get(model)
         if not pricing:
-            logger.warning(f"Unknown model pricing: {model}. Using default.")
+            logger.warning("Unknown model pricing: %s. Using default.", model)
             pricing = self.pricing.get("gpt-3.5-turbo")
 
         return pricing.calculate_cost(input_tokens, output_tokens)
@@ -389,7 +390,7 @@ class BudgetTracker:
         # Update metrics
         self._update_metrics(usage)
 
-        logger.debug(f"Recorded usage: {request_id}, cost=${cost:.4f}")
+        logger.debug("Recorded usage: %s, cost=$%.4f", request_id, cost)
 
         return usage
 
@@ -493,7 +494,7 @@ class BudgetTracker:
             if usage.timestamp >= before
         ]
 
-        logger.info(f"Cleared usage history before {before.isoformat()}")
+        logger.info("Cleared usage history before %s", before.isoformat())
 
 
 if __name__ == "__main__":

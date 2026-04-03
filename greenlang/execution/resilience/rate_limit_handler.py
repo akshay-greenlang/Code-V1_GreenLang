@@ -458,7 +458,7 @@ class RateLimiter:
 
             # Wait if configured
             if wait or config.wait_on_limit:
-                logger.info(f"Waiting {wait_time:.2f}s for rate limit...")
+                logger.info("Waiting %.2fs for rate limit...", wait_time)
                 time.sleep(wait_time)
                 return limiter.consume(amount)
 
@@ -509,7 +509,7 @@ class RateLimiter:
 
             # Wait if configured
             if wait or config.wait_on_limit:
-                logger.info(f"Waiting {wait_time:.2f}s for rate limit...")
+                logger.info("Waiting %.2fs for rate limit...", wait_time)
                 await asyncio.sleep(wait_time)
                 return limiter.consume(amount)
 

@@ -211,7 +211,7 @@ class FoulingAnalyzer:
             raise ValueError("Clean U value must be positive")
 
         self.clean_u_w_m2k = u_clean_w_m2k
-        logger.info(f"Clean baseline set: {u_clean_w_m2k:.1f} W/m2K")
+        logger.info("Clean baseline set: %.1f W/m2K", u_clean_w_m2k)
 
     def add_data_point(
         self,
@@ -747,7 +747,7 @@ class FoulingAnalyzer:
                 pred = self.predict_fouling(days, current_fouling)
                 predictions.append(pred)
             except Exception as e:
-                logger.warning(f"Prediction failed for {days} days: {e}")
+                logger.warning("Prediction failed for %s days: %s", days, e)
 
         return predictions
 

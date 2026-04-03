@@ -1759,7 +1759,7 @@ class WasteHeatRecoveryAgent_AI(BaseAgent):
             return result
 
         except Exception as e:
-            logger.error(f"Error in waste heat recovery analysis: {e}")
+            logger.error("Error in waste heat recovery analysis: %s", e)
             return AgentResult(
                 success=False,
                 error=f"Failed to analyze waste heat recovery: {str(e)}",
@@ -1776,7 +1776,7 @@ class WasteHeatRecoveryAgent_AI(BaseAgent):
 
         for field in required_fields:
             if field not in input_data:
-                logger.error(f"Missing required field: {field}")
+                logger.error("Missing required field: %s", field)
                 return False
 
         return True

@@ -358,7 +358,7 @@ class LIMEHeatRecoveryExplainer:
             "r_squared": r_squared,
         })
 
-        logger.info(f"Opportunity explanation generated: {explanation_id} (R^2={r_squared:.3f})")
+        logger.info("Opportunity explanation generated: %s (R^2=%.3f)", explanation_id, r_squared)
 
         return explanation
 
@@ -432,7 +432,7 @@ class LIMEHeatRecoveryExplainer:
             "r_squared": r_squared,
         })
 
-        logger.info(f"Recovery potential explanation generated: {explanation_id}")
+        logger.info("Recovery potential explanation generated: %s", explanation_id)
 
         return explanation
 

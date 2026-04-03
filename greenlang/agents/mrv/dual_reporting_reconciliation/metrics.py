@@ -349,7 +349,7 @@ class DualReportingReconciliationMetrics:
         try:
             # Validate status
             if status not in [s.value for s in ReconciliationStatus]:
-                logger.warning(f"Invalid reconciliation status: {status}")
+                logger.warning("Invalid reconciliation status: %s", status)
                 status = ReconciliationStatus.FAILED.value
 
             # Record reconciliation count
@@ -385,7 +385,7 @@ class DualReportingReconciliationMetrics:
             )
 
         except Exception as e:
-            logger.error(f"Failed to record reconciliation metrics: {e}", exc_info=True)
+            logger.error("Failed to record reconciliation metrics: %s", e, exc_info=True)
 
     def record_discrepancy(
         self,
@@ -411,15 +411,15 @@ class DualReportingReconciliationMetrics:
         try:
             # Validate inputs
             if discrepancy_type not in [d.value for d in DiscrepancyType]:
-                logger.warning(f"Invalid discrepancy type: {discrepancy_type}")
+                logger.warning("Invalid discrepancy type: %s", discrepancy_type)
                 discrepancy_type = DiscrepancyType.ENERGY_MISMATCH.value
 
             if materiality not in [m.value for m in Materiality]:
-                logger.warning(f"Invalid materiality: {materiality}")
+                logger.warning("Invalid materiality: %s", materiality)
                 materiality = Materiality.MEDIUM.value
 
             if direction not in [d.value for d in Direction]:
-                logger.warning(f"Invalid direction: {direction}")
+                logger.warning("Invalid direction: %s", direction)
                 direction = Direction.NEUTRAL.value
 
             # Record discrepancy
@@ -438,7 +438,7 @@ class DualReportingReconciliationMetrics:
             )
 
         except Exception as e:
-            logger.error(f"Failed to record discrepancy metrics: {e}", exc_info=True)
+            logger.error("Failed to record discrepancy metrics: %s", e, exc_info=True)
 
     def record_quality_score(
         self,
@@ -464,7 +464,7 @@ class DualReportingReconciliationMetrics:
         try:
             # Validate dimension
             if dimension not in [d.value for d in QualityDimension]:
-                logger.warning(f"Invalid quality dimension: {dimension}")
+                logger.warning("Invalid quality dimension: %s", dimension)
                 dimension = QualityDimension.OVERALL.value
 
             # Clamp score to valid range
@@ -489,7 +489,7 @@ class DualReportingReconciliationMetrics:
 
             # Validate grade
             if grade not in [g.value for g in QualityGrade]:
-                logger.warning(f"Invalid quality grade: {grade}")
+                logger.warning("Invalid quality grade: %s", grade)
                 grade = QualityGrade.FAIR.value
 
             # Record quality grade
@@ -503,7 +503,7 @@ class DualReportingReconciliationMetrics:
             )
 
         except Exception as e:
-            logger.error(f"Failed to record quality score metrics: {e}", exc_info=True)
+            logger.error("Failed to record quality score metrics: %s", e, exc_info=True)
 
     def record_report_generated(self, framework: str) -> None:
         """
@@ -518,7 +518,7 @@ class DualReportingReconciliationMetrics:
         try:
             # Validate framework
             if framework not in [f.value for f in Framework]:
-                logger.warning(f"Invalid framework: {framework}")
+                logger.warning("Invalid framework: %s", framework)
                 framework = Framework.GHG_PROTOCOL.value
 
             # Record report generation
@@ -529,10 +529,10 @@ class DualReportingReconciliationMetrics:
             # Update in-memory stats
             self._in_memory_stats['reports_generated'] += 1
 
-            logger.debug(f"Recorded report generation: framework={framework}")
+            logger.debug("Recorded report generation: framework=%s", framework)
 
         except Exception as e:
-            logger.error(f"Failed to record report generation metrics: {e}", exc_info=True)
+            logger.error("Failed to record report generation metrics: %s", e, exc_info=True)
 
     def record_trend_analysis(self, tenant_id: str) -> None:
         """
@@ -553,10 +553,10 @@ class DualReportingReconciliationMetrics:
             # Update in-memory stats
             self._in_memory_stats['trend_analyses'] += 1
 
-            logger.debug(f"Recorded trend analysis: tenant={tenant_id}")
+            logger.debug("Recorded trend analysis: tenant=%s", tenant_id)
 
         except Exception as e:
-            logger.error(f"Failed to record trend analysis metrics: {e}", exc_info=True)
+            logger.error("Failed to record trend analysis metrics: %s", e, exc_info=True)
 
     def record_compliance_check(self, framework: str, status: str) -> None:
         """
@@ -572,12 +572,12 @@ class DualReportingReconciliationMetrics:
         try:
             # Validate framework
             if framework not in [f.value for f in Framework]:
-                logger.warning(f"Invalid framework: {framework}")
+                logger.warning("Invalid framework: %s", framework)
                 framework = Framework.GHG_PROTOCOL.value
 
             # Validate status
             if status not in [s.value for s in ComplianceStatus]:
-                logger.warning(f"Invalid compliance status: {status}")
+                logger.warning("Invalid compliance status: %s", status)
                 status = ComplianceStatus.NOT_APPLICABLE.value
 
             # Record compliance check
@@ -594,7 +594,7 @@ class DualReportingReconciliationMetrics:
             )
 
         except Exception as e:
-            logger.error(f"Failed to record compliance check metrics: {e}", exc_info=True)
+            logger.error("Failed to record compliance check metrics: %s", e, exc_info=True)
 
     def record_batch(self, tenant_id: str, batch_size: int) -> None:
         """
@@ -613,10 +613,10 @@ class DualReportingReconciliationMetrics:
                 tenant_id=tenant_id
             ).observe(batch_size)
 
-            logger.debug(f"Recorded batch: tenant={tenant_id}, size={batch_size}")
+            logger.debug("Recorded batch: tenant=%s, size=%s", tenant_id, batch_size)
 
         except Exception as e:
-            logger.error(f"Failed to record batch metrics: {e}", exc_info=True)
+            logger.error("Failed to record batch metrics: %s", e, exc_info=True)
 
     def record_error(self, error_type: str, operation: str) -> None:
         """
@@ -632,7 +632,7 @@ class DualReportingReconciliationMetrics:
         try:
             # Validate error type
             if error_type not in [e.value for e in ErrorType]:
-                logger.warning(f"Invalid error type: {error_type}")
+                logger.warning("Invalid error type: %s", error_type)
                 error_type = ErrorType.VALIDATION_ERROR.value
 
             # Record error
@@ -644,10 +644,10 @@ class DualReportingReconciliationMetrics:
             # Update in-memory stats
             self._in_memory_stats['errors'] += 1
 
-            logger.debug(f"Recorded error: type={error_type}, operation={operation}")
+            logger.debug("Recorded error: type=%s, operation=%s", error_type, operation)
 
         except Exception as e:
-            logger.error(f"Failed to record error metrics: {e}", exc_info=True)
+            logger.error("Failed to record error metrics: %s", e, exc_info=True)
 
     def get_metrics_summary(self) -> Dict[str, Any]:
         """
@@ -691,11 +691,11 @@ class DualReportingReconciliationMetrics:
                 }
             }
 
-            logger.debug(f"Generated metrics summary: {summary}")
+            logger.debug("Generated metrics summary: %s", summary)
             return summary
 
         except Exception as e:
-            logger.error(f"Failed to generate metrics summary: {e}", exc_info=True)
+            logger.error("Failed to generate metrics summary: %s", e, exc_info=True)
             return {
                 'error': str(e),
                 'prometheus_available': PROMETHEUS_AVAILABLE,
@@ -778,7 +778,7 @@ class DualReportingReconciliationMetrics:
             )
 
         except Exception as e:
-            logger.error(f"Failed to record batch reconciliation metrics: {e}", exc_info=True)
+            logger.error("Failed to record batch reconciliation metrics: %s", e, exc_info=True)
 
     def reset_stats(self) -> None:
         """
@@ -804,7 +804,7 @@ class DualReportingReconciliationMetrics:
             logger.info("Reset in-memory statistics")
 
         except Exception as e:
-            logger.error(f"Failed to reset statistics: {e}", exc_info=True)
+            logger.error("Failed to reset statistics: %s", e, exc_info=True)
 
 
 # Singleton instance for module-level access

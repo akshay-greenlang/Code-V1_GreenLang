@@ -148,7 +148,7 @@ class FormatRegistry:
         """
         key = (from_format, to_format)
         self._converters[key] = converter_func
-        logger.debug(f"Registered converter: {from_format} -> {to_format}")
+        logger.debug("Registered converter: %s -> %s", from_format, to_format)
 
     def convert(self, data: Any, from_format: Format, to_format: Format) -> Any:
         """

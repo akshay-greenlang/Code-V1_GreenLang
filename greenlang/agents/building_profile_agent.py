@@ -301,7 +301,7 @@ class BuildingProfileAgent(IntelligenceMixin, BaseAgent):
             )
 
         except Exception as e:
-            logger.error(f"Error profiling building: {e}")
+            logger.error("Error profiling building: %s", e)
             return AgentResult(success=False, error=str(e))
 
     def _get_climate_adjustments(self, climate_zone: Optional[str]) -> Dict:

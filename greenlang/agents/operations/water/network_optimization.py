@@ -189,7 +189,7 @@ class WaterNetworkOptimizationAgent(BaseAgent):
                 version=self.VERSION,
             )
         super().__init__(config)
-        self.logger.info(f"Initialized {self.AGENT_ID}: {self.AGENT_NAME}")
+        logger.info("Initialized %s: %s", self.AGENT_ID, self.AGENT_NAME)
 
     def execute(self, input_data: Dict[str, Any]) -> AgentResult:
         """Execute network optimization."""
@@ -267,7 +267,7 @@ class WaterNetworkOptimizationAgent(BaseAgent):
             )
 
         except Exception as e:
-            self.logger.error(f"Network optimization failed: {e}", exc_info=True)
+            logger.error("Network optimization failed: %s", e, exc_info=True)
             return AgentResult(success=False, error=str(e))
 
     def _calculate_pumping_energy(self, net_input: NetworkOptimizationInput) -> float:

@@ -344,7 +344,10 @@ class FlagLifecycleManager:
 # ---------------------------------------------------------------------------
 
 
-class InvalidTransitionError(Exception):
+from greenlang.utilities.exceptions.infrastructure import InfrastructureException as _InfrastructureException
+
+
+class InvalidTransitionError(_InfrastructureException):
     """Raised when a flag lifecycle transition is not valid.
 
     Attributes:

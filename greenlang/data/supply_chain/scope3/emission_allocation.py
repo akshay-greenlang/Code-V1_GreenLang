@@ -475,7 +475,7 @@ class Scope3Allocator:
             profile: Supplier emission profile
         """
         self._supplier_profiles[profile.supplier_id] = profile
-        logger.debug(f"Added supplier profile: {profile.supplier_id}")
+        logger.debug("Added supplier profile: %s", profile.supplier_id)
 
     def get_supplier_profile(
         self,

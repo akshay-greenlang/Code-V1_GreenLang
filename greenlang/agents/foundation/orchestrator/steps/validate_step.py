@@ -63,6 +63,7 @@ from greenlang.agents.foundation.schema.models.report import ValidationReport
 from greenlang.agents.foundation.schema.models.schema_ref import SchemaRef
 from greenlang.agents.foundation.schema.registry.resolver import SchemaRegistry
 from greenlang.schemas import GreenLangBase
+from greenlang.utilities.exceptions.agent import AgentException
 
 # NOTE: Step registry functions are defined in __init__.py
 # We avoid importing them here to prevent circular imports.
@@ -94,7 +95,7 @@ ERROR_CODES = {
 # =============================================================================
 
 
-class ValidationFailedError(Exception):
+class ValidationFailedError(AgentException):
     """
     Exception raised when validation fails and fail_on_warnings or errors are present.
 
@@ -756,7 +757,7 @@ class ValidateStep:
             raise
 
         except Exception as e:
-            logger.error(f"ValidateStep failed: {str(e)}", exc_info=True)
+            logger.error("ValidateStep failed: %s", e, exc_info=True)
             raise ValidationFailedError(
                 message=f"Validation step failed: {str(e)}",
                 error_count=1,
@@ -970,10 +971,10 @@ def register_validate_step() -> None:
 
     try:
         register_step(STEP_TYPE, ValidateStep)
-        logger.info(f"Registered step type: {STEP_TYPE}")
+        logger.info("Registered step type: %s", STEP_TYPE)
     except ValueError:
         # Already registered, skip
-        logger.debug(f"Step type {STEP_TYPE} already registered")
+        logger.debug("Step type %s already registered", STEP_TYPE)
 
 
 def create_validate_step(

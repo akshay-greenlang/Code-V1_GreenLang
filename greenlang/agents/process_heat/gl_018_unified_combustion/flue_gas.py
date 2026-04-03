@@ -247,7 +247,7 @@ class FlueGasAnalyzer:
             ValueError: If fuel type not found or O2 >= 21%
         """
         self._calculation_count += 1
-        logger.debug(f"Analyzing flue gas: O2={flue_gas_reading.o2_pct}%, fuel={fuel_type}")
+        logger.debug("Analyzing flue gas: O2=%s%, fuel=%s", flue_gas_reading.o2_pct, fuel_type)
 
         # Get fuel properties
         fuel_key = fuel_type.lower().replace(" ", "_").replace("-", "_")

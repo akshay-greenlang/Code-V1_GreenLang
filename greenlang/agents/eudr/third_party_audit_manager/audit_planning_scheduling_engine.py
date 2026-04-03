@@ -286,7 +286,7 @@ class AuditPlanningSchedulingEngine:
             return response
 
         except Exception as e:
-            logger.error(f"Audit scheduling failed: {e}", exc_info=True)
+            logger.error("Audit scheduling failed: %s", e, exc_info=True)
             raise
 
     def calculate_priority_score(

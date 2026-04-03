@@ -73,7 +73,7 @@ class TelemetryCollector(BaseInfrastructureComponent):
 
     def _initialize(self) -> None:
         """Initialize telemetry resources."""
-        logger.info(f"TelemetryCollector initialized with buffer_size={self.buffer_size}")
+        logger.info("TelemetryCollector initialized with buffer_size=%s", self.buffer_size)
 
     def start(self) -> None:
         """Start the telemetry collector."""
@@ -116,7 +116,7 @@ class TelemetryCollector(BaseInfrastructureComponent):
         elif metric.type == MetricType.TIMER:
             self.timers[metric_key].append(value)
 
-        logger.debug(f"Recorded metric: {name}={value} with tags={tags}")
+        logger.debug("Recorded metric: %s=%s with tags=%s", name, value, tags)
 
     def increment(self, name: str, value: float = 1.0, tags: Optional[Dict[str, str]] = None) -> None:
         """

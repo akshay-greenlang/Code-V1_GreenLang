@@ -154,7 +154,7 @@ class FormulaExecutionEngine:
         except ValidationError as e:
             # Input/output validation failed
             execution_time_ms = (time.time() - start_time) * 1000
-            logger.error(f"Validation error in {formula_code}: {e}")
+            logger.error("Validation error in %s: %s", formula_code, e)
 
             result = FormulaExecutionResult(
                 formula_version_id=version.id if version else 0,
@@ -172,7 +172,7 @@ class FormulaExecutionEngine:
         except Exception as e:
             # Unexpected error
             execution_time_ms = (time.time() - start_time) * 1000
-            logger.error(f"Execution error in {formula_code}: {e}", exc_info=True)
+            logger.error("Execution error in %s: %s", formula_code, e, exc_info=True)
 
             result = FormulaExecutionResult(
                 formula_version_id=version.id if version else 0,

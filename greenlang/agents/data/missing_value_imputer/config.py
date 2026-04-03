@@ -32,10 +32,13 @@ Status: Production Ready
 from __future__ import annotations
 
 import logging
-import os
-import threading
 from dataclasses import dataclass
-from typing import Any, Optional
+
+from greenlang.data_commons.config_base import (
+    BaseDataConfig,
+    EnvReader,
+    create_config_singleton,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -52,77 +55,42 @@ _ENV_PREFIX = "GL_MVI_"
 
 
 @dataclass
-class MissingValueImputerConfig:
-    """Complete configuration for the GreenLang Missing Value Imputer SDK.
+class MissingValueImputerConfig(BaseDataConfig):
+    """Configuration for the GreenLang Missing Value Imputer SDK.
 
-    Attributes are grouped by concern: connections, record processing,
-    imputation strategy, statistical parameters, KNN parameters, MICE
-    parameters, ML imputation, time-series imputation, rule-based
-    imputation, validation, worker pool, cache, rate limiting,
-    provenance, and logging.
+    Inherits shared connection, pool, batch, and logging fields from
+    ``BaseDataConfig``.  Only imputer-specific fields are declared here.
 
     All attributes can be overridden via environment variables using the
     ``GL_MVI_`` prefix.
 
     Attributes:
-        database_url: PostgreSQL connection URL for persistent storage.
-        redis_url: Redis connection URL for caching layer.
-        s3_bucket_url: S3 bucket URL for artifact and report storage.
-        log_level: Logging level for the missing value imputer service.
         batch_size: Default batch size for record processing.
         max_records: Maximum records allowed in a single imputation job.
-        default_strategy: Default imputation strategy when auto-selecting
-            (auto, mean, median, mode, knn, regression, mice,
-            random_forest, gradient_boosting, linear_interpolation,
-            spline_interpolation, seasonal_decomposition, rule_based,
-            lookup_table, regulatory_default).
+        default_strategy: Default imputation strategy.
+        confidence_threshold: Minimum confidence score for an imputed value.
+        max_missing_pct: Maximum fraction of missing values before flagging.
+        enable_statistical: Whether statistical imputation is enabled.
         knn_neighbors: Number of nearest neighbors for KNN imputation.
+        max_knn_dataset_size: Maximum dataset size for KNN imputation.
         mice_iterations: Number of MICE algorithm iterations.
-        confidence_threshold: Minimum confidence score (0.0-1.0) for
-            an imputed value to be accepted.
-        max_missing_pct: Maximum fraction of missing values in a column
-            before it is flagged as too sparse for reliable imputation.
-        enable_ml_imputation: Whether ML-based imputation strategies
-            (random forest, gradient boosting) are enabled.
-        enable_timeseries: Whether time-series imputation strategies
-            (interpolation, seasonal decomposition) are enabled.
-        multiple_imputations: Number of multiple imputations to generate
-            for uncertainty estimation (MICE, Bayesian methods).
-        validation_split: Fraction of non-missing data held out for
-            imputation validation (0.0-1.0).
+        multiple_imputations: Number of multiple imputations for uncertainty.
+        enable_ml_imputation: Whether ML-based imputation is enabled.
+        enable_timeseries: Whether time-series imputation is enabled.
+        interpolation_method: Default interpolation method for time-series.
+        seasonal_period: Seasonal period for time-series decomposition.
+        trend_window: Window size for trend estimation.
+        enable_rule_based: Whether rule-based imputation is enabled.
+        validation_split: Fraction of non-missing data held out for validation.
         worker_count: Number of parallel workers for batch processing.
-        pool_min_size: Minimum connection pool size.
-        pool_max_size: Maximum connection pool size.
         cache_ttl: Cache time-to-live in seconds for strategy results.
         rate_limit_rpm: Rate limit in requests per minute.
         rate_limit_burst: Maximum burst size for rate limiting.
         enable_provenance: Whether SHA-256 provenance tracking is enabled.
-        provenance_hash_algorithm: Hash algorithm for provenance tracking
-            (sha256, sha384, sha512).
-        enable_rule_based: Whether rule-based imputation is enabled.
-        enable_statistical: Whether statistical imputation strategies
-            (mean, median, mode) are enabled.
-        max_knn_dataset_size: Maximum dataset size for KNN imputation
-            before switching to approximate nearest neighbors.
-        interpolation_method: Default interpolation method for time-series
-            imputation (linear, quadratic, cubic, spline, polynomial).
-        seasonal_period: Seasonal period for time-series decomposition
-            (e.g. 12 for monthly data with annual seasonality).
-        trend_window: Window size for trend estimation in time-series
-            imputation (number of periods).
-        default_confidence_method: Default method for computing imputation
-            confidence scores (ensemble, bootstrap, cross_validation,
-            distance_weighted, rule_priority).
+        provenance_hash_algorithm: Hash algorithm for provenance tracking.
         enable_metrics: Whether Prometheus metrics collection is enabled.
+        default_confidence_method: Default method for computing confidence scores.
     """
-
-    # -- Connections ---------------------------------------------------------
-    database_url: str = ""
-    redis_url: str = ""
-    s3_bucket_url: str = ""
-
-    # -- Logging -------------------------------------------------------------
-    log_level: str = "INFO"
 
     # -- Record processing ---------------------------------------------------
     batch_size: int = 1000
@@ -161,8 +129,6 @@ class MissingValueImputerConfig:
 
     # -- Worker pool ---------------------------------------------------------
     worker_count: int = 4
-    pool_min_size: int = 2
-    pool_max_size: int = 10
 
     # -- Cache ---------------------------------------------------------------
     cache_ttl: int = 3600
@@ -182,7 +148,7 @@ class MissingValueImputerConfig:
     default_confidence_method: str = "ensemble"
 
     # ------------------------------------------------------------------
-    # Factory helpers
+    # Factory
     # ------------------------------------------------------------------
 
     @classmethod
@@ -191,147 +157,98 @@ class MissingValueImputerConfig:
 
         Every field can be overridden via ``GL_MVI_<FIELD_UPPER>``.
         Boolean values accept ``true/1/yes`` (case-insensitive).
-        Integer values are parsed via ``int()``.
-        Float values are parsed via ``float()``.
 
         Returns:
             Populated MissingValueImputerConfig instance.
         """
-        prefix = _ENV_PREFIX
-
-        def _env(name: str, default: Any = None) -> Optional[str]:
-            return os.environ.get(f"{prefix}{name}", default)
-
-        def _bool(name: str, default: bool) -> bool:
-            val = _env(name)
-            if val is None:
-                return default
-            return val.lower() in ("true", "1", "yes")
-
-        def _int(name: str, default: int) -> int:
-            val = _env(name)
-            if val is None:
-                return default
-            try:
-                return int(val)
-            except ValueError:
-                logger.warning(
-                    "Invalid integer for %s%s=%s, using default %d",
-                    prefix, name, val, default,
-                )
-                return default
-
-        def _float(name: str, default: float) -> float:
-            val = _env(name)
-            if val is None:
-                return default
-            try:
-                return float(val)
-            except ValueError:
-                logger.warning(
-                    "Invalid float for %s%s=%s, using default %f",
-                    prefix, name, val, default,
-                )
-                return default
-
-        def _str(name: str, default: str) -> str:
-            val = _env(name)
-            if val is None:
-                return default
-            return val
+        env = EnvReader(_ENV_PREFIX)
+        base_kwargs = cls._base_kwargs_from_env(env)
 
         config = cls(
-            # Connections
-            database_url=_str("DATABASE_URL", cls.database_url),
-            redis_url=_str("REDIS_URL", cls.redis_url),
-            s3_bucket_url=_str("S3_BUCKET_URL", cls.s3_bucket_url),
-            # Logging
-            log_level=_str("LOG_LEVEL", cls.log_level),
+            **base_kwargs,
             # Record processing
-            batch_size=_int("BATCH_SIZE", cls.batch_size),
-            max_records=_int("MAX_RECORDS", cls.max_records),
+            batch_size=env.int("BATCH_SIZE", cls.batch_size),
+            max_records=env.int("MAX_RECORDS", cls.max_records),
             # Imputation strategy
-            default_strategy=_str(
+            default_strategy=env.str(
                 "DEFAULT_STRATEGY", cls.default_strategy,
             ),
-            confidence_threshold=_float(
+            confidence_threshold=env.float(
                 "CONFIDENCE_THRESHOLD", cls.confidence_threshold,
             ),
-            max_missing_pct=_float(
+            max_missing_pct=env.float(
                 "MAX_MISSING_PCT", cls.max_missing_pct,
             ),
             # Statistical parameters
-            enable_statistical=_bool(
+            enable_statistical=env.bool(
                 "ENABLE_STATISTICAL", cls.enable_statistical,
             ),
             # KNN parameters
-            knn_neighbors=_int(
+            knn_neighbors=env.int(
                 "KNN_NEIGHBORS", cls.knn_neighbors,
             ),
-            max_knn_dataset_size=_int(
+            max_knn_dataset_size=env.int(
                 "MAX_KNN_DATASET_SIZE", cls.max_knn_dataset_size,
             ),
             # MICE parameters
-            mice_iterations=_int(
+            mice_iterations=env.int(
                 "MICE_ITERATIONS", cls.mice_iterations,
             ),
-            multiple_imputations=_int(
+            multiple_imputations=env.int(
                 "MULTIPLE_IMPUTATIONS", cls.multiple_imputations,
             ),
             # ML imputation
-            enable_ml_imputation=_bool(
+            enable_ml_imputation=env.bool(
                 "ENABLE_ML_IMPUTATION", cls.enable_ml_imputation,
             ),
             # Time-series imputation
-            enable_timeseries=_bool(
+            enable_timeseries=env.bool(
                 "ENABLE_TIMESERIES", cls.enable_timeseries,
             ),
-            interpolation_method=_str(
+            interpolation_method=env.str(
                 "INTERPOLATION_METHOD", cls.interpolation_method,
             ),
-            seasonal_period=_int(
+            seasonal_period=env.int(
                 "SEASONAL_PERIOD", cls.seasonal_period,
             ),
-            trend_window=_int(
+            trend_window=env.int(
                 "TREND_WINDOW", cls.trend_window,
             ),
             # Rule-based imputation
-            enable_rule_based=_bool(
+            enable_rule_based=env.bool(
                 "ENABLE_RULE_BASED", cls.enable_rule_based,
             ),
             # Validation
-            validation_split=_float(
+            validation_split=env.float(
                 "VALIDATION_SPLIT", cls.validation_split,
             ),
             # Worker pool
-            worker_count=_int(
+            worker_count=env.int(
                 "WORKER_COUNT", cls.worker_count,
             ),
-            pool_min_size=_int("POOL_MIN_SIZE", cls.pool_min_size),
-            pool_max_size=_int("POOL_MAX_SIZE", cls.pool_max_size),
             # Cache
-            cache_ttl=_int("CACHE_TTL", cls.cache_ttl),
+            cache_ttl=env.int("CACHE_TTL", cls.cache_ttl),
             # Rate limiting
-            rate_limit_rpm=_int(
+            rate_limit_rpm=env.int(
                 "RATE_LIMIT_RPM", cls.rate_limit_rpm,
             ),
-            rate_limit_burst=_int(
+            rate_limit_burst=env.int(
                 "RATE_LIMIT_BURST", cls.rate_limit_burst,
             ),
             # Provenance
-            enable_provenance=_bool(
+            enable_provenance=env.bool(
                 "ENABLE_PROVENANCE", cls.enable_provenance,
             ),
-            provenance_hash_algorithm=_str(
+            provenance_hash_algorithm=env.str(
                 "PROVENANCE_HASH_ALGORITHM",
                 cls.provenance_hash_algorithm,
             ),
             # Metrics
-            enable_metrics=_bool(
+            enable_metrics=env.bool(
                 "ENABLE_METRICS", cls.enable_metrics,
             ),
             # Confidence
-            default_confidence_method=_str(
+            default_confidence_method=env.str(
                 "DEFAULT_CONFIDENCE_METHOD",
                 cls.default_confidence_method,
             ),
@@ -382,45 +299,9 @@ class MissingValueImputerConfig:
 # Thread-safe singleton accessor
 # ---------------------------------------------------------------------------
 
-_config_instance: Optional[MissingValueImputerConfig] = None
-_config_lock = threading.Lock()
-
-
-def get_config() -> MissingValueImputerConfig:
-    """Return the singleton MissingValueImputerConfig, creating from env if needed.
-
-    Uses double-checked locking for thread safety with minimal
-    contention on the hot path.
-
-    Returns:
-        MissingValueImputerConfig singleton instance.
-    """
-    global _config_instance
-    if _config_instance is None:
-        with _config_lock:
-            if _config_instance is None:
-                _config_instance = MissingValueImputerConfig.from_env()
-    return _config_instance
-
-
-def set_config(config: MissingValueImputerConfig) -> None:
-    """Replace the singleton MissingValueImputerConfig (useful for testing).
-
-    Args:
-        config: New configuration to install.
-    """
-    global _config_instance
-    with _config_lock:
-        _config_instance = config
-    logger.info("MissingValueImputerConfig replaced programmatically")
-
-
-def reset_config() -> None:
-    """Reset the singleton (primarily for test teardown)."""
-    global _config_instance
-    with _config_lock:
-        _config_instance = None
-
+get_config, set_config, reset_config = create_config_singleton(
+    MissingValueImputerConfig, _ENV_PREFIX,
+)
 
 __all__ = [
     "MissingValueImputerConfig",

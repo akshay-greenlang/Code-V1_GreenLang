@@ -75,7 +75,7 @@ class ComplianceReportingApplication:
             Report generation result
         """
         with self.provenance.track_operation("generate_cbam_report"):
-            self.logger.info(f"Generating CBAM report for {reporting_period}")
+            logger.info("Generating CBAM report for %s", reporting_period)
 
             import pandas as pd
             df = pd.DataFrame(emissions_data)
@@ -119,7 +119,7 @@ class ComplianceReportingApplication:
             Report generation result
         """
         with self.provenance.track_operation("generate_csrd_report"):
-            self.logger.info(f"Generating CSRD report for {reporting_year}")
+            logger.info("Generating CSRD report for %s", reporting_year)
 
             import pandas as pd
             df = pd.DataFrame(sustainability_data)
@@ -159,7 +159,7 @@ class ComplianceReportingApplication:
             Report generation result
         """
         with self.provenance.track_operation("generate_ghg_protocol_report"):
-            self.logger.info(f"Generating GHG Protocol report for {reporting_year}")
+            logger.info("Generating GHG Protocol report for %s", reporting_year)
 
             import pandas as pd
             df = pd.DataFrame(emissions_data)

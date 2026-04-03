@@ -189,7 +189,7 @@ class StandardAgentMetrics:
         # Set initial agent info
         self._set_agent_info()
 
-        logger.info(f"StandardAgentMetrics initialized for {agent_id} ({agent_name})")
+        logger.info("StandardAgentMetrics initialized for %s (%s)", agent_id, agent_name)
 
     # =================================================================
     # 1. AGENT INFO & HEALTH METRICS (5 metrics)

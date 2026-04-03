@@ -80,7 +80,7 @@ class ProvenanceTracker:
         # Operation stack for nested tracking
         self._operation_stack: List[Dict[str, Any]] = []
 
-        logger.info(f"Initialized ProvenanceTracker: {name}")
+        logger.info("Initialized ProvenanceTracker: %s", name)
 
     @contextmanager
     def track_operation(self, operation_name: str, metadata: Optional[Dict[str, Any]] = None):
@@ -119,7 +119,7 @@ class ProvenanceTracker:
             # Mark as failed
             operation["status"] = "failed"
             operation["error"] = str(e)
-            logger.error(f"Operation {operation_name} failed: {e}", exc_info=True)
+            logger.error("Operation %s failed: %s", operation_name, e, exc_info=True)
             raise
 
         finally:
@@ -238,7 +238,7 @@ class ProvenanceTracker:
         }
 
         self.context.data_lineage.append(lineage_entry)
-        logger.debug(f"Tracked transformation: {source} -> {destination}")
+        logger.debug("Tracked transformation: %s -> %s", source, destination)
 
     def track_agent_execution(
         self,
@@ -271,7 +271,7 @@ class ProvenanceTracker:
         }
 
         self.context.agent_executions.append(execution)
-        logger.debug(f"Tracked agent execution: {agent_name}")
+        logger.debug("Tracked agent execution: %s", agent_name)
 
     def add_custody_transfer(
         self,
@@ -301,7 +301,7 @@ class ProvenanceTracker:
         }
 
         self.chain_of_custody.append(transfer)
-        logger.debug(f"Tracked custody transfer: {asset} from {from_entity} to {to_entity}")
+        logger.debug("Tracked custody transfer: %s from %s to %s", asset, from_entity, to_entity)
 
     def set_configuration(self, config: Dict[str, Any]):
         """
@@ -351,7 +351,7 @@ class ProvenanceTracker:
         """
         record = self.get_record()
         record.save(output_path)
-        logger.info(f"Saved provenance record to {output_path}")
+        logger.info("Saved provenance record to %s", output_path)
         return output_path
 
     def verify_integrity(self, file_path: str) -> bool:
@@ -383,7 +383,7 @@ class ProvenanceTracker:
                     current_hash = hash_file(file_path)
                     return stored_hash == current_hash
 
-        logger.warning(f"No provenance record found for {file_path}")
+        logger.warning("No provenance record found for %s", file_path)
         return False
 
     def generate_audit_trail(self) -> Dict[str, Any]:
@@ -416,7 +416,7 @@ class ProvenanceTracker:
         self.context = ProvenanceContext(name=self.name)
         self.chain_of_custody = []
         self._operation_stack = []
-        logger.info(f"Reset ProvenanceTracker: {self.name}")
+        logger.info("Reset ProvenanceTracker: %s", self.name)
 
 
 # ============================================================================

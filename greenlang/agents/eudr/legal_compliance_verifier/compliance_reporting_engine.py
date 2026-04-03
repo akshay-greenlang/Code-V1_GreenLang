@@ -383,7 +383,7 @@ class ComplianceReportingEngine:
                 reports.append(report)
                 success_count += 1
             except Exception as exc:
-                logger.warning(f"Batch report generation failed: {exc}")
+                logger.warning("Batch report generation failed: %s", exc)
                 reports.append({
                     "report_type": req.get("report_type", "unknown"),
                     "error": str(exc),
@@ -643,7 +643,7 @@ class ComplianceReportingEngine:
                     metadata={"provenance_hash": provenance_hash},
                 )
             except Exception as exc:
-                logger.warning(f"Provenance recording failed: {exc}")
+                logger.warning("Provenance recording failed: %s", exc)
 
     def _record_metrics(
         self, report_type: str, fmt: str, start_time: float,

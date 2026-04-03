@@ -1,0 +1,241 @@
+{
+  "cycles": [
+    {
+      "all_passed": true,
+      "cycle": "cycle-1",
+      "executed_at_utc": "2026-04-02T13:08:50.075125Z",
+      "results": [
+        {
+          "command": [
+            "C:\\Users\\aksha\\AppData\\Local\\Programs\\Python\\Python311\\python.exe",
+            "-m",
+            "greenlang.cli.main",
+            "v2",
+            "validate-contracts"
+          ],
+          "ok": true,
+          "returncode": 0,
+          "stderr_tail": "C:\\Users\\aksha\\AppData\\Local\\Programs\\Python\\Python311\\Lib\\site-packages\\requests\\__init__.py:113: RequestsDependencyWarning: urllib3 (2.5.0) or chardet (7.3.0)/charset_normalizer (3.4.4) doesn't match a supported version!\n  warnings.warn(\nWARNING:root:FAISS not available. Install with: pip install faiss-cpu\nWARNING:root:Redis not available. Install with: pip install redis\nWARNING:root:tiktoken not available. Install with: pip install tiktoken\nWARNING:greenlang.agents.foundation.orchestrator.executors.k8s_executor:kubernetes_asyncio not available. Install with: pip install kubernetes_asyncio\nWARNING:greenlang.agents.foundation.orchestrator.artifacts.s3_store:aioboto3 not available. Install with: pip install aioboto3\nWARNING:greenlang.agents.foundation.orchestrator:GLIP Orchestrator not available: cannot import name 'AgentNode' from partially initialized module 'greenlang.agents.foundation.orchestrator' (most likely due to a circular import) (C:\\Users\\aksha\\Code-V1_GreenLang\\greenlang\\agents\\foundation\\orchestrator\\__init__.py)\n<frozen runpy>:128: RuntimeWarning: 'greenlang.cli.main' found in sys.modules after import of package 'greenlang.cli', but prior to execution of 'greenlang.cli.main'; this may result in unpredictable behaviour\n",
+          "stdout_tail": "v2 contract checks\n[OK] applications/GL-CBAM-APP/v2 pack contract\n[OK] applications/GL-CBAM-APP/v2 pipeline contract\n[OK] applications/GL-CSRD-APP/CSRD-Reporting-Platform/v2 pack contract\n[OK] applications/GL-CSRD-APP/CSRD-Reporting-Platform/v2 pipeline contract\n[OK] applications/GL-VCCI-Carbon-APP/VCCI-Scope3-Platform/v2 pack contract\n[OK] applications/GL-VCCI-Carbon-APP/VCCI-Scope3-Platform/v2 pipeline contract\n[OK] applications/GL-EUDR-APP/v2 pack contract\n[OK] applications/GL-EUDR-APP/v2 pipeline contract\n[OK] applications/GL-GHG-APP/v2 pack contract\n[OK] applications/GL-GHG-APP/v2 pipeline contract\n[OK] applications/GL-ISO14064-APP/v2 pack contract\n[OK] applications/GL-ISO14064-APP/v2 pipeline contract\n"
+        },
+        {
+          "command": [
+            "C:\\Users\\aksha\\AppData\\Local\\Programs\\Python\\Python311\\python.exe",
+            "-m",
+            "greenlang.cli.main",
+            "v2",
+            "runtime-checks"
+          ],
+          "ok": true,
+          "returncode": 0,
+          "stderr_tail": "C:\\Users\\aksha\\AppData\\Local\\Programs\\Python\\Python311\\Lib\\site-packages\\requests\\__init__.py:113: RequestsDependencyWarning: urllib3 (2.5.0) or chardet (7.3.0)/charset_normalizer (3.4.4) doesn't match a supported version!\n  warnings.warn(\nWARNING:root:FAISS not available. Install with: pip install faiss-cpu\nWARNING:root:Redis not available. Install with: pip install redis\nWARNING:root:tiktoken not available. Install with: pip install tiktoken\nWARNING:greenlang.agents.foundation.orchestrator.executors.k8s_executor:kubernetes_asyncio not available. Install with: pip install kubernetes_asyncio\nWARNING:greenlang.agents.foundation.orchestrator.artifacts.s3_store:aioboto3 not available. Install with: pip install aioboto3\nWARNING:greenlang.agents.foundation.orchestrator:GLIP Orchestrator not available: cannot import name 'AgentNode' from partially initialized module 'greenlang.agents.foundation.orchestrator' (most likely due to a circular import) (C:\\Users\\aksha\\Code-V1_GreenLang\\greenlang\\agents\\foundation\\orchestrator\\__init__.py)\n<frozen runpy>:128: RuntimeWarning: 'greenlang.cli.main' found in sys.modules after import of package 'greenlang.cli', but prior to execution of 'greenlang.cli.main'; this may result in unpredictable behaviour\n",
+          "stdout_tail": "v2 runtime checks\n[OK] applications/GL-CBAM-APP/v2 runtime conventions\n[OK] applications/GL-CSRD-APP/CSRD-Reporting-Platform/v2 runtime conventions\n[OK] applications/GL-VCCI-Carbon-APP/VCCI-Scope3-Platform/v2 runtime conventions\n[OK] applications/GL-EUDR-APP/v2 runtime conventions\n[OK] applications/GL-GHG-APP/v2 runtime conventions\n[OK] applications/GL-ISO14064-APP/v2 runtime conventions\n"
+        },
+        {
+          "command": [
+            "C:\\Users\\aksha\\AppData\\Local\\Programs\\Python\\Python311\\python.exe",
+            "-m",
+            "greenlang.cli.main",
+            "v2",
+            "docs-check"
+          ],
+          "ok": true,
+          "returncode": 0,
+          "stderr_tail": "C:\\Users\\aksha\\AppData\\Local\\Programs\\Python\\Python311\\Lib\\site-packages\\requests\\__init__.py:113: RequestsDependencyWarning: urllib3 (2.5.0) or chardet (7.3.0)/charset_normalizer (3.4.4) doesn't match a supported version!\n  warnings.warn(\nWARNING:root:FAISS not available. Install with: pip install faiss-cpu\nWARNING:root:Redis not available. Install with: pip install redis\nWARNING:root:tiktoken not available. Install with: pip install tiktoken\nWARNING:greenlang.agents.foundation.orchestrator.executors.k8s_executor:kubernetes_asyncio not available. Install with: pip install kubernetes_asyncio\nWARNING:greenlang.agents.foundation.orchestrator.artifacts.s3_store:aioboto3 not available. Install with: pip install aioboto3\nWARNING:greenlang.agents.foundation.orchestrator:GLIP Orchestrator not available: cannot import name 'AgentNode' from partially initialized module 'greenlang.agents.foundation.orchestrator' (most likely due to a circular import) (C:\\Users\\aksha\\Code-V1_GreenLang\\greenlang\\agents\\foundation\\orchestrator\\__init__.py)\n<frozen runpy>:128: RuntimeWarning: 'greenlang.cli.main' found in sys.modules after import of package 'greenlang.cli', but prior to execution of 'greenlang.cli.main'; this may result in unpredictable behaviour\n",
+          "stdout_tail": "v2 docs checks\n[OK] docs contract: docs/v2/PHASE3_CHARTER.md\n[OK] docs contract: docs/v2/PHASE0_CHARTER.md\n[OK] docs contract: docs/v2/V2_SCOPE_AND_DEFERRED.md\n[OK] docs contract: docs/v2/RFC_PROCESS.md\n[OK] docs contract: docs/v2/OWNERSHIP_MATRIX.md\n[OK] docs contract: docs/v2/COMPATIBILITY_MATRIX.md\n[OK] docs contract: docs/v2/PACK_TIERING_POLICY.md\n[OK] docs contract: docs/v2/AGENT_LIFECYCLE_POLICY.md\n[OK] docs contract: docs/v2/RELEASE_TRAINS.md\n[OK] docs contract: docs/v2/ONCALL_AND_SLOS.md\n[OK] docs contract: docs/v2/PRIORITIZED_CONNECTORS.md\n[OK] docs contract: docs/v2/PLATFORM_HANDBOOK.md\n[OK] docs contract: docs/v2/MIGRATION_PLAYBOOKS.md\n[OK] docs contract: docs/v2/GO_NO_GO_RECORD.md\n[OK] docs contract: docs/v2/UAT_RESULTS.md\n[OK] docs contract: docs/v2/RC_SOAK_LOG.md\n[OK] docs contract: docs/v2/RELEASE_TRAIN_CYCLE_LOG.md\n[OK] docs contract: docs/v2/IMMUTABLE_EVIDENCE_MANIFEST.json\n[OK] docs contract: docs/v2/PHASE1_GATE_STATUS.json\n[OK] docs contract: docs/v2/PHASE4_GATE_STATUS.json\n[OK] docs contract: docs/v2/PHASE5_GATE_STATUS.json\n[OK] docs contract: docs/v2/PHASE6_GATE_STATUS.json\n[OK] docs contract: docs/runbooks/V2_CONNECTOR_ALERT_MATRIX.md\n"
+        },
+        {
+          "command": [
+            "C:\\Users\\aksha\\AppData\\Local\\Programs\\Python\\Python311\\python.exe",
+            "-m",
+            "greenlang.cli.main",
+            "v2",
+            "agent-checks"
+          ],
+          "ok": true,
+          "returncode": 0,
+          "stderr_tail": "C:\\Users\\aksha\\AppData\\Local\\Programs\\Python\\Python311\\Lib\\site-packages\\requests\\__init__.py:113: RequestsDependencyWarning: urllib3 (2.5.0) or chardet (7.3.0)/charset_normalizer (3.4.4) doesn't match a supported version!\n  warnings.warn(\nWARNING:root:FAISS not available. Install with: pip install faiss-cpu\nWARNING:root:Redis not available. Install with: pip install redis\nWARNING:root:tiktoken not available. Install with: pip install tiktoken\nWARNING:greenlang.agents.foundation.orchestrator.executors.k8s_executor:kubernetes_asyncio not available. Install with: pip install kubernetes_asyncio\nWARNING:greenlang.agents.foundation.orchestrator.artifacts.s3_store:aioboto3 not available. Install with: pip install aioboto3\nWARNING:greenlang.agents.foundation.orchestrator:GLIP Orchestrator not available: cannot import name 'AgentNode' from partially initialized module 'greenlang.agents.foundation.orchestrator' (most likely due to a circular import) (C:\\Users\\aksha\\Code-V1_GreenLang\\greenlang\\agents\\foundation\\orchestrator\\__init__.py)\n<frozen runpy>:128: RuntimeWarning: 'greenlang.cli.main' found in sys.modules after import of package 'greenlang.cli', but prior to execution of 'greenlang.cli.main'; this may result in unpredictable behaviour\n",
+          "stdout_tail": "v2 agent lifecycle checks\n[OK] agent lifecycle registry\n"
+        },
+        {
+          "command": [
+            "C:\\Users\\aksha\\AppData\\Local\\Programs\\Python\\Python311\\python.exe",
+            "-m",
+            "greenlang.cli.main",
+            "v2",
+            "connector-checks"
+          ],
+          "ok": true,
+          "returncode": 0,
+          "stderr_tail": "C:\\Users\\aksha\\AppData\\Local\\Programs\\Python\\Python311\\Lib\\site-packages\\requests\\__init__.py:113: RequestsDependencyWarning: urllib3 (2.5.0) or chardet (7.3.0)/charset_normalizer (3.4.4) doesn't match a supported version!\n  warnings.warn(\nWARNING:root:FAISS not available. Install with: pip install faiss-cpu\nWARNING:root:Redis not available. Install with: pip install redis\nWARNING:root:tiktoken not available. Install with: pip install tiktoken\nWARNING:greenlang.agents.foundation.orchestrator.executors.k8s_executor:kubernetes_asyncio not available. Install with: pip install kubernetes_asyncio\nWARNING:greenlang.agents.foundation.orchestrator.artifacts.s3_store:aioboto3 not available. Install with: pip install aioboto3\nWARNING:greenlang.agents.foundation.orchestrator:GLIP Orchestrator not available: cannot import name 'AgentNode' from partially initialized module 'greenlang.agents.foundation.orchestrator' (most likely due to a circular import) (C:\\Users\\aksha\\Code-V1_GreenLang\\greenlang\\agents\\foundation\\orchestrator\\__init__.py)\n<frozen runpy>:128: RuntimeWarning: 'greenlang.cli.main' found in sys.modules after import of package 'greenlang.cli', but prior to execution of 'greenlang.cli.main'; this may result in unpredictable behaviour\n",
+          "stdout_tail": "v2 connector reliability checks\n[OK] connector reliability registry\n"
+        },
+        {
+          "command": [
+            "C:\\Users\\aksha\\AppData\\Local\\Programs\\Python\\Python311\\python.exe",
+            "-m",
+            "greenlang.cli.main",
+            "v2",
+            "gate"
+          ],
+          "ok": true,
+          "returncode": 0,
+          "stderr_tail": "C:\\Users\\aksha\\AppData\\Local\\Programs\\Python\\Python311\\Lib\\site-packages\\requests\\__init__.py:113: RequestsDependencyWarning: urllib3 (2.5.0) or chardet (7.3.0)/charset_normalizer (3.4.4) doesn't match a supported version!\n  warnings.warn(\nWARNING:root:FAISS not available. Install with: pip install faiss-cpu\nWARNING:root:Redis not available. Install with: pip install redis\nWARNING:root:tiktoken not available. Install with: pip install tiktoken\nWARNING:greenlang.agents.foundation.orchestrator.executors.k8s_executor:kubernetes_asyncio not available. Install with: pip install kubernetes_asyncio\nWARNING:greenlang.agents.foundation.orchestrator.artifacts.s3_store:aioboto3 not available. Install with: pip install aioboto3\nWARNING:greenlang.agents.foundation.orchestrator:GLIP Orchestrator not available: cannot import name 'AgentNode' from partially initialized module 'greenlang.agents.foundation.orchestrator' (most likely due to a circular import) (C:\\Users\\aksha\\Code-V1_GreenLang\\greenlang\\agents\\foundation\\orchestrator\\__init__.py)\n<frozen runpy>:128: RuntimeWarning: 'greenlang.cli.main' found in sys.modules after import of package 'greenlang.cli', but prior to execution of 'greenlang.cli.main'; this may result in unpredictable behaviour\n",
+          "stdout_tail": " gates\n[OK] applications/GL-CBAM-APP/v2 pack contract\n[OK] applications/GL-CBAM-APP/v2 pipeline contract\n[OK] applications/GL-CSRD-APP/CSRD-Reporting-Platform/v2 pack contract\n[OK] applications/GL-CSRD-APP/CSRD-Reporting-Platform/v2 pipeline contract\n[OK] applications/GL-VCCI-Carbon-APP/VCCI-Scope3-Platform/v2 pack contract\n[OK] applications/GL-VCCI-Carbon-APP/VCCI-Scope3-Platform/v2 pipeline contract\n[OK] applications/GL-EUDR-APP/v2 pack contract\n[OK] applications/GL-EUDR-APP/v2 pipeline contract\n[OK] applications/GL-GHG-APP/v2 pack contract\n[OK] applications/GL-GHG-APP/v2 pipeline contract\n[OK] applications/GL-ISO14064-APP/v2 pack contract\n[OK] applications/GL-ISO14064-APP/v2 pipeline contract\n[OK] applications/GL-CBAM-APP/v2 runtime conventions\n[OK] applications/GL-CSRD-APP/CSRD-Reporting-Platform/v2 runtime conventions\n[OK] applications/GL-VCCI-Carbon-APP/VCCI-Scope3-Platform/v2 runtime conventions\n[OK] applications/GL-EUDR-APP/v2 runtime conventions\n[OK] applications/GL-GHG-APP/v2 runtime conventions\n[OK] applications/GL-ISO14064-APP/v2 runtime conventions\n[OK] runtime execution: GL-EUDR-APP\n[OK] runtime execution: GL-GHG-APP\n[OK] runtime execution: GL-ISO14064-APP\n[OK] agent lifecycle registry\n[OK] connector reliability registry\n[OK] pack tier registry\n[OK] policy bundle: greenlang/governance/policy/bundles/v2_authz.rego\n[OK] policy bundle: greenlang/governance/policy/bundles/v2_pack_trust.rego\n[OK] policy bundle: greenlang/governance/policy/bundles/v2_egress_controls.rego\n[OK] policy bundle: greenlang/governance/policy/bundles/v2_data_controls.rego\n[OK] policy bundle: greenlang/governance/policy/bundles/v2_pack_tier_policy.rego\n[OK] determinism contract: GL-EUDR-APP\n[OK] determinism contract: GL-GHG-APP\n[OK] determinism contract: GL-ISO14064-APP\n[OK] docs contract: docs/v2/PHASE3_CHARTER.md\n[OK] docs contract: docs/v2/PHASE0_CHARTER.md\n[OK] docs contract: docs/v2/V2_SCOPE_AND_DEFERRED.md\n[OK] docs contract: docs/v2/RFC_PROCESS.md\n[OK] docs contract: docs/v2/OWNERSHIP_MATRIX.md\n[OK] docs contract: docs/v2/COMPATIBILITY_MATRIX.md\n[OK] docs contract: docs/v2/PACK_TIERING_POLICY.md\n[OK] docs contract: docs/v2/AGENT_LIFECYCLE_POLICY.md\n[OK] docs contract: docs/v2/RELEASE_TRAINS.md\n[OK] docs contract: docs/v2/ONCALL_AND_SLOS.md\n[OK] docs contract: docs/v2/PRIORITIZED_CONNECTORS.md\n[OK] docs contract: docs/v2/PLATFORM_HANDBOOK.md\n[OK] docs contract: docs/v2/MIGRATION_PLAYBOOKS.md\n[OK] docs contract: docs/v2/GO_NO_GO_RECORD.md\n[OK] docs contract: docs/v2/UAT_RESULTS.md\n[OK] docs contract: docs/v2/RC_SOAK_LOG.md\n[OK] docs contract: docs/v2/RELEASE_TRAIN_CYCLE_LOG.md\n[OK] docs contract: docs/v2/IMMUTABLE_EVIDENCE_MANIFEST.json\n[OK] docs contract: docs/v2/PHASE1_GATE_STATUS.json\n[OK] docs contract: docs/v2/PHASE4_GATE_STATUS.json\n[OK] docs contract: docs/v2/PHASE5_GATE_STATUS.json\n[OK] docs contract: docs/v2/PHASE6_GATE_STATUS.json\n[OK] docs contract: docs/runbooks/V2_CONNECTOR_ALERT_MATRIX.md\n[OK] immutable evidence manifest\nv2 release gates passed\n"
+        },
+        {
+          "command": [
+            "npm.cmd",
+            "run",
+            "lint"
+          ],
+          "ok": true,
+          "returncode": 0,
+          "stderr_tail": "",
+          "stdout_tail": "\n> @greenlang/v2-2-shell@0.1.0 lint\n> eslint . --ext ts,tsx --max-warnings=0\n\n"
+        },
+        {
+          "command": [
+            "npm.cmd",
+            "run",
+            "test"
+          ],
+          "ok": true,
+          "returncode": 0,
+          "stderr_tail": "",
+          "stdout_tail": "\n> @greenlang/v2-2-shell@0.1.0 test\n> vitest run\n\n\n RUN  v3.2.4 C:/Users/aksha/Code-V1_GreenLang/frontend\n\n \u2713 src/smoke.test.ts (1 test) 3ms\n\n Test Files  1 passed (1)\n      Tests  1 passed (1)\n   Start at  18:38:43\n   Duration  514ms (transform 27ms, setup 0ms, collect 25ms, tests 3ms, environment 0ms, prepare 107ms)\n\n"
+        },
+        {
+          "command": [
+            "npm.cmd",
+            "run",
+            "build"
+          ],
+          "ok": true,
+          "returncode": 0,
+          "stderr_tail": "",
+          "stdout_tail": "\n> @greenlang/v2-2-shell@0.1.0 build\n> tsc -b && vite build\n\nvite v7.3.1 building client environment for production...\ntransforming...\n\u2713 505 modules transformed.\nrendering chunks...\ncomputing gzip size...\ndist/index.html                  0.35 kB \u2502 gzip:   0.26 kB\ndist/assets/index-D8-oNjyI.js  376.60 kB \u2502 gzip: 120.86 kB \u2502 map: 1,801.43 kB\n\u2713 built in 1.95s\n"
+        }
+      ]
+    },
+    {
+      "all_passed": true,
+      "cycle": "cycle-2",
+      "executed_at_utc": "2026-04-02T13:09:45.385834Z",
+      "results": [
+        {
+          "command": [
+            "C:\\Users\\aksha\\AppData\\Local\\Programs\\Python\\Python311\\python.exe",
+            "-m",
+            "greenlang.cli.main",
+            "v2",
+            "validate-contracts"
+          ],
+          "ok": true,
+          "returncode": 0,
+          "stderr_tail": "C:\\Users\\aksha\\AppData\\Local\\Programs\\Python\\Python311\\Lib\\site-packages\\requests\\__init__.py:113: RequestsDependencyWarning: urllib3 (2.5.0) or chardet (7.3.0)/charset_normalizer (3.4.4) doesn't match a supported version!\n  warnings.warn(\nWARNING:root:FAISS not available. Install with: pip install faiss-cpu\nWARNING:root:Redis not available. Install with: pip install redis\nWARNING:root:tiktoken not available. Install with: pip install tiktoken\nWARNING:greenlang.agents.foundation.orchestrator.executors.k8s_executor:kubernetes_asyncio not available. Install with: pip install kubernetes_asyncio\nWARNING:greenlang.agents.foundation.orchestrator.artifacts.s3_store:aioboto3 not available. Install with: pip install aioboto3\nWARNING:greenlang.agents.foundation.orchestrator:GLIP Orchestrator not available: cannot import name 'AgentNode' from partially initialized module 'greenlang.agents.foundation.orchestrator' (most likely due to a circular import) (C:\\Users\\aksha\\Code-V1_GreenLang\\greenlang\\agents\\foundation\\orchestrator\\__init__.py)\n<frozen runpy>:128: RuntimeWarning: 'greenlang.cli.main' found in sys.modules after import of package 'greenlang.cli', but prior to execution of 'greenlang.cli.main'; this may result in unpredictable behaviour\n",
+          "stdout_tail": "v2 contract checks\n[OK] applications/GL-CBAM-APP/v2 pack contract\n[OK] applications/GL-CBAM-APP/v2 pipeline contract\n[OK] applications/GL-CSRD-APP/CSRD-Reporting-Platform/v2 pack contract\n[OK] applications/GL-CSRD-APP/CSRD-Reporting-Platform/v2 pipeline contract\n[OK] applications/GL-VCCI-Carbon-APP/VCCI-Scope3-Platform/v2 pack contract\n[OK] applications/GL-VCCI-Carbon-APP/VCCI-Scope3-Platform/v2 pipeline contract\n[OK] applications/GL-EUDR-APP/v2 pack contract\n[OK] applications/GL-EUDR-APP/v2 pipeline contract\n[OK] applications/GL-GHG-APP/v2 pack contract\n[OK] applications/GL-GHG-APP/v2 pipeline contract\n[OK] applications/GL-ISO14064-APP/v2 pack contract\n[OK] applications/GL-ISO14064-APP/v2 pipeline contract\n"
+        },
+        {
+          "command": [
+            "C:\\Users\\aksha\\AppData\\Local\\Programs\\Python\\Python311\\python.exe",
+            "-m",
+            "greenlang.cli.main",
+            "v2",
+            "runtime-checks"
+          ],
+          "ok": true,
+          "returncode": 0,
+          "stderr_tail": "C:\\Users\\aksha\\AppData\\Local\\Programs\\Python\\Python311\\Lib\\site-packages\\requests\\__init__.py:113: RequestsDependencyWarning: urllib3 (2.5.0) or chardet (7.3.0)/charset_normalizer (3.4.4) doesn't match a supported version!\n  warnings.warn(\nWARNING:root:FAISS not available. Install with: pip install faiss-cpu\nWARNING:root:Redis not available. Install with: pip install redis\nWARNING:root:tiktoken not available. Install with: pip install tiktoken\nWARNING:greenlang.agents.foundation.orchestrator.executors.k8s_executor:kubernetes_asyncio not available. Install with: pip install kubernetes_asyncio\nWARNING:greenlang.agents.foundation.orchestrator.artifacts.s3_store:aioboto3 not available. Install with: pip install aioboto3\nWARNING:greenlang.agents.foundation.orchestrator:GLIP Orchestrator not available: cannot import name 'AgentNode' from partially initialized module 'greenlang.agents.foundation.orchestrator' (most likely due to a circular import) (C:\\Users\\aksha\\Code-V1_GreenLang\\greenlang\\agents\\foundation\\orchestrator\\__init__.py)\n<frozen runpy>:128: RuntimeWarning: 'greenlang.cli.main' found in sys.modules after import of package 'greenlang.cli', but prior to execution of 'greenlang.cli.main'; this may result in unpredictable behaviour\n",
+          "stdout_tail": "v2 runtime checks\n[OK] applications/GL-CBAM-APP/v2 runtime conventions\n[OK] applications/GL-CSRD-APP/CSRD-Reporting-Platform/v2 runtime conventions\n[OK] applications/GL-VCCI-Carbon-APP/VCCI-Scope3-Platform/v2 runtime conventions\n[OK] applications/GL-EUDR-APP/v2 runtime conventions\n[OK] applications/GL-GHG-APP/v2 runtime conventions\n[OK] applications/GL-ISO14064-APP/v2 runtime conventions\n"
+        },
+        {
+          "command": [
+            "C:\\Users\\aksha\\AppData\\Local\\Programs\\Python\\Python311\\python.exe",
+            "-m",
+            "greenlang.cli.main",
+            "v2",
+            "docs-check"
+          ],
+          "ok": true,
+          "returncode": 0,
+          "stderr_tail": "C:\\Users\\aksha\\AppData\\Local\\Programs\\Python\\Python311\\Lib\\site-packages\\requests\\__init__.py:113: RequestsDependencyWarning: urllib3 (2.5.0) or chardet (7.3.0)/charset_normalizer (3.4.4) doesn't match a supported version!\n  warnings.warn(\nWARNING:root:FAISS not available. Install with: pip install faiss-cpu\nWARNING:root:Redis not available. Install with: pip install redis\nWARNING:root:tiktoken not available. Install with: pip install tiktoken\nWARNING:greenlang.agents.foundation.orchestrator.executors.k8s_executor:kubernetes_asyncio not available. Install with: pip install kubernetes_asyncio\nWARNING:greenlang.agents.foundation.orchestrator.artifacts.s3_store:aioboto3 not available. Install with: pip install aioboto3\nWARNING:greenlang.agents.foundation.orchestrator:GLIP Orchestrator not available: cannot import name 'AgentNode' from partially initialized module 'greenlang.agents.foundation.orchestrator' (most likely due to a circular import) (C:\\Users\\aksha\\Code-V1_GreenLang\\greenlang\\agents\\foundation\\orchestrator\\__init__.py)\n<frozen runpy>:128: RuntimeWarning: 'greenlang.cli.main' found in sys.modules after import of package 'greenlang.cli', but prior to execution of 'greenlang.cli.main'; this may result in unpredictable behaviour\n",
+          "stdout_tail": "v2 docs checks\n[OK] docs contract: docs/v2/PHASE3_CHARTER.md\n[OK] docs contract: docs/v2/PHASE0_CHARTER.md\n[OK] docs contract: docs/v2/V2_SCOPE_AND_DEFERRED.md\n[OK] docs contract: docs/v2/RFC_PROCESS.md\n[OK] docs contract: docs/v2/OWNERSHIP_MATRIX.md\n[OK] docs contract: docs/v2/COMPATIBILITY_MATRIX.md\n[OK] docs contract: docs/v2/PACK_TIERING_POLICY.md\n[OK] docs contract: docs/v2/AGENT_LIFECYCLE_POLICY.md\n[OK] docs contract: docs/v2/RELEASE_TRAINS.md\n[OK] docs contract: docs/v2/ONCALL_AND_SLOS.md\n[OK] docs contract: docs/v2/PRIORITIZED_CONNECTORS.md\n[OK] docs contract: docs/v2/PLATFORM_HANDBOOK.md\n[OK] docs contract: docs/v2/MIGRATION_PLAYBOOKS.md\n[OK] docs contract: docs/v2/GO_NO_GO_RECORD.md\n[OK] docs contract: docs/v2/UAT_RESULTS.md\n[OK] docs contract: docs/v2/RC_SOAK_LOG.md\n[OK] docs contract: docs/v2/RELEASE_TRAIN_CYCLE_LOG.md\n[OK] docs contract: docs/v2/IMMUTABLE_EVIDENCE_MANIFEST.json\n[OK] docs contract: docs/v2/PHASE1_GATE_STATUS.json\n[OK] docs contract: docs/v2/PHASE4_GATE_STATUS.json\n[OK] docs contract: docs/v2/PHASE5_GATE_STATUS.json\n[OK] docs contract: docs/v2/PHASE6_GATE_STATUS.json\n[OK] docs contract: docs/runbooks/V2_CONNECTOR_ALERT_MATRIX.md\n"
+        },
+        {
+          "command": [
+            "C:\\Users\\aksha\\AppData\\Local\\Programs\\Python\\Python311\\python.exe",
+            "-m",
+            "greenlang.cli.main",
+            "v2",
+            "agent-checks"
+          ],
+          "ok": true,
+          "returncode": 0,
+          "stderr_tail": "C:\\Users\\aksha\\AppData\\Local\\Programs\\Python\\Python311\\Lib\\site-packages\\requests\\__init__.py:113: RequestsDependencyWarning: urllib3 (2.5.0) or chardet (7.3.0)/charset_normalizer (3.4.4) doesn't match a supported version!\n  warnings.warn(\nWARNING:root:FAISS not available. Install with: pip install faiss-cpu\nWARNING:root:Redis not available. Install with: pip install redis\nWARNING:root:tiktoken not available. Install with: pip install tiktoken\nWARNING:greenlang.agents.foundation.orchestrator.executors.k8s_executor:kubernetes_asyncio not available. Install with: pip install kubernetes_asyncio\nWARNING:greenlang.agents.foundation.orchestrator.artifacts.s3_store:aioboto3 not available. Install with: pip install aioboto3\nWARNING:greenlang.agents.foundation.orchestrator:GLIP Orchestrator not available: cannot import name 'AgentNode' from partially initialized module 'greenlang.agents.foundation.orchestrator' (most likely due to a circular import) (C:\\Users\\aksha\\Code-V1_GreenLang\\greenlang\\agents\\foundation\\orchestrator\\__init__.py)\n<frozen runpy>:128: RuntimeWarning: 'greenlang.cli.main' found in sys.modules after import of package 'greenlang.cli', but prior to execution of 'greenlang.cli.main'; this may result in unpredictable behaviour\n",
+          "stdout_tail": "v2 agent lifecycle checks\n[OK] agent lifecycle registry\n"
+        },
+        {
+          "command": [
+            "C:\\Users\\aksha\\AppData\\Local\\Programs\\Python\\Python311\\python.exe",
+            "-m",
+            "greenlang.cli.main",
+            "v2",
+            "connector-checks"
+          ],
+          "ok": true,
+          "returncode": 0,
+          "stderr_tail": "C:\\Users\\aksha\\AppData\\Local\\Programs\\Python\\Python311\\Lib\\site-packages\\requests\\__init__.py:113: RequestsDependencyWarning: urllib3 (2.5.0) or chardet (7.3.0)/charset_normalizer (3.4.4) doesn't match a supported version!\n  warnings.warn(\nWARNING:root:FAISS not available. Install with: pip install faiss-cpu\nWARNING:root:Redis not available. Install with: pip install redis\nWARNING:root:tiktoken not available. Install with: pip install tiktoken\nWARNING:greenlang.agents.foundation.orchestrator.executors.k8s_executor:kubernetes_asyncio not available. Install with: pip install kubernetes_asyncio\nWARNING:greenlang.agents.foundation.orchestrator.artifacts.s3_store:aioboto3 not available. Install with: pip install aioboto3\nWARNING:greenlang.agents.foundation.orchestrator:GLIP Orchestrator not available: cannot import name 'AgentNode' from partially initialized module 'greenlang.agents.foundation.orchestrator' (most likely due to a circular import) (C:\\Users\\aksha\\Code-V1_GreenLang\\greenlang\\agents\\foundation\\orchestrator\\__init__.py)\n<frozen runpy>:128: RuntimeWarning: 'greenlang.cli.main' found in sys.modules after import of package 'greenlang.cli', but prior to execution of 'greenlang.cli.main'; this may result in unpredictable behaviour\n",
+          "stdout_tail": "v2 connector reliability checks\n[OK] connector reliability registry\n"
+        },
+        {
+          "command": [
+            "C:\\Users\\aksha\\AppData\\Local\\Programs\\Python\\Python311\\python.exe",
+            "-m",
+            "greenlang.cli.main",
+            "v2",
+            "gate"
+          ],
+          "ok": true,
+          "returncode": 0,
+          "stderr_tail": "C:\\Users\\aksha\\AppData\\Local\\Programs\\Python\\Python311\\Lib\\site-packages\\requests\\__init__.py:113: RequestsDependencyWarning: urllib3 (2.5.0) or chardet (7.3.0)/charset_normalizer (3.4.4) doesn't match a supported version!\n  warnings.warn(\nWARNING:root:FAISS not available. Install with: pip install faiss-cpu\nWARNING:root:Redis not available. Install with: pip install redis\nWARNING:root:tiktoken not available. Install with: pip install tiktoken\nWARNING:greenlang.agents.foundation.orchestrator.executors.k8s_executor:kubernetes_asyncio not available. Install with: pip install kubernetes_asyncio\nWARNING:greenlang.agents.foundation.orchestrator.artifacts.s3_store:aioboto3 not available. Install with: pip install aioboto3\nWARNING:greenlang.agents.foundation.orchestrator:GLIP Orchestrator not available: cannot import name 'AgentNode' from partially initialized module 'greenlang.agents.foundation.orchestrator' (most likely due to a circular import) (C:\\Users\\aksha\\Code-V1_GreenLang\\greenlang\\agents\\foundation\\orchestrator\\__init__.py)\n<frozen runpy>:128: RuntimeWarning: 'greenlang.cli.main' found in sys.modules after import of package 'greenlang.cli', but prior to execution of 'greenlang.cli.main'; this may result in unpredictable behaviour\n",
+          "stdout_tail": " gates\n[OK] applications/GL-CBAM-APP/v2 pack contract\n[OK] applications/GL-CBAM-APP/v2 pipeline contract\n[OK] applications/GL-CSRD-APP/CSRD-Reporting-Platform/v2 pack contract\n[OK] applications/GL-CSRD-APP/CSRD-Reporting-Platform/v2 pipeline contract\n[OK] applications/GL-VCCI-Carbon-APP/VCCI-Scope3-Platform/v2 pack contract\n[OK] applications/GL-VCCI-Carbon-APP/VCCI-Scope3-Platform/v2 pipeline contract\n[OK] applications/GL-EUDR-APP/v2 pack contract\n[OK] applications/GL-EUDR-APP/v2 pipeline contract\n[OK] applications/GL-GHG-APP/v2 pack contract\n[OK] applications/GL-GHG-APP/v2 pipeline contract\n[OK] applications/GL-ISO14064-APP/v2 pack contract\n[OK] applications/GL-ISO14064-APP/v2 pipeline contract\n[OK] applications/GL-CBAM-APP/v2 runtime conventions\n[OK] applications/GL-CSRD-APP/CSRD-Reporting-Platform/v2 runtime conventions\n[OK] applications/GL-VCCI-Carbon-APP/VCCI-Scope3-Platform/v2 runtime conventions\n[OK] applications/GL-EUDR-APP/v2 runtime conventions\n[OK] applications/GL-GHG-APP/v2 runtime conventions\n[OK] applications/GL-ISO14064-APP/v2 runtime conventions\n[OK] runtime execution: GL-EUDR-APP\n[OK] runtime execution: GL-GHG-APP\n[OK] runtime execution: GL-ISO14064-APP\n[OK] agent lifecycle registry\n[OK] connector reliability registry\n[OK] pack tier registry\n[OK] policy bundle: greenlang/governance/policy/bundles/v2_authz.rego\n[OK] policy bundle: greenlang/governance/policy/bundles/v2_pack_trust.rego\n[OK] policy bundle: greenlang/governance/policy/bundles/v2_egress_controls.rego\n[OK] policy bundle: greenlang/governance/policy/bundles/v2_data_controls.rego\n[OK] policy bundle: greenlang/governance/policy/bundles/v2_pack_tier_policy.rego\n[OK] determinism contract: GL-EUDR-APP\n[OK] determinism contract: GL-GHG-APP\n[OK] determinism contract: GL-ISO14064-APP\n[OK] docs contract: docs/v2/PHASE3_CHARTER.md\n[OK] docs contract: docs/v2/PHASE0_CHARTER.md\n[OK] docs contract: docs/v2/V2_SCOPE_AND_DEFERRED.md\n[OK] docs contract: docs/v2/RFC_PROCESS.md\n[OK] docs contract: docs/v2/OWNERSHIP_MATRIX.md\n[OK] docs contract: docs/v2/COMPATIBILITY_MATRIX.md\n[OK] docs contract: docs/v2/PACK_TIERING_POLICY.md\n[OK] docs contract: docs/v2/AGENT_LIFECYCLE_POLICY.md\n[OK] docs contract: docs/v2/RELEASE_TRAINS.md\n[OK] docs contract: docs/v2/ONCALL_AND_SLOS.md\n[OK] docs contract: docs/v2/PRIORITIZED_CONNECTORS.md\n[OK] docs contract: docs/v2/PLATFORM_HANDBOOK.md\n[OK] docs contract: docs/v2/MIGRATION_PLAYBOOKS.md\n[OK] docs contract: docs/v2/GO_NO_GO_RECORD.md\n[OK] docs contract: docs/v2/UAT_RESULTS.md\n[OK] docs contract: docs/v2/RC_SOAK_LOG.md\n[OK] docs contract: docs/v2/RELEASE_TRAIN_CYCLE_LOG.md\n[OK] docs contract: docs/v2/IMMUTABLE_EVIDENCE_MANIFEST.json\n[OK] docs contract: docs/v2/PHASE1_GATE_STATUS.json\n[OK] docs contract: docs/v2/PHASE4_GATE_STATUS.json\n[OK] docs contract: docs/v2/PHASE5_GATE_STATUS.json\n[OK] docs contract: docs/v2/PHASE6_GATE_STATUS.json\n[OK] docs contract: docs/runbooks/V2_CONNECTOR_ALERT_MATRIX.md\n[OK] immutable evidence manifest\nv2 release gates passed\n"
+        },
+        {
+          "command": [
+            "npm.cmd",
+            "run",
+            "lint"
+          ],
+          "ok": true,
+          "returncode": 0,
+          "stderr_tail": "",
+          "stdout_tail": "\n> @greenlang/v2-2-shell@0.1.0 lint\n> eslint . --ext ts,tsx --max-warnings=0\n\n"
+        },
+        {
+          "command": [
+            "npm.cmd",
+            "run",
+            "test"
+          ],
+          "ok": true,
+          "returncode": 0,
+          "stderr_tail": "",
+          "stdout_tail": "\n> @greenlang/v2-2-shell@0.1.0 test\n> vitest run\n\n\n RUN  v3.2.4 C:/Users/aksha/Code-V1_GreenLang/frontend\n\n \u2713 src/smoke.test.ts (1 test) 2ms\n\n Test Files  1 passed (1)\n      Tests  1 passed (1)\n   Start at  18:39:40\n   Duration  412ms (transform 26ms, setup 0ms, collect 20ms, tests 2ms, environment 0ms, prepare 110ms)\n\n"
+        },
+        {
+          "command": [
+            "npm.cmd",
+            "run",
+            "build"
+          ],
+          "ok": true,
+          "returncode": 0,
+          "stderr_tail": "",
+          "stdout_tail": "\n> @greenlang/v2-2-shell@0.1.0 build\n> tsc -b && vite build\n\nvite v7.3.1 building client environment for production...\ntransforming...\n\u2713 505 modules transformed.\nrendering chunks...\ncomputing gzip size...\ndist/index.html                  0.35 kB \u2502 gzip:   0.26 kB\ndist/assets/index-D8-oNjyI.js  376.60 kB \u2502 gzip: 120.86 kB \u2502 map: 1,801.43 kB\n\u2713 built in 1.66s\n"
+        }
+      ]
+    }
+  ],
+  "generated_at_utc": "2026-04-02T13:07:40.142658Z"
+}

@@ -201,7 +201,7 @@ async def publish_agent(
         HTTPException: If version already exists or validation fails
     """
     start_time = datetime.utcnow()
-    logger.info(f"Publishing agent: {body.agent_id}:{body.version}")
+    logger.info("Publishing agent: %s:%s", body.agent_id, body.version)
 
     client = get_database_client()
 
@@ -378,7 +378,7 @@ async def list_agents(
     Returns:
         ListAgentsResponse with paginated agent list
     """
-    logger.info(f"Listing agents: page={page}, page_size={page_size}")
+    logger.info("Listing agents: page=%s, page_size=%s", page, page_size)
 
     client = get_database_client()
 
@@ -475,7 +475,7 @@ async def get_agent(
     Raises:
         HTTPException: If agent not found
     """
-    logger.info(f"Getting agent details: {agent_id}")
+    logger.info("Getting agent details: %s", agent_id)
 
     client = get_database_client()
 
@@ -571,7 +571,7 @@ async def promote_agent(
     Raises:
         HTTPException: If agent not found or invalid state transition
     """
-    logger.info(f"Promoting agent {agent_id} to {body.target_state.value}")
+    logger.info("Promoting agent %s to %s", agent_id, body.target_state.value)
 
     client = get_database_client()
 
@@ -686,7 +686,7 @@ async def get_version(
     version: str,
 ) -> AgentVersionModel:
     """Get a specific version of an agent."""
-    logger.info(f"Getting version: {agent_id}:{version}")
+    logger.info("Getting version: %s:%s", agent_id, version)
 
     client = get_database_client()
 

@@ -20,21 +20,6 @@ from greenlang.agents.mrv.refrigerants_fgas.setup import RefrigerantsFGasService
 
 
 # ---------------------------------------------------------------------------
-# Override parent conftest autouse fixtures that are incompatible
-# ---------------------------------------------------------------------------
-
-
-@pytest.fixture(autouse=True)
-def mock_agents():
-    """Override the parent integration conftest ``mock_agents`` fixture.
-
-    The parent conftest patches ``greenlang.agents.registry.get_agent``
-    which is not relevant to the refrigerants-fgas service tests and may
-    fail if the module is not importable.  This override is a no-op.
-    """
-    yield {}
-
-# ---------------------------------------------------------------------------
 # Optional imports for config/provenance reset
 # ---------------------------------------------------------------------------
 

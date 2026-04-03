@@ -230,7 +230,7 @@ class EnergyEfficiencyIdentifier(DeterministicAgent):
                 raise ValueError(f"Unknown operation: {eff_input.operation}")
 
         except Exception as e:
-            self.logger.error(f"Identification failed: {str(e)}", exc_info=True)
+            logger.error("Identification failed: %s", e, exc_info=True)
             return {
                 "operation": inputs.get("operation", "unknown"),
                 "success": False,

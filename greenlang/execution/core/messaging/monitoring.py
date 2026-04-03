@@ -117,7 +117,7 @@ class MessageBusMonitor:
         >>> await monitor.start()
         >>> health = monitor.check_health()
         >>> if health.status != "healthy":
-        ...     logger.warning(f"Issues: {health.issues}")
+        logger.warning("Issues: %s", health.issues)
     """
 
     def __init__(
@@ -233,7 +233,7 @@ class MessageBusMonitor:
             except asyncio.CancelledError:
                 break
             except Exception as e:
-                logger.error(f"Error in monitor loop: {e}", exc_info=True)
+                logger.error("Error in monitor loop: %s", e, exc_info=True)
 
     def check_health(self) -> HealthStatus:
         """

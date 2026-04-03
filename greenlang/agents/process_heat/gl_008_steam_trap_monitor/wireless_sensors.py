@@ -462,9 +462,9 @@ class SensorHealthMonitor:
             try:
                 callback(alert)
             except Exception as e:
-                logger.error(f"Alert callback error: {e}")
+                logger.error("Alert callback error: %s", e)
 
-        logger.info(f"Sensor alert: {alert.message}")
+        logger.info("Sensor alert: %s", alert.message)
 
 
 # =============================================================================
@@ -668,7 +668,7 @@ class WirelessSensorNetwork:
                 initial_signal=kwargs.get("signal_strength_dbm"),
             )
 
-        logger.debug(f"Registered sensor {sensor_id} for trap {trap_id}")
+        logger.debug("Registered sensor %s for trap %s", sensor_id, trap_id)
 
     def get_sensor(self, sensor_id: str) -> Optional[SensorConfig]:
         """Get sensor configuration."""

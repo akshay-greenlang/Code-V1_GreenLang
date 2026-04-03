@@ -87,6 +87,7 @@ from greenlang.agents.eudr.qr_code_generator.metrics import (
     record_api_error,
     set_active_codes,
 )
+from greenlang.utilities.exceptions.compliance import ComplianceException
 
 logger = logging.getLogger(__name__)
 
@@ -152,7 +153,7 @@ def _generate_id(prefix: str) -> str:
 # Custom Exceptions
 # ---------------------------------------------------------------------------
 
-class LifecycleError(Exception):
+class LifecycleError(ComplianceException):
     """Base exception for code lifecycle management errors."""
     pass
 

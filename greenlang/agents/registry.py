@@ -391,7 +391,7 @@ class AgentRegistry:
         if agent_name in self._ALIAS_MAPPING:
             original_name = agent_name
             agent_name = self._ALIAS_MAPPING[agent_name]
-            logger.info(f"Resolved alias {original_name} to {agent_name}")
+            logger.info("Resolved alias %s to %s", original_name, agent_name)
 
         # Get agent info
         agent_info = self.get_agent_info(agent_name)
@@ -459,7 +459,7 @@ class AgentRegistry:
             else:
                 agent = agent_class(**kwargs)
 
-            logger.info(f"Created agent '{agent_name}' v{agent_info.version}")
+            logger.info("Created agent '%s' v%s", agent_name, agent_info.version)
             return agent
 
         except Exception as e:

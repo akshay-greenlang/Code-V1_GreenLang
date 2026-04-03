@@ -253,7 +253,7 @@ class ProcessSafetyTimeCalculator:
         Raises:
             ValueError: If input parameters are invalid
         """
-        logger.info(f"Calculating PST for scenario: {input_data.scenario_id}")
+        logger.info("Calculating PST for scenario: %s", input_data.scenario_id)
 
         try:
             # Get appropriate calculation method
@@ -302,7 +302,7 @@ class ProcessSafetyTimeCalculator:
             return pst_result
 
         except Exception as e:
-            logger.error(f"PST calculation failed: {str(e)}", exc_info=True)
+            logger.error("PST calculation failed: %s", e, exc_info=True)
             raise
 
     def _calculate_rate_based(

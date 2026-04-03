@@ -251,7 +251,7 @@ class LIMEExplainer:
         Returns:
             LIMEExplanation with feature contributions
         """
-        logger.info(f"Generating LIME explanation for {failure_mode.value}")
+        logger.info("Generating LIME explanation for %s", failure_mode.value)
 
         # Get base prediction
         base_prob = self.prediction_fn(features)
@@ -710,7 +710,7 @@ class SHAPAnalyzer:
         Returns:
             SHAPExplanation with SHAP values
         """
-        logger.info(f"Generating SHAP explanation for {failure_mode.value}")
+        logger.info("Generating SHAP explanation for %s", failure_mode.value)
 
         # Update feature names from input
         if not self.feature_names:

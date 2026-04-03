@@ -169,9 +169,9 @@ class MetricsCollector:
                         application=ium_data['name']
                     ).set(count)
 
-            logger.info(f"Collected IUM metrics for {len(applications)} applications")
+            logger.info("Collected IUM metrics for %s applications", len(applications))
         except Exception as e:
-            logger.error(f"Error collecting IUM metrics: {e}")
+            logger.error("Error collecting IUM metrics: %s", e)
 
     async def collect_cost_metrics(self) -> None:
         """Collect cost savings metrics"""
@@ -198,7 +198,7 @@ class MetricsCollector:
 
             logger.info("Cost metrics collected successfully")
         except Exception as e:
-            logger.error(f"Error collecting cost metrics: {e}")
+            logger.error("Error collecting cost metrics: %s", e)
 
     async def collect_performance_metrics(self) -> None:
         """Collect performance metrics from application logs"""
@@ -228,7 +228,7 @@ class MetricsCollector:
 
             logger.info("Performance metrics collected successfully")
         except Exception as e:
-            logger.error(f"Error collecting performance metrics: {e}")
+            logger.error("Error collecting performance metrics: %s", e)
 
     def _discover_applications(self, codebase_path: str) -> List[Dict[str, Any]]:
         """Discover applications in codebase"""
@@ -359,9 +359,9 @@ class MetricsCollector:
                 job=job_name,
                 registry=self.registry
             )
-            logger.info(f"Metrics pushed to Pushgateway: {self.pushgateway_url}")
+            logger.info("Metrics pushed to Pushgateway: %s", self.pushgateway_url)
         except Exception as e:
-            logger.error(f"Failed to push metrics: {e}")
+            logger.error("Failed to push metrics: %s", e)
 
 
 async def main():

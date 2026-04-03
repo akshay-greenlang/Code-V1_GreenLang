@@ -769,7 +769,7 @@ class OutputConstraintEnforcer:
         Example:
             >>> enforced_preds, result = enforcer.enforce(predictions, inputs)
             >>> if result.critical_violations > 0:
-            ...     logger.critical(f"{result.critical_violations} critical violations!")
+            logger.critical("%s critical violations!", result.critical_violations)
         """
         predictions = np.atleast_2d(predictions) if predictions.ndim == 1 else predictions
         n_samples = len(predictions)

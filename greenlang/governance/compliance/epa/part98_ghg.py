@@ -284,7 +284,7 @@ class Part98Reporter:
         self.config = config
         self.co2_factors = CO2_EMISSION_FACTORS()
         self.ch4_n2o_factors = CH4_N2O_FACTORS()
-        logger.info(f"Part98Reporter initialized for facility {config.facility_id}")
+        logger.info("Part98Reporter initialized for facility %s", config.facility_id)
 
     def calculate_subpart_c(
         self,
@@ -365,7 +365,7 @@ class Part98Reporter:
             return result
 
         except Exception as e:
-            logger.error(f"Subpart C calculation failed: {str(e)}", exc_info=True)
+            logger.error("Subpart C calculation failed: %s", e, exc_info=True)
             raise
 
     def calculate_co2_tier1(

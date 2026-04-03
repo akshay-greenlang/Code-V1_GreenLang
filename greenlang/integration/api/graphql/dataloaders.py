@@ -64,7 +64,7 @@ class DataLoader:
         """
         # Check cache first
         if key in self.cache:
-            logger.debug(f"Cache hit for key: {key}")
+            logger.debug("Cache hit for key: %s", key)
             return self.cache[key]
 
         # Add to batch queue
@@ -126,7 +126,7 @@ class DataLoader:
                 future.set_result(value)
 
         except Exception as e:
-            logger.error(f"Batch load error: {e}")
+            logger.error("Batch load error: %s", e)
             # Reject all futures
             for future in futures:
                 if not future.done():
@@ -162,7 +162,7 @@ class AgentLoader(DataLoader):
         Returns:
             List of Agent objects (None for not found)
         """
-        logger.debug(f"Batch loading {len(agent_ids)} agents")
+        logger.debug("Batch loading %s agents", len(agent_ids))
 
         agents = []
         for agent_id in agent_ids:
@@ -203,7 +203,7 @@ class WorkflowLoader(DataLoader):
         Returns:
             List of Workflow objects (None for not found)
         """
-        logger.debug(f"Batch loading {len(workflow_ids)} workflows")
+        logger.debug("Batch loading %s workflows", len(workflow_ids))
 
         workflows = []
         for workflow_id in workflow_ids:
@@ -244,7 +244,7 @@ class ExecutionLoader(DataLoader):
         Returns:
             List of Execution objects (None for not found)
         """
-        logger.debug(f"Batch loading {len(execution_ids)} executions")
+        logger.debug("Batch loading %s executions", len(execution_ids))
 
         # Get all execution history
         history = self.orchestrator.get_execution_history()
@@ -294,7 +294,7 @@ class UserLoader(DataLoader):
         Returns:
             List of User objects (None for not found)
         """
-        logger.debug(f"Batch loading {len(user_ids)} users")
+        logger.debug("Batch loading %s users", len(user_ids))
 
         users = []
         for user_id in user_ids:

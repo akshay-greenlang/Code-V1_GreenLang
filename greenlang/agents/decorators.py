@@ -208,11 +208,11 @@ def cached(
             # Check cache
             cached_value = cache.get(cache_key)
             if cached_value is not None:
-                logger.debug(f"Cache hit: {func.__name__} (key={cache_key[:8]})")
+                logger.debug("Cache hit: %s (key=%s)", func.__name__, cache_key[)
                 return cached_value
 
             # Cache miss - execute function
-            logger.debug(f"Cache miss: {func.__name__} (key={cache_key[:8]})")
+            logger.debug("Cache miss: %s (key=%s)", func.__name__, cache_key[)
             result = func(*args, **kwargs)
 
             # Store in cache
@@ -417,7 +417,7 @@ def clear_all_caches():
     """Clear all function caches created by @cached decorator."""
     for cache in _cache_registry.values():
         cache.clear()
-    logger.info(f"Cleared {len(_cache_registry)} caches")
+    logger.info("Cleared %s caches", len(_cache_registry))
 
 
 def get_cache_stats() -> Dict[str, Any]:

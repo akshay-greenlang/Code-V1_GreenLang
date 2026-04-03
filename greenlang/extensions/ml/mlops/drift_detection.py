@@ -126,7 +126,7 @@ class DriftDetector:
             ]
             self._compute_reference_stats()
 
-        logger.info(f"Reference data set: shape={data.shape}")
+        logger.info("Reference data set: shape=%s", data.shape)
 
     def _compute_reference_stats(self) -> None:
         """Compute and cache statistics for reference data."""
@@ -189,7 +189,7 @@ class DriftDetector:
             ValueError: If data shapes don't match.
         """
         start_time = datetime.utcnow()
-        logger.info(f"Detecting data drift for {model_name} v{model_version}")
+        logger.info("Detecting data drift for %s v%s", model_name, model_version)
 
         # Validate inputs
         reference_data = np.array(reference_data)
@@ -312,7 +312,7 @@ class DriftDetector:
             DriftReport with concept drift analysis.
         """
         start_time = datetime.utcnow()
-        logger.info(f"Detecting concept drift for {model_name} v{model_version}")
+        logger.info("Detecting concept drift for %s v%s", model_name, model_version)
 
         X = np.array(X)
         y_true = np.array(y_true).flatten()
@@ -751,7 +751,7 @@ class DriftDetector:
                         if len(reports) >= limit:
                             break
             except Exception as e:
-                logger.warning(f"Failed to load report {report_file}: {e}")
+                logger.warning("Failed to load report %s: %s", report_file, e)
 
         return reports
 

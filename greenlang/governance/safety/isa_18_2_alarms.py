@@ -572,7 +572,7 @@ class AlarmManager:
 
             alarm = self.active_alarms[alarm_id]
             if alarm.state == AlarmState.ACKNOWLEDGED:
-                logger.debug(f"Alarm {alarm_id} already acknowledged")
+                logger.debug("Alarm %s already acknowledged", alarm_id)
                 return alarm
 
             alarm.state = AlarmState.ACKNOWLEDGED

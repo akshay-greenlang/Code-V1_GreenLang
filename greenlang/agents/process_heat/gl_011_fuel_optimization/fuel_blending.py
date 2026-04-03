@@ -573,7 +573,7 @@ class FuelBlendingOptimizer:
             }
 
         except Exception as e:
-            logger.warning(f"Error evaluating blend {blend}: {e}")
+            logger.warning("Error evaluating blend %s: %s", blend, e)
             return None
 
     def _check_constraints(

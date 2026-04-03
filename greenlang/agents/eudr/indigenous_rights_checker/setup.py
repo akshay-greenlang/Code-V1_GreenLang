@@ -504,7 +504,7 @@ class IndigenousRightsCheckerService:
                 )
 
             except Exception as e:
-                logger.error(f"Startup failed: {e}", exc_info=True)
+                logger.error("Startup failed: %s", e, exc_info=True)
                 record_api_error("startup", "500")
                 raise RuntimeError(f"Service startup failed: {e}") from e
 
@@ -534,7 +534,7 @@ class IndigenousRightsCheckerService:
                         await self._redis_client.close()
                         logger.debug("Redis client closed")
                     except Exception as e:
-                        logger.warning(f"Error closing Redis client: {e}")
+                        logger.warning("Error closing Redis client: %s", e)
 
                 # 3. Close database pool
                 if self._db_pool is not None:
@@ -559,7 +559,7 @@ class IndigenousRightsCheckerService:
                 )
 
             except Exception as e:
-                logger.error(f"Shutdown error: {e}", exc_info=True)
+                logger.error("Shutdown error: %s", e, exc_info=True)
 
     async def health_check(
         self, include_details: bool = False
@@ -617,7 +617,7 @@ class IndigenousRightsCheckerService:
                         "violations", 0
                     )
                 except Exception as e:
-                    logger.warning(f"Error fetching live counts: {e}")
+                    logger.warning("Error fetching live counts: %s", e)
 
         return health
 
@@ -642,7 +642,7 @@ class IndigenousRightsCheckerService:
                 f"(size={self._config.pool_size})"
             )
         except Exception as e:
-            logger.error(f"Failed to initialize PostgreSQL pool: {e}")
+            logger.error("Failed to initialize PostgreSQL pool: %s", e)
             self._db_pool = None
 
     async def _init_redis(self) -> None:
@@ -655,7 +655,7 @@ class IndigenousRightsCheckerService:
             await self._redis_client.ping()
             logger.info("Redis client initialized and connected")
         except Exception as e:
-            logger.error(f"Failed to initialize Redis client: {e}")
+            logger.error("Failed to initialize Redis client: %s", e)
             self._redis_client = None
 
     async def _init_engines(self) -> None:
@@ -673,7 +673,7 @@ class IndigenousRightsCheckerService:
         for engine_name, init_method in engine_inits:
             try:
                 await init_method()
-                logger.info(f"Engine {engine_name} initialized successfully")
+                logger.info("Engine %s initialized successfully", engine_name)
             except Exception as e:
                 logger.error(
                     f"Failed to initialize {engine_name}: {e}",
@@ -779,7 +779,7 @@ class IndigenousRightsCheckerService:
             if engine is not None:
                 try:
                     await engine.shutdown()
-                    logger.debug(f"Engine {engine_name} shutdown")
+                    logger.debug("Engine %s shutdown", engine_name)
                 except Exception as e:
                     logger.warning(
                         f"Error shutting down {engine_name}: {e}"

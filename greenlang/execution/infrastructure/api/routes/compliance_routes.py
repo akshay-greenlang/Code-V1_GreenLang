@@ -709,7 +709,7 @@ if FASTAPI_AVAILABLE:
         Returns:
             Paginated list of compliance reports
         """
-        logger.info(f"Listing compliance reports: page={page}, page_size={page_size}")
+        logger.info("Listing compliance reports: page=%s, page_size=%s", page, page_size)
 
         # Filter reports
         reports = list(_reports.values())
@@ -815,12 +815,12 @@ if FASTAPI_AVAILABLE:
         try:
             report = generate_report(report_request)
 
-            logger.info(f"Report generated: {report.report_id}")
+            logger.info("Report generated: %s", report.report_id)
 
             return report
 
         except ValueError as e:
-            logger.warning(f"Validation error in report generation: {e}")
+            logger.warning("Validation error in report generation: %s", e)
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail={
@@ -829,7 +829,7 @@ if FASTAPI_AVAILABLE:
                 }
             )
         except Exception as e:
-            logger.error(f"Report generation error: {e}", exc_info=True)
+            logger.error("Report generation error: %s", e, exc_info=True)
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail={
@@ -873,12 +873,12 @@ if FASTAPI_AVAILABLE:
         Raises:
             HTTPException: If report not found
         """
-        logger.info(f"Getting compliance report: {report_id}")
+        logger.info("Getting compliance report: %s", report_id)
 
         report = _reports.get(report_id)
 
         if not report:
-            logger.warning(f"Report not found: {report_id}")
+            logger.warning("Report not found: %s", report_id)
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail={

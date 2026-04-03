@@ -182,7 +182,7 @@ If not provided, one will be generated.
         """Initialize resources on startup."""
         import logging
         logger = logging.getLogger(__name__)
-        logger.info(f"GreenLang Schema Validator API v{version} starting up")
+        logger.info("GreenLang Schema Validator API v%s starting up", version)
 
     # Add shutdown event
     @app.on_event("shutdown")

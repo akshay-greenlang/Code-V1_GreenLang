@@ -66,10 +66,14 @@ Status: Production Ready
 from __future__ import annotations
 
 import logging
-import os
-import threading
-from dataclasses import dataclass, field
-from typing import Any, Dict, Optional
+from dataclasses import dataclass
+from typing import Any, Dict
+
+from greenlang.data_commons.config_base import (
+    BaseDataConfig,
+    EnvReader,
+    create_config_singleton,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -103,13 +107,11 @@ _VALID_LOG_LEVELS = frozenset(
 
 
 @dataclass
-class SchemaMigrationConfig:
-    """Complete configuration for the GreenLang Schema Migration Agent SDK.
+class SchemaMigrationConfig(BaseDataConfig):
+    """Configuration for the GreenLang Schema Migration Agent SDK.
 
-    Attributes are grouped by concern: connections, schema capacity,
-    migration execution, compatibility enforcement, drift detection,
-    provenance tracking, field mapping, impact analysis, performance
-    tuning, retry/checkpoint strategy, and logging.
+    Inherits shared connection, pool, batch, and logging fields from
+    ``BaseDataConfig``.  Only schema-migration-specific fields are declared here.
 
     All attributes can be overridden via environment variables using the
     ``GL_SM_`` prefix (e.g. ``GL_SM_MAX_SCHEMAS=100000``).
@@ -125,9 +127,6 @@ class SchemaMigrationConfig:
     - ``full_transitive``     : Full compatibility with ALL prior versions.
 
     Attributes:
-        database_url: PostgreSQL connection URL for persistent schema storage.
-        redis_url: Redis connection URL for caching schema lookups and locks.
-        log_level: Logging verbosity level for the schema migration service.
         max_schemas: Maximum number of distinct schema subjects managed.
         max_versions_per_schema: Maximum version history retained per schema.
         max_migration_batch_size: Maximum number of records per migration batch.
@@ -153,13 +152,6 @@ class SchemaMigrationConfig:
         max_change_depth: Maximum graph traversal depth for dependency analysis.
         enable_impact_analysis: Whether to compute downstream impact of changes.
     """
-
-    # -- Connections ---------------------------------------------------------
-    database_url: str = ""
-    redis_url: str = ""
-
-    # -- Logging -------------------------------------------------------------
-    log_level: str = "INFO"
 
     # -- Schema capacity -----------------------------------------------------
     max_schemas: int = 50_000
@@ -361,7 +353,7 @@ class SchemaMigrationConfig:
         )
 
     # ------------------------------------------------------------------
-    # Factory helpers
+    # Factory
     # ------------------------------------------------------------------
 
     @classmethod
@@ -370,10 +362,6 @@ class SchemaMigrationConfig:
 
         Every field can be overridden via ``GL_SM_<FIELD_UPPER>``.
         Boolean values accept ``true/1/yes`` (case-insensitive).
-        Integer values are parsed via ``int()``.
-        Float values are parsed via ``float()``.
-        Unknown / malformed values fall back to the class-level default and
-        emit a WARNING log so the issue is visible in deployment logs.
 
         Returns:
             Populated SchemaMigrationConfig instance, validated via
@@ -386,129 +374,79 @@ class SchemaMigrationConfig:
             >>> cfg.max_schemas
             100000
         """
-        prefix = _ENV_PREFIX
-
-        def _env(name: str, default: Any = None) -> Optional[str]:
-            return os.environ.get(f"{prefix}{name}", default)
-
-        def _bool(name: str, default: bool) -> bool:
-            val = _env(name)
-            if val is None:
-                return default
-            return val.strip().lower() in ("true", "1", "yes")
-
-        def _int(name: str, default: int) -> int:
-            val = _env(name)
-            if val is None:
-                return default
-            try:
-                return int(val.strip())
-            except ValueError:
-                logger.warning(
-                    "Invalid integer for %s%s=%r, using default %d",
-                    prefix,
-                    name,
-                    val,
-                    default,
-                )
-                return default
-
-        def _float(name: str, default: float) -> float:
-            val = _env(name)
-            if val is None:
-                return default
-            try:
-                return float(val.strip())
-            except ValueError:
-                logger.warning(
-                    "Invalid float for %s%s=%r, using default %f",
-                    prefix,
-                    name,
-                    val,
-                    default,
-                )
-                return default
-
-        def _str(name: str, default: str) -> str:
-            val = _env(name)
-            if val is None:
-                return default
-            return val.strip()
+        env = EnvReader(_ENV_PREFIX)
+        base_kwargs = cls._base_kwargs_from_env(env)
 
         config = cls(
-            # Connections
-            database_url=_str("DATABASE_URL", cls.database_url),
-            redis_url=_str("REDIS_URL", cls.redis_url),
-            # Logging
-            log_level=_str("LOG_LEVEL", cls.log_level),
+            **base_kwargs,
             # Schema capacity
-            max_schemas=_int("MAX_SCHEMAS", cls.max_schemas),
-            max_versions_per_schema=_int(
+            max_schemas=env.int("MAX_SCHEMAS", cls.max_schemas),
+            max_versions_per_schema=env.int(
                 "MAX_VERSIONS_PER_SCHEMA",
                 cls.max_versions_per_schema,
             ),
             # Migration execution
-            max_migration_batch_size=_int(
+            max_migration_batch_size=env.int(
                 "MAX_MIGRATION_BATCH_SIZE",
                 cls.max_migration_batch_size,
             ),
-            migration_timeout_seconds=_int(
+            migration_timeout_seconds=env.int(
                 "MIGRATION_TIMEOUT_SECONDS",
                 cls.migration_timeout_seconds,
             ),
-            enable_dry_run=_bool("ENABLE_DRY_RUN", cls.enable_dry_run),
-            enable_auto_rollback=_bool(
+            enable_dry_run=env.bool("ENABLE_DRY_RUN", cls.enable_dry_run),
+            enable_auto_rollback=env.bool(
                 "ENABLE_AUTO_ROLLBACK",
                 cls.enable_auto_rollback,
             ),
             # Compatibility enforcement
-            compatibility_default_level=_str(
+            compatibility_default_level=env.str(
                 "COMPATIBILITY_DEFAULT_LEVEL",
                 cls.compatibility_default_level,
             ),
             # Drift detection
-            drift_check_interval_minutes=_int(
+            drift_check_interval_minutes=env.int(
                 "DRIFT_CHECK_INTERVAL_MINUTES",
                 cls.drift_check_interval_minutes,
             ),
-            drift_sample_size=_int(
+            drift_sample_size=env.int(
                 "DRIFT_SAMPLE_SIZE",
                 cls.drift_sample_size,
             ),
             # Provenance tracking
-            enable_provenance=_bool("ENABLE_PROVENANCE", cls.enable_provenance),
-            genesis_hash=_str("GENESIS_HASH", cls.genesis_hash),
+            enable_provenance=env.bool("ENABLE_PROVENANCE", cls.enable_provenance),
+            genesis_hash=env.str("GENESIS_HASH", cls.genesis_hash),
             # Performance tuning
-            max_workers=_int("MAX_WORKERS", cls.max_workers),
-            pool_size=_int("POOL_SIZE", cls.pool_size),
-            cache_ttl=_int("CACHE_TTL", cls.cache_ttl),
-            rate_limit=_int("RATE_LIMIT", cls.rate_limit),
+            max_workers=env.int("MAX_WORKERS", cls.max_workers),
+            pool_size=env.int("POOL_SIZE", cls.pool_size),
+            cache_ttl=env.int("CACHE_TTL", cls.cache_ttl),
+            rate_limit=env.int("RATE_LIMIT", cls.rate_limit),
             # Retry / checkpoint strategy
-            checkpoint_interval=_int(
+            checkpoint_interval=env.int(
                 "CHECKPOINT_INTERVAL",
                 cls.checkpoint_interval,
             ),
-            retry_max_attempts=_int(
+            retry_max_attempts=env.int(
                 "RETRY_MAX_ATTEMPTS",
                 cls.retry_max_attempts,
             ),
-            retry_backoff_base=_float(
+            retry_backoff_base=env.float(
                 "RETRY_BACKOFF_BASE",
                 cls.retry_backoff_base,
             ),
             # Field mapping
-            field_mapping_min_confidence=_float(
+            field_mapping_min_confidence=env.float(
                 "FIELD_MAPPING_MIN_CONFIDENCE",
                 cls.field_mapping_min_confidence,
             ),
             # Deprecation policy
-            deprecation_warning_days=_int(
+            deprecation_warning_days=env.int(
                 "DEPRECATION_WARNING_DAYS",
                 cls.deprecation_warning_days,
             ),
             # Impact analysis
-            max_change_depth=_int("MAX_CHANGE_DEPTH", cls.max_change_depth),
-            enable_impact_analysis=_bool(
+            max_change_depth=env.int("MAX_CHANGE_DEPTH", cls.max_change_depth),
+            enable_impact_analysis=env.bool(
                 "ENABLE_IMPACT_ANALYSIS",
                 cls.enable_impact_analysis,
             ),
@@ -635,76 +573,9 @@ class SchemaMigrationConfig:
 # Thread-safe singleton accessor
 # ---------------------------------------------------------------------------
 
-_config_instance: Optional[SchemaMigrationConfig] = None
-_config_lock = threading.Lock()
-
-
-def get_config() -> SchemaMigrationConfig:
-    """Return the singleton SchemaMigrationConfig, creating from env if needed.
-
-    Uses double-checked locking for thread safety with minimal
-    contention on the hot path.  The instance is created on first call
-    by reading all ``GL_SM_*`` environment variables via
-    :meth:`SchemaMigrationConfig.from_env`.
-
-    Returns:
-        SchemaMigrationConfig singleton instance.
-
-    Example:
-        >>> cfg = get_config()
-        >>> cfg.max_schemas
-        50000
-    """
-    global _config_instance
-    if _config_instance is None:
-        with _config_lock:
-            if _config_instance is None:
-                _config_instance = SchemaMigrationConfig.from_env()
-    return _config_instance
-
-
-def set_config(config: SchemaMigrationConfig) -> None:
-    """Replace the singleton SchemaMigrationConfig.
-
-    Primarily intended for testing and dependency injection scenarios
-    where a custom configuration must be supplied without relying on
-    environment variables.
-
-    Args:
-        config: New :class:`SchemaMigrationConfig` to install as the singleton.
-
-    Example:
-        >>> cfg = SchemaMigrationConfig(max_schemas=100, enable_dry_run=False)
-        >>> set_config(cfg)
-        >>> assert get_config().max_schemas == 100
-    """
-    global _config_instance
-    with _config_lock:
-        _config_instance = config
-    logger.info(
-        "SchemaMigrationConfig replaced programmatically: "
-        "max_schemas=%d, compatibility=%s",
-        config.max_schemas,
-        config.compatibility_default_level,
-    )
-
-
-def reset_config() -> None:
-    """Reset the singleton SchemaMigrationConfig to ``None``.
-
-    The next call to :func:`get_config` will re-read environment variables
-    and construct a fresh instance.  Intended for test teardown to prevent
-    state leakage between test cases.
-
-    Example:
-        >>> reset_config()
-        >>> cfg = get_config()  # re-reads GL_SM_* env vars
-    """
-    global _config_instance
-    with _config_lock:
-        _config_instance = None
-    logger.debug("SchemaMigrationConfig singleton reset")
-
+get_config, set_config, reset_config = create_config_singleton(
+    SchemaMigrationConfig, _ENV_PREFIX,
+)
 
 # ---------------------------------------------------------------------------
 # Public surface

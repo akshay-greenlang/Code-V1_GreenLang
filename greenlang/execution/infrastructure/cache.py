@@ -75,7 +75,7 @@ class CacheManager(BaseInfrastructureComponent):
 
     def _initialize(self) -> None:
         """Initialize cache resources."""
-        logger.info(f"CacheManager initialized with max_size={self.cache_config.max_size}")
+        logger.info("CacheManager initialized with max_size=%s", self.cache_config.max_size)
 
     def start(self) -> None:
         """Start the cache manager."""
@@ -103,18 +103,18 @@ class CacheManager(BaseInfrastructureComponent):
         entry = self.cache.get(key)
         if entry is None:
             self.misses += 1
-            logger.debug(f"Cache miss for key: {key}")
+            logger.debug("Cache miss for key: %s", key)
             return None
 
         if entry.is_expired():
             self.misses += 1
             del self.cache[key]
-            logger.debug(f"Cache entry expired for key: {key}")
+            logger.debug("Cache entry expired for key: %s", key)
             return None
 
         entry.touch()
         self.hits += 1
-        logger.debug(f"Cache hit for key: {key}")
+        logger.debug("Cache hit for key: %s", key)
 
         self._update_metrics()
         return entry.value
@@ -142,7 +142,7 @@ class CacheManager(BaseInfrastructureComponent):
         )
 
         self.cache[key] = entry
-        logger.debug(f"Cached value for key: {key} with TTL: {entry.ttl_seconds}s")
+        logger.debug("Cached value for key: %s with TTL: %ss", key, entry.ttl_seconds)
 
         self._update_metrics()
 
@@ -180,7 +180,7 @@ class CacheManager(BaseInfrastructureComponent):
         """
         if key in self.cache:
             del self.cache[key]
-            logger.debug(f"Invalidated cache key: {key}")
+            logger.debug("Invalidated cache key: %s", key)
             return True
         return False
 
@@ -188,7 +188,7 @@ class CacheManager(BaseInfrastructureComponent):
         """Clear all cache entries."""
         size = len(self.cache)
         self.cache.clear()
-        logger.info(f"Cleared {size} cache entries")
+        logger.info("Cleared %s cache entries", size)
 
     def _evict(self) -> None:
         """Evict entries based on policy."""
@@ -202,21 +202,21 @@ class CacheManager(BaseInfrastructureComponent):
             oldest_key = min(self.cache.keys(),
                            key=lambda k: self.cache[k].last_accessed)
             del self.cache[oldest_key]
-            logger.debug(f"Evicted LRU key: {oldest_key}")
+            logger.debug("Evicted LRU key: %s", oldest_key)
 
         elif self.cache_config.eviction_policy == 'lfu':
             # Evict least frequently used
             least_used_key = min(self.cache.keys(),
                                key=lambda k: self.cache[k].access_count)
             del self.cache[least_used_key]
-            logger.debug(f"Evicted LFU key: {least_used_key}")
+            logger.debug("Evicted LFU key: %s", least_used_key)
 
         elif self.cache_config.eviction_policy == 'fifo':
             # Evict oldest entry
             oldest_key = min(self.cache.keys(),
                            key=lambda k: self.cache[k].created_at)
             del self.cache[oldest_key]
-            logger.debug(f"Evicted FIFO key: {oldest_key}")
+            logger.debug("Evicted FIFO key: %s", oldest_key)
 
     def _update_metrics(self) -> None:
         """Update cache metrics."""

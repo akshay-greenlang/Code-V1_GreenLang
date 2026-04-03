@@ -6,18 +6,40 @@ GL-VCCI Scope 3 Platform
 Custom exception classes for Factor Broker service with detailed error codes
 and helpful messages for debugging and user feedback.
 
-Version: 1.0.0
+Version: 1.1.0
+
+Migration (2026-04-02):
+- All classes now inherit from the centralized greenlang.exceptions hierarchy
+- isinstance(error, GreenLangException) is now True for all factor broker errors
+- Full backward compatibility: same class names, same public APIs, same attributes
 """
 
 from typing import Optional, Dict, Any
 
+from greenlang.utilities.exceptions.base import GreenLangException
+from greenlang.utilities.exceptions.integration import (
+    IntegrationException as _CentralIntegrationException,
+    EmissionFactorError as _CentralEmissionFactorError,
+    RateLimitError as _CentralRateLimitError,
+    ExternalServiceError as _CentralExternalServiceError,
+)
+from greenlang.utilities.exceptions.calculation import (
+    FactorNotFoundError as _CentralFactorNotFoundError,
+)
+from greenlang.utilities.exceptions.infrastructure import (
+    CacheError as _CentralCacheError,
+)
 
-class FactorBrokerError(Exception):
+
+class FactorBrokerError(_CentralIntegrationException):
     """
     Base exception for all Factor Broker errors.
 
     All custom exceptions in the Factor Broker service inherit from this base class,
     allowing for easy exception handling at different granularity levels.
+
+    Inherits from greenlang.utilities.exceptions.integration.IntegrationException
+    so that isinstance(error, GreenLangException) returns True.
     """
 
     def __init__(
@@ -36,11 +58,29 @@ class FactorBrokerError(Exception):
             details: Additional context about the error
             original_exception: Original exception if this wraps another error
         """
-        super().__init__(message)
         self.message = message
         self.error_code = error_code
         self.details = details or {}
         self.original_exception = original_exception
+
+        # Build context for the centralized parent
+        context = dict(self.details)
+        context["error_code"] = error_code
+        if original_exception:
+            context["original_exception"] = str(original_exception)
+            context["original_exception_type"] = type(original_exception).__name__
+
+        # Initialize centralized parent (pass error_code to prevent auto-generation)
+        _CentralIntegrationException.__init__(
+            self,
+            message=message,
+            error_code=error_code,
+            context=context,
+        )
+
+        # Restore local attributes (parent may format differently)
+        self.message = message
+        self.error_code = error_code
 
     def to_dict(self) -> Dict[str, Any]:
         """
@@ -63,7 +103,7 @@ class FactorBrokerError(Exception):
         return result
 
 
-class FactorNotFoundError(FactorBrokerError):
+class FactorNotFoundError(FactorBrokerError, _CentralFactorNotFoundError):
     """
     Exception raised when an emission factor cannot be found in any source.
 
@@ -108,7 +148,8 @@ class FactorNotFoundError(FactorBrokerError):
             "suggestions": suggestions
         }
 
-        super().__init__(
+        FactorBrokerError.__init__(
+            self,
             message=message,
             error_code="FACTOR_NOT_FOUND",
             details=details
@@ -154,14 +195,15 @@ class LicenseViolationError(FactorBrokerError):
         if details_dict:
             details.update(details_dict)
 
-        super().__init__(
+        FactorBrokerError.__init__(
+            self,
             message=message,
             error_code="LICENSE_VIOLATION",
             details=details
         )
 
 
-class RateLimitExceededError(FactorBrokerError):
+class RateLimitExceededError(FactorBrokerError, _CentralRateLimitError):
     """
     Exception raised when API rate limit is exceeded.
 
@@ -199,14 +241,15 @@ class RateLimitExceededError(FactorBrokerError):
             "retry_after_seconds": retry_after_seconds
         }
 
-        super().__init__(
+        FactorBrokerError.__init__(
+            self,
             message=message,
             error_code="RATE_LIMIT_EXCEEDED",
             details=details
         )
 
 
-class SourceUnavailableError(FactorBrokerError):
+class SourceUnavailableError(FactorBrokerError, _CentralExternalServiceError):
     """
     Exception raised when a data source is unavailable.
 
@@ -235,7 +278,8 @@ class SourceUnavailableError(FactorBrokerError):
             "reason": reason
         }
 
-        super().__init__(
+        FactorBrokerError.__init__(
+            self,
             message=message,
             error_code="SOURCE_UNAVAILABLE",
             details=details,
@@ -279,14 +323,15 @@ class ValidationError(FactorBrokerError):
             "valid_values": valid_values
         }
 
-        super().__init__(
+        FactorBrokerError.__init__(
+            self,
             message=message,
             error_code="VALIDATION_ERROR",
             details=details
         )
 
 
-class CacheError(FactorBrokerError):
+class CacheError(FactorBrokerError, _CentralCacheError):
     """
     Exception raised when cache operations fail.
 
@@ -315,7 +360,8 @@ class CacheError(FactorBrokerError):
             "reason": reason
         }
 
-        super().__init__(
+        FactorBrokerError.__init__(
+            self,
             message=message,
             error_code="CACHE_ERROR",
             details=details,
@@ -364,7 +410,8 @@ class DataQualityError(FactorBrokerError):
             )
         }
 
-        super().__init__(
+        FactorBrokerError.__init__(
+            self,
             message=message,
             error_code="DATA_QUALITY_WARNING",
             details=details
@@ -404,7 +451,8 @@ class ProxyCalculationError(FactorBrokerError):
             "reason": reason
         }
 
-        super().__init__(
+        FactorBrokerError.__init__(
+            self,
             message=message,
             error_code="PROXY_CALCULATION_ERROR",
             details=details
@@ -444,7 +492,8 @@ class ConfigurationError(FactorBrokerError):
             "resolution": resolution
         }
 
-        super().__init__(
+        FactorBrokerError.__init__(
+            self,
             message=message,
             error_code="CONFIGURATION_ERROR",
             details=details

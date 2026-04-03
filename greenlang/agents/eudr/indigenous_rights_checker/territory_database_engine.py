@@ -238,7 +238,7 @@ class TerritoryDatabaseEngine:
                 row = await cur.fetchone()
 
         elapsed_ms = (time.monotonic() - start) * 1000
-        logger.debug(f"get_territory({territory_id}) took {elapsed_ms:.1f}ms")
+        logger.debug("get_territory(%s) took %.1fms", territory_id, elapsed_ms)
 
         if row is None:
             return None
@@ -501,7 +501,7 @@ class TerritoryDatabaseEngine:
                 await cur.execute(_SQL_INSERT_TERRITORY, params)
             await conn.commit()
 
-        logger.info(f"Created territory {territory_id}: {params['territory_name']}")
+        logger.info("Created territory %s: %s", territory_id, params['territory_name'])
         return territory_id
 
     async def get_coverage_statistics(self) -> Dict[str, Any]:

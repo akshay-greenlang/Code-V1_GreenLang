@@ -292,7 +292,7 @@ class ClientConnection:
             return False
 
         if not self.check_rate_limit():
-            logger.warning(f"Rate limit exceeded for client {self.client_id}")
+            logger.warning("Rate limit exceeded for client %s", self.client_id)
             return False
 
         try:
@@ -309,7 +309,7 @@ class ClientConnection:
 
             return True
         except Exception as e:
-            logger.error(f"Error sending metric to client {self.client_id}: {e}")
+            logger.error("Error sending metric to client %s: %s", self.client_id, e)
             return False
 
     async def _send_data(self, data: Dict[str, Any]) -> None:
@@ -407,7 +407,7 @@ class MetricsWebSocketServer:
             try:
                 await client.websocket.close()
             except Exception as e:
-                logger.error(f"Error closing client connection: {e}")
+                logger.error("Error closing client connection: %s", e)
 
         self.clients.clear()
 
@@ -438,7 +438,7 @@ class MetricsWebSocketServer:
             )
             return payload
         except JWTError as e:
-            logger.warning(f"JWT authentication failed: {e}")
+            logger.warning("JWT authentication failed: %s", e)
             return None
 
     async def handle_connection(
@@ -471,7 +471,7 @@ class MetricsWebSocketServer:
         client = ClientConnection(websocket, client_id, user_id)
         self.clients[client_id] = client
 
-        logger.info(f"Client {client_id} connected (user: {user_id})")
+        logger.info("Client %s connected (user: %s)", client_id, user_id)
 
         try:
             # Send welcome message
@@ -484,9 +484,9 @@ class MetricsWebSocketServer:
             # Handle client messages
             await self._handle_client_messages(client)
         except WebSocketDisconnect:
-            logger.info(f"Client {client_id} disconnected")
+            logger.info("Client %s disconnected", client_id)
         except Exception as e:
-            logger.error(f"Error handling client {client_id}: {e}")
+            logger.error("Error handling client %s: %s", client_id, e)
         finally:
             # Remove client
             if client_id in self.clients:
@@ -539,7 +539,7 @@ class MetricsWebSocketServer:
             except WebSocketDisconnect:
                 raise
             except Exception as e:
-                logger.error(f"Error processing client message: {e}")
+                logger.error("Error processing client message: %s", e)
                 await client.send_error(f"Processing error: {e}")
 
     async def _process_redis_messages(self) -> None:
@@ -565,7 +565,7 @@ class MetricsWebSocketServer:
                     await self._broadcast_metric(channel, metric)
 
             except Exception as e:
-                logger.error(f"Error processing Redis message: {e}")
+                logger.error("Error processing Redis message: %s", e)
                 await asyncio.sleep(1)
 
     async def _broadcast_metric(self, channel: str, metric: Dict[str, Any]) -> None:
@@ -590,7 +590,7 @@ class MetricsWebSocketServer:
                 if not success:
                     disconnected_clients.append(client_id)
             except Exception as e:
-                logger.error(f"Error sending metric to client {client_id}: {e}")
+                logger.error("Error sending metric to client %s: %s", client_id, e)
                 disconnected_clients.append(client_id)
 
         # Remove disconnected clients
@@ -608,7 +608,7 @@ class MetricsWebSocketServer:
                 try:
                     await client.send_heartbeat()
                 except Exception as e:
-                    logger.error(f"Error sending heartbeat to client {client_id}: {e}")
+                    logger.error("Error sending heartbeat to client %s: %s", client_id, e)
                     disconnected_clients.append(client_id)
 
             # Remove disconnected clients
@@ -648,7 +648,7 @@ class MetricsWebSocketServer:
             })
 
         except Exception as e:
-            logger.error(f"Error fetching historical metrics: {e}")
+            logger.error("Error fetching historical metrics: %s", e)
             await client.send_error(f"Historical query error: {e}")
 
     def get_stats(self) -> Dict[str, Any]:

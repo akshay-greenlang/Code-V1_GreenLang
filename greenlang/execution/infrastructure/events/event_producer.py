@@ -220,7 +220,7 @@ class EventProducer:
         }
         self._middlewares: List[Callable] = []
 
-        logger.info(f"EventProducer initialized with backend: {config.backend}")
+        logger.info("EventProducer initialized with backend: %s", config.backend)
 
     async def start(self) -> None:
         """
@@ -247,7 +247,7 @@ class EventProducer:
             logger.info("Event producer started")
 
         except Exception as e:
-            logger.error(f"Failed to start producer: {e}", exc_info=True)
+            logger.error("Failed to start producer: %s", e, exc_info=True)
             raise
 
     async def stop(self) -> None:
@@ -300,7 +300,7 @@ class EventProducer:
             middleware: Function that processes events before publishing
         """
         self._middlewares.append(middleware)
-        logger.debug(f"Added middleware: {middleware.__name__}")
+        logger.debug("Added middleware: %s", middleware.__name__)
 
     async def publish(
         self,
@@ -332,7 +332,7 @@ class EventProducer:
                 else:
                     processed_event = middleware(processed_event)
             except Exception as e:
-                logger.error(f"Middleware error: {e}")
+                logger.error("Middleware error: %s", e)
 
         # Validate event
         if not EventSchema.validate_event(processed_event):
@@ -398,7 +398,7 @@ class EventProducer:
 
         except Exception as e:
             self._metrics["events_failed"] += 1
-            logger.error(f"Publish failed: {e}")
+            logger.error("Publish failed: %s", e)
             return PublishResult(
                 event_id=event.metadata.event_id,
                 topic=target_topic,
@@ -429,7 +429,7 @@ class EventProducer:
             result = await self.publish(event, topic, wait=True)
             results.append(result)
 
-        logger.info(f"Published batch of {len(events)} events")
+        logger.info("Published batch of %s events", len(events))
         return results
 
     async def publish_domain_event(
@@ -502,7 +502,7 @@ class EventProducer:
                 return await self._backend.publish(topic, key, value, headers)
             except Exception as e:
                 last_error = e
-                logger.warning(f"Publish attempt {attempt + 1} failed: {e}")
+                logger.warning("Publish attempt %s failed: %s", attempt + 1, e)
                 if attempt < self.config.max_retries - 1:
                     await asyncio.sleep(
                         self.config.retry_delay_ms * (2 ** attempt) / 1000
@@ -544,7 +544,7 @@ class EventProducer:
                     await self._flush_batch(batch)
                 break
             except Exception as e:
-                logger.error(f"Batch processor error: {e}")
+                logger.error("Batch processor error: %s", e)
 
     async def _flush_batch(self, batch: List[Dict[str, Any]]) -> None:
         """Flush a batch of messages."""
@@ -552,10 +552,10 @@ class EventProducer:
             await self._backend.publish_batch(batch)
             self._metrics["events_published"] += len(batch)
             self._metrics["batches_sent"] += 1
-            logger.debug(f"Flushed batch of {len(batch)} events")
+            logger.debug("Flushed batch of %s events", len(batch))
         except Exception as e:
             self._metrics["events_failed"] += len(batch)
-            logger.error(f"Batch flush failed: {e}")
+            logger.error("Batch flush failed: %s", e)
 
     async def flush(self) -> None:
         """Flush all pending events."""

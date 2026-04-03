@@ -35,7 +35,7 @@ def evaluate(
     # Resolve policy path
     policy_file = _resolve_policy_path(policy_path)
     if not policy_file.exists():
-        logger.error(f"Policy not found: {policy_path}, denying by default")
+        logger.error("Policy not found: %s, denying by default", policy_path)
         return {
             "allow": False,
             "reason": f"POLICY.DENIED: Policy not found: {policy_path}",
@@ -80,7 +80,7 @@ def evaluate(
         result = subprocess.run(cmd, capture_output=True, text=True, timeout=10)
 
         if result.returncode != 0:
-            logger.error(f"OPA evaluation failed: {result.stderr}")
+            logger.error("OPA evaluation failed: %s", result.stderr)
             return {
                 "allow": False,
                 "reason": f"Policy evaluation error: {result.stderr[:200]}",
@@ -111,7 +111,7 @@ def evaluate(
         logger.error("OPA evaluation timed out")
         return {"allow": False, "reason": "Policy evaluation timeout"}
     except Exception as e:
-        logger.error(f"OPA evaluation error: {e}")
+        logger.error("OPA evaluation error: %s", e)
         return {"allow": False, "reason": f"Policy evaluation error: {str(e)[:200]}"}
     finally:
         # Cleanup temp files

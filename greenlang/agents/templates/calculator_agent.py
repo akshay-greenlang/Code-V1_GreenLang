@@ -150,7 +150,7 @@ class CalculatorAgent:
                 cache_key = self._generate_cache_key(formula_name, inputs)
                 if cache_key in self._cache:
                     self._stats["cache_hits"] += 1
-                    logger.debug(f"Cache hit for {formula_name}")
+                    logger.debug("Cache hit for %s", formula_name)
                     return self._cache[cache_key]
 
             # Validate formula exists
@@ -209,7 +209,7 @@ class CalculatorAgent:
             return result
 
         except Exception as e:
-            logger.error(f"Calculation failed: {e}", exc_info=True)
+            logger.error("Calculation failed: %s", e, exc_info=True)
             self._stats["failed_calculations"] += 1
 
             return CalculationResult(
@@ -315,7 +315,7 @@ class CalculatorAgent:
         final_results = []
         for i, result in enumerate(results):
             if isinstance(result, Exception):
-                logger.error(f"Parallel calculation {i} failed: {result}")
+                logger.error("Parallel calculation %s failed: %s", i, result)
                 final_results.append(
                     CalculationResult(
                         success=False,
@@ -388,7 +388,7 @@ class CalculatorAgent:
             return result
 
         except Exception as e:
-            logger.error(f"Sync calculation failed: {e}", exc_info=True)
+            logger.error("Sync calculation failed: %s", e, exc_info=True)
             return CalculationResult(
                 success=False,
                 errors=[f"Calculation failed: {str(e)}"]
@@ -419,7 +419,7 @@ class CalculatorAgent:
             "registered_at": DeterministicClock.utcnow(),
         }
 
-        logger.info(f"Registered formula: {name}")
+        logger.info("Registered formula: %s", name)
 
     def _validate_inputs(
         self,
@@ -512,11 +512,11 @@ class CalculatorAgent:
             # In production, would use Monte Carlo simulation
             uncertainty = 0.10  # 10% default uncertainty
 
-            logger.debug(f"Uncertainty for {formula_name}: {uncertainty}")
+            logger.debug("Uncertainty for %s: %s", formula_name, uncertainty)
             return uncertainty
 
         except Exception as e:
-            logger.error(f"Uncertainty quantification failed: {e}")
+            logger.error("Uncertainty quantification failed: %s", e)
             return None
 
     def get_stats(self) -> Dict[str, Any]:

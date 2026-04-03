@@ -294,7 +294,7 @@ class ComplianceCheckerEngine:
             elif framework == ComplianceFramework.ISO_14064:
                 result = self.check_iso14064(calculation_result)
             else:
-                logger.warning(f"Unknown framework: {framework}")
+                logger.warning("Unknown framework: %s", framework)
                 continue
 
             results.append(result)

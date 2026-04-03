@@ -85,7 +85,7 @@ class StreamReader:
             try:
                 yield json.loads(line)
             except json.JSONDecodeError as e:
-                logger.warning(f"Failed to parse JSON line: {str(e)}")
+                logger.warning("Failed to parse JSON line: %s", e)
                 continue
 
     def stream_csv(

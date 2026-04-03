@@ -382,7 +382,7 @@ class WebhookManager:
             )
         except Exception as e:
             response_time_ms = int((time.time() - start_time) * 1000)
-            logger.error(f"Unexpected error delivering webhook: {e}")
+            logger.error("Unexpected error delivering webhook: %s", e)
             return WebhookDeliveryResult(
                 success=False,
                 status_code=None,
@@ -458,7 +458,7 @@ class WebhookManager:
         ).first()
 
         if not delivery:
-            logger.error(f"Delivery {delivery_id} not found")
+            logger.error("Delivery %s not found", delivery_id)
             return
 
         webhook = self.db.query(WebhookModel).filter(
@@ -466,7 +466,7 @@ class WebhookManager:
         ).first()
 
         if not webhook:
-            logger.error(f"Webhook {delivery.webhook_id} not found")
+            logger.error("Webhook %s not found", delivery.webhook_id)
             return
 
         # Reconstruct event
@@ -500,7 +500,7 @@ class WebhookManager:
             webhook.last_delivery_at = DeterministicClock.utcnow()
             webhook.last_success_at = DeterministicClock.utcnow()
 
-            logger.info(f"Webhook delivered successfully: {delivery_id}")
+            logger.info("Webhook delivered successfully: %s", delivery_id)
         else:
             # Failed
             delivery.error_message = result.error_message
@@ -515,7 +515,7 @@ class WebhookManager:
                 webhook.last_delivery_at = DeterministicClock.utcnow()
                 webhook.last_failure_at = DeterministicClock.utcnow()
 
-                logger.error(f"Webhook delivery failed after {delivery.attempt_count} attempts: {delivery_id}")
+                logger.error("Webhook delivery failed after %s attempts: %s", delivery.attempt_count, delivery_id)
             else:
                 # Schedule retry with exponential backoff
                 retry_delay = webhook.retry_delay_seconds * (2 ** (delivery.attempt_count - 1))
@@ -600,7 +600,7 @@ def create_webhook_app():
         db.commit()
         db.refresh(webhook)
 
-        logger.info(f"Webhook created for partner {partner_id}: {webhook.id}")
+        logger.info("Webhook created for partner %s: %s", partner_id, webhook.id)
 
         return WebhookWithSecret(
             id=webhook.id,
@@ -720,7 +720,7 @@ def create_webhook_app():
         db.delete(webhook)
         db.commit()
 
-        logger.info(f"Webhook deleted: {webhook_id}")
+        logger.info("Webhook deleted: %s", webhook_id)
 
         return None
 

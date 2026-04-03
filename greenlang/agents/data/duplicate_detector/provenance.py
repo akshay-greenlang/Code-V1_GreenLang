@@ -2,15 +2,11 @@
 """
 Provenance Tracking for Duplicate Detection Agent - AGENT-DATA-011
 
-Provides SHA-256 based audit trail tracking for all duplicate detection
-operations. Maintains an in-memory chain-hashed operation log for
-tamper-evident provenance.
-
-Zero-Hallucination Guarantees:
-    - All hashes are deterministic SHA-256
-    - Chain hashing links operations in sequence
-    - JSON export for external audit systems
-    - Complete provenance for every operation
+Thin shim that delegates core hashing to the shared
+``greenlang.data_commons.provenance`` base class while preserving the
+extended duplicate-detector API (thread-safe, ``add_to_chain``,
+``hash_record``, ``verify_chain`` with optional entity scoping, and
+``reset``).
 
 Example:
     >>> from greenlang.agents.data.duplicate_detector.provenance import ProvenanceTracker
@@ -31,51 +27,31 @@ import hashlib
 import json
 import logging
 import threading
-from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
+from greenlang.data_commons.provenance import ProvenanceTracker as _BaseProvenanceTracker
 from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
-class ProvenanceTracker:
-    """Tracks provenance for duplicate detection operations with SHA-256 chain hashing.
 
-    Maintains an ordered log of operations with SHA-256 hashes that chain
-    together to provide tamper-evident audit trails, grouped by entity type
-    and entity ID.
+class ProvenanceTracker(_BaseProvenanceTracker):
+    """Thread-safe provenance tracker for duplicate detection operations.
 
-    Attributes:
-        _chain_store: In-memory chain storage grouped by entity key.
-        _global_chain: Flat list of all entries in order.
-        _last_chain_hash: Most recent chain hash for linking.
-        _lock: Thread-safety lock.
-
-    Example:
-        >>> tracker = ProvenanceTracker()
-        >>> entry_id = tracker.record("dedup_job", "job_001", "fingerprint", "abc123")
-        >>> valid, chain = tracker.verify_chain("dedup_job", "job_001")
-        >>> assert valid is True
+    Preserves the extended API with ``add_to_chain``, ``hash_record``,
+    entity-scoped ``verify_chain``, and ``reset`` while delegating
+    genesis-hash derivation and core utilities to the shared base class.
     """
 
-    # Initial chain hash (genesis)
-    GENESIS_HASH = hashlib.sha256(
-        b"greenlang-duplicate-detector-genesis"
-    ).hexdigest()
-
     def __init__(self) -> None:
-        """Initialize ProvenanceTracker with genesis hash."""
-        self._chain_store: Dict[str, List[Dict[str, Any]]] = {}
-        self._global_chain: List[Dict[str, Any]] = []
-        self._last_chain_hash: str = self.GENESIS_HASH
+        """Initialize with duplicate-detector genesis hash."""
+        super().__init__(agent_name="duplicate-detector")
         self._lock = threading.Lock()
-        logger.info("ProvenanceTracker initialized (duplicate detector)")
+
+    # -- Hashing -----------------------------------------------------------
 
     def hash_record(self, data: Dict[str, Any]) -> str:
         """Compute a deterministic SHA-256 hash of a data record.
-
-        Sorts keys and normalises values to ensure deterministic hashing
-        regardless of insertion order.
 
         Args:
             data: Dictionary to hash.
@@ -86,21 +62,16 @@ class ProvenanceTracker:
         serialized = json.dumps(data, sort_keys=True, default=str)
         return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
 
+    # -- Chain operations --------------------------------------------------
+
     def add_to_chain(
-        self,
-        operation: str,
-        input_hash: str,
-        output_hash: str,
+        self, operation: str, input_hash: str, output_hash: str,
         metadata: Optional[Dict[str, Any]] = None,
     ) -> str:
         """Add a chain link recording an operation with input/output hashes.
 
-        Creates a provenance entry linking the previous chain hash to new
-        input and output hashes for the given operation.
-
         Args:
-            operation: Name of the operation (fingerprint, block, compare,
-                classify, cluster, merge, pipeline).
+            operation: Name of the operation.
             input_hash: SHA-256 hash of the operation input.
             output_hash: SHA-256 hash of the operation output.
             metadata: Optional additional metadata to include.
@@ -110,49 +81,31 @@ class ProvenanceTracker:
         """
         timestamp = utcnow().isoformat()
         meta = metadata or {}
-
-        entry = {
-            "operation": operation,
-            "input_hash": input_hash,
-            "output_hash": output_hash,
-            "metadata": meta,
-            "timestamp": timestamp,
-            "chain_hash": "",
+        entry: Dict[str, Any] = {
+            "operation": operation, "input_hash": input_hash,
+            "output_hash": output_hash, "metadata": meta,
+            "timestamp": timestamp, "chain_hash": "",
         }
-
         with self._lock:
-            chain_hash = self._compute_chain_hash(
-                self._last_chain_hash,
-                input_hash,
-                output_hash,
-                operation,
-                timestamp,
+            chain_hash = self._compute_dd_chain_hash(
+                self._last_chain_hash, input_hash, output_hash,
+                operation, timestamp,
             )
             entry["chain_hash"] = chain_hash
             self._global_chain.append(entry)
             self._last_chain_hash = chain_hash
-
-        logger.debug(
-            "Chain link added: op=%s in=%s out=%s chain=%s",
-            operation, input_hash[:16], output_hash[:16], chain_hash[:16],
-        )
         return chain_hash
 
     def record(
-        self,
-        entity_type: str,
-        entity_id: str,
-        action: str,
-        data_hash: str,
-        user_id: str = "system",
+        self, entity_type: str, entity_id: str, action: str,
+        data_hash: str, user_id: str = "system",
     ) -> str:
         """Record a provenance entry for an entity operation.
 
         Args:
-            entity_type: Type of entity (dedup_job, match, cluster, merge, rule).
+            entity_type: Type of entity.
             entity_id: Unique entity identifier.
-            action: Action performed (fingerprint, block, compare, classify,
-                cluster, merge, pipeline, create, cancel).
+            action: Action performed.
             data_hash: SHA-256 hash of the operation data.
             user_id: User who performed the operation.
 
@@ -161,58 +114,38 @@ class ProvenanceTracker:
         """
         timestamp = utcnow().isoformat()
         store_key = f"{entity_type}:{entity_id}"
-
-        entry = {
-            "entity_type": entity_type,
-            "entity_id": entity_id,
-            "action": action,
-            "data_hash": data_hash,
-            "user_id": user_id,
-            "timestamp": timestamp,
-            "chain_hash": "",
+        entry: Dict[str, Any] = {
+            "entity_type": entity_type, "entity_id": entity_id,
+            "action": action, "data_hash": data_hash,
+            "user_id": user_id, "timestamp": timestamp, "chain_hash": "",
         }
-
         with self._lock:
-            chain_hash = self._compute_chain_hash(
-                self._last_chain_hash,
-                data_hash,
-                data_hash,
-                action,
-                timestamp,
+            chain_hash = self._compute_dd_chain_hash(
+                self._last_chain_hash, data_hash, data_hash,
+                action, timestamp,
             )
             entry["chain_hash"] = chain_hash
-
-            # Store in entity chain
             if store_key not in self._chain_store:
                 self._chain_store[store_key] = []
             self._chain_store[store_key].append(entry)
-
-            # Store in global chain
             self._global_chain.append(entry)
             self._last_chain_hash = chain_hash
-
-        logger.debug(
-            "Recorded provenance: %s/%s action=%s hash=%s",
-            entity_type, entity_id[:8], action, chain_hash[:16],
-        )
         return chain_hash
 
+    # -- Verification / retrieval ------------------------------------------
+
     def verify_chain(
-        self,
-        entity_type: Optional[str] = None,
+        self, entity_type: Optional[str] = None,
         entity_id: Optional[str] = None,
     ) -> Tuple[bool, List[Dict[str, Any]]]:
         """Verify the integrity of the provenance chain.
 
-        When entity_type and entity_id are provided, verifies only the
-        entity-scoped chain. Otherwise verifies the full global chain.
-
         Args:
-            entity_type: Optional type of entity to verify.
-            entity_id: Optional entity ID whose chain to verify.
+            entity_type: Optional entity type to scope verification.
+            entity_id: Optional entity ID to scope verification.
 
         Returns:
-            Tuple of (is_valid: bool, chain_entries: list).
+            Tuple of (is_valid, chain_entries).
         """
         if entity_type and entity_id:
             store_key = f"{entity_type}:{entity_id}"
@@ -221,53 +154,38 @@ class ProvenanceTracker:
         else:
             with self._lock:
                 chain = list(self._global_chain)
-
         if not chain:
             return True, []
-
         is_valid = True
         for i, entry in enumerate(chain):
-            if i == 0:
-                if not entry.get("chain_hash"):
-                    is_valid = False
-                    break
+            if i == 0 and not entry.get("chain_hash"):
+                is_valid = False
+                break
             required = [
                 "action" if "action" in entry else "operation",
-                "timestamp",
-                "chain_hash",
+                "timestamp", "chain_hash",
             ]
-            # Validate entity entries have entity fields
             if "entity_type" in entry:
                 required.extend(["entity_type", "entity_id", "data_hash"])
             else:
                 required.extend(["input_hash", "output_hash"])
-
-            for field_name in required:
-                if field_name not in entry:
+            for fn in required:
+                if fn not in entry:
                     is_valid = False
-                    logger.warning(
-                        "Chain verification failed at entry %d: missing field %s",
-                        i, field_name,
-                    )
                     break
             if not is_valid:
                 break
-
         return is_valid, chain
 
     def get_chain(
-        self,
-        entity_type: Optional[str] = None,
+        self, entity_type: Optional[str] = None,
         entity_id: Optional[str] = None,
     ) -> List[Dict[str, Any]]:
-        """Get the provenance chain.
-
-        When entity_type and entity_id are provided, returns only the
-        entity-scoped chain. Otherwise returns the full global chain.
+        """Get the provenance chain, optionally scoped to an entity.
 
         Args:
-            entity_type: Optional type of entity.
-            entity_id: Optional entity ID to look up.
+            entity_type: Optional entity type filter.
+            entity_id: Optional entity ID filter.
 
         Returns:
             List of provenance entries, oldest first.
@@ -292,50 +210,19 @@ class ProvenanceTracker:
             return list(reversed(self._global_chain[-limit:]))
 
     def get_chain_length(self) -> int:
-        """Return the total number of provenance entries in the global chain."""
+        """Return the total number of provenance entries."""
         with self._lock:
             return len(self._global_chain)
 
     def reset(self) -> None:
-        """Reset the provenance tracker to genesis state.
-
-        Clears all stored chains and resets the last chain hash
-        back to the genesis hash.
-        """
+        """Reset the provenance tracker to genesis state."""
         with self._lock:
             self._chain_store.clear()
             self._global_chain.clear()
-            self._last_chain_hash = self.GENESIS_HASH
+            self._last_chain_hash = self._GENESIS_HASH
         logger.info("ProvenanceTracker reset to genesis")
 
-    def _compute_chain_hash(
-        self,
-        previous_hash: str,
-        input_hash: str,
-        output_hash: str,
-        operation: str,
-        timestamp: str,
-    ) -> str:
-        """Compute the next chain hash linking to the previous.
-
-        Args:
-            previous_hash: Previous chain hash.
-            input_hash: Hash of the operation input.
-            output_hash: Hash of the operation output.
-            operation: Operation or action name.
-            timestamp: ISO-formatted timestamp.
-
-        Returns:
-            New SHA-256 chain hash.
-        """
-        combined = json.dumps({
-            "previous": previous_hash,
-            "input": input_hash,
-            "output": output_hash,
-            "operation": operation,
-            "timestamp": timestamp,
-        }, sort_keys=True)
-        return hashlib.sha256(combined.encode("utf-8")).hexdigest()
+    # -- Properties --------------------------------------------------------
 
     @property
     def entry_count(self) -> int:
@@ -350,26 +237,37 @@ class ProvenanceTracker:
             return len(self._chain_store)
 
     def export_json(self) -> str:
-        """Export all provenance records as JSON string.
-
-        Returns:
-            JSON string of provenance records.
-        """
+        """Export all provenance records as JSON string."""
         with self._lock:
             data = list(self._global_chain)
         return json.dumps(data, indent=2, default=str)
 
-    def build_hash(self, data: Any) -> str:
-        """Build a SHA-256 hash for arbitrary data.
+    # -- Internal ----------------------------------------------------------
+
+    @staticmethod
+    def _compute_dd_chain_hash(
+        previous_hash: str, input_hash: str, output_hash: str,
+        operation: str, timestamp: str,
+    ) -> str:
+        """Compute the next chain hash (5-arg variant for duplicate detector).
 
         Args:
-            data: Data to hash (dict, list, or other).
+            previous_hash: Previous chain hash.
+            input_hash: Hash of the operation input.
+            output_hash: Hash of the operation output.
+            operation: Operation or action name.
+            timestamp: ISO-formatted timestamp.
 
         Returns:
-            Hex-encoded SHA-256 hash.
+            New SHA-256 chain hash.
         """
-        serialized = json.dumps(data, sort_keys=True, default=str)
-        return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
+        combined = json.dumps({
+            "previous": previous_hash, "input": input_hash,
+            "output": output_hash, "operation": operation,
+            "timestamp": timestamp,
+        }, sort_keys=True)
+        return hashlib.sha256(combined.encode("utf-8")).hexdigest()
+
 
 __all__ = [
     "ProvenanceTracker",

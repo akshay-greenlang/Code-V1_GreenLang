@@ -120,7 +120,7 @@ class PartnerIntegrationAgent(BaseAgent):
         super().__init__(config)
         self._connections: Dict[str, PartnerConnection] = {}
         self._sync_history: List[Dict[str, Any]] = []
-        self.logger.info(f"Initialized {self.AGENT_ID}")
+        logger.info("Initialized %s", self.AGENT_ID)
 
     def execute(self, input_data: Dict[str, Any]) -> AgentResult:
         start_time = time.time()
@@ -140,7 +140,7 @@ class PartnerIntegrationAgent(BaseAgent):
             )
             return AgentResult(success=True, data=output.model_dump())
         except Exception as e:
-            self.logger.error(f"Operation failed: {e}", exc_info=True)
+            logger.error("Operation failed: %s", e, exc_info=True)
             return AgentResult(success=False, error=str(e))
 
     def _route_operation(self, pi_input: PartnerIntegrationInput) -> Dict[str, Any]:

@@ -408,7 +408,7 @@ class ExperienceReplayBuffer:
 
         # Track for importance sampling
         if is_rare_event:
-            logger.debug(f"Rare event added at index {self._total_added}")
+            logger.debug("Rare event added at index %s", self._total_added)
 
     def _add_reservoir(self, experience: Experience) -> None:
         """Add experience using reservoir sampling."""
@@ -725,7 +725,7 @@ class ExperienceReplayBuffer:
         with open(path, 'wb') as f:
             pickle.dump(data, f)
 
-        logger.info(f"Buffer saved to {path}")
+        logger.info("Buffer saved to %s", path)
 
     def load(self, path: str) -> None:
         """
@@ -747,7 +747,7 @@ class ExperienceReplayBuffer:
         self._total_sampled = data['statistics']['total_sampled']
         self._rare_events = data['statistics']['rare_events']
 
-        logger.info(f"Buffer loaded from {path}")
+        logger.info("Buffer loaded from %s", path)
 
     # Integration with online_learner.py
     def to_training_data(self) -> Tuple[np.ndarray, np.ndarray]:
@@ -860,14 +860,14 @@ class ProcessHeatReplayBuffer(ExperienceReplayBuffer):
         # Detect rare events
         if reward <= self.failure_reward_threshold:
             is_rare_event = True
-            logger.warning(f"Failure event detected: reward={reward}")
+            logger.warning("Failure event detected: reward=%s", reward)
 
         # Detect anomalies using z-score
         if self._reward_std > 0:
             z_score = abs(reward - self._reward_mean) / self._reward_std
             if z_score > self.anomaly_z_threshold:
                 is_rare_event = True
-                logger.info(f"Anomaly detected: z-score={z_score:.2f}")
+                logger.info("Anomaly detected: z-score=%.2f", z_score)
 
         # Add to buffer
         super().add(

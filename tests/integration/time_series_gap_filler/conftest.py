@@ -3,7 +3,6 @@
 Shared pytest fixtures for AGENT-DATA-014 Time Series Gap Filler integration tests.
 
 Provides reusable test fixtures for:
-- Override of parent conftest autouse fixtures (mock_agents, block_network)
 - Configuration reset between tests (fresh_config)
 - Sample time series data with gaps
 - Timestamp generation
@@ -24,33 +23,6 @@ from unittest.mock import MagicMock
 import pytest
 
 from greenlang.agents.data.time_series_gap_filler.config import reset_config
-
-
-# ---------------------------------------------------------------------------
-# Override parent conftest autouse fixtures
-# ---------------------------------------------------------------------------
-
-
-@pytest.fixture(autouse=True)
-def mock_agents():
-    """Override parent conftest mock_agents fixture.
-
-    The parent tests/integration/conftest.py defines an autouse fixture
-    that patches greenlang.agents.registry.get_agent, which does not
-    apply to TSGF integration tests.
-    """
-    return {}
-
-
-@pytest.fixture(scope="session", autouse=True)
-def block_network():
-    """Override parent conftest block_network fixture.
-
-    The parent tests/integration/conftest.py blocks all socket access,
-    which can interfere with asyncio event loop creation. We disable it
-    for TSGF integration tests since our tests are fully self-contained.
-    """
-    pass
 
 
 # ---------------------------------------------------------------------------

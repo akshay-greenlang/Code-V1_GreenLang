@@ -26,6 +26,8 @@ import os
 
 import numpy as np
 
+from greenlang.utilities.exceptions.base import GreenLangException
+
 logger = logging.getLogger(__name__)
 
 
@@ -176,7 +178,7 @@ class SearchResult:
     processing_level: str = "L2A"
 
 
-class Sentinel2ClientError(Exception):
+class Sentinel2ClientError(GreenLangException):
     """Base exception for Sentinel-2 client errors."""
     pass
 
@@ -269,7 +271,7 @@ class Sentinel2Client:
             with open(cache_file, "w") as f:
                 json.dump(data, f)
         except IOError as e:
-            logger.warning(f"Failed to save cache: {e}")
+            logger.warning("Failed to save cache: %s", e)
 
     def authenticate(self) -> str:
         """
@@ -390,7 +392,7 @@ class Sentinel2Client:
 
             current_date += timedelta(days=5)
 
-        logger.info(f"Found {len(results)} Sentinel-2 images")
+        logger.info("Found %s Sentinel-2 images", len(results))
         return results
 
     def download_image(
@@ -427,7 +429,7 @@ class Sentinel2Client:
         # Ensure authenticated
         self.authenticate()
 
-        logger.info(f"Downloading image {search_result.product_id}, bands: {bands}")
+        logger.info("Downloading image %s, bands: %s", search_result.product_id, bands)
 
         raise DownloadError(
             "Real API download not implemented. Use use_mock=True for testing."
@@ -549,7 +551,7 @@ class Sentinel2Client:
 
             image.scl = scl_data
 
-        logger.info(f"Downloaded mock image: {image.product_id}, shape: {base_height}x{base_width}")
+        logger.info("Downloaded mock image: %s, shape: %sx%s", image.product_id, base_height, base_width)
         return image
 
     def get_time_series(
@@ -581,7 +583,7 @@ class Sentinel2Client:
                 image = self.download_image(result, bands)
                 images.append(image)
             except DownloadError as e:
-                logger.warning(f"Failed to download {result.product_id}: {e}")
+                logger.warning("Failed to download %s: %s", result.product_id, e)
 
         # Sort by acquisition date
         images.sort(key=lambda x: x.acquisition_date)
@@ -614,7 +616,7 @@ class Sentinel2Client:
                 cache_file.unlink()
                 deleted += 1
             except OSError as e:
-                logger.warning(f"Failed to delete {cache_file}: {e}")
+                logger.warning("Failed to delete %s: %s", cache_file, e)
 
-        logger.info(f"Cleared {deleted} cached files")
+        logger.info("Cleared %s cached files", deleted)
         return deleted

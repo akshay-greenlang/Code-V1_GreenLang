@@ -60,7 +60,10 @@ class TimeoutConfig:
 # ---------------------------------------------------------------------------
 
 
-class AgentTimeoutError(asyncio.TimeoutError):
+from greenlang.utilities.exceptions.infrastructure import InfrastructureException as _InfrastructureException
+
+
+class AgentTimeoutError(_InfrastructureException, asyncio.TimeoutError):
     """Raised when an agent exceeds its configured execution timeout.
 
     Attributes:

@@ -129,7 +129,10 @@ class AgentStateTransition:
     metadata: Dict[str, Any] = field(default_factory=dict)
 
 
-class InvalidTransitionError(Exception):
+from greenlang.utilities.exceptions.infrastructure import InfrastructureException as _InfrastructureException
+
+
+class InvalidTransitionError(_InfrastructureException):
     """Raised when an invalid state transition is attempted."""
 
     def __init__(

@@ -248,7 +248,7 @@ class CheckpointDebugger:
         checkpoints = self.manager.storage.list_checkpoints(pipeline_id)
 
         if not checkpoints:
-            logger.warning(f"No checkpoints found for pipeline {pipeline_id}")
+            logger.warning("No checkpoints found for pipeline %s", pipeline_id)
             return
 
         # Create directed graph
@@ -307,7 +307,7 @@ class CheckpointDebugger:
 
         if output_path:
             plt.savefig(output_path, bbox_inches='tight', dpi=150)
-            logger.info(f"Saved checkpoint graph to {output_path}")
+            logger.info("Saved checkpoint graph to %s", output_path)
         else:
             plt.show()
 
@@ -427,13 +427,13 @@ class CheckpointDebugger:
         checkpoint = self.manager.storage.load(checkpoint_id)
 
         if not checkpoint:
-            logger.error(f"Checkpoint {checkpoint_id} not found")
+            logger.error("Checkpoint %s not found", checkpoint_id)
             return False
 
         validation = self._validate_checkpoint(checkpoint)
 
         if validation["is_valid"]:
-            logger.info(f"Checkpoint {checkpoint_id} is already valid")
+            logger.info("Checkpoint %s is already valid", checkpoint_id)
             return True
 
         # Attempt repairs
@@ -443,7 +443,7 @@ class CheckpointDebugger:
             if "Checksum mismatch" in issue:
                 # Recalculate and update checksum
                 checkpoint.metadata.checksum = checkpoint.calculate_checksum()
-                logger.info(f"Repaired checksum for {checkpoint_id}")
+                logger.info("Repaired checksum for %s", checkpoint_id)
                 repaired = True
 
             elif "Missing provenance hash" in issue:
@@ -451,17 +451,17 @@ class CheckpointDebugger:
                 for stage in checkpoint.completed_stages:
                     if stage not in checkpoint.provenance_hashes:
                         checkpoint.provenance_hashes[stage] = "repaired_" + stage
-                logger.info(f"Added placeholder provenance hashes for {checkpoint_id}")
+                logger.info("Added placeholder provenance hashes for %s", checkpoint_id)
                 repaired = True
 
         if repaired:
             # Save repaired checkpoint
             success = self.manager.storage.save(checkpoint_id, checkpoint)
             if success:
-                logger.info(f"Successfully repaired checkpoint {checkpoint_id}")
+                logger.info("Successfully repaired checkpoint %s", checkpoint_id)
             return success
 
-        logger.warning(f"Unable to repair checkpoint {checkpoint_id}")
+        logger.warning("Unable to repair checkpoint %s", checkpoint_id)
         return False
 
     def generate_recovery_report(self, pipeline_id: str) -> str:

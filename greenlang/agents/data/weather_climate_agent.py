@@ -242,7 +242,7 @@ class WeatherClimateAgent(BaseAgent):
         # Normal weather data (30-year averages)
         self._normal_data: Dict[str, Dict[int, Dict[str, float]]] = {}
 
-        self.logger.info(f"Initialized {self.AGENT_NAME} v{self.VERSION}")
+        logger.info("Initialized %s v%s", self.AGENT_NAME, self.VERSION)
 
     def execute(self, input_data: Dict[str, Any]) -> AgentResult:
         """Execute weather data operation."""
@@ -265,7 +265,7 @@ class WeatherClimateAgent(BaseAgent):
                 return AgentResult(success=False, error=f"Unknown operation: {operation}")
 
         except Exception as e:
-            self.logger.error(f"Weather operation failed: {str(e)}", exc_info=True)
+            logger.error("Weather operation failed: %s", e, exc_info=True)
             return AgentResult(success=False, error=str(e))
 
     def _handle_query(self, input_data: Dict[str, Any], start_time: datetime) -> AgentResult:

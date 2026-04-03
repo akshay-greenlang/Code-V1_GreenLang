@@ -97,7 +97,7 @@ class FurnacePerformanceMonitor(IntelligenceMixin):
 
         self._history: List[Dict[str, Any]] = []
 
-        logger.info(f"FurnacePerformanceMonitor initialized for {furnace_id}")
+        logger.info("FurnacePerformanceMonitor initialized for %s", furnace_id)
 
         # Initialize intelligence with STANDARD level for furnace monitor
         self._init_intelligence(IntelligenceConfig(

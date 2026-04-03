@@ -270,7 +270,7 @@ class IntegratedReportAgent(BaseAgent):
             )
 
         super().__init__(config)
-        logger.info(f"Initialized {self.AGENT_NAME} v{self.VERSION}")
+        logger.info("Initialized %s v%s", self.AGENT_NAME, self.VERSION)
 
     def execute(self, input_data: Dict[str, Any]) -> AgentResult:
         """Execute integrated report operation."""
@@ -301,7 +301,7 @@ class IntegratedReportAgent(BaseAgent):
             )
 
         except Exception as e:
-            logger.error(f"Integrated report failed: {str(e)}", exc_info=True)
+            logger.error("Integrated report failed: %s", e, exc_info=True)
             return AgentResult(success=False, error=str(e))
 
     def _handle_generate_report(

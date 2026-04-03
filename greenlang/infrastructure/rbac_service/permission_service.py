@@ -99,11 +99,14 @@ class EvaluationResult:
 # ---------------------------------------------------------------------------
 
 
-class PermissionNotFoundError(Exception):
+from greenlang.utilities.exceptions.security import AuthorizationError as _AuthorizationError
+
+
+class PermissionNotFoundError(_AuthorizationError):
     """Raised when a permission lookup fails."""
 
 
-class DuplicatePermissionError(Exception):
+class DuplicatePermissionError(_AuthorizationError):
     """Raised when a resource:action pair already exists."""
 
 

@@ -312,7 +312,7 @@ class PathwayScenarioBuilderAgent(DeterministicAgent):
         )
 
         self.logger = logging.getLogger(self.__class__.__name__)
-        self.logger.info(f"Initialized {self.AGENT_ID}: {self.AGENT_NAME}")
+        logger.info("Initialized %s: %s", self.AGENT_ID, self.AGENT_NAME)
 
     def execute(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
         """Execute scenario building operation."""
@@ -347,7 +347,7 @@ class PathwayScenarioBuilderAgent(DeterministicAgent):
             return result
 
         except Exception as e:
-            self.logger.error(f"Scenario building failed: {str(e)}", exc_info=True)
+            logger.error("Scenario building failed: %s", e, exc_info=True)
             return {
                 "operation": inputs.get("operation", "unknown"),
                 "success": False,

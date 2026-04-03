@@ -1174,24 +1174,24 @@ class BoilerReplacementAgent_AI(Agent[BoilerReplacementInput, BoilerReplacementO
 
         for field in required_fields:
             if field not in payload:
-                self.logger.error(f"Missing required field: {field}")
+                logger.error("Missing required field: %s", field)
                 return False
 
         # Validate ranges
         if payload["rated_capacity_kw"] <= 0:
-            self.logger.error("rated_capacity_kw must be positive")
+            logger.error("rated_capacity_kw must be positive")
             return False
 
         if payload["age_years"] < 0:
-            self.logger.error("age_years must be non-negative")
+            logger.error("age_years must be non-negative")
             return False
 
         if not (0 <= payload["average_load_factor"] <= 1):
-            self.logger.error("average_load_factor must be between 0 and 1")
+            logger.error("average_load_factor must be between 0 and 1")
             return False
 
         if not (-90 <= payload["latitude"] <= 90):
-            self.logger.error("latitude must be between -90 and 90")
+            logger.error("latitude must be between -90 and 90")
             return False
 
         return True
@@ -1250,7 +1250,7 @@ class BoilerReplacementAgent_AI(Agent[BoilerReplacementInput, BoilerReplacementO
             return result
 
         except Exception as e:
-            self.logger.error(f"Error in boiler replacement analysis: {e}")
+            logger.error("Error in boiler replacement analysis: %s", e)
             error_info: ErrorInfo = {
                 "type": "CalculationError",
                 "message": f"Failed to analyze boiler replacement: {str(e)}",
@@ -1354,7 +1354,7 @@ class BoilerReplacementAgent_AI(Agent[BoilerReplacementInput, BoilerReplacementO
             }
 
         except BudgetExceeded as e:
-            self.logger.error(f"Budget exceeded: {e}")
+            logger.error("Budget exceeded: %s", e)
             error_info: ErrorInfo = {
                 "type": "BudgetError",
                 "message": f"AI budget exceeded: {str(e)}",
@@ -1453,7 +1453,7 @@ IMPORTANT:
                 elif name == "compare_replacement_technologies":
                     results["comparison"] = self._compare_replacement_technologies_impl(**args)
             except Exception as e:
-                self.logger.warning(f"Tool call {name} failed: {e}")
+                logger.warning("Tool call %s failed: %s", name, e)
                 # Continue processing other tools
 
         return results

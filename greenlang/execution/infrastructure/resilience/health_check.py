@@ -294,7 +294,7 @@ class HealthChecker:
             name=name,
             status=HealthStatus.UNKNOWN
         )
-        logger.debug(f"Added health check: {name}")
+        logger.debug("Added health check: %s", name)
 
     def add_indicator(
         self,
@@ -313,7 +313,7 @@ class HealthChecker:
             name=name,
             status=HealthStatus.UNKNOWN
         )
-        logger.debug(f"Added health indicator: {name}")
+        logger.debug("Added health indicator: %s", name)
 
     def remove_check(self, name: str) -> None:
         """Remove a health check."""

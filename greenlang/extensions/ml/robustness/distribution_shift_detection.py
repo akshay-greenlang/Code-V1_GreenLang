@@ -328,7 +328,7 @@ class DistributionShiftDetector:
         """
         self._reference_data = data.copy()
         self._compute_reference_stats()
-        logger.info(f"Reference set: shape={data.shape}")
+        logger.info("Reference set: shape=%s", data.shape)
 
     def _compute_reference_stats(self) -> None:
         """Precompute reference statistics (deterministic)."""

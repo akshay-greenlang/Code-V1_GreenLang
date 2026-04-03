@@ -55,7 +55,10 @@ class CircuitBreakerState(str, Enum):
 # ---------------------------------------------------------------------------
 
 
-class CircuitOpenError(Exception):
+from greenlang.utilities.exceptions.infrastructure import CircuitBreakerOpenError as _CircuitBreakerOpenError
+
+
+class CircuitOpenError(_CircuitBreakerOpenError):
     """Raised when a call is rejected because the circuit breaker is open.
 
     Attributes:

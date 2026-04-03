@@ -316,7 +316,7 @@ class ModelRegistry:
         if training_data is not None:
             self._training_data[model_id] = training_data
 
-        logger.info(f"Model registered: {model_id}")
+        logger.info("Model registered: %s", model_id)
 
     def get_model(self, model_id: str) -> Any:
         """Get registered model."""
@@ -539,7 +539,7 @@ async def explain_prediction(
         )
 
     except Exception as e:
-        logger.error(f"Explanation generation failed: {e}", exc_info=True)
+        logger.error("Explanation generation failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=f"Explanation failed: {str(e)}")
 
 
@@ -645,7 +645,7 @@ async def explain_model(
         )
 
     except Exception as e:
-        logger.error(f"Global explanation failed: {e}", exc_info=True)
+        logger.error("Global explanation failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=f"Explanation failed: {str(e)}")
 
 
@@ -733,7 +733,7 @@ async def generate_counterfactual(
             detail="Counterfactual explainer not available"
         )
     except Exception as e:
-        logger.error(f"Counterfactual generation failed: {e}", exc_info=True)
+        logger.error("Counterfactual generation failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=f"Counterfactual failed: {str(e)}")
 
 
@@ -804,7 +804,7 @@ async def analyze_what_if(
             detail="Counterfactual explainer not available"
         )
     except Exception as e:
-        logger.error(f"What-if analysis failed: {e}", exc_info=True)
+        logger.error("What-if analysis failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=f"What-if failed: {str(e)}")
 
 
@@ -876,7 +876,7 @@ async def get_feature_importance(
         )
 
     except Exception as e:
-        logger.error(f"Feature importance failed: {e}", exc_info=True)
+        logger.error("Feature importance failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=f"Importance failed: {str(e)}")
 
 
@@ -1113,7 +1113,7 @@ async def startup_event():
     logger.info("GreenLang ML Explainability API starting up...")
 
     deps = check_dependencies()
-    logger.info(f"Dependencies: SHAP={deps['shap']}, LIME={deps['lime']}, scipy={deps['scipy']}")
+    logger.info("Dependencies: SHAP=%s, LIME=%s, scipy=%s", deps['shap'], deps['lime'], deps['scipy'])
 
     if not FASTAPI_AVAILABLE:
         logger.warning("FastAPI not available - API endpoints will not function")

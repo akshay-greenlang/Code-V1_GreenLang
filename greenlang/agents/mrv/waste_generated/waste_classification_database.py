@@ -293,7 +293,7 @@ class WasteClassificationDatabaseEngine:
         """
         normalized_ewc = self._normalize_ewc_code(ewc_code)
         if normalized_ewc not in self._ewc_database:
-            logger.warning(f"EWC code {ewc_code} not found, returning MIXED_MSW")
+            logger.warning("EWC code %s not found, returning MIXED_MSW", ewc_code)
             return WasteCategory.MIXED_MSW
 
         return self._ewc_database[normalized_ewc]["category"]
@@ -515,7 +515,7 @@ class WasteClassificationDatabaseEngine:
             if truncated in eeio_factors:
                 return eeio_factors[truncated]
 
-        logger.warning(f"EEIO factor not found for NAICS {naics_code}, using default")
+        logger.warning("EEIO factor not found for NAICS %s, using default", naics_code)
         return Decimal("0.285")  # Default for sector 562
 
     def convert_warm_to_metric(self, value_mtco2e_per_short_ton: Decimal) -> Decimal:

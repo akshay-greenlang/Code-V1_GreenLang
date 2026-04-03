@@ -119,7 +119,7 @@ class CondensateAnalyzer:
             cation_conductivity_max_umho=CondensateConstants.CATION_CONDUCTIVITY_MAX,
         )
 
-        logger.info(f"CondensateAnalyzer initialized with amine: {amine_type}")
+        logger.info("CondensateAnalyzer initialized with amine: %s", amine_type)
 
     def analyze(self, input_data: CondensateInput) -> CondensateOutput:
         """
@@ -132,7 +132,7 @@ class CondensateAnalyzer:
             CondensateOutput with comprehensive analysis
         """
         start_time = datetime.now(timezone.utc)
-        logger.debug(f"Analyzing condensate sample: {input_data.sample_id}")
+        logger.debug("Analyzing condensate sample: %s", input_data.sample_id)
 
         parameter_results: List[WaterQualityResult] = []
         recommendations: List[str] = []

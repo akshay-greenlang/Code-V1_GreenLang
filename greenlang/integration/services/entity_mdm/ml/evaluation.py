@@ -87,7 +87,7 @@ class ModelEvaluator:
             EvaluationException: If evaluation fails
         """
         try:
-            logger.info(f"Evaluating model on {len(test_pairs)} test pairs")
+            logger.info("Evaluating model on %s test pairs", len(test_pairs))
 
             # Get predictions
             pairs = [(p.entity1_text, p.entity2_text) for p in test_pairs]
@@ -283,7 +283,7 @@ class ModelEvaluator:
         plt.savefig(output_path, dpi=300, bbox_inches="tight")
         plt.close()
 
-        logger.info(f"Saved confusion matrix to {output_path}")
+        logger.info("Saved confusion matrix to %s", output_path)
 
     def generate_roc_curve(
         self,
@@ -337,7 +337,7 @@ class ModelEvaluator:
             plt.savefig(output_path, dpi=300, bbox_inches="tight")
             plt.close()
 
-            logger.info(f"Saved ROC curve to {output_path}")
+            logger.info("Saved ROC curve to %s", output_path)
 
             return fpr, tpr, roc_auc
 
@@ -398,7 +398,7 @@ class ModelEvaluator:
             plt.savefig(output_path, dpi=300, bbox_inches="tight")
             plt.close()
 
-            logger.info(f"Saved PR curve to {output_path}")
+            logger.info("Saved PR curve to %s", output_path)
 
             return precision, recall, pr_auc
 
@@ -437,7 +437,7 @@ class ModelEvaluator:
             else:
                 raise ValueError(f"Unsupported format: {format}")
 
-            logger.info(f"Saved evaluation report to {output_path}")
+            logger.info("Saved evaluation report to %s", output_path)
 
         except Exception as e:
             raise EvaluationException(

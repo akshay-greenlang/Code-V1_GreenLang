@@ -60,6 +60,7 @@ from greenlang.agents.foundation.orchestrator.pipeline_schema import (
     StepResult,
 )
 from greenlang.schemas import GreenLangBase
+from greenlang.utilities.exceptions.workflow import WorkflowException
 
 logger = logging.getLogger(__name__)
 
@@ -390,7 +391,7 @@ class OPAClient:
         self.retry_count = retry_count
         self._session = None
 
-        logger.info(f"OPA client initialized: {self.base_url}")
+        logger.info("OPA client initialized: %s", self.base_url)
 
     async def _get_session(self):
         """Get or create HTTP session."""
@@ -466,7 +467,7 @@ class OPAClient:
                 last_error = str(e)
                 if attempt < self.retry_count:
                     await asyncio.sleep(0.1 * (attempt + 1))
-                    logger.warning(f"OPA query retry {attempt + 1}: {e}")
+                    logger.warning("OPA query retry %s: %s", attempt + 1, e)
 
         raise OPAError(f"OPA query failed after {self.retry_count + 1} attempts: {last_error}")
 
@@ -482,7 +483,7 @@ class OPAClient:
                 return status == 200
             return False
         except Exception as e:
-            logger.warning(f"OPA health check failed: {e}")
+            logger.warning("OPA health check failed: %s", e)
             return False
 
     def format_input(
@@ -608,7 +609,7 @@ class OPAClient:
         return decision
 
 
-class OPAError(Exception):
+class OPAError(WorkflowException):
     """Exception for OPA-related errors."""
 
     pass
@@ -658,7 +659,7 @@ class YAMLRulesParser:
             data = yaml.safe_load(f)
 
         if not data:
-            logger.warning(f"Empty rules file: {yaml_path}")
+            logger.warning("Empty rules file: %s", yaml_path)
             return
 
         if "rules" in data:
@@ -670,7 +671,7 @@ class YAMLRulesParser:
             # Single rule format
             self._rules = [YAMLRule(**data)]
 
-        logger.info(f"Loaded {len(self._rules)} YAML rules from {yaml_path}")
+        logger.info("Loaded %s YAML rules from %s", len(self._rules), yaml_path)
 
     def load_rules_from_dict(self, data: Dict[str, Any]) -> None:
         """
@@ -738,7 +739,7 @@ class YAMLRulesParser:
                 message = self._render_message(rule.message, context) if rule.message else None
                 results.append((rule, matched, message))
             except Exception as e:
-                logger.error(f"Error evaluating rule {rule.name}: {e}")
+                logger.error("Error evaluating rule %s: %s", rule.name, e)
                 # On error, treat as not matched but log it
                 results.append((rule, False, f"Evaluation error: {e}"))
 
@@ -965,7 +966,7 @@ class PolicyEngine:
         for rule in bundle.yaml_rules:
             self._yaml_parser.add_rule(rule)
 
-        logger.info(f"Added policy bundle: {bundle.bundle_id} v{bundle.version}")
+        logger.info("Added policy bundle: %s v%s", bundle.bundle_id, bundle.version)
         return bundle_hash
 
     def remove_bundle(self, bundle_id: str) -> bool:
@@ -1100,7 +1101,7 @@ class PolicyEngine:
                 approvals.extend(opa_decision.required_approvals)
                 evaluated_policies.append("opa")
             except OPAError as e:
-                logger.warning(f"OPA evaluation failed: {e}")
+                logger.warning("OPA evaluation failed: %s", e)
                 if self.config.strict_mode:
                     reasons.append(PolicyReason(
                         rule_name="opa_unavailable",
@@ -1217,7 +1218,7 @@ class PolicyEngine:
                 approvals.extend(opa_decision.required_approvals)
                 evaluated_policies.append("opa")
             except OPAError as e:
-                logger.warning(f"OPA evaluation failed for step {step.name}: {e}")
+                logger.warning("OPA evaluation failed for step %s: %s", step.name, e)
                 if self.config.strict_mode:
                     reasons.append(PolicyReason(
                         rule_name="opa_unavailable",
@@ -1339,7 +1340,7 @@ class PolicyEngine:
                 approvals.extend(opa_decision.required_approvals)
                 evaluated_policies.append("opa")
             except OPAError as e:
-                logger.warning(f"OPA evaluation failed for post-step {step.name}: {e}")
+                logger.warning("OPA evaluation failed for post-step %s: %s", step.name, e)
                 if self.config.strict_mode:
                     reasons.append(PolicyReason(
                         rule_name="opa_unavailable",

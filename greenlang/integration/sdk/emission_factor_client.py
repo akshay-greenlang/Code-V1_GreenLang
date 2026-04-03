@@ -25,6 +25,7 @@ from functools import lru_cache
 # Import data models
 import sys
 from greenlang.utilities.determinism import DeterministicClock
+from greenlang.exceptions import CalculationException, InfrastructureException
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from greenlang.models.emission_factor import (
@@ -44,17 +45,17 @@ from greenlang.models.emission_factor import (
 logger = logging.getLogger(__name__)
 
 
-class EmissionFactorNotFoundError(Exception):
+class EmissionFactorNotFoundError(CalculationException):
     """Raised when emission factor is not found."""
     pass
 
 
-class UnitNotAvailableError(Exception):
+class UnitNotAvailableError(CalculationException):
     """Raised when requested unit is not available for a factor."""
     pass
 
 
-class DatabaseConnectionError(Exception):
+class DatabaseConnectionError(InfrastructureException):
     """Raised when database connection fails."""
     pass
 
@@ -107,7 +108,7 @@ class EmissionFactorClient:
         self.conn: Optional[sqlite3.Connection] = None
         self._connect()
 
-        logger.info(f"EmissionFactorClient initialized with database: {db_path}")
+        logger.info("EmissionFactorClient initialized with database: %s", db_path)
 
     def _connect(self):
         """Connect to database."""
@@ -566,7 +567,7 @@ class EmissionFactorClient:
             ))
             self.conn.commit()
         except sqlite3.Error as e:
-            logger.warning(f"Failed to log calculation to audit table: {e}")
+            logger.warning("Failed to log calculation to audit table: %s", e)
 
     def _row_to_emission_factor(self, row: sqlite3.Row) -> EmissionFactor:
         """Convert database row to EmissionFactor object."""
@@ -576,7 +577,7 @@ class EmissionFactorClient:
             try:
                 metadata = json.loads(row['metadata_json'])
             except json.JSONDecodeError:
-                logger.warning(f"Failed to parse metadata for {row['factor_id']}")
+                logger.warning("Failed to parse metadata for %s", row['factor_id'])
 
         # Create geography
         geography = Geography(

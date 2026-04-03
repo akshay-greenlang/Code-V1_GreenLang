@@ -29,6 +29,8 @@ from typing import Any, Callable, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.utilities.exceptions.infrastructure import InfrastructureException
+
 logger = logging.getLogger(__name__)
 
 
@@ -65,7 +67,7 @@ class BulkheadMetrics(BaseModel):
     queue_depth: Optional[int] = Field(default=None)
 
 
-class BulkheadFullError(Exception):
+class BulkheadFullError(InfrastructureException):
     """Raised when bulkhead is full and cannot accept calls."""
 
     def __init__(self, name: str, max_concurrent: int):
@@ -414,7 +416,7 @@ class ThreadPoolBulkhead(Bulkhead):
             wait: Wait for pending tasks to complete
         """
         self._executor.shutdown(wait=wait)
-        logger.info(f"ThreadPoolBulkhead '{self.config.name}' shutdown")
+        logger.info("ThreadPoolBulkhead '%s' shutdown", self.config.name)
 
 
 class AdaptiveBulkhead(Bulkhead):

@@ -233,7 +233,7 @@ class RenewableEnergyPlanner(DeterministicAgent):
                 raise ValueError(f"Unknown operation: {plan_input.operation}")
 
         except Exception as e:
-            self.logger.error(f"Planning failed: {str(e)}", exc_info=True)
+            logger.error("Planning failed: %s", e, exc_info=True)
             return {
                 "operation": inputs.get("operation", "unknown"),
                 "success": False,

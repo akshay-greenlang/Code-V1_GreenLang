@@ -420,7 +420,7 @@ class GL018ProvenanceTracker:
         self._records: List[Dict[str, Any]] = []
         self._hash_count = 0
 
-        logger.info(f"GL018ProvenanceTracker initialized: {agent_id} v{model_version}")
+        logger.info("GL018ProvenanceTracker initialized: %s v%s", agent_id, model_version)
 
     def calculate_hash(
         self,
@@ -517,7 +517,7 @@ class GL018ProvenanceTracker:
         }
         self._records.append(record)
 
-        logger.debug(f"Provenance recorded: {provenance_hash[:16]}...")
+        logger.debug("Provenance recorded: %s...", provenance_hash[)
 
     def export_records(self, format: str = "json") -> str:
         """Export provenance records."""
@@ -645,7 +645,7 @@ class SHAPBatchProcessor:
         start_time = time.time()
 
         self._processing_count += 1
-        logger.info(f"Processing batch of {len(records)} records")
+        logger.info("Processing batch of %s records", len(records))
 
         if not records:
             raise ValueError("Batch must contain at least one record")
@@ -929,7 +929,7 @@ class SHAPBatchProcessor:
                     shap_values = np.array(shap_values).mean(axis=0)
                 return shap_values
             except Exception as e:
-                logger.warning(f"SHAP calculation failed, using fallback: {e}")
+                logger.warning("SHAP calculation failed, using fallback: %s", e)
 
         # Fallback: deterministic importance estimation
         return self._estimate_shap_values(X)
@@ -1759,7 +1759,7 @@ class CombustionExplainer:
             model_version=model_version
         )
 
-        logger.info(f"CombustionExplainer initialized (version {model_version})")
+        logger.info("CombustionExplainer initialized (version %s)", model_version)
 
     def explain_batch(
         self,

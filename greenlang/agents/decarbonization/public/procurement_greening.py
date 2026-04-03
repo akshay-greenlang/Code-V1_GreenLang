@@ -383,7 +383,7 @@ class PublicProcurementGreeningAgent(BaseAgent):
         super().__init__(config)
 
         self._plans: Dict[str, ProcurementPlan] = {}
-        self.logger.info(f"Initialized {self.AGENT_NAME} v{self.VERSION}")
+        logger.info("Initialized %s v%s", self.AGENT_NAME, self.VERSION)
 
     def execute(self, input_data: Dict[str, Any]) -> AgentResult:
         """Execute procurement greening operation."""
@@ -422,7 +422,7 @@ class PublicProcurementGreeningAgent(BaseAgent):
             )
 
         except Exception as e:
-            self.logger.error(f"Procurement greening operation failed: {str(e)}", exc_info=True)
+            logger.error("Procurement greening operation failed: %s", e, exc_info=True)
             return AgentResult(success=False, error=str(e))
 
     def _handle_create_plan(

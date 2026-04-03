@@ -230,7 +230,7 @@ class EffectivenessNTUCalculator:
 
         else:
             # Default to counter-flow
-            logger.warning(f"Unknown flow arrangement {flow_arrangement}, using counter-flow")
+            logger.warning("Unknown flow arrangement %s, using counter-flow", flow_arrangement)
             return self._effectiveness_counter_flow(ntu, cr)
 
     def calculate_ntu_from_effectiveness(

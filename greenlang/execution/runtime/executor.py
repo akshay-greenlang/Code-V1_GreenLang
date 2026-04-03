@@ -153,7 +153,7 @@ class Executor:
             if any(char in part for char in ['|', '>', '<', ';', '&', '$', '`', '\n', '(', ')', '{', '}']):
                 # This part might be trying injection - quote it
                 cleaned = shlex.quote(part)
-                logger.warning(f"Potentially dangerous command part quoted: {part} -> {cleaned}")
+                logger.warning("Potentially dangerous command part quoted: %s -> %s", part, cleaned)
                 safe_cmd.append(cleaned)
             else:
                 safe_cmd.append(part)
@@ -276,7 +276,7 @@ class Executor:
                 if pipeline:
                     return pipeline
             except Exception as e:
-                logger.warning(f"Failed to load pipeline from pack: {e}")
+                logger.warning("Failed to load pipeline from pack: %s", e)
 
         # Try as direct pipeline name in discovered packs
         for pack in self.loader.loaded_packs.values():
@@ -322,7 +322,7 @@ class Executor:
             agent_ref = step.get("agent")
 
             if not agent_ref:
-                logger.warning(f"No agent specified for step {step_name}")
+                logger.warning("No agent specified for step %s", step_name)
                 continue
 
             try:
@@ -370,10 +370,10 @@ class Executor:
                         success=result.success,
                     )
 
-                logger.info(f"Step {step_name} completed: {result.success}")
+                logger.info("Step %s completed: %s", step_name, result.success)
 
             except Exception as e:
-                logger.error(f"Step {step_name} failed: {e}")
+                logger.error("Step %s failed: %s", step_name, e)
                 # Create error result
                 error_result = Result(
                     success=False, data={}, metadata={"error": str(e)}
@@ -399,7 +399,7 @@ class Executor:
         run_id = str(deterministic_uuid(__name__, str(DeterministicClock.now())))
         run_start = DeterministicClock.now()
 
-        logger.info(f"Starting run {run_id} for pipeline {pipeline_ref}")
+        logger.info("Starting run %s for pipeline %s", run_id, pipeline_ref)
 
         try:
             # Load pipeline
@@ -450,14 +450,14 @@ class Executor:
             return result
 
         except Exception as e:
-            logger.error(f"Execution failed: {e}")
+            logger.error("Execution failed: %s", e)
             return Result(success=False, error=str(e))
 
     def _exec_local(self, pipeline: Dict[str, Any], inputs: Dict[str, Any]) -> Result:
         """
         Execute pipeline locally with deterministic support
         """
-        logger.info(f"Executing pipeline locally: {pipeline.get('name', 'unnamed')}")
+        logger.info("Executing pipeline locally: %s", pipeline.get('name', 'unnamed'))
 
         start_time = DeterministicClock.utcnow()
 
@@ -474,7 +474,7 @@ class Executor:
 
             for step in steps:
                 step_name = step.get("name", f"step_{len(outputs)}")
-                logger.info(f"Executing step: {step_name}")
+                logger.info("Executing step: %s", step_name)
 
                 # Execute step based on type
                 step_type = step.get("type", "agent")
@@ -493,7 +493,7 @@ class Executor:
                             outputs[step_name] = result.data if result.success else None
                             context["results"][step_name] = outputs[step_name]
                         else:
-                            logger.warning(f"Agent not found: {agent_ref}")
+                            logger.warning("Agent not found: %s", agent_ref)
 
                 elif step_type == "python":
                     outputs[step_name] = self._exec_python_stage_with_sandbox(
@@ -533,7 +533,7 @@ class Executor:
             )
 
         except Exception as e:
-            logger.error(f"Pipeline execution failed: {e}")
+            logger.error("Pipeline execution failed: %s", e)
             duration = (DeterministicClock.utcnow() - start_time).total_seconds()
 
             return Result(
@@ -579,7 +579,7 @@ class Executor:
                 )
 
                 # Wait for job completion
-                logger.info(f"Waiting for job {job_name} to complete...")
+                logger.info("Waiting for job %s to complete...", job_name)
                 self._wait_for_k8s_job(job_name)
 
                 # Get job logs
@@ -616,7 +616,7 @@ class Executor:
                     )
 
         except Exception as e:
-            logger.error(f"Kubernetes execution failed: {e}")
+            logger.error("Kubernetes execution failed: %s", e)
             duration = (DeterministicClock.utcnow() - start_time).total_seconds()
 
             return Result(
@@ -711,7 +711,7 @@ class Executor:
         with open(run_file, "w") as f:
             json.dump(run_json, f, indent=2)
 
-        logger.info(f"Generated run.json: {run_file}")
+        logger.info("Generated run.json: %s", run_file)
 
     def list_runs(self) -> List[Dict[str, Any]]:
         """List all runs from ledger"""
@@ -759,7 +759,7 @@ class Executor:
             )
 
             if byte_code.errors:
-                logger.error(f"Code compilation errors: {byte_code.errors}")
+                logger.error("Code compilation errors: %s", byte_code.errors)
                 raise ValueError(f"Invalid Python code: {byte_code.errors}")
 
             # Create restricted namespace with safe builtins only
@@ -870,7 +870,7 @@ class Executor:
                 # Execute with timeout and restricted namespace
                 exec(compiled_code, namespace)
             except Exception as e:
-                logger.error(f"Code execution failed: {e}")
+                logger.error("Code execution failed: %s", e)
                 raise
 
             return namespace.get("outputs", {})
@@ -893,7 +893,7 @@ class Executor:
             result = sandbox_execute(execute_python, self.sandbox_config)
             return result
         except Exception as e:
-            logger.error(f"Sandbox Python execution failed for step {step_name}: {e}")
+            logger.error("Sandbox Python execution failed for step %s: %s", step_name, e)
             return {"error": str(e), "sandbox_error": True}
 
     def _exec_shell_stage(self, stage: Dict, context: Dict) -> Dict:
@@ -920,7 +920,7 @@ class Executor:
         except ValueError as e:
             # If shlex.split fails, command might have unclosed quotes
             # Log error and return failure
-            logger.error(f"Invalid command syntax: {e}")
+            logger.error("Invalid command syntax: %s", e)
             return {
                 "stdout": "",
                 "stderr": f"Command parsing error: {e}",
@@ -928,7 +928,7 @@ class Executor:
             }
         except Exception as e:
             # For any other execution errors
-            logger.error(f"Command execution error: {e}")
+            logger.error("Command execution error: %s", e)
             return {
                 "stdout": "",
                 "stderr": f"Execution error: {e}",
@@ -948,7 +948,7 @@ class Executor:
         if not self.sandbox_config.enabled:
             return self._exec_shell_stage(stage, context)
 
-        logger.info(f"Executing shell stage {step_name} with sandbox capability gating")
+        logger.info("Executing shell stage %s with sandbox capability gating", step_name)
 
         def execute_shell():
             return self._exec_shell_stage(stage, context)
@@ -957,7 +957,7 @@ class Executor:
             result = sandbox_execute(execute_shell, self.sandbox_config)
             return result
         except Exception as e:
-            logger.error(f"Sandbox shell execution failed for step {step_name}: {e}")
+            logger.error("Sandbox shell execution failed for step %s: %s", step_name, e)
             return {
                 "error": str(e),
                 "sandbox_error": True,
@@ -1120,10 +1120,10 @@ class Executor:
         """
         if not self.sandbox_config.enabled:
             # Sandbox disabled - execute directly
-            logger.debug(f"Executing step {step_name} without sandbox")
+            logger.debug("Executing step %s without sandbox", step_name)
             return method(inputs)
 
-        logger.info(f"Executing step {step_name} with sandbox capability gating")
+        logger.info("Executing step %s with sandbox capability gating", step_name)
 
         try:
             # Execute method within sandbox context
@@ -1143,7 +1143,7 @@ class Executor:
             return result
 
         except Exception as e:
-            logger.error(f"Sandbox execution failed for step {step_name}: {e}")
+            logger.error("Sandbox execution failed for step %s: %s", step_name, e)
             # Return failed result
             return Result(
                 success=False,
@@ -1184,7 +1184,7 @@ class Executor:
         else:
             raise ValueError(f"Unknown sandbox policy: {policy_name}")
 
-        logger.info(f"Set sandbox policy to: {policy_name}")
+        logger.info("Set sandbox policy to: %s", policy_name)
 
 
 # Alias for backward compatibility and alternative naming convention

@@ -224,7 +224,7 @@ class DataIntakeApplication:
             start_time = DeterministicClock.now()
 
             try:
-                self.logger.info(f"Starting ingestion: {file_path} ({format.value})")
+                logger.info("Starting ingestion: %s (%s)", file_path, format.value)
                 self.metrics.increment("ingestion.started")
 
                 # Check cache first
@@ -244,7 +244,7 @@ class DataIntakeApplication:
                 )
 
                 if not result.success:
-                    self.logger.error(f"Ingestion failed: {result.validation_issues}")
+                    logger.error("Ingestion failed: %s", result.validation_issues)
                     self.metrics.increment("ingestion.failed")
 
                     return {
@@ -299,7 +299,7 @@ class DataIntakeApplication:
                 return ingestion_result
 
             except Exception as e:
-                self.logger.error(f"Ingestion error: {str(e)}", exc_info=True)
+                logger.error("Ingestion error: %s", e, exc_info=True)
                 self.metrics.increment("ingestion.error")
 
                 return {
@@ -321,10 +321,10 @@ class DataIntakeApplication:
                 table_name="ingested_data",
                 if_exists="append"
             )
-            self.logger.info(f"Stored {len(data)} rows in database")
+            logger.info("Stored %s rows in database", len(data))
 
         except Exception as e:
-            self.logger.error(f"Database storage error: {str(e)}")
+            logger.error("Database storage error: %s", e)
             raise
 
     async def batch_ingest(
@@ -345,7 +345,7 @@ class DataIntakeApplication:
         Returns:
             Batch ingestion results
         """
-        self.logger.info(f"Starting batch ingestion of {len(file_configs)} files")
+        logger.info("Starting batch ingestion of %s files", len(file_configs))
 
         with self.provenance.track_operation("batch_ingestion"):
             start_time = DeterministicClock.now()
@@ -420,7 +420,7 @@ class DataIntakeApplication:
 
         # Save provenance record
         provenance_record = self.provenance.get_record()
-        self.logger.info(f"Provenance record: {provenance_record.record_id}")
+        logger.info("Provenance record: %s", provenance_record.record_id)
 
         # Close database connections
         await self.db.close()

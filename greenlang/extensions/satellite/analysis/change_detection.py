@@ -33,6 +33,7 @@ from greenlang.satellite.models.forest_classifier import (
     ForestClassifier,
     LandCoverClass,
 )
+from greenlang.utilities.exceptions.base import GreenLangException
 
 logger = logging.getLogger(__name__)
 
@@ -112,7 +113,7 @@ class ChangeDetectionResult:
         return daily_rate * 365 * 100
 
 
-class ChangeDetectionError(Exception):
+class ChangeDetectionError(GreenLangException):
     """Base exception for change detection errors."""
     pass
 
@@ -314,7 +315,7 @@ class BiTemporalChangeDetector:
         Returns:
             ChangeDetectionResult with full analysis
         """
-        logger.info(f"Detecting changes between {pre_date.date()} and {post_date.date()}")
+        logger.info("Detecting changes between %s and %s", pre_date.date(), post_date.date())
 
         # Validate required bands
         required = ["B4", "B8"]
@@ -570,7 +571,7 @@ class MultiTemporalAnalyzer:
         Returns:
             Dict containing all analysis results
         """
-        logger.info(f"Analyzing time series: {len(images)} images from {dates[0]} to {dates[-1]}")
+        logger.info("Analyzing time series: %s images from %s to %s", len(images), dates[0], dates[-1])
 
         # Calculate NDVI for all images
         ndvi_series = []

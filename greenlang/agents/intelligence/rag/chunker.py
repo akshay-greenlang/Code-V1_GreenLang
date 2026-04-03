@@ -209,7 +209,7 @@ class TokenAwareChunker:
             # Fallback: treat entire text as one sentence
             sentences = [text]
 
-        logger.debug(f"Split text into {len(sentences)} sentences")
+        logger.debug("Split text into %s sentences", len(sentences))
 
         # Build chunks by grouping sentences
         chunks = []
@@ -454,7 +454,7 @@ class CharacterChunker:
             if start >= end:
                 start = end
 
-        logger.info(f"Created {len(chunks)} character-based chunks")
+        logger.info("Created %s character-based chunks", len(chunks))
 
         return chunks
 

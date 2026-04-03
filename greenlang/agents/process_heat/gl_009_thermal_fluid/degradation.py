@@ -201,7 +201,7 @@ class DegradationMonitor:
 
         self._calculation_count = 0
 
-        logger.info(f"DegradationMonitor initialized for {fluid_type}")
+        logger.info("DegradationMonitor initialized for %s", fluid_type)
 
     def analyze(
         self,

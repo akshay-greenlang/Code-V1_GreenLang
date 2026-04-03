@@ -275,7 +275,7 @@ class SILClassifier:
         Raises:
             ValueError: If pfd_avg is out of valid range
         """
-        logger.info(f"Classifying SIL from PFDavg: {pfd_avg:.2e}")
+        logger.info("Classifying SIL from PFDavg: %s", pfd_avg)
 
         if not 0 < pfd_avg <= 1.0:
             raise ValueError(f"PFDavg must be between 0 and 1, got {pfd_avg}")
@@ -351,7 +351,7 @@ class SILClassifier:
         Raises:
             ValueError: If pfh is out of valid range
         """
-        logger.info(f"Classifying SIL from PFH: {pfh:.2e}")
+        logger.info("Classifying SIL from PFH: %s", pfh)
 
         if not 0 < pfh <= 1.0:
             raise ValueError(f"PFH must be between 0 and 1, got {pfh}")
@@ -478,7 +478,7 @@ class SILClassifier:
             notes=notes,
         )
 
-        logger.info(f"Risk graph classification: SIL {sil_level.value}")
+        logger.info("Risk graph classification: SIL %s", sil_level.value)
 
         return result
 

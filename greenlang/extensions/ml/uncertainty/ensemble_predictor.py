@@ -271,7 +271,7 @@ class EnsemblePredictor:
         Example:
             >>> ensemble.fit(X_train, y_train)
         """
-        logger.info(f"Fitting ensemble with {self.config.n_models} models")
+        logger.info("Fitting ensemble with %s models", self.config.n_models)
 
         self._n_features = X.shape[1]
         self.models = []
@@ -309,13 +309,13 @@ class EnsemblePredictor:
                 model.fit(X_train, y_train)
 
             self.models.append(model)
-            logger.debug(f"Fitted model {i+1}/{self.config.n_models}")
+            logger.debug("Fitted model %s/%s", i+1, self.config.n_models)
 
         # Initialize equal weights
         self.model_weights = np.ones(self.config.n_models) / self.config.n_models
         self._is_fitted = True
 
-        logger.info(f"Ensemble fitting complete: {len(self.models)} models trained")
+        logger.info("Ensemble fitting complete: %s models trained", len(self.models))
         return self
 
     def _get_all_predictions(self, X: np.ndarray) -> np.ndarray:
@@ -458,7 +458,7 @@ class EnsemblePredictor:
         inv_errors = 1 / (errors + 1e-10)
         self.model_weights = inv_errors / inv_errors.sum()
 
-        logger.info(f"Model weights updated: {self.model_weights}")
+        logger.info("Model weights updated: %s", self.model_weights)
 
     def get_model_diversity(self) -> Dict[str, float]:
         """

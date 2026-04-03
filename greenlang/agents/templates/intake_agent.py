@@ -188,7 +188,7 @@ class IntakeAgent:
             )
 
         except Exception as e:
-            logger.error(f"Intake failed: {e}", exc_info=True)
+            logger.error("Intake failed: %s", e, exc_info=True)
             self._stats["failed_intakes"] += 1
 
             return IntakeResult(
@@ -232,7 +232,7 @@ class IntakeAgent:
                 elif format == DataFormat.FEATHER:
                     return pd.read_feather(file_path)
                 else:
-                    logger.error(f"Unsupported format: {format}")
+                    logger.error("Unsupported format: %s", format)
                     return None
 
             # Parse from raw data
@@ -242,13 +242,13 @@ class IntakeAgent:
                 elif format == DataFormat.JSON:
                     return pd.read_json(pd.io.common.StringIO(data))
                 else:
-                    logger.error(f"Unsupported format for raw data: {format}")
+                    logger.error("Unsupported format for raw data: %s", format)
                     return None
 
             return None
 
         except Exception as e:
-            logger.error(f"Parsing failed: {e}", exc_info=True)
+            logger.error("Parsing failed: %s", e, exc_info=True)
             return None
 
     def _validate_schema(self, df: pd.DataFrame) -> List[ValidationIssue]:
@@ -409,7 +409,7 @@ class IntakeAgent:
                 return None
 
         except Exception as e:
-            logger.error(f"Failed to read Avro file: {e}", exc_info=True)
+            logger.error("Failed to read Avro file: %s", e, exc_info=True)
             return None
 
     async def ingest_streaming(
@@ -437,7 +437,7 @@ class IntakeAgent:
             if format == DataFormat.CSV:
                 # Read CSV in chunks
                 for chunk_num, chunk in enumerate(pd.read_csv(file_path, chunksize=chunk_size)):
-                    logger.info(f"Processing chunk {chunk_num + 1}")
+                    logger.info("Processing chunk %s", chunk_num + 1)
 
                     # Process chunk as regular intake
                     result = await self.ingest(
@@ -453,7 +453,7 @@ class IntakeAgent:
             elif format == DataFormat.JSON:
                 # Read JSON in chunks
                 for chunk_num, chunk in enumerate(pd.read_json(file_path, lines=True, chunksize=chunk_size)):
-                    logger.info(f"Processing chunk {chunk_num + 1}")
+                    logger.info("Processing chunk %s", chunk_num + 1)
 
                     result = await self.ingest(
                         data=chunk,
@@ -477,7 +477,7 @@ class IntakeAgent:
                     end_idx = min((chunk_num + 1) * chunk_size, len(df))
                     chunk = df.iloc[start_idx:end_idx]
 
-                    logger.info(f"Processing chunk {chunk_num + 1}/{total_chunks}")
+                    logger.info("Processing chunk %s/%s", chunk_num + 1, total_chunks)
 
                     result = await self.ingest(
                         data=chunk,
@@ -491,7 +491,7 @@ class IntakeAgent:
                     results.append(result)
 
             else:
-                logger.error(f"Streaming not supported for format: {format}")
+                logger.error("Streaming not supported for format: %s", format)
                 return [IntakeResult(
                     success=False,
                     validation_issues=[
@@ -503,7 +503,7 @@ class IntakeAgent:
                 )]
 
         except Exception as e:
-            logger.error(f"Streaming intake failed: {e}", exc_info=True)
+            logger.error("Streaming intake failed: %s", e, exc_info=True)
             return [IntakeResult(
                 success=False,
                 validation_issues=[

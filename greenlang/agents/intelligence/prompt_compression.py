@@ -218,7 +218,7 @@ class TokenCounter:
             try:
                 self.encoding = tiktoken.encoding_for_model(model)
             except KeyError:
-                logger.warning(f"Model {model} not found. Using cl100k_base encoding.")
+                logger.warning("Model %s not found. Using cl100k_base encoding.", model)
                 self.encoding = tiktoken.get_encoding("cl100k_base")
         else:
             self.encoding = None
@@ -292,7 +292,7 @@ class PromptCompressor:
         # Initialize token counter
         self.token_counter = TokenCounter(model=model)
 
-        logger.info(f"PromptCompressor initialized (model={model}, threshold={compression_threshold})")
+        logger.info("PromptCompressor initialized (model=%s, threshold=%s)", model, compression_threshold)
 
     def compress(
         self,
@@ -316,7 +316,7 @@ class PromptCompressor:
 
         # Check threshold
         if not force and original_tokens < self.compression_threshold:
-            logger.debug(f"Prompt below threshold ({original_tokens} < {self.compression_threshold}). Skipping compression.")
+            logger.debug("Prompt below threshold (%s < %s). Skipping compression.", original_tokens, self.compression_threshold)
             return CompressionResult(
                 original_prompt=prompt,
                 compressed_prompt=prompt,
@@ -364,7 +364,7 @@ class PromptCompressor:
             cost_savings_usd=cost_savings,
         )
 
-        logger.info(f"Compression complete: {original_tokens} -> {compressed_tokens} tokens ({token_reduction:.1f}% reduction)")
+        logger.info("Compression complete: %s -> %s tokens (%.1f% reduction)", original_tokens, compressed_tokens, token_reduction)
 
         return result
 

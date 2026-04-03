@@ -132,7 +132,7 @@ async def scan_supply_chain(request: ScanSupplyChainRequest) -> Dict[str, Any]:
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e))
     except Exception as e:
-        logger.error(f"scan_supply_chain failed: {e}", exc_info=True)
+        logger.error("scan_supply_chain failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 @router.get("/scans", response_model=List[Dict[str, Any]], summary="List supply chain scans")
@@ -186,7 +186,7 @@ async def check_deforestation(request: CheckDeforestationRequest) -> Dict[str, A
         )
         return result if isinstance(result, dict) else result.model_dump(mode="json")
     except Exception as e:
-        logger.error(f"check_deforestation failed: {e}", exc_info=True)
+        logger.error("check_deforestation failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 @router.get("/deforestation-records", response_model=List[Dict[str, Any]], summary="List deforestation records")
@@ -250,7 +250,7 @@ async def run_compliance_audit(request: RunComplianceAuditRequest) -> Dict[str, 
         result = await service.run_compliance_audit(request.operator_id, request.operator_data)
         return result if isinstance(result, dict) else result.model_dump(mode="json")
     except Exception as e:
-        logger.error(f"run_compliance_audit failed: {e}", exc_info=True)
+        logger.error("run_compliance_audit failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 @router.get("/audits", response_model=List[Dict[str, Any]], summary="List compliance audits")
@@ -290,7 +290,7 @@ async def detect_changes(request: DetectChangesRequest) -> List[Dict[str, Any]]:
         results = await service.detect_changes(request.operator_id, request.entity_snapshots)
         return [r.model_dump(mode="json") if hasattr(r, "model_dump") else r for r in results]
     except Exception as e:
-        logger.error(f"detect_changes failed: {e}", exc_info=True)
+        logger.error("detect_changes failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 @router.get("/changes", response_model=List[Dict[str, Any]], summary="List detected changes")
@@ -336,7 +336,7 @@ async def monitor_risk_scores(request: MonitorRiskScoresRequest) -> Dict[str, An
         )
         return result if isinstance(result, dict) else result.model_dump(mode="json")
     except Exception as e:
-        logger.error(f"monitor_risk_scores failed: {e}", exc_info=True)
+        logger.error("monitor_risk_scores failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 @router.get("/risk-monitors", response_model=List[Dict[str, Any]], summary="List risk monitors")
@@ -379,7 +379,7 @@ async def validate_freshness(request: ValidateFreshnessRequest) -> Dict[str, Any
         result = await service.validate_freshness(request.operator_id, request.entities)
         return result if isinstance(result, dict) else result.model_dump(mode="json")
     except Exception as e:
-        logger.error(f"validate_freshness failed: {e}", exc_info=True)
+        logger.error("validate_freshness failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 @router.get("/freshness-records", response_model=List[Dict[str, Any]], summary="List freshness records")
@@ -428,7 +428,7 @@ async def check_regulatory(request: CheckRegulatoryRequest) -> Dict[str, Any]:
         result = await service.check_regulatory(request.operator_id, request.updates)
         return result if isinstance(result, dict) else result.model_dump(mode="json")
     except Exception as e:
-        logger.error(f"check_regulatory failed: {e}", exc_info=True)
+        logger.error("check_regulatory failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)[:200])
 
 @router.get("/regulatory-records", response_model=List[Dict[str, Any]], summary="List regulatory records")

@@ -277,10 +277,10 @@ def create_router() -> APIRouter:
             }
 
         except ValueError as e:
-            logger.error(f"Electric chiller calculation validation error: {str(e)}")
+            logger.error("Electric chiller calculation validation error: %s", e)
             raise HTTPException(status_code=400, detail=str(e))
         except Exception as e:
-            logger.error(f"Electric chiller calculation failed: {str(e)}", exc_info=True)
+            logger.error("Electric chiller calculation failed: %s", e, exc_info=True)
             raise HTTPException(status_code=500, detail=f"Calculation failed: {str(e)}")
 
     @router.post("/calculate/absorption")
@@ -342,10 +342,10 @@ def create_router() -> APIRouter:
             }
 
         except ValueError as e:
-            logger.error(f"Absorption cooling calculation validation error: {str(e)}")
+            logger.error("Absorption cooling calculation validation error: %s", e)
             raise HTTPException(status_code=400, detail=str(e))
         except Exception as e:
-            logger.error(f"Absorption cooling calculation failed: {str(e)}", exc_info=True)
+            logger.error("Absorption cooling calculation failed: %s", e, exc_info=True)
             raise HTTPException(status_code=500, detail=f"Calculation failed: {str(e)}")
 
     @router.post("/calculate/district")
@@ -405,10 +405,10 @@ def create_router() -> APIRouter:
             }
 
         except ValueError as e:
-            logger.error(f"District cooling calculation validation error: {str(e)}")
+            logger.error("District cooling calculation validation error: %s", e)
             raise HTTPException(status_code=400, detail=str(e))
         except Exception as e:
-            logger.error(f"District cooling calculation failed: {str(e)}", exc_info=True)
+            logger.error("District cooling calculation failed: %s", e, exc_info=True)
             raise HTTPException(status_code=500, detail=f"Calculation failed: {str(e)}")
 
     @router.post("/calculate/free-cooling")
@@ -465,10 +465,10 @@ def create_router() -> APIRouter:
             }
 
         except ValueError as e:
-            logger.error(f"Free cooling calculation validation error: {str(e)}")
+            logger.error("Free cooling calculation validation error: %s", e)
             raise HTTPException(status_code=400, detail=str(e))
         except Exception as e:
-            logger.error(f"Free cooling calculation failed: {str(e)}", exc_info=True)
+            logger.error("Free cooling calculation failed: %s", e, exc_info=True)
             raise HTTPException(status_code=500, detail=f"Calculation failed: {str(e)}")
 
     @router.post("/calculate/tes")
@@ -531,10 +531,10 @@ def create_router() -> APIRouter:
             }
 
         except ValueError as e:
-            logger.error(f"TES temporal shifting calculation validation error: {str(e)}")
+            logger.error("TES temporal shifting calculation validation error: %s", e)
             raise HTTPException(status_code=400, detail=str(e))
         except Exception as e:
-            logger.error(f"TES temporal shifting calculation failed: {str(e)}", exc_info=True)
+            logger.error("TES temporal shifting calculation failed: %s", e, exc_info=True)
             raise HTTPException(status_code=500, detail=f"Calculation failed: {str(e)}")
 
     @router.post("/calculate/batch")
@@ -558,7 +558,7 @@ def create_router() -> APIRouter:
         """
         try:
             service = get_service()
-            logger.info(f"Batch calculation: {len(body.calculations)} calculations, tenant={body.tenant_id}")
+            logger.info("Batch calculation: %s calculations, tenant=%s", len(body.calculations), body.tenant_id)
 
             results = []
             errors = []
@@ -594,7 +594,7 @@ def create_router() -> APIRouter:
                     )
 
                 except Exception as e:
-                    logger.warning(f"Batch calculation {idx} failed: {str(e)}")
+                    logger.warning("Batch calculation %s failed: %s", idx, e)
                     errors.append({"index": idx, "error": str(e), "calculation": calc})
 
             return {
@@ -610,7 +610,7 @@ def create_router() -> APIRouter:
             }
 
         except Exception as e:
-            logger.error(f"Batch calculation failed: {str(e)}", exc_info=True)
+            logger.error("Batch calculation failed: %s", e, exc_info=True)
             raise HTTPException(status_code=500, detail=f"Batch calculation failed: {str(e)}")
 
     # ========================================================================
@@ -645,7 +645,7 @@ def create_router() -> APIRouter:
             }
 
         except Exception as e:
-            logger.error(f"Technology listing failed: {str(e)}", exc_info=True)
+            logger.error("Technology listing failed: %s", e, exc_info=True)
             raise HTTPException(status_code=500, detail=f"Technology listing failed: {str(e)}")
 
     @router.get("/technologies/{technology_id}")
@@ -670,7 +670,7 @@ def create_router() -> APIRouter:
         """
         try:
             service = get_service()
-            logger.info(f"Getting technology: {technology_id}")
+            logger.info("Getting technology: %s", technology_id)
 
             try:
                 tech = CoolingTechnology(technology_id)
@@ -691,7 +691,7 @@ def create_router() -> APIRouter:
         except HTTPException:
             raise
         except Exception as e:
-            logger.error(f"Technology lookup failed: {str(e)}", exc_info=True)
+            logger.error("Technology lookup failed: %s", e, exc_info=True)
             raise HTTPException(status_code=500, detail=f"Technology lookup failed: {str(e)}")
 
     # ========================================================================
@@ -719,7 +719,7 @@ def create_router() -> APIRouter:
         """
         try:
             service = get_service()
-            logger.info(f"Getting district cooling factor: {region}")
+            logger.info("Getting district cooling factor: %s", region)
 
             try:
                 region_enum = DistrictCoolingRegion(region)
@@ -743,7 +743,7 @@ def create_router() -> APIRouter:
         except HTTPException:
             raise
         except Exception as e:
-            logger.error(f"District cooling factor lookup failed: {str(e)}", exc_info=True)
+            logger.error("District cooling factor lookup failed: %s", e, exc_info=True)
             raise HTTPException(status_code=500, detail=f"Factor lookup failed: {str(e)}")
 
     @router.get("/factors/heat-source/{source}")
@@ -765,7 +765,7 @@ def create_router() -> APIRouter:
         """
         try:
             service = get_service()
-            logger.info(f"Getting heat source factor: {source}")
+            logger.info("Getting heat source factor: %s", source)
 
             try:
                 source_enum = HeatSource(source)
@@ -789,7 +789,7 @@ def create_router() -> APIRouter:
         except HTTPException:
             raise
         except Exception as e:
-            logger.error(f"Heat source factor lookup failed: {str(e)}", exc_info=True)
+            logger.error("Heat source factor lookup failed: %s", e, exc_info=True)
             raise HTTPException(status_code=500, detail=f"Factor lookup failed: {str(e)}")
 
     @router.get("/factors/refrigerants")
@@ -813,7 +813,7 @@ def create_router() -> APIRouter:
         """
         try:
             service = get_service()
-            logger.info(f"Listing refrigerant GWPs: source={gwp_source}")
+            logger.info("Listing refrigerant GWPs: source=%s", gwp_source)
 
             refrigerants = service.list_refrigerant_gwps(gwp_source)
 
@@ -826,7 +826,7 @@ def create_router() -> APIRouter:
             }
 
         except Exception as e:
-            logger.error(f"Refrigerant GWP listing failed: {str(e)}", exc_info=True)
+            logger.error("Refrigerant GWP listing failed: %s", e, exc_info=True)
             raise HTTPException(status_code=500, detail=f"Refrigerant GWP listing failed: {str(e)}")
 
     # ========================================================================
@@ -852,7 +852,7 @@ def create_router() -> APIRouter:
         """
         try:
             service = get_service()
-            logger.info(f"Registering facility: {body.facility_name}, tenant={body.tenant_id}")
+            logger.info("Registering facility: %s, tenant=%s", body.facility_name, body.tenant_id)
 
             facility_data = {
                 "facility_name": body.facility_name,
@@ -876,10 +876,10 @@ def create_router() -> APIRouter:
             }
 
         except ValueError as e:
-            logger.error(f"Facility registration validation error: {str(e)}")
+            logger.error("Facility registration validation error: %s", e)
             raise HTTPException(status_code=400, detail=str(e))
         except Exception as e:
-            logger.error(f"Facility registration failed: {str(e)}", exc_info=True)
+            logger.error("Facility registration failed: %s", e, exc_info=True)
             raise HTTPException(status_code=500, detail=f"Facility registration failed: {str(e)}")
 
     @router.get("/facilities/{facility_id}")
@@ -904,7 +904,7 @@ def create_router() -> APIRouter:
         """
         try:
             service = get_service()
-            logger.info(f"Getting facility: {facility_id}, tenant={tenant_id}")
+            logger.info("Getting facility: %s, tenant=%s", facility_id, tenant_id)
 
             facility = service.get_facility(facility_id, tenant_id)
 
@@ -920,7 +920,7 @@ def create_router() -> APIRouter:
         except HTTPException:
             raise
         except Exception as e:
-            logger.error(f"Facility lookup failed: {str(e)}", exc_info=True)
+            logger.error("Facility lookup failed: %s", e, exc_info=True)
             raise HTTPException(status_code=500, detail=f"Facility lookup failed: {str(e)}")
 
     @router.post("/suppliers")
@@ -942,7 +942,7 @@ def create_router() -> APIRouter:
         """
         try:
             service = get_service()
-            logger.info(f"Registering supplier: {body.supplier_name}, tenant={body.tenant_id}")
+            logger.info("Registering supplier: %s, tenant=%s", body.supplier_name, body.tenant_id)
 
             supplier_data = {
                 "supplier_name": body.supplier_name,
@@ -966,10 +966,10 @@ def create_router() -> APIRouter:
             }
 
         except ValueError as e:
-            logger.error(f"Supplier registration validation error: {str(e)}")
+            logger.error("Supplier registration validation error: %s", e)
             raise HTTPException(status_code=400, detail=str(e))
         except Exception as e:
-            logger.error(f"Supplier registration failed: {str(e)}", exc_info=True)
+            logger.error("Supplier registration failed: %s", e, exc_info=True)
             raise HTTPException(status_code=500, detail=f"Supplier registration failed: {str(e)}")
 
     @router.get("/suppliers/{supplier_id}")
@@ -994,7 +994,7 @@ def create_router() -> APIRouter:
         """
         try:
             service = get_service()
-            logger.info(f"Getting supplier: {supplier_id}, tenant={tenant_id}")
+            logger.info("Getting supplier: %s, tenant=%s", supplier_id, tenant_id)
 
             supplier = service.get_supplier(supplier_id, tenant_id)
 
@@ -1010,7 +1010,7 @@ def create_router() -> APIRouter:
         except HTTPException:
             raise
         except Exception as e:
-            logger.error(f"Supplier lookup failed: {str(e)}", exc_info=True)
+            logger.error("Supplier lookup failed: %s", e, exc_info=True)
             raise HTTPException(status_code=500, detail=f"Supplier lookup failed: {str(e)}")
 
     # ========================================================================
@@ -1068,10 +1068,10 @@ def create_router() -> APIRouter:
             }
 
         except ValueError as e:
-            logger.error(f"Uncertainty analysis validation error: {str(e)}")
+            logger.error("Uncertainty analysis validation error: %s", e)
             raise HTTPException(status_code=400, detail=str(e))
         except Exception as e:
-            logger.error(f"Uncertainty analysis failed: {str(e)}", exc_info=True)
+            logger.error("Uncertainty analysis failed: %s", e, exc_info=True)
             raise HTTPException(status_code=500, detail=f"Uncertainty analysis failed: {str(e)}")
 
     @router.post("/compliance/check")
@@ -1099,7 +1099,7 @@ def create_router() -> APIRouter:
         """
         try:
             service = get_service()
-            logger.info(f"Running compliance check: frameworks={body.frameworks}, tenant={body.tenant_id}")
+            logger.info("Running compliance check: frameworks=%s, tenant=%s", body.frameworks, body.tenant_id)
 
             check_data = {
                 "calculation_results": body.calculation_results,
@@ -1122,10 +1122,10 @@ def create_router() -> APIRouter:
             }
 
         except ValueError as e:
-            logger.error(f"Compliance check validation error: {str(e)}")
+            logger.error("Compliance check validation error: %s", e)
             raise HTTPException(status_code=400, detail=str(e))
         except Exception as e:
-            logger.error(f"Compliance check failed: {str(e)}", exc_info=True)
+            logger.error("Compliance check failed: %s", e, exc_info=True)
             raise HTTPException(status_code=500, detail=f"Compliance check failed: {str(e)}")
 
     @router.get("/compliance/frameworks")
@@ -1156,7 +1156,7 @@ def create_router() -> APIRouter:
             }
 
         except Exception as e:
-            logger.error(f"Framework listing failed: {str(e)}", exc_info=True)
+            logger.error("Framework listing failed: %s", e, exc_info=True)
             raise HTTPException(status_code=500, detail=f"Framework listing failed: {str(e)}")
 
     @router.post("/aggregate")
@@ -1206,10 +1206,10 @@ def create_router() -> APIRouter:
             }
 
         except ValueError as e:
-            logger.error(f"Aggregation validation error: {str(e)}")
+            logger.error("Aggregation validation error: %s", e)
             raise HTTPException(status_code=400, detail=str(e))
         except Exception as e:
-            logger.error(f"Aggregation failed: {str(e)}", exc_info=True)
+            logger.error("Aggregation failed: %s", e, exc_info=True)
             raise HTTPException(status_code=500, detail=f"Aggregation failed: {str(e)}")
 
     # ========================================================================
@@ -1244,7 +1244,7 @@ def create_router() -> APIRouter:
             }
 
         except Exception as e:
-            logger.error(f"Health check failed: {str(e)}", exc_info=True)
+            logger.error("Health check failed: %s", e, exc_info=True)
             raise HTTPException(status_code=503, detail=f"Service unhealthy: {str(e)}")
 
     return router

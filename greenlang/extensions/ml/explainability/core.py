@@ -519,7 +519,7 @@ class BaseExplainer(ABC, Generic[TModel]):
                 "Model must have 'predict' or 'predict_proba' method"
             )
 
-        logger.info(f"{self.__class__.__name__} initialized")
+        logger.info("%s initialized", self.__class__.__name__)
 
     @abstractmethod
     def explain(
@@ -776,7 +776,7 @@ class SHAPExplainer(BaseExplainer[TModel]):
             self._explainer = shap.KernelExplainer(predict_fn, background)
 
         self._initialized = True
-        logger.info(f"SHAP explainer initialized: {type(self._explainer).__name__}")
+        logger.info("SHAP explainer initialized: %s", type(self._explainer).__name__)
 
     def explain(
         self,
@@ -812,7 +812,7 @@ class SHAPExplainer(BaseExplainer[TModel]):
             self._initialize_explainer(X)
 
         # Compute SHAP values
-        logger.info(f"Computing SHAP values for {X.shape[0]} samples")
+        logger.info("Computing SHAP values for %s samples", X.shape[0])
         shap_values = self._explainer.shap_values(X)
 
         # Handle different output formats
@@ -1394,7 +1394,7 @@ class CausalExplainer:
                 method_name="backdoor.linear_regression"
             )
         except Exception as e:
-            logger.error(f"Causal estimation failed: {e}")
+            logger.error("Causal estimation failed: %s", e)
             raise
 
         ate = float(self._estimate.value)
@@ -1486,7 +1486,7 @@ class CausalExplainer:
                 }
 
             except Exception as e:
-                logger.warning(f"Refutation {name} failed: {e}")
+                logger.warning("Refutation %s failed: %s", name, e)
                 results[name] = {"error": str(e), "passed": True}
 
         return results
@@ -1918,7 +1918,7 @@ class ExplainabilityLayer:
         if self._enable_cache:
             cache_key = self._get_cache_key(X, method.value)
             if cache_key in self._cache:
-                logger.debug(f"Cache hit for {cache_key}")
+                logger.debug("Cache hit for %s", cache_key)
                 return self._cache[cache_key]
 
         # Generate explanation

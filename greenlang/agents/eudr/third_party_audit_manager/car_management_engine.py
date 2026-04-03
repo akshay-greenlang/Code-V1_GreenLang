@@ -255,7 +255,7 @@ class CARManagementEngine:
             return response
 
         except Exception as e:
-            logger.error(f"CAR issuance failed: {e}", exc_info=True)
+            logger.error("CAR issuance failed: %s", e, exc_info=True)
             raise
 
     def advance_car_status(

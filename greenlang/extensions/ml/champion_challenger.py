@@ -164,7 +164,7 @@ class ChampionChallengerManager:
         self.storage_path = Path(storage_path or "./cc_deployment")
         self.storage_path.mkdir(parents=True, exist_ok=True)
 
-        logger.info(f"ChampionChallengerManager initialized at {self.storage_path}")
+        logger.info("ChampionChallengerManager initialized at %s", self.storage_path)
 
     # =========================================================================
     # Champion and Challenger Registration
@@ -188,7 +188,7 @@ class ChampionChallengerManager:
             try:
                 ModelVersion(model_name=model_name, version=model_version)
                 self.champions[model_name] = model_version
-                logger.info(f"Registered champion: {model_name}@{model_version}")
+                logger.info("Registered champion: %s@%s", model_name, model_version)
 
                 self._record_event(
                     {
@@ -199,7 +199,7 @@ class ChampionChallengerManager:
                     }
                 )
             except ValueError as e:
-                logger.error(f"Invalid version format: {e}")
+                logger.error("Invalid version format: %s", e)
                 raise
 
     def register_challenger(
@@ -261,7 +261,7 @@ class ChampionChallengerManager:
                     }
                 )
             except ValueError as e:
-                logger.error(f"Invalid challenger registration: {e}")
+                logger.error("Invalid challenger registration: %s", e)
                 raise
 
     # =========================================================================
@@ -469,7 +469,7 @@ class ChampionChallengerManager:
         """
         with self.lock:
             if model_name not in self.challengers:
-                logger.error(f"No challenger registered for {model_name}")
+                logger.error("No challenger registered for %s", model_name)
                 return False
 
             challenger_version = self.challengers[model_name]["version"]
@@ -497,7 +497,7 @@ class ChampionChallengerManager:
                 return True
 
             except Exception as e:
-                logger.error(f"Promotion failed for {model_name}: {e}")
+                logger.error("Promotion failed for %s: %s", model_name, e)
                 return False
 
     def rollback(self, model_name: str, previous_version: str) -> bool:
@@ -536,7 +536,7 @@ class ChampionChallengerManager:
 
                 return True
             except Exception as e:
-                logger.error(f"Rollback failed for {model_name}: {e}")
+                logger.error("Rollback failed for %s: %s", model_name, e)
                 return False
 
     # =========================================================================
@@ -625,4 +625,4 @@ class ChampionChallengerManager:
             with open(event_file, "a") as f:
                 f.write(json.dumps(event) + "\n")
         except Exception as e:
-            logger.warning(f"Failed to write event to storage: {e}")
+            logger.warning("Failed to write event to storage: %s", e)

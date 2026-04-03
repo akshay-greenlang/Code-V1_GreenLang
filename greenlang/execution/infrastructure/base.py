@@ -56,7 +56,7 @@ class BaseInfrastructureComponent(ABC):
         self.last_activity = datetime.now()
         self._metrics: Dict[str, Any] = {}
 
-        logger.info(f"Initializing {self.config.component_name}")
+        logger.info("Initializing %s", self.config.component_name)
         self._initialize()
         self.status = ComponentStatus.READY
 
@@ -103,7 +103,7 @@ class BaseInfrastructureComponent(ABC):
                 "message": f"{self.config.component_name} is {self.status.value}"
             }
         except Exception as e:
-            logger.error(f"Health check failed: {str(e)}")
+            logger.error("Health check failed: %s", e)
             return {
                 "healthy": False,
                 "status": ComponentStatus.ERROR.value,

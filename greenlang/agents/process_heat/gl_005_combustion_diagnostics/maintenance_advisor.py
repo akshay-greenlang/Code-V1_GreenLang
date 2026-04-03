@@ -320,7 +320,7 @@ class BurnerWearAssessor:
     def set_baseline_co(self, co_ppm: float) -> None:
         """Set baseline CO level (new burner condition)."""
         self._baseline_co = co_ppm
-        logger.info(f"Baseline CO set: {co_ppm} ppm")
+        logger.info("Baseline CO set: %s ppm", co_ppm)
 
     def add_co_reading(self, timestamp: datetime, co_ppm: float) -> None:
         """Add CO reading for trend tracking."""
@@ -556,7 +556,7 @@ class WorkOrderGenerator:
             provenance_hash=provenance_hash,
         )
 
-        logger.info(f"Work order generated: {wo_id} ({work_type}, {recommendation.priority.value})")
+        logger.info("Work order generated: %s (%s, %s)", wo_id, work_type, recommendation.priority.value)
         return work_order
 
     def _format_description(self, recommendation: MaintenanceRecommendation) -> str:
@@ -623,7 +623,7 @@ class MaintenanceAdvisor:
 
         self._audit_trail: List[Dict[str, Any]] = []
 
-        logger.info(f"Maintenance Advisor initialized for {equipment_id}")
+        logger.info("Maintenance Advisor initialized for %s", equipment_id)
 
     def set_baselines(
         self,

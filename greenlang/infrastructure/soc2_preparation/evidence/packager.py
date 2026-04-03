@@ -338,7 +338,7 @@ class EvidencePackager:
             return package
 
         except Exception as exc:
-            logger.error(f"Failed to create evidence package: {exc}")
+            logger.error("Failed to create evidence package: %s", exc)
             raise
         finally:
             # Note: We keep temp_dir for upload, caller should cleanup
@@ -412,7 +412,7 @@ class EvidencePackager:
             # Cleanup temp files
             self._cleanup_temp_files(archive_path)
 
-            logger.info(f"Uploaded evidence package to {package.s3_location}")
+            logger.info("Uploaded evidence package to %s", package.s3_location)
 
             return s3_key
 
@@ -420,7 +420,7 @@ class EvidencePackager:
             logger.error("aioboto3 not available for S3 upload")
             raise
         except Exception as exc:
-            logger.error(f"Failed to upload package to S3: {exc}")
+            logger.error("Failed to upload package to S3: %s", exc)
             raise
 
     def _generate_manifest(
@@ -619,7 +619,7 @@ class EvidencePackager:
                     arcname = file_path.relative_to(source_dir.parent)
                     zf.write(file_path, arcname)
 
-        logger.debug(f"Created ZIP archive: {zip_path}")
+        logger.debug("Created ZIP archive: %s", zip_path)
 
     def _cleanup_temp_files(self, archive_path: str) -> None:
         """Cleanup temporary files after upload.
@@ -638,7 +638,7 @@ class EvidencePackager:
             elif path.is_dir():
                 shutil.rmtree(path, ignore_errors=True)
         except Exception as exc:
-            logger.warning(f"Failed to cleanup temp files: {exc}")
+            logger.warning("Failed to cleanup temp files: %s", exc)
 
     async def list_packages(
         self,
@@ -681,7 +681,7 @@ class EvidencePackager:
             return packages
 
         except Exception as exc:
-            logger.error(f"Failed to list packages: {exc}")
+            logger.error("Failed to list packages: %s", exc)
             return []
 
     async def get_presigned_url(
@@ -717,5 +717,5 @@ class EvidencePackager:
             return url
 
         except Exception as exc:
-            logger.error(f"Failed to generate presigned URL: {exc}")
+            logger.error("Failed to generate presigned URL: %s", exc)
             raise

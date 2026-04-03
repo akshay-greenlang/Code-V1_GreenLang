@@ -630,7 +630,7 @@ class EventMonitor:
             except asyncio.CancelledError:
                 break
             except Exception as e:
-                logger.error(f"Metrics collection error: {e}")
+                logger.error("Metrics collection error: %s", e)
 
     async def _alert_loop(self) -> None:
         """Background loop for alert checking."""
@@ -642,7 +642,7 @@ class EventMonitor:
             except asyncio.CancelledError:
                 break
             except Exception as e:
-                logger.error(f"Alert loop error: {e}")
+                logger.error("Alert loop error: %s", e)
 
     async def _check_alerts(self) -> None:
         """Check metrics and raise alerts if thresholds exceeded."""
@@ -711,7 +711,7 @@ class EventMonitor:
 
         self._alerts.append(alert)
 
-        logger.warning(f"Alert raised: {title} - {message}")
+        logger.warning("Alert raised: %s - %s", title, message)
 
         # Notify callbacks
         for callback in self._alert_callbacks:
@@ -721,7 +721,7 @@ class EventMonitor:
                 else:
                     callback(alert)
             except Exception as e:
-                logger.error(f"Alert callback error: {e}")
+                logger.error("Alert callback error: %s", e)
 
     async def record_event(
         self,
@@ -788,7 +788,7 @@ class EventMonitor:
                     oldest_pending_age_hours=stats.oldest_pending_age_hours
                 )
             except Exception as e:
-                logger.error(f"Failed to get DLQ stats: {e}")
+                logger.error("Failed to get DLQ stats: %s", e)
 
         # Calculate health
         health = await self._calculate_health(throughput, latency, dlq_metrics, consumer_lag)

@@ -5,19 +5,21 @@ Prometheus Metrics - AGENT-DATA-014: Time Series Gap Filler Agent
 12 Prometheus metrics for time series gap filler service monitoring with
 graceful fallback when prometheus_client is not installed.
 
-Metrics:
-    1.  gl_tsgf_jobs_processed_total (Counter, labels: status)
-    2.  gl_tsgf_gaps_detected_total (Counter, labels: gap_type)
-    3.  gl_tsgf_gaps_filled_total (Counter, labels: method)
-    4.  gl_tsgf_validations_passed_total (Counter, labels: result)
-    5.  gl_tsgf_frequencies_detected_total (Counter, labels: level)
-    6.  gl_tsgf_strategies_selected_total (Counter, labels: strategy)
-    7.  gl_tsgf_fill_confidence (Histogram)
-    8.  gl_tsgf_processing_duration_seconds (Histogram, labels: operation)
-    9.  gl_tsgf_gap_duration_seconds (Histogram)
-    10. gl_tsgf_active_jobs (Gauge)
-    11. gl_tsgf_total_gaps_open (Gauge)
-    12. gl_tsgf_processing_errors_total (Counter, labels: error_type)
+Standard metrics (via MetricsFactory):
+    1.  gl_tsgf_operations_total (Counter, labels: type, tenant_id)
+    2.  gl_tsgf_processing_duration_seconds (Histogram, 12 buckets)
+    3.  gl_tsgf_validation_errors_total (Counter, labels: severity, type)
+    4.  gl_tsgf_batch_jobs_total (Counter, labels: status)
+    5.  gl_tsgf_active_jobs (Gauge)
+    6.  gl_tsgf_queue_size (Gauge)
+
+Agent-specific metrics:
+    7.  gl_tsgf_jobs_processed_total (Counter, labels: status)
+    8.  gl_tsgf_gaps_detected_total (Counter, labels: gap_type)
+    9.  gl_tsgf_gaps_filled_total (Counter, labels: method)
+    10. gl_tsgf_fill_confidence (Histogram)
+    11. gl_tsgf_gap_duration_seconds (Histogram)
+    12. gl_tsgf_total_gaps_open (Gauge)
 
 Author: GreenLang Platform Team
 Date: February 2026
@@ -27,136 +29,104 @@ Status: Production Ready
 
 from __future__ import annotations
 
-import logging
-
-logger = logging.getLogger(__name__)
-
-# ---------------------------------------------------------------------------
-# Graceful prometheus_client import
-# ---------------------------------------------------------------------------
-
-try:
-    from prometheus_client import Counter, Gauge, Histogram
-    PROMETHEUS_AVAILABLE = True
-except ImportError:
-    PROMETHEUS_AVAILABLE = False
-    logger.info(
-        "prometheus_client not installed; time series gap filler metrics disabled"
-    )
-
+from greenlang.data_commons.metrics import (
+    CONFIDENCE_BUCKETS,
+    PROMETHEUS_AVAILABLE,
+    MetricsFactory,
+)
 
 # ---------------------------------------------------------------------------
-# Metric definitions
+# Standard metrics (6 of 12) via factory
 # ---------------------------------------------------------------------------
 
-if PROMETHEUS_AVAILABLE:
-    # 1. Gap fill jobs processed by status
-    tsgf_jobs_processed_total = Counter(
-        "gl_tsgf_jobs_processed_total",
-        "Total time series gap fill jobs processed",
-        labelnames=["status"],
-    )
+m = MetricsFactory(
+    "gl_tsgf",
+    "Time Series Gap Filler",
+    duration_buckets=(
+        0.05, 0.1, 0.25, 0.5, 1.0, 2.5,
+        5.0, 10.0, 30.0, 60.0, 120.0, 300.0,
+    ),
+)
 
-    # 2. Gaps detected by gap type
-    tsgf_gaps_detected_total = Counter(
-        "gl_tsgf_gaps_detected_total",
-        "Total gaps detected in time series data",
-        labelnames=["gap_type"],
-    )
+# Backward-compat alias
+tsgf_active_jobs = m.active_jobs
 
-    # 3. Gaps filled by fill method
-    tsgf_gaps_filled_total = Counter(
-        "gl_tsgf_gaps_filled_total",
-        "Total gaps filled in time series data",
-        labelnames=["method"],
-    )
+# ---------------------------------------------------------------------------
+# Agent-specific metrics (6 of 12)
+# ---------------------------------------------------------------------------
 
-    # 4. Validations passed by result
-    tsgf_validations_passed_total = Counter(
-        "gl_tsgf_validations_passed_total",
-        "Total validation checks executed",
-        labelnames=["result"],
-    )
+tsgf_jobs_processed_total = m.create_custom_counter(
+    "jobs_processed_total",
+    "Total time series gap fill jobs processed",
+    labelnames=["status"],
+)
 
-    # 5. Frequencies detected by level
-    tsgf_frequencies_detected_total = Counter(
-        "gl_tsgf_frequencies_detected_total",
-        "Total frequency detection operations performed",
-        labelnames=["level"],
-    )
+tsgf_gaps_detected_total = m.create_custom_counter(
+    "gaps_detected_total",
+    "Total gaps detected in time series data",
+    labelnames=["gap_type"],
+)
 
-    # 6. Strategies selected by strategy name
-    tsgf_strategies_selected_total = Counter(
-        "gl_tsgf_strategies_selected_total",
-        "Total fill strategy selections performed",
-        labelnames=["strategy"],
-    )
+tsgf_gaps_filled_total = m.create_custom_counter(
+    "gaps_filled_total",
+    "Total gaps filled in time series data",
+    labelnames=["method"],
+)
 
-    # 7. Fill confidence score distribution
-    tsgf_fill_confidence = Histogram(
-        "gl_tsgf_fill_confidence",
-        "Distribution of gap fill confidence scores",
-        buckets=(
-            0.0, 0.1, 0.2, 0.3, 0.4, 0.5,
-            0.6, 0.7, 0.8, 0.9, 1.0,
-        ),
-    )
+tsgf_validations_passed_total = m.create_custom_counter(
+    "validations_passed_total",
+    "Total validation checks executed",
+    labelnames=["result"],
+)
 
-    # 8. Processing duration histogram by operation type
-    tsgf_processing_duration_seconds = Histogram(
-        "gl_tsgf_processing_duration_seconds",
-        "Time series gap filler processing duration in seconds",
-        labelnames=["operation"],
-        buckets=(
-            0.05, 0.1, 0.25, 0.5, 1.0, 2.5,
-            5.0, 10.0, 30.0, 60.0, 120.0, 300.0,
-        ),
-    )
+tsgf_frequencies_detected_total = m.create_custom_counter(
+    "frequencies_detected_total",
+    "Total frequency detection operations performed",
+    labelnames=["level"],
+)
 
-    # 9. Gap duration histogram (how long each detected gap spans)
-    tsgf_gap_duration_seconds = Histogram(
-        "gl_tsgf_gap_duration_seconds",
-        "Distribution of detected gap durations in seconds",
-        buckets=(
-            60.0, 300.0, 900.0, 1800.0, 3600.0,
-            7200.0, 14400.0, 28800.0, 43200.0,
-            86400.0, 172800.0, 604800.0, 2592000.0,
-        ),
-    )
+tsgf_strategies_selected_total = m.create_custom_counter(
+    "strategies_selected_total",
+    "Total fill strategy selections performed",
+    labelnames=["strategy"],
+)
 
-    # 10. Currently active gap fill jobs gauge
-    tsgf_active_jobs = Gauge(
-        "gl_tsgf_active_jobs",
-        "Number of currently active time series gap fill jobs",
-    )
+tsgf_fill_confidence = m.create_custom_histogram(
+    "fill_confidence",
+    "Distribution of gap fill confidence scores",
+    buckets=(0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0),
+)
 
-    # 11. Total open gaps gauge
-    tsgf_total_gaps_open = Gauge(
-        "gl_tsgf_total_gaps_open",
-        "Total gaps currently open across active datasets",
-    )
+tsgf_processing_duration_seconds = m.create_custom_histogram(
+    "processing_duration_seconds_detail",
+    "Time series gap filler processing duration in seconds",
+    buckets=(
+        0.05, 0.1, 0.25, 0.5, 1.0, 2.5,
+        5.0, 10.0, 30.0, 60.0, 120.0, 300.0,
+    ),
+    labelnames=["operation"],
+)
 
-    # 12. Processing errors by error type
-    tsgf_processing_errors_total = Counter(
-        "gl_tsgf_processing_errors_total",
-        "Total processing errors encountered",
-        labelnames=["error_type"],
-    )
+tsgf_gap_duration_seconds = m.create_custom_histogram(
+    "gap_duration_seconds",
+    "Distribution of detected gap durations in seconds",
+    buckets=(
+        60.0, 300.0, 900.0, 1800.0, 3600.0,
+        7200.0, 14400.0, 28800.0, 43200.0,
+        86400.0, 172800.0, 604800.0, 2592000.0,
+    ),
+)
 
-else:
-    # No-op placeholders
-    tsgf_jobs_processed_total = None  # type: ignore[assignment]
-    tsgf_gaps_detected_total = None  # type: ignore[assignment]
-    tsgf_gaps_filled_total = None  # type: ignore[assignment]
-    tsgf_validations_passed_total = None  # type: ignore[assignment]
-    tsgf_frequencies_detected_total = None  # type: ignore[assignment]
-    tsgf_strategies_selected_total = None  # type: ignore[assignment]
-    tsgf_fill_confidence = None  # type: ignore[assignment]
-    tsgf_processing_duration_seconds = None  # type: ignore[assignment]
-    tsgf_gap_duration_seconds = None  # type: ignore[assignment]
-    tsgf_active_jobs = None  # type: ignore[assignment]
-    tsgf_total_gaps_open = None  # type: ignore[assignment]
-    tsgf_processing_errors_total = None  # type: ignore[assignment]
+tsgf_total_gaps_open = m.create_custom_gauge(
+    "total_gaps_open",
+    "Total gaps currently open across active datasets",
+)
+
+tsgf_processing_errors_total = m.create_custom_counter(
+    "processing_errors_total",
+    "Total processing errors encountered",
+    labelnames=["error_type"],
+)
 
 
 # ---------------------------------------------------------------------------
@@ -171,11 +141,7 @@ def inc_jobs_processed(status: str) -> None:
         status: Job status (completed, failed, cancelled, timeout,
             partial).
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    tsgf_jobs_processed_total.labels(
-        status=status,
-    ).inc()
+    m.safe_inc(tsgf_jobs_processed_total, 1, status=status)
 
 
 def inc_gaps_detected(gap_type: str, count: int = 1) -> None:
@@ -186,11 +152,7 @@ def inc_gaps_detected(gap_type: str, count: int = 1) -> None:
             duplicated, truncated, sparse, block).
         count: Number of gaps detected.
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    tsgf_gaps_detected_total.labels(
-        gap_type=gap_type,
-    ).inc(count)
+    m.safe_inc(tsgf_gaps_detected_total, count, gap_type=gap_type)
 
 
 def inc_gaps_filled(method: str, count: int = 1) -> None:
@@ -202,11 +164,7 @@ def inc_gaps_filled(method: str, count: int = 1) -> None:
             regression, ensemble, custom).
         count: Number of gaps filled.
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    tsgf_gaps_filled_total.labels(
-        method=method,
-    ).inc(count)
+    m.safe_inc(tsgf_gaps_filled_total, count, method=method)
 
 
 def inc_validations(result: str, count: int = 1) -> None:
@@ -216,11 +174,7 @@ def inc_validations(result: str, count: int = 1) -> None:
         result: Validation result (passed, failed, warning, skipped).
         count: Number of validation checks.
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    tsgf_validations_passed_total.labels(
-        result=result,
-    ).inc(count)
+    m.safe_inc(tsgf_validations_passed_total, count, result=result)
 
 
 def inc_frequencies(level: str, count: int = 1) -> None:
@@ -232,11 +186,7 @@ def inc_frequencies(level: str, count: int = 1) -> None:
             irregular, unknown).
         count: Number of frequency detections.
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    tsgf_frequencies_detected_total.labels(
-        level=level,
-    ).inc(count)
+    m.safe_inc(tsgf_frequencies_detected_total, count, level=level)
 
 
 def inc_strategies(strategy: str, count: int = 1) -> None:
@@ -248,11 +198,7 @@ def inc_strategies(strategy: str, count: int = 1) -> None:
             rule_based, hybrid, manual).
         count: Number of strategy selections.
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    tsgf_strategies_selected_total.labels(
-        strategy=strategy,
-    ).inc(count)
+    m.safe_inc(tsgf_strategies_selected_total, count, strategy=strategy)
 
 
 def observe_confidence(confidence: float) -> None:
@@ -261,9 +207,7 @@ def observe_confidence(confidence: float) -> None:
     Args:
         confidence: Confidence score (0.0 - 1.0).
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    tsgf_fill_confidence.observe(confidence)
+    m.safe_observe(tsgf_fill_confidence, confidence)
 
 
 def observe_duration(operation: str, duration: float) -> None:
@@ -275,11 +219,7 @@ def observe_duration(operation: str, duration: float) -> None:
             batch, export).
         duration: Duration in seconds.
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    tsgf_processing_duration_seconds.labels(
-        operation=operation,
-    ).observe(duration)
+    m.safe_observe(tsgf_processing_duration_seconds, duration, operation=operation)
 
 
 def observe_gap_duration(duration: float) -> None:
@@ -288,9 +228,7 @@ def observe_gap_duration(duration: float) -> None:
     Args:
         duration: Gap duration in seconds.
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    tsgf_gap_duration_seconds.observe(duration)
+    m.safe_observe(tsgf_gap_duration_seconds, duration)
 
 
 def set_active_jobs(count: int) -> None:
@@ -299,9 +237,7 @@ def set_active_jobs(count: int) -> None:
     Args:
         count: Number of currently active gap fill jobs.
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    tsgf_active_jobs.set(count)
+    m.safe_set(tsgf_active_jobs, count)
 
 
 def set_gaps_open(count: int) -> None:
@@ -310,9 +246,7 @@ def set_gaps_open(count: int) -> None:
     Args:
         count: Total number of gaps currently open across datasets.
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    tsgf_total_gaps_open.set(count)
+    m.safe_set(tsgf_total_gaps_open, count)
 
 
 def inc_errors(error_type: str) -> None:
@@ -323,15 +257,12 @@ def inc_errors(error_type: str) -> None:
             integration, detection, frequency, strategy, fill,
             interpolation, extrapolation, unknown).
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    tsgf_processing_errors_total.labels(
-        error_type=error_type,
-    ).inc()
+    m.safe_inc(tsgf_processing_errors_total, 1, error_type=error_type)
 
 
 __all__ = [
     "PROMETHEUS_AVAILABLE",
+    "m",
     # Metric objects
     "tsgf_jobs_processed_total",
     "tsgf_gaps_detected_total",

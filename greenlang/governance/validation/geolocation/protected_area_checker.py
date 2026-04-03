@@ -296,7 +296,7 @@ class ProtectedAreaChecker:
             })
 
         except Exception as e:
-            logger.error(f"Protected area check failed: {e}")
+            logger.error("Protected area check failed: %s", e)
             result.status = ProtectionStatus.UNKNOWN
             result.warnings.append(f"Check failed: {str(e)}")
 
@@ -384,7 +384,7 @@ class ProtectedAreaChecker:
             })
 
         except Exception as e:
-            logger.error(f"Polygon protected area check failed: {e}")
+            logger.error("Polygon protected area check failed: %s", e)
             result.warnings.append(f"Check failed: {str(e)}")
 
         return result
@@ -635,7 +635,7 @@ class ProtectedAreaChecker:
         For production, this would load from a local database file
         (e.g., SQLite, GeoPackage, or shapefile).
         """
-        logger.info(f"Loading local WDPA database from {db_path}")
+        logger.info("Loading local WDPA database from %s", db_path)
         # Stub - implement actual database loading
         pass
 

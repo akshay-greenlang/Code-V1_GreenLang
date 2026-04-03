@@ -218,7 +218,7 @@ class Pipeline(BaseModel):
             try:
                 self._checkpoint_status_callback(event, data)
             except Exception as e:
-                logger.warning(f"Checkpoint status callback failed: {e}")
+                logger.warning("Checkpoint status callback failed: %s", e)
 
     def _generate_pipeline_id(self) -> str:
         """Generate unique pipeline execution ID."""
@@ -286,7 +286,7 @@ class Pipeline(BaseModel):
             )
             self._checkpoint_actually_enabled = True
             self._checkpoint_disabled_reason = None
-            logger.info(f"Initialized checkpoint manager with {self.checkpoint_strategy} strategy")
+            logger.info("Initialized checkpoint manager with %s strategy", self.checkpoint_strategy)
 
             # Notify callback of successful initialization
             self._notify_checkpoint_status("checkpoint_enabled", {
@@ -442,11 +442,11 @@ class Pipeline(BaseModel):
         if resume and self.checkpoint_enabled and self._checkpoint_manager:
             self._resume_context = self._checkpoint_manager.resume_pipeline(self._pipeline_id)
             if self._resume_context:
-                logger.info(f"Resuming pipeline {self._pipeline_id} from checkpoint")
+                logger.info("Resuming pipeline %s from checkpoint", self._pipeline_id)
                 return self._execute_with_resume(dry_run)
 
         # Execute from beginning
-        logger.info(f"Starting pipeline {self._pipeline_id} execution")
+        logger.info("Starting pipeline %s execution", self._pipeline_id)
         return self._execute_pipeline(dry_run)
 
     def _execute_pipeline(self, dry_run: bool = False) -> Dict[str, Any]:
@@ -469,10 +469,10 @@ class Pipeline(BaseModel):
 
                 # Check if step already completed (in resume scenarios)
                 if step_name in self._completed_steps:
-                    logger.info(f"Skipping already completed step: {step_name}")
+                    logger.info("Skipping already completed step: %s", step_name)
                     continue
 
-                logger.info(f"Executing step {i+1}/{len(self.steps)}: {step_name}")
+                logger.info("Executing step %s/%s: %s", i+1, len(self.steps), step_name)
 
                 # Execute step
                 if dry_run:
@@ -512,7 +512,7 @@ class Pipeline(BaseModel):
                 if final_checkpoint_id:
                     results["checkpoints_created"].append(final_checkpoint_id)
 
-            logger.info(f"Pipeline {self._pipeline_id} completed successfully")
+            logger.info("Pipeline %s completed successfully", self._pipeline_id)
 
         except Exception as e:
             self._execution_state = PipelineState.FAILED
@@ -526,7 +526,7 @@ class Pipeline(BaseModel):
                                        len(self._completed_steps),
                                        error_message=str(e))
 
-            logger.error(f"Pipeline {self._pipeline_id} failed: {str(e)}")
+            logger.error("Pipeline %s failed: %s", self._pipeline_id, e)
             raise
 
         return results
@@ -555,8 +555,8 @@ class Pipeline(BaseModel):
         resume_index = context["resume_from_index"]
         resume_stage = context["resume_from_stage"]
 
-        logger.info(f"Resuming from step {resume_index}: {resume_stage}")
-        logger.info(f"Already completed steps: {self._completed_steps}")
+        logger.info("Resuming from step %s: %s", resume_index, resume_stage)
+        logger.info("Already completed steps: %s", self._completed_steps)
 
         # Notify callback of resume
         self._notify_checkpoint_status("checkpoint_resumed", {
@@ -682,7 +682,7 @@ class Pipeline(BaseModel):
             ValueError: If agent cannot be found or instantiated
             ImportError: If agent module cannot be loaded
         """
-        logger.info(f"Loading agent: {agent_name} with config: {config}")
+        logger.info("Loading agent: %s with config: %s", agent_name, config)
 
         # Strategy 1: Try loading from AgentRegistry (recommended approach)
         try:
@@ -692,12 +692,12 @@ class Pipeline(BaseModel):
             if AGENT_REGISTRY_AVAILABLE and get_agent_info is not None:
                 agent_info = get_agent_info(agent_name)
                 if agent_info:
-                    logger.info(f"Found agent '{agent_name}' in registry (v{agent_info.version})")
+                    logger.info("Found agent '%s' in registry (v%s)", agent_name, agent_info.version)
                     return create_agent(agent_name, config=config if config else None)
         except ImportError as e:
-            logger.debug(f"AgentRegistry not available: {e}")
+            logger.debug("AgentRegistry not available: %s", e)
         except ValueError as e:
-            logger.debug(f"Agent '{agent_name}' not found in registry: {e}")
+            logger.debug("Agent '%s' not found in registry: %s", agent_name, e)
 
         # Strategy 2: Try loading from PackLoader (for pack:agent format)
         if ":" in agent_name and "/" not in agent_name and "\\" not in agent_name:
@@ -707,12 +707,12 @@ class Pipeline(BaseModel):
                 loader = PackLoader()
                 agent_class = loader.get_agent(agent_name)
                 if agent_class:
-                    logger.info(f"Loaded agent '{agent_name}' from pack")
+                    logger.info("Loaded agent '%s' from pack", agent_name)
                     return agent_class(config) if config else agent_class()
             except ImportError as e:
-                logger.debug(f"PackLoader not available: {e}")
+                logger.debug("PackLoader not available: %s", e)
             except ValueError as e:
-                logger.debug(f"Agent '{agent_name}' not found in packs: {e}")
+                logger.debug("Agent '%s' not found in packs: %s", agent_name, e)
 
         # Strategy 3: Try dynamic import for module path format (module.path:ClassName)
         if ":" in agent_name or "." in agent_name:
@@ -731,11 +731,11 @@ class Pipeline(BaseModel):
 
                 module = importlib.import_module(module_path)
                 agent_class = getattr(module, class_name)
-                logger.info(f"Loaded agent '{class_name}' from module '{module_path}'")
+                logger.info("Loaded agent '%s' from module '%s'", class_name, module_path)
                 return agent_class(config) if config else agent_class()
 
             except (ImportError, AttributeError) as e:
-                logger.debug(f"Dynamic import failed for '{agent_name}': {e}")
+                logger.debug("Dynamic import failed for '%s': %s", agent_name, e)
 
         # Strategy 4: Try lazy import from greenlang.agents (for backward compatibility)
         try:
@@ -743,10 +743,10 @@ class Pipeline(BaseModel):
 
             if hasattr(agents_module, agent_name):
                 agent_class = getattr(agents_module, agent_name)
-                logger.info(f"Loaded agent '{agent_name}' from greenlang.agents module")
+                logger.info("Loaded agent '%s' from greenlang.agents module", agent_name)
                 return agent_class(config) if config else agent_class()
         except (ImportError, AttributeError) as e:
-            logger.debug(f"Lazy import from greenlang.agents failed: {e}")
+            logger.debug("Lazy import from greenlang.agents failed: %s", e)
 
         # If all strategies fail, raise a clear error
         raise ValueError(
@@ -789,7 +789,7 @@ class Pipeline(BaseModel):
             ValueError: If sub-pipeline cannot be found or loaded
             RuntimeError: If sub-pipeline execution fails
         """
-        logger.info(f"Executing sub-pipeline: {sub_pipeline_ref}")
+        logger.info("Executing sub-pipeline: %s", sub_pipeline_ref)
 
         sub_pipeline = None
 
@@ -808,11 +808,11 @@ class Pipeline(BaseModel):
 
                 if pipeline_path.exists():
                     sub_pipeline = Pipeline.from_yaml(str(pipeline_path))
-                    logger.info(f"Loaded sub-pipeline from file: {pipeline_path}")
+                    logger.info("Loaded sub-pipeline from file: %s", pipeline_path)
                 else:
                     raise ValueError(f"Sub-pipeline file not found: {sub_pipeline_ref}")
             except Exception as e:
-                logger.debug(f"Failed to load sub-pipeline from file: {e}")
+                logger.debug("Failed to load sub-pipeline from file: %s", e)
 
         # Strategy 2: Load from PackLoader (pack:pipeline format)
         if sub_pipeline is None and ":" in sub_pipeline_ref:
@@ -828,15 +828,15 @@ class Pipeline(BaseModel):
 
                 if pipeline_data:
                     sub_pipeline = Pipeline(**pipeline_data)
-                    logger.info(f"Loaded sub-pipeline '{pipeline_name}' from pack '{pack_name}'")
+                    logger.info("Loaded sub-pipeline '%s' from pack '%s'", pipeline_name, pack_name)
                 else:
                     raise ValueError(
                         f"Pipeline '{pipeline_name}' not found in pack '{pack_name}'"
                     )
             except ImportError as e:
-                logger.debug(f"PackLoader not available: {e}")
+                logger.debug("PackLoader not available: %s", e)
             except ValueError as e:
-                logger.debug(f"Sub-pipeline not found in pack: {e}")
+                logger.debug("Sub-pipeline not found in pack: %s", e)
 
         # Strategy 3: Inline pipeline definition (Dict)
         if sub_pipeline is None and isinstance(sub_pipeline_ref, dict):
@@ -859,10 +859,10 @@ class Pipeline(BaseModel):
                 if path.exists():
                     try:
                         sub_pipeline = Pipeline.from_yaml(str(path))
-                        logger.info(f"Loaded sub-pipeline from: {path}")
+                        logger.info("Loaded sub-pipeline from: %s", path)
                         break
                     except Exception as e:
-                        logger.debug(f"Failed to load from {path}: {e}")
+                        logger.debug("Failed to load from %s: %s", path, e)
 
         # If still no pipeline found, raise error
         if sub_pipeline is None:
@@ -908,7 +908,7 @@ class Pipeline(BaseModel):
 
         # Execute the sub-pipeline
         try:
-            logger.info(f"Starting sub-pipeline execution: {sub_pipeline.name}")
+            logger.info("Starting sub-pipeline execution: %s", sub_pipeline.name)
             results = sub_pipeline.execute(resume=False, dry_run=False)
 
             # Return sub-pipeline results
@@ -923,7 +923,7 @@ class Pipeline(BaseModel):
             }
 
         except Exception as e:
-            logger.error(f"Sub-pipeline '{sub_pipeline_ref}' execution failed: {e}")
+            logger.error("Sub-pipeline '%s' execution failed: %s", sub_pipeline_ref, e)
             raise RuntimeError(
                 f"Sub-pipeline '{sub_pipeline_ref}' failed: {str(e)}"
             ) from e
@@ -1042,11 +1042,11 @@ class Pipeline(BaseModel):
                     "pending_steps": len(pending_stages),
                 })
 
-            logger.info(f"Created checkpoint {checkpoint_id} at stage {stage_name}")
+            logger.info("Created checkpoint %s at stage %s", checkpoint_id, stage_name)
             return checkpoint_id
 
         except Exception as e:
-            logger.error(f"Failed to create checkpoint: {str(e)}")
+            logger.error("Failed to create checkpoint: %s", e)
             # Notify callback of checkpoint failure
             self._notify_checkpoint_status("checkpoint_failed", {
                 "pipeline_id": self._pipeline_id,
@@ -1069,7 +1069,7 @@ class Pipeline(BaseModel):
                 f"paused_at_step_{len(self._completed_steps)}",
                 len(self._completed_steps)
             )
-            logger.info(f"Pipeline paused with checkpoint {checkpoint_id}")
+            logger.info("Pipeline paused with checkpoint %s", checkpoint_id)
 
         return True
 

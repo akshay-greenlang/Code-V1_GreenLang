@@ -160,7 +160,7 @@ def load_manifest(pack_path: Path) -> PackManifest:
         if not manifest_path:
             raise FileNotFoundError(f"No manifest found in {pack_path}")
 
-    logger.info(f"Loading manifest from {manifest_path}")
+    logger.info("Loading manifest from %s", manifest_path)
 
     try:
         # Load based on file extension
@@ -174,11 +174,11 @@ def load_manifest(pack_path: Path) -> PackManifest:
         # Parse into model
         manifest = PackManifest(**data)
 
-        logger.info(f"Loaded manifest for {manifest.name} v{manifest.version}")
+        logger.info("Loaded manifest for %s v%s", manifest.name, manifest.version)
         return manifest
 
     except Exception as e:
-        logger.error(f"Failed to load manifest: {e}")
+        logger.error("Failed to load manifest: %s", e)
         raise
 
 
@@ -213,7 +213,7 @@ def save_manifest(pack_path: Path, manifest, format: str = "json") -> Path:
         with open(manifest_file, "w") as f:
             json.dump(data, f, indent=2)
 
-    logger.info(f"Saved manifest to {manifest_file}")
+    logger.info("Saved manifest to %s", manifest_file)
     return manifest_file
 
 
@@ -241,7 +241,7 @@ def validate_manifest(manifest) -> bool:
         return True
 
     except Exception as e:
-        logger.error(f"Manifest validation failed: {e}")
+        logger.error("Manifest validation failed: %s", e)
         raise ValueError(f"Invalid manifest: {e}")
 
 
@@ -311,7 +311,7 @@ def create_manifest(
 
     manifest = PackManifest(**manifest_data)
 
-    logger.info(f"Created manifest for {manifest.name}")
+    logger.info("Created manifest for %s", manifest.name)
     return manifest
 
 
@@ -339,7 +339,7 @@ def update_manifest(manifest_path: Path, updates: Dict[str, Any]) -> PackManifes
     # Save back
     save_manifest(manifest_path.parent, updated_manifest)
 
-    logger.info(f"Updated manifest at {manifest_path}")
+    logger.info("Updated manifest at %s", manifest_path)
     return updated_manifest
 
 

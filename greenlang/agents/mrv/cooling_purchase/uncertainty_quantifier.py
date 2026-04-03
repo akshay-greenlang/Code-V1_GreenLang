@@ -226,7 +226,7 @@ class UncertaintyQuantifierEngine:
                     duration_ms=elapsed,
                     success=False,
                 )
-            logger.error(f"Uncertainty quantification failed: {e}", exc_info=True)
+            logger.error("Uncertainty quantification failed: %s", e, exc_info=True)
             raise
 
     def run_monte_carlo(

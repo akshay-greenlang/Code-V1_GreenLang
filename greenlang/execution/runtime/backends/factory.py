@@ -35,7 +35,7 @@ class BackendFactory:
             backend_class: Backend class
         """
         cls._backends[name.lower()] = backend_class
-        logger.info(f"Registered backend: {name}")
+        logger.info("Registered backend: %s", name)
 
     @classmethod
     def create(
@@ -66,10 +66,10 @@ class BackendFactory:
 
         try:
             backend = backend_class(config or {})
-            logger.info(f"Created {backend_type} backend")
+            logger.info("Created %s backend", backend_type)
             return backend
         except Exception as e:
-            logger.error(f"Failed to create {backend_type} backend: {e}")
+            logger.error("Failed to create %s backend: %s", backend_type, e)
             raise
 
     @classmethod
@@ -127,7 +127,7 @@ class BackendManager:
         self.default_config = default_config or {}
         self.backends: Dict[str, Backend] = {}
 
-        logger.info(f"BackendManager initialized with default: {default_backend}")
+        logger.info("BackendManager initialized with default: %s", default_backend)
 
     def get_backend(
         self,
@@ -218,4 +218,4 @@ def set_default_backend(backend_type: str, config: Optional[Dict[str, Any]] = No
     manager.default_backend = backend_type
     manager.default_config = config or {}
 
-    logger.info(f"Set default backend to: {backend_type}")
+    logger.info("Set default backend to: %s", backend_type)

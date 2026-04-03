@@ -66,6 +66,7 @@ from greenlang.agents.eudr.mobile_data_collector.models import (
 from greenlang.agents.eudr.mobile_data_collector.provenance import (
     get_provenance_tracker,
 )
+from greenlang.utilities.exceptions.compliance import ComplianceException
 
 logger = logging.getLogger(__name__)
 
@@ -110,7 +111,7 @@ _BANDWIDTH_WINDOW_SIZE: int = 10
 # ---------------------------------------------------------------------------
 
 
-class SyncEngineError(Exception):
+class SyncEngineError(ComplianceException):
     """Base exception for sync engine operations."""
 
 

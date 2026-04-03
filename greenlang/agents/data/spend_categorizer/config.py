@@ -29,10 +29,13 @@ Status: Production Ready
 from __future__ import annotations
 
 import logging
-import os
-import threading
 from dataclasses import dataclass
-from typing import Any, Optional
+
+from greenlang.data_commons.config_base import (
+    BaseDataConfig,
+    EnvReader,
+    create_config_singleton,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -49,21 +52,16 @@ _ENV_PREFIX = "GL_SPEND_CAT_"
 
 
 @dataclass
-class SpendCategorizerConfig:
-    """Complete configuration for the GreenLang Spend Data Categorizer SDK.
+class SpendCategorizerConfig(BaseDataConfig):
+    """Configuration for the GreenLang Spend Data Categorizer SDK.
 
-    Attributes are grouped by concern: connections, classification defaults,
-    emission factor versions, processing limits, cache, feature toggles,
-    rate limiting, and provenance tracking.
+    Inherits shared connection, pool, batch, and logging fields from
+    ``BaseDataConfig``.  Only spend-categorizer-specific fields are declared here.
 
     All attributes can be overridden via environment variables using the
     ``GL_SPEND_CAT_`` prefix.
 
     Attributes:
-        database_url: PostgreSQL connection URL for persistent storage.
-        redis_url: Redis connection URL for caching layer.
-        s3_bucket_url: S3 bucket URL for document and report storage.
-        log_level: Logging level for the spend categorizer service.
         default_currency: Default currency for spend amounts (ISO 4217).
         default_taxonomy: Default taxonomy system for classification.
         min_confidence: Minimum confidence threshold for classification.
@@ -90,18 +88,8 @@ class SpendCategorizerConfig:
         rate_limit_burst: Maximum burst requests allowed.
         enable_provenance: Whether to enable provenance tracking.
         provenance_hash_algorithm: Hash algorithm for provenance chains.
-        pool_min_size: Minimum connection pool size.
-        pool_max_size: Maximum connection pool size.
         worker_count: Number of parallel workers for batch processing.
     """
-
-    # -- Connections ---------------------------------------------------------
-    database_url: str = ""
-    redis_url: str = ""
-    s3_bucket_url: str = ""
-
-    # -- Logging -------------------------------------------------------------
-    log_level: str = "INFO"
 
     # -- Classification defaults ---------------------------------------------
     default_currency: str = "USD"
@@ -143,13 +131,11 @@ class SpendCategorizerConfig:
     enable_provenance: bool = True
     provenance_hash_algorithm: str = "sha256"
 
-    # -- Pool sizing ---------------------------------------------------------
-    pool_min_size: int = 2
-    pool_max_size: int = 10
+    # -- Worker count (spend-specific) ---------------------------------------
     worker_count: int = 4
 
     # ------------------------------------------------------------------
-    # Factory helpers
+    # Factory
     # ------------------------------------------------------------------
 
     @classmethod
@@ -158,156 +144,107 @@ class SpendCategorizerConfig:
 
         Every field can be overridden via ``GL_SPEND_CAT_<FIELD_UPPER>``.
         Boolean values accept ``true/1/yes`` (case-insensitive).
-        Integer values are parsed via ``int()``.
-        Float values are parsed via ``float()``.
 
         Returns:
             Populated SpendCategorizerConfig instance.
         """
-        prefix = _ENV_PREFIX
-
-        def _env(name: str, default: Any = None) -> Optional[str]:
-            return os.environ.get(f"{prefix}{name}", default)
-
-        def _bool(name: str, default: bool) -> bool:
-            val = _env(name)
-            if val is None:
-                return default
-            return val.lower() in ("true", "1", "yes")
-
-        def _int(name: str, default: int) -> int:
-            val = _env(name)
-            if val is None:
-                return default
-            try:
-                return int(val)
-            except ValueError:
-                logger.warning(
-                    "Invalid integer for %s%s=%s, using default %d",
-                    prefix, name, val, default,
-                )
-                return default
-
-        def _float(name: str, default: float) -> float:
-            val = _env(name)
-            if val is None:
-                return default
-            try:
-                return float(val)
-            except ValueError:
-                logger.warning(
-                    "Invalid float for %s%s=%s, using default %f",
-                    prefix, name, val, default,
-                )
-                return default
-
-        def _str(name: str, default: str) -> str:
-            val = _env(name)
-            if val is None:
-                return default
-            return val
+        env = EnvReader(_ENV_PREFIX)
+        base_kwargs = cls._base_kwargs_from_env(env)
 
         config = cls(
-            # Connections
-            database_url=_str("DATABASE_URL", cls.database_url),
-            redis_url=_str("REDIS_URL", cls.redis_url),
-            s3_bucket_url=_str("S3_BUCKET_URL", cls.s3_bucket_url),
-            # Logging
-            log_level=_str("LOG_LEVEL", cls.log_level),
+            **base_kwargs,
             # Classification defaults
-            default_currency=_str(
+            default_currency=env.str(
                 "DEFAULT_CURRENCY", cls.default_currency,
             ),
-            default_taxonomy=_str(
+            default_taxonomy=env.str(
                 "DEFAULT_TAXONOMY", cls.default_taxonomy,
             ),
-            min_confidence=_float(
+            min_confidence=env.float(
                 "MIN_CONFIDENCE", cls.min_confidence,
             ),
-            high_confidence_threshold=_float(
+            high_confidence_threshold=env.float(
                 "HIGH_CONFIDENCE_THRESHOLD",
                 cls.high_confidence_threshold,
             ),
-            medium_confidence_threshold=_float(
+            medium_confidence_threshold=env.float(
                 "MEDIUM_CONFIDENCE_THRESHOLD",
                 cls.medium_confidence_threshold,
             ),
             # Emission factor versions
-            eeio_version=_str(
+            eeio_version=env.str(
                 "EEIO_VERSION", cls.eeio_version,
             ),
-            exiobase_version=_str(
+            exiobase_version=env.str(
                 "EXIOBASE_VERSION", cls.exiobase_version,
             ),
-            defra_version=_str(
+            defra_version=env.str(
                 "DEFRA_VERSION", cls.defra_version,
             ),
-            ecoinvent_version=_str(
+            ecoinvent_version=env.str(
                 "ECOINVENT_VERSION", cls.ecoinvent_version,
             ),
             # Processing limits
-            batch_size=_int(
+            batch_size=env.int(
                 "BATCH_SIZE", cls.batch_size,
             ),
-            max_records=_int(
+            max_records=env.int(
                 "MAX_RECORDS", cls.max_records,
             ),
-            dedup_threshold=_float(
+            dedup_threshold=env.float(
                 "DEDUP_THRESHOLD", cls.dedup_threshold,
             ),
-            vendor_normalization=_bool(
+            vendor_normalization=env.bool(
                 "VENDOR_NORMALIZATION",
                 cls.vendor_normalization,
             ),
-            max_taxonomy_depth=_int(
+            max_taxonomy_depth=env.int(
                 "MAX_TAXONOMY_DEPTH", cls.max_taxonomy_depth,
             ),
             # Cache
-            cache_ttl=_int("CACHE_TTL", cls.cache_ttl),
-            cache_emission_factors_ttl=_int(
+            cache_ttl=env.int("CACHE_TTL", cls.cache_ttl),
+            cache_emission_factors_ttl=env.int(
                 "CACHE_EMISSION_FACTORS_TTL",
                 cls.cache_emission_factors_ttl,
             ),
-            cache_taxonomy_ttl=_int(
+            cache_taxonomy_ttl=env.int(
                 "CACHE_TAXONOMY_TTL", cls.cache_taxonomy_ttl,
             ),
             # Feature toggles
-            enable_exiobase=_bool(
+            enable_exiobase=env.bool(
                 "ENABLE_EXIOBASE", cls.enable_exiobase,
             ),
-            enable_defra=_bool(
+            enable_defra=env.bool(
                 "ENABLE_DEFRA", cls.enable_defra,
             ),
-            enable_ecoinvent=_bool(
+            enable_ecoinvent=env.bool(
                 "ENABLE_ECOINVENT", cls.enable_ecoinvent,
             ),
-            enable_hotspot_analysis=_bool(
+            enable_hotspot_analysis=env.bool(
                 "ENABLE_HOTSPOT_ANALYSIS",
                 cls.enable_hotspot_analysis,
             ),
-            enable_trend_analysis=_bool(
+            enable_trend_analysis=env.bool(
                 "ENABLE_TREND_ANALYSIS",
                 cls.enable_trend_analysis,
             ),
             # Rate limiting
-            rate_limit_rpm=_int(
+            rate_limit_rpm=env.int(
                 "RATE_LIMIT_RPM", cls.rate_limit_rpm,
             ),
-            rate_limit_burst=_int(
+            rate_limit_burst=env.int(
                 "RATE_LIMIT_BURST", cls.rate_limit_burst,
             ),
             # Provenance
-            enable_provenance=_bool(
+            enable_provenance=env.bool(
                 "ENABLE_PROVENANCE", cls.enable_provenance,
             ),
-            provenance_hash_algorithm=_str(
+            provenance_hash_algorithm=env.str(
                 "PROVENANCE_HASH_ALGORITHM",
                 cls.provenance_hash_algorithm,
             ),
-            # Pool sizing
-            pool_min_size=_int("POOL_MIN_SIZE", cls.pool_min_size),
-            pool_max_size=_int("POOL_MAX_SIZE", cls.pool_max_size),
-            worker_count=_int("WORKER_COUNT", cls.worker_count),
+            # Worker count
+            worker_count=env.int("WORKER_COUNT", cls.worker_count),
         )
 
         logger.info(
@@ -337,45 +274,9 @@ class SpendCategorizerConfig:
 # Thread-safe singleton accessor
 # ---------------------------------------------------------------------------
 
-_config_instance: Optional[SpendCategorizerConfig] = None
-_config_lock = threading.Lock()
-
-
-def get_config() -> SpendCategorizerConfig:
-    """Return the singleton SpendCategorizerConfig, creating from env if needed.
-
-    Uses double-checked locking for thread safety with minimal
-    contention on the hot path.
-
-    Returns:
-        SpendCategorizerConfig singleton instance.
-    """
-    global _config_instance
-    if _config_instance is None:
-        with _config_lock:
-            if _config_instance is None:
-                _config_instance = SpendCategorizerConfig.from_env()
-    return _config_instance
-
-
-def set_config(config: SpendCategorizerConfig) -> None:
-    """Replace the singleton SpendCategorizerConfig (useful for testing).
-
-    Args:
-        config: New configuration to install.
-    """
-    global _config_instance
-    with _config_lock:
-        _config_instance = config
-    logger.info("SpendCategorizerConfig replaced programmatically")
-
-
-def reset_config() -> None:
-    """Reset the singleton (primarily for test teardown)."""
-    global _config_instance
-    with _config_lock:
-        _config_instance = None
-
+get_config, set_config, reset_config = create_config_singleton(
+    SpendCategorizerConfig, _ENV_PREFIX,
+)
 
 __all__ = [
     "SpendCategorizerConfig",

@@ -348,7 +348,7 @@ class WaterSupplyMRVAgent(BaseAgent):
         # Statistics
         self._calculations_performed = 0
 
-        self.logger.info(f"Initialized {self.AGENT_ID}: {self.AGENT_NAME} v{self.VERSION}")
+        logger.info("Initialized %s: %s v%s", self.AGENT_ID, self.AGENT_NAME, self.VERSION)
 
     def execute(self, input_data: Dict[str, Any]) -> AgentResult:
         """
@@ -442,7 +442,7 @@ class WaterSupplyMRVAgent(BaseAgent):
 
             self._calculations_performed += 1
 
-            self.logger.info(
+            logger.info(
                 f"Calculated water supply emissions: {total_emissions:.2f} kgCO2e "
                 f"({total_treated:.0f} m3 treated, {total_distributed:.0f} m3 distributed)"
             )
@@ -458,7 +458,7 @@ class WaterSupplyMRVAgent(BaseAgent):
             )
 
         except Exception as e:
-            self.logger.error(f"Water supply MRV calculation failed: {e}", exc_info=True)
+            logger.error("Water supply MRV calculation failed: %s", e, exc_info=True)
             return AgentResult(
                 success=False,
                 error=str(e),

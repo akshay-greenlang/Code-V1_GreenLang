@@ -375,7 +375,7 @@ class HENSynthesizer:
         if pinch is None:
             raise ValueError("Pinch analysis result required for HEN synthesis")
 
-        logger.info(f"Synthesizing HEN using {method} method")
+        logger.info("Synthesizing HEN using %s method", method)
 
         if method == "pinch_design":
             design = self._pinch_design_method(streams, pinch)

@@ -411,7 +411,7 @@ class CapacityBuildingManagerEngine:
         """
         enrollment = self._enrollments.get(enrollment_id)
         if enrollment is None:
-            logger.warning(f"Enrollment '{enrollment_id}' not found")
+            logger.warning("Enrollment '%s' not found", enrollment_id)
             return False
 
         self.provenance.record(

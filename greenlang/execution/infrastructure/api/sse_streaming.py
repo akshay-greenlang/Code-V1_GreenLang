@@ -264,14 +264,14 @@ class EventStream:
                 elif event.event_id == last_event_id:
                     found = True
 
-        logger.info(f"Client {client_id} subscribed to {self.name}, replaying {len(replay_events)} events")
+        logger.info("Client %s subscribed to %s, replaying %s events", client_id, self.name, len(replay_events))
         return queue, replay_events
 
     async def unsubscribe(self, client_id: str) -> None:
         """Unsubscribe client from stream."""
         self._subscribers.pop(client_id, None)
         self._event_filters.pop(client_id, None)
-        logger.debug(f"Client {client_id} unsubscribed from {self.name}")
+        logger.debug("Client %s unsubscribed from %s", client_id, self.name)
 
     async def broadcast(self, event: SSEStreamEvent) -> int:
         """
@@ -301,9 +301,9 @@ class EventStream:
                 queue.put_nowait(event)
                 delivered += 1
             except asyncio.QueueFull:
-                logger.warning(f"Queue full for client {client_id} on {self.name}")
+                logger.warning("Queue full for client %s on %s", client_id, self.name)
             except Exception as e:
-                logger.error(f"Error sending to client {client_id}: {e}")
+                logger.error("Error sending to client %s: %s", client_id, e)
                 disconnected.append(client_id)
 
         # Clean up dead subscribers
@@ -484,7 +484,7 @@ class SSEStreamManager:
         except asyncio.CancelledError:
             pass
         except Exception as e:
-            logger.error(f"Event generator error for client {client_id}: {e}")
+            logger.error("Event generator error for client %s: %s", client_id, e)
         finally:
             # Cleanup
             await self._cleanup_subscription(client_id, channel)
@@ -495,7 +495,7 @@ class SSEStreamManager:
             await self._streams[channel].unsubscribe(client_id)
 
         self._subscriptions.pop(client_id, None)
-        logger.debug(f"Cleaned up subscription for client {client_id} on {channel}")
+        logger.debug("Cleaned up subscription for client %s on %s", client_id, channel)
 
     # =====================================================================
     # Public API for sending events
@@ -733,12 +733,12 @@ class SSEStreamManager:
                     if sub:
                         for channel in sub.subscribed_channels:
                             await self._cleanup_subscription(client_id, channel)
-                        logger.info(f"Cleaned up stale subscription {client_id}")
+                        logger.info("Cleaned up stale subscription %s", client_id)
 
             except asyncio.CancelledError:
                 break
             except Exception as e:
-                logger.error(f"Cleanup loop error: {e}")
+                logger.error("Cleanup loop error: %s", e)
 
     # =====================================================================
     # Query and monitoring

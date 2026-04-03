@@ -248,7 +248,7 @@ class BaseCalculator(BaseAgent):
         """
         if denominator == 0:
             if self.config.allow_division_by_zero:
-                self.logger.warning("Division by zero, returning None")
+                logger.warning("Division by zero, returning None")
                 return None
             raise ZeroDivisionError("Division by zero")
 
@@ -435,7 +435,7 @@ class BaseCalculator(BaseAgent):
         cached_result = self.get_cached_result(cache_key)
 
         if cached_result is not None:
-            self.logger.debug(f"Using cached result for {cache_key[:8]}...")
+            logger.debug("Using cached result for %s...", cache_key[)
             self.stats.increment("cache_hits")
 
             # Note: Cached results don't have provenance tracking
@@ -476,7 +476,7 @@ class BaseCalculator(BaseAgent):
             )
 
         except Exception as e:
-            self.logger.error(f"Calculation failed: {str(e)}", exc_info=True)
+            logger.error("Calculation failed: %s", e, exc_info=True)
 
             # Record error in provenance
             if self._current_provenance is not None:
@@ -491,12 +491,12 @@ class BaseCalculator(BaseAgent):
     def validate_input(self, input_data: Dict[str, Any]) -> bool:
         """Validate that input contains calculation inputs."""
         if "inputs" not in input_data:
-            self.logger.error("Input data must contain 'inputs' key")
+            logger.error("Input data must contain 'inputs' key")
             return False
 
         inputs = input_data["inputs"]
         if not isinstance(inputs, dict):
-            self.logger.error("'inputs' must be a dictionary")
+            logger.error("'inputs' must be a dictionary")
             return False
 
         return True
@@ -504,4 +504,4 @@ class BaseCalculator(BaseAgent):
     def clear_cache(self):
         """Clear the calculation cache."""
         self._calc_cache.clear()
-        self.logger.info("Calculation cache cleared")
+        logger.info("Calculation cache cleared")

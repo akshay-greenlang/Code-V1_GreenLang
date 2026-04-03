@@ -560,7 +560,7 @@ class SafeguardRegistry:
             "is_ipl": safeguard.is_ipl
         })
 
-        logger.info(f"Safeguard registered: {safeguard.safeguard_id} - {safeguard.name}")
+        logger.info("Safeguard registered: %s - %s", safeguard.safeguard_id, safeguard.name)
         return safeguard
 
     def update_safeguard(
@@ -602,7 +602,7 @@ class SafeguardRegistry:
                 "new_status": safeguard.status.value
             })
 
-        logger.info(f"Safeguard updated: {safeguard_id}")
+        logger.info("Safeguard updated: %s", safeguard_id)
         return safeguard
 
     def get_safeguard(self, safeguard_id: str) -> Optional[Safeguard]:
@@ -837,7 +837,7 @@ class SafeguardRegistry:
             "verified_by": verified_by
         })
 
-        logger.info(f"Verification started: {verification_id} by {verified_by}")
+        logger.info("Verification started: %s by %s", verification_id, verified_by)
         return verification
 
     def complete_verification(
@@ -1030,7 +1030,7 @@ class SafeguardRegistry:
                 overdue.append(verification)
 
         if overdue:
-            logger.warning(f"{len(overdue)} verifications are overdue")
+            logger.warning("%s verifications are overdue", len(overdue))
 
         return overdue
 

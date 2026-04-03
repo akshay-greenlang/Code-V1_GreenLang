@@ -81,12 +81,12 @@ class ValidationFramework(BaseInfrastructureComponent):
     def register_schema(self, name: str, schema: Dict[str, Any]) -> None:
         """Register a JSON schema for validation."""
         self.schemas[name] = schema
-        logger.debug(f"Registered schema: {name}")
+        logger.debug("Registered schema: %s", name)
 
     def register_rule(self, rule: ValidationRule) -> None:
         """Register a validation rule."""
         self.rules[rule.name] = rule
-        logger.debug(f"Registered rule: {rule.name}")
+        logger.debug("Registered rule: %s", rule.name)
 
     def validate(
         self,
@@ -128,11 +128,11 @@ class ValidationFramework(BaseInfrastructureComponent):
         except jsonschema.ValidationError as e:
             self.error_count += 1
             result.add_error(f"Schema validation failed: {str(e)}")
-            logger.warning(f"Validation failed: {str(e)}")
+            logger.warning("Validation failed: %s", e)
         except Exception as e:
             self.error_count += 1
             result.add_error(f"Validation error: {str(e)}")
-            logger.error(f"Unexpected validation error: {str(e)}")
+            logger.error("Unexpected validation error: %s", e)
 
         # Update metrics
         self._metrics.update({

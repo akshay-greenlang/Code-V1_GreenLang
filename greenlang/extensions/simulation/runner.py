@@ -83,7 +83,7 @@ class ScenarioRunner:
             spec_type="scenario"
         )
 
-        logger.info(f"Initialized ScenarioRunner for '{self.spec.name}' (seed={self.spec.seed})")
+        logger.info("Initialized ScenarioRunner for '%s' (seed=%s)", self.spec.name, self.spec.seed)
 
     def generate_samples(self) -> Iterator[Dict[str, Any]]:
         """
@@ -222,7 +222,7 @@ class ScenarioRunner:
         self.provenance_ctx.status = "success"
         ledger_path = self.provenance_ctx.finalize()
 
-        logger.info(f"Scenario '{self.spec.name}' completed. Provenance: {ledger_path}")
+        logger.info("Scenario '%s' completed. Provenance: %s", self.spec.name, ledger_path)
         return ledger_path
 
 
@@ -259,11 +259,11 @@ def run_scenario(
     runner = ScenarioRunner(scenario_path)
     results = []
 
-    logger.info(f"Running scenario: {runner.spec.name}")
+    logger.info("Running scenario: %s", runner.spec.name)
 
     for i, params in enumerate(runner.generate_samples()):
         if i % 100 == 0:
-            logger.info(f"Sample {i}/{runner.spec.monte_carlo.trials if runner.spec.monte_carlo else '?'}...")
+            logger.info("Sample %s/%s...", i, runner.spec.monte_carlo.trials if runner.spec.monte_carlo else '?')
 
         result = model_fn(**params)
         results.append({
@@ -280,7 +280,7 @@ def run_scenario(
         with open(output_path, "w") as f:
             json.dump(results, f, indent=2)
 
-        logger.info(f"Results saved to: {output_path}")
+        logger.info("Results saved to: %s", output_path)
 
     # Finalize provenance
     runner.finalize()

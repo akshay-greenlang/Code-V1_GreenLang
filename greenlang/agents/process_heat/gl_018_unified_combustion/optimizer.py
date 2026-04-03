@@ -275,7 +275,7 @@ class UnifiedCombustionOptimizer(IntelligenceMixin, BaseProcessHeatAgent[Combust
             ProcessingError: If processing fails
         """
         start_time = datetime.now(timezone.utc)
-        logger.info(f"Processing combustion data for {input_data.equipment_id}")
+        logger.info("Processing combustion data for %s", input_data.equipment_id)
 
         try:
             with self.safety_guard():
@@ -471,7 +471,7 @@ class UnifiedCombustionOptimizer(IntelligenceMixin, BaseProcessHeatAgent[Combust
                 return output
 
         except Exception as e:
-            logger.error(f"Combustion optimization failed: {e}", exc_info=True)
+            logger.error("Combustion optimization failed: %s", e, exc_info=True)
             raise ProcessingError(f"Combustion optimization failed: {str(e)}") from e
 
     def validate_input(self, input_data: CombustionInput) -> bool:
@@ -508,7 +508,7 @@ class UnifiedCombustionOptimizer(IntelligenceMixin, BaseProcessHeatAgent[Combust
             errors.append("CO level dangerously high (>1000 ppm)")
 
         if errors:
-            logger.warning(f"Validation errors: {errors}")
+            logger.warning("Validation errors: %s", errors)
             return False
 
         return True

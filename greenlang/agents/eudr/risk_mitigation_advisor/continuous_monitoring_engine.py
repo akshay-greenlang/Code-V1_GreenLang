@@ -596,7 +596,7 @@ class ContinuousMonitoringEngine:
         """
         count = len(self._quiet_registry)
         self._quiet_registry.clear()
-        logger.info(f"Quiet registry cleared: {count} entries")
+        logger.info("Quiet registry cleared: %s entries", count)
         return count
 
     async def health_check(self) -> Dict[str, Any]:

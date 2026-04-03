@@ -370,7 +370,7 @@ class AuditReportingEngine:
             return response
 
         except Exception as e:
-            logger.error(f"Report generation failed: {e}", exc_info=True)
+            logger.error("Report generation failed: %s", e, exc_info=True)
             raise
 
     def amend_report(

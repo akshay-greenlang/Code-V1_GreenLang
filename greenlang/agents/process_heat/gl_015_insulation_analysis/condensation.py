@@ -126,7 +126,7 @@ class CondensationAnalyzer:
             CondensationAnalysisResult
         """
         self._calculation_count += 1
-        logger.debug(f"Analyzing condensation for {input_data.item_id}")
+        logger.debug("Analyzing condensation for %s", input_data.item_id)
 
         # Calculate dew point
         dew_point = self._calculate_dew_point(

@@ -771,7 +771,7 @@ class ReviewScheduler:
             "scheduled": scheduled_date.isoformat()
         })
 
-        logger.info(f"Review session created: {session.session_id} - {title}")
+        logger.info("Review session created: %s - %s", session.session_id, title)
         return session
 
     def get_session(self, session_id: str) -> Optional[ReviewSession]:
@@ -854,7 +854,7 @@ class ReviewScheduler:
         session.updated_at = datetime.utcnow()
         session.provenance_hash = self._calculate_provenance(session)
 
-        logger.info(f"Added {len(risk_ids)} risks to session {session_id}")
+        logger.info("Added %s risks to session %s", len(risk_ids), session_id)
         return session
 
     def add_risks_by_filter(
@@ -940,7 +940,7 @@ class ReviewScheduler:
         session.reassessments.append(reassessment)
         session.updated_at = datetime.utcnow()
 
-        logger.info(f"Reassessment created for risk {risk_id} in session {session_id}")
+        logger.info("Reassessment created for risk %s in session %s", risk_id, session_id)
         return reassessment
 
     def complete_reassessment(
@@ -1045,7 +1045,7 @@ class ReviewScheduler:
                     f"Risk {reassessment.risk_id} updated from reassessment"
                 )
             except Exception as e:
-                logger.error(f"Failed to update risk: {e}")
+                logger.error("Failed to update risk: %s", e)
 
     # =========================================================================
     # MEETING DOCUMENTATION
@@ -1098,7 +1098,7 @@ class ReviewScheduler:
         session.meetings.append(meeting)
         session.updated_at = datetime.utcnow()
 
-        logger.info(f"Meeting created for session {session_id}")
+        logger.info("Meeting created for session %s", session_id)
         return meeting
 
     def update_meeting(
@@ -1320,7 +1320,7 @@ class ReviewScheduler:
             "summary_length": len(summary)
         })
 
-        logger.info(f"Session {session_id} submitted for approval")
+        logger.info("Session %s submitted for approval", session_id)
         return session
 
     def approve_review(
@@ -1361,7 +1361,7 @@ class ReviewScheduler:
             "approved_by": approved_by
         })
 
-        logger.info(f"Session {session_id} approved by {approved_by}")
+        logger.info("Session %s approved by %s", session_id, approved_by)
         return session
 
     def reject_review(
@@ -1395,7 +1395,7 @@ class ReviewScheduler:
             "reason": reason
         })
 
-        logger.info(f"Session {session_id} rejected: {reason}")
+        logger.info("Session %s rejected: %s", session_id, reason)
         return session
 
     def complete_review(
@@ -1433,7 +1433,7 @@ class ReviewScheduler:
             "outcome": outcome.value
         })
 
-        logger.info(f"Session {session_id} completed: {outcome.value}")
+        logger.info("Session %s completed: %s", session_id, outcome.value)
         return session
 
     # =========================================================================
@@ -1480,7 +1480,7 @@ class ReviewScheduler:
             "frequency_days": frequency_days
         })
 
-        logger.info(f"Review schedule created: {name}")
+        logger.info("Review schedule created: %s", name)
         return schedule
 
     def get_due_schedules(self) -> List[ReviewSchedule]:
@@ -1540,7 +1540,7 @@ class ReviewScheduler:
         schedule.last_run = datetime.utcnow()
         schedule.next_run = datetime.utcnow() + timedelta(days=schedule.frequency_days)
 
-        logger.info(f"Schedule {schedule_id} executed, created session {session.session_id}")
+        logger.info("Schedule %s executed, created session %s", schedule_id, session.session_id)
         return session
 
     # =========================================================================

@@ -67,7 +67,10 @@ def clear_tenant_context() -> None:
 # ---------------------------------------------------------------------------
 
 
-class TenantAccessDeniedError(Exception):
+from greenlang.utilities.exceptions.security import SecretAccessError as _SecretAccessError
+
+
+class TenantAccessDeniedError(_SecretAccessError):
     """Raised when a tenant attempts to access another tenant's secrets."""
 
     def __init__(
@@ -85,7 +88,7 @@ class TenantAccessDeniedError(Exception):
         )
 
 
-class InvalidSecretPathError(Exception):
+class InvalidSecretPathError(_SecretAccessError):
     """Raised when a secret path is invalid or contains forbidden characters."""
 
     def __init__(self, path: str, reason: str):

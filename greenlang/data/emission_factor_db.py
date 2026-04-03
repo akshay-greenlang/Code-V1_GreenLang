@@ -273,7 +273,7 @@ class EmissionFactorDatabase:
                     self.factors[ef_uri] = record
 
                 except Exception as e:
-                    logger.warning(f"Failed to load emission factor {ef_uri}: {e}")
+                    logger.warning("Failed to load emission factor %s: %s", ef_uri, e)
 
     def _load_egrid_json(self, path: Path):
         """Load EPA eGRID emission factors."""
@@ -316,7 +316,7 @@ class EmissionFactorDatabase:
                         self.egrid_state_mapping[state] = code
 
             except Exception as e:
-                logger.warning(f"Failed to load eGRID subregion {code}: {e}")
+                logger.warning("Failed to load eGRID subregion %s: %s", code, e)
 
         # Load state averages for more precise state-level lookups
         state_averages = data.get('state_averages', {})
@@ -347,7 +347,7 @@ class EmissionFactorDatabase:
                 )
                 self.egrid_subregions['US_AVG'] = record
             except Exception as e:
-                logger.warning(f"Failed to load US national average: {e}")
+                logger.warning("Failed to load US national average: %s", e)
 
     def lookup(
         self,

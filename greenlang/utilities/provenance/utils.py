@@ -128,7 +128,7 @@ class ProvenanceContext:
 
         # Write run ledger
         ledger_path = write_run_ledger(result, self)
-        logger.info(f"Provenance ledger written to: {ledger_path}")
+        logger.info("Provenance ledger written to: %s", ledger_path)
 
         return ledger_path
 
@@ -467,7 +467,7 @@ def export_provenance_bundle(
         tar.add(temp_report, arcname="provenance_report.json")
         Path(temp_report).unlink()
 
-    logger.info(f"Provenance bundle created: {output_path}")
+    logger.info("Provenance bundle created: %s", output_path)
     return output_path
 
 
@@ -507,6 +507,6 @@ def import_provenance_bundle(
         is_valid, issues = verify_artifact_chain(artifact_path)
 
         if not is_valid:
-            logger.warning(f"Provenance verification issues: {issues}")
+            logger.warning("Provenance verification issues: %s", issues)
 
     return extracted

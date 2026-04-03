@@ -315,7 +315,7 @@ class MaterialsLCIAgent(BaseAgent):
         for material in _create_default_materials():
             self._materials[material.dataset_id] = material
 
-        self.logger.info(f"Initialized {self.AGENT_NAME} with {len(self._materials)} default materials")
+        logger.info("Initialized %s with %s default materials", self.AGENT_NAME, len(self._materials))
 
     def execute(self, input_data: Dict[str, Any]) -> AgentResult:
         """Execute LCI operation."""
@@ -338,7 +338,7 @@ class MaterialsLCIAgent(BaseAgent):
                 return AgentResult(success=False, error=f"Unknown operation: {lci_input.operation}")
 
         except Exception as e:
-            self.logger.error(f"LCI operation failed: {str(e)}", exc_info=True)
+            logger.error("LCI operation failed: %s", e, exc_info=True)
             return AgentResult(success=False, error=str(e))
 
     def _handle_lookup(self, lci_input: LCIQueryInput, start_time: datetime) -> AgentResult:

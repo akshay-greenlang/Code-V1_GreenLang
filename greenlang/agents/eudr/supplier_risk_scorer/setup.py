@@ -348,7 +348,7 @@ class SupplierRiskScorerService:
             )
 
         except Exception as e:
-            logger.error(f"Service startup failed: {e}", exc_info=True)
+            logger.error("Service startup failed: %s", e, exc_info=True)
             raise RuntimeError(f"Service startup failed: {e}") from e
 
     async def shutdown(self) -> None:
@@ -376,14 +376,14 @@ class SupplierRiskScorerService:
             logger.info("SupplierRiskScorerService shutdown complete")
 
         except Exception as e:
-            logger.error(f"Shutdown error: {e}", exc_info=True)
+            logger.error("Shutdown error: %s", e, exc_info=True)
 
     async def _init_db_pool(self) -> None:
         """Initialize PostgreSQL connection pool."""
         if not PSYCOPG_POOL_AVAILABLE:
             raise RuntimeError("psycopg_pool not available")
 
-        logger.info(f"Initializing database pool (min={self.config.database.pool_min_size}, max={self.config.database.pool_max_size})")
+        logger.info("Initializing database pool (min=%s, max=%s)", self.config.database.pool_min_size, self.config.database.pool_max_size)
         self._db_pool = AsyncConnectionPool(
             conninfo=self.config.database.url,
             min_size=self.config.database.pool_min_size,
@@ -507,7 +507,7 @@ class SupplierRiskScorerService:
 
         except Exception as e:
             record_api_error("assess_supplier_risk")
-            logger.error(f"assess_supplier_risk failed: {e}", exc_info=True)
+            logger.error("assess_supplier_risk failed: %s", e, exc_info=True)
             raise
 
     async def track_due_diligence(
@@ -539,7 +539,7 @@ class SupplierRiskScorerService:
 
         except Exception as e:
             record_api_error("track_due_diligence")
-            logger.error(f"track_due_diligence failed: {e}", exc_info=True)
+            logger.error("track_due_diligence failed: %s", e, exc_info=True)
             raise
 
     async def analyze_documentation(
@@ -571,7 +571,7 @@ class SupplierRiskScorerService:
 
         except Exception as e:
             record_api_error("analyze_documentation")
-            logger.error(f"analyze_documentation failed: {e}", exc_info=True)
+            logger.error("analyze_documentation failed: %s", e, exc_info=True)
             raise
 
     async def validate_certification(
@@ -603,7 +603,7 @@ class SupplierRiskScorerService:
 
         except Exception as e:
             record_api_error("validate_certification")
-            logger.error(f"validate_certification failed: {e}", exc_info=True)
+            logger.error("validate_certification failed: %s", e, exc_info=True)
             raise
 
     async def analyze_geographic_sourcing(
@@ -638,7 +638,7 @@ class SupplierRiskScorerService:
 
         except Exception as e:
             record_api_error("analyze_geographic_sourcing")
-            logger.error(f"analyze_geographic_sourcing failed: {e}", exc_info=True)
+            logger.error("analyze_geographic_sourcing failed: %s", e, exc_info=True)
             raise
 
     async def analyze_network(
@@ -670,7 +670,7 @@ class SupplierRiskScorerService:
 
         except Exception as e:
             record_api_error("analyze_network")
-            logger.error(f"analyze_network failed: {e}", exc_info=True)
+            logger.error("analyze_network failed: %s", e, exc_info=True)
             raise
 
     async def configure_monitoring(
@@ -699,7 +699,7 @@ class SupplierRiskScorerService:
 
         except Exception as e:
             record_api_error("configure_monitoring")
-            logger.error(f"configure_monitoring failed: {e}", exc_info=True)
+            logger.error("configure_monitoring failed: %s", e, exc_info=True)
             raise
 
     async def check_alerts(
@@ -731,7 +731,7 @@ class SupplierRiskScorerService:
 
         except Exception as e:
             record_api_error("check_alerts")
-            logger.error(f"check_alerts failed: {e}", exc_info=True)
+            logger.error("check_alerts failed: %s", e, exc_info=True)
             raise
 
     async def generate_report(
@@ -763,7 +763,7 @@ class SupplierRiskScorerService:
 
         except Exception as e:
             record_api_error("generate_report")
-            logger.error(f"generate_report failed: {e}", exc_info=True)
+            logger.error("generate_report failed: %s", e, exc_info=True)
             raise
 
     # -----------------------------------------------------------------------
@@ -810,7 +810,7 @@ class SupplierRiskScorerService:
         Raises:
             ValueError: If supplier_id invalid
         """
-        logger.info(f"Starting full_assessment for supplier_id={supplier_id}")
+        logger.info("Starting full_assessment for supplier_id=%s", supplier_id)
         start = time.time()
 
         try:
@@ -875,7 +875,7 @@ class SupplierRiskScorerService:
 
         except Exception as e:
             record_api_error("full_assessment")
-            logger.error(f"full_assessment failed: {e}", exc_info=True)
+            logger.error("full_assessment failed: %s", e, exc_info=True)
             raise
 
     async def compare_suppliers(
@@ -895,7 +895,7 @@ class SupplierRiskScorerService:
             ValueError: If supplier_ids invalid or metric invalid
         """
         self._ensure_engines()
-        logger.info(f"Comparing {len(request.supplier_ids)} suppliers on metric={request.metric}")
+        logger.info("Comparing %s suppliers on metric=%s", len(request.supplier_ids), request.metric)
 
         try:
             # Assess all suppliers in parallel
@@ -928,7 +928,7 @@ class SupplierRiskScorerService:
 
         except Exception as e:
             record_api_error("compare_suppliers")
-            logger.error(f"compare_suppliers failed: {e}", exc_info=True)
+            logger.error("compare_suppliers failed: %s", e, exc_info=True)
             raise
 
     async def get_supplier_profile(
@@ -948,7 +948,7 @@ class SupplierRiskScorerService:
             ValueError: If supplier_id invalid
         """
         self._ensure_engines()
-        logger.info(f"Retrieving profile for supplier_id={request.supplier_id}")
+        logger.info("Retrieving profile for supplier_id=%s", request.supplier_id)
 
         try:
             # Delegate to SupplierRiskScorer for profile retrieval
@@ -957,7 +957,7 @@ class SupplierRiskScorerService:
 
         except Exception as e:
             record_api_error("get_supplier_profile")
-            logger.error(f"get_supplier_profile failed: {e}", exc_info=True)
+            logger.error("get_supplier_profile failed: %s", e, exc_info=True)
             raise
 
     async def get_trend(
@@ -988,7 +988,7 @@ class SupplierRiskScorerService:
 
         except Exception as e:
             record_api_error("get_trend")
-            logger.error(f"get_trend failed: {e}", exc_info=True)
+            logger.error("get_trend failed: %s", e, exc_info=True)
             raise
 
     async def batch_assessment(
@@ -1012,7 +1012,7 @@ class SupplierRiskScorerService:
                 f"Batch size {len(request.supplier_ids)} exceeds max {MAX_BATCH_SIZE}"
             )
 
-        logger.info(f"Starting batch assessment for {len(request.supplier_ids)} suppliers")
+        logger.info("Starting batch assessment for %s suppliers", len(request.supplier_ids))
         start = time.time()
 
         try:
@@ -1050,7 +1050,7 @@ class SupplierRiskScorerService:
 
         except Exception as e:
             record_api_error("batch_assessment")
-            logger.error(f"batch_assessment failed: {e}", exc_info=True)
+            logger.error("batch_assessment failed: %s", e, exc_info=True)
             raise
 
     async def search_suppliers(
@@ -1070,7 +1070,7 @@ class SupplierRiskScorerService:
             ValueError: If filters invalid
         """
         self._ensure_engines()
-        logger.info(f"Searching suppliers with filters: {request.filters}")
+        logger.info("Searching suppliers with filters: %s", request.filters)
 
         try:
             # Delegate to SupplierRiskScorer for search
@@ -1079,7 +1079,7 @@ class SupplierRiskScorerService:
 
         except Exception as e:
             record_api_error("search_suppliers")
-            logger.error(f"search_suppliers failed: {e}", exc_info=True)
+            logger.error("search_suppliers failed: %s", e, exc_info=True)
             raise
 
     # -----------------------------------------------------------------------
@@ -1104,7 +1104,7 @@ class SupplierRiskScorerService:
                         await conn.execute("SELECT 1")
                         db_healthy = True
                 except Exception as e:
-                    logger.warning(f"Database health check failed: {e}")
+                    logger.warning("Database health check failed: %s", e)
 
             # Check Redis
             redis_healthy = False
@@ -1113,7 +1113,7 @@ class SupplierRiskScorerService:
                     await self._redis_client.ping()
                     redis_healthy = True
                 except Exception as e:
-                    logger.warning(f"Redis health check failed: {e}")
+                    logger.warning("Redis health check failed: %s", e)
 
             # Overall status
             overall_status = "healthy" if (db_healthy or not self.config.database.enabled) and (redis_healthy or not self.config.redis.enabled) else "degraded"
@@ -1133,7 +1133,7 @@ class SupplierRiskScorerService:
             )
 
         except Exception as e:
-            logger.error(f"health_check failed: {e}", exc_info=True)
+            logger.error("health_check failed: %s", e, exc_info=True)
             return HealthResponse(
                 status="unhealthy",
                 version=VERSION,
@@ -1181,7 +1181,7 @@ class SupplierRiskScorerService:
             return stats
 
         except Exception as e:
-            logger.error(f"get_statistics failed: {e}", exc_info=True)
+            logger.error("get_statistics failed: %s", e, exc_info=True)
             raise
 
 

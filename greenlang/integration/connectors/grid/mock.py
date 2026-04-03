@@ -290,7 +290,7 @@ class GridIntensityMockConnector(Connector[GridIntensityQuery, GridIntensityPayl
                     query_hash=query_hash,
                     output_dir=ctx.cache_dir
                 )
-                self.logger.info(f"Saved snapshot to {saved_path}")
+                logger.info("Saved snapshot to %s", saved_path)
 
             return payload, prov
 

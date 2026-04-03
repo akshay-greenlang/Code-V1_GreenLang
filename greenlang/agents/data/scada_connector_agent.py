@@ -257,7 +257,7 @@ class SCADAConnectorAgent(BaseAgent):
         # Connection status
         self._connection_status: Dict[str, bool] = {}
 
-        self.logger.info(f"Initialized {self.AGENT_NAME} v{self.VERSION}")
+        logger.info("Initialized %s v%s", self.AGENT_NAME, self.VERSION)
 
     def execute(self, input_data: Dict[str, Any]) -> AgentResult:
         """
@@ -291,7 +291,7 @@ class SCADAConnectorAgent(BaseAgent):
                 )
 
         except Exception as e:
-            self.logger.error(f"SCADA operation failed: {str(e)}", exc_info=True)
+            logger.error("SCADA operation failed: %s", e, exc_info=True)
             processing_time = (datetime.utcnow() - start_time).total_seconds() * 1000
 
             return AgentResult(
@@ -481,7 +481,7 @@ class SCADAConnectorAgent(BaseAgent):
             )
 
         # Placeholder for real protocol implementations
-        self.logger.warning(f"Protocol {connection.protocol} not implemented, using simulated")
+        logger.warning("Protocol %s not implemented, using simulated", connection.protocol)
         return self._simulate_tag_data(
             tag_id, start_time, end_time, aggregation, interval_seconds, max_points
         )
@@ -681,7 +681,7 @@ class SCADAConnectorAgent(BaseAgent):
         """
         self._connections[config.connection_id] = config
         self._connection_status[config.connection_id] = False
-        self.logger.info(f"Registered connection: {config.connection_id}")
+        logger.info("Registered connection: %s", config.connection_id)
         return config.connection_id
 
     def register_tag_mapping(self, mapping: TagMapping) -> str:
@@ -695,7 +695,7 @@ class SCADAConnectorAgent(BaseAgent):
             Tag ID
         """
         self._tag_mappings[mapping.tag_id] = mapping
-        self.logger.info(f"Registered tag mapping: {mapping.tag_id} -> {mapping.greenlang_field}")
+        logger.info("Registered tag mapping: %s -> %s", mapping.tag_id, mapping.greenlang_field)
         return mapping.tag_id
 
     def query_data(

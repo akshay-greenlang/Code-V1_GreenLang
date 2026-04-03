@@ -453,7 +453,7 @@ class EffectivenessTrackingEngine:
             is_significant = p_value < self.config.significance_level
             return is_significant, p_value
         except Exception as e:
-            logger.warning(f"Statistical test failed: {e}")
+            logger.warning("Statistical test failed: %s", e)
             return False, None
 
     def _classify_deviation(
@@ -817,7 +817,7 @@ class EffectivenessTrackingEngine:
         key = f"{plan_id}:{supplier_id}"
         self._baselines[key] = scores
         self._activation_dates[key] = datetime.now(timezone.utc)
-        logger.info(f"Baseline set for {key}: {len(scores)} dimensions")
+        logger.info("Baseline set for %s: %s dimensions", key, len(scores))
 
     def get_feedback_queue(self) -> List[Dict[str, Any]]:
         """Get pending ML feedback items.
@@ -835,7 +835,7 @@ class EffectivenessTrackingEngine:
         """
         count = len(self._feedback_queue)
         self._feedback_queue.clear()
-        logger.info(f"ML feedback queue cleared: {count} items")
+        logger.info("ML feedback queue cleared: %s items", count)
         return count
 
     def compute_strategy_accuracy(self) -> Dict[str, Any]:

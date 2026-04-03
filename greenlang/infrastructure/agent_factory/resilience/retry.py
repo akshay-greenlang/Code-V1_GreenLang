@@ -86,7 +86,10 @@ class RetryConfig:
 # ---------------------------------------------------------------------------
 
 
-class RetryExhaustedError(Exception):
+from greenlang.utilities.exceptions.infrastructure import RetryExhaustedError as _RetryExhaustedError
+
+
+class RetryExhaustedError(_RetryExhaustedError):
     """Raised when all retry attempts have been exhausted.
 
     Attributes:

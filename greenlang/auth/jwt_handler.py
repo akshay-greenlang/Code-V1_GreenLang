@@ -29,6 +29,8 @@ from datetime import datetime, timedelta, timezone
 from typing import Dict, List, Optional, Any, Set
 from pathlib import Path
 
+from greenlang.utilities.exceptions.security import AuthenticationError as _SecurityAuthError
+
 logger = logging.getLogger(__name__)
 
 # Token expiry constants
@@ -37,7 +39,7 @@ DEFAULT_KEY_SIZE = 2048
 ALGORITHM = "RS256"
 
 
-class JWTError(Exception):
+class JWTError(_SecurityAuthError):
     """Base exception for JWT operations"""
     pass
 
@@ -227,7 +229,7 @@ class JWTHandler:
         # Load keys
         self._load_keys()
 
-        logger.info(f"JWTHandler initialized with issuer={self.config.issuer}")
+        logger.info("JWTHandler initialized with issuer=%s", self.config.issuer)
 
     def _load_config_from_env(self) -> JWTConfig:
         """Load configuration from environment variables"""
@@ -276,7 +278,7 @@ class JWTHandler:
                         password=None,
                         backend=default_backend()
                     )
-                logger.info(f"Loaded private key from {key_path}")
+                logger.info("Loaded private key from %s", key_path)
 
         if not self._public_key and self.config.public_key_path:
             key_path = Path(self.config.public_key_path)
@@ -286,7 +288,7 @@ class JWTHandler:
                         f.read(),
                         backend=default_backend()
                     )
-                logger.info(f"Loaded public key from {key_path}")
+                logger.info("Loaded public key from %s", key_path)
 
         # If we have private key but no public, derive public from private
         if self._private_key and not self._public_key:
@@ -385,11 +387,11 @@ class JWTHandler:
                 headers=headers
             )
 
-            logger.debug(f"Generated token for user={user_id}, tenant={tenant_id}")
+            logger.debug("Generated token for user=%s, tenant=%s", user_id, tenant_id)
             return token
 
         except Exception as e:
-            logger.error(f"Failed to generate token: {e}")
+            logger.error("Failed to generate token: %s", e)
             raise JWTError(f"Token generation failed: {e}")
 
     def validate_token(self, token: str) -> JWTClaims:
@@ -449,7 +451,7 @@ class JWTHandler:
             # Parse claims
             claims = JWTClaims.from_dict(payload)
 
-            logger.debug(f"Validated token for user={claims.sub}, tenant={claims.tenant_id}")
+            logger.debug("Validated token for user=%s, tenant=%s", claims.sub, claims.tenant_id)
             return claims
 
         except ExpiredSignatureError:
@@ -461,15 +463,15 @@ class JWTHandler:
             raise InvalidSignatureError("Token signature verification failed")
 
         except (DecodeError, InvalidAudienceError, InvalidIssuerError) as e:
-            logger.warning(f"Token validation failed: {e}")
+            logger.warning("Token validation failed: %s", e)
             raise InvalidTokenError(f"Token validation failed: {e}")
 
         except KeyError as e:
-            logger.warning(f"Token validation failed: missing claim {e}")
+            logger.warning("Token validation failed: missing claim %s", e)
             raise InvalidTokenError(f"Token missing required claim: {e}")
 
         except Exception as e:
-            logger.error(f"Token validation error: {e}")
+            logger.error("Token validation error: %s", e)
             raise InvalidTokenError(f"Token validation failed: {e}")
 
     def revoke_token(self, jti: str) -> None:
@@ -483,7 +485,7 @@ class JWTHandler:
             jti: JWT ID of the token to revoke
         """
         self._revoked_tokens.add(jti)
-        logger.info(f"Revoked token with JTI: {jti}")
+        logger.info("Revoked token with JTI: %s", jti)
 
     def is_token_revoked(self, jti: str) -> bool:
         """
@@ -644,4 +646,4 @@ class JWTHandler:
         with open(public_path, "wb") as f:
             f.write(public_pem)
 
-        logger.info(f"Generated RSA key pair: {private_key_path}, {public_key_path}")
+        logger.info("Generated RSA key pair: %s, %s", private_key_path, public_key_path)

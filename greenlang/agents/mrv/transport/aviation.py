@@ -699,7 +699,7 @@ class AviationMRVAgent(BaseTransportMRVAgent):
 
         if not origin_coords or not dest_coords:
             # Default to average short-haul distance if airports not found
-            self.logger.warning(
+            logger.warning(
                 f"Airport coordinates not found for {origin_iata} or {destination_iata}, "
                 "using default distance of 1500 km"
             )

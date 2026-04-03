@@ -235,10 +235,10 @@ class ModbusGateway:
                 raise ConnectionError("Failed to establish connection")
 
             self._connected = True
-            logger.info(f"Connected to Modbus device at {self.config.host}:{self.config.port}")
+            logger.info("Connected to Modbus device at %s:%s", self.config.host, self.config.port)
 
         except Exception as e:
-            logger.error(f"Connection failed: {e}", exc_info=True)
+            logger.error("Connection failed: %s", e, exc_info=True)
             raise ConnectionError(f"Modbus connection failed: {e}") from e
 
     async def disconnect(self) -> None:
@@ -289,11 +289,11 @@ class ModbusGateway:
                     self.config.reconnect_delay * (1.5 ** attempt)
                 )
                 await self.connect()
-                logger.info(f"Reconnected after {attempt + 1} attempts")
+                logger.info("Reconnected after %s attempts", attempt + 1)
                 return
 
             except Exception as e:
-                logger.warning(f"Reconnection attempt {attempt + 1} failed: {e}")
+                logger.warning("Reconnection attempt %s failed: %s", attempt + 1, e)
 
         logger.error("Max reconnection attempts reached")
 
@@ -305,7 +305,7 @@ class ModbusGateway:
             mapping: Register mapping definition
         """
         self.register_map[mapping.name] = mapping
-        logger.debug(f"Added register mapping: {mapping.name} @ {mapping.address}")
+        logger.debug("Added register mapping: %s @ %s", mapping.name, mapping.address)
 
     def add_registers(self, mappings: List[RegisterMapping]) -> None:
         """
@@ -350,7 +350,7 @@ class ModbusGateway:
             return result.bits[:count]
 
         except Exception as e:
-            logger.error(f"Read coils failed: {e}")
+            logger.error("Read coils failed: %s", e)
             await self._handle_connection_loss()
             raise
 
@@ -387,7 +387,7 @@ class ModbusGateway:
             return result.bits[:count]
 
         except Exception as e:
-            logger.error(f"Read discrete inputs failed: {e}")
+            logger.error("Read discrete inputs failed: %s", e)
             await self._handle_connection_loss()
             raise
 
@@ -424,7 +424,7 @@ class ModbusGateway:
             return result.registers
 
         except Exception as e:
-            logger.error(f"Read holding registers failed: {e}")
+            logger.error("Read holding registers failed: %s", e)
             await self._handle_connection_loss()
             raise
 
@@ -461,7 +461,7 @@ class ModbusGateway:
             return result.registers
 
         except Exception as e:
-            logger.error(f"Read input registers failed: {e}")
+            logger.error("Read input registers failed: %s", e)
             await self._handle_connection_loss()
             raise
 
@@ -500,7 +500,7 @@ class ModbusGateway:
             return hashlib.sha256(provenance_str.encode()).hexdigest()
 
         except Exception as e:
-            logger.error(f"Write coil failed: {e}")
+            logger.error("Write coil failed: %s", e)
             raise
 
     async def write_register(
@@ -537,7 +537,7 @@ class ModbusGateway:
             return hashlib.sha256(provenance_str.encode()).hexdigest()
 
         except Exception as e:
-            logger.error(f"Write register failed: {e}")
+            logger.error("Write register failed: %s", e)
             raise
 
     async def write_registers(
@@ -574,7 +574,7 @@ class ModbusGateway:
             return hashlib.sha256(provenance_str.encode()).hexdigest()
 
         except Exception as e:
-            logger.error(f"Write registers failed: {e}")
+            logger.error("Write registers failed: %s", e)
             raise
 
     async def read_register_value(self, name: str) -> ModbusValue:
@@ -625,7 +625,7 @@ class ModbusGateway:
             try:
                 results[name] = await self.read_register_value(name)
             except Exception as e:
-                logger.error(f"Failed to read register {name}: {e}")
+                logger.error("Failed to read register %s: %s", name, e)
         return results
 
     def _decode_registers(
@@ -681,7 +681,7 @@ class ModbusGateway:
             callback: Function to call with each value
         """
         if name in self._poll_tasks:
-            logger.warning(f"Polling already active for {name}")
+            logger.warning("Polling already active for %s", name)
             return
 
         if name not in self._poll_callbacks:
@@ -699,15 +699,15 @@ class ModbusGateway:
                             else:
                                 cb(value)
                         except Exception as e:
-                            logger.error(f"Poll callback error: {e}")
+                            logger.error("Poll callback error: %s", e)
 
                 except Exception as e:
-                    logger.error(f"Polling error for {name}: {e}")
+                    logger.error("Polling error for %s: %s", name, e)
 
                 await asyncio.sleep(interval_ms / 1000)
 
         self._poll_tasks[name] = asyncio.create_task(poll_loop())
-        logger.info(f"Started polling {name} every {interval_ms}ms")
+        logger.info("Started polling %s every %sms", name, interval_ms)
 
     async def stop_polling(self, name: str) -> None:
         """
@@ -723,7 +723,7 @@ class ModbusGateway:
             except asyncio.CancelledError:
                 pass
             del self._poll_tasks[name]
-            logger.info(f"Stopped polling {name}")
+            logger.info("Stopped polling %s", name)
 
     def _ensure_connected(self) -> None:
         """Ensure client is connected."""

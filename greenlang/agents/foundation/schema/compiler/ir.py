@@ -39,6 +39,7 @@ from typing import Any, Dict, FrozenSet, List, Optional, Set, Tuple, Union
 
 from pydantic import ConfigDict, Field, field_validator
 from greenlang.schemas import GreenLangBase
+from greenlang.utilities.exceptions.agent import AgentException
 
 
 # =============================================================================
@@ -951,7 +952,7 @@ class CompilationResult(GreenLangBase):
 # =============================================================================
 
 
-class CompilationError(Exception):
+class CompilationError(AgentException):
     """
     Exception raised during schema compilation.
 

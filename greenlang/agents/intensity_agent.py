@@ -230,7 +230,7 @@ class IntensityAgent(IntelligenceMixin, BaseAgent):
             )
 
         except Exception as e:
-            logger.error(f"Error calculating intensities: {e}")
+            logger.error("Error calculating intensities: %s", e)
             return AgentResult(success=False, error=str(e))
 
     def _determine_rating(self, intensity: float, building_type: str) -> str:

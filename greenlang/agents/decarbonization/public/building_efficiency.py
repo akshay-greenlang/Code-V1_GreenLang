@@ -419,7 +419,7 @@ class PublicBuildingEfficiencyAgent(BaseAgent):
 
         self._plans: Dict[str, BuildingEfficiencyPlan] = {}
         self._buildings: Dict[str, PublicBuilding] = {}
-        self.logger.info(f"Initialized {self.AGENT_NAME} v{self.VERSION}")
+        logger.info("Initialized %s v%s", self.AGENT_NAME, self.VERSION)
 
     def execute(self, input_data: Dict[str, Any]) -> AgentResult:
         """Execute building efficiency operation."""
@@ -457,7 +457,7 @@ class PublicBuildingEfficiencyAgent(BaseAgent):
             )
 
         except Exception as e:
-            self.logger.error(f"Building efficiency operation failed: {str(e)}", exc_info=True)
+            logger.error("Building efficiency operation failed: %s", e, exc_info=True)
             return AgentResult(success=False, error=str(e))
 
     def _handle_create_plan(

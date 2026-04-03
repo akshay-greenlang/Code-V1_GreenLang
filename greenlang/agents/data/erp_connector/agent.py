@@ -95,7 +95,7 @@ class ERPConnectorAgent(BaseAgent):
         # Custom emission factors
         self._custom_emission_factors: Dict[str, float] = {}
 
-        self.logger.info(f"Initialized {self.AGENT_NAME} v{self.VERSION}")
+        logger.info("Initialized %s v%s", self.AGENT_NAME, self.VERSION)
 
     def execute(self, input_data: Dict[str, Any]) -> AgentResult:
         """
@@ -127,7 +127,7 @@ class ERPConnectorAgent(BaseAgent):
                 )
 
         except Exception as e:
-            self.logger.error(f"ERP operation failed: {str(e)}", exc_info=True)
+            logger.error("ERP operation failed: %s", e, exc_info=True)
             processing_time = (datetime.utcnow() - start_time).total_seconds() * 1000
 
             return AgentResult(
@@ -524,7 +524,7 @@ class ERPConnectorAgent(BaseAgent):
     def register_connection(self, config: ERPConnectionConfig) -> str:
         """Register an ERP connection."""
         self._connections[config.connection_id] = config
-        self.logger.info(f"Registered ERP connection: {config.connection_id}")
+        logger.info("Registered ERP connection: %s", config.connection_id)
         return config.connection_id
 
     def register_vendor_mapping(self, mapping: VendorMapping) -> str:

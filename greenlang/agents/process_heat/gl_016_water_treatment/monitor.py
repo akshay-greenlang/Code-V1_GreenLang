@@ -275,7 +275,7 @@ class WaterTreatmentMonitor(IntelligenceMixin, BaseProcessHeatAgent[WaterTreatme
             WaterTreatmentOutput with comprehensive analysis
         """
         start_time = datetime.now(timezone.utc)
-        logger.info(f"Analyzing water treatment for system: {input_data.system_id}")
+        logger.info("Analyzing water treatment for system: %s", input_data.system_id)
 
         with self.safety_guard():
             # Analyze each component if data is provided

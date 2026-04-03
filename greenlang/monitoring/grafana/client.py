@@ -36,6 +36,7 @@ from greenlang.monitoring.grafana.models import (
     HealthStatus,
     NotificationPolicy,
 )
+from greenlang.utilities.exceptions.infrastructure import InfrastructureException
 
 logger = logging.getLogger(__name__)
 
@@ -44,7 +45,7 @@ logger = logging.getLogger(__name__)
 # Exception hierarchy
 # ---------------------------------------------------------------------------
 
-class GrafanaError(Exception):
+class GrafanaError(InfrastructureException):
     """Base exception for all Grafana API errors.
 
     Attributes:

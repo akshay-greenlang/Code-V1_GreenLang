@@ -145,7 +145,7 @@ class AsyncOrchestrator(Orchestrator):
         workflow = self.workflows[workflow_id]
         execution_id = f"{workflow_id}_{len(self.execution_history)}"
 
-        self.logger.info(f"Starting async workflow execution: {execution_id}")
+        logger.info("Starting async workflow execution: %s", execution_id)
 
         # Policy enforcement check
         if POLICY_AVAILABLE:
@@ -162,10 +162,10 @@ class AsyncOrchestrator(Orchestrator):
 
                 policy_context = ExecutionContext(input_data)
                 check_run(workflow, policy_context)
-                self.logger.info("Runtime policy check passed")
+                logger.info("Runtime policy check passed")
             except RuntimeError as e:
                 error_msg = f"Runtime policy check failed: {e}"
-                self.logger.error(error_msg)
+                logger.error(error_msg)
                 return {
                     "workflow_id": workflow_id,
                     "execution_id": execution_id,
@@ -174,7 +174,7 @@ class AsyncOrchestrator(Orchestrator):
                     "results": {},
                 }
             except Exception as e:
-                self.logger.warning(f"Policy check error: {e}")
+                logger.warning("Policy check error: %s", e)
 
         context = {
             "input": input_data,
@@ -187,14 +187,14 @@ class AsyncOrchestrator(Orchestrator):
         # Analyze dependencies and create execution groups
         execution_groups = self._analyze_dependencies(workflow.steps)
 
-        self.logger.info(
+        logger.info(
             f"Workflow has {len(execution_groups)} execution group(s) "
             f"(parallelization opportunities detected)"
         )
 
         # Execute groups sequentially, steps within group in parallel
         for group_idx, step_group in enumerate(execution_groups):
-            self.logger.info(
+            logger.info(
                 f"Executing group {group_idx + 1}/{len(execution_groups)} "
                 f"with {len(step_group)} step(s)"
             )
@@ -256,7 +256,7 @@ class AsyncOrchestrator(Orchestrator):
             if not ready_steps:
                 # No steps ready - might be circular dependency
                 # Execute remaining steps sequentially
-                self.logger.warning(
+                logger.warning(
                     "Possible circular dependency detected, "
                     "executing remaining steps sequentially"
                 )
@@ -314,10 +314,10 @@ class AsyncOrchestrator(Orchestrator):
         """
         # Check condition
         if not self._should_execute_step(step, context):
-            self.logger.info(f"Skipping step (condition not met): {step.name}")
+            logger.info("Skipping step (condition not met): %s", step.name)
             return
 
-        self.logger.info(f"Executing step: {step.name}")
+        logger.info("Executing step: %s", step.name)
 
         # Retry logic
         max_retries = step.retry_count if step.retry_count > 0 else 0
@@ -328,7 +328,7 @@ class AsyncOrchestrator(Orchestrator):
         while attempt <= max_retries:
             try:
                 if attempt > 0:
-                    self.logger.info(
+                    logger.info(
                         f"Retrying step {step.name} (attempt {attempt}/{max_retries})"
                     )
 
@@ -373,7 +373,7 @@ class AsyncOrchestrator(Orchestrator):
                     )
 
                     if attempt < max_retries:
-                        self.logger.warning(
+                        logger.warning(
                             f"Step {step.name} failed, will retry. Error: {last_error}"
                         )
                         attempt += 1
@@ -383,7 +383,7 @@ class AsyncOrchestrator(Orchestrator):
 
             except Exception as e:
                 last_error = str(e)
-                self.logger.error(f"Exception in step {step.name}: {e}")
+                logger.error("Exception in step %s: %s", step.name, e)
 
                 if attempt < max_retries:
                     attempt += 1
@@ -397,13 +397,13 @@ class AsyncOrchestrator(Orchestrator):
             context["errors"].append(error_entry)
 
             if step.on_failure == "stop":
-                self.logger.error(
+                logger.error(
                     f"Step failed after {attempt + 1} attempts, "
                     f"stopping workflow: {step.name}"
                 )
                 raise RuntimeError(f"Step {step.name} failed: {last_error}")
             elif step.on_failure == "skip":
-                self.logger.warning(
+                logger.warning(
                     f"Step failed after {attempt + 1} attempts, "
                     f"continuing: {step.name}"
                 )

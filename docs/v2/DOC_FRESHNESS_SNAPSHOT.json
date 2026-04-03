@@ -1,0 +1,41 @@
+{
+  "generated_at_utc": "2026-04-02T13:00:39.960350Z",
+  "tracked_docs": {
+    "README.md": {
+      "exists": true,
+      "sha256": "b69e9a596b20ee25645a7b689647e9b2fc93e754239cf0f21b61f6e2dd0b7298"
+    },
+    "cbam-pack-mvp/README.md": {
+      "exists": true,
+      "sha256": "61890223f6ef8b82fd292c5323b40d951d99244cc4214c864d8ec4fed523dd5b"
+    },
+    "docs/getting-started.md": {
+      "exists": true,
+      "sha256": "8b24ffa6c9b4acef1275c219b340a08ba85d4b469fb5df575d5a172e5487f501"
+    },
+    "docs/v1/DOCS_CONTRACT.md": {
+      "exists": true,
+      "sha256": "9814d90bf2836114cb85e14284434ccd78361286de0549ded100caef7e9dda64"
+    },
+    "docs/v1/QUICKSTART.md": {
+      "exists": true,
+      "sha256": "35c56ebe30f6e0faf79b5dd25fd9bf1e957c4bbc7cb297015a7cc9c635111896"
+    },
+    "docs/v1/STANDARDS.md": {
+      "exists": true,
+      "sha256": "b5dd9c5319d80f840725753f2d62772ff7026a013fe2bd2f0c2aefc008ecbf77"
+    },
+    "docs/v1/apps/GL-CBAM-APP_RUNBOOK.md": {
+      "exists": true,
+      "sha256": "0da8bee9f72bb983e2c96a845a8b0d82c0192507766f994dcd30434f3558d0c0"
+    },
+    "docs/v1/apps/GL-CSRD-APP_RUNBOOK.md": {
+      "exists": true,
+      "sha256": "6728f55796ae6950a982aaafd87c910a52a585cc30d6a84889b804e7699119eb"
+    },
+    "docs/v1/apps/GL-VCCI-Carbon-APP_RUNBOOK.md": {
+      "exists": true,
+      "sha256": "09185d2281e88a62ce2ed4135c0052ec32d8a01b2ef49fa616a80a976ba04ea9"
+    }
+  }
+}

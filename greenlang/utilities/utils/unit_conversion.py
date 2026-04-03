@@ -503,7 +503,7 @@ def get_regional_defaults(region: str) -> Dict:
         ValueError: If region not recognized
     """
     if region.upper() not in REGIONAL_DEFAULTS:
-        logger.warning(f"Unknown region {region}, using US defaults")
+        logger.warning("Unknown region %s, using US defaults", region)
         return REGIONAL_DEFAULTS["US"]
 
     return REGIONAL_DEFAULTS[region.upper()]

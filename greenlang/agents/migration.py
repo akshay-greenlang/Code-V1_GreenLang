@@ -151,9 +151,9 @@ class ImportMigrator:
             if changes and not dry_run:
                 with open(filepath, 'w', encoding='utf-8') as f:
                     f.write(content)
-                logger.info(f"Updated {filepath} with {len(changes)} changes")
+                logger.info("Updated %s with %s changes", filepath, len(changes))
             elif changes:
-                logger.info(f"Would update {filepath} with {len(changes)} changes (dry run)")
+                logger.info("Would update %s with %s changes (dry run)", filepath, len(changes))
 
             self.changes_made.extend([(filepath, change) for change in changes])
 
@@ -289,7 +289,7 @@ def check_deprecated(directory: str = ".") -> List[Tuple[str, int, str]]:
                         deprecated_found.append((str(filepath), line_num, line.strip()))
 
         except Exception as e:
-            logger.warning(f"Could not check {filepath}: {e}")
+            logger.warning("Could not check %s: %s", filepath, e)
 
     return deprecated_found
 
@@ -386,10 +386,10 @@ warnings.warn(
         with open(filepath, 'w', encoding='utf-8') as f:
             f.write('\n'.join(lines))
 
-        logger.info(f"Added deprecation warning to {filepath}")
+        logger.info("Added deprecation warning to %s", filepath)
 
     except Exception as e:
-        logger.error(f"Failed to add deprecation warning to {filepath}: {e}")
+        logger.error("Failed to add deprecation warning to %s: %s", filepath, e)
 
 
 if __name__ == "__main__":

@@ -168,7 +168,7 @@ class AzureKeyVaultProvider(BaseKMSProvider):
             # Test connectivity
             try:
                 key = client.get_key(self.key_name)
-                logger.info(f"Connected to Azure Key Vault: {self.vault_url}")
+                logger.info("Connected to Azure Key Vault: %s", self.vault_url)
             except ResourceNotFoundError:
                 raise KMSKeyNotFoundError(f"Key {self.key_name} not found in vault")
             except HttpResponseError as e:
@@ -195,7 +195,7 @@ class AzureKeyVaultProvider(BaseKMSProvider):
             return AsyncKeyClient(vault_url=self.vault_url, credential=self._async_credential)
 
         except Exception as e:
-            logger.warning(f"Failed to create async Azure Key Vault client: {e}")
+            logger.warning("Failed to create async Azure Key Vault client: %s", e)
             return None
 
     def _get_crypto_client(self, key: KeyVaultKey) -> Any:
@@ -391,7 +391,7 @@ class AzureKeyVaultProvider(BaseKMSProvider):
 
         except Exception as e:
             # Invalid signature might raise an exception
-            logger.debug(f"Signature verification failed: {e}")
+            logger.debug("Signature verification failed: %s", e)
             return False
 
     def rotate_key(self, key_id: Optional[str] = None) -> str:
@@ -415,7 +415,7 @@ class AzureKeyVaultProvider(BaseKMSProvider):
             # Invalidate cache for this key
             self.cache.invalidate(key_name)
 
-            logger.info(f"Created new key version for {key_name}: {new_key.properties.version}")
+            logger.info("Created new key version for %s: %s", key_name, new_key.properties.version)
             return new_key.properties.version
 
         except ResourceNotFoundError:

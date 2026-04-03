@@ -517,7 +517,7 @@ class LIMEExplainer:
         importance_accumulator: Dict[str, List[float]] = {}
 
         for i, instance in enumerate(instances):
-            logger.info(f"Explaining instance {i+1}/{len(instances)}")
+            logger.info("Explaining instance %s/%s", i+1, len(instances))
             result = self.explain_instance(instance, labels)
             explanations.append(result)
 

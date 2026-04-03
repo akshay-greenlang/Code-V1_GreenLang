@@ -591,7 +591,7 @@ class CorruptionIndexMonitorSetup:
                 )
 
             except Exception as e:
-                logger.error(f"Startup failed: {e}", exc_info=True)
+                logger.error("Startup failed: %s", e, exc_info=True)
                 record_api_error("startup", str(e))
                 raise RuntimeError(f"Service startup failed: {e}") from e
 
@@ -621,7 +621,7 @@ class CorruptionIndexMonitorSetup:
                         await self._redis_client.close()
                         logger.debug("Redis client closed")
                     except Exception as e:
-                        logger.warning(f"Error closing Redis client: {e}")
+                        logger.warning("Error closing Redis client: %s", e)
 
                 # 3. Close database pool
                 if self._db_pool is not None:
@@ -629,7 +629,7 @@ class CorruptionIndexMonitorSetup:
                         await self._db_pool.close()
                         logger.debug("PostgreSQL pool closed")
                     except Exception as e:
-                        logger.warning(f"Error closing PostgreSQL pool: {e}")
+                        logger.warning("Error closing PostgreSQL pool: %s", e)
 
                 # 4. Mark as shutdown
                 self._started = False
@@ -639,7 +639,7 @@ class CorruptionIndexMonitorSetup:
                 )
 
             except Exception as e:
-                logger.error(f"Shutdown error: {e}", exc_info=True)
+                logger.error("Shutdown error: %s", e, exc_info=True)
 
     async def initialize(self) -> Dict[str, Any]:
         """
@@ -687,10 +687,10 @@ class CorruptionIndexMonitorSetup:
             try:
                 await init_method()
                 init_results["engines"][engine_name] = "initialized"
-                logger.info(f"Engine {engine_name} initialized successfully")
+                logger.info("Engine %s initialized successfully", engine_name)
             except Exception as e:
                 init_results["engines"][engine_name] = f"failed: {str(e)}"
-                logger.warning(f"Engine {engine_name} initialization failed: {e}")
+                logger.warning("Engine %s initialization failed: %s", engine_name, e)
 
         # Load reference data
         try:
@@ -706,7 +706,7 @@ class CorruptionIndexMonitorSetup:
             init_results["reference_data"] = validation
         except ImportError as e:
             init_results["reference_data"]["status"] = f"partial: {str(e)}"
-            logger.warning(f"Reference data import failed: {e}")
+            logger.warning("Reference data import failed: %s", e)
 
         # Verify connectivity
         init_results["connectivity"]["database"] = (
@@ -794,9 +794,9 @@ class CorruptionIndexMonitorSetup:
                 try:
                     if hasattr(engine, "shutdown"):
                         await engine.shutdown()
-                    logger.debug(f"{engine_name} shutdown complete")
+                    logger.debug("%s shutdown complete", engine_name)
                 except Exception as e:
-                    logger.warning(f"Error shutting down {engine_name}: {e}")
+                    logger.warning("Error shutting down %s: %s", engine_name, e)
 
     # -----------------------------------------------------------------------
     # Engine lazy initialization
@@ -1012,7 +1012,7 @@ class CorruptionIndexMonitorSetup:
             RuntimeError: If CPIMonitorEngine is not available.
         """
         start_time = time.monotonic()
-        logger.info(f"Querying CPI: {country_code} (year={year})")
+        logger.info("Querying CPI: %s (year=%s)", country_code, year)
 
         try:
             engine = await self._ensure_cpi_monitor_engine()
@@ -1051,7 +1051,7 @@ class CorruptionIndexMonitorSetup:
         except Exception as e:
             self._stats["errors"] += 1
             record_api_error("query_cpi", str(e))
-            logger.error(f"query_cpi failed: {e}", exc_info=True)
+            logger.error("query_cpi failed: %s", e, exc_info=True)
             raise
 
     async def analyze_wgi(
@@ -1076,7 +1076,7 @@ class CorruptionIndexMonitorSetup:
             RuntimeError: If WGIAnalyzerEngine is not available.
         """
         start_time = time.monotonic()
-        logger.info(f"Analyzing WGI: {country_code} (year={year})")
+        logger.info("Analyzing WGI: %s (year=%s)", country_code, year)
 
         try:
             engine = await self._ensure_wgi_analyzer_engine()
@@ -1115,7 +1115,7 @@ class CorruptionIndexMonitorSetup:
         except Exception as e:
             self._stats["errors"] += 1
             record_api_error("analyze_wgi", str(e))
-            logger.error(f"analyze_wgi failed: {e}", exc_info=True)
+            logger.error("analyze_wgi failed: %s", e, exc_info=True)
             raise
 
     async def assess_bribery_risk(
@@ -1180,7 +1180,7 @@ class CorruptionIndexMonitorSetup:
         except Exception as e:
             self._stats["errors"] += 1
             record_api_error("assess_bribery_risk", str(e))
-            logger.error(f"assess_bribery_risk failed: {e}", exc_info=True)
+            logger.error("assess_bribery_risk failed: %s", e, exc_info=True)
             raise
 
     async def assess_compliance_impact(
@@ -1206,7 +1206,7 @@ class CorruptionIndexMonitorSetup:
             RuntimeError: If ComplianceImpactEngine is not available.
         """
         start_time = time.monotonic()
-        logger.info(f"Assessing compliance impact: {country_code}")
+        logger.info("Assessing compliance impact: %s", country_code)
 
         try:
             engine = await self._ensure_compliance_impact_engine()
@@ -1307,7 +1307,7 @@ class CorruptionIndexMonitorSetup:
                     provenance_chain.append(cpi["provenance_hash"])
             except Exception as e:
                 results["cpi_score"] = {"error": str(e)}
-                logger.warning(f"CPI query failed: {e}")
+                logger.warning("CPI query failed: %s", e)
 
             # 2. WGI Analysis (always included)
             try:
@@ -1320,7 +1320,7 @@ class CorruptionIndexMonitorSetup:
                     provenance_chain.append(wgi["provenance_hash"])
             except Exception as e:
                 results["wgi_analysis"] = {"error": str(e)}
-                logger.warning(f"WGI analysis failed: {e}")
+                logger.warning("WGI analysis failed: %s", e)
 
             # 3. Bribery Risk (always included)
             try:
@@ -1333,7 +1333,7 @@ class CorruptionIndexMonitorSetup:
                     provenance_chain.append(bribery["provenance_hash"])
             except Exception as e:
                 results["bribery_risk"] = {"error": str(e)}
-                logger.warning(f"Bribery risk assessment failed: {e}")
+                logger.warning("Bribery risk assessment failed: %s", e)
 
             # 4. Compliance Impact (always included)
             try:
@@ -1345,7 +1345,7 @@ class CorruptionIndexMonitorSetup:
                     provenance_chain.append(compliance["provenance_hash"])
             except Exception as e:
                 results["compliance_impact"] = {"error": str(e)}
-                logger.warning(f"Compliance impact assessment failed: {e}")
+                logger.warning("Compliance impact assessment failed: %s", e)
 
             # Calculate comprehensive provenance
             comprehensive_provenance = _calculate_sha256({
@@ -1441,7 +1441,7 @@ class CorruptionIndexMonitorSetup:
                     await conn.execute("SELECT 1")
                 db_healthy = True
             except Exception as e:
-                logger.warning(f"Database health check failed: {e}")
+                logger.warning("Database health check failed: %s", e)
                 overall_healthy = False
 
         # Check Redis connection
@@ -1451,7 +1451,7 @@ class CorruptionIndexMonitorSetup:
                 await self._redis_client.ping()
                 redis_healthy = True
             except Exception as e:
-                logger.warning(f"Redis health check failed: {e}")
+                logger.warning("Redis health check failed: %s", e)
 
         # Check reference data
         ref_data_healthy = True
@@ -1463,7 +1463,7 @@ class CorruptionIndexMonitorSetup:
             ref_data_healthy = validation.get("overall_status") == "valid"
         except Exception as e:
             ref_data_healthy = False
-            logger.warning(f"Reference data validation failed: {e}")
+            logger.warning("Reference data validation failed: %s", e)
 
         # Calculate uptime
         uptime_seconds = 0.0

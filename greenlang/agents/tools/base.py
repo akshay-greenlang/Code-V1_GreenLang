@@ -316,7 +316,7 @@ class BaseTool(ABC, Generic[InputT, OutputT]):
             # 1. Check if tool is allowed to execute
             if not self.security_config.is_tool_allowed(self.name):
                 error_msg = f"Tool '{self.name}' is not allowed to execute (blacklisted or not whitelisted)"
-                self.logger.warning(error_msg)
+                logger.warning(error_msg)
                 return ToolResult(
                     success=False,
                     error=error_msg,
@@ -329,7 +329,7 @@ class BaseTool(ABC, Generic[InputT, OutputT]):
 
                 if not validation_result.valid:
                     error_msg = f"Validation failed: {', '.join(validation_result.errors)}"
-                    self.logger.warning(f"Tool {self.name} validation failed: {error_msg}")
+                    logger.warning("Tool %s validation failed: %s", self.name, error_msg)
 
                     result = ToolResult(
                         success=False,
@@ -372,7 +372,7 @@ class BaseTool(ABC, Generic[InputT, OutputT]):
                 # Log warnings if any
                 if validation_result.warnings:
                     for warning in validation_result.warnings:
-                        self.logger.debug(f"Validation warning for {self.name}: {warning}")
+                        logger.debug("Validation warning for %s: %s", self.name, warning)
 
             # 3. Rate limiting
             if self.security_config.enable_rate_limiting:
@@ -383,7 +383,7 @@ class BaseTool(ABC, Generic[InputT, OutputT]):
                     )
                 except RateLimitExceeded as e:
                     error_msg = f"Rate limit exceeded: {e.message}"
-                    self.logger.warning(error_msg)
+                    logger.warning(error_msg)
 
                     result = ToolResult(
                         success=False,
@@ -453,7 +453,7 @@ class BaseTool(ABC, Generic[InputT, OutputT]):
             return result
 
         except Exception as e:
-            self.logger.error(f"Tool {self.name} failed: {e}", exc_info=True)
+            logger.error("Tool %s failed: %s", self.name, e, exc_info=True)
             execution_time_ms = (time.perf_counter() - start_time) * 1000
 
             result = ToolResult(

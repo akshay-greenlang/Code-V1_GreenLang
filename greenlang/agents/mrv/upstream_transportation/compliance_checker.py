@@ -295,7 +295,7 @@ class ComplianceCheckerEngine:
             Incoterm.FOB, Incoterm.CFR
         }
 
-        logger.info(f"ComplianceCheckerEngine initialized with {len(config.enabled_frameworks)} frameworks")
+        logger.info("ComplianceCheckerEngine initialized with %s frameworks", len(config.enabled_frameworks))
 
     # ========================================================================
     # Main Entry Points
@@ -340,7 +340,7 @@ class ComplianceCheckerEngine:
                 elif framework == ComplianceFramework.GRI_305:
                     check_result = self.check_gri_305(result)
                 else:
-                    logger.warning(f"Unknown framework: {framework}")
+                    logger.warning("Unknown framework: %s", framework)
                     continue
 
                 all_results[framework] = check_result

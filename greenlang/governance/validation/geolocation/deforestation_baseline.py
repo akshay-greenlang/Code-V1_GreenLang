@@ -420,7 +420,7 @@ class DeforestationBaselineChecker:
             })
 
         except Exception as e:
-            logger.error(f"Baseline check failed: {e}")
+            logger.error("Baseline check failed: %s", e)
             result.warnings.append(f"Check failed: {str(e)}")
             result.forest_status = ForestStatus.UNKNOWN
 
@@ -492,7 +492,7 @@ class DeforestationBaselineChecker:
         # Stub implementation - returns simulated data
         # In production, implement actual satellite data API calls
 
-        logger.debug(f"Querying forest cover for {coordinate} at {target_date}")
+        logger.debug("Querying forest cover for %s at %s", coordinate, target_date)
 
         # Return stub data for demonstration
         # In production, this would be real satellite data

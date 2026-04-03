@@ -207,7 +207,7 @@ class MultiAgentPipelineApplication:
             start_time = DeterministicClock.now()
 
             try:
-                self.logger.info(f"Starting pipeline execution: {input_file}")
+                logger.info("Starting pipeline execution: %s", input_file)
                 self.metrics.increment("pipeline.started")
 
                 # Execute pipeline
@@ -227,7 +227,7 @@ class MultiAgentPipelineApplication:
                 self.metrics.increment("pipeline.completed")
                 self.metrics.record("pipeline.duration", duration)
 
-                self.logger.info(f"Pipeline completed in {duration:.2f}s")
+                logger.info("Pipeline completed in %.2fs", duration)
 
                 return {
                     "success": True,
@@ -237,7 +237,7 @@ class MultiAgentPipelineApplication:
                 }
 
             except Exception as e:
-                self.logger.error(f"Pipeline error: {str(e)}", exc_info=True)
+                logger.error("Pipeline error: %s", e, exc_info=True)
                 self.metrics.increment("pipeline.failed")
                 return {
                     "success": False,

@@ -29,10 +29,13 @@ Status: Production Ready
 from __future__ import annotations
 
 import logging
-import os
-import threading
 from dataclasses import dataclass
-from typing import Any, Optional
+
+from greenlang.data_commons.config_base import (
+    BaseDataConfig,
+    EnvReader,
+    create_config_singleton,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -49,20 +52,16 @@ _ENV_PREFIX = "GL_EXCEL_NORMALIZER_"
 
 
 @dataclass
-class ExcelNormalizerConfig:
-    """Complete configuration for the GreenLang Excel & CSV Normalizer SDK.
+class ExcelNormalizerConfig(BaseDataConfig):
+    """Configuration for the GreenLang Excel & CSV Normalizer SDK.
 
-    Attributes are grouped by concern: connections, parser settings,
-    CSV settings, column mapping, type detection, quality scoring,
-    batch processing, timeouts, pool sizing, and logging.
+    Inherits shared connection, pool, batch, and logging fields from
+    ``BaseDataConfig``.  Only Excel/CSV-specific fields are declared here.
 
     All attributes can be overridden via environment variables using the
     ``GL_EXCEL_NORMALIZER_`` prefix.
 
     Attributes:
-        database_url: PostgreSQL connection URL for persistent storage.
-        redis_url: Redis connection URL for caching layer.
-        s3_bucket_url: S3 bucket URL for file storage.
         max_file_size_mb: Maximum file size in megabytes for ingestion.
         max_rows_per_sheet: Maximum number of rows per sheet to process.
         max_sheets_per_workbook: Maximum number of sheets per workbook.
@@ -82,17 +81,8 @@ class ExcelNormalizerConfig:
         accuracy_weight: Weight of accuracy in quality score.
         consistency_weight: Weight of consistency in quality score.
         batch_max_files: Maximum files allowed in a single batch job.
-        batch_worker_count: Number of parallel workers for batch processing.
         processing_timeout_seconds: Timeout in seconds for a single file.
-        pool_min_size: Minimum connection pool size.
-        pool_max_size: Maximum connection pool size.
-        log_level: Logging level for the Excel normalizer service.
     """
-
-    # -- Connections ---------------------------------------------------------
-    database_url: str = ""
-    redis_url: str = ""
-    s3_bucket_url: str = ""
 
     # -- Parser settings -----------------------------------------------------
     max_file_size_mb: int = 50
@@ -122,22 +112,14 @@ class ExcelNormalizerConfig:
     accuracy_weight: float = 0.35
     consistency_weight: float = 0.25
 
-    # -- Batch processing ----------------------------------------------------
+    # -- Batch processing (Excel-specific alias) ------------------------------
     batch_max_files: int = 100
-    batch_worker_count: int = 4
 
     # -- Timeouts ------------------------------------------------------------
     processing_timeout_seconds: int = 300
 
-    # -- Pool sizing ---------------------------------------------------------
-    pool_min_size: int = 2
-    pool_max_size: int = 10
-
-    # -- Logging -------------------------------------------------------------
-    log_level: str = "INFO"
-
     # ------------------------------------------------------------------
-    # Factory helpers
+    # Factory
     # ------------------------------------------------------------------
 
     @classmethod
@@ -146,129 +128,86 @@ class ExcelNormalizerConfig:
 
         Every field can be overridden via ``GL_EXCEL_NORMALIZER_<FIELD_UPPER>``.
         Boolean values accept ``true/1/yes`` (case-insensitive).
-        Integer values are parsed via ``int()``.
-        Float values are parsed via ``float()``.
 
         Returns:
             Populated ExcelNormalizerConfig instance.
         """
-        prefix = _ENV_PREFIX
-
-        def _env(name: str, default: Any = None) -> Optional[str]:
-            return os.environ.get(f"{prefix}{name}", default)
-
-        def _bool(name: str, default: bool) -> bool:
-            val = _env(name)
-            if val is None:
-                return default
-            return val.lower() in ("true", "1", "yes")
-
-        def _int(name: str, default: int) -> int:
-            val = _env(name)
-            if val is None:
-                return default
-            try:
-                return int(val)
-            except ValueError:
-                logger.warning(
-                    "Invalid integer for %s%s=%s, using default %d",
-                    prefix, name, val, default,
-                )
-                return default
-
-        def _float(name: str, default: float) -> float:
-            val = _env(name)
-            if val is None:
-                return default
-            try:
-                return float(val)
-            except ValueError:
-                logger.warning(
-                    "Invalid float for %s%s=%s, using default %f",
-                    prefix, name, val, default,
-                )
-                return default
-
-        def _str(name: str, default: str) -> str:
-            val = _env(name)
-            if val is None:
-                return default
-            return val
+        env = EnvReader(_ENV_PREFIX)
+        base_kwargs = cls._base_kwargs_from_env(env)
 
         config = cls(
-            database_url=_str("DATABASE_URL", cls.database_url),
-            redis_url=_str("REDIS_URL", cls.redis_url),
-            s3_bucket_url=_str("S3_BUCKET_URL", cls.s3_bucket_url),
-            max_file_size_mb=_int(
+            **base_kwargs,
+            # Parser settings
+            max_file_size_mb=env.int(
                 "MAX_FILE_SIZE_MB", cls.max_file_size_mb,
             ),
-            max_rows_per_sheet=_int(
+            max_rows_per_sheet=env.int(
                 "MAX_ROWS_PER_SHEET", cls.max_rows_per_sheet,
             ),
-            max_sheets_per_workbook=_int(
+            max_sheets_per_workbook=env.int(
                 "MAX_SHEETS_PER_WORKBOOK", cls.max_sheets_per_workbook,
             ),
-            max_columns=_int("MAX_COLUMNS", cls.max_columns),
-            default_encoding=_str(
+            max_columns=env.int("MAX_COLUMNS", cls.max_columns),
+            # CSV settings
+            default_encoding=env.str(
                 "DEFAULT_ENCODING", cls.default_encoding,
             ),
-            default_delimiter=_str(
+            default_delimiter=env.str(
                 "DEFAULT_DELIMITER", cls.default_delimiter,
             ),
-            enable_encoding_detection=_bool(
+            enable_encoding_detection=env.bool(
                 "ENABLE_ENCODING_DETECTION",
                 cls.enable_encoding_detection,
             ),
-            sample_rows_for_detection=_int(
+            sample_rows_for_detection=env.int(
                 "SAMPLE_ROWS_FOR_DETECTION",
                 cls.sample_rows_for_detection,
             ),
-            default_mapping_strategy=_str(
+            # Column mapping
+            default_mapping_strategy=env.str(
                 "DEFAULT_MAPPING_STRATEGY",
                 cls.default_mapping_strategy,
             ),
-            fuzzy_match_threshold=_float(
+            fuzzy_match_threshold=env.float(
                 "FUZZY_MATCH_THRESHOLD",
                 cls.fuzzy_match_threshold,
             ),
-            enable_synonym_matching=_bool(
+            enable_synonym_matching=env.bool(
                 "ENABLE_SYNONYM_MATCHING",
                 cls.enable_synonym_matching,
             ),
-            sample_rows_for_type_detection=_int(
+            # Type detection
+            sample_rows_for_type_detection=env.int(
                 "SAMPLE_ROWS_FOR_TYPE_DETECTION",
                 cls.sample_rows_for_type_detection,
             ),
-            date_formats=_str("DATE_FORMATS", cls.date_formats),
-            enable_currency_detection=_bool(
+            date_formats=env.str("DATE_FORMATS", cls.date_formats),
+            enable_currency_detection=env.bool(
                 "ENABLE_CURRENCY_DETECTION",
                 cls.enable_currency_detection,
             ),
-            min_quality_score=_float(
+            # Quality scoring
+            min_quality_score=env.float(
                 "MIN_QUALITY_SCORE", cls.min_quality_score,
             ),
-            completeness_weight=_float(
+            completeness_weight=env.float(
                 "COMPLETENESS_WEIGHT", cls.completeness_weight,
             ),
-            accuracy_weight=_float(
+            accuracy_weight=env.float(
                 "ACCURACY_WEIGHT", cls.accuracy_weight,
             ),
-            consistency_weight=_float(
+            consistency_weight=env.float(
                 "CONSISTENCY_WEIGHT", cls.consistency_weight,
             ),
-            batch_max_files=_int(
+            # Batch (Excel-specific alias)
+            batch_max_files=env.int(
                 "BATCH_MAX_FILES", cls.batch_max_files,
             ),
-            batch_worker_count=_int(
-                "BATCH_WORKER_COUNT", cls.batch_worker_count,
-            ),
-            processing_timeout_seconds=_int(
+            # Timeouts
+            processing_timeout_seconds=env.int(
                 "PROCESSING_TIMEOUT_SECONDS",
                 cls.processing_timeout_seconds,
             ),
-            pool_min_size=_int("POOL_MIN_SIZE", cls.pool_min_size),
-            pool_max_size=_int("POOL_MAX_SIZE", cls.pool_max_size),
-            log_level=_str("LOG_LEVEL", cls.log_level),
         )
 
         logger.info(
@@ -296,42 +235,9 @@ class ExcelNormalizerConfig:
 # Thread-safe singleton accessor
 # ---------------------------------------------------------------------------
 
-_config_instance: Optional[ExcelNormalizerConfig] = None
-_config_lock = threading.Lock()
-
-
-def get_config() -> ExcelNormalizerConfig:
-    """Return the singleton ExcelNormalizerConfig, creating from env if needed.
-
-    Returns:
-        ExcelNormalizerConfig singleton instance.
-    """
-    global _config_instance
-    if _config_instance is None:
-        with _config_lock:
-            if _config_instance is None:
-                _config_instance = ExcelNormalizerConfig.from_env()
-    return _config_instance
-
-
-def set_config(config: ExcelNormalizerConfig) -> None:
-    """Replace the singleton ExcelNormalizerConfig (useful for testing).
-
-    Args:
-        config: New configuration to install.
-    """
-    global _config_instance
-    with _config_lock:
-        _config_instance = config
-    logger.info("ExcelNormalizerConfig replaced programmatically")
-
-
-def reset_config() -> None:
-    """Reset the singleton (primarily for test teardown)."""
-    global _config_instance
-    with _config_lock:
-        _config_instance = None
-
+get_config, set_config, reset_config = create_config_singleton(
+    ExcelNormalizerConfig, _ENV_PREFIX,
+)
 
 __all__ = [
     "ExcelNormalizerConfig",

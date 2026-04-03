@@ -434,7 +434,7 @@ class RateLimiter:
             self.redis.incr(key)
             return True, quota - current - 1
         except Exception as e:
-            logger.error(f"Rate limit check failed: {e}")
+            logger.error("Rate limit check failed: %s", e)
             # Fail open - allow request if Redis is down
             return True, quota
 
@@ -587,7 +587,7 @@ async def register_partner(partner_data: PartnerCreate, db: Session = Depends(ge
     db.commit()
     db.refresh(partner)
 
-    logger.info(f"New partner registered: {partner.id} ({partner.email})")
+    logger.info("New partner registered: %s (%s)", partner.id, partner.email)
 
     return partner
 
@@ -763,7 +763,7 @@ async def create_api_key(
     db.commit()
     db.refresh(api_key_model)
 
-    logger.info(f"API key created for partner {partner_id}: {api_key_model.id}")
+    logger.info("API key created for partner %s: %s", partner_id, api_key_model.id)
 
     # Return key with secret (only time it's shown)
     return APIKeyWithSecret(
@@ -826,7 +826,7 @@ async def revoke_api_key(
     api_key.status = APIKeyStatus.REVOKED
     db.commit()
 
-    logger.info(f"API key revoked: {key_id}")
+    logger.info("API key revoked: %s", key_id)
 
     return None
 

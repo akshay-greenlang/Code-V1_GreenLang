@@ -349,7 +349,7 @@ class PhysicalRiskScreeningAgent(BaseAgent):
         }
 
         super().__init__(config)
-        logger.info(f"Initialized {self.AGENT_NAME} v{self.VERSION}")
+        logger.info("Initialized %s v%s", self.AGENT_NAME, self.VERSION)
 
     def initialize(self):
         """Initialize agent resources."""
@@ -400,7 +400,7 @@ class PhysicalRiskScreeningAgent(BaseAgent):
         try:
             # Parse input
             screening_input = PhysicalRiskScreeningInput(**input_data)
-            self.logger.info(
+            logger.info(
                 f"Starting physical risk screening: {screening_input.screening_id}, "
                 f"{len(screening_input.assets)} assets"
             )
@@ -452,7 +452,7 @@ class PhysicalRiskScreeningAgent(BaseAgent):
                 screening_input, output
             )
 
-            self.logger.info(
+            logger.info(
                 f"Physical risk screening complete: {output.total_assets_screened} assets, "
                 f"{high_risk} high-risk, {medium_risk} medium-risk"
             )
@@ -468,7 +468,7 @@ class PhysicalRiskScreeningAgent(BaseAgent):
             )
 
         except Exception as e:
-            self.logger.error(f"Physical risk screening failed: {str(e)}", exc_info=True)
+            logger.error("Physical risk screening failed: %s", e, exc_info=True)
             return AgentResult(
                 success=False,
                 error=str(e),

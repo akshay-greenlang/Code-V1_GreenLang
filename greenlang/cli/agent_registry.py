@@ -105,7 +105,7 @@ class AgentRegistry:
                 }
             except Exception as e:
                 # Log error but continue discovery
-                logger.error(f"Failed to load entry point {entry_point.name}: {e}")
+                logger.error("Failed to load entry point %s: %s", entry_point.name, e)
 
     def _discover_custom_agents(self):
         """Discover custom agents from file system paths"""
@@ -155,7 +155,7 @@ class AgentRegistry:
                         "file_path": str(file_path),
                     }
         except Exception as e:
-            logger.error(f"Failed to load custom agent from {file_path}: {e}")
+            logger.error("Failed to load custom agent from %s: %s", file_path, e)
 
     def _load_yaml_agent_definition(self, file_path: Path):
         """Load agent definition from YAML file"""
@@ -178,7 +178,7 @@ class AgentRegistry:
                     "file_path": str(file_path),
                 }
         except Exception as e:
-            logger.error(f"Failed to load YAML agent from {file_path}: {e}")
+            logger.error("Failed to load YAML agent from %s: %s", file_path, e)
 
     def get_agent_info(self, agent_id: str) -> Optional[Dict[str, Any]]:
         """Get information about a specific agent
@@ -226,7 +226,7 @@ class AgentRegistry:
                 else:
                     return agent_class()
             except Exception as e:
-                logger.error(f"Failed to instantiate agent {agent_id}: {e}")
+                logger.error("Failed to instantiate agent %s: %s", agent_id, e)
         return None
 
     def get_agent_template(self, base_agent: str = "base") -> str:

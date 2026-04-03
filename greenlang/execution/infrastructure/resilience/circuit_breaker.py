@@ -28,6 +28,8 @@ from typing import Any, Callable, Dict, List, Optional, Type, Union
 
 from pydantic import BaseModel, Field
 
+from greenlang.utilities.exceptions.infrastructure import InfrastructureException
+
 logger = logging.getLogger(__name__)
 
 
@@ -90,7 +92,7 @@ class CircuitBreakerMetrics(BaseModel):
     last_success_time: Optional[datetime] = Field(default=None)
 
 
-class CircuitBreakerOpenError(Exception):
+class CircuitBreakerOpenError(InfrastructureException):
     """Raised when circuit breaker is open."""
 
     def __init__(self, breaker_name: str, wait_time_ms: int):
@@ -210,7 +212,7 @@ class CircuitBreaker:
         self._lock = asyncio.Lock()
         self._state_change_callbacks: List[Callable] = []
 
-        logger.info(f"CircuitBreaker '{self.config.name}' initialized")
+        logger.info("CircuitBreaker '%s' initialized", self.config.name)
 
     @property
     def state(self) -> CircuitState:
@@ -242,7 +244,7 @@ class CircuitBreaker:
                     else:
                         callback(old_state, new_state)
                 except Exception as e:
-                    logger.error(f"State change callback error: {e}")
+                    logger.error("State change callback error: %s", e)
 
     async def is_call_permitted(self) -> bool:
         """
@@ -469,7 +471,7 @@ class CircuitBreaker:
             self._opened_at = None
             self._not_permitted_calls = 0
 
-        logger.info(f"CircuitBreaker '{self.config.name}' reset")
+        logger.info("CircuitBreaker '%s' reset", self.config.name)
 
     async def force_open(self) -> None:
         """Force the circuit to open."""

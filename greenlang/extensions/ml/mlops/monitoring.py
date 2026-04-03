@@ -209,7 +209,7 @@ class ModelMonitor:
         if len(self._predictions[model_name]) % 100 == 0:
             self._persist_predictions(model_name)
 
-        logger.debug(f"Logged prediction {prediction_id} for {model_name}")
+        logger.debug("Logged prediction %s for %s", prediction_id, model_name)
 
         return prediction_id
 
@@ -235,7 +235,7 @@ class ModelMonitor:
                 if log_entry.prediction_id == prediction_id:
                     log_entry.actual = actual
                     log_entry.actual_timestamp = datetime.utcnow()
-                    logger.debug(f"Logged actual for {prediction_id}: {actual}")
+                    logger.debug("Logged actual for %s: %s", prediction_id, actual)
                     return True
 
         return False
@@ -394,7 +394,7 @@ class ModelMonitor:
             metrics: Baseline metrics dictionary.
         """
         self._baseline_metrics[model_name] = metrics
-        logger.info(f"Set baseline metrics for {model_name}: {metrics}")
+        logger.info("Set baseline metrics for %s: %s", model_name, metrics)
 
     def check_degradation(self, model_name: str) -> Optional[Alert]:
         """
@@ -557,7 +557,7 @@ class ModelMonitor:
         # Persist alert
         self._persist_alert(alert)
 
-        logger.warning(f"Alert created: [{level.value}] {model_name} - {message}")
+        logger.warning("Alert created: [%s] %s - %s", level.value, model_name, message)
 
         return alert
 
@@ -858,6 +858,6 @@ class ModelMonitor:
                 cleaned += original_count - len(recent)
 
         if cleaned > 0:
-            logger.info(f"Cleaned up {cleaned} old prediction logs")
+            logger.info("Cleaned up %s old prediction logs", cleaned)
 
         return cleaned

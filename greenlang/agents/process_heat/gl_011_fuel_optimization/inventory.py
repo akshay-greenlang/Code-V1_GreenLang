@@ -465,7 +465,7 @@ class InventoryManager:
     def add_tank(self, tank_config: TankConfig) -> None:
         """Add a tank to management."""
         self._tanks[tank_config.tank_id] = tank_config
-        logger.info(f"Added tank {tank_config.tank_id}")
+        logger.info("Added tank %s", tank_config.tank_id)
 
     def update_level(
         self,
@@ -665,7 +665,7 @@ class InventoryManager:
                 )
                 return
 
-        logger.warning(f"Delivery {delivery_id} not found")
+        logger.warning("Delivery %s not found", delivery_id)
 
     def get_pending_deliveries(
         self,
@@ -692,7 +692,7 @@ class InventoryManager:
             if alert.alert_id == alert_id:
                 alert.acknowledged = True
                 alert.acknowledged_by = operator_id
-                logger.info(f"Alert {alert_id} acknowledged by {operator_id}")
+                logger.info("Alert %s acknowledged by %s", alert_id, operator_id)
                 return
 
     def resolve_alert(self, alert_id: str) -> None:
@@ -701,7 +701,7 @@ class InventoryManager:
             if alert.alert_id == alert_id:
                 alert.resolved = True
                 alert.resolved_at = datetime.now(timezone.utc)
-                logger.info(f"Alert {alert_id} resolved")
+                logger.info("Alert %s resolved", alert_id)
                 return
 
     def calculate_eoq(
@@ -879,7 +879,7 @@ class InventoryManager:
             threshold_value=threshold_value,
         )
         self._active_alerts.append(alert)
-        logger.warning(f"Alert created: {message}")
+        logger.warning("Alert created: %s", message)
 
     @property
     def tank_count(self) -> int:

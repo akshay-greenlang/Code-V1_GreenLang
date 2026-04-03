@@ -498,12 +498,12 @@ class PredictiveMaintenanceAgent(
                     f"health={health_status.value}, score={health_score:.1f}, "
                     f"RUL={rul_hours:.0f}h" if rul_hours else ""
                 )
-                logger.debug(f"Generated explanation for {input_data.equipment_id}")
+                logger.debug("Generated explanation for %s", input_data.equipment_id)
 
                 return output
 
         except Exception as e:
-            logger.error(f"Predictive maintenance failed: {e}", exc_info=True)
+            logger.error("Predictive maintenance failed: %s", e, exc_info=True)
             raise ProcessingError(f"Analysis failed: {str(e)}") from e
 
     def validate_input(
@@ -547,7 +547,7 @@ class PredictiveMaintenanceAgent(
                 errors.append(f"Invalid operating speed: {vib.operating_speed_rpm}")
 
         if errors:
-            logger.warning(f"Validation errors: {errors}")
+            logger.warning("Validation errors: %s", errors)
             return False
 
         return True

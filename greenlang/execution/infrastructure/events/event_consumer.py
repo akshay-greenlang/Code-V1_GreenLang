@@ -173,7 +173,7 @@ class MemoryConsumerBackend(EventConsumerBackend):
     async def subscribe(self, topics: List[str]) -> None:
         """Subscribe to topics."""
         self._subscribed_topics.update(topics)
-        logger.info(f"Subscribed to topics: {topics}")
+        logger.info("Subscribed to topics: %s", topics)
 
     async def consume(self) -> Optional[Dict[str, Any]]:
         """Consume a single message."""
@@ -236,7 +236,7 @@ class EventConsumer:
         }
         self._dlq_producer = None
 
-        logger.info(f"EventConsumer initialized with backend: {config.backend}")
+        logger.info("EventConsumer initialized with backend: %s", config.backend)
 
     async def start(self) -> None:
         """
@@ -262,7 +262,7 @@ class EventConsumer:
             logger.info("Event consumer started")
 
         except Exception as e:
-            logger.error(f"Failed to start consumer: {e}", exc_info=True)
+            logger.error("Failed to start consumer: %s", e, exc_info=True)
             raise
 
     async def stop(self) -> None:
@@ -326,7 +326,7 @@ class EventConsumer:
             self._handlers[event_type].append(event_handler)
             self._handlers[event_type].sort(key=lambda h: -h.priority)
 
-        logger.info(f"Registered handler for event type: {event_type}")
+        logger.info("Registered handler for event type: %s", event_type)
 
     def unregister_handler(self, event_type: str) -> None:
         """
@@ -340,7 +340,7 @@ class EventConsumer:
         else:
             self._handlers.pop(event_type, None)
 
-        logger.info(f"Unregistered handlers for event type: {event_type}")
+        logger.info("Unregistered handlers for event type: %s", event_type)
 
     async def consume(
         self,
@@ -400,7 +400,7 @@ class EventConsumer:
         except asyncio.CancelledError:
             logger.info("Consume cancelled")
         except Exception as e:
-            logger.error(f"Consume error: {e}", exc_info=True)
+            logger.error("Consume error: %s", e, exc_info=True)
             raise
         finally:
             self._consuming = False
@@ -478,7 +478,7 @@ class EventConsumer:
             )
 
         except Exception as e:
-            logger.error(f"Failed to deserialize message: {e}")
+            logger.error("Failed to deserialize message: %s", e)
             return None
 
     async def _process_event(
@@ -492,7 +492,7 @@ class EventConsumer:
         handlers = self._handlers.get(event_type, []) + self._default_handlers
 
         if not handlers:
-            logger.warning(f"No handler for event type: {event_type}")
+            logger.warning("No handler for event type: %s", event_type)
             self._metrics["events_skipped"] += 1
             return ProcessingResult.SKIP
 
@@ -545,12 +545,12 @@ class EventConsumer:
             return result if isinstance(result, ProcessingResult) else ProcessingResult.SUCCESS
 
         except asyncio.TimeoutError:
-            logger.error(f"Handler timeout for {handler.event_type}")
+            logger.error("Handler timeout for %s", handler.event_type)
             self._metrics["events_failed"] += 1
             return ProcessingResult.FAILURE
 
         except Exception as e:
-            logger.error(f"Handler error for {handler.event_type}: {e}")
+            logger.error("Handler error for %s: %s", handler.event_type, e)
             self._metrics["events_failed"] += 1
             return ProcessingResult.FAILURE
 

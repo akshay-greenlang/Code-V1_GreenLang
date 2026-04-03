@@ -151,7 +151,7 @@ class HttpLegacyAdapter:
         """
         self.config = config
         self._client: Optional[httpx.AsyncClient] = None
-        logger.info(f"Initialized HttpLegacyAdapter for {config.agent_id}@{config.agent_version}")
+        logger.info("Initialized HttpLegacyAdapter for %s@%s", config.agent_id, config.agent_version)
 
     async def _get_client(self) -> httpx.AsyncClient:
         """Get or create HTTP client."""
@@ -314,8 +314,8 @@ class HttpLegacyAdapter:
         }
         body = self._build_request_body(context)
 
-        logger.info(f"Calling legacy agent: {self.config.method.value} {url}")
-        logger.debug(f"Request body: {json.dumps(body, default=str)}")
+        logger.info("Calling legacy agent: %s %s", self.config.method.value, url)
+        logger.debug("Request body: %s", json.dumps(body, default=str))
 
         # Execute with retry
         last_error = None
@@ -340,7 +340,7 @@ class HttpLegacyAdapter:
                 # Check for retryable errors
                 if self.config.retry_on_5xx and 500 <= http_status < 600:
                     if attempt < self.config.max_retries:
-                        logger.warning(f"Got {http_status}, retrying ({attempt + 1}/{self.config.max_retries})")
+                        logger.warning("Got %s, retrying (%s/%s)", http_status, attempt + 1, self.config.max_retries)
                         await self._sleep(self.config.retry_delay_seconds * (attempt + 1))
                         continue
 
@@ -355,14 +355,14 @@ class HttpLegacyAdapter:
             except httpx.TimeoutException as e:
                 last_error = f"Request timeout: {e}"
                 if attempt < self.config.max_retries:
-                    logger.warning(f"Timeout, retrying ({attempt + 1}/{self.config.max_retries})")
+                    logger.warning("Timeout, retrying (%s/%s)", attempt + 1, self.config.max_retries)
                     await self._sleep(self.config.retry_delay_seconds * (attempt + 1))
                     continue
 
             except httpx.RequestError as e:
                 last_error = f"Request error: {e}"
                 if attempt < self.config.max_retries:
-                    logger.warning(f"Request error, retrying ({attempt + 1}/{self.config.max_retries})")
+                    logger.warning("Request error, retrying (%s/%s)", attempt + 1, self.config.max_retries)
                     await self._sleep(self.config.retry_delay_seconds * (attempt + 1))
                     continue
 
@@ -397,7 +397,7 @@ class HttpLegacyAdapter:
             status="success" if result.success else "failed",
         )
 
-        logger.info(f"Legacy agent completed: success={result.success}, duration={duration_ms:.2f}ms")
+        logger.info("Legacy agent completed: success=%s, duration=%.2fms", result.success, duration_ms)
 
         return result, metadata
 
@@ -503,7 +503,7 @@ class AdapterContainerEntrypoint:
             return 0 if result.success else 1
 
         except Exception as e:
-            logger.error(f"Adapter execution failed: {e}", exc_info=True)
+            logger.error("Adapter execution failed: %s", e, exc_info=True)
 
             # Write error
             error_result = StepResult(

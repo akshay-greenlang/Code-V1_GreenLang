@@ -134,7 +134,7 @@ class OSHAPSM:
         self.facility_id = facility_id
         self.audits: List[PSMAuditResult] = []
         self.findings: List[PSMFinding] = []
-        logger.info(f"OSHAPSM manager initialized for {facility_id}")
+        logger.info("OSHAPSM manager initialized for %s", facility_id)
 
     def conduct_audit(
         self,
@@ -151,7 +151,7 @@ class OSHAPSM:
         Returns:
             PSMAuditResult
         """
-        logger.info(f"Conducting PSM audit for {self.facility_id}")
+        logger.info("Conducting PSM audit for %s", self.facility_id)
 
         findings = []
         elements_audited = list(self.ELEMENT_REQUIREMENTS.keys())

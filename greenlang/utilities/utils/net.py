@@ -93,7 +93,7 @@ class NetworkPolicy:
         # Check blocklist first
         for blocked in self.blocked_domains:
             if domain == blocked or domain.endswith(f".{blocked}"):
-                logger.warning(f"Network access blocked: {domain} (tag: {tag})")
+                logger.warning("Network access blocked: %s (tag: %s)", domain, tag)
                 self.audit_log.append(
                     {
                         "action": "blocked",
@@ -108,7 +108,7 @@ class NetworkPolicy:
         # Check allowlist
         for allowed in self.allowed_domains:
             if domain == allowed or domain.endswith(f".{allowed}"):
-                logger.debug(f"Network access allowed: {domain} (tag: {tag})")
+                logger.debug("Network access allowed: %s (tag: %s)", domain, tag)
                 self.audit_log.append(
                     {
                         "action": "allowed",
@@ -121,7 +121,7 @@ class NetworkPolicy:
                 return True
 
         # Not in allowlist
-        logger.warning(f"Network access denied: {domain} not in allowlist (tag: {tag})")
+        logger.warning("Network access denied: %s not in allowlist (tag: %s)", domain, tag)
         self.audit_log.append(
             {
                 "action": "denied",
@@ -175,7 +175,7 @@ def http_get(url: str, *, tag: str = "unknown", timeout: int = 30, **kwargs):
         Exception: If request fails
     """
     # Use secure HTTP wrapper which includes policy checks
-    logger.info(f"HTTP GET: {url} (tag: {tag})")
+    logger.info("HTTP GET: %s (tag: %s)", url, tag)
     return secure_http.get(url, timeout=(5, timeout), **kwargs)
 
 
@@ -205,7 +205,7 @@ def http_post(
         Exception: If request fails
     """
     # Use secure HTTP wrapper which includes policy checks
-    logger.info(f"HTTP POST: {url} (tag: {tag})")
+    logger.info("HTTP POST: %s (tag: %s)", url, tag)
     return secure_http.post(url, data=data, timeout=(5, timeout), **kwargs)
 
 
@@ -229,7 +229,7 @@ def download_file(
         requests.RequestException: If download fails
     """
     # Download file using secure HTTP wrapper
-    logger.info(f"Downloading: {url} -> {dest} (tag: {tag})")
+    logger.info("Downloading: %s -> %s (tag: %s)", url, dest, tag)
 
     # Ensure destination directory exists
     dest.parent.mkdir(parents=True, exist_ok=True)
@@ -245,20 +245,20 @@ def download_file(
                 if chunk:
                     f.write(chunk)
 
-    logger.info(f"Downloaded {dest.stat().st_size} bytes to {dest}")
+    logger.info("Downloaded %s bytes to %s", dest.stat().st_size, dest)
     return dest
 
 
 def add_allowed_domain(domain: str) -> None:
     """Add a domain to the allowlist"""
     _network_policy.allowed_domains.append(domain)
-    logger.info(f"Added domain to allowlist: {domain}")
+    logger.info("Added domain to allowlist: %s", domain)
 
 
 def add_blocked_domain(domain: str) -> None:
     """Add a domain to the blocklist"""
     _network_policy.blocked_domains.append(domain)
-    logger.info(f"Added domain to blocklist: {domain}")
+    logger.info("Added domain to blocklist: %s", domain)
 
 
 def get_network_audit_log() -> List[Dict[str, Any]]:

@@ -404,7 +404,7 @@ class NormalizationEngine:
             )
 
         except Exception as e:
-            logger.error(f"Normalization failed: {e}", exc_info=True)
+            logger.error("Normalization failed: %s", e, exc_info=True)
             raise
 
     # -------------------------------------------------------------------------
@@ -432,10 +432,10 @@ class NormalizationEngine:
         try:
             result, renames = self._key_canonicalizer.canonicalize(payload)
             if renames:
-                logger.debug(f"Applied {len(renames)} key renames")
+                logger.debug("Applied %s key renames", len(renames))
             return result, renames
         except Exception as e:
-            logger.warning(f"Key canonicalization failed: {e}")
+            logger.warning("Key canonicalization failed: %s", e)
             return payload, []
 
     # -------------------------------------------------------------------------
@@ -482,7 +482,7 @@ class NormalizationEngine:
                 if has_default and self._should_apply_default(prop_path):
                     result[key_name] = copy.deepcopy(default_value)
                     defaults_applied.append(prop_path)
-                    logger.debug(f"Applied default at {prop_path}: {default_value}")
+                    logger.debug("Applied default at %s: %s", prop_path, default_value)
 
         # Recursively apply defaults to nested objects
         for key, value in result.items():
@@ -581,7 +581,7 @@ class NormalizationEngine:
         coercions = self._coercion_engine.get_records()
 
         if coercions:
-            logger.debug(f"Applied {len(coercions)} type coercions")
+            logger.debug("Applied %s type coercions", len(coercions))
 
         return result, coercions
 
@@ -689,7 +689,7 @@ class NormalizationEngine:
         )
 
         if conversions:
-            logger.debug(f"Applied {len(conversions)} unit conversions")
+            logger.debug("Applied %s unit conversions", len(conversions))
 
         return result, conversions
 

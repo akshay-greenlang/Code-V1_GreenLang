@@ -735,7 +735,7 @@ class UnitNormalizerAgent(BaseAgent):
         # Exchange rate cache (in production, use external service)
         self._exchange_rates = DEFAULT_EXCHANGE_RATES.copy()
 
-        self.logger.info(f"Initialized {self.AGENT_NAME} v{self.VERSION}")
+        logger.info("Initialized %s v%s", self.AGENT_NAME, self.VERSION)
 
     def initialize(self):
         """Initialize agent resources."""
@@ -815,7 +815,7 @@ class UnitNormalizerAgent(BaseAgent):
             )
 
         except Exception as e:
-            self.logger.error(f"Normalization failed: {str(e)}", exc_info=True)
+            logger.error("Normalization failed: %s", e, exc_info=True)
             end_time = DeterministicClock.now()
             processing_time_ms = (end_time - start_time).total_seconds() * 1000
 
@@ -1269,7 +1269,7 @@ class UnitNormalizerAgent(BaseAgent):
         elif source_upper == "AR4":
             return GWP_AR4_100
         else:
-            self.logger.warning(f"Unknown GWP source: {source}, using AR6")
+            logger.warning("Unknown GWP source: %s, using AR6", source)
             return GWP_AR6_100
 
     # =========================================================================
@@ -1753,7 +1753,7 @@ class UnitNormalizerAgent(BaseAgent):
             self._exchange_rates[from_currency] = {}
 
         self._exchange_rates[from_currency][to_currency] = rate
-        self.logger.info(f"Set exchange rate: {from_currency}/{to_currency} = {rate}")
+        logger.info("Set exchange rate: %s/%s = %s", from_currency, to_currency, rate)
 
     # =========================================================================
     # TENANT CUSTOMIZATION
@@ -1782,7 +1782,7 @@ class UnitNormalizerAgent(BaseAgent):
             self._tenant_conversions[tenant_id][dimension] = {}
 
         self._tenant_conversions[tenant_id][dimension][unit.lower()] = Decimal(str(to_base_factor))
-        self.logger.info(f"Registered tenant conversion: {tenant_id}/{dimension}/{unit}")
+        logger.info("Registered tenant conversion: %s/%s/%s", tenant_id, dimension, unit)
 
     def register_tenant_fuel_mapping(
         self,
@@ -1810,7 +1810,7 @@ class UnitNormalizerAgent(BaseAgent):
             "code": fuel_code,
             "category": category
         }
-        self.logger.info(f"Registered tenant fuel mapping: {tenant_id}/{fuel_alias}")
+        logger.info("Registered tenant fuel mapping: %s/%s", tenant_id, fuel_alias)
 
     def register_tenant_material_mapping(
         self,
@@ -1838,7 +1838,7 @@ class UnitNormalizerAgent(BaseAgent):
             "code": material_code,
             "category": category
         }
-        self.logger.info(f"Registered tenant material mapping: {tenant_id}/{material_alias}")
+        logger.info("Registered tenant material mapping: %s/%s", tenant_id, material_alias)
 
     # =========================================================================
     # PROVENANCE AND UTILITIES

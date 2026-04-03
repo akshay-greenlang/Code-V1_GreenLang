@@ -299,7 +299,7 @@ class Scope2MarketBasedAgent(DeterministicAgent):
     def __init__(self, enable_audit_trail: bool = True):
         """Initialize Scope2MarketBasedAgent."""
         super().__init__(enable_audit_trail=enable_audit_trail)
-        logger.info(f"Initialized {self.AGENT_NAME} v{self.VERSION}")
+        logger.info("Initialized %s v%s", self.AGENT_NAME, self.VERSION)
 
     def execute(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
         """Execute market-based Scope 2 calculation."""
@@ -380,7 +380,7 @@ class Scope2MarketBasedAgent(DeterministicAgent):
             return output.model_dump()
 
         except Exception as e:
-            logger.error(f"Market-based calculation failed: {str(e)}", exc_info=True)
+            logger.error("Market-based calculation failed: %s", e, exc_info=True)
             end_time = DeterministicClock.now()
             processing_time_ms = (end_time - start_time).total_seconds() * 1000
 

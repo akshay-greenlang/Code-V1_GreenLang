@@ -317,7 +317,7 @@ class SupplierEngagementAgent(BaseAgent):
 
         super().__init__(config)
         self._programs: Dict[str, EngagementProgram] = {}
-        logger.info(f"Initialized {self.AGENT_NAME} v{self.VERSION}")
+        logger.info("Initialized %s v%s", self.AGENT_NAME, self.VERSION)
 
     def execute(self, input_data: Dict[str, Any]) -> AgentResult:
         """Execute supplier engagement operation."""
@@ -347,7 +347,7 @@ class SupplierEngagementAgent(BaseAgent):
             )
 
         except Exception as e:
-            logger.error(f"Supplier engagement failed: {e}", exc_info=True)
+            logger.error("Supplier engagement failed: %s", e, exc_info=True)
             return AgentResult(success=False, error=str(e))
 
     def _create_program(self, input_data: EngagementInput) -> EngagementOutput:

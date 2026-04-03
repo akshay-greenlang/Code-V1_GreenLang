@@ -113,7 +113,7 @@ def verify_artifact(
 
         return True, signer_info
     except Exception as e:
-        logger.debug(f"Signature verification failed: {e}")
+        logger.debug("Signature verification failed: %s", e)
         return False, None
 
 
@@ -220,7 +220,7 @@ def sign_pack(pack_path: Path, key_path: Optional[Path] = None) -> Dict[str, Any
     with open(sig_path, "w", encoding="utf-8") as f:
         json.dump(signature, f, indent=2, ensure_ascii=False)
 
-    logger.info(f"Pack signed successfully: {pack_path}")
+    logger.info("Pack signed successfully: %s", pack_path)
     return signature
 
 
@@ -269,7 +269,7 @@ def verify_pack(pack_path: Path) -> bool:
         verifier.verify(payload, sig_bytes, **verify_kwargs)
         return True
     except Exception as e:
-        logger.debug(f"Pack verification failed: {e}")
+        logger.debug("Pack verification failed: %s", e)
         return False
 
 

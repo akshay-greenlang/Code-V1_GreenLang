@@ -66,7 +66,7 @@ async def lifespan(app: FastAPI):
         )
         logger.info("Database connection established successfully")
     except Exception as e:
-        logger.error(f"Failed to initialize database: {e}")
+        logger.error("Failed to initialize database: %s", e)
         raise
 
     yield
@@ -202,7 +202,7 @@ def create_app() -> FastAPI:
                 "timestamp": datetime.utcnow().isoformat(),
             }
         except Exception as e:
-            logger.error(f"Readiness check failed: {e}")
+            logger.error("Readiness check failed: %s", e)
             return JSONResponse(
                 status_code=503,
                 content={

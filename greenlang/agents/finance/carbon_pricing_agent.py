@@ -314,7 +314,7 @@ class CarbonPricingAgent(BaseAgent):
         self._audit_trail: List[AuditEntry] = []
 
         super().__init__(config)
-        logger.info(f"Initialized {self.AGENT_NAME} v{self.VERSION}")
+        logger.info("Initialized %s v%s", self.AGENT_NAME, self.VERSION)
 
     def initialize(self):
         """Custom initialization for the Carbon Pricing Agent."""
@@ -371,7 +371,7 @@ class CarbonPricingAgent(BaseAgent):
             )
 
         except Exception as e:
-            logger.error(f"Carbon pricing execution failed: {e}", exc_info=True)
+            logger.error("Carbon pricing execution failed: %s", e, exc_info=True)
             return AgentResult(
                 success=False,
                 error=str(e)

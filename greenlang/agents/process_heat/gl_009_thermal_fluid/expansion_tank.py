@@ -141,7 +141,7 @@ class ExpansionTankAnalyzer:
         self._property_db = ThermalFluidPropertyDatabase()
         self._calculation_count = 0
 
-        logger.info(f"ExpansionTankAnalyzer initialized for {fluid_type}")
+        logger.info("ExpansionTankAnalyzer initialized for %s", fluid_type)
 
     def analyze(
         self,

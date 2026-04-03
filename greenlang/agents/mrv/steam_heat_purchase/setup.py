@@ -372,7 +372,7 @@ class SteamHeatPurchaseService:
 
         except Exception as e:
             self._error_count += 1
-            logger.error(f"Steam calculation failed: {e}", exc_info=True)
+            logger.error("Steam calculation failed: %s", e, exc_info=True)
 
             if _METRICS_AVAILABLE:
                 increment_counter(
@@ -442,7 +442,7 @@ class SteamHeatPurchaseService:
 
         except Exception as e:
             self._error_count += 1
-            logger.error(f"Heating calculation failed: {e}", exc_info=True)
+            logger.error("Heating calculation failed: %s", e, exc_info=True)
 
             if _METRICS_AVAILABLE:
                 increment_counter(
@@ -512,7 +512,7 @@ class SteamHeatPurchaseService:
 
         except Exception as e:
             self._error_count += 1
-            logger.error(f"Cooling calculation failed: {e}", exc_info=True)
+            logger.error("Cooling calculation failed: %s", e, exc_info=True)
 
             if _METRICS_AVAILABLE:
                 increment_counter(
@@ -582,7 +582,7 @@ class SteamHeatPurchaseService:
 
         except Exception as e:
             self._error_count += 1
-            logger.error(f"CHP calculation failed: {e}", exc_info=True)
+            logger.error("CHP calculation failed: %s", e, exc_info=True)
 
             if _METRICS_AVAILABLE:
                 increment_counter(
@@ -639,7 +639,7 @@ class SteamHeatPurchaseService:
 
         except Exception as e:
             self._error_count += 1
-            logger.error(f"Batch calculation failed: {e}", exc_info=True)
+            logger.error("Batch calculation failed: %s", e, exc_info=True)
 
             return {
                 "status": "error",
@@ -684,7 +684,7 @@ class SteamHeatPurchaseService:
 
         except Exception as e:
             self._error_count += 1
-            logger.error(f"Aggregation failed: {e}", exc_info=True)
+            logger.error("Aggregation failed: %s", e, exc_info=True)
 
             return {
                 "status": "error",
@@ -711,7 +711,7 @@ class SteamHeatPurchaseService:
             self._ensure_engines()
             return self.db_engine.get_fuel_emission_factor(fuel_type)
         except Exception as e:
-            logger.error(f"Failed to get fuel EF: {e}", exc_info=True)
+            logger.error("Failed to get fuel EF: %s", e, exc_info=True)
             return {"status": "error", "error": str(e)}
 
     def get_all_fuel_emission_factors(self) -> Dict[str, Any]:
@@ -725,7 +725,7 @@ class SteamHeatPurchaseService:
             self._ensure_engines()
             return self.db_engine.get_all_fuel_emission_factors()
         except Exception as e:
-            logger.error(f"Failed to get all fuel EFs: {e}", exc_info=True)
+            logger.error("Failed to get all fuel EFs: %s", e, exc_info=True)
             return {"status": "error", "error": str(e)}
 
     def get_district_heating_factor(self, region: str) -> Dict[str, Any]:
@@ -742,7 +742,7 @@ class SteamHeatPurchaseService:
             self._ensure_engines()
             return self.db_engine.get_district_heating_factor(region)
         except Exception as e:
-            logger.error(f"Failed to get district heating factor: {e}", exc_info=True)
+            logger.error("Failed to get district heating factor: %s", e, exc_info=True)
             return {"status": "error", "error": str(e)}
 
     def get_cooling_system_factor(self, technology: str) -> Dict[str, Any]:
@@ -759,7 +759,7 @@ class SteamHeatPurchaseService:
             self._ensure_engines()
             return self.db_engine.get_cooling_system_factor(technology)
         except Exception as e:
-            logger.error(f"Failed to get cooling factor: {e}", exc_info=True)
+            logger.error("Failed to get cooling factor: %s", e, exc_info=True)
             return {"status": "error", "error": str(e)}
 
     def get_chp_defaults(self, fuel_type: str) -> Dict[str, Any]:
@@ -776,7 +776,7 @@ class SteamHeatPurchaseService:
             self._ensure_engines()
             return self.db_engine.get_chp_defaults(fuel_type)
         except Exception as e:
-            logger.error(f"Failed to get CHP defaults: {e}", exc_info=True)
+            logger.error("Failed to get CHP defaults: %s", e, exc_info=True)
             return {"status": "error", "error": str(e)}
 
     # -------------------------------------------------------------------------
@@ -809,7 +809,7 @@ class SteamHeatPurchaseService:
             return result
 
         except Exception as e:
-            logger.error(f"CHP allocation failed: {e}", exc_info=True)
+            logger.error("CHP allocation failed: %s", e, exc_info=True)
             return {"status": "error", "error": str(e)}
 
     def compare_chp_methods(self, request: Dict[str, Any]) -> Dict[str, Any]:
@@ -826,7 +826,7 @@ class SteamHeatPurchaseService:
             self._ensure_engines()
             return self.chp_engine.compare_allocation_methods(request)
         except Exception as e:
-            logger.error(f"CHP comparison failed: {e}", exc_info=True)
+            logger.error("CHP comparison failed: %s", e, exc_info=True)
             return {"status": "error", "error": str(e)}
 
     def compute_primary_energy_savings(self, request: Dict[str, Any]) -> Dict[str, Any]:
@@ -843,7 +843,7 @@ class SteamHeatPurchaseService:
             self._ensure_engines()
             return self.chp_engine.compute_primary_energy_savings(request)
         except Exception as e:
-            logger.error(f"PES calculation failed: {e}", exc_info=True)
+            logger.error("PES calculation failed: %s", e, exc_info=True)
             return {"status": "error", "error": str(e)}
 
     # -------------------------------------------------------------------------
@@ -881,7 +881,7 @@ class SteamHeatPurchaseService:
             return result
 
         except Exception as e:
-            logger.error(f"Uncertainty quantification failed: {e}", exc_info=True)
+            logger.error("Uncertainty quantification failed: %s", e, exc_info=True)
             return {"status": "error", "error": str(e)}
 
     def check_compliance(
@@ -915,7 +915,7 @@ class SteamHeatPurchaseService:
             return result
 
         except Exception as e:
-            logger.error(f"Compliance check failed: {e}", exc_info=True)
+            logger.error("Compliance check failed: %s", e, exc_info=True)
             return {"status": "error", "error": str(e)}
 
     def get_compliance_frameworks(self) -> List[str]:
@@ -929,7 +929,7 @@ class SteamHeatPurchaseService:
             self._ensure_engines()
             return self.compliance_engine.get_supported_frameworks()
         except Exception as e:
-            logger.error(f"Failed to get frameworks: {e}", exc_info=True)
+            logger.error("Failed to get frameworks: %s", e, exc_info=True)
             return []
 
     # -------------------------------------------------------------------------
@@ -950,7 +950,7 @@ class SteamHeatPurchaseService:
             self._ensure_engines()
             return self.db_engine.get_calculation(calc_id)
         except Exception as e:
-            logger.error(f"Failed to get calculation: {e}", exc_info=True)
+            logger.error("Failed to get calculation: %s", e, exc_info=True)
             return {"status": "error", "error": str(e)}
 
     def compare_energy_sources(self, requests: List[Dict[str, Any]]) -> Dict[str, Any]:
@@ -1009,7 +1009,7 @@ class SteamHeatPurchaseService:
             return comparison
 
         except Exception as e:
-            logger.error(f"Energy source comparison failed: {e}", exc_info=True)
+            logger.error("Energy source comparison failed: %s", e, exc_info=True)
             return {"status": "error", "error": str(e)}
 
     def health_check(self) -> Dict[str, Any]:

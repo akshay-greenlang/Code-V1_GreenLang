@@ -294,7 +294,7 @@ class PublishingWorkflow:
 
         checklist = PublishingChecklist()
 
-        logger.info(f"Started publishing workflow for author {author_id}, draft {draft.id}")
+        logger.info("Started publishing workflow for author %s, draft %s", author_id, draft.id)
 
         return str(draft.id), checklist
 
@@ -352,10 +352,10 @@ class PublishingWorkflow:
             }
             result.passed = True
 
-            logger.info(f"Code uploaded for draft {draft_id}: {filename} ({len(code_content)} bytes)")
+            logger.info("Code uploaded for draft %s: %s (%s bytes)", draft_id, filename, len(code_content))
 
         except Exception as e:
-            logger.error(f"Error uploading code for draft {draft_id}: {e}")
+            logger.error("Error uploading code for draft %s: %s", draft_id, e)
             result.issues.append(ValidationIssue(
                 severity=ValidationSeverity.ERROR,
                 message=f"Upload failed: {str(e)}",
@@ -402,12 +402,12 @@ class PublishingWorkflow:
                 "author": metadata.author
             }
 
-            logger.info(f"Metadata extracted for draft {draft_id}: {metadata.name} v{metadata.version}")
+            logger.info("Metadata extracted for draft %s: %s v%s", draft_id, metadata.name, metadata.version)
 
             return result, metadata
 
         except Exception as e:
-            logger.error(f"Error extracting metadata for draft {draft_id}: {e}")
+            logger.error("Error extracting metadata for draft %s: %s", draft_id, e)
             result.issues.append(ValidationIssue(
                 severity=ValidationSeverity.ERROR,
                 message=f"Metadata extraction failed: {str(e)}",
@@ -544,10 +544,10 @@ class PublishingWorkflow:
 
             result.passed = True
 
-            logger.info(f"Performance test completed: {loc} LOC, complexity {complexity}")
+            logger.info("Performance test completed: %s LOC, complexity %s", loc, complexity)
 
         except Exception as e:
-            logger.error(f"Error testing performance: {e}")
+            logger.error("Error testing performance: %s", e)
             result.issues.append(ValidationIssue(
                 severity=ValidationSeverity.ERROR,
                 message=f"Performance test failed: {str(e)}",
@@ -682,12 +682,12 @@ class PublishingWorkflow:
 
             self.session.commit()
 
-            logger.info(f"Published version {version} for agent {draft_id}")
+            logger.info("Published version %s for agent %s", version, draft_id)
 
             return True, str(agent_version.id), []
 
         except Exception as e:
-            logger.error(f"Error publishing version: {e}")
+            logger.error("Error publishing version: %s", e)
             errors.append(f"Publication failed: {str(e)}")
             return False, None, errors
 

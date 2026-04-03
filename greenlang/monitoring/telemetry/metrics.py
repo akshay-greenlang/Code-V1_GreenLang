@@ -236,7 +236,7 @@ class MetricsCollector:
             metric: Custom metric definition
         """
         if metric.name in self.custom_metrics:
-            logger.warning(f"Metric {metric.name} already registered")
+            logger.warning("Metric %s already registered", metric.name)
             return
 
         # Create the actual metric
@@ -266,7 +266,7 @@ class MetricsCollector:
             )
 
         self.custom_metrics[metric.name] = metric
-        logger.info(f"Registered custom metric: {metric.name}")
+        logger.info("Registered custom metric: %s", metric.name)
 
     def record_metric(
         self, metric_name: str, value: float, labels: Optional[Dict[str, str]] = None
@@ -281,7 +281,7 @@ class MetricsCollector:
         """
         metric = self.custom_metrics.get(metric_name)
         if not metric or not metric.metric:
-            logger.warning(f"Metric {metric_name} not found")
+            logger.warning("Metric %s not found", metric_name)
             return
 
         labels = labels or {}
@@ -334,7 +334,7 @@ class MetricsCollector:
             ).set(net_io.bytes_recv)
 
         except Exception as e:
-            logger.error(f"Error collecting system metrics: {e}")
+            logger.error("Error collecting system metrics: %s", e)
             errors.labels(
                 error_type="metric_collection", component="system", tenant_id=tenant_id
             ).inc()
@@ -352,7 +352,7 @@ class MetricsCollector:
 
         # Start HTTP server
         start_http_server(port, registry=self.registry)
-        logger.info(f"Metrics server started on port {port}")
+        logger.info("Metrics server started on port %s", port)
 
         # Start background collection
         self._collection_thread = threading.Thread(
@@ -379,7 +379,7 @@ class MetricsCollector:
                     )
 
             except Exception as e:
-                logger.error(f"Error in collection loop: {e}")
+                logger.error("Error in collection loop: %s", e)
 
             self._stop_collection.wait(self.collection_interval)
 

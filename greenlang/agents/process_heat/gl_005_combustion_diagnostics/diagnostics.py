@@ -209,7 +209,7 @@ class CombustionDiagnosticsAgent(IntelligenceMixin, BaseProcessHeatAgent[Diagnos
         # - GL-018 data stream
         # - OPC-UA/Modbus sensors
         # - CMMS API (if enabled)
-        logger.info(f"GL-005 data source: {self.gl005_config.data_source_agent}")
+        logger.info("GL-005 data source: %s", self.gl005_config.data_source_agent)
 
     async def _close_connections(self) -> None:
         """Close connections."""
@@ -271,7 +271,7 @@ class CombustionDiagnosticsAgent(IntelligenceMixin, BaseProcessHeatAgent[Diagnos
 
         # Verify processing time is reasonable
         if output_data.processing_time_ms > 30000:  # 30 seconds
-            logger.warning(f"Processing time excessive: {output_data.processing_time_ms}ms")
+            logger.warning("Processing time excessive: %sms", output_data.processing_time_ms)
 
         return True
 
@@ -351,7 +351,7 @@ class CombustionDiagnosticsAgent(IntelligenceMixin, BaseProcessHeatAgent[Diagnos
                     })
 
             except Exception as e:
-                logger.error(f"CQI calculation failed: {e}", exc_info=True)
+                logger.error("CQI calculation failed: %s", e, exc_info=True)
                 audit_trail.append({
                     "step": "cqi_calculation",
                     "status": "error",
@@ -388,7 +388,7 @@ class CombustionDiagnosticsAgent(IntelligenceMixin, BaseProcessHeatAgent[Diagnos
                     recommendations.extend(anomaly.recommended_actions)
 
             except Exception as e:
-                logger.error(f"Anomaly detection failed: {e}", exc_info=True)
+                logger.error("Anomaly detection failed: %s", e, exc_info=True)
                 audit_trail.append({
                     "step": "anomaly_detection",
                     "status": "error",
@@ -420,7 +420,7 @@ class CombustionDiagnosticsAgent(IntelligenceMixin, BaseProcessHeatAgent[Diagnos
                     })
 
             except Exception as e:
-                logger.error(f"Fuel characterization failed: {e}", exc_info=True)
+                logger.error("Fuel characterization failed: %s", e, exc_info=True)
                 audit_trail.append({
                     "step": "fuel_characterization",
                     "status": "error",
@@ -460,7 +460,7 @@ class CombustionDiagnosticsAgent(IntelligenceMixin, BaseProcessHeatAgent[Diagnos
                 # (Work orders are generated internally by MaintenanceAdvisor)
 
             except Exception as e:
-                logger.error(f"Maintenance advisory failed: {e}", exc_info=True)
+                logger.error("Maintenance advisory failed: %s", e, exc_info=True)
                 audit_trail.append({
                     "step": "maintenance_advisory",
                     "status": "error",
@@ -547,7 +547,7 @@ class CombustionDiagnosticsAgent(IntelligenceMixin, BaseProcessHeatAgent[Diagnos
             baseline_cqi: Baseline CQI score (clean equipment condition)
         """
         self._baseline_cqi = baseline_cqi
-        logger.info(f"GL-005 CQI baseline set: {baseline_cqi}")
+        logger.info("GL-005 CQI baseline set: %s", baseline_cqi)
 
     def set_maintenance_baselines(
         self,

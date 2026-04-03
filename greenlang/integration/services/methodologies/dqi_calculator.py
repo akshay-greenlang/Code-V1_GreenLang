@@ -93,7 +93,7 @@ class DQICalculator:
         # Try exact match first
         if source_lower in FACTOR_SOURCE_SCORES:
             score = FACTOR_SOURCE_SCORES[source_lower]
-            logger.debug(f"Source quality score for '{source}': {score}")
+            logger.debug("Source quality score for '%s': %s", source, score)
             return score
 
         # Try partial matches
@@ -128,11 +128,11 @@ class DQICalculator:
         }
 
         if tier not in tier_scores:
-            logger.warning(f"Invalid tier {tier}, using tier 3 score")
+            logger.warning("Invalid tier %s, using tier 3 score", tier)
             return tier_scores[3]
 
         score = tier_scores[tier]
-        logger.debug(f"Tier {tier} quality score: {score}")
+        logger.debug("Tier %s quality score: %s", tier, score)
         return score
 
     def pedigree_to_dqi_score(
@@ -237,13 +237,13 @@ class DQICalculator:
             )
             components.append(pedigree_dqi)
             weights.append(w_pedigree)
-            logger.debug(f"Pedigree DQI component: {pedigree_dqi:.2f} (weight={w_pedigree})")
+            logger.debug("Pedigree DQI component: %.2f (weight=%s)", pedigree_dqi, w_pedigree)
 
         if factor_source is not None:
             source_dqi = self.get_source_quality_score(factor_source)
             components.append(source_dqi)
             weights.append(w_source)
-            logger.debug(f"Source DQI component: {source_dqi:.2f} (weight={w_source})")
+            logger.debug("Source DQI component: %.2f (weight=%s)", source_dqi, w_source)
 
         if data_tier is not None:
             tier_dqi = self.get_tier_score(data_tier)
@@ -252,11 +252,11 @@ class DQICalculator:
             if self.config.dqi.apply_tier_penalty and data_tier > 1:
                 penalty = (data_tier - 1) * 10  # 10 point penalty per tier
                 tier_dqi = max(0.0, tier_dqi - penalty)
-                logger.debug(f"Applied tier penalty: -{penalty} points")
+                logger.debug("Applied tier penalty: -%s points", penalty)
 
             components.append(tier_dqi)
             weights.append(w_tier)
-            logger.debug(f"Tier DQI component: {tier_dqi:.2f} (weight={w_tier})")
+            logger.debug("Tier DQI component: %.2f (weight=%s)", tier_dqi, w_tier)
 
         # Calculate weighted average
         if not components:
@@ -432,7 +432,7 @@ class DQICalculator:
 
         report["recommendations"] = recommendations
 
-        logger.debug(f"Generated DQI report: {len(recommendations)} recommendations")
+        logger.debug("Generated DQI report: %s recommendations", len(recommendations))
 
         return report
 

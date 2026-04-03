@@ -146,9 +146,9 @@ class RAGGovernance:
                         req_data['metadata'] = DocMeta(**meta_data)
                         self.approval_requests[key] = ApprovalRequest(**req_data)
 
-                logger.info(f"Loaded {len(self.approval_requests)} approval requests from audit trail")
+                logger.info("Loaded %s approval requests from audit trail", len(self.approval_requests))
             except Exception as e:
-                logger.error(f"Failed to load audit trail: {e}")
+                logger.error("Failed to load audit trail: %s", e)
 
     def _save_audit_trail(self) -> None:
         """Persist audit trail to disk."""
@@ -157,9 +157,9 @@ class RAGGovernance:
             data = {key: req.to_dict() for key, req in self.approval_requests.items()}
             with open(audit_file, 'w') as f:
                 json.dump(data, f, indent=2)
-            logger.info(f"Saved audit trail to {audit_file}")
+            logger.info("Saved audit trail to %s", audit_file)
         except Exception as e:
-            logger.error(f"Failed to save audit trail: {e}")
+            logger.error("Failed to save audit trail: %s", e)
 
     def verify_authenticity(
         self,
@@ -187,14 +187,14 @@ class RAGGovernance:
             ...     raise ValueError("Document tampering detected!")
         """
         if not doc_path.exists():
-            logger.error(f"Document not found: {doc_path}")
+            logger.error("Document not found: %s", doc_path)
             return False
 
         try:
             actual_hash = file_hash(str(doc_path))
 
             if actual_hash == expected_hash:
-                logger.info(f"Document authenticity verified: {doc_path.name}")
+                logger.info("Document authenticity verified: %s", doc_path.name)
                 return True
             else:
                 logger.error(
@@ -203,7 +203,7 @@ class RAGGovernance:
                 )
                 return False
         except Exception as e:
-            logger.error(f"Failed to verify authenticity: {e}")
+            logger.error("Failed to verify authenticity: %s", e)
             return False
 
     def verify_signature(
@@ -290,34 +290,34 @@ class RAGGovernance:
             ... )
         """
         if not doc_path.exists():
-            logger.error(f"Document not found: {doc_path}")
+            logger.error("Document not found: %s", doc_path)
             return False
 
         # 1. Verify document authenticity
         if verify_checksum and self.config.verify_checksums:
             if not self.verify_authenticity(doc_path, metadata.content_hash):
-                logger.error(f"Checksum verification failed for {doc_path.name}")
+                logger.error("Checksum verification failed for %s", doc_path.name)
                 return False
 
         # 2. Check digital signature if present
         sig_path = doc_path.with_suffix(doc_path.suffix + '.sig')
         if sig_path.exists():
-            logger.info(f"Digital signature found: {sig_path}")
+            logger.info("Digital signature found: %s", sig_path)
             if not self.verify_signature(doc_path, sig_path):
-                logger.error(f"Digital signature verification failed for {doc_path.name}")
+                logger.error("Digital signature verification failed for %s", doc_path.name)
                 return False
 
         # 3. Create approval request
         request_key = metadata.collection
         if request_key in self.approval_requests:
-            logger.warning(f"Approval request already exists for {request_key}")
+            logger.warning("Approval request already exists for %s", request_key)
             # Update existing request
             existing = self.approval_requests[request_key]
             if existing.status == 'approved':
-                logger.info(f"Collection {request_key} already approved")
+                logger.info("Collection %s already approved", request_key)
                 return True
             elif existing.status == 'rejected':
-                logger.warning(f"Collection {request_key} previously rejected, re-submitting")
+                logger.warning("Collection %s previously rejected, re-submitting", request_key)
 
         approval_request = ApprovalRequest(
             doc_path=doc_path,
@@ -371,19 +371,19 @@ class RAGGovernance:
             >>> assert req.status == 'approved'  # 2/3 majority reached
         """
         if collection not in self.approval_requests:
-            logger.error(f"No approval request found for {collection}")
+            logger.error("No approval request found for %s", collection)
             return False
 
         request = self.approval_requests[collection]
 
         # Check if approver is authorized
         if approver not in request.approvers_required:
-            logger.error(f"Approver {approver} not authorized for {collection}")
+            logger.error("Approver %s not authorized for %s", approver, collection)
             return False
 
         # Check if already voted
         if approver in request.approvers_voted:
-            logger.warning(f"Approver {approver} already voted on {collection}")
+            logger.warning("Approver %s already voted on %s", approver, collection)
             return False
 
         # Record vote

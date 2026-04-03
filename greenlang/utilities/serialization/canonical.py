@@ -48,6 +48,8 @@ except ImportError:
     np = None
     NUMPY_AVAILABLE = False
 
+from greenlang.exceptions import DataException
+
 logger = logging.getLogger(__name__)
 
 # Type aliases for clarity
@@ -55,7 +57,7 @@ JSONValue = Union[None, bool, int, float, str, List['JSONValue'], Dict[str, 'JSO
 TypeHandler = Callable[[Any], JSONValue]
 
 
-class CanonicalSerializationError(Exception):
+class CanonicalSerializationError(DataException):
     """Exception raised for errors during canonical serialization."""
     pass
 
@@ -455,7 +457,7 @@ def diff_canonical(obj1: Any, obj2: Any) -> Dict[str, Any]:
             }
 
     except Exception as e:
-        logger.error(f"Error during diff calculation: {e}")
+        logger.error("Error during diff calculation: %s", e)
         result['error'] = str(e)
 
     return result

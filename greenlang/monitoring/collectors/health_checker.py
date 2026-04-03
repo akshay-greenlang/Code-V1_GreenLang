@@ -103,9 +103,9 @@ class HealthChecker:
             if isinstance(result, ServiceHealth):
                 self.health_results[result.service_name] = result
             elif isinstance(result, Exception):
-                logger.error(f"Health check exception: {result}")
+                logger.error("Health check exception: %s", result)
 
-        logger.info(f"Health checks completed for {len(self.health_results)} services")
+        logger.info("Health checks completed for %s services", len(self.health_results))
         return self.health_results
 
     async def _check_service(
@@ -155,7 +155,7 @@ class HealthChecker:
                                 'dependencies': data.get('dependencies')
                             }
                         except Exception as e:
-                            logger.debug(f"Failed to parse health response metadata for {service_name}: {e}")
+                            logger.debug("Failed to parse health response metadata for %s: %s", service_name, e)
                             metadata = {}
 
                         return ServiceHealth(
@@ -388,7 +388,7 @@ Unhealthy: {unhealthy}
             service_response_time.labels(service=service_name).set(health.response_time_ms)
 
         push_to_gateway(pushgateway_url, job='health_check', registry=registry)
-        logger.info(f"Health metrics pushed to {pushgateway_url}")
+        logger.info("Health metrics pushed to %s", pushgateway_url)
 
 
 async def main():

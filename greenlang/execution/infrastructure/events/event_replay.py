@@ -685,7 +685,7 @@ class EventReplayManager:
         except Exception as e:
             job.progress.status = ReplayStatus.FAILED
             job.progress.last_error = str(e)
-            logger.error(f"Replay failed: {e}", exc_info=True)
+            logger.error("Replay failed: %s", e, exc_info=True)
             raise
 
         finally:
@@ -797,7 +797,7 @@ class EventReplayManager:
                 else:
                     handler(progress)
             except Exception as e:
-                logger.error(f"Progress handler error: {e}")
+                logger.error("Progress handler error: %s", e)
 
     # ==========================================================================
     # Job Management
@@ -829,7 +829,7 @@ class EventReplayManager:
             created_by=created_by
         )
         self._active_jobs[job.job_id] = job
-        logger.info(f"Created replay job: {job.job_id}")
+        logger.info("Created replay job: %s", job.job_id)
         return job
 
     async def start_job(
@@ -862,7 +862,7 @@ class EventReplayManager:
                     job.progress.failed_events += 1
                     self._total_failed += 1
                     job.progress.last_error = str(e)
-                    logger.error(f"Event handler error: {e}")
+                    logger.error("Event handler error: %s", e)
 
                     if self.config.stop_on_error:
                         raise
@@ -885,7 +885,7 @@ class EventReplayManager:
             raise ValueError(f"Job not found: {job_id}")
 
         job.progress.status = ReplayStatus.PAUSED
-        logger.info(f"Paused replay job: {job_id}")
+        logger.info("Paused replay job: %s", job_id)
 
     async def resume_job(
         self,
@@ -930,7 +930,7 @@ class EventReplayManager:
                 pass
 
         self._job_tasks.pop(job_id, None)
-        logger.info(f"Cancelled replay job: {job_id}")
+        logger.info("Cancelled replay job: %s", job_id)
 
     async def get_job_progress(self, job_id: str) -> Optional[ReplayProgress]:
         """

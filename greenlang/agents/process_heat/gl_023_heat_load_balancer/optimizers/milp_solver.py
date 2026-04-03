@@ -352,7 +352,7 @@ class MILPLoadBalancer:
             )
 
         n_units = len(equipment_fleet)
-        self.logger.info(
+        logger.info(
             f"Formulating MILP problem: {n_units} units, "
             f"demand={demand:.1f} kW"
         )
@@ -407,7 +407,7 @@ class MILPLoadBalancer:
         self._problem_formulated = True
 
         elapsed = (time.perf_counter() - start_time) * 1000
-        self.logger.info(f"Problem formulation completed in {elapsed:.2f} ms")
+        logger.info("Problem formulation completed in %.2f ms", elapsed)
 
     def add_demand_constraint(
         self, total_demand: float, tolerance: float = 0.01
@@ -443,7 +443,7 @@ class MILPLoadBalancer:
             self._A_ub = np.vstack([self._A_ub, row_min, row_max])
             self._b_ub = np.append(self._b_ub, [-demand_min, demand_max])
 
-        self.logger.debug(
+        logger.debug(
             f"Added demand constraint: {demand_min:.1f} <= sum(load) <= {demand_max:.1f}"
         )
 
@@ -487,7 +487,7 @@ class MILPLoadBalancer:
             self._A_ub = np.vstack([self._A_ub, row_min, row_max])
             self._b_ub = np.append(self._b_ub, [0, 0])
 
-        self.logger.debug(
+        logger.debug(
             f"Added equipment limits for unit {unit_idx}: "
             f"{min_load:.1f} <= load <= {max_load:.1f}"
         )
@@ -505,7 +505,7 @@ class MILPLoadBalancer:
         for i, unit in enumerate(self.equipment_fleet):
             self.add_equipment_limits(i, unit.min_load_kw, unit.max_load_kw)
 
-        self.logger.info(
+        logger.info(
             f"Added binary on/off constraints for {len(self.equipment_fleet)} units"
         )
 
@@ -567,7 +567,7 @@ class MILPLoadBalancer:
                 self._A_ub = np.vstack([self._A_ub, row_down])
                 self._b_ub = np.append(self._b_ub, -current_load + max_ramp_down)
 
-        self.logger.info(f"Added ramp rate constraints for {n_units} units")
+        logger.info("Added ramp rate constraints for %s units", n_units)
 
     def add_minimum_runtime_constraints(
         self,
@@ -602,18 +602,18 @@ class MILPLoadBalancer:
             # If unit is currently ON and hasn't met min on-time, force ON
             if unit.is_on and time_in_state < min_on:
                 self._bounds[self._on_vars_start + i] = (1, 1)
-                self.logger.debug(
+                logger.debug(
                     f"Unit {unit.unit_id} forced ON (min on-time not met)"
                 )
 
             # If unit is currently OFF and hasn't met min off-time, force OFF
             elif not unit.is_on and time_in_state < min_off:
                 self._bounds[self._on_vars_start + i] = (0, 0)
-                self.logger.debug(
+                logger.debug(
                     f"Unit {unit.unit_id} forced OFF (min off-time not met)"
                 )
 
-        self.logger.info(
+        logger.info(
             "Added minimum runtime constraints based on current state"
         )
 
@@ -652,7 +652,7 @@ class MILPLoadBalancer:
                 self._A_ub = np.vstack([self._A_ub, row])
                 self._b_ub = np.append(self._b_ub, was_on)
 
-        self.logger.info(
+        logger.info(
             f"Added startup cost constraints for {len(self.equipment_fleet)} units"
         )
 
@@ -710,7 +710,7 @@ class MILPLoadBalancer:
         # Penalty for slack (unmet demand)
         self._c[self._slack_vars_start] = self.config.violation_penalty
 
-        self.logger.info(
+        logger.info(
             f"Set objective: {objective_type.value} "
             f"(cost_weight={cost_weight}, emissions_weight={emissions_weight})"
         )
@@ -745,7 +745,7 @@ class MILPLoadBalancer:
         time_limit = time_limit_s or self.config.time_limit_s
         gap_tol = gap_tolerance or self.config.gap_tolerance
 
-        self.logger.info(
+        logger.info(
             f"Solving MILP with {self.config.solver.value} "
             f"(time_limit={time_limit}s, gap={gap_tol})"
         )
@@ -764,7 +764,7 @@ class MILPLoadBalancer:
         # Calculate provenance hash
         result.provenance_hash = self._calculate_provenance(result)
 
-        self.logger.info(
+        logger.info(
             f"Solve completed: status={result.status.value}, "
             f"objective={result.objective_value}, time={result.solver_time_s:.2f}s"
         )
@@ -1173,4 +1173,4 @@ class MILPLoadBalancer:
         self._b_ub = None
         self._bounds = []
         self._integrality = []
-        self.logger.info("Solver state reset")
+        logger.info("Solver state reset")

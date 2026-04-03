@@ -62,12 +62,6 @@ def restore_sockets():
     socket.create_connection = saved_cc
 
 
-@pytest.fixture(autouse=True)
-def mock_agents():
-    """Override parent conftest mock_agents (not needed for orchestrator tests)."""
-    yield
-
-
 # ---------------------------------------------------------------------------
 # Integration fixtures
 # ---------------------------------------------------------------------------

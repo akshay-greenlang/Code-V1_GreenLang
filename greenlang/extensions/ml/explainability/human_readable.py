@@ -353,7 +353,7 @@ class HumanReadableExplainer:
         explanation = "\n\n".join(sections)
 
         elapsed_ms = (datetime.now() - start_time).total_seconds() * 1000
-        logger.debug(f"Generated explanation in {elapsed_ms:.2f}ms")
+        logger.debug("Generated explanation in %.2fms", elapsed_ms)
 
         return explanation
 
@@ -585,7 +585,7 @@ class HumanReadableExplainer:
         """
         self.audience = audience
         self.style = self.AUDIENCE_STYLES.get(audience, self.AUDIENCE_STYLES[AudienceType.ENGINEER])
-        logger.debug(f"Audience updated to {audience.value}")
+        logger.debug("Audience updated to %s", audience.value)
 
     def set_equipment_type(self, equipment_type: str) -> None:
         """
@@ -595,7 +595,7 @@ class HumanReadableExplainer:
             equipment_type: New equipment type
         """
         self.equipment_type = equipment_type
-        logger.debug(f"Equipment type updated to {equipment_type}")
+        logger.debug("Equipment type updated to %s", equipment_type)
 
 
 class ProcessHeatExplanationTemplates:

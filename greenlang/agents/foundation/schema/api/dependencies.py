@@ -620,7 +620,7 @@ async def check_api_key(
         return
 
     if not context.api_key:
-        logger.warning(f"Missing API key [{context.trace_id}]")
+        logger.warning("Missing API key [%s]", context.trace_id)
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail={
@@ -632,7 +632,7 @@ async def check_api_key(
         )
 
     if context.api_key not in config.allowed_api_keys:
-        logger.warning(f"Invalid API key [{context.trace_id}]")
+        logger.warning("Invalid API key [%s]", context.trace_id)
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail={

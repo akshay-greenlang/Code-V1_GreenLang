@@ -282,7 +282,7 @@ class FanoutEventEmitter:
             try:
                 handler(event)
             except Exception as e:
-                logger.error(f"Event handler error: {e}", exc_info=True)
+                logger.error("Event handler error: %s", e, exc_info=True)
 
         return event
 
@@ -438,7 +438,7 @@ class MapStepExecutor:
         try:
             items = evaluator.evaluate(self._config.items_expression)
         except Exception as e:
-            logger.error(f"Failed to evaluate items expression: {e}", exc_info=True)
+            logger.error("Failed to evaluate items expression: %s", e, exc_info=True)
             raise ValueError(f"Invalid items expression '{self._config.items_expression}': {e}") from e
 
         if not isinstance(items, (list, tuple)):
@@ -555,12 +555,12 @@ class MapStepExecutor:
                     try:
                         await task
                     except Exception as e:
-                        logger.error(f"Child step {child_id} failed: {e}", exc_info=True)
+                        logger.error("Child step %s failed: %s", child_id, e, exc_info=True)
                         if self._config.failure_policy == FailurePolicy.FAIL_FAST:
                             await self.cancel()
                             break
         except asyncio.CancelledError:
-            logger.warning(f"Map step {self._config.step_id} was cancelled")
+            logger.warning("Map step %s was cancelled", self._config.step_id)
             await self.cancel()
 
     async def _execute_continue_on_error(self, tasks: List[Tuple[str, asyncio.Task]]) -> None:
@@ -568,7 +568,7 @@ class MapStepExecutor:
         results = await asyncio.gather(*[task for _, task in tasks], return_exceptions=True)
         for (child_id, _), result in zip(tasks, results):
             if isinstance(result, Exception):
-                logger.error(f"Child step {child_id} raised exception: {result}")
+                logger.error("Child step %s raised exception: %s", child_id, result)
 
     async def _execute_child(
         self,
@@ -665,7 +665,7 @@ class MapStepExecutor:
                 result.status = ChildStepStatus.FAILED
                 result.error = str(e)
 
-                logger.error(f"Child step {child_id} failed: {e}", exc_info=True)
+                logger.error("Child step %s failed: %s", child_id, e, exc_info=True)
 
                 self._event_emitter.emit(
                     FanoutEventType.FANOUT_ITEM_FAILED,
@@ -700,7 +700,7 @@ class MapStepExecutor:
                 result.status = ChildStepStatus.CANCELLED
                 result.completed_at = datetime.now(timezone.utc).isoformat()
 
-        logger.info(f"Map step {self._config.step_id} cancelled")
+        logger.info("Map step %s cancelled", self._config.step_id)
 
     @property
     def is_cancelled(self) -> bool:

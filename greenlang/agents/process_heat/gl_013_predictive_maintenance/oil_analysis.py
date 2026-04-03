@@ -162,7 +162,7 @@ class OilAnalyzer:
             ValueError: If reading is invalid
         """
         start_time = datetime.now(timezone.utc)
-        logger.info(f"Analyzing oil sample: {reading.sample_id}")
+        logger.info("Analyzing oil sample: %s", reading.sample_id)
 
         # Use provided baseline or instance baseline
         base = baseline or self.baseline

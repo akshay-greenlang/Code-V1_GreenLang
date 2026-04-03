@@ -447,7 +447,7 @@ class InvestmentsPipelineEngine:
             dur = self._elapsed_ms(start)
             stage_durations[PipelineStage.VALIDATE.value] = dur
             self._record_provenance(chain_id, PipelineStage.VALIDATE, len(validated_holdings))
-            logger.info(f"[{chain_id}] VALIDATE completed in {dur:.2f}ms ({len(validated_holdings)} holdings)")
+            logger.info("[%s] VALIDATE completed in %.2fms (%s holdings)", chain_id, dur, len(validated_holdings))
 
             # Stage 2: CLASSIFY
             start = datetime.now(timezone.utc)
@@ -455,7 +455,7 @@ class InvestmentsPipelineEngine:
             dur = self._elapsed_ms(start)
             stage_durations[PipelineStage.CLASSIFY.value] = dur
             self._record_provenance(chain_id, PipelineStage.CLASSIFY, len(classified))
-            logger.info(f"[{chain_id}] CLASSIFY completed in {dur:.2f}ms")
+            logger.info("[%s] CLASSIFY completed in %.2fms", chain_id, dur)
 
             # Stage 3: NORMALIZE
             start = datetime.now(timezone.utc)
@@ -463,7 +463,7 @@ class InvestmentsPipelineEngine:
             dur = self._elapsed_ms(start)
             stage_durations[PipelineStage.NORMALIZE.value] = dur
             self._record_provenance(chain_id, PipelineStage.NORMALIZE, len(normalized))
-            logger.info(f"[{chain_id}] NORMALIZE completed in {dur:.2f}ms")
+            logger.info("[%s] NORMALIZE completed in %.2fms", chain_id, dur)
 
             # Stage 4: RESOLVE_EFS
             start = datetime.now(timezone.utc)
@@ -471,7 +471,7 @@ class InvestmentsPipelineEngine:
             dur = self._elapsed_ms(start)
             stage_durations[PipelineStage.RESOLVE_EFS.value] = dur
             self._record_provenance(chain_id, PipelineStage.RESOLVE_EFS, len(with_efs))
-            logger.info(f"[{chain_id}] RESOLVE_EFS completed in {dur:.2f}ms")
+            logger.info("[%s] RESOLVE_EFS completed in %.2fms", chain_id, dur)
 
             # Stage 5: CALCULATE
             start = datetime.now(timezone.utc)
@@ -490,7 +490,7 @@ class InvestmentsPipelineEngine:
             dur = self._elapsed_ms(start)
             stage_durations[PipelineStage.ALLOCATE.value] = dur
             self._record_provenance(chain_id, PipelineStage.ALLOCATE, len(allocated))
-            logger.info(f"[{chain_id}] ALLOCATE completed in {dur:.2f}ms")
+            logger.info("[%s] ALLOCATE completed in %.2fms", chain_id, dur)
 
             # Stage 7: AGGREGATE
             start = datetime.now(timezone.utc)
@@ -509,21 +509,21 @@ class InvestmentsPipelineEngine:
             dur = self._elapsed_ms(start)
             stage_durations[PipelineStage.COMPLIANCE.value] = dur
             self._record_provenance(chain_id, PipelineStage.COMPLIANCE, len(compliance_results))
-            logger.info(f"[{chain_id}] COMPLIANCE completed in {dur:.2f}ms")
+            logger.info("[%s] COMPLIANCE completed in %.2fms", chain_id, dur)
 
             # Stage 9: PROVENANCE
             start = datetime.now(timezone.utc)
             provenance_hash, merkle_root = self._stage_provenance(chain_id, allocated)
             dur = self._elapsed_ms(start)
             stage_durations[PipelineStage.PROVENANCE.value] = dur
-            logger.info(f"[{chain_id}] PROVENANCE completed in {dur:.2f}ms")
+            logger.info("[%s] PROVENANCE completed in %.2fms", chain_id, dur)
 
             # Stage 10: SEAL
             start = datetime.now(timezone.utc)
             sealed = self._stage_seal(aggregated, provenance_hash, merkle_root)
             dur = self._elapsed_ms(start)
             stage_durations[PipelineStage.SEAL.value] = dur
-            logger.info(f"[{chain_id}] SEAL completed in {dur:.2f}ms")
+            logger.info("[%s] SEAL completed in %.2fms", chain_id, dur)
 
             total_dur = sum(stage_durations.values())
             logger.info(
@@ -558,7 +558,7 @@ class InvestmentsPipelineEngine:
         except ValueError:
             raise
         except Exception as e:
-            logger.error(f"[{chain_id}] Pipeline failed: {e}", exc_info=True)
+            logger.error("[%s] Pipeline failed: %s", chain_id, e, exc_info=True)
             raise RuntimeError(f"Pipeline failed: {e}") from e
         finally:
             self._provenance_chains.pop(chain_id, None)
@@ -644,12 +644,12 @@ class InvestmentsPipelineEngine:
 
             # Exclude short positions (DC-INV-008)
             if h.is_short_position:
-                logger.info(f"Holding {h.holding_id}: excluded (short position, DC-INV-008)")
+                logger.info("Holding %s: excluded (short position, DC-INV-008)", h.holding_id)
                 continue
 
             # Exclude consolidated investments (DC-INV-001)
             if h.is_consolidated_scope12:
-                logger.info(f"Holding {h.holding_id}: excluded (consolidated Scope 1/2, DC-INV-001)")
+                logger.info("Holding %s: excluded (consolidated Scope 1/2, DC-INV-001)", h.holding_id)
                 continue
 
             # ISIN validation
@@ -665,7 +665,7 @@ class InvestmentsPipelineEngine:
             valid_holdings.append(h)
 
         if errors:
-            logger.warning(f"Validation warnings: {errors}")
+            logger.warning("Validation warnings: %s", errors)
 
         if not valid_holdings:
             raise ValueError(f"No valid holdings after validation: {errors}")
@@ -856,7 +856,7 @@ class InvestmentsPipelineEngine:
                 results.append(calc_result)
             except Exception as e:
                 h: InvestmentHoldingInput = item["holding"]
-                logger.error(f"Calculation failed for {h.holding_id}: {e}")
+                logger.error("Calculation failed for %s: %s", h.holding_id, e)
                 errors.append({
                     "index": idx,
                     "holding_id": h.holding_id,
@@ -1074,7 +1074,7 @@ class InvestmentsPipelineEngine:
         """
         for r in results:
             if r.attribution_factor < Decimal("0"):
-                logger.warning(f"Holding {r.holding_id}: negative attribution factor, clamping to 0")
+                logger.warning("Holding %s: negative attribution factor, clamping to 0", r.holding_id)
                 r.attribution_factor = Decimal("0")
                 r.financed_emissions_kg_co2e = Decimal("0")
 
@@ -1229,7 +1229,7 @@ class InvestmentsPipelineEngine:
             logger.warning("ComplianceCheckerEngine not available, skipping compliance")
             return []
         except Exception as e:
-            logger.error(f"Compliance stage failed: {e}", exc_info=True)
+            logger.error("Compliance stage failed: %s", e, exc_info=True)
             return [{"error": str(e)}]
 
     # ==========================================================================

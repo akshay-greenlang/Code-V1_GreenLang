@@ -264,7 +264,7 @@ class PriorityManager:
 
         # No blocking - allow command
         result = self._allow_command(command, priority)
-        logger.debug(f"Command {command.command_id} ALLOWED")
+        logger.debug("Command %s ALLOWED", command.command_id)
         return result
 
     def register_active_command(
@@ -316,7 +316,7 @@ class PriorityManager:
                     if c.command_id != command_id
                 ]
                 if len(self.active_commands[eq]) < initial:
-                    logger.debug(f"Deregistered command {command_id}")
+                    logger.debug("Deregistered command %s", command_id)
                     return True
 
         return False
@@ -345,7 +345,7 @@ class PriorityManager:
                 del self.active_commands[equipment]
 
         if cleared > 0:
-            logger.debug(f"Cleared {cleared} expired commands")
+            logger.debug("Cleared %s expired commands", cleared)
 
         return cleared
 

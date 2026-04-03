@@ -133,7 +133,7 @@ class OPCUAClient:
         self._keepalive_task: Optional[asyncio.Task] = None
         self._shutdown = False
 
-        logger.info(f"OPCUAClient initialized for endpoint: {config.endpoint}")
+        logger.info("OPCUAClient initialized for endpoint: %s", config.endpoint)
 
     async def connect(self) -> None:
         """
@@ -173,11 +173,11 @@ class OPCUAClient:
             # Start keepalive
             self._keepalive_task = asyncio.create_task(self._keepalive_loop())
 
-            logger.info(f"Connected to OPC-UA server: {self.config.endpoint}")
+            logger.info("Connected to OPC-UA server: %s", self.config.endpoint)
 
         except Exception as e:
             self.state = ConnectionState.ERROR
-            logger.error(f"Connection failed: {e}", exc_info=True)
+            logger.error("Connection failed: %s", e, exc_info=True)
             raise ConnectionError(f"Failed to connect to {self.config.endpoint}: {e}") from e
 
     async def disconnect(self) -> None:
@@ -207,9 +207,9 @@ class OPCUAClient:
         for sub_id, subscription in self.subscriptions.items():
             try:
                 await subscription.delete()
-                logger.debug(f"Deleted subscription {sub_id}")
+                logger.debug("Deleted subscription %s", sub_id)
             except Exception as e:
-                logger.warning(f"Error deleting subscription {sub_id}: {e}")
+                logger.warning("Error deleting subscription %s: %s", sub_id, e)
 
         self.subscriptions.clear()
 
@@ -218,7 +218,7 @@ class OPCUAClient:
             try:
                 await self.client.disconnect()
             except Exception as e:
-                logger.warning(f"Error during disconnect: {e}")
+                logger.warning("Error during disconnect: %s", e)
 
         self.state = ConnectionState.DISCONNECTED
         logger.info("Disconnected from OPC-UA server")
@@ -254,13 +254,13 @@ class OPCUAClient:
                     server_node = self.client.get_node(ua.ObjectIds.Server_ServerStatus)
                     await server_node.read_value()
                 except Exception as e:
-                    logger.warning(f"Keepalive failed: {e}")
+                    logger.warning("Keepalive failed: %s", e)
                     await self._handle_connection_loss()
 
             except asyncio.CancelledError:
                 break
             except Exception as e:
-                logger.error(f"Keepalive loop error: {e}")
+                logger.error("Keepalive loop error: %s", e)
 
     async def _handle_connection_loss(self) -> None:
         """Handle connection loss and attempt reconnection."""
@@ -289,11 +289,11 @@ class OPCUAClient:
                 # Resubscribe to all active subscriptions
                 await self._resubscribe_all()
 
-                logger.info(f"Reconnected after {attempt + 1} attempts")
+                logger.info("Reconnected after %s attempts", attempt + 1)
                 return
 
             except Exception as e:
-                logger.warning(f"Reconnection attempt {attempt + 1} failed: {e}")
+                logger.warning("Reconnection attempt %s failed: %s", attempt + 1, e)
 
         self.state = ConnectionState.ERROR
         logger.error("Max reconnection attempts reached")
@@ -326,11 +326,11 @@ class OPCUAClient:
         try:
             node = self.client.get_node(node_id)
             value = await node.read_value()
-            logger.debug(f"Read value from {node_id}: {value}")
+            logger.debug("Read value from %s: %s", node_id, value)
             return value
 
         except Exception as e:
-            logger.error(f"Failed to read {node_id}: {e}")
+            logger.error("Failed to read %s: %s", node_id, e)
             raise ValueError(f"Failed to read node {node_id}: {e}") from e
 
     async def read_values(self, node_ids: List[str]) -> Dict[str, Any]:
@@ -392,11 +392,11 @@ class OPCUAClient:
             provenance_str = f"{node_id}:{value}:{datetime.utcnow().isoformat()}"
             provenance_hash = hashlib.sha256(provenance_str.encode()).hexdigest()
 
-            logger.debug(f"Wrote value to {node_id}: {value}")
+            logger.debug("Wrote value to %s: %s", node_id, value)
             return provenance_hash
 
         except Exception as e:
-            logger.error(f"Failed to write to {node_id}: {e}")
+            logger.error("Failed to write to %s: %s", node_id, e)
             raise ValueError(f"Failed to write to node {node_id}: {e}") from e
 
     async def subscribe(
@@ -438,7 +438,7 @@ class OPCUAClient:
             self._data_change_handlers[node_id] = []
         self._data_change_handlers[node_id].append(callback)
 
-        logger.info(f"Subscribed to {node_id} with ID {sub_id}")
+        logger.info("Subscribed to %s with ID %s", node_id, sub_id)
         return sub_id
 
     def _create_data_change_handler(self, sub_id: str) -> Callable:
@@ -461,7 +461,7 @@ class OPCUAClient:
                     else:
                         cb(notification)
                 except Exception as e:
-                    logger.error(f"Data change handler error: {e}")
+                    logger.error("Data change handler error: %s", e)
 
         return handler
 
@@ -475,7 +475,7 @@ class OPCUAClient:
         if subscription_id in self.subscriptions:
             subscription = self.subscriptions.pop(subscription_id)
             await subscription.delete()
-            logger.info(f"Unsubscribed from {subscription_id}")
+            logger.info("Unsubscribed from %s", subscription_id)
 
     async def read_history(
         self,
@@ -515,11 +515,11 @@ class OPCUAClient:
                     status_code=dv.StatusCode.value if dv.StatusCode else 0
                 ))
 
-            logger.info(f"Read {len(data_points)} historical values from {node_id}")
+            logger.info("Read %s historical values from %s", len(data_points), node_id)
             return data_points
 
         except Exception as e:
-            logger.error(f"Failed to read history from {node_id}: {e}")
+            logger.error("Failed to read history from %s: %s", node_id, e)
             raise
 
     async def call_method(
@@ -547,11 +547,11 @@ class OPCUAClient:
 
             result = await object_node.call_method(method_node, *arguments)
 
-            logger.info(f"Called method {method_id} with {len(arguments)} args")
+            logger.info("Called method %s with %s args", method_id, len(arguments))
             return result if isinstance(result, list) else [result]
 
         except Exception as e:
-            logger.error(f"Method call failed: {e}")
+            logger.error("Method call failed: %s", e)
             raise
 
     async def browse(self, node_id: str = None) -> List[Dict[str, Any]]:

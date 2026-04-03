@@ -193,7 +193,7 @@ class RetrainingPipeline:
 
                 logger.info("Loaded pipeline state from storage")
             except Exception as e:
-                logger.warning(f"Failed to load pipeline state: {e}")
+                logger.warning("Failed to load pipeline state: %s", e)
 
     def _save_state(self) -> None:
         """Save pipeline state to storage."""
@@ -222,7 +222,7 @@ class RetrainingPipeline:
                          Signature: (config: dict) -> Tuple[model, metrics]
         """
         self._training_functions[model_name] = training_fn
-        logger.info(f"Registered training function for {model_name}")
+        logger.info("Registered training function for %s", model_name)
 
     def configure_triggers(
         self,
@@ -290,7 +290,7 @@ class RetrainingPipeline:
             self._triggers[model_name] = triggers
             self._save_state()
 
-        logger.info(f"Configured {len(triggers)} triggers for {model_name}")
+        logger.info("Configured %s triggers for %s", len(triggers), model_name)
 
     def record_new_data(self, model_name: str, count: int = 1) -> None:
         """
@@ -431,7 +431,7 @@ class RetrainingPipeline:
             ValueError: If no training function registered and no data provided.
         """
         start_time = datetime.utcnow()
-        logger.info(f"Starting retraining for {model_name}: {trigger_reason}")
+        logger.info("Starting retraining for %s: %s", model_name, trigger_reason)
 
         # Determine trigger type from reason
         trigger_type = RetrainingTriggerType.MANUAL
@@ -548,7 +548,7 @@ class RetrainingPipeline:
             return result
 
         except Exception as e:
-            logger.error(f"Retraining failed for {model_name}: {e}", exc_info=True)
+            logger.error("Retraining failed for %s: %s", model_name, e, exc_info=True)
             raise
 
     def _default_training(
@@ -644,7 +644,7 @@ class RetrainingPipeline:
         new_mae = float(np.mean(errors))
         new_rmse = float(np.sqrt(np.mean((validation_labels - new_preds) ** 2)))
 
-        logger.info(f"New model metrics: MAE={new_mae:.4f}, RMSE={new_rmse:.4f}")
+        logger.info("New model metrics: MAE=%.4f, RMSE=%.4f", new_mae, new_rmse)
 
         # Compare to baseline
         if baseline_metrics:
@@ -760,7 +760,7 @@ class RetrainingPipeline:
                 if trigger.trigger_type == trigger_type:
                     trigger.enabled = False
                     self._save_state()
-                    logger.info(f"Disabled {trigger_type} trigger for {model_name}")
+                    logger.info("Disabled %s trigger for %s", trigger_type, model_name)
                     return True
 
         return False
@@ -786,7 +786,7 @@ class RetrainingPipeline:
                 if trigger.trigger_type == trigger_type:
                     trigger.enabled = True
                     self._save_state()
-                    logger.info(f"Enabled {trigger_type} trigger for {model_name}")
+                    logger.info("Enabled %s trigger for %s", trigger_type, model_name)
                     return True
 
         return False

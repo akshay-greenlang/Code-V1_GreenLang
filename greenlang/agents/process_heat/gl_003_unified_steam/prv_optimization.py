@@ -820,7 +820,7 @@ class MultiPRVCoordinator:
             prv.prv_id: PRVOptimizer(prv) for prv in prvs
         }
 
-        logger.info(f"MultiPRVCoordinator initialized with {len(prvs)} PRVs")
+        logger.info("MultiPRVCoordinator initialized with %s PRVs", len(prvs))
 
     def optimize_load_distribution(
         self,

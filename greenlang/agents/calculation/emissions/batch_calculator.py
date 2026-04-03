@@ -175,7 +175,7 @@ class BatchCalculator:
         results = []
         completed = 0
 
-        logger.info(f"Starting batch calculation: {len(requests)} requests")
+        logger.info("Starting batch calculation: %s requests", len(requests))
 
         # Parallel execution
         with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
@@ -231,7 +231,7 @@ class BatchCalculator:
         try:
             return self.calculator.calculate(request)
         except Exception as e:
-            logger.error(f"Calculation failed for {request.factor_id}: {str(e)}")
+            logger.error("Calculation failed for %s: %s", request.factor_id, e)
 
             if not continue_on_error:
                 raise
@@ -282,7 +282,7 @@ class BatchCalculator:
                 groups[key] = []
             groups[key].append(req)
 
-        logger.info(f"Grouped {len(requests)} requests into {len(groups)} groups by {group_by}")
+        logger.info("Grouped %s requests into %s groups by %s", len(requests), len(groups), group_by)
 
         # Calculate each group
         results = {}

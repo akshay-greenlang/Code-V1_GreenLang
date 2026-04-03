@@ -471,7 +471,7 @@ class SHAPEmissionsAnalyzer:
         self._explainer = None
         self._background_data = None
 
-        logger.info(f"SHAPEmissionsAnalyzer initialized with {method.value} method")
+        logger.info("SHAPEmissionsAnalyzer initialized with %s method", method.value)
 
     def _get_cache_key(
         self,
@@ -491,7 +491,7 @@ class SHAPEmissionsAnalyzer:
         if cache_key in self._cache:
             result, timestamp = self._cache[cache_key]
             if datetime.now(timezone.utc) - timestamp < timedelta(hours=self.cache_ttl_hours):
-                logger.debug(f"Cache hit for {cache_key}")
+                logger.debug("Cache hit for %s", cache_key)
                 return result
             else:
                 del self._cache[cache_key]
@@ -526,7 +526,7 @@ class SHAPEmissionsAnalyzer:
         else:
             self._background_data = background_data
 
-        logger.info(f"Fitted background data with {len(self._background_data)} samples")
+        logger.info("Fitted background data with %s samples", len(self._background_data))
 
     def explain_prediction(
         self,
@@ -664,7 +664,7 @@ class SHAPEmissionsAnalyzer:
         # Cache result
         self._cache_result(cache_key, result)
 
-        logger.info(f"Generated SHAP explanation with {len(contributions)} features")
+        logger.info("Generated SHAP explanation with %s features", len(contributions))
 
         return result
 
@@ -754,7 +754,7 @@ class SHAPEmissionsAnalyzer:
         for i, imp in enumerate(importance_list):
             imp.rank = i + 1
 
-        logger.info(f"Calculated global importance for {len(feature_names)} features")
+        logger.info("Calculated global importance for %s features", len(feature_names))
 
         return importance_list
 
@@ -787,7 +787,7 @@ class SHAPEmissionsAnalyzer:
         """Clear explanation cache."""
         count = len(self._cache)
         self._cache.clear()
-        logger.info(f"Cleared {count} cached explanations")
+        logger.info("Cleared %s cached explanations", count)
         return count
 
 
@@ -849,7 +849,7 @@ class LIMEExplainer:
 
         self._explainer = None
 
-        logger.info(f"LIMEExplainer initialized with {num_features} features")
+        logger.info("LIMEExplainer initialized with %s features", num_features)
 
     def fit(
         self,
@@ -876,7 +876,7 @@ class LIMEExplainer:
             mode="regression",
         )
 
-        logger.info(f"LIME explainer fitted on {len(training_data)} samples")
+        logger.info("LIME explainer fitted on %s samples", len(training_data))
 
     def explain_prediction(
         self,
@@ -972,7 +972,7 @@ class LIMEExplainer:
             narrative_summary=self._generate_narrative(contributions),
         )
 
-        logger.info(f"Generated LIME explanation with {len(contributions)} features")
+        logger.info("Generated LIME explanation with %s features", len(contributions))
 
         return result
 
@@ -1148,7 +1148,7 @@ class CounterfactualExplainer:
             narrative=narrative,
         )
 
-        logger.info(f"Found counterfactual with {len(changes)} changes")
+        logger.info("Found counterfactual with %s changes", len(changes))
 
         return result
 
@@ -1245,7 +1245,7 @@ class EmissionsExplainabilityManager:
         if self._lime_explainer:
             self._lime_explainer.fit(data, feature_names)
 
-        logger.info(f"Fitted background data with {len(data)} samples")
+        logger.info("Fitted background data with %s samples", len(data))
 
     def explain(
         self,

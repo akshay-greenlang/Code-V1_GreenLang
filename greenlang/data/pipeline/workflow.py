@@ -146,7 +146,7 @@ class UpdateWorkflow:
         conn.commit()
         conn.close()
 
-        logger.info(f"Version database initialized: {self.version_db_path}")
+        logger.info("Version database initialized: %s", self.version_db_path)
 
     def submit_change_request(
         self,
@@ -173,7 +173,7 @@ class UpdateWorkflow:
         Returns:
             ChangeRequest object
         """
-        logger.info(f"Submitting change request for {factor_id}")
+        logger.info("Submitting change request for %s", factor_id)
 
         # Get current values
         current_values = self._get_current_factor_values(factor_id)
@@ -206,7 +206,7 @@ class UpdateWorkflow:
         # Route to appropriate approver
         self.approval_manager.assign_reviewer(request, approval_level)
 
-        logger.info(f"Change request submitted: {request_id} (approval level: {approval_level})")
+        logger.info("Change request submitted: %s (approval level: %s)", request_id, approval_level)
 
         return request
 
@@ -371,18 +371,18 @@ class UpdateWorkflow:
         request = self._load_change_request(request_id)
 
         if not request:
-            logger.error(f"Change request not found: {request_id}")
+            logger.error("Change request not found: %s", request_id)
             return False
 
         if not request.approved:
-            logger.error(f"Change request not approved: {request_id}")
+            logger.error("Change request not approved: %s", request_id)
             return False
 
         if request.implemented:
-            logger.warning(f"Change request already implemented: {request_id}")
+            logger.warning("Change request already implemented: %s", request_id)
             return True
 
-        logger.info(f"Implementing change request: {request_id}")
+        logger.info("Implementing change request: %s", request_id)
 
         try:
             # Apply changes to database
@@ -397,11 +397,11 @@ class UpdateWorkflow:
             # Mark request as implemented
             self._mark_implemented(request_id)
 
-            logger.info(f"Change request implemented: {request_id}")
+            logger.info("Change request implemented: %s", request_id)
             return True
 
         except Exception as e:
-            logger.error(f"Failed to implement change request: {e}")
+            logger.error("Failed to implement change request: %s", e)
             return False
 
     def _load_change_request(self, request_id: str) -> Optional[ChangeRequest]:
@@ -617,7 +617,7 @@ class ApprovalManager:
             conn.commit()
             conn.close()
 
-            logger.info(f"Assigned reviewer {assigned_reviewer} to request {request.request_id}")
+            logger.info("Assigned reviewer %s to request %s", assigned_reviewer, request.request_id)
 
     def approve_request(
         self,
@@ -655,7 +655,7 @@ class ApprovalManager:
         conn.commit()
         conn.close()
 
-        logger.info(f"Change request approved: {request_id} by {reviewed_by}")
+        logger.info("Change request approved: %s by %s", request_id, reviewed_by)
 
     def reject_request(
         self,
@@ -692,7 +692,7 @@ class ApprovalManager:
         conn.commit()
         conn.close()
 
-        logger.info(f"Change request rejected: {request_id} by {reviewed_by}")
+        logger.info("Change request rejected: %s by %s", request_id, reviewed_by)
 
     def get_pending_reviews(self, reviewer: str) -> List[Dict[str, Any]]:
         """

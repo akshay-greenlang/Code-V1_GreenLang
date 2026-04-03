@@ -514,9 +514,9 @@ class ComplianceDashboard:
         try:
             with open(output_path, 'w') as f:
                 json.dump(dashboard, f, indent=2)
-            logger.info(f"Compliance dashboard exported to {output_path}")
+            logger.info("Compliance dashboard exported to %s", output_path)
         except Exception as e:
-            logger.error(f"Failed to export dashboard: {e}")
+            logger.error("Failed to export dashboard: %s", e)
             raise
 
 

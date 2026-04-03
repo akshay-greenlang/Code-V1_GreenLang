@@ -66,7 +66,7 @@ class BaseTransformer(ABC):
             except Exception as e:
                 self.records_failed += 1
                 self.errors.append(str(e))
-                logger.warning(f"Transformation failed: {e}")
+                logger.warning("Transformation failed: %s", e)
         return results
 
     def get_stats(self) -> Dict[str, int]:
@@ -185,7 +185,7 @@ class EnrichmentTransformer(BaseTransformer):
             try:
                 enriched[field_name] = calc_func(enriched)
             except Exception as e:
-                logger.warning(f"Calculation failed for {field_name}: {e}")
+                logger.warning("Calculation failed for %s: %s", field_name, e)
 
         return enriched
 
@@ -308,7 +308,7 @@ class NormalizationTransformer(BaseTransformer):
             factor = self.conversions[reverse_key]
             return float(value) / factor
 
-        logger.warning(f"No conversion found: {from_unit} -> {to_unit}")
+        logger.warning("No conversion found: %s -> %s", from_unit, to_unit)
         return None
 
 
@@ -381,7 +381,7 @@ class AggregationTransformer(BaseTransformer):
                     elif agg_func == 'count':
                         aggregated[f"{field}_{agg_func}"] = len(values)
                 except Exception as e:
-                    logger.warning(f"Aggregation failed: {e}")
+                    logger.warning("Aggregation failed: %s", e)
 
             aggregated['_record_count'] = len(records)
             results.append(aggregated)

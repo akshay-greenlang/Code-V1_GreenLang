@@ -174,7 +174,7 @@ class BaselineTargetTrackerAgent(DeterministicAgent):
 
     def __init__(self, enable_audit_trail: bool = True):
         super().__init__(enable_audit_trail=enable_audit_trail)
-        logger.info(f"Initialized {self.AGENT_NAME} v{self.VERSION}")
+        logger.info("Initialized %s v%s", self.AGENT_NAME, self.VERSION)
 
     def execute(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
         """Execute baseline and target tracking."""
@@ -246,7 +246,7 @@ class BaselineTargetTrackerAgent(DeterministicAgent):
             return output.model_dump()
 
         except Exception as e:
-            logger.error(f"Target tracking failed: {str(e)}", exc_info=True)
+            logger.error("Target tracking failed: %s", e, exc_info=True)
             end_time = DeterministicClock.now()
             return {
                 "success": False,

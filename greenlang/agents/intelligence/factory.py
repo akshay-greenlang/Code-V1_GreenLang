@@ -100,12 +100,12 @@ def detect_best_provider() -> str:
     """
     if has_openai_key():
         model = "gpt-4o"  # Good balance of cost and quality
-        logger.info(f"Auto-detected: OpenAI (using {model})")
+        logger.info("Auto-detected: OpenAI (using %s)", model)
         return model
 
     if has_anthropic_key():
         model = "claude-3-sonnet-20240229"
-        logger.info(f"Auto-detected: Anthropic (using {model})")
+        logger.info("Auto-detected: Anthropic (using %s)", model)
         return model
 
     logger.warning(
@@ -185,7 +185,7 @@ def create_openai_provider(
         max_retries=config.max_retries,
     )
 
-    logger.info(f"Creating OpenAI provider: model={model}")
+    logger.info("Creating OpenAI provider: model=%s", model)
 
     return OpenAIProvider(provider_config)
 
@@ -228,7 +228,7 @@ def create_anthropic_provider(
         max_retries=config.max_retries,
     )
 
-    logger.info(f"Creating Anthropic provider: model={model}")
+    logger.info("Creating Anthropic provider: model=%s", model)
 
     return AnthropicProvider(provider_config)
 
@@ -456,11 +456,11 @@ def create_provider(
 
     # Unknown model - try to infer from API keys
     if has_openai_key():
-        logger.warning(f"Unknown model '{model}', defaulting to OpenAI with this model name")
+        logger.warning("Unknown model '%s', defaulting to OpenAI with this model name", model)
         return create_openai_provider(model, config, api_key)
 
     if has_anthropic_key():
-        logger.warning(f"Unknown model '{model}', defaulting to Anthropic with this model name")
+        logger.warning("Unknown model '%s', defaulting to Anthropic with this model name", model)
         return create_anthropic_provider(model, config, api_key)
 
     # Fallback to deterministic (NOT demo mode!)

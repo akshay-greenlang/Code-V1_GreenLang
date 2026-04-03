@@ -1799,7 +1799,7 @@ def _include_auth_routers(app: "FastAPI") -> None:
             app.include_router(eudr_mmd_api.get_router())
             logger.info("EUDR-029 Mitigation Measure Designer router registered")
         except Exception as e:
-            logger.warning(f"Failed to register EUDR-029 router: {e}")
+            logger.warning("Failed to register EUDR-029 router: %s", e)
 
     # AGENT-EUDR-030: Documentation Generator
     if _EUDR_DGN_AVAILABLE:
@@ -1807,7 +1807,7 @@ def _include_auth_routers(app: "FastAPI") -> None:
             app.include_router(eudr_dgn_api.get_router())
             logger.info("EUDR-030 Documentation Generator router registered")
         except Exception as e:
-            logger.warning(f"Failed to register EUDR-030 router: {e}")
+            logger.warning("Failed to register EUDR-030 router: %s", e)
 
     # AGENT-EUDR-031: Stakeholder Engagement Tool
     if _EUDR_SET_AVAILABLE:
@@ -1815,7 +1815,7 @@ def _include_auth_routers(app: "FastAPI") -> None:
             app.include_router(eudr_set_api.get_router())
             logger.info("EUDR-031 Stakeholder Engagement Tool router registered")
         except Exception as e:
-            logger.warning(f"Failed to register EUDR-031 router: {e}")
+            logger.warning("Failed to register EUDR-031 router: %s", e)
 
     # AGENT-EUDR-032: Grievance Mechanism Manager
     if _EUDR_GMM_AVAILABLE:
@@ -1823,7 +1823,7 @@ def _include_auth_routers(app: "FastAPI") -> None:
             app.include_router(eudr_gmm_api.get_router())
             logger.info("EUDR-032 Grievance Mechanism Manager router registered")
         except Exception as e:
-            logger.warning(f"Failed to register EUDR-032 router: {e}")
+            logger.warning("Failed to register EUDR-032 router: %s", e)
 
     # AGENT-EUDR-033: Continuous Monitoring Agent
     if _EUDR_CM_AVAILABLE:
@@ -1831,7 +1831,7 @@ def _include_auth_routers(app: "FastAPI") -> None:
             app.include_router(eudr_cm_api.get_router())
             logger.info("EUDR-033 Continuous Monitoring Agent router registered")
         except Exception as e:
-            logger.warning(f"Failed to register EUDR-033 router: {e}")
+            logger.warning("Failed to register EUDR-033 router: %s", e)
 
     # AGENT-EUDR-034: Annual Review Scheduler
     if _EUDR_ARS_AVAILABLE:
@@ -1839,7 +1839,7 @@ def _include_auth_routers(app: "FastAPI") -> None:
             app.include_router(eudr_ars_api.get_router())
             logger.info("EUDR-034 Annual Review Scheduler router registered")
         except Exception as e:
-            logger.warning(f"Failed to register EUDR-034 router: {e}")
+            logger.warning("Failed to register EUDR-034 router: %s", e)
 
     # AGENT-EUDR-035: Improvement Plan Creator
     if _EUDR_IPC_AVAILABLE:
@@ -1847,7 +1847,7 @@ def _include_auth_routers(app: "FastAPI") -> None:
             app.include_router(eudr_ipc_api.get_router())
             logger.info("EUDR-035 Improvement Plan Creator router registered")
         except Exception as e:
-            logger.warning(f"Failed to register EUDR-035 router: {e}")
+            logger.warning("Failed to register EUDR-035 router: %s", e)
 
     # AGENT-EUDR-036: EU Information System Interface
     if _EUDR_EUIS_AVAILABLE:
@@ -1855,7 +1855,7 @@ def _include_auth_routers(app: "FastAPI") -> None:
             app.include_router(eudr_euis_api.get_router())
             logger.info("EUDR-036 EU Information System Interface router registered")
         except Exception as e:
-            logger.warning(f"Failed to register EUDR-036 router: {e}")
+            logger.warning("Failed to register EUDR-036 router: %s", e)
 
     # AGENT-EUDR-037: Due Diligence Statement Creator
     if _EUDR_DDSC_AVAILABLE:
@@ -1863,7 +1863,7 @@ def _include_auth_routers(app: "FastAPI") -> None:
             app.include_router(eudr_ddsc_api.get_router())
             logger.info("EUDR-037 Due Diligence Statement Creator router registered")
         except Exception as e:
-            logger.warning(f"Failed to register EUDR-037 router: {e}")
+            logger.warning("Failed to register EUDR-037 router: %s", e)
 
     # AGENT-EUDR-038: Reference Number Generator
     if _EUDR_RNG_AVAILABLE:
@@ -1871,7 +1871,7 @@ def _include_auth_routers(app: "FastAPI") -> None:
             app.include_router(eudr_rng_api.get_router())
             logger.info("EUDR-038 Reference Number Generator router registered")
         except Exception as e:
-            logger.warning(f"Failed to register EUDR-038 router: {e}")
+            logger.warning("Failed to register EUDR-038 router: %s", e)
 
     # AGENT-EUDR-039: Customs Declaration Support
     if _EUDR_CDS_AVAILABLE:
@@ -1879,7 +1879,7 @@ def _include_auth_routers(app: "FastAPI") -> None:
             app.include_router(eudr_cds_api.get_router())
             logger.info("EUDR-039 Customs Declaration Support router registered")
         except Exception as e:
-            logger.warning(f"Failed to register EUDR-039 router: {e}")
+            logger.warning("Failed to register EUDR-039 router: %s", e)
 
     # AGENT-EUDR-040: Authority Communication Manager
     if _EUDR_ACM_AVAILABLE:
@@ -1887,7 +1887,7 @@ def _include_auth_routers(app: "FastAPI") -> None:
             app.include_router(eudr_acm_api.get_router())
             logger.info("EUDR-040 Authority Communication Manager router registered")
         except Exception as e:
-            logger.warning(f"Failed to register EUDR-040 router: {e}")
+            logger.warning("Failed to register EUDR-040 router: %s", e)
 
 
 def _protect_all_routes(app: "FastAPI") -> None:

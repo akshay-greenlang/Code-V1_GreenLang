@@ -195,7 +195,7 @@ class AsyncFuelAgentAI(AsyncAgentBase[FuelInput, FuelOutput]):
             # Setup tools
             self._setup_tools()
 
-            self.logger.info(f"AsyncFuelAgentAI initialized with provider: {self.config.llm.provider}")
+            logger.info("AsyncFuelAgentAI initialized with provider: %s", self.config.llm.provider)
 
     async def cleanup_async(self) -> None:
         """Cleanup async resources.
@@ -207,7 +207,7 @@ class AsyncFuelAgentAI(AsyncAgentBase[FuelInput, FuelOutput]):
         if hasattr(self.provider, 'close'):
             await self.provider.close()
 
-        self.logger.info("AsyncFuelAgentAI cleaned up")
+        logger.info("AsyncFuelAgentAI cleaned up")
 
     def _setup_tools(self) -> None:
         """Setup tool definitions for ChatSession."""
@@ -333,7 +333,7 @@ class AsyncFuelAgentAI(AsyncAgentBase[FuelInput, FuelOutput]):
         if not self.fuel_agent.validate(payload):
             raise ValueError(f"Invalid input payload: {payload}")
 
-        self.logger.debug(f"[{context.execution_id}] Input validated: {payload['fuel_type']}")
+        logger.debug("[%s] Input validated: %s", context.execution_id, payload['fuel_type'])
         return payload
 
     async def execute_impl_async(
@@ -373,7 +373,7 @@ class AsyncFuelAgentAI(AsyncAgentBase[FuelInput, FuelOutput]):
         # Reset citations for new execution
         self._current_citations = []
 
-        self.logger.info(
+        logger.info(
             f"[{context.execution_id}] Calculating emissions for "
             f"{amount} {unit} of {fuel_type} in {country}"
         )
@@ -417,7 +417,7 @@ class AsyncFuelAgentAI(AsyncAgentBase[FuelInput, FuelOutput]):
             # Track cost
             self._total_cost_usd += response.usage.cost_usd
 
-            self.logger.debug(
+            logger.debug(
                 f"[{context.execution_id}] AI response received: "
                 f"{response.usage.total_tokens} tokens, "
                 f"${response.usage.cost_usd:.4f}, "
@@ -450,7 +450,7 @@ class AsyncFuelAgentAI(AsyncAgentBase[FuelInput, FuelOutput]):
             return output
 
         except BudgetExceeded as e:
-            self.logger.error(f"[{context.execution_id}] Budget exceeded: {e}")
+            logger.error("[%s] Budget exceeded: %s", context.execution_id, e)
             raise ValueError(f"AI budget exceeded: {str(e)}")
 
     def _build_prompt(self, payload: FuelInput) -> str:
@@ -522,7 +522,7 @@ IMPORTANT:
             name = tool_call.get("name", "")
             args = tool_call.get("arguments", {})
 
-            self.logger.debug(f"[{context.execution_id}] Executing tool: {name}")
+            logger.debug("[%s] Executing tool: %s", context.execution_id, name)
 
             # Match tool names (flexible to handle variations from different providers)
             if "calculate" in name and "emission" in name:

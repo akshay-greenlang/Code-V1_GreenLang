@@ -206,7 +206,7 @@ class OpenAPIGenerator:
                 {"url": "https://staging-api.greenlang.io/v1", "description": "Staging"},
             ]
 
-        logger.info(f"OpenAPIGenerator initialized for {config.title}")
+        logger.info("OpenAPIGenerator initialized for %s", config.title)
 
     def add_pydantic_schema(
         self,
@@ -238,7 +238,7 @@ class OpenAPIGenerator:
                 nested_def = self._convert_pydantic_schema(def_schema)
                 self._schemas[def_name] = nested_def
 
-        logger.debug(f"Added schema: {schema_name}")
+        logger.debug("Added schema: %s", schema_name)
         return schema_name
 
     def _convert_pydantic_schema(self, schema: Dict[str, Any]) -> SchemaDefinition:
@@ -329,7 +329,7 @@ class OpenAPIGenerator:
             schema: Schema definition
         """
         self._schemas[name] = schema
-        logger.debug(f"Added schema: {name}")
+        logger.debug("Added schema: %s", name)
 
     def add_path(
         self,
@@ -349,7 +349,7 @@ class OpenAPIGenerator:
             self._paths[path] = PathDefinition(path=path)
 
         self._paths[path].operations[method.lower()] = operation
-        logger.debug(f"Added path: {method.upper()} {path}")
+        logger.debug("Added path: %s %s", method.upper(), path)
 
     def add_crud_paths(
         self,
@@ -522,7 +522,7 @@ class OpenAPIGenerator:
             )
         )
 
-        logger.info(f"Added CRUD paths for resource: {resource}")
+        logger.info("Added CRUD paths for resource: %s", resource)
 
     def add_security_scheme(self, scheme: SecurityScheme) -> None:
         """
@@ -532,7 +532,7 @@ class OpenAPIGenerator:
             scheme: Security scheme definition
         """
         self._security_schemes[scheme.name] = scheme
-        logger.debug(f"Added security scheme: {scheme.name}")
+        logger.debug("Added security scheme: %s", scheme.name)
 
     def add_bearer_auth(
         self,
@@ -820,7 +820,7 @@ class OpenAPIGenerator:
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(content, encoding="utf-8")
 
-        logger.info(f"OpenAPI specification saved to: {path.absolute()}")
+        logger.info("OpenAPI specification saved to: %s", path.absolute())
         return str(path.absolute())
 
     # =========================================================================
@@ -1262,12 +1262,12 @@ class OpenAPIGenerator:
             response_examples: Dictionary of status code to example response
         """
         if path not in self._paths:
-            logger.warning(f"Path {path} not found, cannot add examples")
+            logger.warning("Path %s not found, cannot add examples", path)
             return
 
         path_def = self._paths[path]
         if method.lower() not in path_def.operations:
-            logger.warning(f"Method {method} not found for path {path}")
+            logger.warning("Method %s not found for path %s", method, path)
             return
 
         operation = path_def.operations[method.lower()]
@@ -1325,7 +1325,7 @@ class OpenAPIGenerator:
                 if tag["name"] not in existing_tag_names:
                     self._tags.append(tag)
 
-        logger.info(f"Merged specification with {len(other_spec.get('paths', {}))} paths")
+        logger.info("Merged specification with %s paths", len(other_spec.get('paths', {})))
 
     def validate_spec(self) -> List[str]:
         """
@@ -1373,7 +1373,7 @@ class OpenAPIGenerator:
                     operation_ids.append(op_id)
 
         if issues:
-            logger.warning(f"OpenAPI validation found {len(issues)} issues")
+            logger.warning("OpenAPI validation found %s issues", len(issues))
         else:
             logger.info("OpenAPI specification is valid")
 

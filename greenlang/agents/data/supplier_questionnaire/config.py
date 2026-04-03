@@ -30,10 +30,13 @@ Status: Production Ready
 from __future__ import annotations
 
 import logging
-import os
-import threading
 from dataclasses import dataclass
-from typing import Any, Optional
+
+from greenlang.data_commons.config_base import (
+    BaseDataConfig,
+    EnvReader,
+    create_config_singleton,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -50,21 +53,16 @@ _ENV_PREFIX = "GL_SUPPLIER_QUEST_"
 
 
 @dataclass
-class SupplierQuestionnaireConfig:
-    """Complete configuration for the GreenLang Supplier Questionnaire SDK.
+class SupplierQuestionnaireConfig(BaseDataConfig):
+    """Configuration for the GreenLang Supplier Questionnaire SDK.
 
-    Attributes are grouped by concern: connections, questionnaire defaults,
-    deadline and reminder scheduling, scoring thresholds, batch processing,
-    pool sizing, portal integration, email settings, localization, retention,
-    and logging.
+    Inherits shared connection, pool, batch, and logging fields from
+    ``BaseDataConfig``.  Only questionnaire-specific fields are declared here.
 
     All attributes can be overridden via environment variables using the
     ``GL_SUPPLIER_QUEST_`` prefix.
 
     Attributes:
-        database_url: PostgreSQL connection URL for persistent storage.
-        redis_url: Redis connection URL for caching layer.
-        log_level: Logging level for the supplier questionnaire service.
         default_framework: Default questionnaire framework for new templates.
         default_deadline_days: Default number of days for questionnaire deadlines.
         max_reminders: Maximum number of reminders per distribution.
@@ -79,20 +77,11 @@ class SupplierQuestionnaireConfig:
         batch_size: Number of records per processing batch.
         worker_count: Number of parallel workers for batch processing.
         cache_ttl_seconds: Cache time-to-live in seconds for template lookups.
-        pool_min_size: Minimum connection pool size.
-        pool_max_size: Maximum connection pool size.
         retention_days: Data retention period in days (default 3 years).
         portal_base_url: Base URL for the supplier self-service portal.
         smtp_host: SMTP host for outbound email notifications.
         default_language: Default language code (ISO 639-1) for templates.
     """
-
-    # -- Connections ---------------------------------------------------------
-    database_url: str = ""
-    redis_url: str = ""
-
-    # -- Logging -------------------------------------------------------------
-    log_level: str = "INFO"
 
     # -- Questionnaire defaults ----------------------------------------------
     default_framework: str = "custom"
@@ -111,16 +100,12 @@ class SupplierQuestionnaireConfig:
     score_developing_threshold: int = 40
     score_lagging_threshold: int = 20
 
-    # -- Batch processing ----------------------------------------------------
+    # -- Batch processing (questionnaire-specific) ---------------------------
     batch_size: int = 100
     worker_count: int = 4
 
     # -- Caching -------------------------------------------------------------
     cache_ttl_seconds: int = 1800
-
-    # -- Pool sizing ---------------------------------------------------------
-    pool_min_size: int = 2
-    pool_max_size: int = 10
 
     # -- Retention -----------------------------------------------------------
     retention_days: int = 1095
@@ -135,7 +120,7 @@ class SupplierQuestionnaireConfig:
     default_language: str = "en"
 
     # ------------------------------------------------------------------
-    # Factory helpers
+    # Factory
     # ------------------------------------------------------------------
 
     @classmethod
@@ -144,99 +129,59 @@ class SupplierQuestionnaireConfig:
 
         Every field can be overridden via ``GL_SUPPLIER_QUEST_<FIELD_UPPER>``.
         Boolean values accept ``true/1/yes`` (case-insensitive).
-        Integer values are parsed via ``int()``.
-        Float values are parsed via ``float()``.
 
         Returns:
             Populated SupplierQuestionnaireConfig instance.
         """
-        prefix = _ENV_PREFIX
-
-        def _env(name: str, default: Any = None) -> Optional[str]:
-            return os.environ.get(f"{prefix}{name}", default)
-
-        def _int(name: str, default: int) -> int:
-            val = _env(name)
-            if val is None:
-                return default
-            try:
-                return int(val)
-            except ValueError:
-                logger.warning(
-                    "Invalid integer for %s%s=%s, using default %d",
-                    prefix, name, val, default,
-                )
-                return default
-
-        def _float(name: str, default: float) -> float:
-            val = _env(name)
-            if val is None:
-                return default
-            try:
-                return float(val)
-            except ValueError:
-                logger.warning(
-                    "Invalid float for %s%s=%s, using default %s",
-                    prefix, name, val, default,
-                )
-                return default
-
-        def _str(name: str, default: str) -> str:
-            val = _env(name)
-            if val is None:
-                return default
-            return val
+        env = EnvReader(_ENV_PREFIX)
+        base_kwargs = cls._base_kwargs_from_env(env)
 
         config = cls(
-            database_url=_str("DATABASE_URL", cls.database_url),
-            redis_url=_str("REDIS_URL", cls.redis_url),
-            log_level=_str("LOG_LEVEL", cls.log_level),
-            default_framework=_str(
+            **base_kwargs,
+            default_framework=env.str(
                 "DEFAULT_FRAMEWORK", cls.default_framework,
             ),
-            default_deadline_days=_int(
+            default_deadline_days=env.int(
                 "DEFAULT_DEADLINE_DAYS", cls.default_deadline_days,
             ),
-            max_reminders=_int(
+            max_reminders=env.int(
                 "MAX_REMINDERS", cls.max_reminders,
             ),
-            reminder_gentle_days=_int(
+            reminder_gentle_days=env.int(
                 "REMINDER_GENTLE_DAYS", cls.reminder_gentle_days,
             ),
-            reminder_firm_days=_int(
+            reminder_firm_days=env.int(
                 "REMINDER_FIRM_DAYS", cls.reminder_firm_days,
             ),
-            reminder_urgent_days=_int(
+            reminder_urgent_days=env.int(
                 "REMINDER_URGENT_DAYS", cls.reminder_urgent_days,
             ),
-            min_completion_pct=_float(
+            min_completion_pct=env.float(
                 "MIN_COMPLETION_PCT", cls.min_completion_pct,
             ),
-            score_leader_threshold=_int(
+            score_leader_threshold=env.int(
                 "SCORE_LEADER_THRESHOLD", cls.score_leader_threshold,
             ),
-            score_advanced_threshold=_int(
+            score_advanced_threshold=env.int(
                 "SCORE_ADVANCED_THRESHOLD", cls.score_advanced_threshold,
             ),
-            score_developing_threshold=_int(
+            score_developing_threshold=env.int(
                 "SCORE_DEVELOPING_THRESHOLD", cls.score_developing_threshold,
             ),
-            score_lagging_threshold=_int(
+            score_lagging_threshold=env.int(
                 "SCORE_LAGGING_THRESHOLD", cls.score_lagging_threshold,
             ),
-            batch_size=_int("BATCH_SIZE", cls.batch_size),
-            worker_count=_int("WORKER_COUNT", cls.worker_count),
-            cache_ttl_seconds=_int(
+            batch_size=env.int("BATCH_SIZE", cls.batch_size),
+            worker_count=env.int("WORKER_COUNT", cls.worker_count),
+            cache_ttl_seconds=env.int(
                 "CACHE_TTL_SECONDS", cls.cache_ttl_seconds,
             ),
-            pool_min_size=_int("POOL_MIN_SIZE", cls.pool_min_size),
-            pool_max_size=_int("POOL_MAX_SIZE", cls.pool_max_size),
-            retention_days=_int("RETENTION_DAYS", cls.retention_days),
-            portal_base_url=_str(
+            retention_days=env.int("RETENTION_DAYS", cls.retention_days),
+            portal_base_url=env.str(
                 "PORTAL_BASE_URL", cls.portal_base_url,
             ),
-            smtp_host=_str("SMTP_HOST", cls.smtp_host),
-            default_language=_str(
+            smtp_host=env.str("SMTP_HOST", cls.smtp_host),
+            default_language=env.str(
                 "DEFAULT_LANGUAGE", cls.default_language,
             ),
         )
@@ -265,42 +210,9 @@ class SupplierQuestionnaireConfig:
 # Thread-safe singleton accessor
 # ---------------------------------------------------------------------------
 
-_config_instance: Optional[SupplierQuestionnaireConfig] = None
-_config_lock = threading.Lock()
-
-
-def get_config() -> SupplierQuestionnaireConfig:
-    """Return the singleton SupplierQuestionnaireConfig, creating from env if needed.
-
-    Returns:
-        SupplierQuestionnaireConfig singleton instance.
-    """
-    global _config_instance
-    if _config_instance is None:
-        with _config_lock:
-            if _config_instance is None:
-                _config_instance = SupplierQuestionnaireConfig.from_env()
-    return _config_instance
-
-
-def set_config(config: SupplierQuestionnaireConfig) -> None:
-    """Replace the singleton SupplierQuestionnaireConfig (useful for testing).
-
-    Args:
-        config: New configuration to install.
-    """
-    global _config_instance
-    with _config_lock:
-        _config_instance = config
-    logger.info("SupplierQuestionnaireConfig replaced programmatically")
-
-
-def reset_config() -> None:
-    """Reset the singleton (primarily for test teardown)."""
-    global _config_instance
-    with _config_lock:
-        _config_instance = None
-
+get_config, set_config, reset_config = create_config_singleton(
+    SupplierQuestionnaireConfig, _ENV_PREFIX,
+)
 
 __all__ = [
     "SupplierQuestionnaireConfig",

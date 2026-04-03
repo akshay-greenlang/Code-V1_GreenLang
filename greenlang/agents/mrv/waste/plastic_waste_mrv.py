@@ -305,7 +305,7 @@ class PlasticWasteMRVAgent(BaseWasteMRVAgent[PlasticWasteInput, PlasticWasteOutp
         self._incineration_ef = INCINERATION_FACTORS
         self._recycling_ef = RECYCLING_PROCESS_EMISSIONS
         self._virgin_ef = VIRGIN_PRODUCTION_FACTORS
-        self.logger.info(f"Initialized {self.AGENT_ID}: {self.AGENT_NAME}")
+        logger.info("Initialized %s: %s", self.AGENT_ID, self.AGENT_NAME)
 
     def calculate(self, input_data: PlasticWasteInput) -> PlasticWasteOutput:
         """

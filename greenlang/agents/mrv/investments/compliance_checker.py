@@ -571,7 +571,7 @@ class ComplianceCheckerEngine:
             try:
                 checker = dispatch.get(framework)
                 if checker is None:
-                    logger.warning(f"Unknown framework: {framework}")
+                    logger.warning("Unknown framework: %s", framework)
                     continue
 
                 check_result = checker(result)

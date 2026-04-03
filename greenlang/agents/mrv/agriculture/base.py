@@ -321,7 +321,7 @@ class BaseAgricultureMRVAgent(ABC):
         self.logger = logging.getLogger(self.__class__.__name__)
         self.gwp_version = gwp_version
         self.gwp = GWP_AR5 if gwp_version == "AR5" else GWP_AR6
-        self.logger.info(f"Initialized {self.AGENT_ID} v{self.AGENT_VERSION}")
+        logger.info("Initialized %s v%s", self.AGENT_ID, self.AGENT_VERSION)
 
     @abstractmethod
     def calculate(self, input_data: AgricultureMRVInput) -> AgricultureMRVOutput:

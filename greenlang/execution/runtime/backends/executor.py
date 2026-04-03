@@ -55,7 +55,7 @@ class PipelineExecutor:
             "on_step_complete": [],
         }
 
-        logger.info(f"PipelineExecutor initialized with backend: {backend_type}")
+        logger.info("PipelineExecutor initialized with backend: %s", backend_type)
 
     def execute(
         self,
@@ -104,7 +104,7 @@ class PipelineExecutor:
                 return result
 
         except Exception as e:
-            logger.error(f"Pipeline execution failed: {e}")
+            logger.error("Pipeline execution failed: %s", e)
             result = ExecutionResult(
                 run_id=context.run_id,
                 pipeline_name=pipeline.name,
@@ -191,7 +191,7 @@ class PipelineExecutor:
             else:
                 json.dump(pipeline.to_dict(), f, indent=2)
 
-        logger.info(f"Pipeline saved to: {path}")
+        logger.info("Pipeline saved to: %s", path)
 
     def get_status(self, run_id: str) -> ExecutionStatus:
         """
@@ -275,9 +275,9 @@ class PipelineExecutor:
         """
         if event in self.callbacks:
             self.callbacks[event].append(callback)
-            logger.info(f"Registered callback for event: {event}")
+            logger.info("Registered callback for event: %s", event)
         else:
-            logger.warning(f"Unknown event: {event}")
+            logger.warning("Unknown event: %s", event)
 
     def _trigger_callbacks(self, event: str, *args, **kwargs):
         """Trigger callbacks for an event"""
@@ -286,7 +286,7 @@ class PipelineExecutor:
             try:
                 callback(*args, **kwargs)
             except Exception as e:
-                logger.error(f"Callback error for {event}: {e}")
+                logger.error("Callback error for %s: %s", event, e)
 
     def get_history(self, limit: int = 10) -> List[ExecutionResult]:
         """

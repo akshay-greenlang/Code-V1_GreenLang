@@ -220,11 +220,11 @@ class RedisCache:
             # Test connection
             self._redis.ping()
             self._connected = True
-            logger.info(f"Connected to Redis at {self.config.host}:{self.config.port}")
+            logger.info("Connected to Redis at %s:%s", self.config.host, self.config.port)
             return True
 
         except Exception as e:
-            logger.warning(f"Failed to connect to Redis: {e}. Using local fallback cache.")
+            logger.warning("Failed to connect to Redis: %s. Using local fallback cache.", e)
             self._connected = False
             return False
 
@@ -275,7 +275,7 @@ class RedisCache:
                 return parsed["value"]
             return parsed
         except Exception as e:
-            logger.warning(f"Failed to deserialize cache value: {e}")
+            logger.warning("Failed to deserialize cache value: %s", e)
             return None
 
     def get(
@@ -304,15 +304,15 @@ class RedisCache:
                 if data:
                     self.metrics.hits += 1
                     if self.config.log_cache_hits:
-                        logger.debug(f"Cache HIT: {full_key}")
+                        logger.debug("Cache HIT: %s", full_key)
                     return self._deserialize(data, model_class)
                 else:
                     self.metrics.misses += 1
                     if self.config.log_cache_misses:
-                        logger.debug(f"Cache MISS: {full_key}")
+                        logger.debug("Cache MISS: %s", full_key)
                     return None
             except Exception as e:
-                logger.warning(f"Redis GET error for {full_key}: {e}")
+                logger.warning("Redis GET error for %s: %s", full_key, e)
                 self.metrics.errors += 1
 
         # Fall back to local cache
@@ -365,10 +365,10 @@ class RedisCache:
             try:
                 self._redis.setex(full_key, ttl_seconds, serialized)
                 self.metrics.sets += 1
-                logger.debug(f"Cache SET: {full_key} (TTL: {ttl_seconds}s)")
+                logger.debug("Cache SET: %s (TTL: %ss)", full_key, ttl_seconds)
                 return True
             except Exception as e:
-                logger.warning(f"Redis SET error for {full_key}: {e}")
+                logger.warning("Redis SET error for %s: %s", full_key, e)
                 self.metrics.errors += 1
 
         # Fall back to local cache
@@ -410,7 +410,7 @@ class RedisCache:
                 if deleted:
                     self.metrics.deletes += 1
             except Exception as e:
-                logger.warning(f"Redis DELETE error for {full_key}: {e}")
+                logger.warning("Redis DELETE error for %s: %s", full_key, e)
 
         # Delete from local cache
         if full_key in self._local_cache:
@@ -443,9 +443,9 @@ class RedisCache:
                 if keys:
                     count = self._redis.delete(*keys)
                     self.metrics.deletes += count
-                    logger.info(f"Invalidated {count} keys matching {redis_pattern}")
+                    logger.info("Invalidated %s keys matching %s", count, redis_pattern)
             except Exception as e:
-                logger.warning(f"Redis INVALIDATE error for {full_pattern}: {e}")
+                logger.warning("Redis INVALIDATE error for %s: %s", full_pattern, e)
 
         # Invalidate in local cache
         local_keys = [k for k in self._local_cache.keys() if k.startswith(full_pattern.replace("*", ""))]
@@ -484,9 +484,9 @@ class RedisCache:
                 if keys:
                     self._redis.delete(*keys)
                 cleared = True
-                logger.info(f"Cleared {len(keys)} keys from Redis cache")
+                logger.info("Cleared %s keys from Redis cache", len(keys))
             except Exception as e:
-                logger.warning(f"Redis CLEAR error: {e}")
+                logger.warning("Redis CLEAR error: %s", e)
 
         # Clear local cache
         self._local_cache.clear()

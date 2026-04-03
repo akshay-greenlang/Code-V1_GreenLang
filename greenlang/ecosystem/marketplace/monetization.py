@@ -145,7 +145,7 @@ class PaymentProcessor:
             return True, payment_intent_id, []
 
         except Exception as e:
-            logger.error(f"Error creating payment intent: {e}", exc_info=True)
+            logger.error("Error creating payment intent: %s", e, exc_info=True)
             errors.append(f"Payment failed: {str(e)}")
             return False, None, errors
 
@@ -212,7 +212,7 @@ class PaymentProcessor:
             return True, purchase, []
 
         except Exception as e:
-            logger.error(f"Error confirming payment: {e}", exc_info=True)
+            logger.error("Error confirming payment: %s", e, exc_info=True)
             self.session.rollback()
             errors.append(f"Payment confirmation failed: {str(e)}")
             return False, None, errors
@@ -286,7 +286,7 @@ class PaymentProcessor:
             return True, subscription_id, []
 
         except Exception as e:
-            logger.error(f"Error creating subscription: {e}", exc_info=True)
+            logger.error("Error creating subscription: %s", e, exc_info=True)
             errors.append(f"Subscription creation failed: {str(e)}")
             return False, None, errors
 
@@ -353,7 +353,7 @@ class PaymentProcessor:
             return True, []
 
         except Exception as e:
-            logger.error(f"Error processing refund: {e}", exc_info=True)
+            logger.error("Error processing refund: %s", e, exc_info=True)
             self.session.rollback()
             errors.append(f"Refund failed: {str(e)}")
             return False, errors

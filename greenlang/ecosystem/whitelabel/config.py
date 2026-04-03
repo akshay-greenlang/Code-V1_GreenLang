@@ -340,7 +340,7 @@ class WhiteLabelManager:
         self.db.commit()
         self.db.refresh(config)
 
-        logger.info(f"Created white-label config for partner {partner_id}")
+        logger.info("Created white-label config for partner %s", partner_id)
 
         return config
 
@@ -409,7 +409,7 @@ class WhiteLabelManager:
         self.db.commit()
         self.db.refresh(config)
 
-        logger.info(f"Updated white-label config for partner {partner_id}")
+        logger.info("Updated white-label config for partner %s", partner_id)
 
         return config
 
@@ -501,7 +501,7 @@ class WhiteLabelManager:
         self.db.commit()
         self.db.refresh(domain_config)
 
-        logger.info(f"Created domain config for partner {partner_id}: {domain}")
+        logger.info("Created domain config for partner %s: %s", partner_id, domain)
 
         return domain_config
 
@@ -533,10 +533,10 @@ class WhiteLabelManager:
                 domain_config.status = DomainStatus.ACTIVE
                 self.db.commit()
 
-                logger.info(f"Domain verified: {domain_config.domain}")
+                logger.info("Domain verified: %s", domain_config.domain)
                 return True
         except Exception as e:
-            logger.error(f"Error verifying domain {domain_config.domain}: {e}")
+            logger.error("Error verifying domain %s: %s", domain_config.domain, e)
 
         return False
 

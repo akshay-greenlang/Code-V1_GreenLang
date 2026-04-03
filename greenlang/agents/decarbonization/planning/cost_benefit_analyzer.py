@@ -214,7 +214,7 @@ class CostBenefitAnalyzer(DeterministicAgent):
                 raise ValueError(f"Unknown operation: {cba_input.operation}")
 
         except Exception as e:
-            self.logger.error(f"Analysis failed: {str(e)}", exc_info=True)
+            logger.error("Analysis failed: %s", e, exc_info=True)
             return {
                 "operation": inputs.get("operation", "unknown"),
                 "success": False,

@@ -188,7 +188,7 @@ class TracingManager:
         # Auto-instrument libraries
         RequestsInstrumentor().instrument()
 
-        logger.info(f"Tracing initialized for service {self.config.service_name}")
+        logger.info("Tracing initialized for service %s", self.config.service_name)
 
     def get_tracer(self):
         """Get tracer instance"""

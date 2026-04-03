@@ -69,7 +69,7 @@ class WeaviateClient:
         self.timeout_config = timeout_config
         self.startup_period = startup_period
 
-        logger.info(f"Initializing Weaviate client for {endpoint}")
+        logger.info("Initializing Weaviate client for %s", endpoint)
 
         # Create client with proper configuration
         try:
@@ -113,13 +113,13 @@ class WeaviateClient:
         for attempt in range(max_retries):
             try:
                 if self.health_check():
-                    logger.info(f"Weaviate is ready (attempt {attempt + 1})")
+                    logger.info("Weaviate is ready (attempt %s)", attempt + 1)
                     return
             except Exception as e:
-                logger.warning(f"Weaviate not ready (attempt {attempt + 1}/{max_retries}): {e}")
+                logger.warning("Weaviate not ready (attempt %s/%s): %s", attempt + 1, max_retries, e)
 
             if attempt < max_retries - 1:
-                logger.info(f"Waiting {delay:.1f}s before retry...")
+                logger.info("Waiting %.1fs before retry...", delay)
                 time.sleep(delay)
                 delay = min(delay * 2, 30.0)  # Exponential backoff, max 30s
 
@@ -151,10 +151,10 @@ class WeaviateClient:
             class_names = [c["class"] for c in schema.get("classes", [])]
 
             if class_name in class_names:
-                logger.info(f"Schema class '{class_name}' already exists")
+                logger.info("Schema class '%s' already exists", class_name)
                 return
         except Exception as e:
-            logger.warning(f"Failed to check existing schema: {e}")
+            logger.warning("Failed to check existing schema: %s", e)
 
         # Define schema for Chunk class
         chunk_schema = {
@@ -246,14 +246,14 @@ class WeaviateClient:
         # Create schema
         try:
             self.client.schema.create_class(chunk_schema)
-            logger.info(f"Created schema class '{class_name}'")
+            logger.info("Created schema class '%s'", class_name)
         except Exception as e:
             # Check if it already exists (race condition)
             try:
                 schema = self.client.schema.get()
                 class_names = [c["class"] for c in schema.get("classes", [])]
                 if class_name in class_names:
-                    logger.info(f"Schema class '{class_name}' already exists (created by another process)")
+                    logger.info("Schema class '%s' already exists (created by another process)", class_name)
                     return
             except:
                 pass
@@ -270,9 +270,9 @@ class WeaviateClient:
 
         try:
             self.client.schema.delete_class(class_name)
-            logger.info(f"Deleted schema class '{class_name}'")
+            logger.info("Deleted schema class '%s'", class_name)
         except Exception as e:
-            logger.warning(f"Failed to delete schema (may not exist): {e}")
+            logger.warning("Failed to delete schema (may not exist): %s", e)
 
     def health_check(self) -> bool:
         """
@@ -285,7 +285,7 @@ class WeaviateClient:
             # Check if client is ready
             return self.client.is_ready()
         except Exception as e:
-            logger.debug(f"Health check failed: {e}")
+            logger.debug("Health check failed: %s", e)
             return False
 
     def get_stats(self) -> Dict[str, Any]:
@@ -322,7 +322,7 @@ class WeaviateClient:
                 "endpoint": self.endpoint,
             }
         except Exception as e:
-            logger.error(f"Failed to get stats: {e}")
+            logger.error("Failed to get stats: %s", e)
             return {
                 "class_name": class_name,
                 "error": str(e),
@@ -395,7 +395,7 @@ class WeaviateClient:
             logger.error(error_msg)
             errors.append(error_msg)
 
-        logger.info(f"Batch add complete: {total_added} added, {total_failed} failed")
+        logger.info("Batch add complete: %s added, %s failed", total_added, total_failed)
 
         return {
             "added": total_added,
@@ -482,5 +482,5 @@ class WeaviateClient:
 
             return objects
         except Exception as e:
-            logger.error(f"Similarity search failed: {e}")
+            logger.error("Similarity search failed: %s", e)
             raise RuntimeError(f"Weaviate search failed: {e}")

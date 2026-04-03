@@ -296,7 +296,7 @@ class BMSConnectorAgent(BaseAgent):
         self._equipment: Dict[str, EquipmentConfig] = {}
         self._meters: Dict[str, MeterConfig] = {}
 
-        self.logger.info(f"Initialized {self.AGENT_NAME} v{self.VERSION}")
+        logger.info("Initialized %s v%s", self.AGENT_NAME, self.VERSION)
 
     def execute(self, input_data: Dict[str, Any]) -> AgentResult:
         """
@@ -330,7 +330,7 @@ class BMSConnectorAgent(BaseAgent):
                 )
 
         except Exception as e:
-            self.logger.error(f"BMS operation failed: {str(e)}", exc_info=True)
+            logger.error("BMS operation failed: %s", e, exc_info=True)
             processing_time = (datetime.utcnow() - start_time).total_seconds() * 1000
 
             return AgentResult(
@@ -744,7 +744,7 @@ class BMSConnectorAgent(BaseAgent):
     def register_connection(self, config: BMSConnectionConfig) -> str:
         """Register a BMS connection."""
         self._connections[config.connection_id] = config
-        self.logger.info(f"Registered BMS connection: {config.connection_id}")
+        logger.info("Registered BMS connection: %s", config.connection_id)
         return config.connection_id
 
     def register_equipment(self, config: EquipmentConfig) -> str:

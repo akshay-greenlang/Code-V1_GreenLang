@@ -316,9 +316,9 @@ class FactorSource(ABC):
             log_data["error"] = error
 
         if success:
-            self._logger.info(f"Factor lookup successful: {log_data}")
+            logger.info("Factor lookup successful: %s", log_data)
         else:
-            self._logger.warning(f"Factor lookup failed: {log_data}")
+            logger.warning("Factor lookup failed: %s", log_data)
 
     def __repr__(self) -> str:
         """String representation."""

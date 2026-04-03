@@ -249,7 +249,7 @@ class Connector(ABC, Generic[TQuery, TPayload, TConfig]):
         Provided for SDK compatibility only.
         """
         from greenlang.sdk.base import Result
-        self.logger.warning(
+        logger.warning(
             f"Connector.read() is deprecated, use fetch() instead. "
             f"Called from {self.connector_id}"
         )

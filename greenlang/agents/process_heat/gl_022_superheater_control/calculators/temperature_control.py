@@ -242,7 +242,7 @@ class PIDController:
 
         self._calculation_count = 0
 
-        logger.debug(f"PIDController initialized: Kp={kp}, Ki={ki}, Kd={kd}")
+        logger.debug("PIDController initialized: Kp=%s, Ki=%s, Kd=%s", kp, ki, kd)
 
     def calculate(
         self,
@@ -365,7 +365,7 @@ class PIDController:
         self.kp = kp
         self.ki = ki
         self.kd = kd
-        logger.info(f"PID tuning updated: Kp={kp}, Ki={ki}, Kd={kd}")
+        logger.info("PID tuning updated: Kp=%s, Ki=%s, Kd=%s", kp, ki, kd)
 
     def get_state(self) -> ControllerState:
         """Get current controller state."""
@@ -551,7 +551,7 @@ class CascadeController:
         self._cascade_active = active
         if not active:
             self.primary.reset()
-        logger.info(f"Cascade mode {'enabled' if active else 'disabled'}")
+        logger.info("Cascade mode %s", 'enabled' if active else 'disabled')
 
     def reset(self) -> None:
         """Reset both controllers."""
@@ -613,7 +613,7 @@ class FeedforwardController:
         self._filtered_load = 0.0
         self._previous_load = 0.0
 
-        logger.debug(f"FeedforwardController initialized: gain={gain}, lag={lag_time}s")
+        logger.debug("FeedforwardController initialized: gain=%s, lag=%ss", gain, lag_time)
 
     def calculate(
         self,
@@ -735,7 +735,7 @@ class RateLimiter:
         self.rate_down = rate_down
         self._previous_value = None
 
-        logger.debug(f"RateLimiter initialized: up={rate_up}/s, down={rate_down}/s")
+        logger.debug("RateLimiter initialized: up=%s/s, down=%s/s", rate_up, rate_down)
 
     def limit(
         self,
@@ -887,7 +887,7 @@ class TemperatureRateLimiter:
         self._previous_setpoint = None
         self._previous_temperature = None
 
-        logger.debug(f"TemperatureRateLimiter initialized")
+        logger.debug("TemperatureRateLimiter initialized")
 
     def limit_setpoint(
         self,
@@ -1342,7 +1342,7 @@ class SuperheaterTemperatureController:
     def set_setpoint(self, setpoint: float) -> None:
         """Set primary temperature setpoint."""
         self.primary_setpoint = setpoint
-        logger.info(f"Setpoint changed to {setpoint}F")
+        logger.info("Setpoint changed to %sF", setpoint)
 
     def reset(self) -> None:
         """Reset all controllers."""

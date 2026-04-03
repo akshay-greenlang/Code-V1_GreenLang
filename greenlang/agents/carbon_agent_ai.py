@@ -528,7 +528,7 @@ class CarbonAgentAI(BaseAgent):
             return result
 
         except Exception as e:
-            self.logger.error(f"Error in AI carbon aggregation: {e}")
+            logger.error("Error in AI carbon aggregation: %s", e)
             return AgentResult(
                 success=False,
                 error=f"Failed to aggregate carbon emissions: {str(e)}",
@@ -619,7 +619,7 @@ class CarbonAgentAI(BaseAgent):
             )
 
         except BudgetExceeded as e:
-            self.logger.error(f"Budget exceeded: {e}")
+            logger.error("Budget exceeded: %s", e)
             return AgentResult(
                 success=False,
                 error=f"AI budget exceeded: {str(e)}",

@@ -535,7 +535,7 @@ class RuleBasedDetector:
     def __init__(self) -> None:
         """Initialize rule-based detector."""
         self._rules: List[Dict[str, Any]] = self._define_rules()
-        logger.info(f"Rule-based detector initialized with {len(self._rules)} rules")
+        logger.info("Rule-based detector initialized with %s rules", len(self._rules))
 
     def _define_rules(self) -> List[Dict[str, Any]]:
         """Define combustion anomaly detection rules."""
@@ -647,7 +647,7 @@ class RuleBasedDetector:
                         "actions": rule["actions"],
                     })
             except Exception as e:
-                logger.warning(f"Rule {rule['id']} evaluation failed: {e}")
+                logger.warning("Rule %s evaluation failed: %s", rule['id'], e)
 
         return triggered
 
@@ -738,7 +738,7 @@ class CombustionAnomalyDetector:
             ]
             self.ml.fit(training_data)
 
-        logger.info(f"Baseline initialized from {len(readings)} readings")
+        logger.info("Baseline initialized from %s readings", len(readings))
 
     def detect(self, reading: FlueGasReading) -> AnomalyDetectionResult:
         """

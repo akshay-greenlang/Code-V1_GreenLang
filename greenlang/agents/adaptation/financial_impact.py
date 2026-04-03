@@ -249,7 +249,7 @@ class FinancialImpactAgent(BaseAgent):
             )
 
         super().__init__(config)
-        logger.info(f"Initialized {self.AGENT_NAME} v{self.VERSION}")
+        logger.info("Initialized %s v%s", self.AGENT_NAME, self.VERSION)
 
     def initialize(self):
         """Initialize agent resources."""
@@ -261,7 +261,7 @@ class FinancialImpactAgent(BaseAgent):
 
         try:
             analysis_input = FinancialImpactInput(**input_data)
-            self.logger.info(
+            logger.info(
                 f"Starting financial impact analysis: {analysis_input.analysis_id}, "
                 f"{len(analysis_input.assets)} assets"
             )
@@ -319,7 +319,7 @@ class FinancialImpactAgent(BaseAgent):
 
             output.provenance_hash = self._calculate_provenance_hash(analysis_input, output)
 
-            self.logger.info(
+            logger.info(
                 f"Financial impact analysis complete: EAL=${total_eal:,.0f}, VaR=${total_var:,.0f}"
             )
 
@@ -334,7 +334,7 @@ class FinancialImpactAgent(BaseAgent):
             )
 
         except Exception as e:
-            self.logger.error(f"Financial impact analysis failed: {str(e)}", exc_info=True)
+            logger.error("Financial impact analysis failed: %s", e, exc_info=True)
             return AgentResult(
                 success=False,
                 error=str(e),

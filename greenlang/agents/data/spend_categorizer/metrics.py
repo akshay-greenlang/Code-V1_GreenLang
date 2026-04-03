@@ -5,18 +5,20 @@ Prometheus Metrics - AGENT-DATA-009: Spend Data Categorizer
 12 Prometheus metrics for spend data categorizer service monitoring with
 graceful fallback when prometheus_client is not installed.
 
-Metrics:
-    1.  gl_spend_cat_records_ingested_total (Counter, labels: source)
-    2.  gl_spend_cat_records_classified_total (Counter, labels: taxonomy)
-    3.  gl_spend_cat_scope3_mapped_total (Counter, labels: category)
-    4.  gl_spend_cat_emissions_calculated_total (Counter, labels: source)
-    5.  gl_spend_cat_rules_evaluated_total (Counter, labels: result)
-    6.  gl_spend_cat_reports_generated_total (Counter, labels: format)
-    7.  gl_spend_cat_classification_confidence (Histogram, buckets: 0.1-1.0)
-    8.  gl_spend_cat_processing_duration_seconds (Histogram, labels: operation)
-    9.  gl_spend_cat_active_batches (Gauge)
-    10. gl_spend_cat_total_spend_usd (Gauge)
-    11. gl_spend_cat_processing_errors_total (Counter, labels: error_type)
+Standard metrics (via MetricsFactory):
+    1.  gl_spend_cat_operations_total (Counter, labels: type, tenant_id)
+    2.  gl_spend_cat_processing_duration_seconds (Histogram, 12 buckets)
+    3.  gl_spend_cat_validation_errors_total (Counter, labels: severity, type)
+    4.  gl_spend_cat_batch_jobs_total (Counter, labels: status)
+    5.  gl_spend_cat_active_jobs (Gauge)
+    6.  gl_spend_cat_queue_size (Gauge)
+
+Agent-specific metrics:
+    7.  gl_spend_cat_records_ingested_total (Counter, labels: source)
+    8.  gl_spend_cat_records_classified_total (Counter, labels: taxonomy)
+    9.  gl_spend_cat_scope3_mapped_total (Counter, labels: category)
+    10. gl_spend_cat_emissions_calculated_total (Counter, labels: source)
+    11. gl_spend_cat_classification_confidence (Histogram, buckets: 0.1-1.0)
     12. gl_spend_cat_emission_factor_lookups_total (Counter, labels: source)
 
 Author: GreenLang Platform Team
@@ -27,132 +29,95 @@ Status: Production Ready
 
 from __future__ import annotations
 
-import logging
-
-logger = logging.getLogger(__name__)
-
-# ---------------------------------------------------------------------------
-# Graceful prometheus_client import
-# ---------------------------------------------------------------------------
-
-try:
-    from prometheus_client import Counter, Gauge, Histogram
-    PROMETHEUS_AVAILABLE = True
-except ImportError:
-    PROMETHEUS_AVAILABLE = False
-    logger.info(
-        "prometheus_client not installed; spend categorizer metrics disabled"
-    )
-
+from greenlang.data_commons.metrics import (
+    CONFIDENCE_BUCKETS,
+    PROMETHEUS_AVAILABLE,
+    MetricsFactory,
+)
 
 # ---------------------------------------------------------------------------
-# Metric definitions
+# Standard metrics (6 of 12) via factory
 # ---------------------------------------------------------------------------
 
-if PROMETHEUS_AVAILABLE:
-    # 1. Spend records ingested by source
-    spend_cat_records_ingested_total = Counter(
-        "gl_spend_cat_records_ingested_total",
-        "Total spend records ingested",
-        labelnames=["source"],
-    )
+m = MetricsFactory(
+    "gl_spend_cat",
+    "Spend Categorizer",
+    duration_buckets=(
+        0.05, 0.1, 0.25, 0.5, 1.0, 2.5,
+        5.0, 10.0, 30.0, 60.0, 120.0, 300.0,
+    ),
+)
 
-    # 2. Records classified by taxonomy system
-    spend_cat_records_classified_total = Counter(
-        "gl_spend_cat_records_classified_total",
-        "Total spend records classified",
-        labelnames=["taxonomy"],
-    )
+# ---------------------------------------------------------------------------
+# Agent-specific metrics (6 of 12)
+# ---------------------------------------------------------------------------
 
-    # 3. Scope 3 category mappings by GHG Protocol category
-    spend_cat_scope3_mapped_total = Counter(
-        "gl_spend_cat_scope3_mapped_total",
-        "Total spend records mapped to Scope 3 categories",
-        labelnames=["category"],
-    )
+spend_cat_records_ingested_total = m.create_custom_counter(
+    "records_ingested_total",
+    "Total spend records ingested",
+    labelnames=["source"],
+)
 
-    # 4. Emission calculations completed by factor source
-    spend_cat_emissions_calculated_total = Counter(
-        "gl_spend_cat_emissions_calculated_total",
-        "Total emission calculations completed",
-        labelnames=["source"],
-    )
+spend_cat_records_classified_total = m.create_custom_counter(
+    "records_classified_total",
+    "Total spend records classified",
+    labelnames=["taxonomy"],
+)
 
-    # 5. Classification rules evaluated by result
-    spend_cat_rules_evaluated_total = Counter(
-        "gl_spend_cat_rules_evaluated_total",
-        "Total classification rules evaluated",
-        labelnames=["result"],
-    )
+spend_cat_scope3_mapped_total = m.create_custom_counter(
+    "scope3_mapped_total",
+    "Total spend records mapped to Scope 3 categories",
+    labelnames=["category"],
+)
 
-    # 6. Reports generated by format
-    spend_cat_reports_generated_total = Counter(
-        "gl_spend_cat_reports_generated_total",
-        "Total reports generated",
-        labelnames=["format"],
-    )
+spend_cat_emissions_calculated_total = m.create_custom_counter(
+    "emissions_calculated_total",
+    "Total emission calculations completed",
+    labelnames=["source"],
+)
 
-    # 7. Classification confidence score distribution
-    spend_cat_classification_confidence = Histogram(
-        "gl_spend_cat_classification_confidence",
-        "Classification confidence score distribution",
-        buckets=(
-            0.1, 0.2, 0.3, 0.4, 0.5,
-            0.6, 0.7, 0.8, 0.9, 1.0,
-        ),
-    )
+spend_cat_rules_evaluated_total = m.create_custom_counter(
+    "rules_evaluated_total",
+    "Total classification rules evaluated",
+    labelnames=["result"],
+)
 
-    # 8. Processing duration histogram by operation type
-    spend_cat_processing_duration_seconds = Histogram(
-        "gl_spend_cat_processing_duration_seconds",
-        "Spend categorizer processing duration in seconds",
-        labelnames=["operation"],
-        buckets=(
-            0.05, 0.1, 0.25, 0.5, 1.0, 2.5,
-            5.0, 10.0, 30.0, 60.0, 120.0, 300.0,
-        ),
-    )
+spend_cat_reports_generated_total = m.create_custom_counter(
+    "reports_generated_total",
+    "Total reports generated",
+    labelnames=["format"],
+)
 
-    # 9. Currently active batches gauge
-    spend_cat_active_batches = Gauge(
-        "gl_spend_cat_active_batches",
-        "Number of currently active processing batches",
-    )
+spend_cat_classification_confidence = m.create_custom_histogram(
+    "classification_confidence",
+    "Classification confidence score distribution",
+    buckets=CONFIDENCE_BUCKETS,
+)
 
-    # 10. Total spend amount in USD gauge
-    spend_cat_total_spend_usd = Gauge(
-        "gl_spend_cat_total_spend_usd",
-        "Total cumulative spend amount in USD",
-    )
+spend_cat_active_batches = m.create_custom_gauge(
+    "active_batches",
+    "Number of currently active processing batches",
+)
 
-    # 11. Processing errors by error type
-    spend_cat_processing_errors_total = Counter(
-        "gl_spend_cat_processing_errors_total",
-        "Total processing errors encountered",
-        labelnames=["error_type"],
-    )
+spend_cat_total_spend_usd = m.create_custom_gauge(
+    "total_spend_usd",
+    "Total cumulative spend amount in USD",
+)
 
-    # 12. Emission factor lookups by source
-    spend_cat_emission_factor_lookups_total = Counter(
-        "gl_spend_cat_emission_factor_lookups_total",
-        "Total emission factor lookups performed",
-        labelnames=["source"],
-    )
+spend_cat_processing_errors_total = m.create_custom_counter(
+    "processing_errors_total",
+    "Total processing errors encountered",
+    labelnames=["error_type"],
+)
 
-else:
-    # No-op placeholders
-    spend_cat_records_ingested_total = None  # type: ignore[assignment]
-    spend_cat_records_classified_total = None  # type: ignore[assignment]
-    spend_cat_scope3_mapped_total = None  # type: ignore[assignment]
-    spend_cat_emissions_calculated_total = None  # type: ignore[assignment]
-    spend_cat_rules_evaluated_total = None  # type: ignore[assignment]
-    spend_cat_reports_generated_total = None  # type: ignore[assignment]
-    spend_cat_classification_confidence = None  # type: ignore[assignment]
-    spend_cat_processing_duration_seconds = None  # type: ignore[assignment]
-    spend_cat_active_batches = None  # type: ignore[assignment]
-    spend_cat_total_spend_usd = None  # type: ignore[assignment]
-    spend_cat_processing_errors_total = None  # type: ignore[assignment]
-    spend_cat_emission_factor_lookups_total = None  # type: ignore[assignment]
+spend_cat_emission_factor_lookups_total = m.create_custom_counter(
+    "emission_factor_lookups_total",
+    "Total emission factor lookups performed",
+    labelnames=["source"],
+)
+
+# Backward-compat alias for standard metrics expected by __init__.py
+spend_cat_processing_duration_seconds = m.processing_duration
 
 
 # ---------------------------------------------------------------------------
@@ -166,11 +131,7 @@ def record_ingestion(source: str) -> None:
     Args:
         source: Ingestion source (csv, excel, api, erp, manual).
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    spend_cat_records_ingested_total.labels(
-        source=source,
-    ).inc()
+    m.safe_inc(spend_cat_records_ingested_total, 1, source=source)
 
 
 def record_classification(taxonomy: str) -> None:
@@ -179,11 +140,7 @@ def record_classification(taxonomy: str) -> None:
     Args:
         taxonomy: Taxonomy system used (unspsc, naics, nace, custom).
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    spend_cat_records_classified_total.labels(
-        taxonomy=taxonomy,
-    ).inc()
+    m.safe_inc(spend_cat_records_classified_total, 1, taxonomy=taxonomy)
 
 
 def record_scope3_mapping(category: str) -> None:
@@ -192,11 +149,7 @@ def record_scope3_mapping(category: str) -> None:
     Args:
         category: GHG Protocol Scope 3 category (cat1..cat15).
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    spend_cat_scope3_mapped_total.labels(
-        category=category,
-    ).inc()
+    m.safe_inc(spend_cat_scope3_mapped_total, 1, category=category)
 
 
 def record_emission_calculation(source: str) -> None:
@@ -205,11 +158,7 @@ def record_emission_calculation(source: str) -> None:
     Args:
         source: Emission factor source (eeio, exiobase, defra, ecoinvent).
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    spend_cat_emissions_calculated_total.labels(
-        source=source,
-    ).inc()
+    m.safe_inc(spend_cat_emissions_calculated_total, 1, source=source)
 
 
 def record_rule_evaluation(result: str) -> None:
@@ -218,11 +167,7 @@ def record_rule_evaluation(result: str) -> None:
     Args:
         result: Evaluation result (match, no_match).
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    spend_cat_rules_evaluated_total.labels(
-        result=result,
-    ).inc()
+    m.safe_inc(spend_cat_rules_evaluated_total, 1, result=result)
 
 
 def record_report_generation(report_format: str) -> None:
@@ -231,11 +176,7 @@ def record_report_generation(report_format: str) -> None:
     Args:
         report_format: Report format (json, csv, excel, pdf).
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    spend_cat_reports_generated_total.labels(
-        format=report_format,
-    ).inc()
+    m.safe_inc(spend_cat_reports_generated_total, 1, format=report_format)
 
 
 def record_classification_confidence(confidence: float) -> None:
@@ -244,9 +185,7 @@ def record_classification_confidence(confidence: float) -> None:
     Args:
         confidence: Confidence score (0.0 - 1.0).
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    spend_cat_classification_confidence.observe(confidence)
+    m.safe_observe(spend_cat_classification_confidence, confidence)
 
 
 def record_processing_duration(operation: str, duration: float) -> None:
@@ -256,11 +195,7 @@ def record_processing_duration(operation: str, duration: float) -> None:
         operation: Operation type (ingest, classify, map_scope3, calculate, etc.).
         duration: Duration in seconds.
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    spend_cat_processing_duration_seconds.labels(
-        operation=operation,
-    ).observe(duration)
+    m.record_operation(duration, type=operation, tenant_id="default")
 
 
 def update_active_batches(delta: int) -> None:
@@ -269,12 +204,13 @@ def update_active_batches(delta: int) -> None:
     Args:
         delta: Positive to increment, negative to decrement.
     """
-    if not PROMETHEUS_AVAILABLE:
+    if not m.available:
         return
-    if delta > 0:
-        spend_cat_active_batches.inc(delta)
-    elif delta < 0:
-        spend_cat_active_batches.dec(abs(delta))
+    if spend_cat_active_batches is not None:
+        if delta > 0:
+            spend_cat_active_batches.inc(delta)
+        elif delta < 0:
+            spend_cat_active_batches.dec(abs(delta))
 
 
 def update_total_spend(amount: float) -> None:
@@ -283,9 +219,10 @@ def update_total_spend(amount: float) -> None:
     Args:
         amount: Amount to add to the total spend (may be negative for corrections).
     """
-    if not PROMETHEUS_AVAILABLE:
+    if not m.available:
         return
-    spend_cat_total_spend_usd.inc(amount)
+    if spend_cat_total_spend_usd is not None:
+        spend_cat_total_spend_usd.inc(amount)
 
 
 def record_processing_error(error_type: str) -> None:
@@ -294,11 +231,7 @@ def record_processing_error(error_type: str) -> None:
     Args:
         error_type: Error classification (validation, timeout, data, integration, unknown).
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    spend_cat_processing_errors_total.labels(
-        error_type=error_type,
-    ).inc()
+    m.safe_inc(spend_cat_processing_errors_total, 1, error_type=error_type)
 
 
 def record_factor_lookup(source: str) -> None:
@@ -307,15 +240,12 @@ def record_factor_lookup(source: str) -> None:
     Args:
         source: Factor database source (eeio, exiobase, defra, ecoinvent).
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    spend_cat_emission_factor_lookups_total.labels(
-        source=source,
-    ).inc()
+    m.safe_inc(spend_cat_emission_factor_lookups_total, 1, source=source)
 
 
 __all__ = [
     "PROMETHEUS_AVAILABLE",
+    "m",
     # Metric objects
     "spend_cat_records_ingested_total",
     "spend_cat_records_classified_total",
@@ -324,7 +254,6 @@ __all__ = [
     "spend_cat_rules_evaluated_total",
     "spend_cat_reports_generated_total",
     "spend_cat_classification_confidence",
-    "spend_cat_processing_duration_seconds",
     "spend_cat_active_batches",
     "spend_cat_total_spend_usd",
     "spend_cat_processing_errors_total",

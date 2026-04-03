@@ -153,7 +153,7 @@ class VectorStore:
         # Ensure schema exists
         self._ensure_schema()
 
-        logger.info(f"Initialized VectorStore with collection={self.COLLECTION_NAME}")
+        logger.info("Initialized VectorStore with collection=%s", self.COLLECTION_NAME)
 
     def _connect(self) -> None:
         """
@@ -224,7 +224,7 @@ class VectorStore:
         try:
             # Check if collection exists
             if self._client.collections.exists(self.COLLECTION_NAME):
-                logger.info(f"Collection {self.COLLECTION_NAME} already exists")
+                logger.info("Collection %s already exists", self.COLLECTION_NAME)
                 return
 
             # Create collection
@@ -299,7 +299,7 @@ class VectorStore:
                 ],
             )
 
-            logger.info(f"Created collection {self.COLLECTION_NAME}")
+            logger.info("Created collection %s", self.COLLECTION_NAME)
 
         except Exception as e:
             raise VectorStoreException(
@@ -376,7 +376,7 @@ class VectorStore:
                         )
 
             if show_progress:
-                logger.info(f"Successfully indexed {len(entities)} entities")
+                logger.info("Successfully indexed %s entities", len(entities))
 
             return uuids
 
@@ -524,7 +524,7 @@ class VectorStore:
             uuid = generate_uuid5(entity_id)
 
             collection.data.delete_by_id(uuid)
-            logger.info(f"Deleted entity {entity_id}")
+            logger.info("Deleted entity %s", entity_id)
             return True
 
         except Exception as e:
@@ -565,7 +565,7 @@ class VectorStore:
         try:
             if self._client.collections.exists(self.COLLECTION_NAME):
                 self._client.collections.delete(self.COLLECTION_NAME)
-                logger.warning(f"Deleted collection {self.COLLECTION_NAME}")
+                logger.warning("Deleted collection %s", self.COLLECTION_NAME)
                 self._ensure_schema()
 
         except Exception as e:

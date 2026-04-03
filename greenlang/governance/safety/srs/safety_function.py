@@ -451,7 +451,7 @@ class SafetyFunction:
         Raises:
             ValueError: If parameters are invalid
         """
-        logger.info(f"Creating safety function: {function_id} - {name}")
+        logger.info("Creating safety function: %s - %s", function_id, name)
 
         # Validate response time vs PST
         if required_response_time_ms >= process_safety_time_ms:
@@ -494,7 +494,7 @@ class SafetyFunction:
 
         self.functions[function_id] = spec
 
-        logger.info(f"Safety function created: {function_id}")
+        logger.info("Safety function created: %s", function_id)
 
         return spec
 
@@ -597,7 +597,7 @@ class SafetyFunction:
         spec.last_modified = datetime.utcnow()
         spec.provenance_hash = self._calculate_provenance(spec)
 
-        logger.info(f"Set logic solver {solver.solver_id} for {function_id}")
+        logger.info("Set logic solver %s for %s", solver.solver_id, function_id)
 
         return spec
 

@@ -199,7 +199,7 @@ class ThermographyAnalyzer:
             ThermographyResult with analysis
         """
         start_time = datetime.now(timezone.utc)
-        logger.info(f"Analyzing thermal image: {image.image_id}")
+        logger.info("Analyzing thermal image: %s", image.image_id)
 
         # Determine reference temperature
         ref_temp = self._determine_reference(image, reference)

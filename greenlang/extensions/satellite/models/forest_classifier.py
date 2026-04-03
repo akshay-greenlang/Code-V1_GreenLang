@@ -31,6 +31,7 @@ from greenlang.satellite.analysis.vegetation_indices import (
     calculate_evi,
     calculate_ndmi,
 )
+from greenlang.utilities.exceptions.base import GreenLangException
 
 logger = logging.getLogger(__name__)
 
@@ -140,7 +141,7 @@ class GEDICanopyData:
     footprint_size_m: float = 25.0
 
 
-class ForestClassifierError(Exception):
+class ForestClassifierError(GreenLangException):
     """Base exception for forest classifier errors."""
     pass
 

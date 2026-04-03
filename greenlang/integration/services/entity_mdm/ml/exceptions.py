@@ -7,13 +7,26 @@ providing clear error handling and debugging capabilities.
 
 Author: GreenLang AI
 Phase: 5 - Entity Resolution ML
+
+Migration (2026-04-02):
+- All classes now inherit from the centralized greenlang.exceptions hierarchy
+- isinstance(error, GreenLangException) is now True for all entity resolution ML errors
+- Full backward compatibility: same class names, same public APIs, same attributes
 """
 
 from typing import Optional, Dict, Any
 
+from greenlang.utilities.exceptions.integration import (
+    EntityResolutionError as _CentralEntityResolutionError,
+)
 
-class EntityResolutionMLException(Exception):
-    """Base exception for all Entity Resolution ML errors."""
+
+class EntityResolutionMLException(_CentralEntityResolutionError):
+    """Base exception for all Entity Resolution ML errors.
+
+    Inherits from greenlang.utilities.exceptions.integration.EntityResolutionError
+    so that isinstance(error, GreenLangException) returns True.
+    """
 
     def __init__(
         self,
@@ -32,7 +45,21 @@ class EntityResolutionMLException(Exception):
         self.message = message
         self.error_code = error_code or self.__class__.__name__
         self.details = details or {}
-        super().__init__(self.message)
+
+        # Build context for the centralized parent
+        context = dict(self.details)
+        context["error_code"] = self.error_code
+
+        # Initialize centralized parent (pass error_code to prevent auto-generation)
+        _CentralEntityResolutionError.__init__(
+            self,
+            message=message,
+            context=context,
+        )
+
+        # Restore local attributes (parent may overwrite with auto-generated values)
+        self.message = message
+        self.error_code = error_code or self.__class__.__name__
 
     def to_dict(self) -> Dict[str, Any]:
         """

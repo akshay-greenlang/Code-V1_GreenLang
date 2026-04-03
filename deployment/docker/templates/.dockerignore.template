@@ -1,0 +1,204 @@
+# =============================================================================
+# GreenLang Standard .dockerignore Template
+# =============================================================================
+# Copy this file as `.dockerignore` in the build context root to keep Docker
+# images lean and prevent secrets, tests, and dev artefacts from leaking in.
+# =============================================================================
+
+# ---- Version control ----
+.git/
+.gitignore
+.gitattributes
+.github/
+.gitmodules
+
+# ---- Python bytecode and build artefacts ----
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+*.pyo
+*.pyd
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+pip-wheel-metadata/
+
+# ---- Virtual environments ----
+venv/
+.venv/
+ENV/
+env/
+.ENV/
+
+# ---- Testing ----
+.pytest_cache/
+.coverage
+.coverage.*
+coverage.xml
+*.cover
+htmlcov/
+.tox/
+.nox/
+test-results/
+tests/
+test/
+conftest.py
+*_test.py
+test_*.py
+pytest.ini
+
+# ---- Type checking and linting ----
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pyre/
+.pytype/
+.ruff_cache/
+
+# ---- Documentation ----
+docs/
+*.md
+README.*
+LICENSE
+CHANGELOG*
+CONTRIBUTING*
+AUTHORS
+MAINTAINERS
+
+# ---- IDE and editor files ----
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+*.sublime-project
+*.sublime-workspace
+
+# ---- CI/CD configuration ----
+.travis.yml
+.gitlab-ci.yml
+.drone.yml
+.circleci/
+azure-pipelines.yml
+appveyor.yml
+jenkins/
+Jenkinsfile
+.pre-commit-config.yaml
+
+# ---- Docker (do not copy Dockerfiles into the image) ----
+Dockerfile*
+docker-compose*.yml
+docker-compose*.yaml
+.dockerignore
+
+# ---- Temporary files ----
+tmp/
+temp/
+*.tmp
+*.bak
+*.backup
+*.orig
+
+# ---- Logs ----
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ---- OS files ----
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Desktop.ini
+
+# ---- Node (frontend assets if any) ----
+node_modules/
+npm-debug.log
+yarn-error.log
+.npm/
+.yarn/
+
+# ---- Security and secrets (NEVER ship these) ----
+.env
+.env.*
+*.key
+*.pem
+*.crt
+*.p12
+*.pfx
+secrets/
+credentials/
+config.local.*
+*.secret
+*.credentials
+
+# ---- Archive and binary files ----
+*.tar
+*.tar.gz
+*.tgz
+*.zip
+*.7z
+*.rar
+
+# ---- Database files ----
+*.db
+*.sqlite
+*.sqlite3
+
+# ---- Jupyter notebooks ----
+*.ipynb
+.ipynb_checkpoints/
+
+# ---- Profiling ----
+*.prof
+.prof/
+cython_debug/
+
+# ---- GreenLang-specific exclusions ----
+.greenlang/
+.claude/
+ralphy-agent/
+benchmarks/
+perf/
+*.bench
+examples/
+samples/
+demo/
+reports/
+*.generated
+generated/
+*.xlsx
+*.xls
+*.csv
+
+# ---- Terraform state (never ship infrastructure secrets) ----
+*.tfstate
+*.tfstate.backup
+.terraform/
+*.tfvars
+
+# ---- Kubernetes manifests (not needed inside app containers) ----
+deployment/kubernetes/
+deployment/terraform/

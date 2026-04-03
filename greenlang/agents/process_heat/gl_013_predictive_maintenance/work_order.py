@@ -245,7 +245,7 @@ class SAPPMAdapter(CMMSAdapter):
         # For now, return simulated response
         sap_order_number = f"400{str(uuid.uuid4().int)[:7]}"
 
-        logger.info(f"SAP PM work order created: {sap_order_number}")
+        logger.info("SAP PM work order created: %s", sap_order_number)
 
         return {
             "success": True,
@@ -261,7 +261,7 @@ class SAPPMAdapter(CMMSAdapter):
         updates: Dict[str, Any],
     ) -> Dict[str, Any]:
         """Update SAP PM work order."""
-        logger.info(f"Updating SAP PM work order: {work_order_id}")
+        logger.info("Updating SAP PM work order: %s", work_order_id)
         return {
             "success": True,
             "work_order_id": work_order_id,
@@ -285,7 +285,7 @@ class SAPPMAdapter(CMMSAdapter):
         completion_data: Dict[str, Any],
     ) -> Dict[str, Any]:
         """Close SAP PM work order."""
-        logger.info(f"Closing SAP PM work order: {work_order_id}")
+        logger.info("Closing SAP PM work order: %s", work_order_id)
         return {
             "success": True,
             "work_order_id": work_order_id,
@@ -343,7 +343,7 @@ class MaximoAdapter(CMMSAdapter):
 
         maximo_id = f"WO{str(uuid.uuid4().int)[:8]}"
 
-        logger.info(f"Maximo work order created: {maximo_id}")
+        logger.info("Maximo work order created: %s", maximo_id)
 
         return {
             "success": True,

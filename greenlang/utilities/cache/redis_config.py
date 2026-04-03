@@ -118,7 +118,7 @@ class RedisConfig:
             if client:
                 return client.ping()
         except Exception as e:
-            logger.error(f"Redis health check failed: {e}")
+            logger.error("Redis health check failed: %s", e)
 
         return False
 
@@ -169,7 +169,7 @@ class RedisSessionStore:
                 return json.loads(data)
 
         except Exception as e:
-            logger.error(f"Error getting session {session_id}: {e}")
+            logger.error("Error getting session %s: %s", session_id, e)
 
         return None
 
@@ -207,7 +207,7 @@ class RedisSessionStore:
             return True
 
         except Exception as e:
-            logger.error(f"Error setting session {session_id}: {e}")
+            logger.error("Error setting session %s: %s", session_id, e)
             return False
 
     def delete(self, session_id: str) -> bool:
@@ -229,7 +229,7 @@ class RedisSessionStore:
             return True
 
         except Exception as e:
-            logger.error(f"Error deleting session {session_id}: {e}")
+            logger.error("Error deleting session %s: %s", session_id, e)
             return False
 
     def exists(self, session_id: str) -> bool:
@@ -250,7 +250,7 @@ class RedisSessionStore:
             return bool(self.client.exists(key))
 
         except Exception as e:
-            logger.error(f"Error checking session {session_id}: {e}")
+            logger.error("Error checking session %s: %s", session_id, e)
             return False
 
     def extend_ttl(self, session_id: str, ttl: Union[int, timedelta]) -> bool:
@@ -276,7 +276,7 @@ class RedisSessionStore:
             return bool(self.client.expire(key, ttl))
 
         except Exception as e:
-            logger.error(f"Error extending TTL for session {session_id}: {e}")
+            logger.error("Error extending TTL for session %s: %s", session_id, e)
             return False
 
     def get_ttl(self, session_id: str) -> Optional[int]:
@@ -300,7 +300,7 @@ class RedisSessionStore:
                 return ttl
 
         except Exception as e:
-            logger.error(f"Error getting TTL for session {session_id}: {e}")
+            logger.error("Error getting TTL for session %s: %s", session_id, e)
 
         return None
 
@@ -326,7 +326,7 @@ class RedisSessionStore:
             return [key[prefix_len:] for key in keys]
 
         except Exception as e:
-            logger.error(f"Error listing sessions: {e}")
+            logger.error("Error listing sessions: %s", e)
             return []
 
     def clear_all(self) -> int:
@@ -345,7 +345,7 @@ class RedisSessionStore:
                 return self.client.delete(*keys)
 
         except Exception as e:
-            logger.error(f"Error clearing sessions: {e}")
+            logger.error("Error clearing sessions: %s", e)
 
         return 0
 

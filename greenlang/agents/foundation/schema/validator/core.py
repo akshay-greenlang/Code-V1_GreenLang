@@ -218,7 +218,7 @@ class SchemaValidator:
         timings: Dict[str, float] = {}
         effective_options = options or self.options
 
-        logger.info(f"Starting validation with profile={effective_options.profile}")
+        logger.info("Starting validation with profile=%s", effective_options.profile)
 
         # Normalize schema_ref to SchemaRef object
         if isinstance(schema_ref, str):
@@ -515,10 +515,10 @@ class SchemaValidator:
 
         # Check cache
         if cache_key in self._ir_cache:
-            logger.debug(f"IR cache hit for {cache_key}")
+            logger.debug("IR cache hit for %s", cache_key)
             return self._ir_cache[cache_key], []
 
-        logger.debug(f"IR cache miss for {cache_key}")
+        logger.debug("IR cache miss for %s", cache_key)
 
         # Resolve schema from registry
         schema_source: Optional[Dict[str, Any]] = None
@@ -531,7 +531,7 @@ class SchemaValidator:
                 )
                 schema_source = source.content
             except Exception as e:
-                logger.error(f"Schema resolution failed: {e}")
+                logger.error("Schema resolution failed: %s", e)
                 finding = Finding(
                     code="GLSCHEMA-E500",
                     severity=Severity.ERROR,
@@ -572,7 +572,7 @@ class SchemaValidator:
 
         # Cache the IR
         self._ir_cache[cache_key] = result.ir
-        logger.debug(f"Cached IR for {cache_key}")
+        logger.debug("Cached IR for %s", cache_key)
 
         return result.ir, []
 
@@ -693,7 +693,7 @@ class SchemaValidator:
             logger.debug("Structural validation not yet implemented, skipping")
             return []
         except Exception as e:
-            logger.error(f"Structural validation error: {e}", exc_info=True)
+            logger.error("Structural validation error: %s", e, exc_info=True)
             return [
                 Finding(
                     code="GLSCHEMA-E100",
@@ -744,7 +744,7 @@ class SchemaValidator:
             logger.debug("Constraint validation not yet implemented, skipping")
             return []
         except Exception as e:
-            logger.error(f"Constraint validation error: {e}", exc_info=True)
+            logger.error("Constraint validation error: %s", e, exc_info=True)
             return [
                 Finding(
                     code="GLSCHEMA-E200",
@@ -883,7 +883,7 @@ class SchemaValidator:
             logger.debug("Unit validation not yet implemented, skipping")
             return []
         except Exception as e:
-            logger.error(f"Unit validation error: {e}", exc_info=True)
+            logger.error("Unit validation error: %s", e, exc_info=True)
             return [
                 Finding(
                     code="GLSCHEMA-E300",
@@ -983,7 +983,7 @@ class SchemaValidator:
             logger.debug("Rule validation not yet implemented, skipping")
             return []
         except Exception as e:
-            logger.error(f"Rule validation error: {e}", exc_info=True)
+            logger.error("Rule validation error: %s", e, exc_info=True)
             return [
                 Finding(
                     code="GLSCHEMA-E400",
@@ -1024,7 +1024,7 @@ class SchemaValidator:
             logger.debug("Linting not yet implemented, skipping")
             return []
         except Exception as e:
-            logger.debug(f"Linting error (non-blocking): {e}")
+            logger.debug("Linting error (non-blocking): %s", e)
             return []
 
     def _convert_findings(self, findings: List[Any]) -> List[Finding]:
@@ -1082,7 +1082,7 @@ class SchemaValidator:
             return True
 
         if error_count >= options.max_errors:
-            logger.debug(f"Stopping validation due to max_errors ({error_count})")
+            logger.debug("Stopping validation due to max_errors (%s)", error_count)
             return True
 
         return False

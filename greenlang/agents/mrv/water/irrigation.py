@@ -303,7 +303,7 @@ class IrrigationMRVAgent(BaseAgent):
         self._emission_factors = DEFAULT_EMISSION_FACTORS.copy()
         self._calculations_performed = 0
 
-        self.logger.info(f"Initialized {self.AGENT_ID}: {self.AGENT_NAME} v{self.VERSION}")
+        logger.info("Initialized %s: %s v%s", self.AGENT_ID, self.AGENT_NAME, self.VERSION)
 
     def execute(self, input_data: Dict[str, Any]) -> AgentResult:
         """Execute irrigation emissions calculation."""
@@ -364,7 +364,7 @@ class IrrigationMRVAgent(BaseAgent):
 
             self._calculations_performed += 1
 
-            self.logger.info(
+            logger.info(
                 f"Calculated irrigation emissions: {total_emissions:.2f} kgCO2e "
                 f"({total_area:.0f} ha, {total_water:.0f} m3)"
             )
@@ -380,7 +380,7 @@ class IrrigationMRVAgent(BaseAgent):
             )
 
         except Exception as e:
-            self.logger.error(f"Irrigation MRV calculation failed: {e}", exc_info=True)
+            logger.error("Irrigation MRV calculation failed: %s", e, exc_info=True)
             return AgentResult(
                 success=False,
                 error=str(e),

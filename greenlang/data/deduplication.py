@@ -410,7 +410,7 @@ class DataDeduplicator:
             )
 
             if result.is_duplicate:
-                logger.warning(f"Duplicate found: {result.similarity_score}")
+                logger.warning("Duplicate found: %s", result.similarity_score)
             else:
                 process_record(shipment)
         """
@@ -703,7 +703,7 @@ class DataDeduplicator:
         with open(path, 'w') as f:
             json.dump(report, f, indent=2, default=str)
 
-        logger.info(f"Duplicate report exported to {path}")
+        logger.info("Duplicate report exported to %s", path)
 
 
 class ConnectorDeduplicator(ABC):

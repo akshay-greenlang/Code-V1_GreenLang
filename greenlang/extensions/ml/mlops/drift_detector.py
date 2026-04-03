@@ -275,7 +275,7 @@ class DriftDetector:
         """
         self._reference_data = data
         self._compute_reference_stats()
-        logger.info(f"Reference data set: {data.shape}")
+        logger.info("Reference data set: %s", data.shape)
 
     def _compute_reference_stats(self) -> None:
         """Compute statistics for reference data."""

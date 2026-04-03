@@ -143,7 +143,7 @@ class OPCUAServer:
         self._running = False
         self._event_callbacks: Dict[str, List[Callable]] = {}
 
-        logger.info(f"OPCUAServer initialized with endpoint: {config.endpoint}")
+        logger.info("OPCUAServer initialized with endpoint: %s", config.endpoint)
 
     async def start(self) -> None:
         """
@@ -183,7 +183,7 @@ class OPCUAServer:
             )
 
         except Exception as e:
-            logger.error(f"Failed to start OPC-UA server: {e}", exc_info=True)
+            logger.error("Failed to start OPC-UA server: %s", e, exc_info=True)
             raise RuntimeError(f"OPC-UA server start failed: {e}") from e
 
     async def stop(self) -> None:
@@ -197,14 +197,14 @@ class OPCUAServer:
             try:
                 # Notify subscribers
                 for sub_id, sub_info in self.subscriptions.items():
-                    logger.info(f"Closing subscription {sub_id} for client {sub_info.client_id}")
+                    logger.info("Closing subscription %s for client %s", sub_id, sub_info.client_id)
 
                 await self.server.stop()
                 self._running = False
                 logger.info("OPC-UA server stopped gracefully")
 
             except Exception as e:
-                logger.error(f"Error stopping OPC-UA server: {e}", exc_info=True)
+                logger.error("Error stopping OPC-UA server: %s", e, exc_info=True)
 
     async def _configure_security(self) -> None:
         """Configure server security policies and certificates."""
@@ -225,7 +225,7 @@ class OPCUAServer:
             if security_policies:
                 self.server.set_security_policy(security_policies)
 
-            logger.info(f"Security configured with policies: {self.config.security_policies}")
+            logger.info("Security configured with policies: %s", self.config.security_policies)
         else:
             logger.warning("No certificates configured - running without security")
 
@@ -266,7 +266,7 @@ class OPCUAServer:
         # Create nodes from schema
         await self._create_nodes_from_schema(agent_folder, ns_idx, agent_name, schema)
 
-        logger.info(f"Registered namespace for agent '{agent_name}' with index {ns_idx}")
+        logger.info("Registered namespace for agent '%s' with index %s", agent_name, ns_idx)
         return ns_idx
 
     async def _create_nodes_from_schema(
@@ -305,7 +305,7 @@ class OPCUAServer:
                 value=prop_def.get("default")
             )
 
-            logger.debug(f"Created node {node_id} with type {data_type}")
+            logger.debug("Created node %s with type %s", node_id, data_type)
 
     def _map_json_type_to_opcua(self, json_type: str) -> Any:
         """Map JSON schema type to OPC-UA data type."""
@@ -369,7 +369,7 @@ class OPCUAServer:
         # Notify subscribers
         await self._notify_subscribers(node_id, value, dv.SourceTimestamp)
 
-        logger.debug(f"Wrote value to {node_id}: {value} (hash: {provenance_hash[:8]}...)")
+        logger.debug("Wrote value to %s: %s (hash: %s...)", node_id, value, provenance_hash[)
         return provenance_hash
 
     async def read_value(self, node_id: str) -> Any:
@@ -411,7 +411,7 @@ class OPCUAServer:
                     try:
                         await callback(node_id, value, timestamp)
                     except Exception as e:
-                        logger.error(f"Subscriber callback error: {e}")
+                        logger.error("Subscriber callback error: %s", e)
 
     async def register_method(
         self,
@@ -474,7 +474,7 @@ class OPCUAServer:
         )
 
         method_id = f"ns={ns_idx};s={agent_name}.{method_name}"
-        logger.info(f"Registered method {method_id}")
+        logger.info("Registered method %s", method_id)
 
         return method_id
 

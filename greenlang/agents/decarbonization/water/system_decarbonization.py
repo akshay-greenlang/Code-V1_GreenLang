@@ -258,7 +258,7 @@ class WaterSystemDecarbonizationAgent(BaseAgent):
                 version=self.VERSION,
             )
         super().__init__(config)
-        self.logger.info(f"Initialized {self.AGENT_ID}: {self.AGENT_NAME} v{self.VERSION}")
+        logger.info("Initialized %s: %s v%s", self.AGENT_ID, self.AGENT_NAME, self.VERSION)
 
     def execute(self, input_data: Dict[str, Any]) -> AgentResult:
         """Execute decarbonization pathway development."""
@@ -390,7 +390,7 @@ class WaterSystemDecarbonizationAgent(BaseAgent):
                 processing_time_ms=processing_time,
             )
 
-            self.logger.info(
+            logger.info(
                 f"Developed decarbonization pathway for {dc_input.utility_id}: "
                 f"{final_reduction_pct:.1f}% reduction by {dc_input.target.target_year}"
             )
@@ -405,7 +405,7 @@ class WaterSystemDecarbonizationAgent(BaseAgent):
             )
 
         except Exception as e:
-            self.logger.error(f"Decarbonization planning failed: {e}", exc_info=True)
+            logger.error("Decarbonization planning failed: %s", e, exc_info=True)
             return AgentResult(success=False, error=str(e))
 
     def _generate_default_interventions(

@@ -142,7 +142,7 @@ class ServiceContainer:
                 lifetime=ServiceLifetime.SINGLETON,
             )
             self._registrations[service_type] = registration
-            logger.debug(f"Registered singleton: {service_type.__name__}")
+            logger.debug("Registered singleton: %s", service_type.__name__)
             return self
 
     def register_scoped(
@@ -167,7 +167,7 @@ class ServiceContainer:
                 lifetime=ServiceLifetime.SCOPED,
             )
             self._registrations[service_type] = registration
-            logger.debug(f"Registered scoped: {service_type.__name__}")
+            logger.debug("Registered scoped: %s", service_type.__name__)
             return self
 
     def register_transient(
@@ -192,7 +192,7 @@ class ServiceContainer:
                 lifetime=ServiceLifetime.TRANSIENT,
             )
             self._registrations[service_type] = registration
-            logger.debug(f"Registered transient: {service_type.__name__}")
+            logger.debug("Registered transient: %s", service_type.__name__)
             return self
 
     def register_instance(
@@ -219,7 +219,7 @@ class ServiceContainer:
             )
             registration.instance = instance
             self._registrations[service_type] = registration
-            logger.debug(f"Registered instance: {service_type.__name__}")
+            logger.debug("Registered instance: %s", service_type.__name__)
             return self
 
     # ==========================================================================
@@ -286,20 +286,20 @@ class ServiceContainer:
     def _resolve_singleton(self, registration: ServiceRegistration[T]) -> T:
         """Resolve singleton (lazy initialization)."""
         if registration.instance is None:
-            logger.debug(f"Creating singleton: {registration.service_type.__name__}")
+            logger.debug("Creating singleton: %s", registration.service_type.__name__)
             registration.instance = registration.factory(self)
         return registration.instance
 
     def _resolve_scoped(self, registration: ServiceRegistration[T]) -> T:
         """Resolve scoped service."""
         if registration.service_type not in self._scoped_instances:
-            logger.debug(f"Creating scoped: {registration.service_type.__name__}")
+            logger.debug("Creating scoped: %s", registration.service_type.__name__)
             self._scoped_instances[registration.service_type] = registration.factory(self)
         return self._scoped_instances[registration.service_type]
 
     def _resolve_transient(self, registration: ServiceRegistration[T]) -> T:
         """Resolve transient service."""
-        logger.debug(f"Creating transient: {registration.service_type.__name__}")
+        logger.debug("Creating transient: %s", registration.service_type.__name__)
         return registration.factory(self)
 
     # ==========================================================================

@@ -221,7 +221,7 @@ class AdaptationInvestmentPrioritizerAgent(BaseAgent):
             )
 
         super().__init__(config)
-        logger.info(f"Initialized {self.AGENT_NAME} v{self.VERSION}")
+        logger.info("Initialized %s v%s", self.AGENT_NAME, self.VERSION)
 
     def initialize(self):
         """Initialize agent resources."""
@@ -233,7 +233,7 @@ class AdaptationInvestmentPrioritizerAgent(BaseAgent):
 
         try:
             priority_input = PrioritizationInput(**input_data)
-            self.logger.info(
+            logger.info(
                 f"Starting investment prioritization: {priority_input.request_id}, "
                 f"{len(priority_input.investment_options)} options"
             )
@@ -295,7 +295,7 @@ class AdaptationInvestmentPrioritizerAgent(BaseAgent):
 
             output.provenance_hash = self._calculate_provenance_hash(priority_input, output)
 
-            self.logger.info(
+            logger.info(
                 f"Investment prioritization complete: {critical_count} critical, "
                 f"{high_count} high priority"
             )
@@ -311,7 +311,7 @@ class AdaptationInvestmentPrioritizerAgent(BaseAgent):
             )
 
         except Exception as e:
-            self.logger.error(f"Investment prioritization failed: {str(e)}", exc_info=True)
+            logger.error("Investment prioritization failed: %s", e, exc_info=True)
             return AgentResult(
                 success=False,
                 error=str(e),

@@ -570,5 +570,5 @@ class Category07CommutingCalculator(Scope3CategoryCalculator):
             return self._commute_factors[mode]["factor"]
 
         # Default to average car
-        self.logger.warning(f"No factor for mode '{mode}', using car average")
+        logger.warning("No factor for mode '%s', using car average", mode)
         return self._commute_factors["car_average"]["factor"]

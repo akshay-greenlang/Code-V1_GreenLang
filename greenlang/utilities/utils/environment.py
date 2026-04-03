@@ -233,7 +233,7 @@ class ProductionGuard:
         ]
 
         if operation in forbidden_ops:
-            logger.error(f"Operation '{operation}' blocked in production environment")
+            logger.error("Operation '%s' blocked in production environment", operation)
             self.blocked_operations.append({
                 "operation": operation,
                 "details": details,
@@ -253,7 +253,7 @@ class ProductionGuard:
             checker = restricted_ops[operation]
             allowed = checker(details or {})
             if not allowed:
-                logger.warning(f"Operation '{operation}' restricted in production: {details}")
+                logger.warning("Operation '%s' restricted in production: %s", operation, details)
                 self.blocked_operations.append({
                     "operation": operation,
                     "details": details,
@@ -394,11 +394,11 @@ def check_operation_allowed(operation: str, details: Dict[str, Any] = None) -> b
 if __name__ != "__main__":
     detector = EnvironmentDetector()
     if detector.is_production:
-        logger.info(f"Production environment detected: {detector.env}")
+        logger.info("Production environment detected: %s", detector.env)
         try:
             guard = ProductionGuard()
             guard.enforce_production_policies()
         except EnvironmentError as e:
-            logger.critical(f"Production safety violation: {e}")
+            logger.critical("Production safety violation: %s", e)
             # In production, fail fast on safety violations
             sys.exit(1)

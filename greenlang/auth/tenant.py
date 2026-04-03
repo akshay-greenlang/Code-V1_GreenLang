@@ -339,7 +339,7 @@ class TenantIsolation:
     def apply_network_policies(tenant_id: str, policies: List[Dict[str, Any]]):
         """Apply network isolation policies"""
         # This would integrate with Kubernetes NetworkPolicies
-        logger.info(f"Applying network policies for tenant {tenant_id}")
+        logger.info("Applying network policies for tenant %s", tenant_id)
 
     @staticmethod
     def create_resource_quota(tenant_id: str, quota: TenantQuota) -> Dict[str, Any]:
@@ -432,7 +432,7 @@ class TenantManager:
         if tenant.isolation_level != IsolationLevel.SHARED:
             self._create_isolation_resources(tenant)
 
-        logger.info(f"Created tenant: {tenant.tenant_id} ({tenant.name})")
+        logger.info("Created tenant: %s (%s)", tenant.tenant_id, tenant.name)
         return tenant
 
     def get_tenant(self, tenant_id: str) -> Optional[Tenant]:
@@ -455,7 +455,7 @@ class TenantManager:
 
         tenant.updated_at = DeterministicClock.utcnow()
 
-        logger.info(f"Updated tenant: {tenant_id}")
+        logger.info("Updated tenant: %s", tenant_id)
         return tenant
 
     def delete_tenant(self, tenant_id: str) -> bool:
@@ -476,7 +476,7 @@ class TenantManager:
         if tenant_id in self.usage_tracker:
             del self.usage_tracker[tenant_id]
 
-        logger.info(f"Deleted tenant: {tenant_id}")
+        logger.info("Deleted tenant: %s", tenant_id)
         return True
 
     def get_tenant_context(self, token: str) -> TenantContext:
@@ -501,7 +501,7 @@ class TenantManager:
                 options={"verify_signature": True},
             )
         except jwt.InvalidTokenError as e:
-            logger.error(f"Invalid token: {e}")
+            logger.error("Invalid token: %s", e)
             # For development, decode without verification
             # SECURITY FIX: Verify JWT signature
             import os
@@ -657,18 +657,18 @@ class TenantManager:
         namespace = TenantIsolation.get_namespace(
             tenant.tenant_id, tenant.isolation_level
         )
-        logger.info(f"Creating namespace: {namespace}")
+        logger.info("Creating namespace: %s", namespace)
 
         # Create resource quota
         quota_manifest = TenantIsolation.create_resource_quota(
             tenant.tenant_id, tenant.quota
         )
-        logger.info(f"Creating resource quota for tenant: {tenant.tenant_id}")
+        logger.info("Creating resource quota for tenant: %s", tenant.tenant_id)
 
         # Create storage directories
         storage_path = TenantIsolation.get_storage_path(tenant.tenant_id)
         storage_path.mkdir(parents=True, exist_ok=True)
-        logger.info(f"Created storage path: {storage_path}")
+        logger.info("Created storage path: %s", storage_path)
 
     def _cleanup_isolation_resources(self, tenant: Tenant):
         """Cleanup isolation resources for tenant"""
@@ -676,7 +676,7 @@ class TenantManager:
         namespace = TenantIsolation.get_namespace(
             tenant.tenant_id, tenant.isolation_level
         )
-        logger.info(f"Removing namespace: {namespace}")
+        logger.info("Removing namespace: %s", namespace)
 
         # Remove storage
         storage_path = TenantIsolation.get_storage_path(tenant.tenant_id)
@@ -684,7 +684,7 @@ class TenantManager:
             import shutil
 
             shutil.rmtree(storage_path)
-            logger.info(f"Removed storage path: {storage_path}")
+            logger.info("Removed storage path: %s", storage_path)
 
     def _parse_size(self, size_str: str) -> int:
         """Parse size string to bytes"""

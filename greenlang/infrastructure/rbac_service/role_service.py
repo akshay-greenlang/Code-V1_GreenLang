@@ -50,23 +50,26 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 
-class RoleNotFoundError(Exception):
+from greenlang.utilities.exceptions.security import AuthorizationError as _AuthorizationError
+
+
+class RoleNotFoundError(_AuthorizationError):
     """Raised when a role lookup fails."""
 
 
-class SystemRoleProtectionError(Exception):
+class SystemRoleProtectionError(_AuthorizationError):
     """Raised when attempting to modify or delete a system role."""
 
 
-class RoleHierarchyCycleError(Exception):
+class RoleHierarchyCycleError(_AuthorizationError):
     """Raised when a parent assignment would create a cycle."""
 
 
-class RoleHierarchyDepthError(Exception):
+class RoleHierarchyDepthError(_AuthorizationError):
     """Raised when the hierarchy exceeds the maximum allowed depth."""
 
 
-class DuplicateRoleError(Exception):
+class DuplicateRoleError(_AuthorizationError):
     """Raised when a role name conflicts within the same tenant."""
 
 

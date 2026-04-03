@@ -34,6 +34,8 @@ from uuid import uuid4
 
 from pydantic import BaseModel, Field, validator
 
+from greenlang.utilities.exceptions.compliance import ComplianceException
+
 logger = logging.getLogger(__name__)
 
 
@@ -143,7 +145,7 @@ class ReportParams(BaseModel):
         return v
 
 
-class ComplianceServiceError(Exception):
+class ComplianceServiceError(ComplianceException):
     """Base exception for compliance service errors."""
     pass
 
@@ -386,7 +388,7 @@ class ComplianceService:
         except ReportGenerationError:
             raise
         except Exception as e:
-            logger.error(f"Failed to generate report: {e}", exc_info=True)
+            logger.error("Failed to generate report: %s", e, exc_info=True)
             raise ReportGenerationError(
                 f"Failed to generate report: {str(e)}"
             ) from e
@@ -421,7 +423,7 @@ class ComplianceService:
                 type_enum = ReportTypeEnum(report_type.lower())
                 reports = [r for r in reports if r.report_type == type_enum]
             except ValueError:
-                logger.warning(f"Invalid report_type filter: {report_type}")
+                logger.warning("Invalid report_type filter: %s", report_type)
                 return []
 
         if status:
@@ -429,7 +431,7 @@ class ComplianceService:
                 status_enum = ComplianceStatusEnum(status.lower())
                 reports = [r for r in reports if r.status == status_enum]
             except ValueError:
-                logger.warning(f"Invalid status filter: {status}")
+                logger.warning("Invalid status filter: %s", status)
                 return []
 
         if facility_id:
@@ -441,7 +443,7 @@ class ComplianceService:
         # Apply pagination
         reports = reports[offset:offset + limit]
 
-        logger.debug(f"Listed {len(reports)} reports")
+        logger.debug("Listed %s reports", len(reports))
         return reports
 
     async def get_report(self, report_id: str) -> Optional[ComplianceReport]:
@@ -458,9 +460,9 @@ class ComplianceService:
             report = self._reports.get(report_id)
 
         if report:
-            logger.debug(f"Retrieved report {report_id}")
+            logger.debug("Retrieved report %s", report_id)
         else:
-            logger.debug(f"Report not found: {report_id}")
+            logger.debug("Report not found: %s", report_id)
 
         return report
 
@@ -490,7 +492,7 @@ class ComplianceService:
                 severity_enum = FindingSeverityEnum(severity.lower())
                 findings = [f for f in findings if f.severity == severity_enum]
             except ValueError:
-                logger.warning(f"Invalid severity filter: {severity}")
+                logger.warning("Invalid severity filter: %s", severity)
                 return []
 
         return findings

@@ -207,14 +207,16 @@ class SCADAConnector(BaseConnector[SCADAQuery, SCADAPayload, SCADAConfig]):
             ConnectionError: If connection fails
         """
         try:
-            self.logger.info(
-                f"Connecting to SCADA system: {self.config.protocol}://{self.config.endpoint}"
+            logger.info(
+                "Connecting to SCADA system: %s://%s",
+                self.config.protocol,
+                self.config.endpoint
             )
 
             if self.config.mock_mode:
                 # Mock connection - always succeeds
                 self._client = "mock_client"
-                self.logger.info("Mock mode: SCADA connection simulated")
+                logger.info("Mock mode: SCADA connection simulated")
                 return True
 
             # Protocol-specific connection logic
@@ -229,11 +231,11 @@ class SCADAConnector(BaseConnector[SCADAQuery, SCADAPayload, SCADAConfig]):
             else:
                 raise ValueError(f"Unsupported protocol: {self.config.protocol}")
 
-            self.logger.info(f"Successfully connected to SCADA system")
+            logger.info("Successfully connected to SCADA system")
             return True
 
         except Exception as e:
-            self.logger.error(f"Failed to connect to SCADA system: {e}", exc_info=True)
+            logger.error("Failed to connect to SCADA system: %s", e, exc_info=True)
             raise ConnectionError(f"SCADA connection failed: {e}") from e
 
     async def disconnect(self) -> bool:
@@ -258,12 +260,12 @@ class SCADAConnector(BaseConnector[SCADAQuery, SCADAPayload, SCADAConfig]):
                     elif self.config.protocol == "bacnet":
                         await self._disconnect_bacnet()
 
-                self.logger.info(f"Disconnected from SCADA system")
+                logger.info("Disconnected from SCADA system")
 
             return True
 
         except Exception as e:
-            self.logger.error(f"Error disconnecting from SCADA system: {e}")
+            logger.error("Error disconnecting from SCADA system: %s", e)
             return False
 
     async def _health_check_impl(self) -> bool:
@@ -298,7 +300,7 @@ class SCADAConnector(BaseConnector[SCADAQuery, SCADAPayload, SCADAConfig]):
             return True
 
         except Exception as e:
-            self.logger.error(f"Health check failed: {e}")
+            logger.error("Health check failed: %s", e)
             return False
 
     async def _fetch_data_impl(self, query: SCADAQuery) -> SCADAPayload:
@@ -345,7 +347,7 @@ class SCADAConnector(BaseConnector[SCADAQuery, SCADAPayload, SCADAConfig]):
             )
 
         except Exception as e:
-            self.logger.error(f"Failed to fetch SCADA data: {e}", exc_info=True)
+            logger.error("Failed to fetch SCADA data: %s", e, exc_info=True)
             raise
 
     # OPC UA protocol methods

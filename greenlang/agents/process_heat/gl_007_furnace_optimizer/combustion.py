@@ -205,7 +205,7 @@ class CombustionCalculator:
         self.precision = precision
         self._provenance_tracker = ProvenanceTracker() if provenance_enabled else None
 
-        logger.info(f"CombustionCalculator initialized v{self.VERSION}")
+        logger.info("CombustionCalculator initialized v%s", self.VERSION)
 
     # =========================================================================
     # PRIMARY CALCULATION METHODS - ZERO HALLUCINATION

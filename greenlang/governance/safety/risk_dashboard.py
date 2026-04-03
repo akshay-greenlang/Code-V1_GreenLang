@@ -321,7 +321,7 @@ class RiskDashboard:
         self._cache_timestamp: Optional[datetime] = None
         self._cache_ttl_seconds = 60
 
-        logger.info(f"RiskDashboard initialized: {self.config.name}")
+        logger.info("RiskDashboard initialized: %s", self.config.name)
 
     # =========================================================================
     # METRIC CALCULATION
@@ -754,7 +754,7 @@ class RiskDashboard:
     def add_alert(self, alert: DashboardAlert) -> DashboardAlert:
         """Add a new alert."""
         self.alerts.append(alert)
-        logger.info(f"Alert added: {alert.title} ({alert.severity.value})")
+        logger.info("Alert added: %s (%s)", alert.title, alert.severity.value)
         return alert
 
     def acknowledge_alert(
@@ -768,7 +768,7 @@ class RiskDashboard:
                 alert.acknowledged = True
                 alert.acknowledged_by = acknowledged_by
                 alert.acknowledged_at = datetime.utcnow()
-                logger.info(f"Alert acknowledged: {alert_id}")
+                logger.info("Alert acknowledged: %s", alert_id)
                 return alert
         return None
 
@@ -910,7 +910,7 @@ def create_dashboard_router(dashboard: RiskDashboard) -> Optional[Any]:
         try:
             return await dashboard.get_current_metrics(use_cache=use_cache)
         except Exception as e:
-            logger.error(f"Error getting metrics: {e}")
+            logger.error("Error getting metrics: %s", e)
             raise HTTPException(status_code=500, detail=str(e))
 
     @router.get("/kpis", response_model=DashboardKPIs)
@@ -919,7 +919,7 @@ def create_dashboard_router(dashboard: RiskDashboard) -> Optional[Any]:
         try:
             return await dashboard._calculate_kpis()
         except Exception as e:
-            logger.error(f"Error getting KPIs: {e}")
+            logger.error("Error getting KPIs: %s", e)
             raise HTTPException(status_code=500, detail=str(e))
 
     @router.get("/heatmap", response_model=HeatmapData)
@@ -928,7 +928,7 @@ def create_dashboard_router(dashboard: RiskDashboard) -> Optional[Any]:
         try:
             return await dashboard._generate_heatmap()
         except Exception as e:
-            logger.error(f"Error getting heatmap: {e}")
+            logger.error("Error getting heatmap: %s", e)
             raise HTTPException(status_code=500, detail=str(e))
 
     @router.get("/alerts")
@@ -940,7 +940,7 @@ def create_dashboard_router(dashboard: RiskDashboard) -> Optional[Any]:
                 alerts = [a for a in alerts if not a.acknowledged]
             return {"alerts": [a.model_dump() for a in alerts]}
         except Exception as e:
-            logger.error(f"Error getting alerts: {e}")
+            logger.error("Error getting alerts: %s", e)
             raise HTTPException(status_code=500, detail=str(e))
 
     @router.post("/alerts/{alert_id}/acknowledge")
@@ -955,7 +955,7 @@ def create_dashboard_router(dashboard: RiskDashboard) -> Optional[Any]:
                 return {"status": "acknowledged", "alert": alert.model_dump()}
             raise HTTPException(status_code=404, detail="Alert not found")
         except Exception as e:
-            logger.error(f"Error acknowledging alert: {e}")
+            logger.error("Error acknowledging alert: %s", e)
             raise HTTPException(status_code=500, detail=str(e))
 
     @router.get("/trends")
@@ -967,7 +967,7 @@ def create_dashboard_router(dashboard: RiskDashboard) -> Optional[Any]:
                 "trends": {k: v.model_dump() for k, v in trends.items()}
             }
         except Exception as e:
-            logger.error(f"Error getting trends: {e}")
+            logger.error("Error getting trends: %s", e)
             raise HTTPException(status_code=500, detail=str(e))
 
     @router.get("/top-risks")
@@ -977,7 +977,7 @@ def create_dashboard_router(dashboard: RiskDashboard) -> Optional[Any]:
             risks = await dashboard._get_top_risks(limit)
             return {"risks": risks, "count": len(risks)}
         except Exception as e:
-            logger.error(f"Error getting top risks: {e}")
+            logger.error("Error getting top risks: %s", e)
             raise HTTPException(status_code=500, detail=str(e))
 
     @router.get("/activity")
@@ -987,7 +987,7 @@ def create_dashboard_router(dashboard: RiskDashboard) -> Optional[Any]:
             activity = await dashboard._get_recent_activity(limit)
             return {"activity": activity, "count": len(activity)}
         except Exception as e:
-            logger.error(f"Error getting activity: {e}")
+            logger.error("Error getting activity: %s", e)
             raise HTTPException(status_code=500, detail=str(e))
 
     @router.get("/widget/{widget_id}")
@@ -996,7 +996,7 @@ def create_dashboard_router(dashboard: RiskDashboard) -> Optional[Any]:
         try:
             return await dashboard.get_widget_data(widget_id)
         except Exception as e:
-            logger.error(f"Error getting widget data: {e}")
+            logger.error("Error getting widget data: %s", e)
             raise HTTPException(status_code=500, detail=str(e))
 
     @router.post("/cache/clear")

@@ -499,7 +499,7 @@ class Category05WasteCalculator(Scope3CategoryCalculator):
         if factor is None:
             # Try default treatment for this waste type
             factor = type_factors.get("landfill", Decimal("450"))
-            self.logger.warning(
+            logger.warning(
                 f"No factor for {waste_type}/{treatment}, using landfill default"
             )
 

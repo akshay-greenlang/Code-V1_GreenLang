@@ -359,7 +359,7 @@ class EmissionFactorLibraryAgent(BaseAgent):
         for factor in _create_default_factors():
             self._factors[factor.factor_id] = factor
 
-        self.logger.info(f"Initialized {self.AGENT_NAME} with {len(self._factors)} default factors")
+        logger.info("Initialized %s with %s default factors", self.AGENT_NAME, len(self._factors))
 
     def execute(self, input_data: Dict[str, Any]) -> AgentResult:
         """Execute factor library operation."""
@@ -380,7 +380,7 @@ class EmissionFactorLibraryAgent(BaseAgent):
                 return AgentResult(success=False, error=f"Unknown operation: {lib_input.operation}")
 
         except Exception as e:
-            self.logger.error(f"Factor library operation failed: {str(e)}", exc_info=True)
+            logger.error("Factor library operation failed: %s", e, exc_info=True)
             return AgentResult(success=False, error=str(e))
 
     def _handle_lookup(self, lib_input: FactorLibraryInput, start_time: datetime) -> AgentResult:

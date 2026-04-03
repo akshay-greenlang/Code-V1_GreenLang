@@ -301,7 +301,7 @@ class LIMEExplainer:
         Returns:
             LocalExplanation with feature contributions
         """
-        logger.debug(f"Explaining cleanliness factor: CF={cleanliness_factor:.3f}")
+        logger.debug("Explaining cleanliness factor: CF=%.3f", cleanliness_factor)
         self._explanation_count += 1
 
         # Define baseline (design conditions)
@@ -599,7 +599,7 @@ class LIMEExplainer:
         Returns:
             LocalExplanation with feature contributions
         """
-        logger.debug(f"Explaining recommendation: {recommendation_type}")
+        logger.debug("Explaining recommendation: %s", recommendation_type)
         self._explanation_count += 1
 
         contributions = []

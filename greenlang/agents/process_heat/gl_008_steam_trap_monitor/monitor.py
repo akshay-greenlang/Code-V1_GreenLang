@@ -455,11 +455,11 @@ class SteamTrapMonitorAgent(IntelligenceMixin, BaseProcessHeatAgent[TrapDiagnost
 
             # Check steam pressure is reasonable
             if input_data.steam_pressure_psig <= 0:
-                logger.warning(f"Invalid steam pressure: {input_data.steam_pressure_psig}")
+                logger.warning("Invalid steam pressure: %s", input_data.steam_pressure_psig)
                 return False
 
             if input_data.steam_pressure_psig > 1000:
-                logger.warning(f"Steam pressure exceeds maximum: {input_data.steam_pressure_psig}")
+                logger.warning("Steam pressure exceeds maximum: %s", input_data.steam_pressure_psig)
                 return False
 
             # Must have at least one diagnostic method
@@ -474,18 +474,18 @@ class SteamTrapMonitorAgent(IntelligenceMixin, BaseProcessHeatAgent[TrapDiagnost
             # Validate sensor readings
             for reading in input_data.ultrasonic_readings:
                 if reading.decibel_level_db < 0 or reading.decibel_level_db > 120:
-                    logger.warning(f"Invalid ultrasonic reading: {reading.decibel_level_db} dB")
+                    logger.warning("Invalid ultrasonic reading: %s dB", reading.decibel_level_db)
                     return False
 
             for reading in input_data.temperature_readings:
                 if reading.inlet_temp_f < 32 or reading.inlet_temp_f > 1000:
-                    logger.warning(f"Invalid inlet temperature: {reading.inlet_temp_f} F")
+                    logger.warning("Invalid inlet temperature: %s F", reading.inlet_temp_f)
                     return False
 
             return True
 
         except Exception as e:
-            logger.error(f"Input validation error: {e}")
+            logger.error("Input validation error: %s", e)
             return False
 
     def validate_output(self, output_data: TrapDiagnosticOutput) -> bool:
@@ -538,7 +538,7 @@ class SteamTrapMonitorAgent(IntelligenceMixin, BaseProcessHeatAgent[TrapDiagnost
             return True
 
         except Exception as e:
-            logger.error(f"Output validation error: {e}")
+            logger.error("Output validation error: %s", e)
             return False
 
     # =========================================================================

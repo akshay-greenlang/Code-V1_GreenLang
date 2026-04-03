@@ -10,6 +10,12 @@ Please import from the specific submodules:
 - greenlang.exceptions.agent - Agent-related exceptions
 - greenlang.exceptions.workflow - Workflow orchestration exceptions
 - greenlang.exceptions.data - Data access and validation exceptions
+- greenlang.exceptions.connector - External connector exceptions
+- greenlang.exceptions.security - Authentication, authorization, and security exceptions
+- greenlang.exceptions.integration - External service integration exceptions
+- greenlang.exceptions.infrastructure - Database, cache, storage, and resilience exceptions
+- greenlang.exceptions.compliance - Regulatory compliance and audit trail exceptions
+- greenlang.exceptions.calculation - Emission calculation and measurement exceptions
 - greenlang.exceptions.utils - Exception utilities
 
 This file provides backward-compatible re-exports.
@@ -26,11 +32,56 @@ Exception Hierarchy:
     │   ├── PolicyViolation
     │   ├── ResourceError
     │   └── OrchestrationError
-    └── DataException
-        ├── InvalidSchema
-        ├── MissingData
-        ├── CorruptedData
-        └── DataAccessError
+    ├── DataException
+    │   ├── InvalidSchema
+    │   ├── MissingData
+    │   ├── CorruptedData
+    │   └── DataAccessError
+    ├── ConnectorException
+    │   ├── ConnectorConfigError
+    │   ├── ConnectorAuthError
+    │   ├── ConnectorNetworkError
+    │   ├── ConnectorTimeoutError
+    │   ├── ConnectorRateLimitError
+    │   ├── ConnectorNotFoundError
+    │   ├── ConnectorValidationError
+    │   ├── ConnectorSecurityError
+    │   └── ConnectorServerError
+    ├── SecurityException
+    │   ├── AuthenticationError
+    │   ├── AuthorizationError
+    │   ├── EncryptionError
+    │   ├── SecretAccessError
+    │   ├── PIIViolationError
+    │   ├── EgressBlockedError
+    │   └── CertificateError
+    ├── IntegrationException
+    │   ├── EmissionFactorError
+    │   ├── EntityResolutionError
+    │   ├── ExternalServiceError
+    │   ├── APIClientError
+    │   └── RateLimitError
+    ├── InfrastructureException
+    │   ├── DatabaseError
+    │   ├── CacheError
+    │   ├── StorageError
+    │   ├── QueueError
+    │   ├── CircuitBreakerOpenError
+    │   ├── BulkheadFullError
+    │   └── RetryExhaustedError
+    ├── ComplianceException
+    │   ├── EUDRViolationError
+    │   ├── CSRDViolationError
+    │   ├── CBAMViolationError
+    │   ├── RegulatoryDeadlineError
+    │   ├── AuditTrailError
+    │   └── ProvenanceError
+    └── CalculationException
+        ├── EmissionCalculationError
+        ├── UnitConversionError
+        ├── FactorNotFoundError
+        ├── MethodologyError
+        └── BoundaryError
 
 All exceptions include rich context:
 - error_code: Unique error identifier
@@ -60,6 +111,9 @@ warnings.warn(
     "Please import from specific submodules: "
     "greenlang.exceptions.base, greenlang.exceptions.agent, "
     "greenlang.exceptions.workflow, greenlang.exceptions.data, "
+    "greenlang.exceptions.connector, greenlang.exceptions.security, "
+    "greenlang.exceptions.integration, greenlang.exceptions.infrastructure, "
+    "greenlang.exceptions.compliance, greenlang.exceptions.calculation, "
     "greenlang.exceptions.utils",
     DeprecationWarning,
     stacklevel=2
@@ -92,6 +146,69 @@ from greenlang.utilities.exceptions.data import (
     DataAccessError,
 )
 
+from greenlang.utilities.exceptions.connector import (
+    ConnectorException,
+    ConnectorConfigError,
+    ConnectorAuthError,
+    ConnectorNetworkError,
+    ConnectorTimeoutError,
+    ConnectorRateLimitError,
+    ConnectorNotFoundError,
+    ConnectorValidationError,
+    ConnectorSecurityError,
+    ConnectorServerError,
+)
+
+from greenlang.utilities.exceptions.security import (
+    SecurityException,
+    AuthenticationError,
+    AuthorizationError,
+    EncryptionError,
+    SecretAccessError,
+    PIIViolationError,
+    EgressBlockedError,
+    CertificateError,
+)
+
+from greenlang.utilities.exceptions.integration import (
+    IntegrationException,
+    EmissionFactorError,
+    EntityResolutionError,
+    ExternalServiceError,
+    APIClientError,
+    RateLimitError,
+)
+
+from greenlang.utilities.exceptions.infrastructure import (
+    InfrastructureException,
+    DatabaseError,
+    CacheError,
+    StorageError,
+    QueueError,
+    CircuitBreakerOpenError,
+    BulkheadFullError,
+    RetryExhaustedError,
+)
+
+from greenlang.utilities.exceptions.compliance import (
+    ComplianceException,
+    EUDRViolationError,
+    CSRDViolationError,
+    CBAMViolationError,
+    RegulatoryDeadlineError,
+    AuditTrailError,
+    ProvenanceError,
+)
+
+from greenlang.utilities.exceptions.calculation import (
+    CalculationException,
+    EmissionCalculationError,
+    UnitConversionError,
+    FactorNotFoundError,
+    MethodologyError,
+    BoundaryError,
+)
+
 from greenlang.utilities.exceptions.utils import (
     format_exception_chain,
     is_retriable,
@@ -122,6 +239,63 @@ __all__ = [
     'MissingData',
     'CorruptedData',
     'DataAccessError',
+
+    # Connector Exceptions
+    'ConnectorException',
+    'ConnectorConfigError',
+    'ConnectorAuthError',
+    'ConnectorNetworkError',
+    'ConnectorTimeoutError',
+    'ConnectorRateLimitError',
+    'ConnectorNotFoundError',
+    'ConnectorValidationError',
+    'ConnectorSecurityError',
+    'ConnectorServerError',
+
+    # Security Exceptions
+    'SecurityException',
+    'AuthenticationError',
+    'AuthorizationError',
+    'EncryptionError',
+    'SecretAccessError',
+    'PIIViolationError',
+    'EgressBlockedError',
+    'CertificateError',
+
+    # Integration Exceptions
+    'IntegrationException',
+    'EmissionFactorError',
+    'EntityResolutionError',
+    'ExternalServiceError',
+    'APIClientError',
+    'RateLimitError',
+
+    # Infrastructure Exceptions
+    'InfrastructureException',
+    'DatabaseError',
+    'CacheError',
+    'StorageError',
+    'QueueError',
+    'CircuitBreakerOpenError',
+    'BulkheadFullError',
+    'RetryExhaustedError',
+
+    # Compliance Exceptions
+    'ComplianceException',
+    'EUDRViolationError',
+    'CSRDViolationError',
+    'CBAMViolationError',
+    'RegulatoryDeadlineError',
+    'AuditTrailError',
+    'ProvenanceError',
+
+    # Calculation Exceptions
+    'CalculationException',
+    'EmissionCalculationError',
+    'UnitConversionError',
+    'FactorNotFoundError',
+    'MethodologyError',
+    'BoundaryError',
 
     # Utils
     'format_exception_chain',

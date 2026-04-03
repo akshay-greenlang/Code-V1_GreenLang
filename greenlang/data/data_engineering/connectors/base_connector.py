@@ -258,7 +258,7 @@ class BaseConnector(ABC, Generic[T]):
         # Connection pool
         self.pool = ConnectionPool(config.connection_pool_size)
 
-        logger.info(f"Connector {config.name} initialized")
+        logger.info("Connector %s initialized", config.name)
 
     async def connect(self) -> bool:
         """
@@ -278,13 +278,13 @@ class BaseConnector(ABC, Generic[T]):
             await self.authenticate()
 
             self.status = ConnectorStatus.AUTHENTICATED
-            logger.info(f"Connector {self.config.name} connected successfully")
+            logger.info("Connector %s connected successfully", self.config.name)
             return True
 
         except Exception as e:
             self.status = ConnectorStatus.ERROR
             self.metrics.last_error = str(e)
-            logger.error(f"Connection failed: {e}")
+            logger.error("Connection failed: %s", e)
             raise
 
     @abstractmethod
@@ -464,7 +464,7 @@ class BaseConnector(ABC, Generic[T]):
             self._update_metrics(success=False)
             await self.circuit_breaker.record_failure()
             self.metrics.last_error = str(e)
-            logger.error(f"Request failed: {e}")
+            logger.error("Request failed: %s", e)
             raise
 
     def _update_metrics(self, success: bool, response_time_ms: float = 0):
@@ -501,7 +501,7 @@ class BaseConnector(ABC, Generic[T]):
         """Close connector and release resources."""
         await self.pool.close_all()
         self.status = ConnectorStatus.DISCONNECTED
-        logger.info(f"Connector {self.config.name} closed")
+        logger.info("Connector %s closed", self.config.name)
 
     def get_metrics(self) -> Dict[str, Any]:
         """Get connector metrics."""

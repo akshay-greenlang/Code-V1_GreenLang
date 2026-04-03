@@ -822,7 +822,7 @@ class ReportAgentAI(OperationalMonitoringMixin, BaseAgent):
                 return result
 
             except Exception as e:
-                self.logger.error(f"Error in AI report generation: {e}")
+                logger.error("Error in AI report generation: %s", e)
                 return AgentResult(
                     success=False,
                     error=f"Failed to generate report: {str(e)}",
@@ -925,7 +925,7 @@ class ReportAgentAI(OperationalMonitoringMixin, BaseAgent):
             )
 
         except BudgetExceeded as e:
-            self.logger.error(f"Budget exceeded: {e}")
+            logger.error("Budget exceeded: %s", e)
             return AgentResult(
                 success=False,
                 error=f"AI budget exceeded: {str(e)}",

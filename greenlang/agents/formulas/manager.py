@@ -62,7 +62,7 @@ class FormulaManager:
         self.repository = FormulaRepository(db_path, schema_path)
         self.engine = FormulaExecutionEngine(self.repository)
 
-        logger.info(f"FormulaManager initialized with database: {db_path}")
+        logger.info("FormulaManager initialized with database: %s", db_path)
 
     # ========================================================================
     # FORMULA EXECUTION
@@ -172,7 +172,7 @@ class FormulaManager:
         )
 
         formula_id = self.repository.create_formula(formula)
-        logger.info(f"Created formula {formula_code} (id={formula_id})")
+        logger.info("Created formula %s (id=%s)", formula_code, formula_id)
 
         return formula_id
 

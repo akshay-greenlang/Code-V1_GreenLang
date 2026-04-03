@@ -1213,13 +1213,13 @@ async def calculate_emissions(
         )
 
     except ValueError as e:
-        logger.error(f"Validation error in calculate_emissions: {e}")
+        logger.error("Validation error in calculate_emissions: %s", e)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e),
         )
     except Exception as e:
-        logger.error(f"Error in calculate_emissions: {e}", exc_info=True)
+        logger.error("Error in calculate_emissions: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Calculation failed",
@@ -1281,7 +1281,7 @@ async def calculate_asset_specific(
         )
 
     except ValueError as e:
-        logger.error(f"Validation error in calculate_asset_specific: {e}")
+        logger.error("Validation error in calculate_asset_specific: %s", e)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e),
@@ -1363,7 +1363,7 @@ async def calculate_building_emissions(
         )
 
     except ValueError as e:
-        logger.error(f"Validation error in calculate_building_emissions: {e}")
+        logger.error("Validation error in calculate_building_emissions: %s", e)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e),
@@ -1434,7 +1434,7 @@ async def calculate_vehicle_emissions(
         )
 
     except ValueError as e:
-        logger.error(f"Validation error in calculate_vehicle_emissions: {e}")
+        logger.error("Validation error in calculate_vehicle_emissions: %s", e)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e),
@@ -1653,7 +1653,7 @@ async def calculate_average_data(
         )
 
     except ValueError as e:
-        logger.error(f"Validation error in calculate_average_data: {e}")
+        logger.error("Validation error in calculate_average_data: %s", e)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e),
@@ -1727,7 +1727,7 @@ async def calculate_spend_based(
         )
 
     except ValueError as e:
-        logger.error(f"Validation error in calculate_spend_based: {e}")
+        logger.error("Validation error in calculate_spend_based: %s", e)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e),
@@ -1800,13 +1800,13 @@ async def calculate_hybrid(
         )
 
     except ValueError as e:
-        logger.error(f"Validation error in calculate_hybrid: {e}")
+        logger.error("Validation error in calculate_hybrid: %s", e)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e),
         )
     except Exception as e:
-        logger.error(f"Error in calculate_hybrid: {e}", exc_info=True)
+        logger.error("Error in calculate_hybrid: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Hybrid calculation failed",
@@ -1863,7 +1863,7 @@ async def calculate_batch_emissions(
         )
 
     except ValueError as e:
-        logger.error(f"Validation error in calculate_batch_emissions: {e}")
+        logger.error("Validation error in calculate_batch_emissions: %s", e)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e),
@@ -1930,13 +1930,13 @@ async def analyze_portfolio(
         )
 
     except ValueError as e:
-        logger.error(f"Validation error in analyze_portfolio: {e}")
+        logger.error("Validation error in analyze_portfolio: %s", e)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e),
         )
     except Exception as e:
-        logger.error(f"Error in analyze_portfolio: {e}", exc_info=True)
+        logger.error("Error in analyze_portfolio: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Portfolio analysis failed",
@@ -1993,13 +1993,13 @@ async def check_compliance(
         )
 
     except ValueError as e:
-        logger.error(f"Validation error in check_compliance: {e}")
+        logger.error("Validation error in check_compliance: %s", e)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e),
         )
     except Exception as e:
-        logger.error(f"Error in check_compliance: {e}", exc_info=True)
+        logger.error("Error in check_compliance: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Compliance check failed",
@@ -2039,7 +2039,7 @@ async def get_calculation_detail(
         HTTPException: 404 if not found, 500 for retrieval failures
     """
     try:
-        logger.info(f"Getting DLA calculation detail: {calculation_id}")
+        logger.info("Getting DLA calculation detail: %s", calculation_id)
 
         result = await service.get_calculation(calculation_id)
 
@@ -2148,7 +2148,7 @@ async def list_calculations(
         )
 
     except Exception as e:
-        logger.error(f"Error in list_calculations: {e}", exc_info=True)
+        logger.error("Error in list_calculations: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to list calculations",
@@ -2183,7 +2183,7 @@ async def delete_calculation(
         HTTPException: 404 if not found, 500 for deletion failures
     """
     try:
-        logger.info(f"Deleting DLA calculation: {calculation_id}")
+        logger.info("Deleting DLA calculation: %s", calculation_id)
 
         deleted = await service.delete_calculation(calculation_id)
 
@@ -2202,7 +2202,7 @@ async def delete_calculation(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error in delete_calculation: {e}", exc_info=True)
+        logger.error("Error in delete_calculation: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to delete calculation",
@@ -2245,7 +2245,7 @@ async def get_emission_factors(
         HTTPException: 400 for invalid asset type, 500 for retrieval failures
     """
     try:
-        logger.info(f"Getting DLA emission factors: asset_type={asset_type}")
+        logger.info("Getting DLA emission factors: asset_type=%s", asset_type)
 
         result = await service.get_emission_factors(asset_type)
 
@@ -2370,7 +2370,7 @@ async def get_grid_factors(
         return json.loads(json.dumps(result, cls=DecimalEncoder))
 
     except Exception as e:
-        logger.error(f"Error in get_grid_factors: {e}", exc_info=True)
+        logger.error("Error in get_grid_factors: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to retrieve grid factors",
@@ -2502,7 +2502,7 @@ async def get_aggregations(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error in get_aggregations: {e}", exc_info=True)
+        logger.error("Error in get_aggregations: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Aggregation failed",
@@ -2561,7 +2561,7 @@ async def get_provenance(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error in get_provenance: {e}", exc_info=True)
+        logger.error("Error in get_provenance: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to retrieve provenance",
@@ -2601,7 +2601,7 @@ async def health_check() -> HealthResponse:
         )
 
     except Exception as e:
-        logger.error(f"Error in health_check: {e}", exc_info=True)
+        logger.error("Error in health_check: %s", e, exc_info=True)
         return HealthResponse(
             status="unhealthy",
             agent_id="GL-MRV-S3-013",

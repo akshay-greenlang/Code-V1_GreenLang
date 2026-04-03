@@ -260,7 +260,7 @@ class {class_name}(BaseAgent):
                 version=self.VERSION,
             )
         super().__init__(config)
-        self.logger.info(f"Initialized {{self.AGENT_ID}}: {{self.AGENT_NAME}}")
+        logger.info("Initialized %s: %s", self.AGENT_ID, self.AGENT_NAME)
 
     def execute(self, input_data: Dict[str, Any]) -> AgentResult:
         start_time = time.time()
@@ -285,7 +285,7 @@ class {class_name}(BaseAgent):
             return AgentResult(success=True, data=output.model_dump())
 
         except Exception as e:
-            self.logger.error(f"Operation failed: {{e}}", exc_info=True)
+            logger.error("Operation failed: %s", e, exc_info=True)
             return AgentResult(success=False, error=str(e))
 
     def _route_operation(self, agent_input: {input_model_name}) -> Dict[str, Any]:
@@ -405,7 +405,7 @@ class AgentSDKAgent(BaseAgent):
         self._templates: Dict[str, AgentTemplate] = {}
         self._load_default_templates()
 
-        self.logger.info(f"Initialized {self.AGENT_ID}: {self.AGENT_NAME}")
+        logger.info("Initialized %s: %s", self.AGENT_ID, self.AGENT_NAME)
 
     def _load_default_templates(self):
         """Load default agent templates."""
@@ -448,7 +448,7 @@ class AgentSDKAgent(BaseAgent):
             return AgentResult(success=True, data=output.model_dump())
 
         except Exception as e:
-            self.logger.error(f"SDK operation failed: {e}", exc_info=True)
+            logger.error("SDK operation failed: %s", e, exc_info=True)
             return AgentResult(success=False, error=str(e))
 
     def _route_operation(self, sdk_input: AgentSDKInput) -> Dict[str, Any]:

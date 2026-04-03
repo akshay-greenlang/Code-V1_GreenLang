@@ -393,7 +393,7 @@ class UnitCanonicalizer:
         numeric_value, original_unit = self._extract_value_unit(value)
 
         if numeric_value is None:
-            logger.warning(f"Could not extract numeric value from {value} at {path}")
+            logger.warning("Could not extract numeric value from %s at %s", value, path)
             # Return original value unchanged if we can't parse it
             return value, records
 
@@ -514,7 +514,7 @@ class UnitCanonicalizer:
             return float(value), None
 
         # Unknown format
-        logger.debug(f"Unknown unit value format: {type(value)}")
+        logger.debug("Unknown unit value format: %s", type(value))
         return None, None
 
     def _extract_from_object(
@@ -636,7 +636,7 @@ class UnitCanonicalizer:
                 to_unit=canonical_unit
             )
         except ValueError as e:
-            logger.error(f"Conversion failed at {path}: {e}")
+            logger.error("Conversion failed at %s: %s", path, e)
             raise
 
         # Get dimension for the record
@@ -753,7 +753,7 @@ class UnitCanonicalizer:
                         result[key] = canonical_value
                         records.extend(new_records)
                     except ValueError as e:
-                        logger.warning(f"Canonicalization failed at {child_path}: {e}")
+                        logger.warning("Canonicalization failed at %s: %s", child_path, e)
                         result[key] = value  # Keep original on error
                 else:
                     # Recurse into nested structures

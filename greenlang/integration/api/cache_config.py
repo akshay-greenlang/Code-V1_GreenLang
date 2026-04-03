@@ -43,10 +43,10 @@ async def init_cache():
             prefix="greenlang-api:"
         )
 
-        logger.info(f"Redis cache initialized: {redis_url}")
+        logger.info("Redis cache initialized: %s", redis_url)
 
     except Exception as e:
-        logger.error(f"Failed to initialize Redis cache: {e}")
+        logger.error("Failed to initialize Redis cache: %s", e)
         logger.warning("Continuing without caching")
 
 
@@ -56,7 +56,7 @@ async def close_cache():
         await FastAPICache.clear()
         logger.info("Redis cache closed")
     except Exception as e:
-        logger.error(f"Error closing cache: {e}")
+        logger.error("Error closing cache: %s", e)
 
 
 # Cache decorator with default settings

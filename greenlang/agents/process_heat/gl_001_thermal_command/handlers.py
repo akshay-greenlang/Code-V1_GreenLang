@@ -74,7 +74,7 @@ class EventHandler(ABC):
             try:
                 callback(event)
             except Exception as e:
-                logger.error(f"Callback error in {self.name}: {e}")
+                logger.error("Callback error in %s: %s", self.name, e)
 
     @property
     def event_count(self) -> int:
@@ -155,7 +155,7 @@ class SafetyEventHandler(EventHandler):
 
     async def _handle_critical_event(self, event: SafetyEvent) -> None:
         """Handle a critical safety event."""
-        logger.critical(f"CRITICAL SAFETY EVENT: {event.description}")
+        logger.critical("CRITICAL SAFETY EVENT: %s", event.description)
 
         # Determine if ESD should be triggered
         esd_triggers = [
@@ -187,7 +187,7 @@ class SafetyEventHandler(EventHandler):
             if alarm.event_id == event_id:
                 alarm.acknowledged = True
                 alarm.acknowledged_by = user
-                logger.info(f"Alarm {event_id} acknowledged by {user}")
+                logger.info("Alarm %s acknowledged by %s", event_id, user)
                 return True
         return False
 
@@ -298,9 +298,9 @@ class ComplianceEventHandler(EventHandler):
                 "description": event.payload.get("violation_description", ""),
                 "severity": event.payload.get("severity", "warning"),
             })
-            logger.warning(f"Compliance violation recorded: {event.event_id}")
+            logger.warning("Compliance violation recorded: %s", event.event_id)
 
-        logger.info(f"Compliance event: {event.event_type}")
+        logger.info("Compliance event: %s", event.event_type)
 
         # Invoke callbacks
         self._invoke_callbacks(event)

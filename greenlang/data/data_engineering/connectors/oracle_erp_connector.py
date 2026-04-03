@@ -195,7 +195,7 @@ class OracleERPConnector(BaseConnector[Dict[str, Any]]):
                 logger.warning("Reached pagination limit")
                 break
 
-        logger.info(f"Fetched {len(all_records)} records from {resource}")
+        logger.info("Fetched %s records from %s", len(all_records), resource)
         return all_records
 
     def _build_query_params(
@@ -292,7 +292,7 @@ class OracleERPConnector(BaseConnector[Dict[str, Any]]):
                 )
                 suppliers.append(supplier)
             except Exception as e:
-                logger.warning(f"Error parsing supplier: {e}")
+                logger.warning("Error parsing supplier: %s", e)
 
         return suppliers
 
@@ -360,7 +360,7 @@ class OracleERPConnector(BaseConnector[Dict[str, Any]]):
                 )
                 orders.append(order)
             except Exception as e:
-                logger.warning(f"Error parsing purchase order: {e}")
+                logger.warning("Error parsing purchase order: %s", e)
 
         return orders
 

@@ -370,7 +370,7 @@ class DeadLetterQueue:
             # Get reprocessing handler
             handler = self._reprocessing_handlers.get(record.pipeline_stage)
             if not handler:
-                logger.warning(f"No reprocessing handler for stage: {record.pipeline_stage}")
+                logger.warning("No reprocessing handler for stage: %s", record.pipeline_stage)
                 results["failed"] += 1
                 results["details"].append({
                     "record_id": record.record_id,
@@ -392,7 +392,7 @@ class DeadLetterQueue:
                     "retry_count": record.retry_count
                 })
 
-                logger.info(f"Successfully reprocessed record: {record.record_id}")
+                logger.info("Successfully reprocessed record: %s", record.record_id)
 
             except Exception as e:
                 # Failed - update retry count
@@ -408,7 +408,7 @@ class DeadLetterQueue:
                     "retry_count": record.retry_count
                 })
 
-                logger.error(f"Failed to reprocess record {record.record_id}: {e}")
+                logger.error("Failed to reprocess record %s: %s", record.record_id, e)
 
         # Persist changes
         if self.persistence_path:
@@ -481,7 +481,7 @@ class DeadLetterQueue:
             dlq.register_reprocessing_handler("transformation", reprocess_transformation)
         """
         self._reprocessing_handlers[pipeline_stage] = handler
-        logger.info(f"Registered reprocessing handler for stage: {pipeline_stage}")
+        logger.info("Registered reprocessing handler for stage: %s", pipeline_stage)
 
     def get_statistics(self) -> Dict[str, Any]:
         """
@@ -551,7 +551,7 @@ class DeadLetterQueue:
         if removed > 0 and self.persistence_path:
             self._persist_queue()
 
-        logger.info(f"Cleared {removed} records from DLQ")
+        logger.info("Cleared %s records from DLQ", removed)
         return removed
 
     def export_records(
@@ -585,7 +585,7 @@ class DeadLetterQueue:
         else:
             raise ValueError(f"Unsupported format: {format}")
 
-        logger.info(f"Exported {len(records)} records to {output_path}")
+        logger.info("Exported %s records to %s", len(records), output_path)
         return len(records)
 
     def _generate_record_id(self, record: Any, stage: str) -> str:
@@ -629,7 +629,7 @@ class DeadLetterQueue:
         for record_id, _ in sorted_records[:records_to_remove]:
             del self._queue[record_id]
 
-        logger.warning(f"Evicted {records_to_remove} oldest records from DLQ")
+        logger.warning("Evicted %s oldest records from DLQ", records_to_remove)
 
     def _trigger_alert(self):
         """Trigger alert when threshold exceeded."""
@@ -654,9 +654,9 @@ class DeadLetterQueue:
             try:
                 with open(self.persistence_path, 'rb') as f:
                     self._queue = pickle.load(f)
-                logger.info(f"Loaded {len(self._queue)} records from persisted DLQ")
+                logger.info("Loaded %s records from persisted DLQ", len(self._queue))
             except Exception as e:
-                logger.error(f"Failed to load persisted DLQ: {e}")
+                logger.error("Failed to load persisted DLQ: %s", e)
 
     async def _async_reprocess_batch(
         self,

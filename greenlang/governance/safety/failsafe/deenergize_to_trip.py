@@ -242,7 +242,7 @@ class DeenergizeToTrip:
 
         self.channels[channel_id] = channel
 
-        logger.info(f"Trip channel added: {channel_id} -> {safe_state}")
+        logger.info("Trip channel added: %s -> %s", channel_id, safe_state)
 
         return channel
 
@@ -353,7 +353,7 @@ class DeenergizeToTrip:
         )
 
         if channels_failed:
-            logger.error(f"TRIP FAILURES: {channels_failed}")
+            logger.error("TRIP FAILURES: %s", channels_failed)
 
         return result
 
@@ -375,7 +375,7 @@ class DeenergizeToTrip:
             True if reset successful
         """
         if channel_id not in self.channels:
-            logger.error(f"Channel not found: {channel_id}")
+            logger.error("Channel not found: %s", channel_id)
             return False
 
         channel = self.channels[channel_id]
@@ -388,7 +388,7 @@ class DeenergizeToTrip:
         # Re-energize
         channel.current_state = ChannelState.ENERGIZED
 
-        logger.info(f"Channel {channel_id} reset by {reset_by}")
+        logger.info("Channel %s reset by %s", channel_id, reset_by)
 
         return True
 
@@ -406,7 +406,7 @@ class DeenergizeToTrip:
         for channel_id in self.channels:
             results[channel_id] = self.reset_channel(channel_id, reset_by)
 
-        logger.info(f"All channels reset by {reset_by}")
+        logger.info("All channels reset by %s", reset_by)
 
         return results
 

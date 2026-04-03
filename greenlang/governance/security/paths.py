@@ -110,7 +110,7 @@ def safe_extract_tar(
 
         # All checks passed, extract
         tar.extractall(extract_path)
-        logger.info(f"Safely extracted tar archive to: {extract_path}")
+        logger.info("Safely extracted tar archive to: %s", extract_path)
 
 
 def safe_extract_zip(
@@ -147,7 +147,7 @@ def safe_extract_zip(
 
         # All checks passed, extract
         zip_ref.extractall(extract_path)
-        logger.info(f"Safely extracted zip archive to: {extract_path}")
+        logger.info("Safely extracted zip archive to: %s", extract_path)
 
 
 def safe_extract_archive(
@@ -218,7 +218,7 @@ def validate_pack_structure(pack_path: Union[str, Path]) -> None:
     for pattern in suspicious_patterns:
         suspicious_files = list(pack_path.rglob(pattern))
         if suspicious_files:
-            logger.warning(f"Suspicious files found in pack: {suspicious_files}")
+            logger.warning("Suspicious files found in pack: %s", suspicious_files)
 
     # Check file permissions (on Unix systems)
     if os.name != "nt":  # Not Windows
@@ -226,7 +226,7 @@ def validate_pack_structure(pack_path: Union[str, Path]) -> None:
             if file_path.is_file():
                 # Check for executable files
                 if os.access(file_path, os.X_OK):
-                    logger.warning(f"Executable file found in pack: {file_path}")
+                    logger.warning("Executable file found in pack: %s", file_path)
 
 
 def safe_create_directory(
@@ -253,6 +253,6 @@ def safe_create_directory(
 
     # Create directory
     dir_path.mkdir(parents=True, exist_ok=True)
-    logger.debug(f"Created directory: {dir_path}")
+    logger.debug("Created directory: %s", dir_path)
 
     return dir_path

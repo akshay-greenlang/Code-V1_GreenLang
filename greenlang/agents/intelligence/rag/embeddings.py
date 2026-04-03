@@ -114,7 +114,7 @@ class MiniLMProvider(EmbeddingProvider):
             try:
                 torch.use_deterministic_algorithms(True)
             except Exception as e:
-                logger.warning(f"Could not enable deterministic algorithms: {e}")
+                logger.warning("Could not enable deterministic algorithms: %s", e)
 
             # Disable CUDA (force CPU)
             torch.cuda.is_available = lambda: False
@@ -127,7 +127,7 @@ class MiniLMProvider(EmbeddingProvider):
             try:
                 from sentence_transformers import SentenceTransformer
 
-                logger.info(f"Loading {self._model_name}...")
+                logger.info("Loading %s...", self._model_name)
 
                 # Load model with CPU-only device
                 self._model = SentenceTransformer(
@@ -145,7 +145,7 @@ class MiniLMProvider(EmbeddingProvider):
                     )
                     self._dimension = actual_dim
 
-                logger.info(f"Loaded {self._model_name} (dim={self._dimension})")
+                logger.info("Loaded %s (dim=%s)", self._model_name, self._dimension)
 
             except ImportError:
                 raise ImportError(
@@ -183,7 +183,7 @@ class MiniLMProvider(EmbeddingProvider):
         self._load_model()
 
         # Generate embeddings
-        logger.debug(f"Embedding {len(texts)} texts...")
+        logger.debug("Embedding %s texts...", len(texts))
 
         embeddings = self._model.encode(
             texts,
@@ -203,7 +203,7 @@ class MiniLMProvider(EmbeddingProvider):
         if self.config.mode == "replay" and logger.isEnabledFor(logging.DEBUG):
             for i, emb in enumerate(result):
                 emb_hash = embedding_hash(emb.tolist())
-                logger.debug(f"Embedding {i}: hash={emb_hash[:8]}")
+                logger.debug("Embedding %s: hash=%s", i, emb_hash[:16])
 
         return result
 
@@ -227,7 +227,7 @@ class MiniLMProvider(EmbeddingProvider):
         self._load_model()
 
         # Generate embeddings synchronously
-        logger.debug(f"Embedding {len(texts)} texts...")
+        logger.debug("Embedding %s texts...", len(texts))
 
         embeddings = self._model.encode(
             texts,
@@ -247,7 +247,7 @@ class MiniLMProvider(EmbeddingProvider):
         if self.config.mode == "replay" and logger.isEnabledFor(logging.DEBUG):
             for i, emb in enumerate(result):
                 emb_hash = embedding_hash(emb.tolist())
-                logger.debug(f"Embedding {i}: hash={emb_hash[:8]}")
+                logger.debug("Embedding %s: hash=%s", i, emb_hash[:16])
 
         return result
 

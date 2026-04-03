@@ -624,7 +624,7 @@ class IEDComplianceManager:
         if activity and activity in self.DEFAULT_BAT_AELS:
             self.bat_aels = self.DEFAULT_BAT_AELS[activity].copy()
 
-        logger.info(f"IEDComplianceManager initialized for {installation_id}")
+        logger.info("IEDComplianceManager initialized for %s", installation_id)
 
     def set_activity(self, activity: IEDAnnexIActivity) -> None:
         """
@@ -636,7 +636,7 @@ class IEDComplianceManager:
         self.activity = activity
         if activity in self.DEFAULT_BAT_AELS:
             self.bat_aels = self.DEFAULT_BAT_AELS[activity].copy()
-        logger.info(f"Activity set to {activity.value}")
+        logger.info("Activity set to %s", activity.value)
 
     def add_bat_ael(self, bat_ael: BATAEL) -> None:
         """
@@ -646,7 +646,7 @@ class IEDComplianceManager:
             bat_ael: BATAEL to add
         """
         self.bat_aels[bat_ael.pollutant] = bat_ael
-        logger.info(f"Added BAT-AEL for {bat_ael.pollutant}")
+        logger.info("Added BAT-AEL for %s", bat_ael.pollutant)
 
     def add_elv(self, elv: EmissionLimitValue) -> None:
         """
@@ -656,7 +656,7 @@ class IEDComplianceManager:
             elv: EmissionLimitValue to add
         """
         self.elvs[elv.pollutant] = elv
-        logger.info(f"Added ELV for {elv.pollutant}")
+        logger.info("Added ELV for %s", elv.pollutant)
 
     def add_permit_condition(self, condition: PermitCondition) -> None:
         """
@@ -666,7 +666,7 @@ class IEDComplianceManager:
             condition: PermitCondition to add
         """
         self.permit_conditions.append(condition)
-        logger.info(f"Added permit condition {condition.condition_id}")
+        logger.info("Added permit condition %s", condition.condition_id)
 
     def record_measurement(self, measurement: EmissionMeasurement) -> None:
         """
@@ -689,7 +689,7 @@ class IEDComplianceManager:
             derogation: DerogationRequest to add
         """
         self.derogations.append(derogation)
-        logger.info(f"Added derogation request {derogation.derogation_id}")
+        logger.info("Added derogation request %s", derogation.derogation_id)
 
     def assess_compliance(
         self,
@@ -704,7 +704,7 @@ class IEDComplianceManager:
         Returns:
             ComplianceAssessment with results
         """
-        logger.info(f"Assessing compliance for {self.installation_id}")
+        logger.info("Assessing compliance for %s", self.installation_id)
 
         elv_compliance: Dict[str, bool] = {}
         bat_ael_compliance: Dict[str, bool] = {}
@@ -832,7 +832,7 @@ class IEDComplianceManager:
         Returns:
             AnnualReport
         """
-        logger.info(f"Generating annual report for {reporting_year}")
+        logger.info("Generating annual report for %s", reporting_year)
 
         # Filter measurements for reporting year
         year_measurements = [
@@ -891,7 +891,7 @@ class IEDComplianceManager:
 
         report.provenance_hash = self._calculate_report_provenance(report)
 
-        logger.info(f"Annual report generated: {report.report_id}")
+        logger.info("Annual report generated: %s", report.report_id)
 
         return report
 
@@ -1016,7 +1016,7 @@ class IEDComplianceManager:
         )
 
         self.derogations.append(derogation)
-        logger.info(f"Derogation request created: {derogation.derogation_id}")
+        logger.info("Derogation request created: %s", derogation.derogation_id)
 
         return derogation
 

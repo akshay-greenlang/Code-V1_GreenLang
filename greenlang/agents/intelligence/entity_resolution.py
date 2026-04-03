@@ -188,7 +188,7 @@ class GLEIFClient:
         """
         cache_key = f"gleif_name_{name}_{country}"
         if cache_key in self._cache:
-            logger.debug(f"GLEIF cache hit for {name}")
+            logger.debug("GLEIF cache hit for %s", name)
             return self._cache[cache_key]
 
         await self._rate_limiter.acquire()
@@ -217,14 +217,14 @@ class GLEIFClient:
                     logger.warning("GLEIF rate limit exceeded")
                     return []
                 else:
-                    logger.error(f"GLEIF API error: {response.status}")
+                    logger.error("GLEIF API error: %s", response.status)
                     return []
 
         except asyncio.TimeoutError:
             logger.error("GLEIF API timeout")
             return []
         except Exception as e:
-            logger.error(f"GLEIF API exception: {e}")
+            logger.error("GLEIF API exception: %s", e)
             return []
 
     async def get_by_lei(self, lei: str) -> Optional[Dict[str, Any]]:
@@ -259,7 +259,7 @@ class GLEIFClient:
                     return None
 
         except Exception as e:
-            logger.error(f"GLEIF LEI lookup error: {e}")
+            logger.error("GLEIF LEI lookup error: %s", e)
             return None
 
     def parse_lei_record(self, record: Dict[str, Any]) -> EntityMatch:
@@ -375,7 +375,7 @@ class DUNSClient:
 
         # In production, implement actual D&B API call
         # This is a simulated response
-        logger.info(f"Would search D&B for: {name} in {country}")
+        logger.info("Would search D&B for: %s in %s", name, country)
 
         # Simulate some matches for demonstration
         if "microsoft" in name.lower():
@@ -415,7 +415,7 @@ class DUNSClient:
             return self._cache[cache_key]
 
         # In production, implement actual API call
-        logger.info(f"Would lookup DUNS: {duns}")
+        logger.info("Would lookup DUNS: %s", duns)
         return None
 
     def parse_duns_record(self, record: Dict[str, Any]) -> EntityMatch:
@@ -510,11 +510,11 @@ class OpenCorporatesClient:
                     self._cache[cache_key] = results
                     return results
                 else:
-                    logger.error(f"OpenCorporates API error: {response.status}")
+                    logger.error("OpenCorporates API error: %s", response.status)
                     return []
 
         except Exception as e:
-            logger.error(f"OpenCorporates exception: {e}")
+            logger.error("OpenCorporates exception: %s", e)
             return []
 
     async def get_company(self, jurisdiction: str, company_number: str) -> Optional[Dict[str, Any]]:
@@ -553,7 +553,7 @@ class OpenCorporatesClient:
                     return None
 
         except Exception as e:
-            logger.error(f"OpenCorporates lookup error: {e}")
+            logger.error("OpenCorporates lookup error: %s", e)
             return None
 
     def parse_company_record(self, record: Dict[str, Any], confidence: float = 0.85) -> EntityMatch:
@@ -625,7 +625,7 @@ class RateLimiter:
         if len(self.calls[key]) >= self.max_calls:
             sleep_time = self.period_seconds - (now - self.calls[key][0]) + 0.1
             if sleep_time > 0:
-                logger.debug(f"Rate limit reached, sleeping {sleep_time:.1f}s")
+                logger.debug("Rate limit reached, sleeping %.1fs", sleep_time)
                 await asyncio.sleep(sleep_time)
 
         # Record this call
@@ -718,7 +718,7 @@ class EntityResolver:
                 result.sources_queried.append(source)
 
             except Exception as e:
-                logger.error(f"Error with {source.value}: {e}")
+                logger.error("Error with %s: %s", source.value, e)
                 result.sources_failed[source.value] = str(e)
                 self.stats["source_failures"][source.value] += 1
 
@@ -807,7 +807,7 @@ class EntityResolver:
             self.stats["source_successes"]["gleif"] += 1
 
         except Exception as e:
-            logger.error(f"GLEIF resolution error: {e}")
+            logger.error("GLEIF resolution error: %s", e)
             self.stats["source_failures"]["gleif"] += 1
 
         return matches
@@ -847,7 +847,7 @@ class EntityResolver:
             self.stats["source_successes"]["duns"] += 1
 
         except Exception as e:
-            logger.error(f"D&B resolution error: {e}")
+            logger.error("D&B resolution error: %s", e)
             self.stats["source_failures"]["duns"] += 1
 
         return matches
@@ -879,7 +879,7 @@ class EntityResolver:
             self.stats["source_successes"]["opencorporates"] += 1
 
         except Exception as e:
-            logger.error(f"OpenCorporates resolution error: {e}")
+            logger.error("OpenCorporates resolution error: %s", e)
             self.stats["source_failures"]["opencorporates"] += 1
 
         return matches
@@ -1008,7 +1008,7 @@ class EntityResolver:
         final_results = []
         for i, result in enumerate(results):
             if isinstance(result, Exception):
-                logger.error(f"Batch resolve error for query {i}: {result}")
+                logger.error("Batch resolve error for query %s: %s", i, result)
                 # Create error result
                 req = queries[i] if isinstance(queries[i], ResolutionRequest) else ResolutionRequest(query=queries[i])
                 error_result = ResolutionResult(

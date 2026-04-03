@@ -432,7 +432,7 @@ class WasteGeneratedPipelineEngine:
         self._stage_cache: Dict[str, Dict[ProvenanceStage, Any]] = {}
 
         self._initialized = True
-        logger.info(f"WasteGeneratedPipelineEngine initialized (version {VERSION})")
+        logger.info("WasteGeneratedPipelineEngine initialized (version %s)", VERSION)
 
     # ==========================================================================
     # PUBLIC API - CORE PROCESSING METHODS
@@ -470,7 +470,7 @@ class WasteGeneratedPipelineEngine:
             self.provenance.record_stage(
                 chain_id, ProvenanceStage.VALIDATE, input_data, {"is_valid": True}, duration_ms
             )
-            logger.info(f"[{chain_id}] Stage VALIDATE completed in {duration_ms:.2f}ms")
+            logger.info("[%s] Stage VALIDATE completed in %.2fms", chain_id, duration_ms)
 
             # Stage 2: CLASSIFY
             start_time = datetime.now(timezone.utc)
@@ -480,7 +480,7 @@ class WasteGeneratedPipelineEngine:
             self.provenance.record_stage(
                 chain_id, ProvenanceStage.CLASSIFY, input_data, classification_result, duration_ms
             )
-            logger.info(f"[{chain_id}] Stage CLASSIFY completed in {duration_ms:.2f}ms")
+            logger.info("[%s] Stage CLASSIFY completed in %.2fms", chain_id, duration_ms)
 
             # Stage 3: NORMALIZE
             start_time = datetime.now(timezone.utc)
@@ -490,7 +490,7 @@ class WasteGeneratedPipelineEngine:
             self.provenance.record_stage(
                 chain_id, ProvenanceStage.NORMALIZE, input_data, normalized_input, duration_ms
             )
-            logger.info(f"[{chain_id}] Stage NORMALIZE completed in {duration_ms:.2f}ms")
+            logger.info("[%s] Stage NORMALIZE completed in %.2fms", chain_id, duration_ms)
 
             # Stage 4: RESOLVE_EFS
             start_time = datetime.now(timezone.utc)
@@ -566,7 +566,7 @@ class WasteGeneratedPipelineEngine:
                 {"total_co2e": total_co2e},
                 duration_ms
             )
-            logger.info(f"[{chain_id}] Stage ALLOCATE completed in {duration_ms:.2f}ms")
+            logger.info("[%s] Stage ALLOCATE completed in %.2fms", chain_id, duration_ms)
 
             # Stage 8: COMPLIANCE
             start_time = datetime.now(timezone.utc)
@@ -585,7 +585,7 @@ class WasteGeneratedPipelineEngine:
             self.provenance.record_stage(
                 chain_id, ProvenanceStage.COMPLIANCE, treatment_result, compliance_results, duration_ms
             )
-            logger.info(f"[{chain_id}] Stage COMPLIANCE completed in {duration_ms:.2f}ms")
+            logger.info("[%s] Stage COMPLIANCE completed in %.2fms", chain_id, duration_ms)
 
             # Create result (aggregation handled separately for batch processing)
             result = WasteCalculationResult(
@@ -615,7 +615,7 @@ class WasteGeneratedPipelineEngine:
             duration_ms = (datetime.now(timezone.utc) - start_time).total_seconds() * 1000
             stage_durations["SEAL"] = duration_ms
             result.provenance_hash = sealed_result.provenance_hash
-            logger.info(f"[{chain_id}] Stage SEAL completed in {duration_ms:.2f}ms")
+            logger.info("[%s] Stage SEAL completed in %.2fms", chain_id, duration_ms)
 
             # Record metrics
             self.metrics.record_calculation(
@@ -635,7 +635,7 @@ class WasteGeneratedPipelineEngine:
             return result
 
         except Exception as e:
-            logger.error(f"[{chain_id}] Pipeline execution failed: {str(e)}", exc_info=True)
+            logger.error("[%s] Pipeline execution failed: %s", chain_id, e, exc_info=True)
             errors.append(f"Pipeline execution failed: {str(e)}")
 
             # Return partial result
@@ -693,7 +693,7 @@ class WasteGeneratedPipelineEngine:
         start_time_aggregate = datetime.now(timezone.utc)
         aggregation = self.aggregate_stage(results, "all")
         duration_ms_aggregate = (datetime.now(timezone.utc) - start_time_aggregate).total_seconds() * 1000
-        logger.info(f"[{batch_id}] Stage AGGREGATE completed in {duration_ms_aggregate:.2f}ms")
+        logger.info("[%s] Stage AGGREGATE completed in %.2fms", batch_id, duration_ms_aggregate)
 
         # Calculate batch totals
         total_emissions = sum(r.total_emissions_kg_co2e for r in results)
@@ -975,7 +975,7 @@ class WasteGeneratedPipelineEngine:
         )
 
         if ef:
-            logger.debug(f"Using EPA WARM EF for {waste_category.value}/{treatment_method.value}")
+            logger.debug("Using EPA WARM EF for %s/%s", waste_category.value, treatment_method.value)
             return ef
 
         # Try DEFRA
@@ -986,7 +986,7 @@ class WasteGeneratedPipelineEngine:
         )
 
         if ef:
-            logger.debug(f"Using DEFRA EF for {waste_category.value}/{treatment_method.value}")
+            logger.debug("Using DEFRA EF for %s/%s", waste_category.value, treatment_method.value)
             return ef
 
         # Try IPCC 2019
@@ -997,7 +997,7 @@ class WasteGeneratedPipelineEngine:
         )
 
         if ef:
-            logger.debug(f"Using IPCC 2019 EF for {waste_category.value}/{treatment_method.value}")
+            logger.debug("Using IPCC 2019 EF for %s/%s", waste_category.value, treatment_method.value)
             return ef
 
         # Fallback to IPCC 2006
@@ -1008,7 +1008,7 @@ class WasteGeneratedPipelineEngine:
         )
 
         if ef:
-            logger.debug(f"Using IPCC 2006 EF for {waste_category.value}/{treatment_method.value}")
+            logger.debug("Using IPCC 2006 EF for %s/%s", waste_category.value, treatment_method.value)
             return ef
 
         raise ValueError(

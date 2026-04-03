@@ -82,7 +82,7 @@ class TrainingPipeline:
             entity1_id, entity1_name, entity1_text, entity2_id, entity2_name, entity2_text, label
         """
         try:
-            logger.info(f"Loading labeled data from {data_path}")
+            logger.info("Loading labeled data from %s", data_path)
 
             if format == "csv":
                 df = pd.read_csv(data_path)
@@ -116,7 +116,7 @@ class TrainingPipeline:
                 )
                 pairs.append(pair)
 
-            logger.info(f"Loaded {len(pairs)} labeled pairs")
+            logger.info("Loaded %s labeled pairs", len(pairs))
 
             # Log class distribution
             labels = [p.label for p in pairs]
@@ -345,7 +345,7 @@ class TrainingPipeline:
             results_path = self.training_config.checkpoint_dir / "training_results.json"
             with open(results_path, "w") as f:
                 json.dump(results, f, indent=2)
-            logger.info(f"Saved training results to {results_path}")
+            logger.info("Saved training results to %s", results_path)
 
             return results
 
@@ -391,7 +391,7 @@ class TrainingPipeline:
                 dict(zip(keys, v)) for v in itertools.product(*values)
             ]
 
-            logger.info(f"Testing {len(combinations)} parameter combinations")
+            logger.info("Testing %s parameter combinations", len(combinations))
 
             best_score = 0.0
             best_params = {}
@@ -438,7 +438,7 @@ class TrainingPipeline:
                     )
                     model.save(best_path)
 
-                logger.info(f"Validation accuracy: {val_acc:.4f}")
+                logger.info("Validation accuracy: %.4f", val_acc)
 
             logger.info(
                 f"Tuning complete. Best params: {best_params} "
@@ -493,7 +493,7 @@ class TrainingPipeline:
             else:
                 raise ValueError(f"Unsupported format: {format}")
 
-            logger.info(f"Saved training report to {output_path}")
+            logger.info("Saved training report to %s", output_path)
 
         except Exception as e:
             raise TrainingException(

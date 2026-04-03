@@ -457,7 +457,7 @@ class RandomForestModel(BaseForecastModel):
         self._last_trained = datetime.now(timezone.utc)
         self._training_samples = len(targets)
 
-        logger.info(f"RandomForestModel trained on {len(targets)} samples")
+        logger.info("RandomForestModel trained on %s samples", len(targets))
 
     def predict(
         self,
@@ -543,7 +543,7 @@ class ARIMAModel(BaseForecastModel):
         self._last_trained = datetime.now(timezone.utc)
         self._training_samples = len(targets)
 
-        logger.info(f"ARIMAModel trained on {len(targets)} samples")
+        logger.info("ARIMAModel trained on %s samples", len(targets))
 
     def predict(
         self,
@@ -658,7 +658,7 @@ class EnsembleForecaster:
             )
             return
 
-        logger.info(f"Training ensemble on {len(historical_data)} samples")
+        logger.info("Training ensemble on %s samples", len(historical_data))
 
         # Store historical data
         self._historical_data = historical_data[-self._max_history_points:]
@@ -679,9 +679,9 @@ class EnsembleForecaster:
         for name, model in self._models.items():
             try:
                 model.train(features, targets)
-                logger.info(f"Trained model: {name}")
+                logger.info("Trained model: %s", name)
             except Exception as e:
-                logger.error(f"Failed to train {name}: {e}")
+                logger.error("Failed to train %s: %s", name, e)
 
     def forecast(
         self,
@@ -735,7 +735,7 @@ class EnsembleForecaster:
                         pred = model.predict(features)
                         predictions.append(pred)
                     except Exception as e:
-                        logger.warning(f"Model {name} prediction failed: {e}")
+                        logger.warning("Model %s prediction failed: %s", name, e)
 
             if not predictions:
                 # Fallback to historical average
@@ -850,7 +850,7 @@ class EnsembleForecaster:
             for name in avg_errors:
                 self._weights[name] = (1 / (avg_errors[name] + 0.01)) / total_inv_error
 
-            logger.info(f"Updated model weights: {self._weights}")
+            logger.info("Updated model weights: %s", self._weights)
 
     def _assess_data_quality(self) -> float:
         """Assess input data quality score."""

@@ -462,7 +462,7 @@ class CoordinationLayer:
         self._lock = asyncio.Lock()
         self._master_id: Optional[str] = None
 
-        logger.info(f"CoordinationLayer initialized with pattern: {config.pattern.value if config else 'orchestration'}")
+        logger.info("CoordinationLayer initialized with pattern: %s", config.pattern.value if config else 'orchestration')
 
     def register_agent(self, agent: AgentInfo) -> None:
         """
@@ -473,7 +473,7 @@ class CoordinationLayer:
         """
         self._agents[agent.agent_id] = agent
         self._update_metrics()
-        logger.info(f"Registered agent: {agent.agent_id} (role: {agent.role})")
+        logger.info("Registered agent: %s (role: %s)", agent.agent_id, agent.role)
 
         # Set master if this is the first or it claims master role
         if agent.role == "master" or not self._master_id:
@@ -503,7 +503,7 @@ class CoordinationLayer:
                 self._elect_master()
 
             self._update_metrics()
-            logger.info(f"Unregistered agent: {agent_id}")
+            logger.info("Unregistered agent: %s", agent_id)
             return True
         return False
 
@@ -520,7 +520,7 @@ class CoordinationLayer:
             handler: Async function to handle actions
         """
         self._action_handlers[agent_id] = handler
-        logger.debug(f"Registered action handler for agent: {agent_id}")
+        logger.debug("Registered action handler for agent: %s", agent_id)
 
     async def heartbeat(self, agent_id: str) -> bool:
         """
@@ -591,7 +591,7 @@ class CoordinationLayer:
 
             if lock.acquire(holder_id, ttl_seconds):
                 self._update_metrics()
-                logger.debug(f"Lock acquired: {resource_id} by {holder_id}")
+                logger.debug("Lock acquired: %s by %s", resource_id, holder_id)
                 return True
 
             # Add to waiters
@@ -628,7 +628,7 @@ class CoordinationLayer:
                     lock.acquire(next_holder, self.config.lock_ttl_seconds)
 
                 self._update_metrics()
-                logger.debug(f"Lock released: {resource_id} by {holder_id}")
+                logger.debug("Lock released: %s by %s", resource_id, holder_id)
                 return True
 
             return False
@@ -653,7 +653,7 @@ class CoordinationLayer:
         self._sagas[saga.saga_id] = saga
         self._update_metrics()
 
-        logger.info(f"Starting saga: {saga.name} ({saga.saga_id})")
+        logger.info("Starting saga: %s (%s)", saga.name, saga.saga_id)
 
         try:
             # Execute forward steps
@@ -669,12 +669,12 @@ class CoordinationLayer:
                     if on_step_complete:
                         on_step_complete(step)
 
-                    logger.debug(f"Saga step completed: {step.name}")
+                    logger.debug("Saga step completed: %s", step.name)
 
                 except Exception as e:
                     step.error = str(e)
                     step.state = TransactionState.ABORTED
-                    logger.error(f"Saga step failed: {step.name} - {e}")
+                    logger.error("Saga step failed: %s - %s", step.name, e)
 
                     # Start compensation
                     await self._compensate_saga(saga, i)
@@ -684,13 +684,13 @@ class CoordinationLayer:
             saga.state = TransactionState.COMMITTED
             saga.completed_at = datetime.now(timezone.utc).isoformat()
             self._metrics.sagas_completed += 1
-            logger.info(f"Saga completed: {saga.name}")
+            logger.info("Saga completed: %s", saga.name)
 
         except Exception as e:
             saga.state = TransactionState.ABORTED
             saga.completed_at = datetime.now(timezone.utc).isoformat()
             self._metrics.sagas_failed += 1
-            logger.error(f"Saga failed: {saga.name} - {e}")
+            logger.error("Saga failed: %s - %s", saga.name, e)
 
         finally:
             self._update_metrics()
@@ -729,7 +729,7 @@ class CoordinationLayer:
             failed_step_index: Index where failure occurred
         """
         saga.state = TransactionState.COMPENSATING
-        logger.info(f"Compensating saga: {saga.name}")
+        logger.info("Compensating saga: %s", saga.name)
 
         # Compensate in reverse order
         for i in range(failed_step_index - 1, -1, -1):
@@ -743,9 +743,9 @@ class CoordinationLayer:
                             timeout=step.timeout_seconds,
                         )
                     step.state = TransactionState.COMPENSATED
-                    logger.debug(f"Compensated step: {step.name}")
+                    logger.debug("Compensated step: %s", step.name)
                 except Exception as e:
-                    logger.error(f"Compensation failed for step {step.name}: {e}")
+                    logger.error("Compensation failed for step %s: %s", step.name, e)
 
         saga.state = TransactionState.COMPENSATED
         saga.completed_at = datetime.now(timezone.utc).isoformat()
@@ -786,7 +786,7 @@ class CoordinationLayer:
         )
 
         self._proposals[proposal.proposal_id] = proposal
-        logger.info(f"Consensus proposal created: {topic} ({proposal.proposal_id})")
+        logger.info("Consensus proposal created: %s (%s)", topic, proposal.proposal_id)
 
         return proposal
 
@@ -831,7 +831,7 @@ class CoordinationLayer:
         )
 
         proposal.add_vote(consensus_vote)
-        logger.debug(f"Vote recorded: {voter_id} voted {vote} on {proposal_id}")
+        logger.debug("Vote recorded: %s voted %s on %s", voter_id, vote, proposal_id)
         return True
 
     async def resolve_consensus(
@@ -862,7 +862,7 @@ class CoordinationLayer:
             self._metrics.consensus_failed += 1
 
         self._update_metrics()
-        logger.info(f"Consensus resolved: {proposal.topic} - {result.value}")
+        logger.info("Consensus resolved: %s - %s", proposal.topic, result.value)
         return result
 
     async def coordinate_agents(
@@ -1038,7 +1038,7 @@ class CoordinationLayer:
             new_master = masters[0] if masters else healthy_agents[0]
             self._master_id = new_master.agent_id
             new_master.role = "master"
-            logger.info(f"Elected new master: {self._master_id}")
+            logger.info("Elected new master: %s", self._master_id)
         else:
             self._master_id = None
             logger.warning("No agents available for master election")

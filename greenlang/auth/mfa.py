@@ -35,6 +35,7 @@ from typing import Dict, List, Optional, Any, Tuple
 from dataclasses import dataclass, field
 from enum import Enum
 from greenlang.utilities.determinism import DeterministicClock
+from greenlang.utilities.exceptions.security import AuthenticationError as _SecurityAuthError
 
 try:
     import pyotp
@@ -328,11 +329,11 @@ class SMSProvider:
                 to=phone_number
             )
 
-            logger.info(f"Sent SMS to {phone_number}, SID: {message.sid}")
+            logger.info("Sent SMS to %s, SID: %s", phone_number, message.sid)
             return True
 
         except Exception as e:
-            logger.error(f"Failed to send SMS: {e}")
+            logger.error("Failed to send SMS: %s", e)
             return False
 
     def generate_code(self, length: int = 6) -> str:
@@ -370,11 +371,11 @@ class EmailOTPProvider:
             # Call email client (placeholder)
             # self.email_client.send(to=email, subject=subject, body=body)
 
-            logger.info(f"Sent email OTP to {email}")
+            logger.info("Sent email OTP to %s", email)
             return True
 
         except Exception as e:
-            logger.error(f"Failed to send email OTP: {e}")
+            logger.error("Failed to send email OTP: %s", e)
             return False
 
     def generate_code(self, length: int = 6) -> str:
@@ -503,7 +504,7 @@ class MFAManager:
         )
         qr_code = self.totp_provider.generate_qr_code(provisioning_uri)
 
-        logger.info(f"TOTP enrollment initiated for user: {user_id}")
+        logger.info("TOTP enrollment initiated for user: %s", user_id)
 
         return device.device_id, secret, qr_code
 
@@ -540,7 +541,7 @@ class MFAManager:
                 enrollment.status = MFAStatus.ENABLED
                 enrollment.enrolled_at = DeterministicClock.utcnow()
 
-            logger.info(f"TOTP enrollment verified for user: {user_id}")
+            logger.info("TOTP enrollment verified for user: %s", user_id)
             return True
 
         return False
@@ -579,7 +580,7 @@ class MFAManager:
 
         self.sms_provider.send_code(phone_number, code)
 
-        logger.info(f"SMS enrollment initiated for user: {user_id}")
+        logger.info("SMS enrollment initiated for user: %s", user_id)
 
         return device.device_id
 
@@ -616,7 +617,7 @@ class MFAManager:
                 enrollment.status = MFAStatus.ENABLED
                 enrollment.enrolled_at = DeterministicClock.utcnow()
 
-            logger.info(f"SMS enrollment verified for user: {user_id}")
+            logger.info("SMS enrollment verified for user: %s", user_id)
             return True
 
         return False
@@ -641,7 +642,7 @@ class MFAManager:
         # Return codes for user to save
         codes = [bc.code for bc in backup_codes]
 
-        logger.info(f"Generated {len(codes)} backup codes for user: {user_id}")
+        logger.info("Generated %s backup codes for user: %s", len(codes), user_id)
 
         return codes
 
@@ -669,7 +670,7 @@ class MFAManager:
         allowed, remaining = self.rate_limiter.check_rate_limit(rate_key)
 
         if not allowed:
-            logger.warning(f"Rate limit exceeded for user: {user_id}")
+            logger.warning("Rate limit exceeded for user: %s", user_id)
             raise MFAError("Too many attempts. Please try again later.")
 
         enrollment = self.enrollments.get(user_id)
@@ -701,7 +702,7 @@ class MFAManager:
         if verified:
             enrollment.failed_attempts = 0
             self.rate_limiter.reset(rate_key)
-            logger.info(f"MFA verification successful for user: {user_id}")
+            logger.info("MFA verification successful for user: %s", user_id)
             return True
         else:
             enrollment.failed_attempts += 1
@@ -713,7 +714,7 @@ class MFAManager:
                 enrollment.locked_until = DeterministicClock.utcnow() + timedelta(
                     seconds=self.config.lockout_duration
                 )
-                logger.warning(f"Account locked for user: {user_id}")
+                logger.warning("Account locked for user: %s", user_id)
 
             return False
 
@@ -763,7 +764,7 @@ class MFAManager:
         if backup_code:
             backup_code.used = True
             backup_code.used_at = DeterministicClock.utcnow()
-            logger.info(f"Backup code used for user: {enrollment.user_id}")
+            logger.info("Backup code used for user: %s", enrollment.user_id)
             return True
 
         return False
@@ -841,13 +842,13 @@ class MFAManager:
             enrollment.totp_devices.clear()
             enrollment.sms_devices.clear()
 
-            logger.info(f"MFA disabled for user: {user_id}")
+            logger.info("MFA disabled for user: %s", user_id)
             return True
 
         return False
 
 
-class MFAError(Exception):
+class MFAError(_SecurityAuthError):
     """MFA-specific error"""
     pass
 

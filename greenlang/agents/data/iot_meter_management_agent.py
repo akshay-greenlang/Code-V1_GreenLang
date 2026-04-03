@@ -297,7 +297,7 @@ class IoTMeterManagementAgent(BaseAgent):
         self._anomalies: Dict[str, List[MeterAnomaly]] = {}
         self._trust_scores: Dict[str, MeterTrustScore] = {}
 
-        self.logger.info(f"Initialized {self.AGENT_NAME}")
+        logger.info("Initialized %s", self.AGENT_NAME)
 
     def execute(self, input_data: Dict[str, Any]) -> AgentResult:
         """Execute meter operation."""
@@ -326,7 +326,7 @@ class IoTMeterManagementAgent(BaseAgent):
                 return AgentResult(success=False, error=f"Unknown operation: {query_input.operation}")
 
         except Exception as e:
-            self.logger.error(f"Meter operation failed: {str(e)}", exc_info=True)
+            logger.error("Meter operation failed: %s", e, exc_info=True)
             return AgentResult(success=False, error=str(e))
 
     def _handle_register(self, query_input: MeterQueryInput, start_time: datetime) -> AgentResult:

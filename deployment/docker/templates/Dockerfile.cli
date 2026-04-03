@@ -1,0 +1,221 @@
+# syntax=docker/dockerfile:1.7
+# =============================================================================
+# GreenLang Parameterized CLI Dockerfile Template
+# =============================================================================
+# Replaces Dockerfile.core, Dockerfile.full, Dockerfile.secure,
+# Dockerfile.runner, Runner.Dockerfile, Full.Dockerfile
+#
+# The single GL_INSTALL_EXTRAS ARG controls the dependency profile:
+#
+#   Profile     | Extras                     | Use case
+#   ------------|----------------------------|----------------------------------
+#   core        | (empty string)             | Minimal CLI, smallest image
+#   server      | server,security            | API-capable runtime
+#   full        | full                       | All optional deps
+#   dev         | full,dev,test              | Development with lint/test tools
+#
+# Usage:
+#   # Minimal core CLI
+#   docker build --build-arg GL_INSTALL_EXTRAS="" \
+#     -f deployment/docker/templates/Dockerfile.cli \
+#     -t greenlang/cli:core .
+#
+#   # Full CLI with all optional dependencies
+#   docker build --build-arg GL_INSTALL_EXTRAS="full" \
+#     -f deployment/docker/templates/Dockerfile.cli \
+#     -t greenlang/cli:full .
+#
+#   # Server-ready with security hardening
+#   docker build --build-arg GL_INSTALL_EXTRAS="server,security" \
+#     -f deployment/docker/templates/Dockerfile.cli \
+#     -t greenlang/cli:secure .
+#
+#   # Development image with test and dev tools
+#   docker build --build-arg GL_INSTALL_EXTRAS="full,dev,test" \
+#     --target development \
+#     -f deployment/docker/templates/Dockerfile.cli \
+#     -t greenlang/cli:dev .
+#
+# Build targets:
+#   --target production   (default) Hardened CLI runtime
+#   --target development  Adds git, vim, build-essential for interactive dev
+# =============================================================================
+
+ARG PYTHON_VERSION=3.11-slim-bookworm
+
+# ===========================================================================
+# Stage 1: builder -- compile wheels and install packages
+# ===========================================================================
+FROM python:${PYTHON_VERSION} AS builder
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    PIP_DEFAULT_TIMEOUT=100 \
+    VIRTUAL_ENV=/opt/venv \
+    PATH="/opt/venv/bin:$PATH"
+
+RUN python -m venv $VIRTUAL_ENV
+
+# Build dependencies for native extensions
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        build-essential \
+        gcc \
+        g++ \
+        git \
+        curl \
+        pkg-config \
+        libpq-dev \
+        libssl-dev \
+        libffi-dev \
+        ca-certificates \
+    && apt-get upgrade -y \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN pip install --upgrade pip setuptools wheel
+
+# Copy project metadata and source for editable/local install
+COPY pyproject.toml README.md ./
+COPY greenlang/ ./greenlang/
+COPY core/ ./core/
+
+# GL_INSTALL_EXTRAS controls the optional dependency groups from pyproject.toml.
+# Empty string = core only; "full" = all groups; "server,security" = specific.
+ARG GL_INSTALL_EXTRAS=""
+ARG GL_VERSION=0.3.0
+
+# Install from local source. If extras are provided, append them; otherwise
+# install the bare package.
+RUN --mount=type=cache,target=/root/.cache/pip \
+    if [ -z "${GL_INSTALL_EXTRAS}" ]; then \
+        pip install --no-deps -e . ; \
+    else \
+        pip install --no-deps -e ".[${GL_INSTALL_EXTRAS}]" ; \
+    fi
+
+# ===========================================================================
+# Stage 2: production -- minimal hardened runtime
+# ===========================================================================
+FROM python:${PYTHON_VERSION} AS production
+
+ARG GL_VERSION=0.3.0
+ARG GL_INSTALL_EXTRAS=""
+ARG BUILD_DATE=""
+ARG VCS_REF=""
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PYTHONFAULTHANDLER=1 \
+    PYTHONHASHSEED=random \
+    VIRTUAL_ENV=/opt/venv \
+    PATH="/opt/venv/bin:$PATH" \
+    GL_HOME=/var/lib/greenlang \
+    GL_CACHE_DIR=/var/cache/greenlang \
+    GL_LOG_DIR=/var/log/greenlang \
+    GL_VERSION=${GL_VERSION}
+
+# Minimal runtime system packages
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        ca-certificates \
+        curl \
+        tini \
+        libpq5 \
+    && apt-get upgrade -y \
+    && rm -rf /var/lib/apt/lists/* /var/cache/apt/* /tmp/*
+
+# Copy the pre-built virtualenv from builder
+COPY --from=builder ${VIRTUAL_ENV} ${VIRTUAL_ENV}
+
+# Non-root user (UID 10001+ per container best practices)
+RUN groupadd -g 10001 gluser \
+    && useradd -u 10001 -g 10001 -m -s /bin/bash gluser \
+    && mkdir -p ${GL_HOME} ${GL_CACHE_DIR} ${GL_LOG_DIR} /app \
+    && chown -R gluser:gluser ${GL_HOME} ${GL_CACHE_DIR} ${GL_LOG_DIR} /app
+
+# Security: drop capabilities from Python binary
+RUN setcap -r ${VIRTUAL_ENV}/bin/python3.11 2>/dev/null || true
+
+USER gluser
+WORKDIR /app
+
+# OCI metadata
+LABEL org.opencontainers.image.title="GreenLang CLI (${GL_INSTALL_EXTRAS:-core})" \
+      org.opencontainers.image.description="GreenLang CLI v${GL_VERSION} -- profile: ${GL_INSTALL_EXTRAS:-core}" \
+      org.opencontainers.image.version="${GL_VERSION}" \
+      org.opencontainers.image.created="${BUILD_DATE}" \
+      org.opencontainers.image.revision="${VCS_REF}" \
+      org.opencontainers.image.source="https://github.com/greenlang/greenlang" \
+      org.opencontainers.image.url="https://greenlang.io" \
+      org.opencontainers.image.licenses="MIT" \
+      org.opencontainers.image.vendor="GreenLang Team" \
+      com.greenlang.extras="${GL_INSTALL_EXTRAS:-core}" \
+      security.capabilities.drop="ALL" \
+      security.no-new-privileges="true" \
+      security.read-only-rootfs="true"
+
+# Declare writable volumes for read-only root filesystem deployments
+VOLUME ["${GL_CACHE_DIR}", "${GL_LOG_DIR}", "/tmp"]
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+    CMD gl --help >/dev/null 2>&1 || exit 1
+
+# tini for proper signal handling
+ENTRYPOINT ["/usr/bin/tini", "--", "gl"]
+CMD ["--help"]
+
+# ===========================================================================
+# Stage 3: development -- interactive dev environment
+# ===========================================================================
+FROM production AS development
+
+USER root
+
+# Additional system tools for interactive development
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        build-essential \
+        gcc \
+        g++ \
+        git \
+        make \
+        vim \
+        nano \
+        jq \
+        openssh-client \
+        rsync \
+        zip \
+        unzip \
+    && apt-get upgrade -y \
+    && rm -rf /var/lib/apt/lists/*
+
+# Dev/CI Python tools
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install --no-cache-dir \
+        pre-commit \
+        tox \
+        build \
+        twine \
+        bandit \
+        safety \
+        pip-audit \
+        mypy \
+        ruff \
+        black \
+        isort \
+        pytest \
+        pytest-cov \
+        pytest-asyncio
+
+# Git safe directory for CI bind-mounts
+RUN git config --global --add safe.directory '*'
+
+USER gluser
+WORKDIR /workspace
+
+VOLUME ["${GL_CACHE_DIR}", "${GL_LOG_DIR}", "/workspace", "/tmp"]
+
+ENTRYPOINT ["/usr/bin/tini", "--"]
+CMD ["bash"]

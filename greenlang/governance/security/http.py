@@ -113,10 +113,10 @@ class SecureHTTPSession:
         result = self._evaluate_egress_policy(policy_input)
         if not result.get("allow", False):
             reason = result.get("reason", "Egress not allowed by policy")
-            logger.error(f"Egress denied: {url} - {reason}")
+            logger.error("Egress denied: %s - %s", url, reason)
             raise PermissionError(f"Policy violation: {reason}")
 
-        logger.info(f"Egress allowed: {method} {url}")
+        logger.info("Egress allowed: %s %s", method, url)
 
     def _evaluate_egress_policy(self, policy_input: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -177,11 +177,11 @@ class SecureHTTPSession:
                             "reason": result.get("reason", "OPA policy decision")
                         }
             except Exception as e:
-                logger.warning(f"OPA policy check failed, using default allow: {e}")
+                logger.warning("OPA policy check failed, using default allow: %s", e)
 
         # Default: allow in non-production, log warning in production
         if env == "prod":
-            logger.warning(f"Egress allowed by default (no OPA configured): {host}")
+            logger.warning("Egress allowed by default (no OPA configured): %s", host)
 
         return {"allow": True, "reason": "Default policy: allowed"}
 
@@ -223,7 +223,7 @@ class SecureHTTPSession:
         if error:
             audit_entry.update({"error": str(error), "success": False})
 
-        logger.info(f"HTTP Audit: {audit_entry}")
+        logger.info("HTTP Audit: %s", audit_entry)
 
     def request(
         self,

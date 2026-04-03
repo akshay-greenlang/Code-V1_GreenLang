@@ -450,13 +450,13 @@ class UpstreamLeasedAssetsService:
             mod = importlib.import_module(module_path)
             cls = getattr(mod, class_name)
             instance = cls()
-            logger.info(f"{class_name} initialized")
+            logger.info("%s initialized", class_name)
             return instance
         except ImportError:
-            logger.warning(f"{class_name} not available (ImportError)")
+            logger.warning("%s not available (ImportError)", class_name)
             return None
         except Exception as e:
-            logger.warning(f"{class_name} initialization failed: {e}")
+            logger.warning("%s initialization failed: %s", class_name, e)
             return None
 
     # ========================================================================
@@ -719,7 +719,7 @@ class UpstreamLeasedAssetsService:
             return result
 
         except Exception as e:
-            logger.error(f"Building calculation {calc_id} failed: {e}", exc_info=True)
+            logger.error("Building calculation %s failed: %s", calc_id, e, exc_info=True)
             raise
 
     def calculate_vehicle(self, request: Dict[str, Any]) -> Dict[str, Any]:
@@ -833,7 +833,7 @@ class UpstreamLeasedAssetsService:
             return result
 
         except Exception as e:
-            logger.error(f"Vehicle calculation {calc_id} failed: {e}", exc_info=True)
+            logger.error("Vehicle calculation %s failed: %s", calc_id, e, exc_info=True)
             raise
 
     def calculate_equipment(self, request: Dict[str, Any]) -> Dict[str, Any]:
@@ -929,7 +929,7 @@ class UpstreamLeasedAssetsService:
             return result
 
         except Exception as e:
-            logger.error(f"Equipment calculation {calc_id} failed: {e}", exc_info=True)
+            logger.error("Equipment calculation %s failed: %s", calc_id, e, exc_info=True)
             raise
 
     def calculate_it_asset(self, request: Dict[str, Any]) -> Dict[str, Any]:
@@ -1008,7 +1008,7 @@ class UpstreamLeasedAssetsService:
             return result
 
         except Exception as e:
-            logger.error(f"IT asset calculation {calc_id} failed: {e}", exc_info=True)
+            logger.error("IT asset calculation %s failed: %s", calc_id, e, exc_info=True)
             raise
 
     def calculate_lessor(self, request: Dict[str, Any]) -> Dict[str, Any]:
@@ -1074,7 +1074,7 @@ class UpstreamLeasedAssetsService:
             return result
 
         except Exception as e:
-            logger.error(f"Lessor calculation {calc_id} failed: {e}", exc_info=True)
+            logger.error("Lessor calculation %s failed: %s", calc_id, e, exc_info=True)
             raise
 
     def calculate_spend(self, request: Dict[str, Any]) -> Dict[str, Any]:
@@ -1157,7 +1157,7 @@ class UpstreamLeasedAssetsService:
             return result
 
         except Exception as e:
-            logger.error(f"Spend calculation {calc_id} failed: {e}", exc_info=True)
+            logger.error("Spend calculation %s failed: %s", calc_id, e, exc_info=True)
             raise
 
     def calculate_batch(self, request: Dict[str, Any]) -> Dict[str, Any]:
@@ -1241,7 +1241,7 @@ class UpstreamLeasedAssetsService:
                 building_results.append(r)
                 buildings_co2e += self._to_decimal(r.get("total_co2e_kg", 0))
             except Exception as e:
-                logger.warning(f"Portfolio building calculation failed: {e}")
+                logger.warning("Portfolio building calculation failed: %s", e)
 
         # Process vehicles
         for veh in request.get("vehicles", []):
@@ -1251,7 +1251,7 @@ class UpstreamLeasedAssetsService:
                 vehicle_results.append(r)
                 vehicles_co2e += self._to_decimal(r.get("total_co2e_kg", 0))
             except Exception as e:
-                logger.warning(f"Portfolio vehicle calculation failed: {e}")
+                logger.warning("Portfolio vehicle calculation failed: %s", e)
 
         # Process equipment
         for eqp in request.get("equipment", []):
@@ -1261,7 +1261,7 @@ class UpstreamLeasedAssetsService:
                 equipment_results.append(r)
                 equipment_co2e += self._to_decimal(r.get("total_co2e_kg", 0))
             except Exception as e:
-                logger.warning(f"Portfolio equipment calculation failed: {e}")
+                logger.warning("Portfolio equipment calculation failed: %s", e)
 
         # Process IT assets
         for it_asset in request.get("it_assets", []):
@@ -1271,7 +1271,7 @@ class UpstreamLeasedAssetsService:
                 it_results.append(r)
                 it_assets_co2e += self._to_decimal(r.get("total_co2e_kg", 0))
             except Exception as e:
-                logger.warning(f"Portfolio IT asset calculation failed: {e}")
+                logger.warning("Portfolio IT asset calculation failed: %s", e)
 
         total_co2e = buildings_co2e + vehicles_co2e + equipment_co2e + it_assets_co2e
 

@@ -290,7 +290,7 @@ class AlertAnomalyAgent(BaseAgent):
         self._total_detections = 0
         self._total_alerts_generated = 0
 
-        self.logger.info(f"Initialized {self.AGENT_ID}: {self.AGENT_NAME}")
+        logger.info("Initialized %s: %s", self.AGENT_ID, self.AGENT_NAME)
 
     def execute(self, input_data: Dict[str, Any]) -> AgentResult:
         """Execute anomaly detection operations."""
@@ -319,7 +319,7 @@ class AlertAnomalyAgent(BaseAgent):
             )
 
         except Exception as e:
-            self.logger.error(f"Anomaly detection failed: {e}", exc_info=True)
+            logger.error("Anomaly detection failed: %s", e, exc_info=True)
             processing_time_ms = (time.time() - start_time) * 1000
 
             return AgentResult(

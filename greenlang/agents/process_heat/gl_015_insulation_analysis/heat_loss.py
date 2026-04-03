@@ -151,7 +151,7 @@ class HeatLossCalculator:
             ValueError: If input is invalid or geometry not supported
         """
         self._calculation_count += 1
-        logger.debug(f"Calculating heat loss for {input_data.item_id}")
+        logger.debug("Calculating heat loss for %s", input_data.item_id)
 
         if input_data.geometry_type == GeometryType.PIPE:
             if input_data.pipe_geometry is None:

@@ -181,7 +181,7 @@ def generate_audit_report(
     if output_path:
         with open(output_path, 'w') as f:
             f.write(content)
-        logger.info(f"Audit report saved to {output_path}")
+        logger.info("Audit report saved to %s", output_path)
 
     return content
 

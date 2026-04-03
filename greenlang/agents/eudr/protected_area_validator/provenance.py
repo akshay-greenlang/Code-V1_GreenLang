@@ -287,7 +287,7 @@ class ProvenanceTracker:
                     self._genesis_hash if i == 0 else self._chain[i - 1].hash_value
                 )
                 if record.previous_hash != expected_prev:
-                    logger.error(f"Record {i} previous_hash mismatch")
+                    logger.error("Record %s previous_hash mismatch", i)
                     return False
 
                 computed_hash = self._compute_hash(
@@ -300,10 +300,10 @@ class ProvenanceTracker:
                     previous_hash=record.previous_hash,
                 )
                 if record.hash_value != computed_hash:
-                    logger.error(f"Record {i} hash mismatch")
+                    logger.error("Record %s hash mismatch", i)
                     return False
 
-            logger.info(f"Provenance chain verified ({len(self._chain)} records)")
+            logger.info("Provenance chain verified (%s records)", len(self._chain))
             return True
 
     def get_chain(self) -> List[ProvenanceRecord]:

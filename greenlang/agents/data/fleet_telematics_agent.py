@@ -314,7 +314,7 @@ class FleetTelematicsAgent(BaseAgent):
         self._connections: Dict[str, TelematicsConnectionConfig] = {}
         self._vehicles: Dict[str, VehicleConfig] = {}
 
-        self.logger.info(f"Initialized {self.AGENT_NAME} v{self.VERSION}")
+        logger.info("Initialized %s v%s", self.AGENT_NAME, self.VERSION)
 
     def execute(self, input_data: Dict[str, Any]) -> AgentResult:
         """Execute fleet telematics operation."""
@@ -333,7 +333,7 @@ class FleetTelematicsAgent(BaseAgent):
                 return AgentResult(success=False, error=f"Unknown operation: {operation}")
 
         except Exception as e:
-            self.logger.error(f"Fleet operation failed: {str(e)}", exc_info=True)
+            logger.error("Fleet operation failed: %s", e, exc_info=True)
             processing_time = (datetime.utcnow() - start_time).total_seconds() * 1000
             return AgentResult(success=False, error=str(e), data={"processing_time_ms": processing_time})
 

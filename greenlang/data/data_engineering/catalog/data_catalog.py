@@ -285,7 +285,7 @@ class DataCatalog:
         # Check for duplicates by hash
         if factor.factor_hash in self._index_by_hash:
             existing_id = self._index_by_hash[factor.factor_hash]
-            logger.warning(f"Duplicate factor detected: {existing_id}")
+            logger.warning("Duplicate factor detected: %s", existing_id)
             return self.entries[existing_id]
 
         # Store entry
@@ -309,7 +309,7 @@ class DataCatalog:
             lineage.factor_id = factor.factor_id
             self.lineage[factor.factor_id].append(lineage)
 
-        logger.debug(f"Added factor to catalog: {factor.factor_id}")
+        logger.debug("Added factor to catalog: %s", factor.factor_id)
         self._save_catalog()
 
         return factor
@@ -382,7 +382,7 @@ class DataCatalog:
         )
         self.versions[factor_id].append(version)
 
-        logger.debug(f"Updated factor: {factor_id}, changed: {changed_fields}")
+        logger.debug("Updated factor: %s, changed: %s", factor_id, changed_fields)
         self._save_catalog()
 
         return new_entry
@@ -933,7 +933,7 @@ class DataCatalog:
         for entry in self.entries.values():
             self._update_indexes(entry)
 
-        logger.info(f"Rebuilt indexes for {len(self.entries)} entries")
+        logger.info("Rebuilt indexes for %s entries", len(self.entries))
 
     # =========================================================================
     # PERSISTENCE
@@ -990,7 +990,7 @@ class DataCatalog:
                     self.entries[fid] = CatalogEntry(**entry_dict)
 
         self.rebuild_indexes()
-        logger.info(f"Loaded {len(self.entries)} catalog entries")
+        logger.info("Loaded %s catalog entries", len(self.entries))
 
     # =========================================================================
     # UTILITIES

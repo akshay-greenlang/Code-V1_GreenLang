@@ -5,19 +5,21 @@ Prometheus Metrics - AGENT-DATA-018: Data Lineage Tracker
 12 Prometheus metrics for data lineage tracking service monitoring with
 graceful fallback when prometheus_client is not installed.
 
-Metrics:
-    1.  gl_dlt_assets_registered_total           (Counter,   labels: asset_type, classification)
-    2.  gl_dlt_transformations_captured_total     (Counter,   labels: transformation_type, agent_id)
-    3.  gl_dlt_edges_created_total               (Counter,   labels: edge_type)
-    4.  gl_dlt_impact_analyses_total             (Counter,   labels: direction, severity)
-    5.  gl_dlt_validations_total                 (Counter,   labels: result)
-    6.  gl_dlt_reports_generated_total           (Counter,   labels: report_type, format)
-    7.  gl_dlt_change_events_total               (Counter,   labels: change_type, severity)
-    8.  gl_dlt_quality_scores_computed_total     (Counter,   labels: score_tier)
-    9.  gl_dlt_graph_traversal_duration_seconds  (Histogram, buckets: traversal-scale)
-    10. gl_dlt_processing_duration_seconds       (Histogram, labels: operation, buckets: sub-second)
-    11. gl_dlt_graph_node_count                  (Gauge)
-    12. gl_dlt_graph_edge_count                  (Gauge)
+Standard metrics (via MetricsFactory):
+    1.  gl_dlt_operations_total (Counter, labels: type, tenant_id)
+    2.  gl_dlt_processing_duration_seconds (Histogram, 12 buckets)
+    3.  gl_dlt_validation_errors_total (Counter, labels: severity, type)
+    4.  gl_dlt_batch_jobs_total (Counter, labels: status)
+    5.  gl_dlt_active_jobs (Gauge)
+    6.  gl_dlt_queue_size (Gauge)
+
+Agent-specific metrics:
+    7.  gl_dlt_assets_registered_total (Counter, labels: asset_type, classification)
+    8.  gl_dlt_transformations_captured_total (Counter, labels: transformation_type, agent_id)
+    9.  gl_dlt_edges_created_total (Counter, labels: edge_type)
+    10. gl_dlt_graph_traversal_duration_seconds (Histogram, buckets: traversal-scale)
+    11. gl_dlt_graph_node_count (Gauge)
+    12. gl_dlt_graph_edge_count (Gauge)
 
 Author: GreenLang Platform Team
 Date: February 2026
@@ -27,125 +29,95 @@ Status: Production Ready
 
 from __future__ import annotations
 
-import logging
-
-logger = logging.getLogger(__name__)
-
-# ---------------------------------------------------------------------------
-# Graceful prometheus_client import
-# ---------------------------------------------------------------------------
-
-try:
-    from prometheus_client import Counter, Gauge, Histogram
-    PROMETHEUS_AVAILABLE = True
-except ImportError:
-    PROMETHEUS_AVAILABLE = False
-    logger.info(
-        "prometheus_client not installed; data lineage tracker metrics disabled"
-    )
+from greenlang.data_commons.metrics import (
+    PROMETHEUS_AVAILABLE,
+    MetricsFactory,
+)
 
 # ---------------------------------------------------------------------------
-# Metric definitions
+# Standard metrics (6 of 12) via factory
 # ---------------------------------------------------------------------------
 
-if PROMETHEUS_AVAILABLE:
-    # 1. Assets registered by asset type and data classification
-    dlt_assets_registered_total = Counter(
-        "gl_dlt_assets_registered_total",
-        "Total data assets registered in the lineage graph",
-        labelnames=["asset_type", "classification"],
-    )
+m = MetricsFactory(
+    "gl_dlt",
+    "Data Lineage Tracker",
+    duration_buckets=(0.01, 0.05, 0.1, 0.5, 1, 5, 10),
+)
 
-    # 2. Transformations captured by transformation type and originating agent
-    dlt_transformations_captured_total = Counter(
-        "gl_dlt_transformations_captured_total",
-        "Total data transformations captured in the lineage graph",
-        labelnames=["transformation_type", "agent_id"],
-    )
+# ---------------------------------------------------------------------------
+# Agent-specific metrics (6 of 12)
+# ---------------------------------------------------------------------------
 
-    # 3. Lineage edges created by edge type
-    dlt_edges_created_total = Counter(
-        "gl_dlt_edges_created_total",
-        "Total lineage edges created between data assets",
-        labelnames=["edge_type"],
-    )
+dlt_assets_registered_total = m.create_custom_counter(
+    "assets_registered_total",
+    "Total data assets registered in the lineage graph",
+    labelnames=["asset_type", "classification"],
+)
 
-    # 4. Impact analyses performed by traversal direction and severity
-    dlt_impact_analyses_total = Counter(
-        "gl_dlt_impact_analyses_total",
-        "Total impact analyses performed on the lineage graph",
-        labelnames=["direction", "severity"],
-    )
+dlt_transformations_captured_total = m.create_custom_counter(
+    "transformations_captured_total",
+    "Total data transformations captured in the lineage graph",
+    labelnames=["transformation_type", "agent_id"],
+)
 
-    # 5. Lineage validations by result outcome
-    dlt_validations_total = Counter(
-        "gl_dlt_validations_total",
-        "Total lineage validation checks performed",
-        labelnames=["result"],
-    )
+dlt_edges_created_total = m.create_custom_counter(
+    "edges_created_total",
+    "Total lineage edges created between data assets",
+    labelnames=["edge_type"],
+)
 
-    # 6. Lineage reports generated by report type and output format
-    dlt_reports_generated_total = Counter(
-        "gl_dlt_reports_generated_total",
-        "Total lineage reports generated",
-        labelnames=["report_type", "format"],
-    )
+dlt_impact_analyses_total = m.create_custom_counter(
+    "impact_analyses_total",
+    "Total impact analyses performed on the lineage graph",
+    labelnames=["direction", "severity"],
+)
 
-    # 7. Change events tracked by change type and severity
-    dlt_change_events_total = Counter(
-        "gl_dlt_change_events_total",
-        "Total lineage change events detected and recorded",
-        labelnames=["change_type", "severity"],
-    )
+dlt_validations_total = m.create_custom_counter(
+    "validations_total",
+    "Total lineage validation checks performed",
+    labelnames=["result"],
+)
 
-    # 8. Quality scores computed by score tier
-    dlt_quality_scores_computed_total = Counter(
-        "gl_dlt_quality_scores_computed_total",
-        "Total lineage quality scores computed for data assets",
-        labelnames=["score_tier"],
-    )
+dlt_reports_generated_total = m.create_custom_counter(
+    "reports_generated_total",
+    "Total lineage reports generated",
+    labelnames=["report_type", "format"],
+)
 
-    # 9. Graph traversal duration for impact analysis and path queries
-    dlt_graph_traversal_duration_seconds = Histogram(
-        "gl_dlt_graph_traversal_duration_seconds",
-        "Duration of lineage graph traversal operations in seconds",
-        buckets=(0.01, 0.05, 0.1, 0.5, 1, 5, 10, 30),
-    )
+dlt_change_events_total = m.create_custom_counter(
+    "change_events_total",
+    "Total lineage change events detected and recorded",
+    labelnames=["change_type", "severity"],
+)
 
-    # 10. Processing duration for individual engine operations
-    dlt_processing_duration_seconds = Histogram(
-        "gl_dlt_processing_duration_seconds",
-        "Data lineage tracker engine operation processing duration in seconds",
-        labelnames=["operation"],
-        buckets=(0.01, 0.05, 0.1, 0.5, 1, 5, 10),
-    )
+dlt_quality_scores_computed_total = m.create_custom_counter(
+    "quality_scores_computed_total",
+    "Total lineage quality scores computed for data assets",
+    labelnames=["score_tier"],
+)
 
-    # 11. Current number of nodes in the lineage graph
-    dlt_graph_node_count = Gauge(
-        "gl_dlt_graph_node_count",
-        "Current number of nodes in the data lineage graph",
-    )
+dlt_graph_traversal_duration_seconds = m.create_custom_histogram(
+    "graph_traversal_duration_seconds",
+    "Duration of lineage graph traversal operations in seconds",
+    buckets=(0.01, 0.05, 0.1, 0.5, 1, 5, 10, 30),
+)
 
-    # 12. Current number of edges in the lineage graph
-    dlt_graph_edge_count = Gauge(
-        "gl_dlt_graph_edge_count",
-        "Current number of edges in the data lineage graph",
-    )
+dlt_processing_duration_seconds = m.create_custom_histogram(
+    "processing_duration_seconds_detail",
+    "Data lineage tracker engine operation processing duration in seconds",
+    buckets=(0.01, 0.05, 0.1, 0.5, 1, 5, 10),
+    labelnames=["operation"],
+)
 
-else:
-    # No-op placeholders so callers never need to guard on PROMETHEUS_AVAILABLE
-    dlt_assets_registered_total = None           # type: ignore[assignment]
-    dlt_transformations_captured_total = None     # type: ignore[assignment]
-    dlt_edges_created_total = None               # type: ignore[assignment]
-    dlt_impact_analyses_total = None             # type: ignore[assignment]
-    dlt_validations_total = None                 # type: ignore[assignment]
-    dlt_reports_generated_total = None           # type: ignore[assignment]
-    dlt_change_events_total = None               # type: ignore[assignment]
-    dlt_quality_scores_computed_total = None     # type: ignore[assignment]
-    dlt_graph_traversal_duration_seconds = None  # type: ignore[assignment]
-    dlt_processing_duration_seconds = None       # type: ignore[assignment]
-    dlt_graph_node_count = None                  # type: ignore[assignment]
-    dlt_graph_edge_count = None                  # type: ignore[assignment]
+dlt_graph_node_count = m.create_custom_gauge(
+    "graph_node_count",
+    "Current number of nodes in the data lineage graph",
+)
+
+dlt_graph_edge_count = m.create_custom_gauge(
+    "graph_edge_count",
+    "Current number of edges in the data lineage graph",
+)
 
 
 # ---------------------------------------------------------------------------
@@ -163,12 +135,10 @@ def record_asset_registered(asset_type: str, classification: str) -> None:
         classification: Data classification level
             (public, internal, confidential, restricted, pii).
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    dlt_assets_registered_total.labels(
-        asset_type=asset_type,
-        classification=classification,
-    ).inc()
+    m.safe_inc(
+        dlt_assets_registered_total, 1,
+        asset_type=asset_type, classification=classification,
+    )
 
 
 def record_transformation_captured(
@@ -183,12 +153,10 @@ def record_transformation_captured(
         agent_id: Identifier of the agent that performed the transformation
             (e.g. ``"data-quality-profiler"``, ``"excel-normalizer"``).
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    dlt_transformations_captured_total.labels(
-        transformation_type=transformation_type,
-        agent_id=agent_id,
-    ).inc()
+    m.safe_inc(
+        dlt_transformations_captured_total, 1,
+        transformation_type=transformation_type, agent_id=agent_id,
+    )
 
 
 def record_edge_created(edge_type: str) -> None:
@@ -199,11 +167,7 @@ def record_edge_created(edge_type: str) -> None:
             (derived_from, consumed_by, produced_by, transformed_by,
             validated_by, enriched_by, copied_from, merged_from).
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    dlt_edges_created_total.labels(
-        edge_type=edge_type,
-    ).inc()
+    m.safe_inc(dlt_edges_created_total, 1, edge_type=edge_type)
 
 
 def record_impact_analysis(direction: str, severity: str) -> None:
@@ -215,12 +179,7 @@ def record_impact_analysis(direction: str, severity: str) -> None:
         severity: Highest severity level found during analysis
             (critical, high, medium, low, none).
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    dlt_impact_analyses_total.labels(
-        direction=direction,
-        severity=severity,
-    ).inc()
+    m.safe_inc(dlt_impact_analyses_total, 1, direction=direction, severity=severity)
 
 
 def record_validation(result: str) -> None:
@@ -230,11 +189,7 @@ def record_validation(result: str) -> None:
         result: Validation outcome
             (pass, fail, warning, error, skipped).
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    dlt_validations_total.labels(
-        result=result,
-    ).inc()
+    m.safe_inc(dlt_validations_total, 1, result=result)
 
 
 def record_report_generated(report_type: str, format: str) -> None:
@@ -247,12 +202,10 @@ def record_report_generated(report_type: str, format: str) -> None:
         format: Output format of the generated report
             (json, html, pdf, csv, markdown, graphviz).
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    dlt_reports_generated_total.labels(
-        report_type=report_type,
-        format=format,
-    ).inc()
+    m.safe_inc(
+        dlt_reports_generated_total, 1,
+        report_type=report_type, format=format,
+    )
 
 
 def record_change_event(change_type: str, severity: str) -> None:
@@ -266,12 +219,10 @@ def record_change_event(change_type: str, severity: str) -> None:
         severity: Severity level of the change
             (critical, high, medium, low, informational).
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    dlt_change_events_total.labels(
-        change_type=change_type,
-        severity=severity,
-    ).inc()
+    m.safe_inc(
+        dlt_change_events_total, 1,
+        change_type=change_type, severity=severity,
+    )
 
 
 def record_quality_score(score_tier: str) -> None:
@@ -281,11 +232,7 @@ def record_quality_score(score_tier: str) -> None:
         score_tier: Quality score tier computed for the data asset
             (excellent, good, fair, poor, critical).
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    dlt_quality_scores_computed_total.labels(
-        score_tier=score_tier,
-    ).inc()
+    m.safe_inc(dlt_quality_scores_computed_total, 1, score_tier=score_tier)
 
 
 def observe_graph_traversal_duration(seconds: float) -> None:
@@ -293,11 +240,8 @@ def observe_graph_traversal_duration(seconds: float) -> None:
 
     Args:
         seconds: Graph traversal wall-clock time in seconds.
-            Buckets: 0.01, 0.05, 0.1, 0.5, 1, 5, 10, 30.
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    dlt_graph_traversal_duration_seconds.observe(seconds)
+    m.safe_observe(dlt_graph_traversal_duration_seconds, seconds)
 
 
 def observe_processing_duration(operation: str, seconds: float) -> None:
@@ -309,51 +253,31 @@ def observe_processing_duration(operation: str, seconds: float) -> None:
             impact_analyze, validate, report_generate, change_detect,
             quality_score, graph_query, export, import).
         seconds: Operation duration in seconds.
-            Buckets: 0.01, 0.05, 0.1, 0.5, 1, 5, 10.
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    dlt_processing_duration_seconds.labels(
-        operation=operation,
-    ).observe(seconds)
+    m.safe_observe(dlt_processing_duration_seconds, seconds, operation=operation)
 
 
 def set_graph_node_count(count: int) -> None:
     """Set the gauge for current number of nodes in the lineage graph.
 
-    This is an absolute set (not an increment) so the caller is
-    responsible for computing the correct current count.
-
     Args:
         count: Number of nodes currently in the lineage graph.
-            Must be >= 0.
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    dlt_graph_node_count.set(count)
+    m.safe_set(dlt_graph_node_count, count)
 
 
 def set_graph_edge_count(count: int) -> None:
     """Set the gauge for current number of edges in the lineage graph.
 
-    This is an absolute set (not an increment) so the caller is
-    responsible for computing the correct current count.
-
     Args:
         count: Number of edges currently in the lineage graph.
-            Must be >= 0.
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    dlt_graph_edge_count.set(count)
+    m.safe_set(dlt_graph_edge_count, count)
 
-
-# ---------------------------------------------------------------------------
-# Public API
-# ---------------------------------------------------------------------------
 
 __all__ = [
     "PROMETHEUS_AVAILABLE",
+    "m",
     # Metric objects
     "dlt_assets_registered_total",
     "dlt_transformations_captured_total",

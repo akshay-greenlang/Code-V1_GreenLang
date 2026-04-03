@@ -644,7 +644,7 @@ class EmissionTradingManager:
                 price_per_unit=acquisition_price,
             )
 
-        logger.info(f"Credit {credit_id} added successfully")
+        logger.info("Credit %s added successfully", credit_id)
         return credit
 
     def record_allocation(
@@ -770,7 +770,7 @@ class EmissionTradingManager:
                 surrendered_ids.append(f"{credit.credit_id}_partial")
                 remaining = 0
 
-        logger.info(f"Surrendered {len(surrendered_ids)} credit(s)")
+        logger.info("Surrendered %s credit(s)", len(surrendered_ids))
         return surrendered_ids
 
     def calculate_compliance_position(

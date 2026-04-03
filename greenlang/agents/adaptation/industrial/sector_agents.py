@@ -118,7 +118,7 @@ class IndustrialAdaptationBaseAgent(ABC):
         try:
             return self.assess(input_data)
         except Exception as e:
-            self.logger.error(f"{self.AGENT_ID} failed: {str(e)}", exc_info=True)
+            logger.error("%s failed: %s", self.AGENT_ID, e, exc_info=True)
             raise
 
     def _get_timestamp(self) -> str:

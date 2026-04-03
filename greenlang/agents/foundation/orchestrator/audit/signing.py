@@ -33,6 +33,7 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 from pydantic import Field
 from greenlang.schemas import GreenLangBase
+from greenlang.utilities.exceptions.security import SecurityException
 
 logger = logging.getLogger(__name__)
 
@@ -155,7 +156,7 @@ class PublicKeyInfo(GreenLangBase):
 # EXCEPTIONS
 # ============================================================================
 
-class SigningError(Exception):
+class SigningError(SecurityException):
     """Base exception for signing operations."""
     pass
 
@@ -271,7 +272,7 @@ class LocalKeySigner(SigningProvider):
         self.created_at = created_at or datetime.now(timezone.utc)
         self.expires_at = expires_at
         self.is_active = True
-        logger.info(f"Initialized LocalKeySigner: key_id={key_id}")
+        logger.info("Initialized LocalKeySigner: key_id=%s", key_id)
 
     @property
     def key_id(self) -> str:
@@ -294,7 +295,7 @@ class LocalKeySigner(SigningProvider):
             raise ImportError("cryptography library required. Install: pip install cryptography")
         private_key = Ed25519PrivateKey.generate()
         public_key = private_key.public_key()
-        logger.info(f"Generated new Ed25519 key pair: key_id={key_id}")
+        logger.info("Generated new Ed25519 key pair: key_id=%s", key_id)
         return cls(private_key, public_key, key_id, SignatureAlgorithm.ED25519, expires_at=expires_at)
 
     @classmethod
@@ -321,7 +322,7 @@ class LocalKeySigner(SigningProvider):
             raise ValueError(f"Invalid hash algorithm: {hash_algorithm}")
         private_key = rsa.generate_private_key(public_exponent=65537, key_size=key_size)
         public_key = private_key.public_key()
-        logger.info(f"Generated new RSA-{key_size} key pair: key_id={key_id}")
+        logger.info("Generated new RSA-%s key pair: key_id=%s", key_size, key_id)
         return cls(private_key, public_key, key_id, algo_map[hash_algorithm], expires_at=expires_at)
 
     @classmethod
@@ -340,7 +341,7 @@ class LocalKeySigner(SigningProvider):
         curve_obj, algorithm = curve_map[curve]
         private_key = ec.generate_private_key(curve_obj)
         public_key = private_key.public_key()
-        logger.info(f"Generated new ECDSA-{curve} key pair: key_id={key_id}")
+        logger.info("Generated new ECDSA-%s key pair: key_id=%s", curve, key_id)
         return cls(private_key, public_key, key_id, algorithm, expires_at=expires_at)
 
     @classmethod
@@ -363,10 +364,10 @@ class LocalKeySigner(SigningProvider):
             with open(path, "rb") as f:
                 private_key = serialization.load_pem_private_key(f.read(), password=password)
             public_key = private_key.public_key()
-            logger.info(f"Loaded key from file: key_id={key_id}, path={path}")
+            logger.info("Loaded key from file: key_id=%s, path=%s", key_id, path)
             return cls(private_key, public_key, key_id, algorithm)
         except Exception as e:
-            logger.error(f"Failed to load key from {path}: {e}")
+            logger.error("Failed to load key from %s: %s", path, e)
             raise SigningError(f"Failed to load key: {e}") from e
 
     def save_private_key(self, path: Union[str, Path], password: Optional[bytes] = None) -> None:
@@ -389,9 +390,9 @@ class LocalKeySigner(SigningProvider):
             path.parent.mkdir(parents=True, exist_ok=True)
             with open(path, "wb") as f:
                 f.write(pem_data)
-            logger.info(f"Saved private key to: {path}")
+            logger.info("Saved private key to: %s", path)
         except Exception as e:
-            logger.error(f"Failed to save private key: {e}")
+            logger.error("Failed to save private key: %s", e)
             raise SigningError(f"Failed to save private key: {e}") from e
 
     def sign(self, data: bytes) -> bytes:
@@ -433,7 +434,7 @@ class LocalKeySigner(SigningProvider):
             else:
                 raise SigningError(f"Unsupported algorithm: {self._algorithm}")
         except Exception as e:
-            logger.error(f"Signing failed: {e}")
+            logger.error("Signing failed: %s", e)
             raise SigningError(f"Signing failed: {e}") from e
 
     def get_public_key(self) -> bytes:
@@ -467,7 +468,7 @@ class KMSSigner(SigningProvider):
         self._algorithm = algorithm
         self._profile_name = profile_name
         self._client = None
-        logger.info(f"Initialized KMSSigner: key_id={key_id}, region={region}")
+        logger.info("Initialized KMSSigner: key_id=%s, region=%s", key_id, region)
 
     @property
     def key_id(self) -> str:
@@ -517,7 +518,7 @@ class KMSSigner(SigningProvider):
         except ImportError:
             raise
         except Exception as e:
-            logger.error(f"KMS signing failed: {e}")
+            logger.error("KMS signing failed: %s", e)
             raise SigningError(f"KMS signing failed: {e}") from e
 
     def get_public_key(self) -> bytes:
@@ -535,7 +536,7 @@ class KMSSigner(SigningProvider):
         except ImportError as e:
             raise ImportError(str(e))
         except Exception as e:
-            logger.error(f"Failed to get KMS public key: {e}")
+            logger.error("Failed to get KMS public key: %s", e)
             raise SigningError(f"Failed to get KMS public key: {e}") from e
 
 
@@ -562,7 +563,7 @@ class VaultSigner(SigningProvider):
         self._algorithm = algorithm
         self._key_version = key_version
         self._client = None
-        logger.info(f"Initialized VaultSigner: key_name={key_name}")
+        logger.info("Initialized VaultSigner: key_name=%s", key_name)
 
     @property
     def key_id(self) -> str:
@@ -618,7 +619,7 @@ class VaultSigner(SigningProvider):
         except ImportError:
             raise
         except Exception as e:
-            logger.error(f"Vault signing failed: {e}")
+            logger.error("Vault signing failed: %s", e)
             raise SigningError(f"Vault signing failed: {e}") from e
 
     def get_public_key(self) -> bytes:
@@ -640,7 +641,7 @@ class VaultSigner(SigningProvider):
         except ImportError as e:
             raise ImportError(str(e))
         except Exception as e:
-            logger.error(f"Failed to get Vault public key: {e}")
+            logger.error("Failed to get Vault public key: %s", e)
             raise SigningError(f"Failed to get Vault public key: {e}") from e
 
 
@@ -676,9 +677,9 @@ class SignatureVerifier:
                 public_key_pem=public_key.decode("utf-8"),
                 created_at=datetime.now(timezone.utc)
             )
-            logger.info(f"Added public key to verifier: key_id={key_id}")
+            logger.info("Added public key to verifier: key_id=%s", key_id)
         except Exception as e:
-            logger.error(f"Failed to add public key: {e}")
+            logger.error("Failed to add public key: %s", e)
             raise SigningError(f"Failed to add public key: {e}") from e
 
     def add_public_key_info(self, key_info: PublicKeyInfo) -> None:
@@ -742,10 +743,10 @@ class SignatureVerifier:
                 public_key.verify(signature, data, ec.ECDSA(hash_map[algorithm]))
                 return True
             else:
-                logger.error(f"Unsupported algorithm: {algorithm}")
+                logger.error("Unsupported algorithm: %s", algorithm)
                 return False
         except Exception as e:
-            logger.debug(f"Signature verification failed: {e}")
+            logger.debug("Signature verification failed: %s", e)
             return False
 
     def verify_bundle(self, data: bytes, bundle: SignatureBundle) -> bool:

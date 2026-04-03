@@ -292,8 +292,8 @@ class EmissionFactorDatabase:
             if as_of_date:
                 if not factor.is_valid_on(as_of_date):
                     logger.warning(
-                        f"Factor {key} not valid on {as_of_date}. "
-                        f"Valid: {factor.valid_from} to {factor.valid_to or 'current'}"
+                        "Factor %s not valid on %s. Valid: %s to %s",
+                        key, as_of_date, factor.valid_from, factor.valid_to or 'current'
                     )
                     return None
 
@@ -322,7 +322,7 @@ class EmissionFactorDatabase:
         )
 
         self.factors[key] = factor
-        logger.info(f"Added factor: {key} ({factor.gwp_100yr.co2e_total:.4f} kgCO2e/unit)")
+        logger.info("Added factor: %s (%.4f kgCO2e/unit)", key, factor.gwp_100yr.co2e_total)
 
     def list_factors(
         self,
@@ -457,8 +457,8 @@ class EmissionFactorDatabase:
 
             if not combustion_factor:
                 logger.warning(
-                    f"No combustion factor found for {fuel_type} ({unit}) in {geography}. "
-                    "Cannot compute WTW."
+                    "No combustion factor found for %s (%s) in %s. Cannot compute WTW.",
+                    fuel_type, unit, geography
                 )
                 return None
 
@@ -476,7 +476,8 @@ class EmissionFactorDatabase:
                 wtt_source = f"Estimated using typical ratio ({wtt_emission_factors.TYPICAL_WTT_RATIOS.get(fuel_type, 0.15)*100:.0f}%)"
             else:
                 logger.warning(
-                    f"No WTT data available for {fuel_type} ({unit}) in {geography}"
+                    "No WTT data available for %s (%s) in %s",
+                    fuel_type, unit, geography
                 )
                 return None
 
@@ -738,7 +739,7 @@ class EmissionFactorDatabase:
         if geography != "US":
             key = self._make_key(fuel_type, unit, "US", scope, boundary, gwp_set)
             if key in self.factors:
-                logger.warning(f"Using fallback geography: US (requested: {geography})")
+                logger.warning("Using fallback geography: US (requested: %s)", geography)
                 return key
 
         return None
@@ -1091,7 +1092,7 @@ class EmissionFactorDatabase:
             )
         )
 
-        logger.info(f"Loaded {len(self.factors)} default emission factors (v2)")
+        logger.info("Loaded %s default emission factors (v2)", len(self.factors))
 
     def _convert_unit_factor(
         self,
@@ -1169,10 +1170,10 @@ class EmissionFactorDatabase:
                     factor = EmissionFactorRecord.from_dict(data)
                     self.add_factor_record(factor)
 
-                logger.info(f"Loaded custom factors from {file_path}")
+                logger.info("Loaded custom factors from %s", file_path)
 
             except Exception as e:
-                logger.error(f"Error loading {file_path}: {e}")
+                logger.error("Error loading %s: %s", file_path, e)
 
     def save_to_directory(self, output_dir: str):
         """
@@ -1206,7 +1207,7 @@ class EmissionFactorDatabase:
                 with open(file_path, "w") as f:
                     f.write(factor.to_json())
 
-        logger.info(f"Saved {len(self.factors)} factors to {output_dir}")
+        logger.info("Saved %s factors to %s", len(self.factors), output_dir)
 
     # ==================== CACHE MANAGEMENT ====================
 
@@ -1241,7 +1242,7 @@ class EmissionFactorDatabase:
             if factor:
                 warmed += 1
 
-        logger.info(f"Cache warmed with {warmed} common factors")
+        logger.info("Cache warmed with %s common factors", warmed)
 
     def get_cache_stats(self) -> Dict[str, Any]:
         """
@@ -1281,7 +1282,7 @@ class EmissionFactorDatabase:
         """
         if self.enable_cache and self.cache:
             count = self.cache.invalidate(fuel_type, geography)
-            logger.info(f"Invalidated {count} cache entries")
+            logger.info("Invalidated %s cache entries", count)
 
 
 # ==================== BACKWARD COMPATIBILITY (v1) ====================

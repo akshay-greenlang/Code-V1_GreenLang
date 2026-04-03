@@ -10,6 +10,8 @@ from pydantic import BaseModel, Field
 from decimal import Decimal
 from enum import Enum
 
+from greenlang.utilities.exceptions.agent import AgentException
+
 
 class ValidationLevel(str, Enum):
     """Validation severity level."""
@@ -29,7 +31,7 @@ class ValidationResult(BaseModel):
     metadata: Dict[str, Any] = Field(default_factory=dict)
 
 
-class ValidationError(Exception):
+class ValidationError(AgentException):
     """Raised when validation fails."""
     def __init__(self, results: List[ValidationResult]):
         self.results = results

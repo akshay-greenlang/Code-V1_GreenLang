@@ -221,12 +221,12 @@ class AdaptationOptionsLibraryAgent(BaseAgent):
         self._measures: Dict[str, AdaptationMeasure] = {}
 
         super().__init__(config)
-        logger.info(f"Initialized {self.AGENT_NAME} v{self.VERSION}")
+        logger.info("Initialized %s v%s", self.AGENT_NAME, self.VERSION)
 
     def initialize(self):
         """Initialize agent resources and load measure library."""
         self._load_default_measures()
-        logger.info(f"Loaded {len(self._measures)} adaptation measures")
+        logger.info("Loaded %s adaptation measures", len(self._measures))
 
     def _load_default_measures(self):
         """Load default adaptation measures."""
@@ -474,7 +474,7 @@ class AdaptationOptionsLibraryAgent(BaseAgent):
         try:
             # Parse input
             query_input = LibraryQueryInput(**input_data)
-            self.logger.info(f"Querying adaptation library: {query_input.query_id}")
+            logger.info("Querying adaptation library: %s", query_input.query_id)
 
             # Match measures
             matches = self._match_measures(query_input)
@@ -509,7 +509,7 @@ class AdaptationOptionsLibraryAgent(BaseAgent):
                 }, sort_keys=True).encode()
             ).hexdigest()
 
-            self.logger.info(f"Library query complete: {len(matches)} matches")
+            logger.info("Library query complete: %s matches", len(matches))
 
             return AgentResult(
                 success=True,
@@ -522,7 +522,7 @@ class AdaptationOptionsLibraryAgent(BaseAgent):
             )
 
         except Exception as e:
-            self.logger.error(f"Library query failed: {str(e)}", exc_info=True)
+            logger.error("Library query failed: %s", e, exc_info=True)
             return AgentResult(
                 success=False,
                 error=str(e),

@@ -159,7 +159,7 @@ class SSEChannel:
         if last_event_id:
             await self._replay_events(queue, last_event_id)
 
-        logger.debug(f"Client {client_id} subscribed to channel {self.name}")
+        logger.debug("Client %s subscribed to channel %s", client_id, self.name)
         return queue
 
     async def unsubscribe(self, client_id: str) -> None:
@@ -171,7 +171,7 @@ class SSEChannel:
         """
         if client_id in self._clients:
             del self._clients[client_id]
-            logger.debug(f"Client {client_id} unsubscribed from channel {self.name}")
+            logger.debug("Client %s unsubscribed from channel %s", client_id, self.name)
 
     async def broadcast(self, event: SSEEvent) -> int:
         """
@@ -203,9 +203,9 @@ class SSEChannel:
                 delivered += 1
             except asyncio.QueueFull:
                 # Queue full - client is slow
-                logger.warning(f"Queue full for client {client_id}")
+                logger.warning("Queue full for client %s", client_id)
             except Exception as e:
-                logger.error(f"Error sending to client {client_id}: {e}")
+                logger.error("Error sending to client %s: %s", client_id, e)
                 disconnected.append(client_id)
 
         # Clean up disconnected clients
@@ -402,7 +402,7 @@ class SSEManager:
         except asyncio.CancelledError:
             pass
         except Exception as e:
-            logger.error(f"SSE generator error: {e}")
+            logger.error("SSE generator error: %s", e)
         finally:
             # Cleanup
             await self._cleanup_client(client_id, channel)
@@ -413,7 +413,7 @@ class SSEManager:
             await self._channels[channel].unsubscribe(client_id)
 
         self._clients.pop(client_id, None)
-        logger.debug(f"Cleaned up client {client_id}")
+        logger.debug("Cleaned up client %s", client_id)
 
     def get_channel(self, name: str) -> SSEChannel:
         """
@@ -450,7 +450,7 @@ class SSEManager:
             Number of clients that received the event
         """
         if channel not in self._channels:
-            logger.debug(f"Channel {channel} has no subscribers")
+            logger.debug("Channel %s has no subscribers", channel)
             return 0
 
         event = SSEEvent(
@@ -623,4 +623,4 @@ class SSEManager:
             except asyncio.CancelledError:
                 break
             except Exception as e:
-                logger.error(f"Cleanup loop error: {e}")
+                logger.error("Cleanup loop error: %s", e)

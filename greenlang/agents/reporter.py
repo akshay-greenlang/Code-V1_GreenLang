@@ -316,7 +316,7 @@ class BaseReporter(BaseAgent):
             row += 1  # Blank line between sections
 
         workbook.save(output_path)
-        logger.info(f"Excel report saved to {output_path}")
+        logger.info("Excel report saved to %s", output_path)
 
     def _render_table_markdown(self, data: Any) -> str:
         """Render data as Markdown table."""
@@ -386,7 +386,7 @@ class BaseReporter(BaseAgent):
         self.sections = []
 
         # Aggregate data
-        logger.info(f"Aggregating data for {self.config.name}")
+        logger.info("Aggregating data for %s", self.config.name)
         aggregated_data = self.aggregate_data(input_data)
 
         # Add summary if enabled
@@ -396,12 +396,12 @@ class BaseReporter(BaseAgent):
 
         # Build sections
         if self.config.include_details:
-            logger.info(f"Building report sections")
+            logger.info("Building report sections")
             sections = self.build_sections(aggregated_data)
             self.sections.extend(sections)
 
         # Render in requested format
-        logger.info(f"Rendering report in {self.config.output_format} format")
+        logger.info("Rendering report in %s format", self.config.output_format)
 
         if self.config.output_format == "markdown":
             report_content = self.render_markdown()
@@ -433,7 +433,7 @@ class BaseReporter(BaseAgent):
     def validate_input(self, input_data: Dict[str, Any]) -> bool:
         """Validate that input contains data to report on."""
         if not input_data:
-            self.logger.error("Input data is empty")
+            logger.error("Input data is empty")
             return False
 
         return True

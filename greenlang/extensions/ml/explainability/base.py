@@ -161,7 +161,7 @@ class ExplainabilityLayer(ABC):
             RuntimeError: If initialization fails
         """
         self.initialized = True
-        logger.info(f"{self.__class__.__name__} initialized successfully")
+        logger.info("%s initialized successfully", self.__class__.__name__)
 
     def validate_input(
         self,
@@ -234,7 +234,7 @@ class ExplainabilityLayer(ABC):
             else:
                 raise ValueError("Model has no predict or predict_proba method")
         except Exception as e:
-            logger.error(f"Failed to extract prediction: {e}")
+            logger.error("Failed to extract prediction: %s", e)
             raise
 
     def _get_feature_names(
@@ -372,7 +372,7 @@ class ExplainabilityLayer(ABC):
             feature_names: List of feature names
         """
         self.feature_names = feature_names
-        logger.debug(f"Set {len(feature_names)} feature names")
+        logger.debug("Set %s feature names", len(feature_names))
 
     def set_process_heat_context(self, context: ProcessHeatContext) -> None:
         """
@@ -382,7 +382,7 @@ class ExplainabilityLayer(ABC):
             context: Process heat context with domain knowledge
         """
         self.process_heat_context = context
-        logger.debug(f"Set process heat context for {context.equipment_type}")
+        logger.debug("Set process heat context for %s", context.equipment_type)
 
 
 class ExplainerRegistry:
@@ -419,7 +419,7 @@ class ExplainerRegistry:
         cls._registry[explainer_type] = explainer_class
         cls._model_compatibility[explainer_type] = compatible_models or list(ModelType)
 
-        logger.info(f"Registered explainer: {explainer_type}")
+        logger.info("Registered explainer: %s", explainer_type)
 
     @classmethod
     def get(cls, explainer_type: str) -> type:

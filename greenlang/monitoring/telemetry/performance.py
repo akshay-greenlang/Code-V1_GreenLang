@@ -268,7 +268,7 @@ class PerformanceMonitor:
             target=self._monitor_loop, args=(interval_seconds,), daemon=True
         )
         self._monitoring_thread.start()
-        logger.info(f"Started performance monitoring (interval={interval_seconds}s)")
+        logger.info("Started performance monitoring (interval=%ss)", interval_seconds)
 
     def stop_monitoring(self):
         """Stop background monitoring"""
@@ -294,17 +294,17 @@ class PerformanceMonitor:
                 self._check_thresholds(memory, cpu)
 
             except Exception as e:
-                logger.error(f"Error in monitoring loop: {e}")
+                logger.error("Error in monitoring loop: %s", e)
 
             self._stop_monitoring.wait(interval)
 
     def _check_thresholds(self, memory: Dict[str, float], cpu: Dict[str, float]):
         """Check performance thresholds"""
         if memory["rss_mb"] > self.thresholds["memory_mb"]:
-            logger.warning(f"Memory threshold exceeded: {memory['rss_mb']:.1f}MB")
+            logger.warning("Memory threshold exceeded: %.1fMB", memory['rss_mb'])
 
         if cpu["percent"] > self.thresholds["cpu_percent"]:
-            logger.warning(f"CPU threshold exceeded: {cpu['percent']:.1f}%")
+            logger.warning("CPU threshold exceeded: %.1f%", cpu['percent'])
 
     def _percentile(self, values: List[float], percentile: float) -> float:
         """Calculate percentile"""

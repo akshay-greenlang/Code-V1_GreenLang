@@ -389,7 +389,7 @@ class ProxySource(FactorSource):
                 latency_ms=latency_ms,
                 error=str(e)
             )
-            logger.error(f"Error calculating proxy factor: {e}", exc_info=True)
+            logger.error("Error calculating proxy factor: %s", e, exc_info=True)
             raise ProxyCalculationError(
                 product=request.product,
                 category=request.category,

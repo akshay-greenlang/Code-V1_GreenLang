@@ -299,7 +299,7 @@ class RateLimiter:
                 return True
 
             self._limited_requests += 1
-            self.logger.warning(
+            logger.warning(
                 f"Rate limit check failed for tool={tool_name}, "
                 f"user={user_id}, tokens_needed={tokens}, "
                 f"tokens_available={bucket.tokens:.2f}"
@@ -329,12 +329,12 @@ class RateLimiter:
             success = bucket.consume(tokens)
 
             if success:
-                self.logger.debug(
+                logger.debug(
                     f"Consumed {tokens} token(s) for tool={tool_name}, "
                     f"user={user_id}, remaining={bucket.tokens:.2f}"
                 )
             else:
-                self.logger.warning(
+                logger.warning(
                     f"Failed to consume {tokens} token(s) for tool={tool_name}, "
                     f"user={user_id}, available={bucket.tokens:.2f}"
                 )
@@ -364,7 +364,7 @@ class RateLimiter:
             wait_time = bucket.get_wait_time(tokens)
 
             if wait_time > 0:
-                self.logger.debug(
+                logger.debug(
                     f"Wait time for tool={tool_name}, user={user_id}: {wait_time:.2f}s"
                 )
 
@@ -424,13 +424,13 @@ class RateLimiter:
             if tool_name is None and user_id is None:
                 # Reset all buckets
                 self._buckets.clear()
-                self.logger.info("Reset all rate limit buckets")
+                logger.info("Reset all rate limit buckets")
             else:
                 # Reset specific bucket
                 key = self._get_bucket_key(tool_name or "", user_id)
                 if key in self._buckets:
                     del self._buckets[key]
-                    self.logger.info(f"Reset rate limit bucket: {key}")
+                    logger.info("Reset rate limit bucket: %s", key)
 
     def get_stats(self) -> Dict[str, any]:
         """
@@ -550,5 +550,5 @@ def configure_rate_limiter(
         per_tool_limits=per_tool_limits
     )
 
-    logger.info(f"Configured global rate limiter: {_global_rate_limiter}")
+    logger.info("Configured global rate limiter: %s", _global_rate_limiter)
     return _global_rate_limiter

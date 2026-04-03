@@ -164,7 +164,10 @@ _ENVIRONMENT_PROFILES: Dict[str, Dict[str, Any]] = {
 # ---------------------------------------------------------------------------
 
 
-class ResourceLimitValidationError(ValueError):
+from greenlang.utilities.exceptions.infrastructure import InfrastructureException as _InfrastructureException
+
+
+class ResourceLimitValidationError(_InfrastructureException, ValueError):
     """Raised when resource limits fail validation.
 
     Attributes:

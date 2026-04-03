@@ -230,7 +230,7 @@ class ProgressMonitoringAgent(DeterministicAgent):
                 raise ValueError(f"Unknown operation: {pm_input.operation}")
 
         except Exception as e:
-            self.logger.error(f"Monitoring failed: {str(e)}", exc_info=True)
+            logger.error("Monitoring failed: %s", e, exc_info=True)
             return {
                 "operation": inputs.get("operation", "unknown"),
                 "success": False,

@@ -120,7 +120,7 @@ class ClimateTableExtractor:
             ...     print(row)
         """
         if not pdf_path.exists():
-            logger.error(f"PDF not found: {pdf_path}")
+            logger.error("PDF not found: %s", pdf_path)
             return []
 
         # Determine page specification
@@ -134,7 +134,7 @@ class ClimateTableExtractor:
         if self.prefer_camelot:
             tables = self._extract_with_camelot(pdf_path, page_spec)
             if tables:
-                logger.info(f"Extracted {len(tables)} tables with Camelot from {pdf_path.name}")
+                logger.info("Extracted %s tables with Camelot from %s", len(tables), pdf_path.name)
                 return tables
             else:
                 logger.warning("Camelot extraction failed, trying Tabula")
@@ -142,7 +142,7 @@ class ClimateTableExtractor:
         # Fallback to Tabula
         if TABULA_AVAILABLE:
             tables = self._extract_with_tabula(pdf_path, page_spec)
-            logger.info(f"Extracted {len(tables)} tables with Tabula from {pdf_path.name}")
+            logger.info("Extracted %s tables with Tabula from %s", len(tables), pdf_path.name)
             return tables
         else:
             logger.error("No table extraction library available")
@@ -220,7 +220,7 @@ class ClimateTableExtractor:
             return result
 
         except Exception as e:
-            logger.error(f"Camelot extraction failed: {e}")
+            logger.error("Camelot extraction failed: %s", e)
             return []
 
     def _extract_with_tabula(
@@ -291,7 +291,7 @@ class ClimateTableExtractor:
             return result
 
         except Exception as e:
-            logger.error(f"Tabula extraction failed: {e}")
+            logger.error("Tabula extraction failed: %s", e)
             return []
 
     def _extract_units_from_headers(self, headers: List[str]) -> Dict[str, str]:
@@ -416,7 +416,7 @@ class ClimateTableExtractor:
             return table_struct
 
         except Exception as e:
-            logger.error(f"Failed to generate embeddings: {e}")
+            logger.error("Failed to generate embeddings: %s", e)
             return table_struct
 
     def table_to_markdown(self, table_struct: Dict) -> str:

@@ -517,7 +517,7 @@ class LIMEExplainer:
         importance_accumulator: Dict[str, List[float]] = {}
 
         for i, instance in enumerate(instances):
-            logger.info(f"Explaining instance {i+1}/{len(instances)}")
+            logger.info("Explaining instance %s/%s", i+1, len(instances))
             result = self.explain_instance(instance, labels)
             explanations.append(result)
 
@@ -719,7 +719,7 @@ class ProcessHeatLIMEExplainer(LIMEExplainer):
         self.cache_size = cache_size
         self._cache_hits = 0
         self._cache_misses = 0
-        logger.info(f"ProcessHeatLIMEExplainer initialized with cache_size={cache_size}")
+        logger.info("ProcessHeatLIMEExplainer initialized with cache_size=%s", cache_size)
 
     def _get_cache_key(self, instance):
         return hashlib.sha256(
@@ -734,7 +734,7 @@ class ProcessHeatLIMEExplainer(LIMEExplainer):
 
         if use_cache and cache_key in self._explanation_cache:
             self._cache_hits += 1
-            logger.debug(f"Cache hit (hits={self._cache_hits}, misses={self._cache_misses})")
+            logger.debug("Cache hit (hits=%s, misses=%s)", self._cache_hits, self._cache_misses)
             return self._explanation_cache[cache_key]
 
         self._cache_misses += 1

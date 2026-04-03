@@ -309,7 +309,7 @@ class DatabaseConnectionPool:
             logger.info("Database connection pool initialized")
 
         except Exception as e:
-            logger.error(f"Failed to initialize connection pool: {e}", exc_info=True)
+            logger.error("Failed to initialize connection pool: %s", e, exc_info=True)
             self._circuit_breaker.record_failure()
             raise
 
@@ -369,7 +369,7 @@ class DatabaseConnectionPool:
                 self._metrics.update_connection_time(duration_ms)
 
         except Exception as e:
-            logger.error(f"Database session error: {e}")
+            logger.error("Database session error: %s", e)
             self._circuit_breaker.record_failure()
             if self._metrics:
                 self._metrics.connection_errors += 1
@@ -404,7 +404,7 @@ class DatabaseConnectionPool:
             return True
 
         except Exception as e:
-            logger.error(f"Database connection test failed: {e}")
+            logger.error("Database connection test failed: %s", e)
             return False
 
     async def _health_check_loop(self) -> None:
@@ -421,7 +421,7 @@ class DatabaseConnectionPool:
             except asyncio.CancelledError:
                 break
             except Exception as e:
-                logger.error(f"Error in health check loop: {e}")
+                logger.error("Error in health check loop: %s", e)
 
     def _register_event_listeners(self) -> None:
         """Register SQLAlchemy event listeners."""
@@ -439,7 +439,7 @@ class DatabaseConnectionPool:
                 try:
                     callback(dbapi_conn, connection_record)
                 except Exception as e:
-                    logger.error(f"Error in connect callback: {e}")
+                    logger.error("Error in connect callback: %s", e)
 
         @event.listens_for(self._engine.sync_engine, "close")
         def on_close(dbapi_conn, connection_record):
@@ -448,7 +448,7 @@ class DatabaseConnectionPool:
                 try:
                     callback(dbapi_conn, connection_record)
                 except Exception as e:
-                    logger.error(f"Error in disconnect callback: {e}")
+                    logger.error("Error in disconnect callback: %s", e)
 
     def register_connect_callback(self, callback: Callable) -> None:
         """

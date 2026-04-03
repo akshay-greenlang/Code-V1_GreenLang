@@ -30,10 +30,13 @@ Status: Production Ready
 from __future__ import annotations
 
 import logging
-import os
-import threading
 from dataclasses import dataclass
-from typing import Any, Optional
+
+from greenlang.data_commons.config_base import (
+    BaseDataConfig,
+    EnvReader,
+    create_config_singleton,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -50,21 +53,16 @@ _ENV_PREFIX = "GL_DQ_"
 
 
 @dataclass
-class DataQualityProfilerConfig:
-    """Complete configuration for the GreenLang Data Quality Profiler SDK.
+class DataQualityProfilerConfig(BaseDataConfig):
+    """Configuration for the GreenLang Data Quality Profiler SDK.
 
-    Attributes are grouped by concern: connections, profiling settings,
-    quality dimension weights, freshness/timeliness thresholds, anomaly
-    detection parameters, rule engine limits, processing limits,
-    connection pool sizing, and logging.
+    Inherits shared connection, pool, batch, and logging fields from
+    ``BaseDataConfig``.  Only profiler-specific fields are declared here.
 
     All attributes can be overridden via environment variables using the
     ``GL_DQ_`` prefix.
 
     Attributes:
-        database_url: PostgreSQL connection URL for persistent storage.
-        redis_url: Redis connection URL for caching layer.
-        s3_bucket_url: S3 bucket URL for report and artifact storage.
         max_rows_per_profile: Maximum rows to include in a single profile run.
         max_columns_per_profile: Maximum columns to include in a single profile.
         sample_size_for_stats: Number of rows sampled for statistical analysis.
@@ -85,23 +83,15 @@ class DataQualityProfilerConfig:
         default_outlier_method: Default outlier detection method.
         iqr_multiplier: IQR fence multiplier for outlier detection.
         zscore_threshold: Z-score threshold for outlier detection.
-        mad_threshold: MAD (Median Absolute Deviation) threshold for outliers.
-        min_samples_for_anomaly: Minimum sample size required for anomaly detection.
+        mad_threshold: MAD threshold for outliers.
+        min_samples_for_anomaly: Minimum sample size for anomaly detection.
         max_rules_per_dataset: Maximum quality rules allowed per dataset.
         max_gate_conditions: Maximum conditions per quality gate definition.
         default_gate_threshold: Default pass/fail threshold for quality gates.
         batch_max_datasets: Maximum datasets per batch profiling run.
         processing_timeout_seconds: Timeout in seconds for a single profile run.
         cache_ttl_seconds: Default cache time-to-live in seconds.
-        pool_min_size: Minimum connection pool size.
-        pool_max_size: Maximum connection pool size.
-        log_level: Logging level for the data quality profiler service.
     """
-
-    # -- Connections ---------------------------------------------------------
-    database_url: str = ""
-    redis_url: str = ""
-    s3_bucket_url: str = ""
 
     # -- Profiling settings --------------------------------------------------
     max_rows_per_profile: int = 1_000_000
@@ -143,15 +133,8 @@ class DataQualityProfilerConfig:
     processing_timeout_seconds: int = 300
     cache_ttl_seconds: int = 3600
 
-    # -- Pool sizing ---------------------------------------------------------
-    pool_min_size: int = 2
-    pool_max_size: int = 10
-
-    # -- Logging -------------------------------------------------------------
-    log_level: str = "INFO"
-
     # ------------------------------------------------------------------
-    # Factory helpers
+    # Factory
     # ------------------------------------------------------------------
 
     @classmethod
@@ -160,159 +143,109 @@ class DataQualityProfilerConfig:
 
         Every field can be overridden via ``GL_DQ_<FIELD_UPPER>``.
         Boolean values accept ``true/1/yes`` (case-insensitive).
-        Integer values are parsed via ``int()``.
-        Float values are parsed via ``float()``.
 
         Returns:
             Populated DataQualityProfilerConfig instance.
         """
-        prefix = _ENV_PREFIX
-
-        def _env(name: str, default: Any = None) -> Optional[str]:
-            return os.environ.get(f"{prefix}{name}", default)
-
-        def _bool(name: str, default: bool) -> bool:
-            val = _env(name)
-            if val is None:
-                return default
-            return val.lower() in ("true", "1", "yes")
-
-        def _int(name: str, default: int) -> int:
-            val = _env(name)
-            if val is None:
-                return default
-            try:
-                return int(val)
-            except ValueError:
-                logger.warning(
-                    "Invalid integer for %s%s=%s, using default %d",
-                    prefix, name, val, default,
-                )
-                return default
-
-        def _float(name: str, default: float) -> float:
-            val = _env(name)
-            if val is None:
-                return default
-            try:
-                return float(val)
-            except ValueError:
-                logger.warning(
-                    "Invalid float for %s%s=%s, using default %f",
-                    prefix, name, val, default,
-                )
-                return default
-
-        def _str(name: str, default: str) -> str:
-            val = _env(name)
-            if val is None:
-                return default
-            return val
+        env = EnvReader(_ENV_PREFIX)
+        base_kwargs = cls._base_kwargs_from_env(env)
 
         config = cls(
-            # Connections
-            database_url=_str("DATABASE_URL", cls.database_url),
-            redis_url=_str("REDIS_URL", cls.redis_url),
-            s3_bucket_url=_str("S3_BUCKET_URL", cls.s3_bucket_url),
+            **base_kwargs,
             # Profiling settings
-            max_rows_per_profile=_int(
+            max_rows_per_profile=env.int(
                 "MAX_ROWS_PER_PROFILE", cls.max_rows_per_profile,
             ),
-            max_columns_per_profile=_int(
+            max_columns_per_profile=env.int(
                 "MAX_COLUMNS_PER_PROFILE", cls.max_columns_per_profile,
             ),
-            sample_size_for_stats=_int(
+            sample_size_for_stats=env.int(
                 "SAMPLE_SIZE_FOR_STATS", cls.sample_size_for_stats,
             ),
-            enable_schema_inference=_bool(
+            enable_schema_inference=env.bool(
                 "ENABLE_SCHEMA_INFERENCE", cls.enable_schema_inference,
             ),
-            enable_cardinality_analysis=_bool(
+            enable_cardinality_analysis=env.bool(
                 "ENABLE_CARDINALITY_ANALYSIS",
                 cls.enable_cardinality_analysis,
             ),
-            max_unique_values_tracked=_int(
+            max_unique_values_tracked=env.int(
                 "MAX_UNIQUE_VALUES_TRACKED",
                 cls.max_unique_values_tracked,
             ),
             # Quality dimension weights
-            completeness_weight=_float(
+            completeness_weight=env.float(
                 "COMPLETENESS_WEIGHT", cls.completeness_weight,
             ),
-            validity_weight=_float(
+            validity_weight=env.float(
                 "VALIDITY_WEIGHT", cls.validity_weight,
             ),
-            consistency_weight=_float(
+            consistency_weight=env.float(
                 "CONSISTENCY_WEIGHT", cls.consistency_weight,
             ),
-            timeliness_weight=_float(
+            timeliness_weight=env.float(
                 "TIMELINESS_WEIGHT", cls.timeliness_weight,
             ),
-            uniqueness_weight=_float(
+            uniqueness_weight=env.float(
                 "UNIQUENESS_WEIGHT", cls.uniqueness_weight,
             ),
-            accuracy_weight=_float(
+            accuracy_weight=env.float(
                 "ACCURACY_WEIGHT", cls.accuracy_weight,
             ),
             # Freshness / timeliness thresholds
-            freshness_excellent_hours=_int(
+            freshness_excellent_hours=env.int(
                 "FRESHNESS_EXCELLENT_HOURS",
                 cls.freshness_excellent_hours,
             ),
-            freshness_good_hours=_int(
+            freshness_good_hours=env.int(
                 "FRESHNESS_GOOD_HOURS", cls.freshness_good_hours,
             ),
-            freshness_fair_hours=_int(
+            freshness_fair_hours=env.int(
                 "FRESHNESS_FAIR_HOURS", cls.freshness_fair_hours,
             ),
-            freshness_poor_hours=_int(
+            freshness_poor_hours=env.int(
                 "FRESHNESS_POOR_HOURS", cls.freshness_poor_hours,
             ),
-            default_sla_hours=_int(
+            default_sla_hours=env.int(
                 "DEFAULT_SLA_HOURS", cls.default_sla_hours,
             ),
             # Anomaly detection
-            default_outlier_method=_str(
+            default_outlier_method=env.str(
                 "DEFAULT_OUTLIER_METHOD", cls.default_outlier_method,
             ),
-            iqr_multiplier=_float(
+            iqr_multiplier=env.float(
                 "IQR_MULTIPLIER", cls.iqr_multiplier,
             ),
-            zscore_threshold=_float(
+            zscore_threshold=env.float(
                 "ZSCORE_THRESHOLD", cls.zscore_threshold,
             ),
-            mad_threshold=_float(
+            mad_threshold=env.float(
                 "MAD_THRESHOLD", cls.mad_threshold,
             ),
-            min_samples_for_anomaly=_int(
+            min_samples_for_anomaly=env.int(
                 "MIN_SAMPLES_FOR_ANOMALY", cls.min_samples_for_anomaly,
             ),
             # Rule engine
-            max_rules_per_dataset=_int(
+            max_rules_per_dataset=env.int(
                 "MAX_RULES_PER_DATASET", cls.max_rules_per_dataset,
             ),
-            max_gate_conditions=_int(
+            max_gate_conditions=env.int(
                 "MAX_GATE_CONDITIONS", cls.max_gate_conditions,
             ),
-            default_gate_threshold=_float(
+            default_gate_threshold=env.float(
                 "DEFAULT_GATE_THRESHOLD", cls.default_gate_threshold,
             ),
             # Processing
-            batch_max_datasets=_int(
+            batch_max_datasets=env.int(
                 "BATCH_MAX_DATASETS", cls.batch_max_datasets,
             ),
-            processing_timeout_seconds=_int(
+            processing_timeout_seconds=env.int(
                 "PROCESSING_TIMEOUT_SECONDS",
                 cls.processing_timeout_seconds,
             ),
-            cache_ttl_seconds=_int(
+            cache_ttl_seconds=env.int(
                 "CACHE_TTL_SECONDS", cls.cache_ttl_seconds,
             ),
-            # Pool sizing
-            pool_min_size=_int("POOL_MIN_SIZE", cls.pool_min_size),
-            pool_max_size=_int("POOL_MAX_SIZE", cls.pool_max_size),
-            # Logging
-            log_level=_str("LOG_LEVEL", cls.log_level),
         )
 
         logger.info(
@@ -352,45 +285,9 @@ class DataQualityProfilerConfig:
 # Thread-safe singleton accessor
 # ---------------------------------------------------------------------------
 
-_config_instance: Optional[DataQualityProfilerConfig] = None
-_config_lock = threading.Lock()
-
-
-def get_config() -> DataQualityProfilerConfig:
-    """Return the singleton DataQualityProfilerConfig, creating from env if needed.
-
-    Uses double-checked locking for thread safety with minimal
-    contention on the hot path.
-
-    Returns:
-        DataQualityProfilerConfig singleton instance.
-    """
-    global _config_instance
-    if _config_instance is None:
-        with _config_lock:
-            if _config_instance is None:
-                _config_instance = DataQualityProfilerConfig.from_env()
-    return _config_instance
-
-
-def set_config(config: DataQualityProfilerConfig) -> None:
-    """Replace the singleton DataQualityProfilerConfig (useful for testing).
-
-    Args:
-        config: New configuration to install.
-    """
-    global _config_instance
-    with _config_lock:
-        _config_instance = config
-    logger.info("DataQualityProfilerConfig replaced programmatically")
-
-
-def reset_config() -> None:
-    """Reset the singleton (primarily for test teardown)."""
-    global _config_instance
-    with _config_lock:
-        _config_instance = None
-
+get_config, set_config, reset_config = create_config_singleton(
+    DataQualityProfilerConfig, _ENV_PREFIX,
+)
 
 __all__ = [
     "DataQualityProfilerConfig",

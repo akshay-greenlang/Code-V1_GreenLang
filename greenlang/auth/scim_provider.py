@@ -38,6 +38,8 @@ from dataclasses import dataclass, field, asdict
 from enum import Enum
 import uuid
 
+from greenlang.utilities.exceptions.security import SecurityException
+
 logger = logging.getLogger(__name__)
 
 
@@ -425,7 +427,7 @@ class SCIMProvider:
             data=user.to_dict()
         )
 
-        logger.info(f"Created user: {user.userName} ({user_id})")
+        logger.info("Created user: %s (%s)", user.userName, user_id)
 
         return user
 
@@ -464,7 +466,7 @@ class SCIMProvider:
             data=updated_user.to_dict()
         )
 
-        logger.info(f"Updated user: {user_id}")
+        logger.info("Updated user: %s", user_id)
 
         return updated_user
 
@@ -501,7 +503,7 @@ class SCIMProvider:
             data=user.to_dict()
         )
 
-        logger.info(f"Patched user: {user_id}")
+        logger.info("Patched user: %s", user_id)
 
         return user
 
@@ -527,7 +529,7 @@ class SCIMProvider:
             data={"id": user_id, "userName": user.userName}
         )
 
-        logger.info(f"Deleted user: {user_id}")
+        logger.info("Deleted user: %s", user_id)
 
         return True
 
@@ -606,7 +608,7 @@ class SCIMProvider:
             data=group.to_dict()
         )
 
-        logger.info(f"Created group: {group.displayName} ({group_id})")
+        logger.info("Created group: %s (%s)", group.displayName, group_id)
 
         return group
 
@@ -648,7 +650,7 @@ class SCIMProvider:
             data=updated_group.to_dict()
         )
 
-        logger.info(f"Updated group: {group_id}")
+        logger.info("Updated group: %s", group_id)
 
         return updated_group
 
@@ -677,7 +679,7 @@ class SCIMProvider:
             data={"id": group_id, "displayName": group.displayName}
         )
 
-        logger.info(f"Deleted group: {group_id}")
+        logger.info("Deleted group: %s", group_id)
 
         return True
 
@@ -862,7 +864,7 @@ class SCIMProvider:
 
         # In production, would send to webhook URL
         if self.config.webhook_url:
-            logger.info(f"Webhook event: {event_type} for {resource_type.value} {resource_id}")
+            logger.info("Webhook event: %s for %s %s", event_type, resource_type.value, resource_id)
 
     def get_service_provider_config(self) -> Dict[str, Any]:
         """Get SCIM service provider configuration"""
@@ -925,7 +927,7 @@ class SCIMProvider:
         ]
 
 
-class SCIMError(Exception):
+class SCIMError(SecurityException):
     """SCIM-specific error"""
     pass
 

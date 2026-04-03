@@ -38,7 +38,7 @@ def cosign_sign(path: str, recursive: bool = True) -> None:
         key_path = _get_signing_key()
         if key_path:
             cmd.extend(["--key", str(key_path)])
-            logger.info(f"Using key-based signing with {key_path}")
+            logger.info("Using key-based signing with %s", key_path)
         else:
             logger.warning("No signing key configured, skipping signing")
             return
@@ -184,14 +184,14 @@ def _sign_file(file_path: Path, base_cmd: list) -> bool:
         result = subprocess.run(cmd, capture_output=True, text=True)
 
         if result.returncode == 0:
-            logger.info(f"Signed: {file_path}")
+            logger.info("Signed: %s", file_path)
             return True
         else:
-            logger.error(f"Failed to sign {file_path}: {result.stderr}")
+            logger.error("Failed to sign %s: %s", file_path, result.stderr)
             return False
 
     except Exception as e:
-        logger.error(f"Error signing {file_path}: {e}")
+        logger.error("Error signing %s: %s", file_path, e)
         return False
 
 
@@ -202,7 +202,7 @@ def _verify_file(file_path: Path, base_cmd: list) -> bool:
         cert_path = file_path.parent / f"{file_path.name}.pem"
 
         if not sig_path.exists():
-            logger.warning(f"No signature found for {file_path}")
+            logger.warning("No signature found for %s", file_path)
             return False
 
         cmd = base_cmd.copy()
@@ -216,14 +216,14 @@ def _verify_file(file_path: Path, base_cmd: list) -> bool:
         result = subprocess.run(cmd, capture_output=True, text=True)
 
         if result.returncode == 0:
-            logger.info(f"Verified: {file_path}")
+            logger.info("Verified: %s", file_path)
             return True
         else:
-            logger.error(f"Verification failed for {file_path}: {result.stderr}")
+            logger.error("Verification failed for %s: %s", file_path, result.stderr)
             return False
 
     except Exception as e:
-        logger.error(f"Error verifying {file_path}: {e}")
+        logger.error("Error verifying %s: %s", file_path, e)
         return False
 
 

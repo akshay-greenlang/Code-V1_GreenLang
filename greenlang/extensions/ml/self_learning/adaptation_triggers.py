@@ -516,7 +516,7 @@ class AdaptationTrigger:
         self._metric_window.clear()
         self._consecutive_count = 0
         self._last_triggered = None
-        logger.info(f"Trigger {self.trigger_id} reset")
+        logger.info("Trigger %s reset", self.trigger_id)
 
     def force_cooldown(self, minutes: Optional[int] = None) -> None:
         """Force trigger into cooldown."""

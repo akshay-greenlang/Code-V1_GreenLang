@@ -206,7 +206,7 @@ class DatabaseCredentialRotationHandler(RotationHandler):
                 try:
                     await self.vault_client.revoke_lease(old_lease)
                 except Exception as e:
-                    logger.warning(f"Failed to revoke old lease {old_lease}: {e}")
+                    logger.warning("Failed to revoke old lease %s: %s", old_lease, e)
 
             next_rotation = datetime.utcnow() + self.config.database_rotation_interval
 
@@ -224,7 +224,7 @@ class DatabaseCredentialRotationHandler(RotationHandler):
             )
 
         except Exception as e:
-            logger.error(f"Database credential rotation failed for {role}: {e}")
+            logger.error("Database credential rotation failed for %s: %s", role, e)
             return RotationResult(
                 rotation_type=RotationType.DATABASE_CREDENTIAL,
                 secret_path=f"database/creds/{role}",
@@ -257,7 +257,7 @@ class DatabaseCredentialRotationHandler(RotationHandler):
             logger.warning("asyncpg not available, skipping database validation")
             return True
         except Exception as e:
-            logger.error(f"Database credential validation failed: {e}")
+            logger.error("Database credential validation failed: %s", e)
             return False
 
     async def rollback(self, role: str, previous_version: str) -> bool:
@@ -313,7 +313,7 @@ class APIKeyRotationHandler(RotationHandler):
             )
 
         except Exception as e:
-            logger.error(f"API key rotation failed for {path}: {e}")
+            logger.error("API key rotation failed for %s: %s", path, e)
             return RotationResult(
                 rotation_type=RotationType.API_KEY,
                 secret_path=path,
@@ -347,7 +347,7 @@ class APIKeyRotationHandler(RotationHandler):
             return True
 
         except Exception as e:
-            logger.error(f"API key rollback failed for {path}: {e}")
+            logger.error("API key rollback failed for %s: %s", path, e)
             return False
 
 
@@ -390,7 +390,7 @@ class CertificateRotationHandler(RotationHandler):
                 try:
                     await self.vault_client.revoke_certificate(old_serial)
                 except Exception as e:
-                    logger.warning(f"Failed to revoke old certificate {old_serial}: {e}")
+                    logger.warning("Failed to revoke old certificate %s: %s", old_serial, e)
 
             # Calculate next rotation (threshold before expiry)
             next_rotation = new_cert.expiration - self.config.certificate_renewal_threshold
@@ -409,7 +409,7 @@ class CertificateRotationHandler(RotationHandler):
             )
 
         except Exception as e:
-            logger.error(f"Certificate rotation failed for {role}: {e}")
+            logger.error("Certificate rotation failed for %s: %s", role, e)
             return RotationResult(
                 rotation_type=RotationType.CERTIFICATE,
                 secret_path=f"pki_int/issue/{role}",
@@ -472,7 +472,7 @@ class EncryptionKeyRotationHandler(RotationHandler):
             )
 
         except Exception as e:
-            logger.error(f"Encryption key rotation failed for {key_name}: {e}")
+            logger.error("Encryption key rotation failed for %s: %s", key_name, e)
             return RotationResult(
                 rotation_type=RotationType.ENCRYPTION_KEY,
                 secret_path=f"transit/keys/{key_name}",
@@ -496,7 +496,7 @@ class EncryptionKeyRotationHandler(RotationHandler):
             decrypted = await self.vault_client.decrypt_data(key_name, ciphertext)
             return decrypted == test_data
         except Exception as e:
-            logger.error(f"Encryption key validation failed: {e}")
+            logger.error("Encryption key validation failed: %s", e)
             return False
 
     async def rollback(self, key_name: str, previous_version: str) -> bool:
@@ -619,7 +619,7 @@ class NotificationService:
                 )
 
         except Exception as e:
-            logger.error(f"Failed to send Slack notification: {e}")
+            logger.error("Failed to send Slack notification: %s", e)
 
 
 class SecretsRotationManager:
@@ -752,7 +752,7 @@ class SecretsRotationManager:
             except asyncio.CancelledError:
                 break
             except Exception as e:
-                logger.error(f"Rotation loop error: {e}")
+                logger.error("Rotation loop error: %s", e)
                 await asyncio.sleep(60)
 
     async def _check_and_rotate(self) -> None:
@@ -773,10 +773,10 @@ class SecretsRotationManager:
         async with self._semaphore:
             handler = self._handlers.get(schedule.rotation_type)
             if not handler:
-                logger.error(f"No handler for rotation type: {schedule.rotation_type}")
+                logger.error("No handler for rotation type: %s", schedule.rotation_type)
                 return
 
-            logger.info(f"Starting rotation for {key}")
+            logger.info("Starting rotation for %s", key)
 
             result = await handler.rotate(schedule.identifier)
 
@@ -802,7 +802,7 @@ class SecretsRotationManager:
                     else:
                         # Disable further retries until manual intervention
                         schedule.next_rotation = None
-                        logger.error(f"Rotation for {key} exceeded max retries")
+                        logger.error("Rotation for %s exceeded max retries", key)
 
             # Audit and notify
             await self._audit_logger.log_rotation(result)

@@ -381,7 +381,7 @@ class CounterfactualExplainer:
                     best_result = result.x
 
             except Exception as e:
-                logger.warning(f"Optimization attempt failed: {e}")
+                logger.warning("Optimization attempt failed: %s", e)
 
         if best_result is None:
             # Return original if optimization failed
@@ -621,7 +621,7 @@ class CounterfactualExplainer:
                 X_modified[idx] = new_value
                 applied_changes[name] = (float(old_value), float(new_value))
             else:
-                logger.warning(f"Unknown feature '{name}' in what-if scenario")
+                logger.warning("Unknown feature '%s' in what-if scenario", name)
 
         # Get modified prediction
         modified_prediction = self._get_prediction(X_modified)
@@ -723,7 +723,7 @@ class CounterfactualExplainer:
             high = float(np.percentile(col, 99))
             self.feature_ranges[name] = (low, high)
 
-        logger.info(f"Updated feature ranges from {len(X)} samples")
+        logger.info("Updated feature ranges from %s samples", len(X))
 
 
 class ProcessHeatCounterfactualExplainer(CounterfactualExplainer):

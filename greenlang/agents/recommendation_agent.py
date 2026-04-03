@@ -286,7 +286,7 @@ class RecommendationAgent(BaseAgent):
             )
 
         except Exception as e:
-            logger.error(f"Error generating recommendations: {e}")
+            logger.error("Error generating recommendations: %s", e)
             return AgentResult(success=False, error=str(e))
 
     def _get_recommendations(self, category: str, subcategory: str) -> List[Dict]:
@@ -388,7 +388,7 @@ class RecommendationAgent(BaseAgent):
             if numbers:
                 return float(numbers[0])
         except Exception as e:
-            logger.warning(f"Failed to extract payback years from '{payback_str}': {e}")
+            logger.warning("Failed to extract payback years from '%s': %s", payback_str, e)
 
         return 10
 

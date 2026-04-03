@@ -371,7 +371,7 @@ class RedisRateLimiter:
                 return True
 
             except Exception as e:
-                logger.error(f"Failed to connect to Redis: {e}")
+                logger.error("Failed to connect to Redis: %s", e)
                 self._connected = False
                 return False
 
@@ -387,7 +387,7 @@ class RedisRateLimiter:
             self._leaky_bucket_sha = await self._redis.script_load(LEAKY_BUCKET_SCRIPT)
             logger.debug("Lua scripts loaded successfully")
         except Exception as e:
-            logger.error(f"Failed to load Lua scripts: {e}")
+            logger.error("Failed to load Lua scripts: %s", e)
             raise
 
     async def close(self) -> None:
@@ -498,11 +498,11 @@ class RedisRateLimiter:
             elif self.config.strategy == RateLimitStrategy.LEAKY_BUCKET:
                 return await self._acquire_leaky_bucket(key, tokens, now)
             else:
-                logger.warning(f"Unknown strategy: {self.config.strategy}")
+                logger.warning("Unknown strategy: %s", self.config.strategy)
                 return True
 
         except Exception as e:
-            logger.error(f"Redis rate limit error: {e}")
+            logger.error("Redis rate limit error: %s", e)
             self._connected = False
             return await self._use_fallback('acquire', client_id, route, tokens)
 
@@ -637,7 +637,7 @@ class RedisRateLimiter:
                 )
 
         except Exception as e:
-            logger.error(f"Redis rate limit check error: {e}")
+            logger.error("Redis rate limit check error: %s", e)
             self._connected = False
             return await self._use_fallback('check', client_id, route)
 
@@ -803,10 +803,10 @@ class RedisRateLimiter:
             keys_to_delete.append(f"{key}:{window_start}")
 
             await self._redis.delete(*keys_to_delete)
-            logger.info(f"Reset rate limit for key: {key}")
+            logger.info("Reset rate limit for key: %s", key)
 
         except Exception as e:
-            logger.error(f"Failed to reset rate limit: {e}")
+            logger.error("Failed to reset rate limit: %s", e)
             if self._fallback_limiter:
                 await self._fallback_limiter.reset(client_id, route)
 
@@ -849,7 +849,7 @@ class RedisRateLimiter:
                 result["fallback_active"] = self._fallback_limiter is not None
 
         except Exception as e:
-            logger.warning(f"Health check failed: {e}")
+            logger.warning("Health check failed: %s", e)
             result["fallback_active"] = self._fallback_limiter is not None
             self._connected = False
 

@@ -237,7 +237,7 @@ class InsulationMaterialDatabase:
         """Initialize the material database."""
         self._materials: Dict[str, InsulationMaterial] = {}
         self._load_materials()
-        logger.info(f"Loaded {len(self._materials)} insulation materials")
+        logger.info("Loaded %s insulation materials", len(self._materials))
 
     def _load_materials(self) -> None:
         """Load all material data into the database."""
@@ -1066,7 +1066,7 @@ class InsulationMaterialDatabase:
             astm_standards=["ASTM C155"],
         ))
 
-        logger.info(f"Loaded {len(self._materials)} insulation materials")
+        logger.info("Loaded %s insulation materials", len(self._materials))
 
     def _add_material(self, material: InsulationMaterial) -> None:
         """Add a material to the database."""

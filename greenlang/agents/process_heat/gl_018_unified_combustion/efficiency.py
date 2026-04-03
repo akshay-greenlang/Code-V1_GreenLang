@@ -185,7 +185,7 @@ class EfficiencyCalculator:
             ValueError: If fuel type not found or invalid inputs
         """
         self._calculation_count += 1
-        logger.debug(f"Calculating efficiency (losses method): fuel={fuel_type}")
+        logger.debug("Calculating efficiency (losses method): fuel=%s", fuel_type)
 
         # Get fuel properties
         fuel_key = fuel_type.lower().replace(" ", "_").replace("-", "_")
@@ -373,7 +373,7 @@ class EfficiencyCalculator:
 
         # Validate
         if efficiency > 100:
-            logger.warning(f"Calculated efficiency {efficiency:.1f}% > 100%, capping")
+            logger.warning("Calculated efficiency %.1f% > 100%, capping", efficiency)
             efficiency = 99.9
 
         heat_loss = heat_input - total_output

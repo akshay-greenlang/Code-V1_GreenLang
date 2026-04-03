@@ -57,6 +57,7 @@ from greenlang.agents.eudr.mobile_data_collector.models import (
 from greenlang.agents.eudr.mobile_data_collector.provenance import (
     get_provenance_tracker,
 )
+from greenlang.utilities.exceptions.compliance import ComplianceException
 
 logger = logging.getLogger(__name__)
 
@@ -66,7 +67,7 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 
-class OfflineFormEngineError(Exception):
+class OfflineFormEngineError(ComplianceException):
     """Base exception for offline form engine operations."""
 
 

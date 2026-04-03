@@ -55,7 +55,7 @@ class PACTPathfinderClient:
             headers=self._get_headers()
         )
 
-        logger.info(f"Initialized PACTPathfinderClient (base_url={self.base_url})")
+        logger.info("Initialized PACTPathfinderClient (base_url=%s)", self.base_url)
 
     def _get_headers(self) -> Dict[str, str]:
         """Get HTTP headers for API requests."""
@@ -94,7 +94,7 @@ class PACTPathfinderClient:
             )
 
         except httpx.HTTPStatusError as e:
-            logger.error(f"HTTP error fetching PCF {pcf_id}: {e}")
+            logger.error("HTTP error fetching PCF %s: %s", pcf_id, e)
             return PCFExchangeResponse(
                 success=False,
                 validation_errors=[f"HTTP {e.response.status_code}: {e.response.text}"],
@@ -102,7 +102,7 @@ class PACTPathfinderClient:
             )
 
         except Exception as e:
-            logger.error(f"Error fetching PCF {pcf_id}: {e}", exc_info=True)
+            logger.error("Error fetching PCF %s: %s", pcf_id, e, exc_info=True)
             return PCFExchangeResponse(
                 success=False,
                 validation_errors=[str(e)],
@@ -137,7 +137,7 @@ class PACTPathfinderClient:
             )
 
         except httpx.HTTPStatusError as e:
-            logger.error(f"HTTP error publishing PCF: {e}")
+            logger.error("HTTP error publishing PCF: %s", e)
             return PCFExchangeResponse(
                 success=False,
                 validation_errors=[f"HTTP {e.response.status_code}: {e.response.text}"],
@@ -145,7 +145,7 @@ class PACTPathfinderClient:
             )
 
         except Exception as e:
-            logger.error(f"Error publishing PCF: {e}", exc_info=True)
+            logger.error("Error publishing PCF: %s", e, exc_info=True)
             return PCFExchangeResponse(
                 success=False,
                 validation_errors=[str(e)],
@@ -181,7 +181,7 @@ class PACTPathfinderClient:
             return response.json()
 
         except Exception as e:
-            logger.error(f"Error listing PCFs: {e}", exc_info=True)
+            logger.error("Error listing PCFs: %s", e, exc_info=True)
             return {"data": [], "error": str(e)}
 
     async def update_pcf(
@@ -216,7 +216,7 @@ class PACTPathfinderClient:
             )
 
         except Exception as e:
-            logger.error(f"Error updating PCF {pcf_id}: {e}", exc_info=True)
+            logger.error("Error updating PCF %s: %s", pcf_id, e, exc_info=True)
             return PCFExchangeResponse(
                 success=False,
                 validation_errors=[str(e)],
@@ -239,7 +239,7 @@ class PACTPathfinderClient:
             return True
 
         except Exception as e:
-            logger.error(f"Error deleting PCF {pcf_id}: {e}", exc_info=True)
+            logger.error("Error deleting PCF %s: %s", pcf_id, e, exc_info=True)
             return False
 
     async def close(self):

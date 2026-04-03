@@ -69,7 +69,7 @@ class ConfigFileWatcher(FileSystemEventHandler):
             now = time.time()
             if now - self.last_modified > 1.0:
                 self.last_modified = now
-                logger.info(f"Config file modified: {self.config_path}")
+                logger.info("Config file modified: %s", self.config_path)
                 self.config_manager.reload()
 
 
@@ -149,7 +149,7 @@ class ConfigManager:
         """
         with self._config_lock:
             self._config = load_config_from_env()
-            logger.info(f"Config loaded from environment: {self._config.environment}")
+            logger.info("Config loaded from environment: %s", self._config.environment)
             self._notify_reload_callbacks()
             return self._config
 
@@ -168,7 +168,7 @@ class ConfigManager:
         with self._config_lock:
             self._config = load_config_from_file(config_path)
             self._config_path = config_path
-            logger.info(f"Config loaded from file: {config_path}")
+            logger.info("Config loaded from file: %s", config_path)
             self._notify_reload_callbacks()
             return self._config
 
@@ -193,7 +193,7 @@ class ConfigManager:
         """Reload configuration from source."""
         with self._config_lock:
             if self._config_path:
-                logger.info(f"Reloading config from {self._config_path}")
+                logger.info("Reloading config from %s", self._config_path)
                 self.load_from_file(self._config_path)
             else:
                 logger.info("Reloading config from environment")
@@ -235,7 +235,7 @@ class ConfigManager:
         self._observer.schedule(event_handler, str(config_path.parent), recursive=False)
         self._observer.start()
 
-        logger.info(f"Hot-reload enabled for {config_path}")
+        logger.info("Hot-reload enabled for %s", config_path)
 
     def disable_hot_reload(self):
         """Disable hot-reload."""
@@ -260,7 +260,7 @@ class ConfigManager:
             try:
                 callback(self._config)
             except Exception as e:
-                logger.error(f"Reload callback failed: {e}", exc_info=True)
+                logger.error("Reload callback failed: %s", e, exc_info=True)
 
     def _apply_overrides(self, config: GreenLangConfig) -> GreenLangConfig:
         """

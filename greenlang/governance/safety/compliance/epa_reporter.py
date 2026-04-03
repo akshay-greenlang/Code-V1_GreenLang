@@ -217,7 +217,7 @@ class EPAReporter:
         self.emission_records: List[EmissionRecord] = []
         self.reports: List[EPAReport] = []
 
-        logger.info(f"EPAReporter initialized for facility {facility_id}")
+        logger.info("EPAReporter initialized for facility %s", facility_id)
 
     def add_emission(self, record: EmissionRecord) -> None:
         """

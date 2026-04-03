@@ -263,7 +263,7 @@ class AuditLogger:
         self._lock = threading.RLock()
         self._last_hash: Optional[str] = None
 
-        logger.info(f"AuditLogger initialized for agent {agent_id}")
+        logger.info("AuditLogger initialized for agent %s", agent_id)
 
     # =========================================================================
     # CORE LOGGING
@@ -344,7 +344,7 @@ class AuditLogger:
                 try:
                     handler(event)
                 except Exception as e:
-                    logger.error(f"Audit handler error: {e}")
+                    logger.error("Audit handler error: %s", e)
 
             # Log to standard logger as well
             log_level = self._audit_to_log_level(level)
@@ -587,7 +587,7 @@ class AuditLogger:
                 metadata=metadata or {},
             )
             self._compliance_trails[standard] = trail
-            logger.info(f"Started compliance trail for {standard.value}")
+            logger.info("Started compliance trail for %s", standard.value)
             return trail
 
     def close_compliance_trail(
@@ -608,7 +608,7 @@ class AuditLogger:
             if trail:
                 trail.end_time = datetime.now(timezone.utc)
                 trail.hash_chain_root = self._calculate_trail_hash(trail)
-                logger.info(f"Closed compliance trail for {standard.value}")
+                logger.info("Closed compliance trail for %s", standard.value)
             return trail
 
     def _add_to_compliance_trail(

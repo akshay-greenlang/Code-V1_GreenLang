@@ -121,7 +121,7 @@ class AWSKMSProvider(BaseKMSProvider):
             # Test connectivity
             try:
                 client.describe_key(KeyId=self.config.key_id)
-                logger.info(f"Connected to AWS KMS in region {client.meta.region_name}")
+                logger.info("Connected to AWS KMS in region %s", client.meta.region_name)
             except ClientError as e:
                 if e.response["Error"]["Code"] == "NotFoundException":
                     raise KMSKeyNotFoundError(f"Key {self.config.key_id} not found")
@@ -162,7 +162,7 @@ class AWSKMSProvider(BaseKMSProvider):
             return session.client(**client_kwargs)
 
         except Exception as e:
-            logger.warning(f"Failed to create async AWS KMS client: {e}")
+            logger.warning("Failed to create async AWS KMS client: %s", e)
             return None
 
     def get_key_info(self, key_id: Optional[str] = None) -> KMSKeyInfo:
@@ -190,7 +190,7 @@ class AWSKMSProvider(BaseKMSProvider):
                     public_key_response = self.client.get_public_key(KeyId=key_id)
                     public_key = public_key_response["PublicKey"]
                 except ClientError:
-                    logger.warning(f"Could not retrieve public key for {key_id}")
+                    logger.warning("Could not retrieve public key for %s", key_id)
 
             # Map key spec to our algorithm enum
             key_spec = key_metadata.get("KeySpec", "UNKNOWN")
@@ -374,7 +374,7 @@ class AWSKMSProvider(BaseKMSProvider):
             response = self.client.get_key_rotation_status(KeyId=key_id)
 
             if response["KeyRotationEnabled"]:
-                logger.info(f"Key rotation enabled for {key_id}")
+                logger.info("Key rotation enabled for %s", key_id)
                 return key_id  # AWS manages versions internally
             else:
                 raise KMSKeyRotationError(f"Failed to enable rotation for {key_id}")

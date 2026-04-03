@@ -5,19 +5,21 @@ Prometheus Metrics - AGENT-DATA-007: Deforestation Satellite Connector
 12 Prometheus metrics for deforestation satellite connector service
 monitoring with graceful fallback when prometheus_client is not installed.
 
-Metrics:
-    1.  gl_deforestation_sat_scenes_acquired_total (Counter) [satellite, status]
-    2.  gl_deforestation_sat_acquisition_duration_seconds (Histogram) [satellite]
-    3.  gl_deforestation_sat_change_detections_total (Counter) [change_type, status]
-    4.  gl_deforestation_sat_alerts_processed_total (Counter) [source, severity]
-    5.  gl_deforestation_sat_baseline_checks_total (Counter) [country, compliance_status]
-    6.  gl_deforestation_sat_classifications_total (Counter) [land_cover_type]
-    7.  gl_deforestation_sat_compliance_reports_total (Counter) [status]
-    8.  gl_deforestation_sat_pipeline_runs_total (Counter) [stage, status]
-    9.  gl_deforestation_sat_active_monitoring_jobs (Gauge) []
-    10. gl_deforestation_sat_processing_errors_total (Counter) [engine, error_type]
-    11. gl_deforestation_sat_forest_area_monitored_ha (Gauge) []
-    12. gl_deforestation_sat_pipeline_duration_seconds (Histogram) [stage]
+Standard metrics (via MetricsFactory):
+    1.  gl_deforestation_sat_operations_total (Counter, labels: type, tenant_id)
+    2.  gl_deforestation_sat_processing_duration_seconds (Histogram, 12 buckets)
+    3.  gl_deforestation_sat_validation_errors_total (Counter, labels: severity, type)
+    4.  gl_deforestation_sat_batch_jobs_total (Counter, labels: status)
+    5.  gl_deforestation_sat_active_jobs (Gauge)
+    6.  gl_deforestation_sat_queue_size (Gauge)
+
+Agent-specific metrics:
+    7.  gl_deforestation_sat_scenes_acquired_total (Counter, labels: satellite, status)
+    8.  gl_deforestation_sat_change_detections_total (Counter, labels: change_type, status)
+    9.  gl_deforestation_sat_alerts_processed_total (Counter, labels: source, severity)
+    10. gl_deforestation_sat_baseline_checks_total (Counter, labels: country, compliance_status)
+    11. gl_deforestation_sat_classifications_total (Counter, labels: land_cover_type)
+    12. gl_deforestation_sat_compliance_reports_total (Counter, labels: status)
 
 Author: GreenLang Platform Team
 Date: February 2026
@@ -27,133 +29,100 @@ Status: Production Ready
 
 from __future__ import annotations
 
-import logging
-
-logger = logging.getLogger(__name__)
-
-# ---------------------------------------------------------------------------
-# Graceful prometheus_client import
-# ---------------------------------------------------------------------------
-
-try:
-    from prometheus_client import Counter, Gauge, Histogram
-    PROMETHEUS_AVAILABLE = True
-except ImportError:
-    PROMETHEUS_AVAILABLE = False
-    logger.info(
-        "prometheus_client not installed; deforestation satellite metrics disabled"
-    )
-
+from greenlang.data_commons.metrics import (
+    LONG_DURATION_BUCKETS,
+    PROMETHEUS_AVAILABLE,
+    MetricsFactory,
+)
 
 # ---------------------------------------------------------------------------
-# Metric definitions
+# Standard metrics (6 of 12) via factory
 # ---------------------------------------------------------------------------
 
-if PROMETHEUS_AVAILABLE:
-    # 1. Satellite scenes acquired by satellite type and status
-    scenes_acquired_total = Counter(
-        "gl_deforestation_sat_scenes_acquired_total",
-        "Total satellite scenes acquired",
-        labelnames=["satellite", "status"],
-    )
+m = MetricsFactory(
+    "gl_deforestation_sat",
+    "Deforestation Satellite",
+    duration_buckets=LONG_DURATION_BUCKETS,
+)
 
-    # 2. Acquisition duration histogram (buckets from sub-second to minutes)
-    acquisition_duration_seconds = Histogram(
-        "gl_deforestation_sat_acquisition_duration_seconds",
-        "Satellite acquisition duration in seconds",
-        labelnames=["satellite"],
-        buckets=(
-            0.1, 0.25, 0.5, 1.0, 2.5, 5.0,
-            10.0, 30.0, 60.0, 120.0, 300.0, 600.0,
-        ),
-    )
+# ---------------------------------------------------------------------------
+# Agent-specific metrics (6 of 12)
+# ---------------------------------------------------------------------------
 
-    # 3. Change detections by change type and status
-    change_detections_total = Counter(
-        "gl_deforestation_sat_change_detections_total",
-        "Total forest change detections performed",
-        labelnames=["change_type", "status"],
-    )
+scenes_acquired_total = m.create_custom_counter(
+    "scenes_acquired_total",
+    "Total satellite scenes acquired",
+    labelnames=["satellite", "status"],
+)
 
-    # 4. Alerts processed by source and severity
-    alerts_processed_total = Counter(
-        "gl_deforestation_sat_alerts_processed_total",
-        "Total deforestation alerts processed",
-        labelnames=["source", "severity"],
-    )
+acquisition_duration_seconds = m.create_custom_histogram(
+    "acquisition_duration_seconds",
+    "Satellite acquisition duration in seconds",
+    buckets=LONG_DURATION_BUCKETS,
+    labelnames=["satellite"],
+)
 
-    # 5. Baseline checks by country and compliance status
-    baseline_checks_total = Counter(
-        "gl_deforestation_sat_baseline_checks_total",
-        "Total baseline compliance checks performed",
-        labelnames=["country", "compliance_status"],
-    )
+change_detections_total = m.create_custom_counter(
+    "change_detections_total",
+    "Total forest change detections performed",
+    labelnames=["change_type", "status"],
+)
 
-    # 6. Classifications by land cover type
-    classifications_total = Counter(
-        "gl_deforestation_sat_classifications_total",
-        "Total land cover classifications performed",
-        labelnames=["land_cover_type"],
-    )
+alerts_processed_total = m.create_custom_counter(
+    "alerts_processed_total",
+    "Total deforestation alerts processed",
+    labelnames=["source", "severity"],
+)
 
-    # 7. Compliance reports by status
-    compliance_reports_total = Counter(
-        "gl_deforestation_sat_compliance_reports_total",
-        "Total EUDR compliance reports generated",
-        labelnames=["status"],
-    )
+baseline_checks_total = m.create_custom_counter(
+    "baseline_checks_total",
+    "Total baseline compliance checks performed",
+    labelnames=["country", "compliance_status"],
+)
 
-    # 8. Pipeline runs by stage and status
-    pipeline_runs_total = Counter(
-        "gl_deforestation_sat_pipeline_runs_total",
-        "Total pipeline stage executions",
-        labelnames=["stage", "status"],
-    )
+classifications_total = m.create_custom_counter(
+    "classifications_total",
+    "Total land cover classifications performed",
+    labelnames=["land_cover_type"],
+)
 
-    # 9. Active monitoring jobs gauge
-    active_monitoring_jobs = Gauge(
-        "gl_deforestation_sat_active_monitoring_jobs",
-        "Number of currently active monitoring jobs",
-    )
+compliance_reports_total = m.create_custom_counter(
+    "compliance_reports_total",
+    "Total EUDR compliance reports generated",
+    labelnames=["status"],
+)
 
-    # 10. Processing errors by engine and error type
-    processing_errors_total = Counter(
-        "gl_deforestation_sat_processing_errors_total",
-        "Total processing errors encountered",
-        labelnames=["engine", "error_type"],
-    )
+pipeline_runs_total = m.create_custom_counter(
+    "pipeline_runs_total",
+    "Total pipeline stage executions",
+    labelnames=["stage", "status"],
+)
 
-    # 11. Forest area monitored gauge (hectares)
-    forest_area_monitored_ha = Gauge(
-        "gl_deforestation_sat_forest_area_monitored_ha",
-        "Total forest area currently under monitoring in hectares",
-    )
+active_monitoring_jobs = m.create_custom_gauge(
+    "active_monitoring_jobs",
+    "Number of currently active monitoring jobs",
+)
 
-    # 12. Pipeline duration histogram by stage
-    pipeline_duration_seconds = Histogram(
-        "gl_deforestation_sat_pipeline_duration_seconds",
-        "Pipeline stage execution duration in seconds",
-        labelnames=["stage"],
-        buckets=(
-            0.01, 0.05, 0.1, 0.25, 0.5, 1.0,
-            2.5, 5.0, 10.0, 30.0, 60.0, 300.0,
-        ),
-    )
+processing_errors_total = m.create_custom_counter(
+    "processing_errors_total",
+    "Total processing errors encountered",
+    labelnames=["engine", "error_type"],
+)
 
-else:
-    # No-op placeholders
-    scenes_acquired_total = None  # type: ignore[assignment]
-    acquisition_duration_seconds = None  # type: ignore[assignment]
-    change_detections_total = None  # type: ignore[assignment]
-    alerts_processed_total = None  # type: ignore[assignment]
-    baseline_checks_total = None  # type: ignore[assignment]
-    classifications_total = None  # type: ignore[assignment]
-    compliance_reports_total = None  # type: ignore[assignment]
-    pipeline_runs_total = None  # type: ignore[assignment]
-    active_monitoring_jobs = None  # type: ignore[assignment]
-    processing_errors_total = None  # type: ignore[assignment]
-    forest_area_monitored_ha = None  # type: ignore[assignment]
-    pipeline_duration_seconds = None  # type: ignore[assignment]
+forest_area_monitored_ha = m.create_custom_gauge(
+    "forest_area_monitored_ha",
+    "Total forest area currently under monitoring in hectares",
+)
+
+pipeline_duration_seconds = m.create_custom_histogram(
+    "pipeline_duration_seconds",
+    "Pipeline stage execution duration in seconds",
+    buckets=(
+        0.01, 0.05, 0.1, 0.25, 0.5, 1.0,
+        2.5, 5.0, 10.0, 30.0, 60.0, 300.0,
+    ),
+    labelnames=["stage"],
+)
 
 
 # ---------------------------------------------------------------------------
@@ -168,9 +137,7 @@ def record_scene_acquired(satellite: str, status: str = "success") -> None:
         satellite: Satellite source (sentinel2, landsat8, landsat9, modis).
         status: Acquisition status (success, failed, partial).
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    scenes_acquired_total.labels(satellite=satellite, status=status).inc()
+    m.safe_inc(scenes_acquired_total, 1, satellite=satellite, status=status)
 
 
 def record_change_detection(change_type: str, status: str = "success") -> None:
@@ -180,9 +147,7 @@ def record_change_detection(change_type: str, status: str = "success") -> None:
         change_type: Detected change type (clear_cut, degradation, etc.).
         status: Detection status (success, failed).
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    change_detections_total.labels(change_type=change_type, status=status).inc()
+    m.safe_inc(change_detections_total, 1, change_type=change_type, status=status)
 
 
 def record_alert_processed(source: str, severity: str) -> None:
@@ -192,9 +157,7 @@ def record_alert_processed(source: str, severity: str) -> None:
         source: Alert source (glad, radd, firms, gfw, internal).
         severity: Alert severity (low, medium, high, critical).
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    alerts_processed_total.labels(source=source, severity=severity).inc()
+    m.safe_inc(alerts_processed_total, 1, source=source, severity=severity)
 
 
 def record_baseline_check(country: str, compliance_status: str) -> None:
@@ -205,11 +168,10 @@ def record_baseline_check(country: str, compliance_status: str) -> None:
         compliance_status: Compliance determination (compliant, review_required,
             non_compliant).
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    baseline_checks_total.labels(
+    m.safe_inc(
+        baseline_checks_total, 1,
         country=country, compliance_status=compliance_status,
-    ).inc()
+    )
 
 
 def record_classification(land_cover_type: str) -> None:
@@ -219,9 +181,7 @@ def record_classification(land_cover_type: str) -> None:
         land_cover_type: Classified land cover type (dense_forest, open_forest,
             shrubland, grassland, etc.).
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    classifications_total.labels(land_cover_type=land_cover_type).inc()
+    m.safe_inc(classifications_total, 1, land_cover_type=land_cover_type)
 
 
 def record_compliance_report(status: str) -> None:
@@ -231,9 +191,7 @@ def record_compliance_report(status: str) -> None:
         status: Report compliance status (compliant, review_required,
             non_compliant).
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    compliance_reports_total.labels(status=status).inc()
+    m.safe_inc(compliance_reports_total, 1, status=status)
 
 
 def record_pipeline_run(stage: str, status: str = "completed") -> None:
@@ -243,9 +201,7 @@ def record_pipeline_run(stage: str, status: str = "completed") -> None:
         stage: Pipeline stage name (initialization, image_acquisition, etc.).
         status: Execution status (completed, failed, skipped).
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    pipeline_runs_total.labels(stage=stage, status=status).inc()
+    m.safe_inc(pipeline_runs_total, 1, stage=stage, status=status)
 
 
 def record_processing_error(engine: str, error_type: str) -> None:
@@ -258,9 +214,7 @@ def record_processing_error(engine: str, error_type: str) -> None:
         error_type: Error classification (validation, connection, timeout,
             computation, data, unknown).
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    processing_errors_total.labels(engine=engine, error_type=error_type).inc()
+    m.safe_inc(processing_errors_total, 1, engine=engine, error_type=error_type)
 
 
 def update_active_jobs(count: int) -> None:
@@ -269,9 +223,7 @@ def update_active_jobs(count: int) -> None:
     Args:
         count: Current number of active monitoring jobs.
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    active_monitoring_jobs.set(count)
+    m.safe_set(active_monitoring_jobs, count)
 
 
 def update_forest_area(area_ha: float) -> None:
@@ -280,13 +232,12 @@ def update_forest_area(area_ha: float) -> None:
     Args:
         area_ha: Total forest area under monitoring in hectares.
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    forest_area_monitored_ha.set(area_ha)
+    m.safe_set(forest_area_monitored_ha, area_ha)
 
 
 __all__ = [
     "PROMETHEUS_AVAILABLE",
+    "m",
     # Metric objects
     "scenes_acquired_total",
     "acquisition_duration_seconds",

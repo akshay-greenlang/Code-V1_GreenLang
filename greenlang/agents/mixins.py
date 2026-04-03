@@ -137,7 +137,7 @@ class DeterministicMixin(ABC):
         }
 
         self._audit_trail.append(audit_entry)
-        logger.debug(f"Audit entry captured for operation: {operation}")
+        logger.debug("Audit entry captured for operation: %s", operation)
 
         return audit_entry
 
@@ -160,7 +160,7 @@ class DeterministicMixin(ABC):
         with open(file_path, "w") as f:
             json.dump(self._audit_trail, f, indent=2, default=str)
 
-        logger.info(f"Audit trail exported to {file_path}")
+        logger.info("Audit trail exported to %s", file_path)
 
     def validate_determinism(self, result: Any) -> bool:
         """
@@ -261,7 +261,7 @@ class ReasoningMixin(ABC):
             rag_engine: RAGEngine instance
         """
         self._rag_engine = rag_engine
-        logger.debug(f"RAG engine set for {self.__class__.__name__}")
+        logger.debug("RAG engine set for %s", self.__class__.__name__)
 
     def set_chat_session(self, chat_session: Any) -> None:
         """
@@ -271,7 +271,7 @@ class ReasoningMixin(ABC):
             chat_session: ChatSession instance
         """
         self._chat_session = chat_session
-        logger.debug(f"Chat session set for {self.__class__.__name__}")
+        logger.debug("Chat session set for %s", self.__class__.__name__)
 
     def register_tool(self, name: str, tool: Any) -> None:
         """
@@ -282,7 +282,7 @@ class ReasoningMixin(ABC):
             tool: Tool function or callable
         """
         self._tool_registry[name] = tool
-        logger.debug(f"Tool registered: {name}")
+        logger.debug("Tool registered: %s", name)
 
     async def rag_retrieve(
         self,
@@ -313,7 +313,7 @@ class ReasoningMixin(ABC):
             top_k=top_k
         )
 
-        logger.debug(f"RAG retrieved {len(result.chunks) if hasattr(result, 'chunks') else 0} chunks")
+        logger.debug("RAG retrieved %s chunks", len(result.chunks) if hasattr(result, 'chunks') else 0)
         return result
 
     def format_rag_results(self, rag_result: Any) -> str:
@@ -360,7 +360,7 @@ class ReasoningMixin(ABC):
         else:
             result = tool_func(**kwargs)
 
-        logger.debug(f"Tool executed: {tool_name}")
+        logger.debug("Tool executed: %s", tool_name)
         return result
 
 
@@ -483,7 +483,7 @@ class InsightMixin(ABC):
         }
 
         self._audit_trail.append(audit_entry)
-        logger.debug(f"Calculation audit captured: {operation}")
+        logger.debug("Calculation audit captured: %s", operation)
 
         return audit_entry
 
@@ -599,7 +599,7 @@ def validate_mixin_usage(agent_class: type) -> None:
             f"Agent must inherit from exactly one category mixin."
         )
 
-    logger.info(f"Mixin validation passed for {agent_class.__name__} ({mixins[0].__name__})")
+    logger.info("Mixin validation passed for %s (%s)", agent_class.__name__, mixins[0].__name__)
 
 
 # ==============================================================================

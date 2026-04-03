@@ -84,6 +84,7 @@ from greenlang.agents.eudr.qr_code_generator.metrics import (
     set_active_bulk_jobs,
     record_api_error,
 )
+from greenlang.utilities.exceptions.compliance import ComplianceException
 
 logger = logging.getLogger(__name__)
 
@@ -134,7 +135,7 @@ def _generate_id(prefix: str) -> str:
 # Custom Exceptions
 # ---------------------------------------------------------------------------
 
-class BulkGenerationError(Exception):
+class BulkGenerationError(ComplianceException):
     """Base exception for bulk generation pipeline errors."""
     pass
 

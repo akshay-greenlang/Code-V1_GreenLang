@@ -30,6 +30,7 @@ from enum import Enum
 import threading
 import time
 from greenlang.utilities.determinism import DeterministicClock
+from greenlang.utilities.exceptions.security import AuthenticationError as _SecurityAuthError
 
 try:
     import ldap3
@@ -167,14 +168,14 @@ class LDAPConnectionPool:
 
     def _initialize_pool(self) -> None:
         """Initialize connection pool"""
-        logger.info(f"Initializing LDAP connection pool (size: {self._max_size})")
+        logger.info("Initializing LDAP connection pool (size: %s)", self._max_size)
 
         for _ in range(min(3, self._max_size)):  # Start with 3 connections
             try:
                 conn = self._create_connection()
                 self._pool.append(conn)
             except Exception as e:
-                logger.error(f"Failed to create initial connection: {e}")
+                logger.error("Failed to create initial connection: %s", e)
 
     def _create_connection(self) -> Connection:
         """Create a new LDAP connection"""
@@ -200,7 +201,7 @@ class LDAPConnectionPool:
             conn.start_tls()
 
         self._created_count += 1
-        logger.debug(f"Created LDAP connection #{self._created_count}")
+        logger.debug("Created LDAP connection #%s", self._created_count)
 
         return conn
 
@@ -219,7 +220,7 @@ class LDAPConnectionPool:
                     try:
                         conn.unbind()
                     except Exception as e:
-                        logger.debug(f"Failed to unbind stale LDAP connection: {e}")
+                        logger.debug("Failed to unbind stale LDAP connection: %s", e)
 
             # Create new connection if pool is not full
             if self._created_count < self._max_size:
@@ -243,14 +244,14 @@ class LDAPConnectionPool:
                     conn.unbind()
                     self._created_count -= 1
                 except Exception as e:
-                    logger.debug(f"Failed to unbind/decrement LDAP connection: {e}")
+                    logger.debug("Failed to unbind/decrement LDAP connection: %s", e)
 
     def _is_connection_valid(self, conn: Connection) -> bool:
         """Check if connection is still valid"""
         try:
             return conn.bound and not conn.closed
         except Exception as e:
-            logger.debug(f"Connection validation failed: {e}")
+            logger.debug("Connection validation failed: %s", e)
             return False
 
     def close_all(self) -> None:
@@ -260,7 +261,7 @@ class LDAPConnectionPool:
                 try:
                     conn.unbind()
                 except Exception as e:
-                    logger.debug(f"Failed to unbind LDAP connection: {e}")
+                    logger.debug("Failed to unbind LDAP connection: %s", e)
             self._pool.clear()
             self._created_count = 0
 
@@ -343,7 +344,7 @@ class LDAPProvider:
         self._last_sync: Optional[datetime] = None
         self._sync_lock = threading.Lock()
 
-        logger.info(f"Initialized LDAP provider for {config.server_uri}")
+        logger.info("Initialized LDAP provider for %s", config.server_uri)
 
     def authenticate(self, username: str, password: str) -> Optional[LDAPUser]:
         """
@@ -360,7 +361,7 @@ class LDAPProvider:
             # First, find the user's DN
             user_dn = self._find_user_dn(username)
             if not user_dn:
-                logger.warning(f"User not found: {username}")
+                logger.warning("User not found: %s", username)
                 return None
 
             # Try to bind with user credentials
@@ -371,14 +372,14 @@ class LDAPProvider:
                 # Get group memberships
                 user.groups = self._get_user_groups(user_dn)
 
-                logger.info(f"Successfully authenticated user: {username}")
+                logger.info("Successfully authenticated user: %s", username)
                 return user
             else:
-                logger.warning(f"Authentication failed for user: {username}")
+                logger.warning("Authentication failed for user: %s", username)
                 return None
 
         except LDAPException as e:
-            logger.error(f"LDAP authentication error: {e}")
+            logger.error("LDAP authentication error: %s", e)
             return None
 
     def _find_user_dn(self, username: str) -> Optional[str]:
@@ -428,7 +429,7 @@ class LDAPProvider:
         except LDAPBindError:
             return False
         except LDAPException as e:
-            logger.error(f"LDAP bind error: {e}")
+            logger.error("LDAP bind error: %s", e)
             return False
 
     def _get_user_details(self, user_dn: str, username: str) -> LDAPUser:
@@ -688,11 +689,11 @@ class LDAPProvider:
 
                 self._last_sync = start_time
 
-                logger.info(f"LDAP sync completed: {stats}")
+                logger.info("LDAP sync completed: %s", stats)
                 return stats
 
             except Exception as e:
-                logger.error(f"LDAP sync failed: {e}")
+                logger.error("LDAP sync failed: %s", e)
                 raise
 
     def get_user_by_id(self, user_id: str) -> Optional[LDAPUser]:
@@ -726,7 +727,7 @@ class LDAPProvider:
             return user
 
         except Exception as e:
-            logger.error(f"Failed to convert entry to user: {e}")
+            logger.error("Failed to convert entry to user: %s", e)
             return None
 
     def _entry_to_group(self, entry) -> Optional[LDAPGroup]:
@@ -751,7 +752,7 @@ class LDAPProvider:
             return group
 
         except Exception as e:
-            logger.error(f"Failed to convert entry to group: {e}")
+            logger.error("Failed to convert entry to group: %s", e)
             return None
 
     def _get_attribute(self, entry, attribute_name: str) -> Optional[str]:
@@ -777,11 +778,11 @@ class LDAPProvider:
             result = conn.bound
             self.connection_pool.return_connection(conn)
 
-            logger.info(f"LDAP connection test: {'SUCCESS' if result else 'FAILED'}")
+            logger.info("LDAP connection test: %s", 'SUCCESS' if result else 'FAILED')
             return result
 
         except Exception as e:
-            logger.error(f"LDAP connection test failed: {e}")
+            logger.error("LDAP connection test failed: %s", e)
             return False
 
     def close(self) -> None:
@@ -790,7 +791,7 @@ class LDAPProvider:
         logger.info("LDAP provider closed")
 
 
-class LDAPError(Exception):
+class LDAPError(_SecurityAuthError):
     """LDAP-specific error"""
     pass
 

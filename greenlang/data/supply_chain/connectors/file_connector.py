@@ -526,7 +526,7 @@ class FileConnector:
             if should_close:
                 file_handle.close()
 
-        logger.info(f"Exported {len(suppliers)} suppliers to CSV")
+        logger.info("Exported %s suppliers to CSV", len(suppliers))
         return len(suppliers)
 
     def _supplier_to_row(
@@ -859,7 +859,7 @@ class FileConnector:
             for row in sample_data:
                 writer.writerow(row)
 
-        logger.info(f"Generated supplier template: {file_path}")
+        logger.info("Generated supplier template: %s", file_path)
 
     def generate_facility_template(
         self,
@@ -895,7 +895,7 @@ class FileConnector:
             for row in sample_data:
                 writer.writerow(row)
 
-        logger.info(f"Generated facility template: {file_path}")
+        logger.info("Generated facility template: %s", file_path)
 
     # =========================================================================
     # JSON Export
@@ -918,7 +918,7 @@ class FileConnector:
         with open(file_path, "w", encoding=self.encoding) as f:
             json.dump(data, f, indent=indent, default=str)
 
-        logger.info(f"Exported data to JSON: {file_path}")
+        logger.info("Exported data to JSON: %s", file_path)
 
     def import_from_json(
         self,

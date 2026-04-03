@@ -128,8 +128,7 @@ class ProcessHeatDLQManager:
             "resolved": 0
         }
 
-        logger.info(f"Queue configured: {queue_name} "
-                   f"(max_retries={max_retries})")
+        logger.info("Queue configured: %s (max_retries=%s)", queue_name, max_retries)
 
     async def handle_failed_event(
         self,
@@ -199,7 +198,7 @@ class ProcessHeatDLQManager:
             Number of messages successfully processed
         """
         if not reprocess_handler:
-            logger.warning(f"No reprocess handler for {queue_name}")
+            logger.warning("No reprocess handler for %s", queue_name)
             return 0
 
         # Reprocess with DLQ handler
@@ -211,7 +210,7 @@ class ProcessHeatDLQManager:
         # Update metrics
         self.metrics["total_processed"] += processed
 
-        logger.info(f"Reprocessed {processed} messages from {queue_name}")
+        logger.info("Reprocessed %s messages from %s", processed, queue_name)
         return processed
 
     async def get_metrics(self) -> Dict[str, Any]:
@@ -361,7 +360,7 @@ class ProcessHeatDLQManager:
                 )
 
         except Exception as e:
-            logger.error(f"Failed to send alert webhook: {e}")
+            logger.error("Failed to send alert webhook: %s", e)
 
     async def __aenter__(self) -> "ProcessHeatDLQManager":
         """Async context manager entry."""
@@ -423,7 +422,7 @@ async def example_agent_pipeline_with_dlq():
                 "heat-calculations",
                 agent_id="gl_010"
             )
-            logger.info(f"Event sent to DLQ: {msg_id}")
+            logger.info("Event sent to DLQ: %s", msg_id)
 
         # Later: Reprocess DLQ messages
         async def heat_agent_handler(msg: DLQMessage) -> bool:

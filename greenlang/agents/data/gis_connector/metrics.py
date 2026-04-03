@@ -5,18 +5,20 @@ Prometheus Metrics - AGENT-DATA-006: GIS/Mapping Connector (GL-DATA-GEO-001)
 12 Prometheus metrics for GIS connector service monitoring with graceful
 fallback when prometheus_client is not installed.
 
-Metrics:
-    1.  gl_gis_connector_operations_total (Counter, labels: operation, format, status)
-    2.  gl_gis_connector_operation_duration_seconds (Histogram, labels: operation, format)
-    3.  gl_gis_connector_format_conversions_total (Counter, labels: source_format, target_format)
-    4.  gl_gis_connector_crs_transformations_total (Counter, labels: source_crs, target_crs)
-    5.  gl_gis_connector_spatial_queries_total (Counter, labels: query_type, status)
-    6.  gl_gis_connector_geocoding_requests_total (Counter, labels: direction, status)
-    7.  gl_gis_connector_features_processed_total (Counter, labels: layer, operation)
-    8.  gl_gis_connector_active_layers (Gauge)
-    9.  gl_gis_connector_layer_features_count (Gauge, labels: layer)
-    10. gl_gis_connector_processing_errors_total (Counter, labels: operation, error_type)
-    11. gl_gis_connector_cache_hit_rate (Gauge, labels: cache_type)
+Standard metrics (via MetricsFactory):
+    1.  gl_gis_connector_operations_total (Counter, labels: type, tenant_id)
+    2.  gl_gis_connector_processing_duration_seconds (Histogram, 12 buckets)
+    3.  gl_gis_connector_validation_errors_total (Counter, labels: severity, type)
+    4.  gl_gis_connector_batch_jobs_total (Counter, labels: status)
+    5.  gl_gis_connector_active_jobs (Gauge)
+    6.  gl_gis_connector_queue_size (Gauge)
+
+Agent-specific metrics:
+    7.  gl_gis_connector_format_conversions_total (Counter, labels: source_format, target_format)
+    8.  gl_gis_connector_crs_transformations_total (Counter, labels: source_crs, target_crs)
+    9.  gl_gis_connector_spatial_queries_total (Counter, labels: query_type, status)
+    10. gl_gis_connector_geocoding_requests_total (Counter, labels: direction, status)
+    11. gl_gis_connector_features_processed_total (Counter, labels: layer, operation)
     12. gl_gis_connector_data_volume_bytes (Histogram, labels: format)
 
 Author: GreenLang Platform Team
@@ -27,134 +29,89 @@ Status: Production Ready
 
 from __future__ import annotations
 
-import logging
-
-logger = logging.getLogger(__name__)
-
-# ---------------------------------------------------------------------------
-# Graceful prometheus_client import
-# ---------------------------------------------------------------------------
-
-try:
-    from prometheus_client import Counter, Gauge, Histogram
-    PROMETHEUS_AVAILABLE = True
-except ImportError:
-    PROMETHEUS_AVAILABLE = False
-    logger.info(
-        "prometheus_client not installed; GIS connector metrics disabled"
-    )
-
+from greenlang.data_commons.metrics import (
+    PROMETHEUS_AVAILABLE,
+    MetricsFactory,
+)
 
 # ---------------------------------------------------------------------------
-# Metric definitions
+# Standard metrics (6 of 12) via factory
 # ---------------------------------------------------------------------------
 
-if PROMETHEUS_AVAILABLE:
-    # 1. Total operations by operation, format, and status
-    gis_connector_operations_total = Counter(
-        "gl_gis_connector_operations_total",
-        "Total GIS connector operations executed",
-        labelnames=["operation", "format", "status"],
-    )
+m = MetricsFactory(
+    "gl_gis_connector",
+    "GIS Connector",
+    duration_buckets=(
+        0.01, 0.05, 0.1, 0.25, 0.5, 1.0,
+        2.5, 5.0, 10.0, 30.0, 60.0, 120.0,
+    ),
+)
 
-    # 2. Operation duration histogram by operation and format
-    gis_connector_operation_duration_seconds = Histogram(
-        "gl_gis_connector_operation_duration_seconds",
-        "GIS connector operation duration in seconds",
-        labelnames=["operation", "format"],
-        buckets=(
-            0.01, 0.05, 0.1, 0.25, 0.5, 1.0,
-            2.5, 5.0, 10.0, 30.0, 60.0, 120.0,
-        ),
-    )
+# Backward-compat aliases
+gis_connector_operations_total = m.operations_total
+gis_connector_operation_duration_seconds = m.processing_duration
+gis_connector_processing_errors_total = m.validation_errors_total
 
-    # 3. Format conversions by source and target format
-    gis_connector_format_conversions_total = Counter(
-        "gl_gis_connector_format_conversions_total",
-        "Total format conversion operations",
-        labelnames=["source_format", "target_format"],
-    )
+# ---------------------------------------------------------------------------
+# Agent-specific metrics (6 of 12)
+# ---------------------------------------------------------------------------
 
-    # 4. CRS transformations by source and target CRS
-    gis_connector_crs_transformations_total = Counter(
-        "gl_gis_connector_crs_transformations_total",
-        "Total CRS transformation operations",
-        labelnames=["source_crs", "target_crs"],
-    )
+gis_connector_format_conversions_total = m.create_custom_counter(
+    "format_conversions_total",
+    "Total format conversion operations",
+    labelnames=["source_format", "target_format"],
+)
 
-    # 5. Spatial queries by query type and status
-    gis_connector_spatial_queries_total = Counter(
-        "gl_gis_connector_spatial_queries_total",
-        "Total spatial query operations",
-        labelnames=["query_type", "status"],
-    )
+gis_connector_crs_transformations_total = m.create_custom_counter(
+    "crs_transformations_total",
+    "Total CRS transformation operations",
+    labelnames=["source_crs", "target_crs"],
+)
 
-    # 6. Geocoding requests by direction and status
-    gis_connector_geocoding_requests_total = Counter(
-        "gl_gis_connector_geocoding_requests_total",
-        "Total geocoding requests",
-        labelnames=["direction", "status"],
-    )
+gis_connector_spatial_queries_total = m.create_custom_counter(
+    "spatial_queries_total",
+    "Total spatial query operations",
+    labelnames=["query_type", "status"],
+)
 
-    # 7. Features processed by layer and operation
-    gis_connector_features_processed_total = Counter(
-        "gl_gis_connector_features_processed_total",
-        "Total features processed",
-        labelnames=["layer", "operation"],
-    )
+gis_connector_geocoding_requests_total = m.create_custom_counter(
+    "geocoding_requests_total",
+    "Total geocoding requests",
+    labelnames=["direction", "status"],
+)
 
-    # 8. Active layers gauge
-    gis_connector_active_layers = Gauge(
-        "gl_gis_connector_active_layers",
-        "Number of currently active layers",
-    )
+gis_connector_features_processed_total = m.create_custom_counter(
+    "features_processed_total",
+    "Total features processed",
+    labelnames=["layer", "operation"],
+)
 
-    # 9. Layer feature count gauge by layer
-    gis_connector_layer_features_count = Gauge(
-        "gl_gis_connector_layer_features_count",
-        "Number of features per layer",
-        labelnames=["layer"],
-    )
+gis_connector_active_layers = m.create_custom_gauge(
+    "active_layers",
+    "Number of currently active layers",
+)
 
-    # 10. Processing errors by operation and error type
-    gis_connector_processing_errors_total = Counter(
-        "gl_gis_connector_processing_errors_total",
-        "Total GIS connector processing errors",
-        labelnames=["operation", "error_type"],
-    )
+gis_connector_layer_features_count = m.create_custom_gauge(
+    "layer_features_count",
+    "Number of features per layer",
+    labelnames=["layer"],
+)
 
-    # 11. Cache hit rate gauge by cache type
-    gis_connector_cache_hit_rate = Gauge(
-        "gl_gis_connector_cache_hit_rate",
-        "Cache hit rate (0-1) per cache type",
-        labelnames=["cache_type"],
-    )
+gis_connector_cache_hit_rate = m.create_custom_gauge(
+    "cache_hit_rate",
+    "Cache hit rate (0-1) per cache type",
+    labelnames=["cache_type"],
+)
 
-    # 12. Data volume histogram by format
-    gis_connector_data_volume_bytes = Histogram(
-        "gl_gis_connector_data_volume_bytes",
-        "Data volume processed in bytes",
-        labelnames=["format"],
-        buckets=(
-            256, 1024, 4096, 16384, 65536, 262144,
-            1048576, 4194304, 16777216, 67108864,
-        ),
-    )
-
-else:
-    # No-op placeholders
-    gis_connector_operations_total = None  # type: ignore[assignment]
-    gis_connector_operation_duration_seconds = None  # type: ignore[assignment]
-    gis_connector_format_conversions_total = None  # type: ignore[assignment]
-    gis_connector_crs_transformations_total = None  # type: ignore[assignment]
-    gis_connector_spatial_queries_total = None  # type: ignore[assignment]
-    gis_connector_geocoding_requests_total = None  # type: ignore[assignment]
-    gis_connector_features_processed_total = None  # type: ignore[assignment]
-    gis_connector_active_layers = None  # type: ignore[assignment]
-    gis_connector_layer_features_count = None  # type: ignore[assignment]
-    gis_connector_processing_errors_total = None  # type: ignore[assignment]
-    gis_connector_cache_hit_rate = None  # type: ignore[assignment]
-    gis_connector_data_volume_bytes = None  # type: ignore[assignment]
+gis_connector_data_volume_bytes = m.create_custom_histogram(
+    "data_volume_bytes",
+    "Data volume processed in bytes",
+    buckets=(
+        256, 1024, 4096, 16384, 65536, 262144,
+        1048576, 4194304, 16777216, 67108864,
+    ),
+    labelnames=["format"],
+)
 
 
 # ---------------------------------------------------------------------------
@@ -176,15 +133,7 @@ def record_operation(
         status: Result status (success, error).
         duration: Execution duration in seconds.
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    gis_connector_operations_total.labels(
-        operation=operation, format=format, status=status,
-    ).inc()
-    if duration > 0:
-        gis_connector_operation_duration_seconds.labels(
-            operation=operation, format=format,
-        ).observe(duration)
+    m.record_operation(duration, type=f"{operation}:{format}", tenant_id=status)
 
 
 def record_format_conversion(
@@ -197,11 +146,10 @@ def record_format_conversion(
         source_format: Source data format.
         target_format: Target data format.
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    gis_connector_format_conversions_total.labels(
+    m.safe_inc(
+        gis_connector_format_conversions_total, 1,
         source_format=source_format, target_format=target_format,
-    ).inc()
+    )
 
 
 def record_crs_transformation(
@@ -214,11 +162,10 @@ def record_crs_transformation(
         source_crs: Source CRS identifier.
         target_crs: Target CRS identifier.
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    gis_connector_crs_transformations_total.labels(
+    m.safe_inc(
+        gis_connector_crs_transformations_total, 1,
         source_crs=source_crs, target_crs=target_crs,
-    ).inc()
+    )
 
 
 def record_spatial_query(
@@ -231,11 +178,10 @@ def record_spatial_query(
         query_type: Query type (distance, area, contains, etc.).
         status: Result status (success, error).
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    gis_connector_spatial_queries_total.labels(
+    m.safe_inc(
+        gis_connector_spatial_queries_total, 1,
         query_type=query_type, status=status,
-    ).inc()
+    )
 
 
 def record_geocoding_request(
@@ -248,11 +194,10 @@ def record_geocoding_request(
         direction: Direction (forward, reverse).
         status: Result status (success, no_results, error).
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    gis_connector_geocoding_requests_total.labels(
+    m.safe_inc(
+        gis_connector_geocoding_requests_total, 1,
         direction=direction, status=status,
-    ).inc()
+    )
 
 
 def record_features_processed(
@@ -265,11 +210,10 @@ def record_features_processed(
         layer: Layer identifier.
         operation: Operation type (add, update, delete).
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    gis_connector_features_processed_total.labels(
+    m.safe_inc(
+        gis_connector_features_processed_total, 1,
         layer=layer, operation=operation,
-    ).inc()
+    )
 
 
 def record_processing_error(
@@ -282,11 +226,7 @@ def record_processing_error(
         operation: Operation that failed.
         error_type: Type of error encountered.
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    gis_connector_processing_errors_total.labels(
-        operation=operation, error_type=error_type,
-    ).inc()
+    m.record_validation_error(severity=operation, type=error_type)
 
 
 def update_active_layers(count: int) -> None:
@@ -295,9 +235,7 @@ def update_active_layers(count: int) -> None:
     Args:
         count: Current number of active layers.
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    gis_connector_active_layers.set(count)
+    m.safe_set(gis_connector_active_layers, count)
 
 
 def update_layer_features(layer: str, count: int) -> None:
@@ -307,9 +245,7 @@ def update_layer_features(layer: str, count: int) -> None:
         layer: Layer identifier.
         count: Current feature count.
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    gis_connector_layer_features_count.labels(layer=layer).set(count)
+    m.safe_set(gis_connector_layer_features_count, count, layer=layer)
 
 
 def update_cache_hit_rate(cache_type: str, rate: float) -> None:
@@ -319,9 +255,7 @@ def update_cache_hit_rate(cache_type: str, rate: float) -> None:
         cache_type: Cache type (geocoding, format_parse, etc.).
         rate: Hit rate as float 0-1.
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    gis_connector_cache_hit_rate.labels(cache_type=cache_type).set(rate)
+    m.safe_set(gis_connector_cache_hit_rate, rate, cache_type=cache_type)
 
 
 def record_data_volume(format: str, size_bytes: int) -> None:
@@ -331,13 +265,12 @@ def record_data_volume(format: str, size_bytes: int) -> None:
         format: Data format identifier.
         size_bytes: Data size in bytes.
     """
-    if not PROMETHEUS_AVAILABLE:
-        return
-    gis_connector_data_volume_bytes.labels(format=format).observe(size_bytes)
+    m.safe_observe(gis_connector_data_volume_bytes, size_bytes, format=format)
 
 
 __all__ = [
     "PROMETHEUS_AVAILABLE",
+    "m",
     # Metric objects
     "gis_connector_operations_total",
     "gis_connector_operation_duration_seconds",

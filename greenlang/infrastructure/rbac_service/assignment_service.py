@@ -42,15 +42,18 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 
-class AssignmentNotFoundError(Exception):
+from greenlang.utilities.exceptions.security import AuthorizationError as _AuthorizationError
+
+
+class AssignmentNotFoundError(_AuthorizationError):
     """Raised when a user-role assignment lookup fails."""
 
 
-class DuplicateAssignmentError(Exception):
+class DuplicateAssignmentError(_AuthorizationError):
     """Raised when a user already holds the role in the tenant."""
 
 
-class AssignmentAlreadyRevokedError(Exception):
+class AssignmentAlreadyRevokedError(_AuthorizationError):
     """Raised when trying to revoke an already-revoked assignment."""
 
 

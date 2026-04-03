@@ -317,7 +317,7 @@ class L2RedisCache:
 
             logger.info("L2 Redis cache started")
         except Exception as e:
-            logger.error(f"Failed to start L2 cache: {e}", exc_info=True)
+            logger.error("Failed to start L2 cache: %s", e, exc_info=True)
             raise
 
     async def _start_direct(self) -> None:
@@ -432,7 +432,7 @@ class L2RedisCache:
                 return value
 
         except Exception as e:
-            logger.error(f"Error getting key {key}: {e}")
+            logger.error("Error getting key %s: %s", key, e)
             if self._metrics:
                 self._metrics.record_miss()
             return None
@@ -476,7 +476,7 @@ class L2RedisCache:
                 return True
 
         except Exception as e:
-            logger.error(f"Error setting key {key}: {e}", exc_info=True)
+            logger.error("Error setting key %s: %s", key, e, exc_info=True)
             return False
 
     async def delete(self, key: str) -> bool:
@@ -505,7 +505,7 @@ class L2RedisCache:
                 return result > 0
 
         except Exception as e:
-            logger.error(f"Error deleting key {key}: {e}")
+            logger.error("Error deleting key %s: %s", key, e)
             return False
 
     async def delete_pattern(self, pattern: str) -> int:
@@ -543,11 +543,11 @@ class L2RedisCache:
                     [k.decode() if isinstance(k, bytes) else k for k in keys]
                 )
 
-                logger.info(f"Deleted {count} keys matching pattern: {pattern}")
+                logger.info("Deleted %s keys matching pattern: %s", count, pattern)
                 return count
 
         except Exception as e:
-            logger.error(f"Error deleting pattern {pattern}: {e}")
+            logger.error("Error deleting pattern %s: %s", pattern, e)
             return 0
 
     async def exists(self, key: str) -> bool:
@@ -565,7 +565,7 @@ class L2RedisCache:
                 await self._redis.flushdb()
                 logger.warning("L2 cache cleared (flushdb)")
         except Exception as e:
-            logger.error(f"Error clearing cache: {e}")
+            logger.error("Error clearing cache: %s", e)
 
     def _serialize(self, value: Any) -> bytes:
         """
@@ -629,7 +629,7 @@ class L2RedisCache:
             })
             await self._redis.publish(self._pubsub_channel, message)
         except Exception as e:
-            logger.error(f"Error publishing invalidation: {e}")
+            logger.error("Error publishing invalidation: %s", e)
 
     async def _pubsub_listener(self) -> None:
         """Background task to listen for invalidation events."""
@@ -650,13 +650,13 @@ class L2RedisCache:
                 except asyncio.TimeoutError:
                     continue
                 except Exception as e:
-                    logger.error(f"Error in pub/sub listener: {e}")
+                    logger.error("Error in pub/sub listener: %s", e)
                     await asyncio.sleep(1)
 
         except asyncio.CancelledError:
             pass
         except Exception as e:
-            logger.error(f"Pub/sub listener error: {e}", exc_info=True)
+            logger.error("Pub/sub listener error: %s", e, exc_info=True)
 
     async def _handle_invalidation(self, data: bytes) -> None:
         """
@@ -677,10 +677,10 @@ class L2RedisCache:
                 try:
                     await callback(keys)
                 except Exception as e:
-                    logger.error(f"Error in invalidation callback: {e}")
+                    logger.error("Error in invalidation callback: %s", e)
 
         except Exception as e:
-            logger.error(f"Error handling invalidation: {e}")
+            logger.error("Error handling invalidation: %s", e)
 
     def register_invalidation_callback(self, callback: callable) -> None:
         """
@@ -719,7 +719,7 @@ class L2RedisCache:
                 "keyspace_misses": info.get("keyspace_misses", 0),
             })
         except Exception as e:
-            logger.error(f"Error getting Redis info: {e}")
+            logger.error("Error getting Redis info: %s", e)
 
         # Add metrics
         if self._metrics:

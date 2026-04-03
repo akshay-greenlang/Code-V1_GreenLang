@@ -358,7 +358,7 @@ class ResponseTimeValidator:
         Returns:
             ResponseMeasurement with results
         """
-        logger.info(f"Measuring response time for {sif_id}")
+        logger.info("Measuring response time for %s", sif_id)
 
         start_time = time.time()
 

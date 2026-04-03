@@ -56,6 +56,7 @@ from greenlang.agents.eudr.mobile_data_collector.models import (
 from greenlang.agents.eudr.mobile_data_collector.provenance import (
     get_provenance_tracker,
 )
+from greenlang.utilities.exceptions.compliance import ComplianceException
 
 logger = logging.getLogger(__name__)
 
@@ -93,7 +94,7 @@ _PHOTO_TYPE_MAP: Dict[str, PhotoType] = {
 # ---------------------------------------------------------------------------
 
 
-class PhotoEvidenceError(Exception):
+class PhotoEvidenceError(ComplianceException):
     """Base exception for photo evidence collector operations."""
 
 

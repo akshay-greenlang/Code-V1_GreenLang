@@ -282,7 +282,7 @@ class ConformalPredictor:
         Example:
             >>> conformal.calibrate(X_cal, y_cal)
         """
-        logger.info(f"Calibrating with {len(X_cal)} samples")
+        logger.info("Calibrating with %s samples", len(X_cal))
 
         self._n_calibration = len(X_cal)
 
@@ -300,7 +300,7 @@ class ConformalPredictor:
             self._calibrate_split(X_cal, y_cal, uncertainty)
 
         self._is_calibrated = True
-        logger.info(f"Calibration complete: quantile={self._quantile:.4f}")
+        logger.info("Calibration complete: quantile=%.4f", self._quantile)
 
     def _calibrate_split(
         self,
@@ -666,7 +666,7 @@ class AdaptiveConformalPredictor:
         ))
 
         self._is_calibrated = True
-        logger.info(f"Initial calibration complete: quantile={self._quantile:.4f}")
+        logger.info("Initial calibration complete: quantile=%.4f", self._quantile)
 
     def predict_interval_online(
         self,

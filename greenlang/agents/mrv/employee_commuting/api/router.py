@@ -94,7 +94,7 @@ def get_service():
             _service_instance = EmployeeCommutingService()
             logger.info("EmployeeCommutingService initialized successfully")
         except Exception as e:
-            logger.error(f"Failed to initialize EmployeeCommutingService: {e}")
+            logger.error("Failed to initialize EmployeeCommutingService: %s", e)
             raise HTTPException(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
                 detail="Service initialization failed",
@@ -1333,13 +1333,13 @@ async def calculate_emissions(
         )
 
     except ValueError as e:
-        logger.error(f"Validation error in calculate_emissions: {e}")
+        logger.error("Validation error in calculate_emissions: %s", e)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e),
         )
     except Exception as e:
-        logger.error(f"Error in calculate_emissions: {e}", exc_info=True)
+        logger.error("Error in calculate_emissions: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Calculation failed",
@@ -1403,7 +1403,7 @@ async def calculate_batch_emissions(
         )
 
     except ValueError as e:
-        logger.error(f"Validation error in calculate_batch_emissions: {e}")
+        logger.error("Validation error in calculate_batch_emissions: %s", e)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e),
@@ -1476,7 +1476,7 @@ async def calculate_commute_emissions(
         )
 
     except ValueError as e:
-        logger.error(f"Validation error in calculate_commute_emissions: {e}")
+        logger.error("Validation error in calculate_commute_emissions: %s", e)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e),
@@ -1638,13 +1638,13 @@ async def process_survey(
         )
 
     except ValueError as e:
-        logger.error(f"Validation error in process_survey: {e}")
+        logger.error("Validation error in process_survey: %s", e)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e),
         )
     except Exception as e:
-        logger.error(f"Error in process_survey: {e}", exc_info=True)
+        logger.error("Error in process_survey: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Survey processing failed",
@@ -1715,7 +1715,7 @@ async def calculate_average_data(
         )
 
     except ValueError as e:
-        logger.error(f"Validation error in calculate_average_data: {e}")
+        logger.error("Validation error in calculate_average_data: %s", e)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e),
@@ -1788,7 +1788,7 @@ async def calculate_spend_emissions(
         )
 
     except ValueError as e:
-        logger.error(f"Validation error in calculate_spend_emissions: {e}")
+        logger.error("Validation error in calculate_spend_emissions: %s", e)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e),
@@ -1910,7 +1910,7 @@ async def get_calculation_detail(
         HTTPException: 404 if calculation not found, 500 for failures
     """
     try:
-        logger.info(f"Getting calculation detail: {calculation_id}")
+        logger.info("Getting calculation detail: %s", calculation_id)
 
         result = await service.get_calculation(calculation_id)
 
@@ -1935,7 +1935,7 @@ async def get_calculation_detail(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error in get_calculation_detail: {e}", exc_info=True)
+        logger.error("Error in get_calculation_detail: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to retrieve calculation",
@@ -2029,7 +2029,7 @@ async def list_calculations(
         )
 
     except Exception as e:
-        logger.error(f"Error in list_calculations: {e}", exc_info=True)
+        logger.error("Error in list_calculations: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to list calculations",
@@ -2065,7 +2065,7 @@ async def delete_calculation(
         HTTPException: 404 if not found, 500 for deletion failures
     """
     try:
-        logger.info(f"Deleting calculation: {calculation_id}")
+        logger.info("Deleting calculation: %s", calculation_id)
 
         deleted = await service.delete_calculation(calculation_id)
 
@@ -2084,7 +2084,7 @@ async def delete_calculation(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error in delete_calculation: {e}", exc_info=True)
+        logger.error("Error in delete_calculation: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to delete calculation",
@@ -2145,7 +2145,7 @@ async def list_emission_factors(
         )
 
     except Exception as e:
-        logger.error(f"Error in list_emission_factors: {e}", exc_info=True)
+        logger.error("Error in list_emission_factors: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to list emission factors",
@@ -2187,7 +2187,7 @@ async def get_emission_factors_by_mode(
         HTTPException: 400 for invalid mode, 500 for retrieval failures
     """
     try:
-        logger.info(f"Getting emission factors for mode: {mode}")
+        logger.info("Getting emission factors for mode: %s", mode)
 
         result = await service.get_emission_factors_by_mode(mode)
 
@@ -2252,7 +2252,7 @@ async def list_commute_modes(
         )
 
     except Exception as e:
-        logger.error(f"Error in list_commute_modes: {e}", exc_info=True)
+        logger.error("Error in list_commute_modes: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to list commute modes",
@@ -2291,7 +2291,7 @@ async def get_working_days(
         HTTPException: 400 for invalid region, 500 for retrieval failures
     """
     try:
-        logger.info(f"Getting working days for region: {region}")
+        logger.info("Getting working days for region: %s", region)
 
         result = await service.get_working_days(region)
 
@@ -2317,7 +2317,7 @@ async def get_working_days(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error in get_working_days: {e}", exc_info=True)
+        logger.error("Error in get_working_days: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to retrieve working days",
@@ -2369,7 +2369,7 @@ async def get_commute_averages(
         )
 
     except Exception as e:
-        logger.error(f"Error in get_commute_averages: {e}", exc_info=True)
+        logger.error("Error in get_commute_averages: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to retrieve commute averages",
@@ -2408,7 +2408,7 @@ async def get_grid_factors(
         HTTPException: 400 for invalid country, 500 for retrieval failures
     """
     try:
-        logger.info(f"Getting grid factors for country: {country}")
+        logger.info("Getting grid factors for country: %s", country)
 
         result = await service.get_grid_factors(country)
 
@@ -2431,7 +2431,7 @@ async def get_grid_factors(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error in get_grid_factors: {e}", exc_info=True)
+        logger.error("Error in get_grid_factors: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to retrieve grid factors",
@@ -2492,13 +2492,13 @@ async def check_compliance(
         )
 
     except ValueError as e:
-        logger.error(f"Validation error in check_compliance: {e}")
+        logger.error("Validation error in check_compliance: %s", e)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e),
         )
     except Exception as e:
-        logger.error(f"Error in check_compliance: {e}", exc_info=True)
+        logger.error("Error in check_compliance: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Compliance check failed",
@@ -2560,13 +2560,13 @@ async def analyze_uncertainty(
         )
 
     except ValueError as e:
-        logger.error(f"Validation error in analyze_uncertainty: {e}")
+        logger.error("Validation error in analyze_uncertainty: %s", e)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e),
         )
     except Exception as e:
-        logger.error(f"Error in analyze_uncertainty: {e}", exc_info=True)
+        logger.error("Error in analyze_uncertainty: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Uncertainty analysis failed",
@@ -2668,7 +2668,7 @@ async def get_aggregations(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error in get_aggregations: {e}", exc_info=True)
+        logger.error("Error in get_aggregations: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Aggregation failed",
@@ -2730,13 +2730,13 @@ async def analyze_mode_share(
         )
 
     except ValueError as e:
-        logger.error(f"Validation error in analyze_mode_share: {e}")
+        logger.error("Validation error in analyze_mode_share: %s", e)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e),
         )
     except Exception as e:
-        logger.error(f"Error in analyze_mode_share: {e}", exc_info=True)
+        logger.error("Error in analyze_mode_share: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Mode share analysis failed",
@@ -2778,7 +2778,7 @@ async def get_provenance(
         HTTPException: 404 if not found, 500 for retrieval failures
     """
     try:
-        logger.info(f"Getting provenance for calculation: {calculation_id}")
+        logger.info("Getting provenance for calculation: %s", calculation_id)
 
         result = await service.get_provenance(calculation_id)
 
@@ -2802,7 +2802,7 @@ async def get_provenance(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error in get_provenance: {e}", exc_info=True)
+        logger.error("Error in get_provenance: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to retrieve provenance",
@@ -2853,7 +2853,7 @@ async def health_check() -> HealthResponse:
         )
 
     except Exception as e:
-        logger.error(f"Error in health_check: {e}", exc_info=True)
+        logger.error("Error in health_check: %s", e, exc_info=True)
         return HealthResponse(
             status="unhealthy",
             agent_id="GL-MRV-S3-007",

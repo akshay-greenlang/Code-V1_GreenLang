@@ -87,7 +87,7 @@ def get_service():
             _service_instance = DownstreamTransportService()
             logger.info("DownstreamTransportService initialized successfully")
         except Exception as e:
-            logger.error(f"Failed to initialize DownstreamTransportService: {e}")
+            logger.error("Failed to initialize DownstreamTransportService: %s", e)
             raise HTTPException(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
                 detail="Service initialization failed",
@@ -1208,13 +1208,13 @@ async def calculate_emissions(
         return CalculationResponse(**result)
 
     except ValueError as e:
-        logger.error(f"Validation error in calculate_emissions: {e}")
+        logger.error("Validation error in calculate_emissions: %s", e)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e),
         )
     except Exception as e:
-        logger.error(f"Error in calculate_emissions: {e}", exc_info=True)
+        logger.error("Error in calculate_emissions: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Calculation failed",
@@ -1262,13 +1262,13 @@ async def calculate_distance_based(
         return ShipmentResponse(**result)
 
     except ValueError as e:
-        logger.error(f"Validation error in calculate_distance_based: {e}")
+        logger.error("Validation error in calculate_distance_based: %s", e)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e),
         )
     except Exception as e:
-        logger.error(f"Error in calculate_distance_based: {e}", exc_info=True)
+        logger.error("Error in calculate_distance_based: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Distance-based calculation failed",
@@ -1315,13 +1315,13 @@ async def calculate_spend_based(
         return CalculationResponse(**result)
 
     except ValueError as e:
-        logger.error(f"Validation error in calculate_spend_based: {e}")
+        logger.error("Validation error in calculate_spend_based: %s", e)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e),
         )
     except Exception as e:
-        logger.error(f"Error in calculate_spend_based: {e}", exc_info=True)
+        logger.error("Error in calculate_spend_based: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Spend-based calculation failed",
@@ -1368,13 +1368,13 @@ async def calculate_average_data(
         return CalculationResponse(**result)
 
     except ValueError as e:
-        logger.error(f"Validation error in calculate_average_data: {e}")
+        logger.error("Validation error in calculate_average_data: %s", e)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e),
         )
     except Exception as e:
-        logger.error(f"Error in calculate_average_data: {e}", exc_info=True)
+        logger.error("Error in calculate_average_data: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Average-data calculation failed",
@@ -1422,13 +1422,13 @@ async def calculate_warehouse(
         return WarehouseResponse(**result)
 
     except ValueError as e:
-        logger.error(f"Validation error in calculate_warehouse: {e}")
+        logger.error("Validation error in calculate_warehouse: %s", e)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e),
         )
     except Exception as e:
-        logger.error(f"Error in calculate_warehouse: {e}", exc_info=True)
+        logger.error("Error in calculate_warehouse: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Warehouse calculation failed",
@@ -1475,13 +1475,13 @@ async def calculate_last_mile(
         return LastMileResponse(**result)
 
     except ValueError as e:
-        logger.error(f"Validation error in calculate_last_mile: {e}")
+        logger.error("Validation error in calculate_last_mile: %s", e)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e),
         )
     except Exception as e:
-        logger.error(f"Error in calculate_last_mile: {e}", exc_info=True)
+        logger.error("Error in calculate_last_mile: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Last-mile calculation failed",
@@ -1528,13 +1528,13 @@ async def calculate_supplier_specific(
         return CalculationResponse(**result)
 
     except ValueError as e:
-        logger.error(f"Validation error in calculate_supplier_specific: {e}")
+        logger.error("Validation error in calculate_supplier_specific: %s", e)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e),
         )
     except Exception as e:
-        logger.error(f"Error in calculate_supplier_specific: {e}", exc_info=True)
+        logger.error("Error in calculate_supplier_specific: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Supplier-specific calculation failed",
@@ -1581,13 +1581,13 @@ async def calculate_batch(
         return BatchResponse(**result)
 
     except ValueError as e:
-        logger.error(f"Validation error in calculate_batch: {e}")
+        logger.error("Validation error in calculate_batch: %s", e)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e),
         )
     except Exception as e:
-        logger.error(f"Error in calculate_batch: {e}", exc_info=True)
+        logger.error("Error in calculate_batch: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Batch calculation failed",
@@ -1635,13 +1635,13 @@ async def calculate_portfolio(
         return BatchResponse(**result)
 
     except ValueError as e:
-        logger.error(f"Validation error in calculate_portfolio: {e}")
+        logger.error("Validation error in calculate_portfolio: %s", e)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e),
         )
     except Exception as e:
-        logger.error(f"Error in calculate_portfolio: {e}", exc_info=True)
+        logger.error("Error in calculate_portfolio: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Portfolio calculation failed",
@@ -1694,13 +1694,13 @@ async def check_compliance(
         return ComplianceResponse(**result)
 
     except ValueError as e:
-        logger.error(f"Validation error in check_compliance: {e}")
+        logger.error("Validation error in check_compliance: %s", e)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e),
         )
     except Exception as e:
-        logger.error(f"Error in check_compliance: {e}", exc_info=True)
+        logger.error("Error in check_compliance: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Compliance check failed",
@@ -1742,7 +1742,7 @@ async def get_calculation_detail(
         HTTPException: 404 if not found, 500 for failures.
     """
     try:
-        logger.info(f"Getting calculation detail: {calculation_id}")
+        logger.info("Getting calculation detail: %s", calculation_id)
 
         result = await service.get_calculation(calculation_id, tenant_id)
 
@@ -1757,7 +1757,7 @@ async def get_calculation_detail(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error in get_calculation_detail: {e}", exc_info=True)
+        logger.error("Error in get_calculation_detail: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to retrieve calculation",
@@ -1826,7 +1826,7 @@ async def list_calculations(
         return result
 
     except Exception as e:
-        logger.error(f"Error in list_calculations: {e}", exc_info=True)
+        logger.error("Error in list_calculations: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to list calculations",
@@ -1863,7 +1863,7 @@ async def delete_calculation(
         HTTPException: 404 if not found, 500 for failures.
     """
     try:
-        logger.info(f"Deleting calculation: {calculation_id}")
+        logger.info("Deleting calculation: %s", calculation_id)
 
         result = await service.delete_calculation(calculation_id, tenant_id)
 
@@ -1878,7 +1878,7 @@ async def delete_calculation(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error in delete_calculation: {e}", exc_info=True)
+        logger.error("Error in delete_calculation: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to delete calculation",
@@ -1923,14 +1923,14 @@ async def get_emission_factors_by_mode(
         HTTPException: 400 for invalid mode, 500 for retrieval failures.
     """
     try:
-        logger.info(f"Getting emission factors for mode: {mode}, year: {year}")
+        logger.info("Getting emission factors for mode: %s, year: %s", mode, year)
 
         result = await service.get_emission_factors(mode, year)
 
         return EmissionFactorResponse(**result)
 
     except ValueError as e:
-        logger.error(f"Validation error in get_emission_factors_by_mode: {e}")
+        logger.error("Validation error in get_emission_factors_by_mode: %s", e)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e),
@@ -1991,7 +1991,7 @@ async def get_warehouse_benchmarks(
         return WarehouseBenchmarkResponse(**result)
 
     except Exception as e:
-        logger.error(f"Error in get_warehouse_benchmarks: {e}", exc_info=True)
+        logger.error("Error in get_warehouse_benchmarks: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to retrieve warehouse benchmarks",
@@ -2029,14 +2029,14 @@ async def get_last_mile_factors(
         HTTPException: 500 for retrieval failures.
     """
     try:
-        logger.info(f"Getting last-mile factors: vehicle_type={vehicle_type}")
+        logger.info("Getting last-mile factors: vehicle_type=%s", vehicle_type)
 
         result = await service.get_last_mile_factors(vehicle_type)
 
         return LastMileFactorResponse(**result)
 
     except Exception as e:
-        logger.error(f"Error in get_last_mile_factors: {e}", exc_info=True)
+        logger.error("Error in get_last_mile_factors: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to retrieve last-mile factors",
@@ -2075,14 +2075,14 @@ async def get_incoterm_classification(
         HTTPException: 500 for retrieval failures.
     """
     try:
-        logger.info(f"Getting Incoterm classification: incoterm={incoterm}")
+        logger.info("Getting Incoterm classification: incoterm=%s", incoterm)
 
         result = await service.get_incoterm_rules(incoterm)
 
         return IncotermResponse(**result)
 
     except Exception as e:
-        logger.error(f"Error in get_incoterm_classification: {e}", exc_info=True)
+        logger.error("Error in get_incoterm_classification: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to retrieve Incoterm classification",
@@ -2148,7 +2148,7 @@ async def get_aggregations(
         return AggregationResponse(**result)
 
     except Exception as e:
-        logger.error(f"Error in get_aggregations: {e}", exc_info=True)
+        logger.error("Error in get_aggregations: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Aggregation failed",
@@ -2192,7 +2192,7 @@ async def get_provenance(
         HTTPException: 404 if not found, 500 for retrieval failures.
     """
     try:
-        logger.info(f"Getting provenance for calculation: {calculation_id}")
+        logger.info("Getting provenance for calculation: %s", calculation_id)
 
         result = await service.get_provenance(calculation_id, tenant_id)
 
@@ -2207,7 +2207,7 @@ async def get_provenance(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error in get_provenance: {e}", exc_info=True)
+        logger.error("Error in get_provenance: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to retrieve provenance",
@@ -2262,7 +2262,7 @@ async def health_check() -> HealthResponse:
             )
 
     except Exception as e:
-        logger.error(f"Error in health_check: {e}", exc_info=True)
+        logger.error("Error in health_check: %s", e, exc_info=True)
         return HealthResponse(
             status="unhealthy",
             agent_id="GL-MRV-S3-009",
@@ -2318,13 +2318,13 @@ async def analyze_uncertainty(
         return UncertaintyResponse(**result)
 
     except ValueError as e:
-        logger.error(f"Validation error in analyze_uncertainty: {e}")
+        logger.error("Validation error in analyze_uncertainty: %s", e)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e),
         )
     except Exception as e:
-        logger.error(f"Error in analyze_uncertainty: {e}", exc_info=True)
+        logger.error("Error in analyze_uncertainty: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Uncertainty analysis failed",
@@ -2376,13 +2376,13 @@ async def analyze_portfolio(
         return result
 
     except ValueError as e:
-        logger.error(f"Validation error in analyze_portfolio: {e}")
+        logger.error("Validation error in analyze_portfolio: %s", e)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e),
         )
     except Exception as e:
-        logger.error(f"Error in analyze_portfolio: {e}", exc_info=True)
+        logger.error("Error in analyze_portfolio: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Portfolio analysis failed",

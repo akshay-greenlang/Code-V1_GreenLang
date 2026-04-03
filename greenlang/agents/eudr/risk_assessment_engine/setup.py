@@ -308,7 +308,7 @@ class RiskAssessmentEngineService:
                 await self._db_pool.open()
                 logger.info("PostgreSQL connection pool opened")
             except Exception as e:
-                logger.warning(f"PostgreSQL pool init failed: {e}")
+                logger.warning("PostgreSQL pool init failed: %s", e)
                 self._db_pool = None
 
         # Initialize Redis
@@ -321,7 +321,7 @@ class RiskAssessmentEngineService:
                 await self._redis.ping()
                 logger.info("Redis connection established")
             except Exception as e:
-                logger.warning(f"Redis init failed: {e}")
+                logger.warning("Redis init failed: %s", e)
                 self._redis = None
 
         # Initialize engines
@@ -353,11 +353,11 @@ class RiskAssessmentEngineService:
                 try:
                     engine = engine_cls(config=self.config)
                     self._engines[name] = engine
-                    logger.info(f"Engine '{name}' initialized")
+                    logger.info("Engine '%s' initialized", name)
                 except Exception as e:
-                    logger.warning(f"Engine '{name}' init failed: {e}")
+                    logger.warning("Engine '%s' init failed: %s", name, e)
             else:
-                logger.debug(f"Engine '{name}' class not available")
+                logger.debug("Engine '%s' class not available", name)
 
     async def shutdown(self) -> None:
         """Gracefully shutdown all connections and engines.
@@ -372,9 +372,9 @@ class RiskAssessmentEngineService:
             if hasattr(engine, "shutdown"):
                 try:
                     await engine.shutdown()
-                    logger.info(f"Engine '{name}' shut down")
+                    logger.info("Engine '%s' shut down", name)
                 except Exception as e:
-                    logger.warning(f"Engine '{name}' shutdown error: {e}")
+                    logger.warning("Engine '%s' shutdown error: %s", name, e)
 
         # Close Redis
         if self._redis is not None:
@@ -382,7 +382,7 @@ class RiskAssessmentEngineService:
                 await self._redis.close()
                 logger.info("Redis connection closed")
             except Exception as e:
-                logger.warning(f"Redis close error: {e}")
+                logger.warning("Redis close error: %s", e)
 
         # Close database pool
         if self._db_pool is not None:
@@ -390,7 +390,7 @@ class RiskAssessmentEngineService:
                 await self._db_pool.close()
                 logger.info("PostgreSQL pool closed")
             except Exception as e:
-                logger.warning(f"PostgreSQL pool close error: {e}")
+                logger.warning("PostgreSQL pool close error: %s", e)
 
         self._initialized = False
         logger.info("RiskAssessmentEngineService shutdown complete")

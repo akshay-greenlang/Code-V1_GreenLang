@@ -1297,7 +1297,7 @@ class RemediationPlanDesignEngine:
         """
         plan = self._plans.get(plan_id)
         if plan is None:
-            logger.warning(f"Plan '{plan_id}' not found for milestone update")
+            logger.warning("Plan '%s' not found for milestone update", plan_id)
             return False
 
         # Find milestone in plan
@@ -1323,7 +1323,7 @@ class RemediationPlanDesignEngine:
                 )
                 return True
 
-        logger.warning(f"Milestone '{milestone_id}' not found in plan '{plan_id}'")
+        logger.warning("Milestone '%s' not found in plan '%s'", milestone_id, plan_id)
         return False
 
     def clone_plan(
@@ -1350,7 +1350,7 @@ class RemediationPlanDesignEngine:
         """
         source = self._plans.get(source_plan_id)
         if source is None:
-            logger.warning(f"Source plan '{source_plan_id}' not found for cloning")
+            logger.warning("Source plan '%s' not found for cloning", source_plan_id)
             return None
 
         new_plan_id = str(uuid.uuid4())

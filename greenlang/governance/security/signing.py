@@ -185,7 +185,7 @@ class SigstoreKeylessSigner(Signer):
             logger.warning("Not in GitHub Actions, Sigstore signing may not work")
 
         self.staging = self.config.sigstore_staging
-        logger.info(f"Initialized Sigstore keyless signer (staging={self.staging})")
+        logger.info("Initialized Sigstore keyless signer (staging=%s)", self.staging)
 
     def sign(self, payload: bytes) -> SignResult:
         """Sign using Sigstore keyless flow"""
@@ -223,7 +223,7 @@ class SigstoreKeylessSigner(Signer):
             )
 
         except Exception as e:
-            logger.error(f"Sigstore signing failed: {e}")
+            logger.error("Sigstore signing failed: %s", e)
             raise RuntimeError(f"Failed to sign with Sigstore: {e}")
 
     def get_signer_info(self) -> Dict[str, Any]:
@@ -340,7 +340,7 @@ class ExternalKMSSigner(Signer):
         try:
             self.kms_provider = create_kms_provider(kms_config)
             self.provider_name = self.kms_provider.config.provider
-            logger.info(f"Initialized {self.provider_name.upper()} KMS signer with key {self.config.kms_key_id}")
+            logger.info("Initialized %s KMS signer with key %s", self.provider_name.upper(), self.config.kms_key_id)
         except KMSProviderError as e:
             raise RuntimeError(f"Failed to initialize KMS provider: {e}")
 
@@ -361,10 +361,10 @@ class ExternalKMSSigner(Signer):
             )
 
         except KMSSigningError as e:
-            logger.error(f"KMS signing failed: {e}")
+            logger.error("KMS signing failed: %s", e)
             raise RuntimeError(f"Failed to sign with KMS: {e}")
         except Exception as e:
-            logger.error(f"Unexpected error during KMS signing: {e}")
+            logger.error("Unexpected error during KMS signing: %s", e)
             raise RuntimeError(f"Unexpected KMS signing error: {e}")
 
     def get_signer_info(self) -> Dict[str, Any]:
@@ -385,7 +385,7 @@ class ExternalKMSSigner(Signer):
                 "created_at": key_info.created_at.isoformat() if key_info.created_at else None,
             })
         except Exception as e:
-            logger.warning(f"Could not fetch key info: {e}")
+            logger.warning("Could not fetch key info: %s", e)
 
         return info
 

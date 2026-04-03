@@ -242,9 +242,9 @@ class Orchestrator:
             try:
                 store = InMemoryCheckpointStore()
                 self._checkpoint_manager = CheckpointManager(store=store)
-                self.logger.info("Initialized Orchestrator with InMemoryCheckpointStore")
+                logger.info("Initialized Orchestrator with InMemoryCheckpointStore")
             except Exception as e:
-                self.logger.warning(f"Failed to initialize checkpoint manager: {e}")
+                logger.warning("Failed to initialize checkpoint manager: %s", e)
                 self.checkpoint_enabled = False
 
         # FR-063: Alert management
@@ -254,9 +254,9 @@ class Orchestrator:
         if self.alerting_enabled and self._alert_manager is None:
             try:
                 self._alert_manager = AlertManager()
-                self.logger.info("Initialized Orchestrator with AlertManager")
+                logger.info("Initialized Orchestrator with AlertManager")
             except Exception as e:
-                self.logger.warning(f"Failed to initialize alert manager: {e}")
+                logger.warning("Failed to initialize alert manager: %s", e)
                 self.alerting_enabled = False
 
     @property
@@ -310,7 +310,7 @@ class Orchestrator:
                 details=details,
             )
         except Exception as e:
-            self.logger.warning(f"Failed to emit alert: {e}")
+            logger.warning("Failed to emit alert: %s", e)
 
     def _emit_alert_sync(
         self,
@@ -379,7 +379,7 @@ class Orchestrator:
                 )
             )
         except Exception as e:
-            self.logger.warning(f"Failed to emit alert: {e}")
+            logger.warning("Failed to emit alert: %s", e)
 
     def register_agent(self, agent_id: str, agent: BaseAgent) -> None:
         """Register an agent for use in workflows.
@@ -389,7 +389,7 @@ class Orchestrator:
             agent: Agent instance to register
         """
         self.agents[agent_id] = agent
-        self.logger.info(f"Registered agent: {agent_id}")
+        logger.info("Registered agent: %s", agent_id)
 
     def register_workflow(self, workflow_id: str, workflow: Workflow) -> None:
         """Register a workflow for execution.
@@ -399,7 +399,7 @@ class Orchestrator:
             workflow: Workflow instance to register
         """
         self.workflows[workflow_id] = workflow
-        self.logger.info(f"Registered workflow: {workflow_id}")
+        logger.info("Registered workflow: %s", workflow_id)
 
     def execute_workflow(
         self,
@@ -434,7 +434,7 @@ class Orchestrator:
         workflow = self.workflows[workflow_id]
         execution_id = f"{workflow_id}_{len(self.execution_history)}"
 
-        self.logger.info(f"Starting workflow execution: {execution_id}")
+        logger.info("Starting workflow execution: %s", execution_id)
 
         # FR-074: Compute plan hash for checkpoint integrity
         plan_hash = self._compute_plan_hash(workflow)
@@ -450,7 +450,7 @@ class Orchestrator:
                     # Use provided checkpoint for retry
                     checkpoint_run = run_checkpoint
                     skipped_steps = set(checkpoint_run.get_completed_steps())
-                    self.logger.info(
+                    logger.info(
                         f"Resuming from checkpoint: {len(skipped_steps)} steps will be skipped"
                     )
                 else:
@@ -479,9 +479,9 @@ class Orchestrator:
                                 pipeline_id=workflow_id,
                             )
                         )
-                    self.logger.info(f"Created checkpoint for run: {execution_id}")
+                    logger.info("Created checkpoint for run: %s", execution_id)
             except Exception as e:
-                self.logger.warning(f"Failed to initialize checkpoint: {e}")
+                logger.warning("Failed to initialize checkpoint: %s", e)
 
         # Policy enforcement check before execution
         if POLICY_AVAILABLE:
@@ -493,10 +493,10 @@ class Orchestrator:
                     execution_state=ExecutionState.STARTED
                 )
                 check_run(workflow, policy_context)
-                self.logger.info(f"Runtime policy check passed for run_id={policy_context.run_id}")
+                logger.info("Runtime policy check passed for run_id=%s", policy_context.run_id)
             except RuntimeError as e:
                 error_msg = f"Runtime policy check failed: {e}"
-                self.logger.error(error_msg)
+                logger.error(error_msg)
                 # FR-063: Emit policy denial alert
                 if self.alerting_enabled and ALERTING_AVAILABLE:
                     self._emit_alert_sync(
@@ -515,7 +515,7 @@ class Orchestrator:
                     "results": {},
                 }
             except Exception as e:
-                self.logger.warning(f"Policy check error: {e}")
+                logger.warning("Policy check error: %s", e)
 
         context = {
             "input": input_data,
@@ -531,19 +531,19 @@ class Orchestrator:
                 step_checkpoint = checkpoint_run.get_step_checkpoint(step_id)
                 if step_checkpoint and step_checkpoint.outputs:
                     context["results"][step_id] = step_checkpoint.outputs
-                    self.logger.info(f"Loaded checkpoint outputs for step: {step_id}")
+                    logger.info("Loaded checkpoint outputs for step: %s", step_id)
 
         for step in workflow.steps:
             # FR-074: Skip steps that completed successfully in previous run
             if step.name in skipped_steps:
-                self.logger.info(f"Skipping step (from checkpoint): {step.name}")
+                logger.info("Skipping step (from checkpoint): %s", step.name)
                 continue
 
             if not self._should_execute_step(step, context):
-                self.logger.info(f"Skipping step (condition): {step.name}")
+                logger.info("Skipping step (condition): %s", step.name)
                 continue
 
-            self.logger.info(f"Executing step: {step.name}")
+            logger.info("Executing step: %s", step.name)
 
             # FR-074: Generate idempotency key for this step
             idempotency_key = ""
@@ -564,7 +564,7 @@ class Orchestrator:
             while attempt <= max_retries:
                 try:
                     if attempt > 0:
-                        self.logger.info(
+                        logger.info(
                             f"Retrying step {step.name} (attempt {attempt}/{max_retries})"
                         )
                         # FR-074: Update idempotency key for retry attempt
@@ -648,7 +648,7 @@ class Orchestrator:
                         )
 
                         if attempt < max_retries:
-                            self.logger.warning(
+                            logger.warning(
                                 f"Step {step.name} failed, will retry. Error: {last_error}"
                             )
                             attempt += 1
@@ -659,10 +659,10 @@ class Orchestrator:
 
                 except Exception as e:
                     last_error = str(e)
-                    self.logger.error(f"Error in step {step.name}: {last_error}")
+                    logger.error("Error in step %s: %s", step.name, last_error)
 
                     if attempt < max_retries:
-                        self.logger.warning(f"Will retry step {step.name}")
+                        logger.warning("Will retry step %s", step.name)
                         attempt += 1
                         continue
                     else:
@@ -693,7 +693,7 @@ class Orchestrator:
                     )
 
                 if step.on_failure == "stop":
-                    self.logger.error(
+                    logger.error(
                         f"Step failed after {attempt + 1} attempts, stopping workflow: {step.name}"
                     )
                     # FR-063: Emit step failure alert that stops workflow
@@ -714,7 +714,7 @@ class Orchestrator:
                         )
                     break
                 elif step.on_failure == "skip":
-                    self.logger.warning(
+                    logger.warning(
                         f"Step failed after {attempt + 1} attempts, continuing: {step.name}"
                     )
                     continue
@@ -777,16 +777,16 @@ class Orchestrator:
         try:
             # Safe expression evaluation using AST
             result = self._evaluate_condition(step.condition, context)
-            self.logger.debug(
+            logger.debug(
                 f"Step '{step.name}' condition '{step.condition}' evaluated to {result}"
             )
             return result
         except ValidationError as e:
             # Structured validation errors - log with full context
             error_msg = f"Condition evaluation failed for step '{step.name}': {e.message}"
-            self.logger.error(error_msg)
-            self.logger.error(f"Condition: {step.condition}")
-            self.logger.error(f"Context: {e.context}")
+            logger.error(error_msg)
+            logger.error("Condition: %s", step.condition)
+            logger.error("Context: %s", e.context)
             # Record the error in context for visibility
             context.setdefault("condition_errors", []).append({
                 "step": step.name,
@@ -798,8 +798,8 @@ class Orchestrator:
         except SyntaxError as e:
             # Syntax errors in the condition expression
             error_msg = f"Invalid condition syntax for step '{step.name}': {e}"
-            self.logger.error(error_msg)
-            self.logger.error(f"Condition: {step.condition}")
+            logger.error(error_msg)
+            logger.error("Condition: %s", step.condition)
             context.setdefault("condition_errors", []).append({
                 "step": step.name,
                 "condition": step.condition,
@@ -810,8 +810,8 @@ class Orchestrator:
         except Exception as e:
             # Unexpected errors - log with stack trace
             error_msg = f"Unexpected error evaluating condition for step '{step.name}': {e}"
-            self.logger.error(error_msg, exc_info=True)
-            self.logger.error(f"Condition: {step.condition}")
+            logger.error(error_msg, exc_info=True)
+            logger.error("Condition: %s", step.condition)
             context.setdefault("condition_errors", []).append({
                 "step": step.name,
                 "condition": step.condition,
@@ -1146,10 +1146,10 @@ class Orchestrator:
                     self._checkpoint_manager.save_checkpoint(run_id, step_id, state)
                 )
 
-            self.logger.debug(f"Saved checkpoint for step {step_id}: {status.value}")
+            logger.debug("Saved checkpoint for step %s: %s", step_id, status.value)
 
         except Exception as e:
-            self.logger.warning(f"Failed to save step checkpoint: {e}")
+            logger.warning("Failed to save step checkpoint: %s", e)
 
     async def get_run_checkpoint(self, run_id: str) -> Optional[Any]:
         """

@@ -224,7 +224,7 @@ class ThermalCommandOrchestrator(IntelligenceMixin):
         Raises:
             RuntimeError: If startup fails
         """
-        logger.info(f"Starting ThermalCommand Orchestrator: {self.config.name}")
+        logger.info("Starting ThermalCommand Orchestrator: %s", self.config.name)
 
         try:
             self._state = "starting"
@@ -258,11 +258,11 @@ class ThermalCommandOrchestrator(IntelligenceMixin):
                 data={"config": self.config.dict()},
             )
 
-            logger.info(f"ThermalCommand Orchestrator started successfully")
+            logger.info("ThermalCommand Orchestrator started successfully")
 
         except Exception as e:
             self._state = "error"
-            logger.error(f"Failed to start orchestrator: {e}", exc_info=True)
+            logger.error("Failed to start orchestrator: %s", e, exc_info=True)
             raise RuntimeError(f"Orchestrator startup failed: {e}") from e
 
     async def stop(self) -> None:
@@ -272,7 +272,7 @@ class ThermalCommandOrchestrator(IntelligenceMixin):
         This method stops all coordinators, disconnects from external
         systems, and flushes audit logs.
         """
-        logger.info(f"Stopping ThermalCommand Orchestrator: {self.config.name}")
+        logger.info("Stopping ThermalCommand Orchestrator: %s", self.config.name)
 
         self._state = "stopping"
 
@@ -297,7 +297,7 @@ class ThermalCommandOrchestrator(IntelligenceMixin):
             logger.info("ThermalCommand Orchestrator stopped")
 
         except Exception as e:
-            logger.error(f"Error during shutdown: {e}", exc_info=True)
+            logger.error("Error during shutdown: %s", e, exc_info=True)
             self._state = "error"
 
     # =========================================================================
@@ -315,7 +315,7 @@ class ThermalCommandOrchestrator(IntelligenceMixin):
             True if registration successful
         """
         if registration.agent_id in self._registered_agents:
-            logger.warning(f"Agent already registered: {registration.agent_id}")
+            logger.warning("Agent already registered: %s", registration.agent_id)
             return False
 
         self._registered_agents[registration.agent_id] = registration
@@ -360,7 +360,7 @@ class ThermalCommandOrchestrator(IntelligenceMixin):
             message=f"Agent deregistered: {agent_id}",
         )
 
-        logger.info(f"Agent deregistered: {agent_id}")
+        logger.info("Agent deregistered: %s", agent_id)
         return True
 
     def get_agent_status(self, agent_id: str) -> Optional[AgentStatus]:
@@ -414,7 +414,7 @@ class ThermalCommandOrchestrator(IntelligenceMixin):
         Raises:
             ValueError: If workflow specification is invalid
         """
-        logger.info(f"Executing workflow: {spec.workflow_id} ({spec.name})")
+        logger.info("Executing workflow: %s (%s)", spec.workflow_id, spec.name)
 
         # Validate workflow
         validation_errors = self._validate_workflow(spec)
@@ -473,7 +473,7 @@ class ThermalCommandOrchestrator(IntelligenceMixin):
 
         except Exception as e:
             self._metrics["workflows_failed"] += 1
-            logger.error(f"Workflow execution failed: {e}", exc_info=True)
+            logger.error("Workflow execution failed: %s", e, exc_info=True)
 
             self._audit_logger.log_event(
                 event_type="WORKFLOW_FAILED",
@@ -518,7 +518,7 @@ class ThermalCommandOrchestrator(IntelligenceMixin):
         Args:
             reason: Reason for ESD
         """
-        logger.critical(f"EMERGENCY SHUTDOWN: {reason}")
+        logger.critical("EMERGENCY SHUTDOWN: %s", reason)
 
         await self._safety_coordinator.trigger_esd(reason)
         self._metrics["safety_events"] += 1
@@ -656,7 +656,7 @@ class ThermalCommandOrchestrator(IntelligenceMixin):
         Args:
             event: Event to handle
         """
-        logger.debug(f"Handling event: {event.event_type}")
+        logger.debug("Handling event: %s", event.event_type)
 
         # Route to appropriate handler
         if "SAFETY" in event.event_type.upper():
@@ -671,7 +671,7 @@ class ThermalCommandOrchestrator(IntelligenceMixin):
     async def _broadcast_event(self, event: OrchestratorEvent) -> None:
         """Broadcast event to all agents."""
         # In production, this would use MQTT/Kafka
-        logger.info(f"Broadcasting event: {event.event_type}")
+        logger.info("Broadcasting event: %s", event.event_type)
 
     # =========================================================================
     # INTERNAL METHODS
@@ -746,7 +746,7 @@ class ThermalCommandOrchestrator(IntelligenceMixin):
             unhealthy = [aid for aid, status in health.items() if status != "healthy"]
 
             if unhealthy:
-                logger.warning(f"Unhealthy agents detected: {unhealthy}")
+                logger.warning("Unhealthy agents detected: %s", unhealthy)
 
             await asyncio.sleep(interval)
 
@@ -757,7 +757,7 @@ class ThermalCommandOrchestrator(IntelligenceMixin):
         while self._state == "running":
             # Collect and export metrics
             metrics = self.get_metrics()
-            logger.debug(f"Metrics collected: {metrics}")
+            logger.debug("Metrics collected: %s", metrics)
 
             await asyncio.sleep(interval)
 

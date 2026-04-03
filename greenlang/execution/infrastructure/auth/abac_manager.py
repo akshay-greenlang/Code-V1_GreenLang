@@ -313,7 +313,7 @@ class Condition(BaseModel):
             else:
                 return False
         except Exception as e:
-            logger.warning(f"Condition evaluation error: {e}")
+            logger.warning("Condition evaluation error: %s", e)
             return False
 
 
@@ -508,7 +508,7 @@ class ExpressionEngine:
             result = self._evaluate_tokens(tokens, request)
             return bool(result)
         except Exception as e:
-            logger.error(f"Expression evaluation error: {e}")
+            logger.error("Expression evaluation error: %s", e)
             return False
 
     def _tokenize(self, expression: str) -> List[str]:
@@ -793,7 +793,7 @@ class ABACManager:
             policy: Policy to register
         """
         self._policies[policy.policy_id] = policy
-        logger.info(f"Registered policy: {policy.name} ({policy.policy_id})")
+        logger.info("Registered policy: %s (%s)", policy.name, policy.policy_id)
 
     def unregister_policy(self, policy_id: str) -> bool:
         """
@@ -807,7 +807,7 @@ class ABACManager:
         """
         if policy_id in self._policies:
             del self._policies[policy_id]
-            logger.info(f"Unregistered policy: {policy_id}")
+            logger.info("Unregistered policy: %s", policy_id)
             return True
         return False
 
@@ -819,7 +819,7 @@ class ABACManager:
             policy_set: Policy set to register
         """
         self._policy_sets[policy_set.policy_set_id] = policy_set
-        logger.info(f"Registered policy set: {policy_set.name}")
+        logger.info("Registered policy set: %s", policy_set.name)
 
     async def evaluate(self, request: AccessRequest) -> PolicyDecision:
         """

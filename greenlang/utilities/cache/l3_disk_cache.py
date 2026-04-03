@@ -250,7 +250,7 @@ class L3DiskCache:
             # Read file
             file_path = Path(entry.file_path)
             if not file_path.exists():
-                logger.warning(f"Cache file missing: {file_path}")
+                logger.warning("Cache file missing: %s", file_path)
                 await self._evict_entry(entry, reason="file_missing")
                 self._misses += 1
                 return None
@@ -263,7 +263,7 @@ class L3DiskCache:
             if self._corruption_check:
                 checksum = hashlib.sha256(data).hexdigest()
                 if checksum != entry.checksum:
-                    logger.error(f"Checksum mismatch for key: {key}")
+                    logger.error("Checksum mismatch for key: %s", key)
                     self._corruption_errors += 1
                     await self._evict_entry(entry, reason="corruption")
                     self._misses += 1
@@ -287,7 +287,7 @@ class L3DiskCache:
             return value
 
         except Exception as e:
-            logger.error(f"Error getting key {key}: {e}", exc_info=True)
+            logger.error("Error getting key %s: %s", key, e, exc_info=True)
             self._misses += 1
             return None
 
@@ -392,7 +392,7 @@ class L3DiskCache:
             return True
 
         except Exception as e:
-            logger.error(f"Error setting key {key}: {e}", exc_info=True)
+            logger.error("Error setting key %s: %s", key, e, exc_info=True)
             return False
 
     async def delete(self, key: str) -> bool:
@@ -420,7 +420,7 @@ class L3DiskCache:
             return True
 
         except Exception as e:
-            logger.error(f"Error deleting key {key}: {e}")
+            logger.error("Error deleting key %s: %s", key, e)
             return False
 
     async def exists(self, key: str) -> bool:
@@ -447,7 +447,7 @@ class L3DiskCache:
             try:
                 file_path.unlink()
             except Exception as e:
-                logger.error(f"Error deleting file {file_path}: {e}")
+                logger.error("Error deleting file %s: %s", file_path, e)
 
         # Clear database
         self._db.execute("DELETE FROM cache_entries")
@@ -470,7 +470,7 @@ class L3DiskCache:
             try:
                 file_path.unlink()
             except Exception as e:
-                logger.error(f"Error deleting file {file_path}: {e}")
+                logger.error("Error deleting file %s: %s", file_path, e)
 
         # Remove from database
         self._db.execute("DELETE FROM cache_entries WHERE key = ?", (entry.key,))
@@ -479,7 +479,7 @@ class L3DiskCache:
         self._current_size_bytes -= entry.size_bytes
         self._evictions += 1
 
-        logger.debug(f"Evicted entry: {entry.key} (reason: {reason})")
+        logger.debug("Evicted entry: %s (reason: %s)", entry.key, reason)
 
     async def _evict_lru(self) -> None:
         """Evict least recently used entry."""
@@ -509,7 +509,7 @@ class L3DiskCache:
             await self._evict_entry(entry, reason="ttl_expired")
 
         if expired_entries:
-            logger.info(f"Cleaned up {len(expired_entries)} expired entries")
+            logger.info("Cleaned up %s expired entries", len(expired_entries))
 
     async def _calculate_size(self) -> None:
         """Calculate current cache size."""
@@ -545,7 +545,7 @@ class L3DiskCache:
             except asyncio.CancelledError:
                 break
             except Exception as e:
-                logger.error(f"Error in checkpoint loop: {e}")
+                logger.error("Error in checkpoint loop: %s", e)
 
     async def _cleanup_loop(self) -> None:
         """Background task for cleanup."""
@@ -556,7 +556,7 @@ class L3DiskCache:
             except asyncio.CancelledError:
                 break
             except Exception as e:
-                logger.error(f"Error in cleanup loop: {e}")
+                logger.error("Error in cleanup loop: %s", e)
 
     async def get_stats(self) -> Dict[str, Any]:
         """
@@ -594,7 +594,7 @@ class L3DiskCache:
             self._db.commit()
             logger.info("Cache vacuum completed")
         except Exception as e:
-            logger.error(f"Error during vacuum: {e}")
+            logger.error("Error during vacuum: %s", e)
 
     async def get_top_keys(self, n: int = 10) -> List[Dict[str, Any]]:
         """

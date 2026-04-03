@@ -385,7 +385,7 @@ class SecurityHeadersMiddleware:
             response.headers[header_name] = header_value
 
         # Log security headers applied
-        logger.debug(f"Security headers applied to {request.url.path}")
+        logger.debug("Security headers applied to %s", request.url.path)
 
         return response
 

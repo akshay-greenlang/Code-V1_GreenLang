@@ -304,7 +304,7 @@ class ExperimentTracker:
         self._current_run = run
         experiment.runs.append(run_id)
 
-        logger.info(f"Started run: {run_id} ({run_name or 'unnamed'})")
+        logger.info("Started run: %s (%s)", run_id, run_name or 'unnamed')
 
         # Start MLflow run if available
         mlflow_run = None
@@ -315,7 +315,7 @@ class ExperimentTracker:
                 for key, value in tags.items():
                     mlflow.set_tag(key, value)
             except Exception as e:
-                logger.warning(f"Failed to start MLflow run: {e}")
+                logger.warning("Failed to start MLflow run: %s", e)
 
         try:
             yield run
@@ -364,9 +364,9 @@ class ExperimentTracker:
                 for key, value in params.items():
                     mlflow.log_param(key, value)
             except Exception as e:
-                logger.warning(f"Failed to log params to MLflow: {e}")
+                logger.warning("Failed to log params to MLflow: %s", e)
 
-        logger.debug(f"Logged params: {list(params.keys())}")
+        logger.debug("Logged params: %s", list(params.keys()))
 
     def log_metrics(
         self,
@@ -408,9 +408,9 @@ class ExperimentTracker:
                 for key, value in metrics.items():
                     mlflow.log_metric(key, value, step=step)
             except Exception as e:
-                logger.warning(f"Failed to log metrics to MLflow: {e}")
+                logger.warning("Failed to log metrics to MLflow: %s", e)
 
-        logger.debug(f"Logged metrics: {list(metrics.keys())}")
+        logger.debug("Logged metrics: %s", list(metrics.keys()))
 
     def log_artifact(
         self,
@@ -438,9 +438,9 @@ class ExperimentTracker:
                 import mlflow
                 mlflow.log_artifact(local_path, artifact_path)
             except Exception as e:
-                logger.warning(f"Failed to log artifact to MLflow: {e}")
+                logger.warning("Failed to log artifact to MLflow: %s", e)
 
-        logger.debug(f"Logged artifact: {local_path}")
+        logger.debug("Logged artifact: %s", local_path)
 
     def log_model(
         self,
@@ -474,9 +474,9 @@ class ExperimentTracker:
                 import mlflow.sklearn
                 mlflow.sklearn.log_model(model, artifact_path)
             except Exception as e:
-                logger.warning(f"Failed to log model to MLflow: {e}")
+                logger.warning("Failed to log model to MLflow: %s", e)
 
-        logger.debug(f"Logged model to {model_path}")
+        logger.debug("Logged model to %s", model_path)
 
     def log_tags(self, tags: Dict[str, str]) -> None:
         """Log tags for the current run."""

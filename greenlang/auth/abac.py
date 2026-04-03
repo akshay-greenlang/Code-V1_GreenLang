@@ -213,7 +213,7 @@ class PolicyCondition(BaseModel):
                     return self.value[0] <= attr_value <= self.value[1]
                 return False
         except (TypeError, ValueError) as e:
-            logger.warning(f"Error evaluating condition: {e}")
+            logger.warning("Error evaluating condition: %s", e)
             return False
 
         return False
@@ -465,13 +465,13 @@ class ABACEvaluator:
     def add_policy(self, policy: ABACPolicy):
         """Add a policy to the evaluator."""
         self._policies[policy.policy_id] = policy
-        logger.info(f"Added ABAC policy: {policy.name}")
+        logger.info("Added ABAC policy: %s", policy.name)
 
     def remove_policy(self, policy_id: str) -> bool:
         """Remove a policy from the evaluator."""
         if policy_id in self._policies:
             del self._policies[policy_id]
-            logger.info(f"Removed ABAC policy: {policy_id}")
+            logger.info("Removed ABAC policy: %s", policy_id)
             return True
         return False
 
@@ -621,7 +621,7 @@ class ABACEvaluator:
                 self.add_policy(policy)
                 count += 1
             except Exception as e:
-                logger.error(f"Error loading policy from {file_path}: {e}")
+                logger.error("Error loading policy from %s: %s", file_path, e)
 
         for file_path in directory.glob('*.yaml'):
             try:
@@ -629,7 +629,7 @@ class ABACEvaluator:
                 self.add_policy(policy)
                 count += 1
             except Exception as e:
-                logger.error(f"Error loading policy from {file_path}: {e}")
+                logger.error("Error loading policy from %s: %s", file_path, e)
 
         for file_path in directory.glob('*.yml'):
             try:
@@ -637,9 +637,9 @@ class ABACEvaluator:
                 self.add_policy(policy)
                 count += 1
             except Exception as e:
-                logger.error(f"Error loading policy from {file_path}: {e}")
+                logger.error("Error loading policy from %s: %s", file_path, e)
 
-        logger.info(f"Loaded {count} policies from {directory}")
+        logger.info("Loaded %s policies from %s", count, directory)
 
 
 # ==============================================================================
@@ -661,7 +661,7 @@ class OPAIntegration:
             opa_url: URL of OPA server
         """
         self.opa_url = opa_url.rstrip('/')
-        logger.info(f"Initialized OPA integration: {opa_url}")
+        logger.info("Initialized OPA integration: %s", opa_url)
 
     def evaluate(
         self,

@@ -456,13 +456,13 @@ class InvestmentsService:
             mod = importlib.import_module(module_path)
             cls = getattr(mod, class_name)
             instance = cls()
-            logger.info(f"{class_name} initialized")
+            logger.info("%s initialized", class_name)
             return instance
         except ImportError:
-            logger.warning(f"{class_name} not available (ImportError)")
+            logger.warning("%s not available (ImportError)", class_name)
             return None
         except Exception as e:
-            logger.warning(f"{class_name} initialization failed: {e}")
+            logger.warning("%s initialization failed: %s", class_name, e)
             return None
 
     # ========================================================================
@@ -523,7 +523,7 @@ class InvestmentsService:
 
         except Exception as e:
             elapsed = (time.monotonic() - start_time) * 1000.0
-            logger.error(f"Calculation {calc_id} failed: {e}", exc_info=True)
+            logger.error("Calculation %s failed: %s", calc_id, e, exc_info=True)
             return InvestmentCalculationResponse(
                 success=False,
                 calculation_id=calc_id,
@@ -907,7 +907,7 @@ class InvestmentsService:
 
         except Exception as e:
             elapsed = (time.monotonic() - start_time) * 1000.0
-            logger.error(f"Portfolio calculation failed: {e}", exc_info=True)
+            logger.error("Portfolio calculation failed: %s", e, exc_info=True)
             return PortfolioCalculationResponse(
                 success=False,
                 portfolio_id=request.portfolio_id,

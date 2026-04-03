@@ -898,7 +898,7 @@ class CitationsEvidenceAgent(BaseAgent):
         # Initialize with standard methodologies
         self._initialize_standard_methodologies()
 
-        self.logger.info(f"Initialized {self.AGENT_NAME} v{self.VERSION}")
+        logger.info("Initialized %s v%s", self.AGENT_NAME, self.VERSION)
 
     def _initialize_standard_methodologies(self) -> None:
         """Initialize standard methodology references."""
@@ -1009,7 +1009,7 @@ class CitationsEvidenceAgent(BaseAgent):
             )
 
         except Exception as e:
-            self.logger.error(f"Citation operation failed: {str(e)}", exc_info=True)
+            logger.error("Citation operation failed: %s", e, exc_info=True)
             return AgentResult(
                 success=False,
                 error=str(e),
@@ -1039,7 +1039,7 @@ class CitationsEvidenceAgent(BaseAgent):
         # Store citation
         self._citations[citation.citation_id] = citation
 
-        self.logger.info(f"Registered citation: {citation.citation_id}")
+        logger.info("Registered citation: %s", citation.citation_id)
 
         return CitationsAgentOutput(
             success=True,
@@ -1189,7 +1189,7 @@ class CitationsEvidenceAgent(BaseAgent):
         if citation.content_hash:
             current_hash = citation.calculate_content_hash()
             if current_hash != citation.content_hash:
-                self.logger.warning(
+                logger.warning(
                     f"Content hash mismatch for citation {citation.citation_id}"
                 )
                 return VerificationStatus.INVALID
@@ -1239,7 +1239,7 @@ class CitationsEvidenceAgent(BaseAgent):
 
         self._packages[package.package_id] = package
 
-        self.logger.info(f"Created evidence package: {package.package_id}")
+        logger.info("Created evidence package: %s", package.package_id)
 
         return CitationsAgentOutput(
             success=True,
@@ -1309,7 +1309,7 @@ class CitationsEvidenceAgent(BaseAgent):
 
         package_hash = package.finalize()
 
-        self.logger.info(
+        logger.info(
             f"Finalized evidence package: {package_id} with hash {package_hash[:16]}..."
         )
 

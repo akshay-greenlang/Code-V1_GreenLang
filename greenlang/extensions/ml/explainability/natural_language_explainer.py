@@ -258,7 +258,7 @@ class NaturalLanguageExplainer:
         self.default_audience = default_audience
         self.default_format = default_format
         self.include_provenance = include_provenance
-        logger.info(f"NaturalLanguageExplainer initialized for {default_audience.value}")
+        logger.info("NaturalLanguageExplainer initialized for %s", default_audience.value)
 
     def explain_prediction(
         self,
@@ -523,7 +523,7 @@ class NaturalLanguageExplainer:
             return explanation
 
         # This is where language translation would be integrated
-        logger.warning(f"Language '{language}' not yet supported. Returning English.")
+        logger.warning("Language '%s' not yet supported. Returning English.", language)
         return explanation
 
     # =========================================================================

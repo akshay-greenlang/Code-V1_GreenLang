@@ -185,11 +185,11 @@ class EmbeddingGenerator:
         self.model_name = model_name
         self.cache_dir = cache_dir or str(Path.home() / ".cache" / "greenlang" / "embeddings")
 
-        logger.info(f"Loading embedding model: {model_name}")
+        logger.info("Loading embedding model: %s", model_name)
         self.model = SentenceTransformer(model_name, cache_folder=self.cache_dir)
         self.embedding_dim = self.model.get_sentence_embedding_dimension()
 
-        logger.info(f"Embedding model loaded. Dimension: {self.embedding_dim}")
+        logger.info("Embedding model loaded. Dimension: %s", self.embedding_dim)
 
     def encode(self, text: str) -> np.ndarray:
         """
@@ -263,7 +263,7 @@ class FAISSIndex:
         # Mapping from FAISS index to cache keys
         self.index_to_key: List[str] = []
 
-        logger.info(f"FAISS index initialized. Dimension: {dimension}")
+        logger.info("FAISS index initialized. Dimension: %s", dimension)
 
     def add(self, key: str, embedding: np.ndarray):
         """
@@ -324,7 +324,7 @@ class FAISSIndex:
         with open(mapping_path, "wb") as f:
             pickle.dump(self.index_to_key, f)
 
-        logger.info(f"FAISS index saved to {filepath}")
+        logger.info("FAISS index saved to %s", filepath)
 
     def load(self, filepath: str):
         """Load index from disk"""
@@ -335,7 +335,7 @@ class FAISSIndex:
         with open(mapping_path, "rb") as f:
             self.index_to_key = pickle.load(f)
 
-        logger.info(f"FAISS index loaded from {filepath}")
+        logger.info("FAISS index loaded from %s", filepath)
 
     @property
     def size(self) -> int:
@@ -386,9 +386,9 @@ class RedisCache:
             )
             # Test connection
             self.client.ping()
-            logger.info(f"Redis cache connected: {host}:{port}")
+            logger.info("Redis cache connected: %s:%s", host, port)
         except redis.ConnectionError as e:
-            logger.warning(f"Redis connection failed: {e}. Using in-memory fallback.")
+            logger.warning("Redis connection failed: %s. Using in-memory fallback.", e)
             self.client = None
 
     def _make_key(self, key: str) -> str:
@@ -587,7 +587,7 @@ class SemanticCache:
             try:
                 self.cache_storage = RedisCache(host=redis_host, port=redis_port)
             except Exception as e:
-                logger.warning(f"Redis initialization failed: {e}. Using in-memory cache.")
+                logger.warning("Redis initialization failed: %s. Using in-memory cache.", e)
                 self.cache_storage = InMemoryCache()
         else:
             self.cache_storage = InMemoryCache()
@@ -671,7 +671,7 @@ class SemanticCache:
         # Update metrics
         self.metrics.total_entries = self.faiss_index.size
 
-        logger.debug(f"Cached response for prompt: {prompt[:50]}...")
+        logger.debug("Cached response for prompt: %s...", prompt[:50])
 
     def get(
         self,
@@ -704,7 +704,7 @@ class SemanticCache:
         results = self.faiss_index.search(query_embedding, k=5)
         search_time = time.time() - start_time
 
-        logger.debug(f"FAISS search completed in {search_time*1000:.2f}ms")
+        logger.debug("FAISS search completed in %.2fms", search_time*1000)
 
         # Check results
         for key, similarity in results:
@@ -738,13 +738,13 @@ class SemanticCache:
             # Estimate cost savings (assume $0.002 per request saved)
             self.metrics.cost_savings_usd += 0.002
 
-            logger.info(f"Cache hit! Similarity: {similarity:.3f}, Prompt: {prompt[:50]}...")
+            logger.info("Cache hit! Similarity: %.3f, Prompt: %s...", similarity, prompt[:50])
 
             return (entry.response, similarity, entry)
 
         # Cache miss
         self.metrics.cache_misses += 1
-        logger.debug(f"Cache miss for prompt: {prompt[:50]}...")
+        logger.debug("Cache miss for prompt: %s...", prompt[:50])
 
         return None
 
@@ -777,7 +777,7 @@ class SemanticCache:
         # Save FAISS index
         self.faiss_index.save(filepath)
 
-        logger.info(f"Index saved to {filepath}")
+        logger.info("Index saved to %s", filepath)
 
     def load_index(self, filepath: Optional[str] = None):
         """Load FAISS index from disk"""
@@ -791,7 +791,7 @@ class SemanticCache:
         # Update metrics
         self.metrics.total_entries = self.faiss_index.size
 
-        logger.info(f"Index loaded from {filepath}")
+        logger.info("Index loaded from %s", filepath)
 
     def get_metrics(self) -> CacheMetrics:
         """Get current cache metrics"""

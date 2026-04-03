@@ -151,7 +151,7 @@ class AgentFactory:
         self._total_cost_usd = 0.0
         self._total_generation_time_seconds = 0.0
 
-        logger.info(f"Agent Factory initialized (budget: ${budget_per_agent_usd}/agent)")
+        logger.info("Agent Factory initialized (budget: $%s/agent)", budget_per_agent_usd)
 
     async def generate_agent(
         self,
@@ -191,7 +191,7 @@ class AgentFactory:
         total_cost = 0.0
         attempts = 0
 
-        logger.info(f"Starting agent generation: {spec.id}")
+        logger.info("Starting agent generation: %s", spec.id)
 
         try:
             # Create budget for this agent
@@ -232,7 +232,7 @@ class AgentFactory:
             if self.enable_validation:
                 for attempt in range(1, self.max_refinement_attempts + 1):
                     attempts = attempt
-                    logger.info(f"Validation attempt {attempt}/{self.max_refinement_attempts}")
+                    logger.info("Validation attempt %s/%s", attempt, self.max_refinement_attempts)
 
                     validation_result = self.validator.validate_code(
                         complete_agent_code,
@@ -245,7 +245,7 @@ class AgentFactory:
                         break
 
                     if attempt < self.max_refinement_attempts:
-                        logger.warning(f"Validation failed, refining code (attempt {attempt})...")
+                        logger.warning("Validation failed, refining code (attempt %s)...", attempt)
                         complete_agent_code, refinement_cost = await self._refine_code(
                             complete_agent_code,
                             validation_result.errors,
@@ -327,7 +327,7 @@ class AgentFactory:
             )
 
         except BudgetExceeded as e:
-            logger.error(f"Budget exceeded: {e}")
+            logger.error("Budget exceeded: %s", e)
             return GenerationResult(
                 success=False,
                 error=f"Budget exceeded: {str(e)}",
@@ -336,7 +336,7 @@ class AgentFactory:
             )
 
         except Exception as e:
-            logger.error(f"Agent generation failed: {e}", exc_info=True)
+            logger.error("Agent generation failed: %s", e, exc_info=True)
             return GenerationResult(
                 success=False,
                 error=f"Generation failed: {str(e)}",
@@ -363,7 +363,7 @@ class AgentFactory:
         if reference_file.exists():
             return reference_file.read_text()
         else:
-            logger.warning(f"Reference agent not found: {reference_file}")
+            logger.warning("Reference agent not found: %s", reference_file)
             return ""
 
     async def _load_reference_tests(self, spec: AgentSpecV2) -> str:
@@ -382,7 +382,7 @@ class AgentFactory:
         if test_file.exists():
             return test_file.read_text()
         else:
-            logger.warning(f"Reference tests not found: {test_file}")
+            logger.warning("Reference tests not found: %s", test_file)
             return ""
 
     async def _generate_tools(
@@ -693,30 +693,30 @@ class AgentFactory:
         # Save agent code
         agent_file = agent_dir / f"{spec.id.split('/')[-1]}_ai.py"
         agent_file.write_text(agent_code)
-        logger.info(f"Saved agent code: {agent_file}")
+        logger.info("Saved agent code: %s", agent_file)
 
         # Save test code
         if test_code:
             test_file = agent_dir / f"test_{spec.id.split('/')[-1]}_ai.py"
             test_file.write_text(test_code)
-            logger.info(f"Saved test code: {test_file}")
+            logger.info("Saved test code: %s", test_file)
 
         # Save documentation
         if docs:
             docs_file = agent_dir / "README.md"
             docs_file.write_text(docs)
-            logger.info(f"Saved documentation: {docs_file}")
+            logger.info("Saved documentation: %s", docs_file)
 
         # Save demo script
         if demo_script:
             demo_file = agent_dir / "demo.py"
             demo_file.write_text(demo_script)
-            logger.info(f"Saved demo script: {demo_file}")
+            logger.info("Saved demo script: %s", demo_file)
 
         # Save spec
         spec_file = agent_dir / "pack.yaml"
         spec_file.write_text(yaml.dump(spec.model_dump(), sort_keys=False))
-        logger.info(f"Saved spec: {spec_file}")
+        logger.info("Saved spec: %s", spec_file)
 
     def _create_provenance(
         self,
@@ -798,7 +798,7 @@ class AgentFactory:
         Returns:
             List of GenerationResults
         """
-        logger.info(f"Starting batch generation: {len(specs)} agents")
+        logger.info("Starting batch generation: %s agents", len(specs))
 
         # Create semaphore for concurrency control
         semaphore = asyncio.Semaphore(max_concurrent)

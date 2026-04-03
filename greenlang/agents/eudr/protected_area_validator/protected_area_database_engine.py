@@ -154,10 +154,10 @@ class ProtectedAreaDatabaseEngine:
 
         elapsed_ms = (time.monotonic() - start) * 1000
         if row is None:
-            logger.debug(f"WDPA ID {wdpa_id} not found ({elapsed_ms:.1f}ms)")
+            logger.debug("WDPA ID %s not found (%.1fms)", wdpa_id, elapsed_ms)
             return None
 
-        logger.debug(f"WDPA ID {wdpa_id} retrieved ({elapsed_ms:.1f}ms)")
+        logger.debug("WDPA ID %s retrieved (%.1fms)", wdpa_id, elapsed_ms)
         return self._row_to_model(row)
 
     async def search(

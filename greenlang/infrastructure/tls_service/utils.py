@@ -466,7 +466,7 @@ def get_connection_info(
                             cert_data=peer_cert_der
                         )
                     except Exception as e:
-                        logger.debug(f"Failed to parse peer certificate: {e}")
+                        logger.debug("Failed to parse peer certificate: %s", e)
 
     except ssl.SSLCertVerificationError as e:
         info.error = f"Certificate verification failed: {e}"

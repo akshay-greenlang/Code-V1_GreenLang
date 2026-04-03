@@ -57,7 +57,7 @@ class DatasetLoader:
         # Check cache
         cache_key = str(path.absolute())
         if self.config.cache_enabled and cache_key in self._cache:
-            logger.debug(f"Loading from cache: {path}")
+            logger.debug("Loading from cache: %s", path)
             return self._cache[cache_key]
 
         # Auto-detect format
@@ -65,7 +65,7 @@ class DatasetLoader:
             format = self._detect_format(path)
 
         # Load based on format
-        logger.info(f"Loading dataset: {path} (format: {format})")
+        logger.info("Loading dataset: %s (format: %s)", path, format)
 
         if format == 'csv':
             data = self.load_csv(path)
@@ -101,10 +101,10 @@ class DatasetLoader:
                 encoding=self.config.encoding,
                 delimiter=self.config.delimiter
             )
-            logger.info(f"Loaded CSV: {len(df)} rows, {len(df.columns)} columns")
+            logger.info("Loaded CSV: %s rows, %s columns", len(df), len(df.columns))
             return df
         except Exception as e:
-            logger.error(f"Failed to load CSV {path}: {str(e)}")
+            logger.error("Failed to load CSV %s: %s", path, e)
             raise
 
     def load_json(self, path: Union[str, Path]) -> Union[Dict, List]:
@@ -121,10 +121,10 @@ class DatasetLoader:
         try:
             with open(path, 'r', encoding=self.config.encoding) as f:
                 data = json.load(f)
-            logger.info(f"Loaded JSON from {path}")
+            logger.info("Loaded JSON from %s", path)
             return data
         except Exception as e:
-            logger.error(f"Failed to load JSON {path}: {str(e)}")
+            logger.error("Failed to load JSON %s: %s", path, e)
             raise
 
     def load_yaml(self, path: Union[str, Path]) -> Dict[str, Any]:
@@ -141,10 +141,10 @@ class DatasetLoader:
         try:
             with open(path, 'r', encoding=self.config.encoding) as f:
                 data = yaml.safe_load(f)
-            logger.info(f"Loaded YAML from {path}")
+            logger.info("Loaded YAML from %s", path)
             return data
         except Exception as e:
-            logger.error(f"Failed to load YAML {path}: {str(e)}")
+            logger.error("Failed to load YAML %s: %s", path, e)
             raise
 
     def load_excel(self, path: Union[str, Path], sheet_name: Optional[str] = None) -> pd.DataFrame:
@@ -161,10 +161,10 @@ class DatasetLoader:
         path = Path(path)
         try:
             df = pd.read_excel(path, sheet_name=sheet_name)
-            logger.info(f"Loaded Excel: {len(df)} rows, {len(df.columns)} columns")
+            logger.info("Loaded Excel: %s rows, %s columns", len(df), len(df.columns))
             return df
         except Exception as e:
-            logger.error(f"Failed to load Excel {path}: {str(e)}")
+            logger.error("Failed to load Excel %s: %s", path, e)
             raise
 
     def _detect_format(self, path: Path) -> str:

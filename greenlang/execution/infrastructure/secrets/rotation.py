@@ -293,7 +293,7 @@ class SlackNotificationChannel(NotificationChannel):
                 return response.status_code == 200
 
         except Exception as e:
-            logger.error(f"Failed to send Slack notification: {e}")
+            logger.error("Failed to send Slack notification: %s", e)
             return False
 
 
@@ -318,10 +318,10 @@ class EmailNotificationChannel(NotificationChannel):
 
         try:
             # Implementation would use aiosmtplib
-            logger.info(f"Email notification sent: {notification.message}")
+            logger.info("Email notification sent: %s", notification.message)
             return True
         except Exception as e:
-            logger.error(f"Failed to send email notification: {e}")
+            logger.error("Failed to send email notification: %s", e)
             return False
 
 
@@ -350,7 +350,7 @@ class NotificationManager:
             try:
                 await channel.send(notification)
             except Exception as e:
-                logger.error(f"Notification channel {name} failed: {e}")
+                logger.error("Notification channel %s failed: %s", name, e)
 
     def create_notification(
         self,
@@ -425,7 +425,7 @@ class APIKeyRotationStrategy(RotationStrategy):
             await vault_client.put_secret(path, data)
             return True
         except Exception as e:
-            logger.error(f"Failed to apply API key rotation: {e}")
+            logger.error("Failed to apply API key rotation: %s", e)
             return False
 
     async def validate(self, vault_client, path: str) -> bool:
@@ -443,7 +443,7 @@ class APIKeyRotationStrategy(RotationStrategy):
             await vault_client.put_secret(path, previous.data)
             return True
         except Exception as e:
-            logger.error(f"Failed to rollback API key: {e}")
+            logger.error("Failed to rollback API key: %s", e)
             return False
 
 
@@ -466,7 +466,7 @@ class DatabaseCredentialRotationStrategy(RotationStrategy):
             creds = await vault_client.get_database_credentials(path)
             return creds is not None
         except Exception as e:
-            logger.error(f"Failed to apply database credential rotation: {e}")
+            logger.error("Failed to apply database credential rotation: %s", e)
             return False
 
     async def validate(self, vault_client, path: str) -> bool:
@@ -497,7 +497,7 @@ class EncryptionKeyRotationStrategy(RotationStrategy):
             await vault_client._request("POST", f"/v1/transit/keys/{path}/rotate")
             return True
         except Exception as e:
-            logger.error(f"Failed to rotate encryption key: {e}")
+            logger.error("Failed to rotate encryption key: %s", e)
             return False
 
     async def validate(self, vault_client, path: str) -> bool:
@@ -641,7 +641,7 @@ class RotationExecutor:
         except Exception as e:
             record.state = RotationState.FAILED
             record.error_message = str(e)
-            logger.error(f"Rotation failed for {secret.metadata.name}: {e}")
+            logger.error("Rotation failed for %s: %s", secret.metadata.name, e)
 
             # Attempt rollback
             if self.config.enable_auto_rollback:
@@ -698,7 +698,7 @@ class RotationExecutor:
             return success
 
         except Exception as e:
-            logger.error(f"Rollback failed: {e}")
+            logger.error("Rollback failed: %s", e)
             return False
 
 
@@ -822,14 +822,14 @@ class RotationScheduler:
         secret = ManagedSecret(metadata=metadata)
         self._secrets[metadata.secret_id] = secret
 
-        logger.info(f"Registered secret for rotation: {metadata.name}")
+        logger.info("Registered secret for rotation: %s", metadata.name)
         return secret
 
     def unregister_secret(self, secret_id: str) -> bool:
         """Unregister a secret from management."""
         if secret_id in self._secrets:
             del self._secrets[secret_id]
-            logger.info(f"Unregistered secret: {secret_id}")
+            logger.info("Unregistered secret: %s", secret_id)
             return True
         return False
 
@@ -850,7 +850,7 @@ class RotationScheduler:
         """
         secret = self._secrets.get(secret_id)
         if not secret:
-            logger.error(f"Secret not found: {secret_id}")
+            logger.error("Secret not found: %s", secret_id)
             return None
 
         # Create rotation record
@@ -898,7 +898,7 @@ class RotationScheduler:
             except asyncio.CancelledError:
                 break
             except Exception as e:
-                logger.error(f"Scheduler loop error: {e}")
+                logger.error("Scheduler loop error: %s", e)
 
     async def _check_rotations(self) -> None:
         """Check for secrets that need rotation."""
@@ -941,7 +941,7 @@ class RotationScheduler:
                     if record.state == RotationState.GRACE_PERIOD:
                         if record.grace_period_ends_at and record.grace_period_ends_at <= now:
                             record.state = RotationState.COMPLETED
-                            logger.info(f"Grace period ended for rotation {record.rotation_id}")
+                            logger.info("Grace period ended for rotation %s", record.rotation_id)
 
                         # Notify when grace period is ending
                         elif record.grace_period_ends_at:
@@ -960,7 +960,7 @@ class RotationScheduler:
             except asyncio.CancelledError:
                 break
             except Exception as e:
-                logger.error(f"Grace period loop error: {e}")
+                logger.error("Grace period loop error: %s", e)
 
     async def _audit_rotation(self, record: RotationRecord) -> None:
         """Log rotation to audit log."""

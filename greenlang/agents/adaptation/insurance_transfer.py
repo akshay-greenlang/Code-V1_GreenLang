@@ -225,7 +225,7 @@ class InsuranceTransferAgent(BaseAgent):
             )
 
         super().__init__(config)
-        logger.info(f"Initialized {self.AGENT_NAME} v{self.VERSION}")
+        logger.info("Initialized %s v%s", self.AGENT_NAME, self.VERSION)
 
     def initialize(self):
         """Initialize agent resources."""
@@ -237,7 +237,7 @@ class InsuranceTransferAgent(BaseAgent):
 
         try:
             analysis_input = InsuranceAnalysisInput(**input_data)
-            self.logger.info(f"Starting insurance analysis: {analysis_input.analysis_id}")
+            logger.info("Starting insurance analysis: %s", analysis_input.analysis_id)
 
             # Analyze current coverage
             coverage_summary = self._analyze_current_coverage(analysis_input.existing_coverage)
@@ -304,7 +304,7 @@ class InsuranceTransferAgent(BaseAgent):
 
             output.provenance_hash = self._calculate_provenance_hash(analysis_input, output)
 
-            self.logger.info(
+            logger.info(
                 f"Insurance analysis complete: {len(gaps)} gaps, {len(recommended)} recommendations"
             )
 
@@ -319,7 +319,7 @@ class InsuranceTransferAgent(BaseAgent):
             )
 
         except Exception as e:
-            self.logger.error(f"Insurance analysis failed: {str(e)}", exc_info=True)
+            logger.error("Insurance analysis failed: %s", e, exc_info=True)
             return AgentResult(
                 success=False,
                 error=str(e),

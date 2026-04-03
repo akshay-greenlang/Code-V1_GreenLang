@@ -155,7 +155,7 @@ class HAZOPAnalyzer:
         )
 
         self.studies[study.study_id] = study
-        logger.info(f"HAZOP study created: {study.study_id}")
+        logger.info("HAZOP study created: %s", study.study_id)
         return study
 
     def add_node(
@@ -180,7 +180,7 @@ class HAZOPAnalyzer:
         )
 
         self.studies[study_id].nodes.append(node)
-        logger.info(f"Node added to study {study_id}: {node_id}")
+        logger.info("Node added to study %s: %s", study_id, node_id)
         return node
 
     def add_deviation(
@@ -207,7 +207,7 @@ class HAZOPAnalyzer:
                 if deviation.risk_ranking >= 15:
                     study.high_risk_items += 1
 
-                logger.info(f"Deviation added: {deviation.deviation_id}")
+                logger.info("Deviation added: %s", deviation.deviation_id)
                 return deviation
 
         raise ValueError(f"Node not found: {node_id}")

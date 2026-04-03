@@ -419,7 +419,7 @@ class AdversarialTester:
             >>> if result.robustness_score < 0.7:
             ...     print("Model is vulnerable!")
         """
-        logger.info(f"Testing robustness on {len(X)} samples")
+        logger.info("Testing robustness on %s samples", len(X))
 
         # Sample if needed
         if len(X) > self.config.n_samples:
@@ -436,7 +436,7 @@ class AdversarialTester:
 
         # Run each attack method
         for method in self.config.attack_methods:
-            logger.info(f"Running {method.value} attack")
+            logger.info("Running %s attack", method.value)
 
             if method == AttackMethod.FGSM:
                 X_adv = self._fgsm_attack(X_test, y_test, self.config.epsilon)

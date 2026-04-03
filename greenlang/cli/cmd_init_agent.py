@@ -1595,7 +1595,7 @@ def create_provenance_record(
         "gwp_set": "AR6GWP100"
     }
 
-    logger.debug(f"Created provenance record: {provenance}")
+    logger.debug("Created provenance record: %s", provenance)
 
     return provenance
 
@@ -2667,9 +2667,9 @@ def git_init(agent_dir):
             capture_output=True,
             text=True
         )
-        logger.info(f"Initialized git repository in {agent_dir}")
+        logger.info("Initialized git repository in %s", agent_dir)
     except subprocess.CalledProcessError as e:
-        logger.warning(f"Failed to initialize git: {e}")
+        logger.warning("Failed to initialize git: %s", e)
     except FileNotFoundError:
         logger.warning("git command not found - skipping git initialization")
 

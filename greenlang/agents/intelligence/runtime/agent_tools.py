@@ -72,11 +72,12 @@ from pydantic import Field, ValidationError
 from greenlang.agents.intelligence.schemas.tools import ToolDef
 from greenlang.agents.intelligence.runtime.jsonio import validate_json_payload
 from greenlang.schemas import GreenLangBase
+from greenlang.exceptions import AgentException
 
 logger = logging.getLogger(__name__)
 
 
-class ToolExecutionError(Exception):
+class ToolExecutionError(AgentException):
     """
     Error during tool execution
 
@@ -98,13 +99,13 @@ class ToolExecutionError(Exception):
         super().__init__(f"Tool '{tool_name}' failed: {original_error}")
 
 
-class ToolNotFoundError(Exception):
+class ToolNotFoundError(AgentException):
     """Tool not found in registry"""
 
     pass
 
 
-class ToolTimeoutError(Exception):
+class ToolTimeoutError(AgentException):
     """Tool execution exceeded timeout"""
 
     pass
@@ -367,7 +368,7 @@ class ToolRegistry:
         )
 
         self._tools[name] = spec
-        logger.info(f"Manually registered tool: {name}")
+        logger.info("Manually registered tool: %s", name)
 
     def get_tool_defs(self) -> List[ToolDef]:
         """
@@ -492,7 +493,7 @@ class ToolRegistry:
                     f"Tool '{name}' return value invalid: {e}. " f"Got: {result}"
                 )
 
-        logger.debug(f"Tool '{name}' executed successfully")
+        logger.debug("Tool '%s' executed successfully", name)
         return result
 
     async def invoke_async(
@@ -575,14 +576,14 @@ class ToolRegistry:
                     f"Tool '{name}' return value invalid: {e}. " f"Got: {result}"
                 )
 
-        logger.debug(f"Tool '{name}' executed successfully (async)")
+        logger.debug("Tool '%s' executed successfully (async)", name)
         return result
 
     def clear(self) -> None:
         """Clear all registered tools"""
         count = len(self._tools)
         self._tools.clear()
-        logger.info(f"Cleared {count} tools from registry")
+        logger.info("Cleared %s tools from registry", count)
 
     def __len__(self) -> int:
         """Return number of registered tools"""

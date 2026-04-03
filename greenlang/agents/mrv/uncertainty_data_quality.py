@@ -264,7 +264,7 @@ class UncertaintyDataQualityAgent(DeterministicAgent):
     def __init__(self, enable_audit_trail: bool = True):
         """Initialize UncertaintyDataQualityAgent."""
         super().__init__(enable_audit_trail=enable_audit_trail)
-        logger.info(f"Initialized {self.AGENT_NAME} v{self.VERSION}")
+        logger.info("Initialized %s v%s", self.AGENT_NAME, self.VERSION)
 
     def execute(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
         """Execute uncertainty and data quality calculations."""
@@ -349,7 +349,7 @@ class UncertaintyDataQualityAgent(DeterministicAgent):
             return output.model_dump()
 
         except Exception as e:
-            logger.error(f"Uncertainty calculation failed: {str(e)}", exc_info=True)
+            logger.error("Uncertainty calculation failed: %s", e, exc_info=True)
             end_time = DeterministicClock.now()
             processing_time_ms = (end_time - start_time).total_seconds() * 1000
 

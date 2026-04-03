@@ -23,6 +23,7 @@ import logging
 
 import numpy as np
 from greenlang.schemas.enums import AlertSeverity
+from greenlang.utilities.exceptions.base import GreenLangException
 
 logger = logging.getLogger(__name__)
 
@@ -197,7 +198,7 @@ class AlertAggregation:
         return [a for a in self.alerts if a.confidence == AlertConfidence.HIGH]
 
 
-class AlertSystemError(Exception):
+class AlertSystemError(GreenLangException):
     """Base exception for alert system errors."""
     pass
 
@@ -257,7 +258,7 @@ class GlobalForestWatchClient:
         if self.use_mock:
             return self._mock_glad_alerts(polygon, start_date, end_date, min_confidence)
 
-        logger.info(f"Fetching GLAD alerts for {start_date.date()} to {end_date.date()}")
+        logger.info("Fetching GLAD alerts for %s to %s", start_date.date(), end_date.date())
 
         # Stub for real API call
         # response = requests.post(
@@ -341,7 +342,7 @@ class GlobalForestWatchClient:
 
             current_date += timedelta(days=7)  # Weekly updates
 
-        logger.info(f"Generated {len(alerts)} mock GLAD alerts")
+        logger.info("Generated %s mock GLAD alerts", len(alerts))
         return alerts
 
     def get_radd_alerts(
@@ -444,7 +445,7 @@ class GlobalForestWatchClient:
 
             current_date += timedelta(days=1)
 
-        logger.info(f"Generated {len(alerts)} mock RADD alerts")
+        logger.info("Generated %s mock RADD alerts", len(alerts))
         return alerts
 
 
@@ -509,7 +510,7 @@ class DeforestationAlertSystem:
                 )
                 all_alerts.extend(glad_alerts)
             except APIError as e:
-                logger.warning(f"Failed to fetch GLAD alerts: {e}")
+                logger.warning("Failed to fetch GLAD alerts: %s", e)
 
         if AlertSource.RADD in sources:
             try:
@@ -518,7 +519,7 @@ class DeforestationAlertSystem:
                 )
                 all_alerts.extend(radd_alerts)
             except APIError as e:
-                logger.warning(f"Failed to fetch RADD alerts: {e}")
+                logger.warning("Failed to fetch RADD alerts: %s", e)
 
         # Sort by date
         all_alerts.sort(key=lambda a: a.detection_date)

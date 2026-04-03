@@ -419,44 +419,44 @@ class SARIMAForecastAgent(Agent[Dict[str, Any], Dict[str, Any]]):
         """
         # Check required fields
         if "data" not in input_data:
-            self.logger.error("Missing required field: data")
+            logger.error("Missing required field: data")
             return False
 
         if "target_column" not in input_data:
-            self.logger.error("Missing required field: target_column")
+            logger.error("Missing required field: target_column")
             return False
 
         if "forecast_horizon" not in input_data:
-            self.logger.error("Missing required field: forecast_horizon")
+            logger.error("Missing required field: forecast_horizon")
             return False
 
         # Validate data is DataFrame
         data = input_data["data"]
         if not isinstance(data, pd.DataFrame):
-            self.logger.error("Data must be a pandas DataFrame")
+            logger.error("Data must be a pandas DataFrame")
             return False
 
         # Validate target column exists
         target = input_data["target_column"]
         if target not in data.columns:
-            self.logger.error(f"Target column '{target}' not found in data")
+            logger.error("Target column '%s' not found in data", target)
             return False
 
         # Validate datetime index
         if not isinstance(data.index, pd.DatetimeIndex):
-            self.logger.error("Data must have a DatetimeIndex")
+            logger.error("Data must have a DatetimeIndex")
             return False
 
         # Validate minimum data points
         min_points = input_data.get("seasonal_period", 12) * 2
         if len(data) < min_points:
-            self.logger.error(f"Insufficient data: need at least {min_points} points")
+            logger.error("Insufficient data: need at least %s points", min_points)
             return False
 
         # Validate forecast horizon
         horizon = input_data["forecast_horizon"]
         if not isinstance(horizon, int) or horizon < 1:
-            self.logger.error("forecast_horizon must be a positive integer")
+            logger.error("forecast_horizon must be a positive integer")
             return False
 
         return True
@@ -581,10 +581,10 @@ class SARIMAForecastAgent(Agent[Dict[str, Any], Dict[str, Any]]):
             return output
 
         except BudgetExceeded as e:
-            self.logger.error(f"Budget exceeded: {e}")
+            logger.error("Budget exceeded: %s", e)
             raise ValueError(f"AI budget exceeded: {str(e)}")
         except Exception as e:
-            self.logger.error(f"Error in forecast: {e}")
+            logger.error("Error in forecast: %s", e)
             raise
 
     def _build_prompt(self, input_data: Dict[str, Any]) -> str:
@@ -697,7 +697,7 @@ IMPORTANT:
                 elif name == "preprocess_data":
                     results["preprocessing"] = self._preprocess_data_impl(input_data, **args)
             except Exception as e:
-                self.logger.error(f"Tool {name} failed: {e}")
+                logger.error("Tool %s failed: %s", name, e)
                 results[name] = {"error": str(e)}
 
         return results

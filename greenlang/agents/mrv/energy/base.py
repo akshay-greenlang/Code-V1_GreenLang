@@ -101,7 +101,7 @@ class MRVEnergyBaseAgent(DeterministicAgent):
         # Load standard emission factors
         self._load_emission_factors()
 
-        self.logger.info(f"Initialized {agent_id} v{version}")
+        logger.info("Initialized %s v%s", agent_id, version)
 
     def _load_emission_factors(self) -> None:
         """
@@ -417,7 +417,7 @@ class MRVEnergyBaseAgent(DeterministicAgent):
             return outputs
 
         except Exception as e:
-            self.logger.error(f"Processing failed: {str(e)}", exc_info=True)
+            logger.error("Processing failed: %s", e, exc_info=True)
             raise
 
     @abstractmethod

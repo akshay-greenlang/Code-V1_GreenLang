@@ -44,10 +44,12 @@ from typing import Any, Dict, Optional
 from pydantic import ValidationError
 import jsonschema
 
+from greenlang.exceptions import DataException
+
 logger = logging.getLogger(__name__)
 
 
-class GLJsonParseError(Exception):
+class GLJsonParseError(DataException):
     """
     JSON parsing failed after maximum retry attempts
 
@@ -82,7 +84,7 @@ class GLJsonParseError(Exception):
         )
 
 
-class GLValidationError(Exception):
+class GLValidationError(DataException):
     """JSON validation error (schema mismatch)"""
 
     pass
@@ -214,7 +216,7 @@ def parse_json(text: str) -> Dict[str, Any]:
         return json.loads(candidate)
     except json.JSONDecodeError as e:
         # Log for debugging
-        logger.debug(f"JSON parse error: {e}. Candidate: {candidate[:200]}")
+        logger.debug("JSON parse error: %s. Candidate: %s", e, candidate[:120])
         raise
 
 

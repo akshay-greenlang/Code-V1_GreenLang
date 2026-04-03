@@ -22,6 +22,7 @@ from fastapi import HTTPException, Request, Header
 from pydantic import BaseModel
 import redis
 from greenlang.utilities.determinism import DeterministicClock
+from greenlang.exceptions import SecurityException
 
 logger = logging.getLogger(__name__)
 
@@ -32,17 +33,17 @@ MAX_WEBHOOKS_PER_MINUTE = 100
 MAX_PAYLOAD_SIZE_BYTES = 1024 * 1024  # 1 MB
 
 
-class SignatureVerificationError(Exception):
+class SignatureVerificationError(SecurityException):
     """Raised when signature verification fails"""
     pass
 
 
-class ReplayAttackError(Exception):
+class ReplayAttackError(SecurityException):
     """Raised when timestamp is outside allowed window"""
     pass
 
 
-class RateLimitExceededError(Exception):
+class RateLimitExceededError(SecurityException):
     """Raised when rate limit is exceeded"""
     pass
 
@@ -216,7 +217,7 @@ class WebhookRateLimiter:
             return True
 
         except redis.RedisError as e:
-            logger.error(f"Redis error in rate limiter: {e}")
+            logger.error("Redis error in rate limiter: %s", e)
             # Fail open - allow webhook if Redis is down
             return True
 
@@ -247,7 +248,7 @@ class WebhookRateLimiter:
             return max(0, limit - int(current))
 
         except redis.RedisError as e:
-            logger.error(f"Redis error getting quota: {e}")
+            logger.error("Redis error getting quota: %s", e)
             return limit
 
 
@@ -273,7 +274,7 @@ class IPWhitelist:
         try:
             network = ipaddress.ip_network(ip_range, strict=False)
             self.whitelists[partner_id].add(network)
-            logger.info(f"Added IP range {ip_range} to whitelist for partner {partner_id}")
+            logger.info("Added IP range %s to whitelist for partner %s", ip_range, partner_id)
         except ValueError as e:
             raise ValueError(f"Invalid IP range: {ip_range}") from e
 
@@ -291,9 +292,9 @@ class IPWhitelist:
         try:
             network = ipaddress.ip_network(ip_range, strict=False)
             self.whitelists[partner_id].discard(network)
-            logger.info(f"Removed IP range {ip_range} from whitelist for partner {partner_id}")
+            logger.info("Removed IP range %s from whitelist for partner %s", ip_range, partner_id)
         except ValueError as e:
-            logger.warning(f"Invalid IP range for removal: {ip_range}")
+            logger.warning("Invalid IP range for removal: %s", ip_range)
 
     def is_allowed(self, partner_id: str, ip_address: str) -> bool:
         """
@@ -317,7 +318,7 @@ class IPWhitelist:
                     return True
             return False
         except ValueError:
-            logger.warning(f"Invalid IP address: {ip_address}")
+            logger.warning("Invalid IP address: %s", ip_address)
             return False
 
     def get_whitelist(self, partner_id: str) -> List[str]:
@@ -495,7 +496,7 @@ class WebhookReceiver:
                 timestamp
             )
         except (SignatureVerificationError, ReplayAttackError) as e:
-            logger.error(f"Webhook verification failed: {e}")
+            logger.error("Webhook verification failed: %s", e)
             return False
 
 

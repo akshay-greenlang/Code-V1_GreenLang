@@ -187,7 +187,7 @@ async def get_overall_ium(api_key: str = Depends(verify_api_key)):
 
             return IUMResponse(**ium_data)
         except Exception as e:
-            logger.error(f"Error fetching IUM data: {e}")
+            logger.error("Error fetching IUM data: %s", e)
             api_requests_total.labels(
                 endpoint="/api/ium/overall",
                 method="GET",
@@ -240,7 +240,7 @@ async def get_ium_by_app(
 
             return data
         except Exception as e:
-            logger.error(f"Error fetching app IUM: {e}")
+            logger.error("Error fetching app IUM: %s", e)
             raise HTTPException(status_code=500, detail=str(e))
 
 

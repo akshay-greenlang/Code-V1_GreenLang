@@ -421,7 +421,7 @@ class EventSchema:
         self._schemas[event_type] = schema
         self._schema_versions[event_type] = version
 
-        logger.info(f"Registered schema for {event_type} v{version}")
+        logger.info("Registered schema for %s v%s", event_type, version)
 
     def get_schema(self, event_type: str) -> Dict[str, Any]:
         """
@@ -472,7 +472,7 @@ class EventSchema:
             return True
 
         except Exception as e:
-            logger.error(f"Event validation error: {e}")
+            logger.error("Event validation error: %s", e)
             return False
 
     def evolve_schema(
@@ -496,7 +496,7 @@ class EventSchema:
             return True
 
         if not self._is_backward_compatible(current_schema, new_schema):
-            logger.error(f"Schema evolution not backward compatible for {event_type}")
+            logger.error("Schema evolution not backward compatible for %s", event_type)
             return False
 
         new_version = self._schema_versions.get(event_type, 0) + 1
@@ -726,7 +726,7 @@ class EventProducer:
             "batches_sent": 0,
         }
 
-        logger.info(f"EventProducer initialized with backend: {config.backend}")
+        logger.info("EventProducer initialized with backend: %s", config.backend)
 
     async def start(self) -> None:
         """Start the event producer."""
@@ -746,7 +746,7 @@ class EventProducer:
             logger.info("Event producer started")
 
         except Exception as e:
-            logger.error(f"Failed to start producer: {e}", exc_info=True)
+            logger.error("Failed to start producer: %s", e, exc_info=True)
             raise
 
     async def stop(self) -> None:
@@ -813,7 +813,7 @@ class EventProducer:
                 else:
                     processed_event = middleware(processed_event)
             except Exception as e:
-                logger.error(f"Middleware error: {e}")
+                logger.error("Middleware error: %s", e)
 
         target_topic = topic or self._get_topic_for_event(processed_event)
         partition_key = key or self._get_partition_key(processed_event)
@@ -863,7 +863,7 @@ class EventProducer:
 
         except Exception as e:
             self._metrics["events_failed"] += 1
-            logger.error(f"Publish failed: {e}")
+            logger.error("Publish failed: %s", e)
             return PublishResult(
                 event_id=event.event_id,
                 topic=target_topic,
@@ -908,7 +908,7 @@ class EventProducer:
                 return await self._backend.publish(topic, key, value, headers)
             except Exception as e:
                 last_error = e
-                logger.warning(f"Publish attempt {attempt + 1} failed: {e}")
+                logger.warning("Publish attempt %s failed: %s", attempt + 1, e)
                 if attempt < self.config.max_retries - 1:
                     await asyncio.sleep(
                         self.config.retry_delay_ms * (2 ** attempt) / 1000
@@ -947,7 +947,7 @@ class EventProducer:
                     await self._flush_batch(batch)
                 break
             except Exception as e:
-                logger.error(f"Batch processor error: {e}")
+                logger.error("Batch processor error: %s", e)
 
     async def _flush_batch(self, batch: List[Dict[str, Any]]) -> None:
         """Flush a batch of messages."""
@@ -957,7 +957,7 @@ class EventProducer:
             self._metrics["batches_sent"] += 1
         except Exception as e:
             self._metrics["events_failed"] += len(batch)
-            logger.error(f"Batch flush failed: {e}")
+            logger.error("Batch flush failed: %s", e)
 
     async def flush(self) -> None:
         """Flush all pending events."""
@@ -1167,7 +1167,7 @@ class EventConsumer:
             "events_dlq": 0,
         }
 
-        logger.info(f"EventConsumer initialized with backend: {config.backend}")
+        logger.info("EventConsumer initialized with backend: %s", config.backend)
 
     async def start(self) -> None:
         """Start the event consumer."""
@@ -1185,7 +1185,7 @@ class EventConsumer:
             logger.info("Event consumer started")
 
         except Exception as e:
-            logger.error(f"Failed to start consumer: {e}", exc_info=True)
+            logger.error("Failed to start consumer: %s", e, exc_info=True)
             raise
 
     async def stop(self) -> None:
@@ -1232,7 +1232,7 @@ class EventConsumer:
             self._handlers[pattern].append((handler, priority))
             self._handlers[pattern].sort(key=lambda x: -x[1])
 
-        logger.info(f"Registered handler for pattern: {pattern}")
+        logger.info("Registered handler for pattern: %s", pattern)
 
     def unsubscribe(self, pattern: str) -> None:
         """Unsubscribe from a pattern."""
@@ -1300,7 +1300,7 @@ class EventConsumer:
         except asyncio.CancelledError:
             logger.info("Consume cancelled")
         except Exception as e:
-            logger.error(f"Consume error: {e}", exc_info=True)
+            logger.error("Consume error: %s", e, exc_info=True)
             raise
         finally:
             self._consuming = False
@@ -1339,7 +1339,7 @@ class EventConsumer:
             )
 
         except Exception as e:
-            logger.error(f"Failed to deserialize message: {e}")
+            logger.error("Failed to deserialize message: %s", e)
             return None
 
     async def _process_event(self, consumed_event: ConsumedEvent) -> ProcessingResult:
@@ -1362,7 +1362,7 @@ class EventConsumer:
         handlers.extend(self._default_handlers)
 
         if not handlers:
-            logger.warning(f"No handler for event type: {event_type}")
+            logger.warning("No handler for event type: %s", event_type)
             return ProcessingResult.SKIP
 
         # Sort by priority and execute
@@ -1387,7 +1387,7 @@ class EventConsumer:
                     return ProcessingResult.DLQ
 
             except Exception as e:
-                logger.error(f"Handler error: {e}")
+                logger.error("Handler error: %s", e)
                 self._metrics["events_failed"] += 1
                 if consumed_event.retry_count < self.config.max_retries:
                     consumed_event.retry_count += 1
@@ -1410,7 +1410,7 @@ class EventConsumer:
             logger.warning("DLQ disabled, dropping event")
             return
 
-        logger.info(f"Sending to DLQ: {consumed_event.event.get('event_type')} reason: {reason}")
+        logger.info("Sending to DLQ: %s reason: %s", consumed_event.event.get('event_type'), reason)
         # DLQ integration would happen here
 
     def _ensure_started(self) -> None:
@@ -1615,7 +1615,7 @@ class DeadLetterQueue:
 
         self._entries[entry.entry_id] = entry
 
-        logger.info(f"Added to DLQ: {entry.entry_id} reason: {failure_reason.value}")
+        logger.info("Added to DLQ: %s reason: %s", entry.entry_id, failure_reason.value)
 
         await self._check_alerts()
         return entry
@@ -1661,7 +1661,7 @@ class DeadLetterQueue:
             return False
 
         if entry.status != DLQStatus.PENDING:
-            logger.warning(f"Entry not pending: {entry_id}")
+            logger.warning("Entry not pending: %s", entry_id)
             return False
 
         entry.status = DLQStatus.RETRYING
@@ -1697,7 +1697,7 @@ class DeadLetterQueue:
             else:
                 return self._retry_handler(entry)
         except Exception as e:
-            logger.error(f"Retry handler failed: {e}")
+            logger.error("Retry handler failed: %s", e)
             entry.error_message = str(e)
             return False
 
@@ -1751,7 +1751,7 @@ class DeadLetterQueue:
         stats = await self.alerting()
 
         if stats.pending_count >= self.config.alert_threshold:
-            logger.warning(f"DLQ alert threshold reached: {stats.pending_count} pending")
+            logger.warning("DLQ alert threshold reached: %s pending", stats.pending_count)
 
             for callback in self._alert_callbacks:
                 try:
@@ -1760,7 +1760,7 @@ class DeadLetterQueue:
                     else:
                         callback(stats)
                 except Exception as e:
-                    logger.error(f"Alert callback error: {e}")
+                    logger.error("Alert callback error: %s", e)
 
     async def _auto_retry_loop(self) -> None:
         """Background loop for automatic retries."""
@@ -1781,7 +1781,7 @@ class DeadLetterQueue:
             except asyncio.CancelledError:
                 break
             except Exception as e:
-                logger.error(f"Auto-retry loop error: {e}")
+                logger.error("Auto-retry loop error: %s", e)
 
     async def __aenter__(self) -> "DeadLetterQueue":
         """Async context manager entry."""
@@ -2041,7 +2041,7 @@ class SagaOrchestrator:
                 self._metrics["sagas_completed"] += 1
 
         except Exception as e:
-            logger.error(f"Saga execution failed: {e}")
+            logger.error("Saga execution failed: %s", e)
             saga.error = str(e)
             saga.status = SagaStatus.COMPENSATING
             saga = await self.compensation_on_failure(saga)
@@ -2125,13 +2125,13 @@ class SagaOrchestrator:
 
             except asyncio.TimeoutError:
                 step.retry_count += 1
-                logger.warning(f"Step '{step.name}' timeout (retry {step.retry_count})")
+                logger.warning("Step '%s' timeout (retry %s)", step.name, step.retry_count)
                 if step.retry_count < step.retry_attempts:
                     await asyncio.sleep(self.config.retry_delay_seconds)
 
             except Exception as e:
                 step.retry_count += 1
-                logger.warning(f"Step '{step.name}' failed: {e} (retry {step.retry_count})")
+                logger.warning("Step '%s' failed: %s (retry %s)", step.name, e, step.retry_count)
                 if step.retry_count < step.retry_attempts:
                     await asyncio.sleep(self.config.retry_delay_seconds)
 
@@ -2149,7 +2149,7 @@ class SagaOrchestrator:
         Returns:
             Compensated saga
         """
-        logger.info(f"Starting compensation for saga {saga.saga_id}")
+        logger.info("Starting compensation for saga %s", saga.saga_id)
 
         for i in range(saga.current_step_index, -1, -1):
             step = saga.steps[i]
@@ -2160,7 +2160,7 @@ class SagaOrchestrator:
             saga_compensators = self._step_compensators.get(saga.saga_id, {})
             compensator = saga_compensators.get(step.step_id)
             if not compensator:
-                logger.warning(f"No compensator for step '{step.name}'")
+                logger.warning("No compensator for step '%s'", step.name)
                 continue
 
             step.status = StepStatus.COMPENSATING
@@ -2175,10 +2175,10 @@ class SagaOrchestrator:
                     compensator(saga.context, step.output_data)
 
                 step.status = StepStatus.COMPENSATED
-                logger.info(f"Compensated step '{step.name}'")
+                logger.info("Compensated step '%s'", step.name)
 
             except Exception as e:
-                logger.error(f"Compensation failed for step '{step.name}': {e}")
+                logger.error("Compensation failed for step '%s': %s", step.name, e)
                 step.status = StepStatus.FAILED
                 saga.status = SagaStatus.FAILED
                 self._metrics["sagas_failed"] += 1
@@ -2249,7 +2249,7 @@ class SagaOrchestrator:
                     if saga.status == SagaStatus.RUNNING and saga.started_at:
                         elapsed = (datetime.utcnow() - saga.started_at).total_seconds()
                         if elapsed >= saga.timeout_seconds:
-                            logger.warning(f"Recovering timed out saga: {saga.saga_id}")
+                            logger.warning("Recovering timed out saga: %s", saga.saga_id)
                             saga.status = SagaStatus.COMPENSATING
                             saga.error = "Saga timeout - recovered"
                             await self.compensation_on_failure(saga)
@@ -2257,7 +2257,7 @@ class SagaOrchestrator:
             except asyncio.CancelledError:
                 break
             except Exception as e:
-                logger.error(f"Recovery loop error: {e}")
+                logger.error("Recovery loop error: %s", e)
 
     def get_metrics(self) -> Dict[str, Any]:
         """Get orchestrator metrics."""
@@ -2454,7 +2454,7 @@ class EventSourcer:
             self._streams[aggregate_id].append(stored_event)
             self._all_events.append(stored_event)
 
-            logger.debug(f"Appended event to stream {aggregate_id}, version {stored_event.version}")
+            logger.debug("Appended event to stream %s, version %s", aggregate_id, stored_event.version)
             return stored_event.version
 
     async def get_events(
@@ -2565,7 +2565,7 @@ class EventSourcer:
         )
 
         self._snapshots[aggregate.aggregate_id] = snapshot
-        logger.info(f"Created snapshot for {aggregate.aggregate_id} at version {aggregate.version}")
+        logger.info("Created snapshot for %s at version %s", aggregate.aggregate_id, aggregate.version)
 
         return snapshot
 

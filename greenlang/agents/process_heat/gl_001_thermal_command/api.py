@@ -133,7 +133,7 @@ class RESTAPIController:
             status = self._orchestrator.get_system_status()
             return APIResponse(success=True, data=status.dict())
         except Exception as e:
-            logger.error(f"Error getting status: {e}")
+            logger.error("Error getting status: %s", e)
             return APIResponse(success=False, error=str(e))
 
     async def list_agents(self) -> APIResponse:
@@ -146,7 +146,7 @@ class RESTAPIController:
                     agents.append(status.dict())
             return APIResponse(success=True, data={"agents": agents})
         except Exception as e:
-            logger.error(f"Error listing agents: {e}")
+            logger.error("Error listing agents: %s", e)
             return APIResponse(success=False, error=str(e))
 
     async def register_agent(
@@ -183,7 +183,7 @@ class RESTAPIController:
                 )
 
         except Exception as e:
-            logger.error(f"Error registering agent: {e}")
+            logger.error("Error registering agent: %s", e)
             return APIResponse(success=False, error=str(e))
 
     async def get_agent(self, agent_id: str) -> APIResponse:
@@ -195,7 +195,7 @@ class RESTAPIController:
             else:
                 return APIResponse(success=False, error="Agent not found")
         except Exception as e:
-            logger.error(f"Error getting agent: {e}")
+            logger.error("Error getting agent: %s", e)
             return APIResponse(success=False, error=str(e))
 
     async def deregister_agent(self, agent_id: str) -> APIResponse:
@@ -204,7 +204,7 @@ class RESTAPIController:
             success = self._orchestrator.deregister_agent(agent_id)
             return APIResponse(success=success, data={"deregistered": success})
         except Exception as e:
-            logger.error(f"Error deregistering agent: {e}")
+            logger.error("Error deregistering agent: %s", e)
             return APIResponse(success=False, error=str(e))
 
     async def list_workflows(self) -> APIResponse:
@@ -213,7 +213,7 @@ class RESTAPIController:
             workflows = self._orchestrator._workflow_coordinator.get_active_workflows()
             return APIResponse(success=True, data={"workflows": workflows})
         except Exception as e:
-            logger.error(f"Error listing workflows: {e}")
+            logger.error("Error listing workflows: %s", e)
             return APIResponse(success=False, error=str(e))
 
     async def execute_workflow(self, request: WorkflowRequest) -> APIResponse:
@@ -245,7 +245,7 @@ class RESTAPIController:
             return APIResponse(success=True, data=result.dict())
 
         except Exception as e:
-            logger.error(f"Error executing workflow: {e}")
+            logger.error("Error executing workflow: %s", e)
             return APIResponse(success=False, error=str(e))
 
     async def get_workflow(self, workflow_id: str) -> APIResponse:
@@ -262,7 +262,7 @@ class RESTAPIController:
             else:
                 return APIResponse(success=False, error="Workflow not found")
         except Exception as e:
-            logger.error(f"Error getting workflow: {e}")
+            logger.error("Error getting workflow: %s", e)
             return APIResponse(success=False, error=str(e))
 
     async def cancel_workflow(self, workflow_id: str) -> APIResponse:
@@ -271,7 +271,7 @@ class RESTAPIController:
             success = await self._orchestrator.cancel_workflow(workflow_id)
             return APIResponse(success=success, data={"cancelled": success})
         except Exception as e:
-            logger.error(f"Error cancelling workflow: {e}")
+            logger.error("Error cancelling workflow: %s", e)
             return APIResponse(success=False, error=str(e))
 
     async def get_safety_status(self) -> APIResponse:
@@ -286,7 +286,7 @@ class RESTAPIController:
                 }
             )
         except Exception as e:
-            logger.error(f"Error getting safety status: {e}")
+            logger.error("Error getting safety status: %s", e)
             return APIResponse(success=False, error=str(e))
 
     async def trigger_esd(self, reason: str) -> APIResponse:
@@ -295,7 +295,7 @@ class RESTAPIController:
             await self._orchestrator.trigger_emergency_shutdown(reason)
             return APIResponse(success=True, data={"esd_triggered": True})
         except Exception as e:
-            logger.error(f"Error triggering ESD: {e}")
+            logger.error("Error triggering ESD: %s", e)
             return APIResponse(success=False, error=str(e))
 
     async def reset_esd(self, authorized_by: str) -> APIResponse:
@@ -304,7 +304,7 @@ class RESTAPIController:
             success = await self._orchestrator.reset_emergency_shutdown(authorized_by)
             return APIResponse(success=success, data={"esd_reset": success})
         except Exception as e:
-            logger.error(f"Error resetting ESD: {e}")
+            logger.error("Error resetting ESD: %s", e)
             return APIResponse(success=False, error=str(e))
 
     async def list_permits(self) -> APIResponse:
@@ -316,7 +316,7 @@ class RESTAPIController:
                 data={"permits": [p.dict() for p in permits]}
             )
         except Exception as e:
-            logger.error(f"Error listing permits: {e}")
+            logger.error("Error listing permits: %s", e)
             return APIResponse(success=False, error=str(e))
 
     async def request_permit(self, request: SafetyPermitRequest) -> APIResponse:
@@ -335,7 +335,7 @@ class RESTAPIController:
                 return APIResponse(success=False, error="Permit denied")
 
         except Exception as e:
-            logger.error(f"Error requesting permit: {e}")
+            logger.error("Error requesting permit: %s", e)
             return APIResponse(success=False, error=str(e))
 
     async def get_metrics(self) -> APIResponse:
@@ -344,7 +344,7 @@ class RESTAPIController:
             metrics = self._orchestrator.get_metrics()
             return APIResponse(success=True, data=metrics)
         except Exception as e:
-            logger.error(f"Error getting metrics: {e}")
+            logger.error("Error getting metrics: %s", e)
             return APIResponse(success=False, error=str(e))
 
 

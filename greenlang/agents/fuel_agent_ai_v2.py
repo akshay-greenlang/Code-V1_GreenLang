@@ -190,25 +190,25 @@ class FuelAgentAI_v2(Agent[FuelInput, FuelOutput]):
         required = ["fuel_type", "amount", "unit"]
         for field in required:
             if field not in payload:
-                self.logger.error(f"Missing required field: {field}")
+                logger.error("Missing required field: %s", field)
                 return False
 
         # Validate amount
         if not isinstance(payload["amount"], (int, float)):
-            self.logger.error(f"Invalid amount: {payload['amount']}")
+            logger.error("Invalid amount: %s", payload['amount'])
             return False
 
         # Validate v2 enums if present
         if "scope" in payload and payload["scope"] not in ["1", "2", "3"]:
-            self.logger.error(f"Invalid scope: {payload['scope']}")
+            logger.error("Invalid scope: %s", payload['scope'])
             return False
 
         if "boundary" in payload and payload["boundary"] not in ["combustion", "WTT", "WTW", "cradle_to_gate", "cradle_to_grave"]:
-            self.logger.error(f"Invalid boundary: {payload['boundary']}")
+            logger.error("Invalid boundary: %s", payload['boundary'])
             return False
 
         if "response_format" in payload and payload["response_format"] not in ["legacy", "enhanced", "compact"]:
-            self.logger.error(f"Invalid response_format: {payload['response_format']}")
+            logger.error("Invalid response_format: %s", payload['response_format'])
             return False
 
         return True
@@ -292,7 +292,7 @@ class FuelAgentAI_v2(Agent[FuelInput, FuelOutput]):
             return result
 
         except Exception as e:
-            self.logger.error(f"Error in v2 fuel calculation: {e}")
+            logger.error("Error in v2 fuel calculation: %s", e)
             error_info: ErrorInfo = {
                 "type": "CalculationError",
                 "message": f"Failed to calculate fuel emissions: {str(e)}",
@@ -456,7 +456,7 @@ class FuelAgentAI_v2(Agent[FuelInput, FuelOutput]):
             }
 
         except BudgetExceeded as e:
-            self.logger.error(f"Budget exceeded: {e}")
+            logger.error("Budget exceeded: %s", e)
             error_info: ErrorInfo = {
                 "type": "BudgetError",
                 "message": f"AI budget exceeded: {str(e)}",
@@ -550,7 +550,7 @@ IMPORTANT:
                 elif name == "generate_recommendations":
                     results["recommendations"] = result
             except Exception as e:
-                self.logger.error(f"Tool call {name} failed: {e}")
+                logger.error("Tool call %s failed: %s", name, e)
                 # Continue processing other tool calls
 
         return results

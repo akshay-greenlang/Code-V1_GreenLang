@@ -338,7 +338,7 @@ class WastewaterMRVAgent(BaseAgent):
         self._emission_factors = DEFAULT_EMISSION_FACTORS.copy()
         self._calculations_performed = 0
 
-        self.logger.info(f"Initialized {self.AGENT_ID}: {self.AGENT_NAME} v{self.VERSION}")
+        logger.info("Initialized %s: %s v%s", self.AGENT_ID, self.AGENT_NAME, self.VERSION)
 
     def execute(self, input_data: Dict[str, Any]) -> AgentResult:
         """Execute wastewater emissions calculation."""
@@ -412,7 +412,7 @@ class WastewaterMRVAgent(BaseAgent):
 
             self._calculations_performed += 1
 
-            self.logger.info(
+            logger.info(
                 f"Calculated wastewater emissions: {net_total:.2f} kgCO2e "
                 f"({total_volume:.0f} m3 treated)"
             )
@@ -428,7 +428,7 @@ class WastewaterMRVAgent(BaseAgent):
             )
 
         except Exception as e:
-            self.logger.error(f"Wastewater MRV calculation failed: {e}", exc_info=True)
+            logger.error("Wastewater MRV calculation failed: %s", e, exc_info=True)
             return AgentResult(
                 success=False,
                 error=str(e),

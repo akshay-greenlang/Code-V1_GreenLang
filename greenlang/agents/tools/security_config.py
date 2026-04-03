@@ -434,10 +434,10 @@ def configure_security(
         if hasattr(config, key):
             setattr(config, key, value)
         else:
-            logger.warning(f"Unknown security config parameter: {key}")
+            logger.warning("Unknown security config parameter: %s", key)
 
     _global_security_config = config
-    logger.info(f"Configured security: {config}")
+    logger.info("Configured security: %s", config)
 
     return config
 

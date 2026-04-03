@@ -1207,7 +1207,7 @@ class ProvenanceTracker:
             record.metadata["invalidated_at"] = datetime.now(timezone.utc).isoformat()
             record.metadata["invalidated_by"] = operator_id
 
-            logger.info(f"Record invalidated: {record_id} - {reason}")
+            logger.info("Record invalidated: %s - %s", record_id, reason)
             return True
 
     # =========================================================================
@@ -1441,7 +1441,7 @@ class ProvenanceTracker:
             for rid in to_remove:
                 del self._records[rid]
 
-            logger.info(f"Cleared {len(to_remove)} expired provenance records")
+            logger.info("Cleared %s expired provenance records", len(to_remove))
             return len(to_remove)
 
 

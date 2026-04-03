@@ -258,7 +258,7 @@ class ConstraintManager:
         violations = []
 
         if not self.equipment_fleet:
-            self.logger.warning("No equipment fleet configured for validation")
+            logger.warning("No equipment fleet configured for validation")
             return FeasibilityResult(is_feasible=True)
 
         # Create lookup for equipment specs
@@ -267,7 +267,7 @@ class ConstraintManager:
         for sp in setpoints:
             unit = equipment_map.get(sp.unit_id)
             if unit is None:
-                self.logger.warning(f"Unknown equipment unit: {sp.unit_id}")
+                logger.warning("Unknown equipment unit: %s", sp.unit_id)
                 continue
 
             # Check minimum load constraint (only if unit is on)
@@ -737,7 +737,7 @@ class ConstraintManager:
         for constraint_type in priority_order:
             # Skip non-relaxable constraints
             if constraint_type in self.NON_RELAXABLE:
-                self.logger.warning(
+                logger.warning(
                     f"Skipping non-relaxable constraint: {constraint_type.value}"
                 )
                 continue
@@ -875,9 +875,9 @@ class ConstraintManager:
     def update_equipment_fleet(self, equipment_fleet: List[EquipmentUnit]) -> None:
         """Update the equipment fleet configuration."""
         self.equipment_fleet = equipment_fleet
-        self.logger.info(f"Updated equipment fleet: {len(equipment_fleet)} units")
+        logger.info("Updated equipment fleet: %s units", len(equipment_fleet))
 
     def update_constraints(self, constraints: OptimizationConstraints) -> None:
         """Update the optimization constraints."""
         self.constraints = constraints
-        self.logger.info(f"Updated constraints: demand={constraints.total_demand_kw} kW")
+        logger.info("Updated constraints: demand=%s kW", constraints.total_demand_kw)

@@ -233,7 +233,7 @@ class HeuristicLoadBalancer:
 
         prio = priority or self.config.priority
 
-        self.logger.info(
+        logger.info(
             f"Merit order dispatch: demand={demand:.1f} kW, priority={prio.value}"
         )
 
@@ -398,7 +398,7 @@ class HeuristicLoadBalancer:
 
         result.provenance_hash = self._calculate_provenance(result, demand, prio.value)
 
-        self.logger.info(
+        logger.info(
             f"Merit order dispatch complete: {units_on} units, "
             f"{total_load:.1f} kW, ${total_cost:.2f}/h"
         )
@@ -430,7 +430,7 @@ class HeuristicLoadBalancer:
         if demand <= 0:
             return self._empty_result(HeuristicMethod.EQUAL_PERCENTAGE)
 
-        self.logger.info(f"Equal percentage loading: demand={demand:.1f} kW")
+        logger.info("Equal percentage loading: demand=%.1f kW", demand)
 
         # Calculate total capacity
         total_capacity = sum(u.max_load_kw for u in self.equipment_fleet)
@@ -533,7 +533,7 @@ class HeuristicLoadBalancer:
             result, demand, "equal_percentage"
         )
 
-        self.logger.info(
+        logger.info(
             f"Equal percentage loading complete: {target_pct:.1f}% load factor, "
             f"{units_on} units"
         )
@@ -564,7 +564,7 @@ class HeuristicLoadBalancer:
         if demand <= 0:
             return self._empty_result(HeuristicMethod.EFFICIENCY_WEIGHTED)
 
-        self.logger.info(f"Efficiency weighted dispatch: demand={demand:.1f} kW")
+        logger.info("Efficiency weighted dispatch: demand=%.1f kW", demand)
 
         # Calculate efficiency weights
         total_efficiency = sum(u.efficiency for u in self.equipment_fleet)
@@ -713,7 +713,7 @@ class HeuristicLoadBalancer:
             result, demand, "efficiency_weighted"
         )
 
-        self.logger.info(
+        logger.info(
             f"Efficiency weighted dispatch complete: {units_on} units, "
             f"{total_load:.1f} kW"
         )
@@ -744,7 +744,7 @@ class HeuristicLoadBalancer:
         if demand <= 0:
             return self._empty_result(HeuristicMethod.PROPORTIONAL_CAPACITY)
 
-        self.logger.info(f"Proportional capacity dispatch: demand={demand:.1f} kW")
+        logger.info("Proportional capacity dispatch: demand=%.1f kW", demand)
 
         # Sort by capacity (largest first)
         sorted_fleet = sorted(
@@ -931,7 +931,7 @@ class HeuristicLoadBalancer:
             try:
                 results[method] = self.dispatch(method, demand_kw)
             except Exception as e:
-                self.logger.error(f"Method {method.value} failed: {e}")
+                logger.error("Method %s failed: %s", method.value, e)
 
         return results
 
@@ -987,18 +987,18 @@ class HeuristicLoadBalancer:
     ) -> None:
         """Update the equipment fleet configuration."""
         self.equipment_fleet = equipment_fleet
-        self.logger.info(f"Updated equipment fleet: {len(equipment_fleet)} units")
+        logger.info("Updated equipment fleet: %s units", len(equipment_fleet))
 
     def update_constraints(
         self, constraints: OptimizationConstraints
     ) -> None:
         """Update the optimization constraints."""
         self.constraints = constraints
-        self.logger.info(
+        logger.info(
             f"Updated constraints: demand={constraints.total_demand_kw} kW"
         )
 
     def update_config(self, config: MeritOrderConfig) -> None:
         """Update the merit order configuration."""
         self.config = config
-        self.logger.info(f"Updated config: priority={config.priority}")
+        logger.info("Updated config: priority=%s", config.priority)

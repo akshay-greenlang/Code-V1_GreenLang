@@ -639,7 +639,7 @@ class GridFactorAgentAI(OperationalMonitoringMixin, Agent[GridFactorInput, GridF
                 return result
 
             except Exception as e:
-                self.logger.error(f"Error in AI grid factor lookup: {e}")
+                logger.error("Error in AI grid factor lookup: %s", e)
                 error_info: ErrorInfo = {
                     "type": "LookupError",
                     "message": f"Failed to lookup grid factor: {str(e)}",
@@ -733,7 +733,7 @@ class GridFactorAgentAI(OperationalMonitoringMixin, Agent[GridFactorInput, GridF
             }
 
         except BudgetExceeded as e:
-            self.logger.error(f"Budget exceeded: {e}")
+            logger.error("Budget exceeded: %s", e)
             error_info: ErrorInfo = {
                 "type": "BudgetError",
                 "message": f"AI budget exceeded: {str(e)}",

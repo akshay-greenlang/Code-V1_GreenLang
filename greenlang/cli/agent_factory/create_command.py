@@ -715,7 +715,7 @@ class {module_name.title().replace("_", "")}Agent:
         self.version = "{config.version}"
         self.category = "{config.category}"
         self.config = config or {{}}
-        logger.info(f"Initialized {{self.name}} v{{self.version}}")
+        logger.info("Initialized %s v%s", self.name, self.version)
 
     async def run(self, input_data: AgentInput) -> AgentOutput:
         """
@@ -732,7 +732,7 @@ class {module_name.title().replace("_", "")}Agent:
             ProcessingError: If processing fails
         """
         start_time = datetime.now()
-        logger.info(f"Starting {{self.name}} execution")
+        logger.info("Starting %s execution", self.name)
 
         try:
             # Step 1: Validate input
@@ -754,11 +754,11 @@ class {module_name.title().replace("_", "")}Agent:
                 timestamp=datetime.now().isoformat(),
             )
 
-            logger.info(f"Completed {{self.name}} in {{processing_time:.2f}}ms")
+            logger.info("Completed %s in %.2fms", self.name, processing_time)
             return output
 
         except Exception as e:
-            logger.error(f"{{self.name}} execution failed: {{str(e)}}", exc_info=True)
+            logger.error("%s execution failed: %s", self.name, e, exc_info=True)
             raise
 
     def _validate_input(self, input_data: AgentInput) -> None:
@@ -862,7 +862,7 @@ async def {tool}(
     Note:
         This tool must be DETERMINISTIC - no LLM calls for calculations.
     """
-    logger.info(f"Executing {tool}")
+    logger.info("Executing %s", tool)
 
     # Example:
     # - Database lookup: value = db.lookup(key)
@@ -1451,6 +1451,6 @@ build/
         )
 
     except subprocess.CalledProcessError as e:
-        logger.warning(f"Git initialization failed: {e}")
+        logger.warning("Git initialization failed: %s", e)
     except FileNotFoundError:
         logger.warning("Git not found - skipping git initialization")

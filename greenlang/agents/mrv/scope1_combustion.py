@@ -489,7 +489,7 @@ class Scope1CombustionAgent(DeterministicAgent):
         """
         super().__init__(enable_audit_trail=enable_audit_trail)
         self._calculation_counter = 0
-        logger.info(f"Initialized {self.AGENT_NAME} v{self.VERSION}")
+        logger.info("Initialized %s v%s", self.AGENT_NAME, self.VERSION)
 
     def execute(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -631,7 +631,7 @@ class Scope1CombustionAgent(DeterministicAgent):
             return output.model_dump()
 
         except Exception as e:
-            logger.error(f"Scope 1 combustion calculation failed: {str(e)}", exc_info=True)
+            logger.error("Scope 1 combustion calculation failed: %s", e, exc_info=True)
 
             end_time = DeterministicClock.now()
             processing_time_ms = (end_time - start_time).total_seconds() * 1000

@@ -80,6 +80,7 @@ from greenlang.agents.eudr.qr_code_generator.metrics import (
     observe_verification_duration,
     record_api_error,
 )
+from greenlang.utilities.exceptions.compliance import ComplianceException
 
 logger = logging.getLogger(__name__)
 
@@ -147,7 +148,7 @@ def _generate_id(prefix: str) -> str:
 # Custom Exceptions
 # ---------------------------------------------------------------------------
 
-class VerificationURLError(Exception):
+class VerificationURLError(ComplianceException):
     """Base exception for verification URL construction errors."""
     pass
 

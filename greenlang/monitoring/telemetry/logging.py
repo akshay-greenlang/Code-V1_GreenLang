@@ -156,7 +156,7 @@ class StructuredLogger:
 
         # Log to standard logger
         log_level = getattr(logging, level.value)
-        self.logger.log(log_level, entry.to_json())
+        logger.log(log_level, entry.to_json())
 
         # Send to aggregator
         get_log_aggregator().add_log(entry)
@@ -409,7 +409,7 @@ class LogShipper:
             try:
                 self._ship_batch()
             except Exception as e:
-                logger.error(f"Error shipping logs: {e}")
+                logger.error("Error shipping logs: %s", e)
 
             self._stop_shipping.wait(self.ship_interval)
 
@@ -430,7 +430,7 @@ class LogShipper:
                 for log in batch:
                     destination(log)
             except Exception as e:
-                logger.error(f"Error shipping to destination: {e}")
+                logger.error("Error shipping to destination: %s", e)
 
 
 def configure_logging(
@@ -469,7 +469,7 @@ def configure_logging(
         file_handler.setFormatter(formatter)
         logging.getLogger().addHandler(file_handler)
 
-    logger.info(f"Logging configured: level={level}, json={format_json}")
+    logger.info("Logging configured: level=%s, json=%s", level, format_json)
 
 
 def add_log_context(**kwargs):

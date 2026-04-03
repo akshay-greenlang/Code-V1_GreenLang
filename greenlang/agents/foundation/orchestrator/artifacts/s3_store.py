@@ -138,7 +138,7 @@ class S3ArtifactStore(ArtifactStore):
         """
         self.config = config
         self._session = aioboto3.Session()
-        logger.info(f"Initialized S3ArtifactStore: bucket={config.bucket}, region={config.region}")
+        logger.info("Initialized S3ArtifactStore: bucket=%s, region=%s", config.bucket, config.region)
 
     def _get_client_kwargs(self) -> Dict[str, Any]:
         """Get kwargs for S3 client creation."""
@@ -199,7 +199,7 @@ class S3ArtifactStore(ArtifactStore):
             )
 
         uri = f"s3://{self.config.bucket}/{key}"
-        logger.debug(f"Wrote input context: {uri}")
+        logger.debug("Wrote input context: %s", uri)
 
         return ArtifactMetadata(
             artifact_id=str(uuid.uuid4()),
@@ -233,7 +233,7 @@ class S3ArtifactStore(ArtifactStore):
                 return json.loads(body.decode("utf-8"))
         except ClientError as e:
             if e.response["Error"]["Code"] == "NoSuchKey":
-                logger.debug(f"Result not found: {key}")
+                logger.debug("Result not found: %s", key)
                 return None
             raise
 
@@ -256,7 +256,7 @@ class S3ArtifactStore(ArtifactStore):
                 return json.loads(body.decode("utf-8"))
         except ClientError as e:
             if e.response["Error"]["Code"] == "NoSuchKey":
-                logger.debug(f"Step metadata not found: {key}")
+                logger.debug("Step metadata not found: %s", key)
                 return None
             raise
 
@@ -379,7 +379,7 @@ class S3ArtifactStore(ArtifactStore):
             )
 
         uri = f"s3://{self.config.bucket}/{key}"
-        logger.debug(f"Wrote artifact: {uri}")
+        logger.debug("Wrote artifact: %s", uri)
 
         return ArtifactMetadata(
             artifact_id=str(uuid.uuid4()),
@@ -413,7 +413,7 @@ class S3ArtifactStore(ArtifactStore):
                 return await response["Body"].read()
         except ClientError as e:
             if e.response["Error"]["Code"] == "NoSuchKey":
-                logger.debug(f"Artifact not found: {key}")
+                logger.debug("Artifact not found: %s", key)
                 return None
             raise
 
@@ -473,7 +473,7 @@ class S3ArtifactStore(ArtifactStore):
                     )
                     deleted_count += len(objects)
 
-        logger.info(f"Deleted {deleted_count} artifacts for {prefix}")
+        logger.info("Deleted %s artifacts for %s", deleted_count, prefix)
         return deleted_count
 
     async def verify_checksum(
@@ -511,7 +511,7 @@ class S3ArtifactStore(ArtifactStore):
     ) -> int:
         """Apply retention policy to artifacts."""
         if policy.legal_hold:
-            logger.info(f"Skipping retention for {tenant_id}: legal hold active")
+            logger.info("Skipping retention for %s: legal hold active", tenant_id)
             return 0
 
         cutoff_date = DeterministicClock.now() - timedelta(days=policy.retention_days)
@@ -541,7 +541,7 @@ class S3ArtifactStore(ArtifactStore):
                     )
                     deleted_count += len(objects_to_delete)
 
-        logger.info(f"Applied retention policy for {tenant_id}: deleted {deleted_count} artifacts")
+        logger.info("Applied retention policy for %s: deleted %s artifacts", tenant_id, deleted_count)
         return deleted_count
 
     async def health_check(self) -> bool:
@@ -551,7 +551,7 @@ class S3ArtifactStore(ArtifactStore):
                 await s3.head_bucket(Bucket=self.config.bucket)
                 return True
         except Exception as e:
-            logger.error(f"S3 health check failed: {e}")
+            logger.error("S3 health check failed: %s", e)
             return False
 
 

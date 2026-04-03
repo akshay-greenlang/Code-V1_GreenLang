@@ -321,7 +321,7 @@ class CompostingMRVAgent(BaseWasteMRVAgent[CompostingInput, CompostingOutput]):
         self._biogas_yield = BIOGAS_YIELD
         self._compost_yield = COMPOST_YIELD
         self._sequestration = CARBON_SEQUESTRATION
-        self.logger.info(f"Initialized {self.AGENT_ID}: {self.AGENT_NAME}")
+        logger.info("Initialized %s: %s", self.AGENT_ID, self.AGENT_NAME)
 
     def calculate(self, input_data: CompostingInput) -> CompostingOutput:
         """

@@ -243,7 +243,7 @@ def create_database(db_path: str, overwrite: bool = False) -> bool:
     db_exists = db_file.exists()
 
     if db_exists and overwrite:
-        logger.warning(f"Dropping existing database: {db_path}")
+        logger.warning("Dropping existing database: %s", db_path)
         db_file.unlink()
         db_exists = False
 
@@ -283,8 +283,8 @@ def create_database(db_path: str, overwrite: bool = False) -> bool:
             if table not in tables:
                 raise sqlite3.Error(f"Failed to create table: {table}")
 
-        logger.info(f"Database created successfully: {db_path}")
-        logger.info(f"Tables created: {', '.join(tables)}")
+        logger.info("Database created successfully: %s", db_path)
+        logger.info("Tables created: %s", ', '.join(tables))
 
         # Get table counts
         # SECURITY FIX: Validate table names against whitelist before SQL execution
@@ -299,19 +299,19 @@ def create_database(db_path: str, overwrite: bool = False) -> bool:
         for table in expected_tables:
             # SECURITY: Whitelist validation - only allow known table names
             if table not in allowed_tables:
-                logger.error(f"Table name not in whitelist: {table}")
+                logger.error("Table name not in whitelist: %s", table)
                 raise ValueError(f"Invalid table name: {table}")
 
             # Safe to use in query after whitelist validation
             cursor.execute(f"SELECT COUNT(*) FROM {table}")
             count = cursor.fetchone()[0]
-            logger.info(f"  {table}: {count} rows")
+            logger.info("  %s: %s rows", table, count)
 
         conn.close()
         return True
 
     except sqlite3.Error as e:
-        logger.error(f"Database creation failed: {e}")
+        logger.error("Database creation failed: %s", e)
         raise
 
 
@@ -412,10 +412,10 @@ def validate_database(db_path: str) -> dict:
             results['valid'] = False
             results['errors'].append(f"Invalid emission factors (<=0): {invalid_factors}")
 
-        logger.info(f"Database validation: {'PASSED' if results['valid'] else 'FAILED'}")
-        logger.info(f"Total factors: {results['statistics']['total_factors']}")
-        logger.info(f"Categories: {results['statistics']['categories']}")
-        logger.info(f"Sources: {results['statistics']['sources']}")
+        logger.info("Database validation: %s", 'PASSED' if results['valid'] else 'FAILED')
+        logger.info("Total factors: %s", results['statistics']['total_factors'])
+        logger.info("Categories: %s", results['statistics']['categories'])
+        logger.info("Sources: %s", results['statistics']['sources'])
 
         if results['warnings']:
             for warning in results['warnings']:
@@ -428,7 +428,7 @@ def validate_database(db_path: str) -> dict:
     except sqlite3.Error as e:
         results['valid'] = False
         results['errors'].append(str(e))
-        logger.error(f"Validation error: {e}")
+        logger.error("Validation error: %s", e)
 
     finally:
         conn.close()
@@ -480,7 +480,7 @@ def get_database_info(db_path: str) -> dict:
     for (table_name,) in cursor.fetchall():
         # SECURITY: Validate table name against whitelist
         if table_name not in allowed_tables:
-            logger.warning(f"Skipping unknown table: {table_name}")
+            logger.warning("Skipping unknown table: %s", table_name)
             continue
 
         # Safe to use in query after whitelist validation

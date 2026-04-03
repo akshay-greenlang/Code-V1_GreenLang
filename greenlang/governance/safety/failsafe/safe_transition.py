@@ -348,7 +348,7 @@ class SafeTransition:
         except Exception as e:
             status = TransitionStatus.FAILED
             errors.append(f"Transition error: {str(e)}")
-            logger.error(f"Transition failed: {e}", exc_info=True)
+            logger.error("Transition failed: %s", e, exc_info=True)
 
         end_time = datetime.utcnow()
         duration_ms = (end_time - start_time).total_seconds() * 1000
@@ -525,7 +525,7 @@ class SafeTransition:
         expected_state: str
     ) -> bool:
         """Default state verifier (always returns True)."""
-        logger.debug(f"Verifying {equipment_id} is in {expected_state}")
+        logger.debug("Verifying %s is in %s", equipment_id, expected_state)
         return True
 
     def _default_executor(
@@ -535,7 +535,7 @@ class SafeTransition:
         target: str
     ) -> bool:
         """Default action executor (always returns True)."""
-        logger.debug(f"Executing {action} on {equipment_id} -> {target}")
+        logger.debug("Executing %s on %s -> %s", action, equipment_id, target)
         return True
 
     def simulate(self) -> TransitionResult:
@@ -545,7 +545,7 @@ class SafeTransition:
         Returns:
             TransitionResult with simulated results
         """
-        logger.info(f"Simulating transition {self.config.transition_id}")
+        logger.info("Simulating transition %s", self.config.transition_id)
 
         start_time = datetime.utcnow()
         step_results = []

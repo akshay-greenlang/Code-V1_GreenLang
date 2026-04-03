@@ -277,7 +277,7 @@ class SafeStateManager:
         Raises:
             ValueError: If state_id already exists
         """
-        logger.info(f"Defining safe state: {state_id} - {name}")
+        logger.info("Defining safe state: %s - %s", state_id, name)
 
         if state_id in self.safe_states:
             raise ValueError(f"Safe state {state_id} already exists")
@@ -300,7 +300,7 @@ class SafeStateManager:
 
         self.safe_states[state_id] = safe_state
 
-        logger.info(f"Safe state defined: {state_id}")
+        logger.info("Safe state defined: %s", state_id)
 
         return safe_state
 
@@ -332,7 +332,7 @@ class SafeStateManager:
         Raises:
             ValueError: If target state doesn't exist
         """
-        logger.info(f"Creating transition to {to_state_id}")
+        logger.info("Creating transition to %s", to_state_id)
 
         if to_state_id not in self.safe_states:
             raise ValueError(f"Safe state {to_state_id} not found")
@@ -389,7 +389,7 @@ class SafeStateManager:
         Returns:
             Validation result dictionary
         """
-        logger.info(f"Validating transition {transition.transition_id}")
+        logger.info("Validating transition %s", transition.transition_id)
 
         errors: List[str] = []
         warnings: List[str] = []
@@ -485,7 +485,7 @@ class SafeStateManager:
         Returns:
             List of execution steps with timing
         """
-        logger.info(f"Simulating transition {transition.transition_id}")
+        logger.info("Simulating transition %s", transition.transition_id)
 
         steps = []
         current_time_ms = 0.0

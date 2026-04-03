@@ -323,7 +323,7 @@ class LandUseChangeMRVAgent(DeterministicAgent):
     def __init__(self, enable_audit_trail: bool = True):
         """Initialize Land Use Change MRV Agent."""
         super().__init__(enable_audit_trail=enable_audit_trail)
-        logger.info(f"Initialized {self.AGENT_NAME} v{self.VERSION}")
+        logger.info("Initialized %s v%s", self.AGENT_NAME, self.VERSION)
 
     def execute(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
         """Execute land use change calculation."""
@@ -413,7 +413,7 @@ class LandUseChangeMRVAgent(DeterministicAgent):
             return output.model_dump()
 
         except Exception as e:
-            logger.error(f"Land use change calculation failed: {str(e)}", exc_info=True)
+            logger.error("Land use change calculation failed: %s", e, exc_info=True)
             raise
 
     def _calculate_transition_emissions(

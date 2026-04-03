@@ -246,7 +246,7 @@ class MeasureLibraryEngine:
                 if set_library_measures is not None:
                     set_library_measures(len(self._measures))
             except Exception as e:
-                logger.warning(f"Failed to load measures from reference data: {e}")
+                logger.warning("Failed to load measures from reference data: %s", e)
                 self._measures = []
         else:
             logger.info("Reference data not available; measure library empty")

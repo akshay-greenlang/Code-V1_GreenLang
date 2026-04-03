@@ -34,6 +34,8 @@ import json
 import logging
 from functools import wraps
 
+from greenlang.utilities.exceptions.base import GreenLangException
+
 logger = logging.getLogger(__name__)
 
 
@@ -66,17 +68,17 @@ class LicenseStatus(Enum):
     GRACE_PERIOD = "grace_period"
 
 
-class LicenseValidationError(Exception):
+class LicenseValidationError(GreenLangException):
     """Exception raised when license validation fails."""
     pass
 
 
-class LicenseExpiredError(Exception):
+class LicenseExpiredError(GreenLangException):
     """Exception raised when license has expired."""
     pass
 
 
-class FeatureNotLicensedError(Exception):
+class FeatureNotLicensedError(GreenLangException):
     """Exception raised when attempting to use an unlicensed feature."""
 
     def __init__(self, feature: str, required_tier: str = None):
@@ -88,7 +90,7 @@ class FeatureNotLicensedError(Exception):
         super().__init__(message)
 
 
-class UsageLimitExceededError(Exception):
+class UsageLimitExceededError(GreenLangException):
     """Exception raised when usage limits are exceeded."""
 
     def __init__(self, resource: str, limit: int, current: int):
@@ -489,7 +491,7 @@ class LicenseManager:
 
         self._license = license
         self._reset_usage()
-        logger.info(f"License loaded: {license.license_id} ({license.tier.value})")
+        logger.info("License loaded: %s (%s)", license.license_id, license.tier.value)
         return license
 
     def _create_demo_license(self, license_key: str) -> License:
@@ -819,7 +821,7 @@ class LicenseAudit:
             **details,
         }
         self._events.append(event)
-        logger.info(f"License audit: {event_type} - {details}")
+        logger.info("License audit: %s - %s", event_type, details)
 
     def log_validation(self, manager: LicenseManager) -> None:
         """Log a license validation event."""

@@ -530,5 +530,5 @@ class Category04UpstreamTransportCalculator(Scope3CategoryCalculator):
             return self._transport_factors[mode]["factor"]
 
         # Default to truck
-        self.logger.warning(f"No factor found for mode '{mode}', using truck average")
+        logger.warning("No factor found for mode '%s', using truck average", mode)
         return self._transport_factors["truck"]["factor"]

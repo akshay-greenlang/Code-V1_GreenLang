@@ -116,7 +116,7 @@ class EmbeddingPipeline:
             self._cache.ping()
             logger.info("Redis cache connection established")
         except Exception as e:
-            logger.warning(f"Failed to initialize Redis cache: {e}. Caching disabled.")
+            logger.warning("Failed to initialize Redis cache: %s. Caching disabled.", e)
             self._cache = None
 
     @property
@@ -132,7 +132,7 @@ class EmbeddingPipeline:
         """
         if self._model is None:
             try:
-                logger.info(f"Loading embedding model: {self.model_config.embedding_model}")
+                logger.info("Loading embedding model: %s", self.model_config.embedding_model)
                 self._model = SentenceTransformer(
                     self.model_config.embedding_model,
                     cache_folder=str(self.model_config.model_cache_dir),
@@ -203,7 +203,7 @@ class EmbeddingPipeline:
                 self._stats["cache_misses"] += 1
                 return None
         except Exception as e:
-            logger.warning(f"Cache retrieval failed: {e}")
+            logger.warning("Cache retrieval failed: %s", e)
             return None
 
     def _save_to_cache(self, text: str, embedding: np.ndarray) -> None:
@@ -227,7 +227,7 @@ class EmbeddingPipeline:
                 embedding_bytes,
             )
         except Exception as e:
-            logger.warning(f"Cache save failed: {e}")
+            logger.warning("Cache save failed: %s", e)
 
     def embed(
         self,
@@ -405,7 +405,7 @@ class EmbeddingPipeline:
             keys = self._cache.keys("emb:*")
             if keys:
                 count = self._cache.delete(*keys)
-                logger.info(f"Cleared {count} cached embeddings")
+                logger.info("Cleared %s cached embeddings", count)
                 return count
             return 0
         except Exception as e:

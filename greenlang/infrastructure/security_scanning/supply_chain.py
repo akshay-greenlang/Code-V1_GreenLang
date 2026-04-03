@@ -302,7 +302,7 @@ class SupplyChainVerifier:
         if not skip_cache and self.config.cache_results:
             cached = self._get_cached_result(image_reference)
             if cached:
-                logger.debug(f"Cache hit for {image_reference}")
+                logger.debug("Cache hit for %s", image_reference)
                 return cached
 
         # Check Cosign availability
@@ -464,7 +464,7 @@ class SupplyChainVerifier:
                 if match:
                     return match.group(0)
         except Exception as e:
-            logger.debug(f"Could not resolve digest: {e}")
+            logger.debug("Could not resolve digest: %s", e)
 
         return ""
 
@@ -523,14 +523,14 @@ class SupplyChainVerifier:
 
                 return SignatureInfo(verified=True)
             else:
-                logger.debug(f"Signature verification failed: {result.stderr}")
+                logger.debug("Signature verification failed: %s", result.stderr)
                 return SignatureInfo(verified=False)
 
         except subprocess.TimeoutExpired:
             logger.error("Signature verification timed out")
             return SignatureInfo(verified=False)
         except Exception as e:
-            logger.error(f"Signature verification error: {e}")
+            logger.error("Signature verification error: %s", e)
             return SignatureInfo(verified=False)
 
     async def _verify_sbom_attestation(
@@ -598,7 +598,7 @@ class SupplyChainVerifier:
                             components=top_components,
                         )
                 except (json.JSONDecodeError, KeyError) as e:
-                    logger.debug(f"Could not parse SBOM: {e}")
+                    logger.debug("Could not parse SBOM: %s", e)
                     return SBOMInfo(present=True, verified=True)
 
                 return SBOMInfo(present=True, verified=True)
@@ -612,7 +612,7 @@ class SupplyChainVerifier:
             logger.error("SBOM verification timed out")
             return SBOMInfo(present=False, verified=False)
         except Exception as e:
-            logger.error(f"SBOM verification error: {e}")
+            logger.error("SBOM verification error: %s", e)
             return SBOMInfo(present=False, verified=False)
 
     async def _verify_provenance(
@@ -693,7 +693,7 @@ class SupplyChainVerifier:
                             materials=material_list,
                         )
                 except (json.JSONDecodeError, KeyError) as e:
-                    logger.debug(f"Could not parse provenance: {e}")
+                    logger.debug("Could not parse provenance: %s", e)
                     return ProvenanceInfo(present=True, verified=True, slsa_level=1)
 
                 return ProvenanceInfo(present=True, verified=True)
@@ -706,7 +706,7 @@ class SupplyChainVerifier:
             logger.error("Provenance verification timed out")
             return ProvenanceInfo(present=False, verified=False)
         except Exception as e:
-            logger.error(f"Provenance verification error: {e}")
+            logger.error("Provenance verification error: %s", e)
             return ProvenanceInfo(present=False, verified=False)
 
     def _determine_slsa_level(

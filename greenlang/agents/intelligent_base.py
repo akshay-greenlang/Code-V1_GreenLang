@@ -271,7 +271,7 @@ class IntelligentAgentBase(BaseAgent, ABC):
         if self._provider is None:
             self._provider = create_provider(model=self.intelligent_config.llm_model)
             self._session = ChatSession(self._provider)
-            logger.debug(f"Created LLM provider: {type(self._provider).__name__}")
+            logger.debug("Created LLM provider: %s", type(self._provider).__name__)
         return self._provider
 
     def _get_session(self) -> ChatSession:
@@ -368,7 +368,7 @@ class IntelligentAgentBase(BaseAgent, ABC):
             return response.text or ""
 
         except BudgetExceeded as e:
-            logger.warning(f"Budget exceeded for {task_description}: {e}")
+            logger.warning("Budget exceeded for %s: %s", task_description, e)
             raise
 
     def _run_async(self, coro):
@@ -462,7 +462,7 @@ class IntelligentAgentBase(BaseAgent, ABC):
             self._intelligence_metrics.explanations_generated += 1
             return explanation
         except Exception as e:
-            logger.error(f"Failed to generate explanation: {e}")
+            logger.error("Failed to generate explanation: %s", e)
             return f"Unable to generate explanation: {str(e)}"
 
     def generate_recommendations(
@@ -557,7 +557,7 @@ class IntelligentAgentBase(BaseAgent, ABC):
             return recommendations
 
         except Exception as e:
-            logger.error(f"Failed to generate recommendations: {e}")
+            logger.error("Failed to generate recommendations: %s", e)
             return []
 
     def detect_anomalies(
@@ -646,7 +646,7 @@ class IntelligentAgentBase(BaseAgent, ABC):
             return anomalies
 
         except Exception as e:
-            logger.error(f"Failed to detect anomalies: {e}")
+            logger.error("Failed to detect anomalies: %s", e)
             return []
 
     def reason_about(
@@ -708,7 +708,7 @@ class IntelligentAgentBase(BaseAgent, ABC):
                 self._call_llm(messages, "reason_about")
             )
         except Exception as e:
-            logger.error(f"Failed to reason: {e}")
+            logger.error("Failed to reason: %s", e)
             return f"Unable to reason: {str(e)}"
 
     def validate_with_reasoning(
@@ -782,7 +782,7 @@ class IntelligentAgentBase(BaseAgent, ABC):
             return is_valid, reasoning
 
         except Exception as e:
-            logger.error(f"Failed to validate with reasoning: {e}")
+            logger.error("Failed to validate with reasoning: %s", e)
             # Fall back to basic validation
             return self.validate_input(input_data), f"Fallback validation: {str(e)}"
 

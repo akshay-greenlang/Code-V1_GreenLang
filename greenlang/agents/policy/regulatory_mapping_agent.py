@@ -640,7 +640,7 @@ class RegulatoryMappingAgent(BaseAgent):
 
         super().__init__(config)
 
-        logger.info(f"Initialized {self.AGENT_NAME} v{self.VERSION}")
+        logger.info("Initialized %s v%s", self.AGENT_NAME, self.VERSION)
 
     def execute(self, input_data: Dict[str, Any]) -> AgentResult:
         """
@@ -678,7 +678,7 @@ class RegulatoryMappingAgent(BaseAgent):
             )
 
         except Exception as e:
-            logger.error(f"Regulatory mapping failed: {str(e)}", exc_info=True)
+            logger.error("Regulatory mapping failed: %s", e, exc_info=True)
             return AgentResult(
                 success=False,
                 error=str(e),
@@ -1172,7 +1172,7 @@ class RegulatoryMappingAgent(BaseAgent):
             Regulation ID
         """
         self._regulations[regulation.regulation_id] = regulation
-        logger.info(f"Added regulation: {regulation.regulation_id}")
+        logger.info("Added regulation: %s", regulation.regulation_id)
         return regulation.regulation_id
 
 

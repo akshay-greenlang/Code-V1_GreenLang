@@ -968,7 +968,7 @@ class WorkOrderGenerator:
     def add_template(self, template: WorkOrderTemplate) -> None:
         """Add or update a work order template."""
         self._templates[template.failure_mode] = template
-        logger.info(f"Template added: {template.name}")
+        logger.info("Template added: %s", template.name)
 
 
 # =============================================================================
@@ -1066,11 +1066,11 @@ class SAPPMAdapter(CMMSAdapter):
         self._connected = False
         self._session = None
 
-        logger.info(f"SAP PM adapter initialized: {config.base_url} (plant={config.plant})")
+        logger.info("SAP PM adapter initialized: %s (plant=%s)", config.base_url, config.plant)
 
     async def create_work_order(self, work_order: WorkOrder) -> CMMSResponse:
         """Create work order in SAP PM."""
-        logger.info(f"Creating SAP PM order: {work_order.work_order_id}")
+        logger.info("Creating SAP PM order: %s", work_order.work_order_id)
 
         try:
             # Map to SAP fields
@@ -1090,7 +1090,7 @@ class SAPPMAdapter(CMMSAdapter):
             )
 
         except Exception as e:
-            logger.error(f"SAP PM create failed: {e}", exc_info=True)
+            logger.error("SAP PM create failed: %s", e, exc_info=True)
             return CMMSResponse(
                 success=False,
                 message="Failed to create SAP PM order",
@@ -1106,7 +1106,7 @@ class SAPPMAdapter(CMMSAdapter):
                 errors=["Missing external_id"],
             )
 
-        logger.info(f"Updating SAP PM order: {work_order.external_id}")
+        logger.info("Updating SAP PM order: %s", work_order.external_id)
         return CMMSResponse(
             success=True,
             external_id=work_order.external_id,
@@ -1115,7 +1115,7 @@ class SAPPMAdapter(CMMSAdapter):
 
     async def get_work_order(self, external_id: str) -> Optional[WorkOrder]:
         """Get work order from SAP PM."""
-        logger.info(f"Getting SAP PM order: {external_id}")
+        logger.info("Getting SAP PM order: %s", external_id)
         # In production, would call SAP OData
         return None
 
@@ -1123,7 +1123,7 @@ class SAPPMAdapter(CMMSAdapter):
         self, external_id: str, status: WorkOrderStatus, notes: str = ""
     ) -> CMMSResponse:
         """Update work order status in SAP PM."""
-        logger.info(f"Updating SAP PM status: {external_id} -> {status.value}")
+        logger.info("Updating SAP PM status: %s -> %s", external_id, status.value)
 
         # Map status to SAP
         sap_status_map = {
@@ -1145,7 +1145,7 @@ class SAPPMAdapter(CMMSAdapter):
         self, external_id: str, completion_notes: str, actual_hours: float = 0
     ) -> CMMSResponse:
         """Close work order in SAP PM."""
-        logger.info(f"Closing SAP PM order: {external_id}")
+        logger.info("Closing SAP PM order: %s", external_id)
 
         return CMMSResponse(
             success=True,
@@ -1216,11 +1216,11 @@ class MaximoAdapter(CMMSAdapter):
         self.config = config
         self._connected = False
 
-        logger.info(f"Maximo adapter initialized: {config.base_url} (site={config.site_id})")
+        logger.info("Maximo adapter initialized: %s (site=%s)", config.base_url, config.site_id)
 
     async def create_work_order(self, work_order: WorkOrder) -> CMMSResponse:
         """Create work order in Maximo."""
-        logger.info(f"Creating Maximo order: {work_order.work_order_id}")
+        logger.info("Creating Maximo order: %s", work_order.work_order_id)
 
         try:
             maximo_wo = self._map_to_maximo(work_order)
@@ -1237,7 +1237,7 @@ class MaximoAdapter(CMMSAdapter):
             )
 
         except Exception as e:
-            logger.error(f"Maximo create failed: {e}", exc_info=True)
+            logger.error("Maximo create failed: %s", e, exc_info=True)
             return CMMSResponse(
                 success=False,
                 message="Failed to create Maximo order",
@@ -1334,11 +1334,11 @@ class eMaintAdapter(CMMSAdapter):
         self.config = config
         self._connected = False
 
-        logger.info(f"eMaint adapter initialized: {config.base_url}")
+        logger.info("eMaint adapter initialized: %s", config.base_url)
 
     async def create_work_order(self, work_order: WorkOrder) -> CMMSResponse:
         """Create work order in eMaint."""
-        logger.info(f"Creating eMaint order: {work_order.work_order_id}")
+        logger.info("Creating eMaint order: %s", work_order.work_order_id)
 
         try:
             emaint_wo = self._map_to_emaint(work_order)
@@ -1354,7 +1354,7 @@ class eMaintAdapter(CMMSAdapter):
             )
 
         except Exception as e:
-            logger.error(f"eMaint create failed: {e}", exc_info=True)
+            logger.error("eMaint create failed: %s", e, exc_info=True)
             return CMMSResponse(
                 success=False,
                 message="Failed to create eMaint order",
@@ -1438,7 +1438,7 @@ class MockCMMSAdapter(CMMSAdapter):
         work_order.status = WorkOrderStatus.SUBMITTED
         self._work_orders[external_id] = work_order
 
-        logger.info(f"Mock work order created: {external_id}")
+        logger.info("Mock work order created: %s", external_id)
         return CMMSResponse(
             success=True,
             external_id=external_id,
@@ -1585,7 +1585,7 @@ class CMSIntegration:
                 work_order.external_id = response.external_id
                 work_order.status = WorkOrderStatus.SUBMITTED
             else:
-                logger.error(f"Failed to submit work order: {response.errors}")
+                logger.error("Failed to submit work order: %s", response.errors)
 
         # Audit log
         self._log_audit(
@@ -1625,7 +1625,7 @@ class CMSIntegration:
         Returns:
             Created WorkOrder
         """
-        logger.info(f"Creating manual work order for {equipment_id}")
+        logger.info("Creating manual work order for %s", equipment_id)
 
         # Plan resources if tasks provided
         labor = []
@@ -1688,7 +1688,7 @@ class CMSIntegration:
         """
         work_order = self._work_orders.get(work_order_id)
         if not work_order:
-            logger.error(f"Work order not found: {work_order_id}")
+            logger.error("Work order not found: %s", work_order_id)
             return False
 
         old_status = work_order.status
@@ -1700,7 +1700,7 @@ class CMSIntegration:
                 work_order.external_id, status, notes
             )
             if not response.success:
-                logger.error(f"Failed to update CMMS status: {response.errors}")
+                logger.error("Failed to update CMMS status: %s", response.errors)
                 return False
 
         self._log_audit(
@@ -1735,7 +1735,7 @@ class CMSIntegration:
         """
         work_order = self._work_orders.get(work_order_id)
         if not work_order:
-            logger.error(f"Work order not found: {work_order_id}")
+            logger.error("Work order not found: %s", work_order_id)
             return False
 
         work_order.status = WorkOrderStatus.CLOSED
@@ -1748,7 +1748,7 @@ class CMSIntegration:
                 work_order.external_id, completion_notes, actual_hours
             )
             if not response.success:
-                logger.error(f"Failed to close CMMS order: {response.errors}")
+                logger.error("Failed to close CMMS order: %s", response.errors)
                 return False
 
         self._log_audit(
@@ -1759,7 +1759,7 @@ class CMSIntegration:
             actual_cost=actual_cost,
         )
 
-        logger.info(f"Work order closed: {work_order_id}")
+        logger.info("Work order closed: %s", work_order_id)
         return True
 
     # =========================================================================
@@ -1925,7 +1925,7 @@ def create_cms_integration(
     elif cmms_type == CMMSType.MOCK:
         adapter = MockCMMSAdapter()
     else:
-        logger.warning(f"Unknown CMMS type {cmms_type}, using mock adapter")
+        logger.warning("Unknown CMMS type %s, using mock adapter", cmms_type)
         adapter = MockCMMSAdapter()
 
     return CMSIntegration(adapter=adapter, auto_submit=auto_submit)

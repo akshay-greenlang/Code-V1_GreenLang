@@ -370,7 +370,7 @@ class ParallelExecutionEngine:
             # Check if agent already running
             slot_key = f"{workflow_id}:{agent_id}"
             if slot_key in self._running_slots:
-                logger.warning(f"Agent {agent_id} already running in {workflow_id}")
+                logger.warning("Agent %s already running in %s", agent_id, workflow_id)
                 return False
 
             # Acquire slot

@@ -111,7 +111,10 @@ class BudgetCheckResult:
 # ---------------------------------------------------------------------------
 
 
-class BudgetExceededError(Exception):
+from greenlang.utilities.exceptions.infrastructure import InfrastructureException as _InfrastructureException
+
+
+class BudgetExceededError(_InfrastructureException):
     """Raised when a hard budget limit is exceeded.
 
     Attributes:

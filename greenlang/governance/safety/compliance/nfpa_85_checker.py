@@ -132,7 +132,7 @@ class NFPA85Checker:
         Returns:
             NFPA85CheckResult
         """
-        logger.info(f"Checking NFPA 85 compliance for {equipment_id}")
+        logger.info("Checking NFPA 85 compliance for %s", equipment_id)
 
         findings = []
         passed = 0

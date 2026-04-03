@@ -1,0 +1,264 @@
+# syntax=docker/dockerfile:1.7
+# =============================================================================
+# GreenLang Parameterized API/Application Dockerfile Template
+# =============================================================================
+# Replaces per-app Dockerfiles for CSRD, VCCI, CBAM, GHG, ISO14064, CDP,
+# TCFD, SBTi, Taxonomy, Agent Factory API, and Registry API services.
+#
+# Parameterized via build args so any FastAPI/ASGI application can use it:
+#
+#   ARG              | Default                    | Purpose
+#   -----------------|----------------------------|-------------------------------
+#   APP_NAME         | app                        | Human-readable app name
+#   APP_MODULE       | greenlang.api.main:app     | Uvicorn import path
+#   APP_PORT         | 8000                       | Primary HTTP port
+#   METRICS_PORT     | 9090                       | Prometheus metrics port
+#   HEALTH_PATH      | /api/v1/health             | Health endpoint path
+#   INSTALL_EXTRAS   | server,data,security       | pyproject.toml extras
+#   WORKERS          | 4                          | Uvicorn worker count
+#
+# Usage:
+#   # CSRD Reporting Platform
+#   docker build \
+#     --build-arg APP_NAME=csrd-reporting \
+#     --build-arg APP_MODULE=greenlang.csrd.api:app \
+#     --build-arg INSTALL_EXTRAS="server,security,analytics" \
+#     -f deployment/docker/templates/Dockerfile.api \
+#     -t greenlang/csrd:1.0.0 .
+#
+#   # CBAM Importer Copilot
+#   docker build \
+#     --build-arg APP_NAME=cbam-importer \
+#     --build-arg APP_MODULE=greenlang.cbam.api:app \
+#     --build-arg APP_PORT=8001 \
+#     -f deployment/docker/templates/Dockerfile.api \
+#     -t greenlang/cbam:1.0.0 .
+#
+#   # VCCI Scope 3 Backend
+#   docker build \
+#     --build-arg APP_NAME=vcci-scope3 \
+#     --build-arg APP_MODULE=greenlang.vcci.api:app \
+#     --build-arg INSTALL_EXTRAS="server,security,analytics,data" \
+#     -f deployment/docker/templates/Dockerfile.api \
+#     -t greenlang/vcci:1.0.0 .
+#
+#   # Agent Registry API
+#   docker build \
+#     --build-arg APP_NAME=agent-registry \
+#     --build-arg APP_MODULE=greenlang.registry.api:app \
+#     --build-arg HEALTH_PATH=/health \
+#     -f deployment/docker/templates/Dockerfile.api \
+#     -t greenlang/registry:1.0.0 .
+#
+# Build targets:
+#   --target production   (default) Hardened ASGI server
+#   --target development  Hot-reload + debug tooling
+#   --target worker       Celery/background worker variant
+# =============================================================================
+
+ARG PYTHON_VERSION=3.11-slim-bookworm
+
+# ===========================================================================
+# Stage 1: builder -- compile native extensions, install deps
+# ===========================================================================
+FROM python:${PYTHON_VERSION} AS builder
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    PIP_DEFAULT_TIMEOUT=100 \
+    VIRTUAL_ENV=/opt/venv
+
+RUN python -m venv $VIRTUAL_ENV
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+
+# System build deps for native wheels
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        build-essential \
+        gcc \
+        g++ \
+        git \
+        curl \
+        pkg-config \
+        libssl-dev \
+        libffi-dev \
+        libpq-dev \
+        ca-certificates \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN pip install --upgrade pip setuptools wheel
+
+# Copy project metadata and source for local install
+COPY pyproject.toml README.md ./
+COPY core/ ./core/
+COPY greenlang/ ./greenlang/
+
+# Install with the specified optional extras from pyproject.toml
+ARG INSTALL_EXTRAS=server,data,security
+ARG GL_VERSION=0.3.0
+
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install --no-deps -e ".[${INSTALL_EXTRAS}]"
+
+# ===========================================================================
+# Stage 2: production -- minimal ASGI application server
+# ===========================================================================
+FROM python:${PYTHON_VERSION} AS production
+
+# --- Application identity ---
+ARG APP_NAME=app
+ARG GL_VERSION=0.3.0
+ARG BUILD_DATE=""
+ARG VCS_REF=""
+
+# --- Network ---
+ARG APP_PORT=8000
+ARG METRICS_PORT=9090
+
+# --- Application ---
+ARG APP_MODULE=greenlang.api.main:app
+ARG HEALTH_PATH=/api/v1/health
+ARG WORKERS=4
+
+# Runtime environment
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PYTHONFAULTHANDLER=1 \
+    VIRTUAL_ENV=/opt/venv \
+    PATH="/opt/venv/bin:$PATH" \
+    GL_HOME=/var/lib/greenlang \
+    GL_CACHE_DIR=/var/cache/greenlang \
+    GL_LOG_DIR=/var/log/greenlang \
+    GL_CONFIG_DIR=/etc/greenlang \
+    GL_VERSION=${GL_VERSION} \
+    GL_LOG_LEVEL=INFO \
+    GL_LOG_FORMAT=json \
+    ENVIRONMENT=production \
+    APP_NAME=${APP_NAME} \
+    APP_PORT=${APP_PORT} \
+    METRICS_PORT=${METRICS_PORT} \
+    APP_MODULE=${APP_MODULE} \
+    HEALTH_PATH=${HEALTH_PATH} \
+    WORKERS=${WORKERS}
+
+# Minimal runtime system packages
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        ca-certificates \
+        tini \
+        curl \
+        libpq5 \
+    && apt-get upgrade -y \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* /var/cache/apt/* /tmp/*
+
+# Copy pre-built venv from builder
+COPY --from=builder ${VIRTUAL_ENV} ${VIRTUAL_ENV}
+
+# Copy application source
+COPY --chown=10001:10001 greenlang/ /app/greenlang/
+COPY --chown=10001:10001 core/ /app/core/
+
+# Non-root user (K8s-compatible UID)
+RUN groupadd -g 10001 glapp \
+    && useradd -u 10001 -g 10001 -m -s /bin/bash glapp \
+    && mkdir -p ${GL_HOME} ${GL_CACHE_DIR} ${GL_LOG_DIR} ${GL_CONFIG_DIR} /app \
+    && chown -R glapp:glapp ${GL_HOME} ${GL_CACHE_DIR} ${GL_LOG_DIR} ${GL_CONFIG_DIR} /app
+
+# Security: drop capabilities
+RUN setcap -r ${VIRTUAL_ENV}/bin/python* 2>/dev/null || true
+
+USER glapp
+WORKDIR /app
+
+EXPOSE ${APP_PORT} ${METRICS_PORT}
+
+# OCI metadata
+LABEL org.opencontainers.image.title="GreenLang ${APP_NAME}" \
+      org.opencontainers.image.description="GreenLang ${APP_NAME} API v${GL_VERSION}" \
+      org.opencontainers.image.version="${GL_VERSION}" \
+      org.opencontainers.image.created="${BUILD_DATE}" \
+      org.opencontainers.image.revision="${VCS_REF}" \
+      org.opencontainers.image.source="https://github.com/greenlang/greenlang" \
+      org.opencontainers.image.url="https://greenlang.io" \
+      org.opencontainers.image.licenses="MIT" \
+      org.opencontainers.image.vendor="GreenLang Team" \
+      com.greenlang.app="${APP_NAME}" \
+      com.greenlang.app.port="${APP_PORT}" \
+      security.capabilities.drop="ALL" \
+      security.no-new-privileges="true"
+
+# Health check with parameterized path and port
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD curl -sf http://localhost:${APP_PORT}${HEALTH_PATH} || exit 1
+
+# Writable volumes for read-only root filesystem
+VOLUME ["${GL_CACHE_DIR}", "${GL_LOG_DIR}"]
+
+# tini as PID 1
+ENTRYPOINT ["/usr/bin/tini", "--"]
+
+# Run uvicorn with parameterized module, port, and workers
+CMD uvicorn ${APP_MODULE} \
+    --host 0.0.0.0 \
+    --port ${APP_PORT} \
+    --workers ${WORKERS} \
+    --access-log \
+    --proxy-headers
+
+# ===========================================================================
+# Stage 3: development -- hot-reload + debug tooling
+# ===========================================================================
+FROM production AS development
+
+USER root
+
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install --no-cache-dir \
+        pytest \
+        pytest-cov \
+        pytest-asyncio \
+        httpx \
+        black \
+        ruff \
+        mypy \
+        ipython \
+        debugpy
+
+USER glapp
+
+ENV GL_LOG_LEVEL=DEBUG \
+    ENVIRONMENT=development
+
+CMD uvicorn ${APP_MODULE} \
+    --host 0.0.0.0 \
+    --port ${APP_PORT} \
+    --reload
+
+# ===========================================================================
+# Stage 4: worker -- Celery/background task runner variant
+# ===========================================================================
+FROM production AS worker
+
+# Override for task queue workers (CBAM import jobs, CSRD generation, etc.)
+ARG CELERY_APP=greenlang.tasks.celery:app
+ARG CELERY_CONCURRENCY=4
+ARG CELERY_QUEUES=default
+
+ENV CELERY_APP=${CELERY_APP} \
+    CELERY_CONCURRENCY=${CELERY_CONCURRENCY} \
+    CELERY_QUEUES=${CELERY_QUEUES}
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+    CMD celery -A ${CELERY_APP} inspect ping --timeout 5 || exit 1
+
+CMD celery -A ${CELERY_APP} worker \
+    --loglevel=${GL_LOG_LEVEL} \
+    --concurrency=${CELERY_CONCURRENCY} \
+    --queues=${CELERY_QUEUES} \
+    --without-heartbeat \
+    --without-gossip \
+    --without-mingle

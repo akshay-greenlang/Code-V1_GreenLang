@@ -270,17 +270,17 @@ class FactorCache:
                 # Mark as cache hit in provenance
                 response.provenance.cache_hit = True
 
-                logger.debug(f"Cache hit for key: {key}")
+                logger.debug("Cache hit for key: %s", key)
                 return response
             else:
                 # Cache miss
                 self.miss_count += 1
-                logger.debug(f"Cache miss for key: {key}")
+                logger.debug("Cache miss for key: %s", key)
                 return None
 
         except Exception as e:
             # Log error but don't fail - cache is not critical
-            logger.error(f"Cache get error: {e}", exc_info=True)
+            logger.error("Cache get error: %s", e, exc_info=True)
             return None
 
     async def set(
@@ -323,7 +323,7 @@ class FactorCache:
                 namespace=self._namespace
             )
 
-            logger.debug(f"Cached factor for key: {key} (TTL: {ttl}s)")
+            logger.debug("Cached factor for key: %s (TTL: %ss)", key, ttl)
 
         except LicenseViolationError as e:
             raise CacheError(
@@ -333,7 +333,7 @@ class FactorCache:
             )
 
         except Exception as e:
-            logger.error(f"Cache set error: {e}", exc_info=True)
+            logger.error("Cache set error: %s", e, exc_info=True)
             raise CacheError(
                 operation="set",
                 reason="Serialization error",
@@ -359,7 +359,7 @@ class FactorCache:
         try:
             key = self._generate_cache_key(request)
             await self.cache_manager.invalidate(key, namespace=self._namespace)
-            logger.info(f"Invalidated cache for key: {key}")
+            logger.info("Invalidated cache for key: %s", key)
 
         except Exception as e:
             raise CacheError(
@@ -479,7 +479,7 @@ class FactorCache:
                 stats["overall_hit_rate"] = analytics.get("overall_hit_rate", 0.0)
 
             except Exception as e:
-                logger.error(f"Error getting cache stats: {e}")
+                logger.error("Error getting cache stats: %s", e)
 
         return stats
 

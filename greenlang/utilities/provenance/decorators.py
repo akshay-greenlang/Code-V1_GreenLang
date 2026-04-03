@@ -107,7 +107,7 @@ def traced(
                 # Finalize and save
                 provenance = ctx.finalize(output_path=save_path)
 
-                logger.info(f"Provenance tracked for {func.__name__}: {provenance.record_id}")
+                logger.info("Provenance tracked for %s: %s", func.__name__, provenance.record_id)
 
         return wrapper
 
@@ -260,7 +260,7 @@ class provenance_tracker:
         self.context = ProvenanceContext(name=self.name, record_id=self.record_id)
         self.start_time = datetime.now(timezone.utc)
 
-        logger.debug(f"Started provenance tracking: {self.context.record_id}")
+        logger.debug("Started provenance tracking: %s", self.context.record_id)
 
         return self.context
 
@@ -282,7 +282,7 @@ class provenance_tracker:
             # Save provenance
             provenance = self.context.finalize(output_path=self.save_path)
 
-            logger.info(f"Provenance saved: {provenance.record_id} (status: {status})")
+            logger.info("Provenance saved: %s (status: %s)", provenance.record_id, status)
 
         # Don't suppress exceptions
         return False

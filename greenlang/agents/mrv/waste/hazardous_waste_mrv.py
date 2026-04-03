@@ -288,7 +288,7 @@ class HazardousWasteMRVAgent(BaseWasteMRVAgent[HazardousWasteInput, HazardousWas
         self._incineration_factors = HAZARDOUS_INCINERATION_FACTORS
         self._carbon_content = CARBON_CONTENT_BY_CATEGORY
         self._chemical_energy = CHEMICAL_TREATMENT_ENERGY
-        self.logger.info(f"Initialized {self.AGENT_ID}: {self.AGENT_NAME}")
+        logger.info("Initialized %s: %s", self.AGENT_ID, self.AGENT_NAME)
 
     def calculate(self, input_data: HazardousWasteInput) -> HazardousWasteOutput:
         """

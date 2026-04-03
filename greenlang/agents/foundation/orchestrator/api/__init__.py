@@ -180,7 +180,7 @@ def create_app(config: Optional[APIConfig] = None) -> FastAPI:
     @app.exception_handler(Exception)
     async def global_exception_handler(request, exc):
         """Handle unhandled exceptions."""
-        logger.error(f"Unhandled exception: {exc}", exc_info=True)
+        logger.error("Unhandled exception: %s", exc, exc_info=True)
 
         return JSONResponse(
             status_code=500,
@@ -205,7 +205,7 @@ def create_app(config: Optional[APIConfig] = None) -> FastAPI:
             "openapi": "/api/openapi.json",
         }
 
-    logger.info(f"Created {config.api_title} v{config.api_version}")
+    logger.info("Created %s v%s", config.api_title, config.api_version)
 
     return app
 

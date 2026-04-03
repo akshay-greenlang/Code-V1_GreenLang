@@ -322,7 +322,7 @@ class DelegationManager:
             'revoked_delegations': 0
         }
 
-        logger.info(f"Initialized DelegationManager (max_chain={max_delegation_chain})")
+        logger.info("Initialized DelegationManager (max_chain=%s)", max_delegation_chain)
 
     def delegate(
         self,
@@ -437,7 +437,7 @@ class DelegationManager:
         self._stats['active_delegations'] -= 1
         self._stats['revoked_delegations'] += 1
 
-        logger.info(f"Revoked delegation {delegation_id}")
+        logger.info("Revoked delegation %s", delegation_id)
 
         # Cascade to children if requested
         if cascade:
@@ -536,7 +536,7 @@ class DelegationManager:
                 self._stats['active_delegations'] -= 1
                 self._stats['expired_delegations'] += 1
                 count += 1
-                logger.info(f"Expired delegation {delegation.delegation_id}")
+                logger.info("Expired delegation %s", delegation.delegation_id)
 
         return count
 

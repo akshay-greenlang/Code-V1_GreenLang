@@ -30,6 +30,8 @@ from uuid import uuid4
 
 from pydantic import BaseModel, Field, validator
 
+from greenlang.utilities.exceptions.calculation import CalculationException
+
 logger = logging.getLogger(__name__)
 
 
@@ -108,7 +110,7 @@ class CalculationInput(BaseModel):
         return v
 
 
-class CalculationServiceError(Exception):
+class CalculationServiceError(CalculationException):
     """Base exception for calculation service errors."""
     pass
 
@@ -291,7 +293,7 @@ class CalculationService:
             return job
 
         except Exception as e:
-            logger.error(f"Failed to create calculation job: {e}", exc_info=True)
+            logger.error("Failed to create calculation job: %s", e, exc_info=True)
             raise CalculationServiceError(
                 f"Failed to create calculation job: {str(e)}"
             ) from e
@@ -310,9 +312,9 @@ class CalculationService:
             job = self._jobs.get(job_id)
 
         if job:
-            logger.debug(f"Retrieved job {job_id}: {job.status}")
+            logger.debug("Retrieved job %s: %s", job_id, job.status)
         else:
-            logger.debug(f"Job not found: {job_id}")
+            logger.debug("Job not found: %s", job_id)
 
         return job
 
@@ -346,7 +348,7 @@ class CalculationService:
                 status_enum = JobStatusEnum(status.lower())
                 jobs = [j for j in jobs if j.status == status_enum]
             except ValueError:
-                logger.warning(f"Invalid status filter: {status}")
+                logger.warning("Invalid status filter: %s", status)
                 return []
 
         if agent_id:
@@ -361,7 +363,7 @@ class CalculationService:
         # Apply pagination
         jobs = jobs[offset:offset + limit]
 
-        logger.debug(f"Listed {len(jobs)} jobs (status={status})")
+        logger.debug("Listed %s jobs (status=%s)", len(jobs), status)
         return jobs
 
     async def cancel_job(self, job_id: str) -> CalculationJob:
@@ -397,7 +399,7 @@ class CalculationService:
             job.status = JobStatusEnum.CANCELLED
             job.completed_at = datetime.utcnow()
 
-            logger.info(f"Cancelled job {job_id}")
+            logger.info("Cancelled job %s", job_id)
             return job
 
     async def get_job_results(
@@ -419,7 +421,7 @@ class CalculationService:
             return None
 
         if job.status != JobStatusEnum.COMPLETED:
-            logger.debug(f"Job {job_id} not completed: {job.status}")
+            logger.debug("Job %s not completed: %s", job_id, job.status)
             return None
 
         return job.results
@@ -517,12 +519,12 @@ class CalculationService:
                     job.completed_at = now
                     job.execution_time_ms = execution_time
 
-            logger.info(f"Job {job_id} completed in {execution_time:.1f}ms")
+            logger.info("Job %s completed in %.1fms", job_id, execution_time)
 
         except asyncio.CancelledError:
-            logger.info(f"Job {job_id} was cancelled")
+            logger.info("Job %s was cancelled", job_id)
         except Exception as e:
-            logger.error(f"Job {job_id} failed: {e}", exc_info=True)
+            logger.error("Job %s failed: %s", job_id, e, exc_info=True)
 
             async with self._lock:
                 job = self._jobs.get(job_id)
@@ -545,7 +547,7 @@ class CalculationService:
                 else:
                     callback(job_id, progress, message)
             except Exception as e:
-                logger.error(f"Progress callback error: {e}")
+                logger.error("Progress callback error: %s", e)
 
     def _create_input_summary(self, params: CalculationInput) -> str:
         """Create human-readable input summary."""

@@ -591,7 +591,7 @@ class FeaturePipeline:
         if func:
             return func(valid_values)
 
-        logger.warning(f"Unknown aggregation: {aggregation}")
+        logger.warning("Unknown aggregation: %s", aggregation)
         return float('nan')
 
     def _compute_rolling_aggregations(
@@ -614,7 +614,7 @@ class FeaturePipeline:
         for config in self.config.rolling_aggregations:
             source_values = features.get(config.feature_name, [])
             if not source_values:
-                logger.warning(f"Feature {config.feature_name} not found for rolling aggregation")
+                logger.warning("Feature %s not found for rolling aggregation", config.feature_name)
                 continue
 
             window_size = self._get_window_size_hours(config.window)
@@ -660,7 +660,7 @@ class FeaturePipeline:
         for config in self.config.lag_features:
             source_values = features.get(config.feature_name, [])
             if not source_values:
-                logger.warning(f"Feature {config.feature_name} not found for lag features")
+                logger.warning("Feature %s not found for lag features", config.feature_name)
                 continue
 
             for lag in config.lag_periods:
@@ -821,7 +821,7 @@ class FeaturePipeline:
                 elif config.operation == "subtract":
                     output_values.append(a - b)
                 else:
-                    logger.warning(f"Unknown operation: {config.operation}")
+                    logger.warning("Unknown operation: %s", config.operation)
                     output_values.append(float('nan'))
 
             result[output_name] = output_values
@@ -970,7 +970,7 @@ class FeaturePipeline:
             json_str = json.dumps(data, sort_keys=True, default=str)
             return hashlib.sha256(json_str.encode('utf-8')).hexdigest()
         except Exception as e:
-            logger.warning(f"Failed to calculate provenance hash: {e}")
+            logger.warning("Failed to calculate provenance hash: %s", e)
             return ""
 
     def fit(
@@ -989,7 +989,7 @@ class FeaturePipeline:
         # Compute scaling parameters
         self._apply_scaling(features, fit=True)
         self._is_fitted = True
-        logger.info(f"Pipeline fitted with {len(self._scaling_params)} scaling parameters")
+        logger.info("Pipeline fitted with %s scaling parameters", len(self._scaling_params))
         return self
 
     def transform(

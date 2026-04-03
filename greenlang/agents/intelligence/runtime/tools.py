@@ -114,10 +114,10 @@ class ToolRegistry:
     def register(self, tool: Tool) -> None:
         """Register a tool"""
         if tool.name in self._tools:
-            logger.warning(f"Overwriting tool: {tool.name}")
+            logger.warning("Overwriting tool: %s", tool.name)
 
         self._tools[tool.name] = tool
-        logger.info(f"Registered tool: {tool.name}")
+        logger.info("Registered tool: %s", tool.name)
 
     def get(self, name: str) -> Tool:
         """Get tool by name"""

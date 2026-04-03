@@ -138,7 +138,7 @@ class RequestBatcher:
         # Metrics
         self.metrics = BatchMetrics()
 
-        logger.info(f"RequestBatcher initialized (max_size={max_batch_size}, max_wait={max_wait_time_ms}ms)")
+        logger.info("RequestBatcher initialized (max_size=%s, max_wait=%sms)", max_batch_size, max_wait_time_ms)
 
     async def start(self):
         """Start batch processing"""
@@ -223,7 +223,7 @@ class RequestBatcher:
             except asyncio.CancelledError:
                 break
             except Exception as e:
-                logger.error(f"Batch processor error: {e}")
+                logger.error("Batch processor error: %s", e)
 
     async def _flush_batch(
         self,
@@ -245,7 +245,7 @@ class RequestBatcher:
         batch_size = len(batch)
         start_time = time.time()
 
-        logger.debug(f"Flushing batch of {batch_size} requests")
+        logger.debug("Flushing batch of %s requests", batch_size)
 
         # Calculate average wait time
         now = DeterministicClock.now()
@@ -273,10 +273,10 @@ class RequestBatcher:
             self.metrics.update(batch_size, avg_wait * 1000)
 
             elapsed = (time.time() - start_time) * 1000
-            logger.info(f"Batch complete: {batch_size} requests in {elapsed:.0f}ms (avg wait: {avg_wait*1000:.0f}ms)")
+            logger.info("Batch complete: %s requests in %.0fms (avg wait: %.0fms)", batch_size, elapsed, avg_wait*1000)
 
         except Exception as e:
-            logger.error(f"Batch execution failed: {e}")
+            logger.error("Batch execution failed: %s", e)
 
             # Reject all requests
             for req in batch:
@@ -451,7 +451,7 @@ class AdaptiveBatcher(RequestBatcher):
             self.max_batch_size = 2
             self.max_wait_time = 0.05
 
-        logger.debug(f"Adaptive batching: rate={request_rate:.1f} rps, batch_size={self.max_batch_size}, wait={self.max_wait_time*1000:.0f}ms")
+        logger.debug("Adaptive batching: rate=%.1f rps, batch_size=%s, wait=%.0fms", request_rate, self.max_batch_size, self.max_wait_time*1000)
 
 
 if __name__ == "__main__":

@@ -347,7 +347,7 @@ class ConfidenceReporter:
             >>> report = reporter.generate_report(X_test)
             >>> print(f"High confidence: {report.high_confidence_ratio:.1%}")
         """
-        logger.info(f"Generating confidence report for {len(X)} samples")
+        logger.info("Generating confidence report for %s samples", len(X))
 
         prediction_confidences = []
         interval_widths = []
@@ -361,7 +361,7 @@ class ConfidenceReporter:
                     X, confidence=self.config.interval_confidence
                 )
             except Exception as e:
-                logger.warning(f"Ensemble prediction failed: {e}")
+                logger.warning("Ensemble prediction failed: %s", e)
 
         # Get conformal intervals
         conformal_result = None
@@ -371,7 +371,7 @@ class ConfidenceReporter:
                     X, confidence=self.config.interval_confidence
                 )
             except Exception as e:
-                logger.warning(f"Conformal prediction failed: {e}")
+                logger.warning("Conformal prediction failed: %s", e)
 
         # Estimate prediction range for normalization
         if predictions is not None:

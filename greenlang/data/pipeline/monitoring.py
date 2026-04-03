@@ -268,7 +268,7 @@ class CoverageAnalyzer:
 
         report['recommendations'] = recommendations
 
-        logger.info(f"Coverage report generated: {len(recommendations)} recommendations")
+        logger.info("Coverage report generated: %s recommendations", len(recommendations))
 
         return report
 
@@ -592,7 +592,7 @@ class DataQualityMonitor:
             }
         )
 
-        logger.info(f"Quality metrics calculated: Overall score {metrics.overall_quality_score}/100")
+        logger.info("Quality metrics calculated: Overall score %s/100", metrics.overall_quality_score)
 
         return metrics
 

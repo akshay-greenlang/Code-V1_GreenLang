@@ -354,7 +354,7 @@ class CausalInference:
             proceed_when_unidentifiable=proceed_when_unidentifiable
         )
 
-        logger.info(f"Causal effect identified: {self._identified_estimand}")
+        logger.info("Causal effect identified: %s", self._identified_estimand)
 
     def _get_estimation_method_name(self) -> str:
         """Get DoWhy estimation method name."""
@@ -418,7 +418,7 @@ class CausalInference:
         # Estimate effect
         method_name = self._get_estimation_method_name()
 
-        logger.info(f"Estimating causal effect using {method_name}")
+        logger.info("Estimating causal effect using %s", method_name)
 
         try:
             self._estimate = self._model.estimate_effect(
@@ -428,7 +428,7 @@ class CausalInference:
                 test_significance=True
             )
         except Exception as e:
-            logger.warning(f"Primary method failed: {e}, using linear regression")
+            logger.warning("Primary method failed: %s, using linear regression", e)
             self._estimate = self._model.estimate_effect(
                 self._identified_estimand,
                 method_name="backdoor.linear_regression"
@@ -606,7 +606,7 @@ class CausalInference:
                 )
 
             except Exception as e:
-                logger.warning(f"Refutation {method.value} failed: {e}")
+                logger.warning("Refutation %s failed: %s", method.value, e)
                 results[method.value] = {
                     "error": str(e),
                     "passed": True  # Don't fail on refutation errors

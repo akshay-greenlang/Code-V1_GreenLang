@@ -299,7 +299,7 @@ class NFPA86ComplianceChecker:
         Returns:
             ComplianceCheckResult with detailed findings
         """
-        logger.info(f"Checking Class A furnace {config.equipment_id}")
+        logger.info("Checking Class A furnace %s", config.equipment_id)
 
         requirements = self.CLASS_A_REQUIREMENTS
         result = self._check_common_requirements(config, FurnaceClass.CLASS_A)
@@ -345,7 +345,7 @@ class NFPA86ComplianceChecker:
         Returns:
             ComplianceCheckResult
         """
-        logger.info(f"Checking Class B furnace {config.equipment_id}")
+        logger.info("Checking Class B furnace %s", config.equipment_id)
 
         result = self._check_common_requirements(config, FurnaceClass.CLASS_B)
 
@@ -390,7 +390,7 @@ class NFPA86ComplianceChecker:
         Returns:
             ComplianceCheckResult
         """
-        logger.info(f"Checking Class C furnace {config.equipment_id}")
+        logger.info("Checking Class C furnace %s", config.equipment_id)
 
         result = self._check_common_requirements(config, FurnaceClass.CLASS_C)
 
@@ -451,7 +451,7 @@ class NFPA86ComplianceChecker:
         Returns:
             ComplianceCheckResult
         """
-        logger.info(f"Checking Class D furnace {config.equipment_id}")
+        logger.info("Checking Class D furnace %s", config.equipment_id)
 
         result = self._check_common_requirements(config, FurnaceClass.CLASS_D)
 
@@ -537,7 +537,7 @@ class NFPA86ComplianceChecker:
             and required_time >= NFPA86TimingRequirements.PREPURGE_MIN_TIME_SECONDS
         )
 
-        logger.info(f"Purge validation: {message} - {'PASS' if is_valid else 'FAIL'}")
+        logger.info("Purge validation: %s - %s", message, 'PASS' if is_valid else 'FAIL')
 
         return is_valid, message, required_time
 

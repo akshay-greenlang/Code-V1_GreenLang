@@ -367,7 +367,7 @@ class EnhancedOrchestratorMixin:
 
     async def _on_sis_trip(self, interlock_id: str) -> None:
         """Callback for SIS trip events."""
-        logger.warning(f"SIS trip callback: {interlock_id}")
+        logger.warning("SIS trip callback: %s", interlock_id)
 
     def get_sis_status(self) -> Dict[str, Any]:
         """Get SIS system status."""
@@ -411,7 +411,7 @@ class EnhancedOrchestratorMixin:
 
         bypass_reason = reason_map.get(reason.lower())
         if not bypass_reason:
-            logger.error(f"Invalid bypass reason: {reason}")
+            logger.error("Invalid bypass reason: %s", reason)
             return False
 
         return self._sis_manager.request_bypass(
@@ -539,7 +539,7 @@ class EnhancedOrchestratorMixin:
 
         cascade = self._cascade_coordinator._cascades.get(cascade_id)
         if not cascade:
-            logger.warning(f"Cascade not found: {cascade_id}")
+            logger.warning("Cascade not found: %s", cascade_id)
             return None
 
         return cascade.calculate(
@@ -752,7 +752,7 @@ class EnhancedOrchestratorMixin:
                             })
 
             except Exception as e:
-                logger.error(f"Error processing interlock {interlock_id}: {e}")
+                logger.error("Error processing interlock %s: %s", interlock_id, e)
 
         return results
 

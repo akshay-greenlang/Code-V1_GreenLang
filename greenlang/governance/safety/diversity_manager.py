@@ -398,7 +398,7 @@ class DiversityManager:
             component: ComponentInfo to add
         """
         self.components[component.component_id] = component
-        logger.info(f"Added component {component.component_id} ({component.category.value})")
+        logger.info("Added component %s (%s)", component.component_id, component.category.value)
 
     def add_requirement(self, requirement: DiversityRequirement) -> None:
         """
@@ -408,7 +408,7 @@ class DiversityManager:
             requirement: DiversityRequirement to add
         """
         self.requirements.append(requirement)
-        logger.info(f"Added requirement {requirement.requirement_id}")
+        logger.info("Added requirement %s", requirement.requirement_id)
 
     def add_shutdown_path(self, path: ShutdownPathInfo) -> None:
         """
@@ -418,7 +418,7 @@ class DiversityManager:
             path: ShutdownPathInfo to add
         """
         self.shutdown_paths.append(path)
-        logger.info(f"Added shutdown path {path.path_id}")
+        logger.info("Added shutdown path %s", path.path_id)
 
     def evaluate_hardware_diversity(
         self,
@@ -513,7 +513,7 @@ class DiversityManager:
         evaluation.provenance_hash = self._calculate_provenance(evaluation)
         self.evaluations.append(evaluation)
 
-        logger.info(f"Hardware diversity: {achieved_level.value} (score: {diversity_score})")
+        logger.info("Hardware diversity: %s (score: %s)", achieved_level.value, diversity_score)
 
         return evaluation
 
@@ -602,7 +602,7 @@ class DiversityManager:
         if len(components) < 2:
             raise ValueError("At least 2 components required for diversity evaluation")
 
-        logger.info(f"Evaluating measurement diversity for {len(components)} components")
+        logger.info("Evaluating measurement diversity for %s components", len(components))
 
         findings = []
         recommendations = []
@@ -732,7 +732,7 @@ class DiversityManager:
         Returns:
             DiversityReport with comprehensive assessment
         """
-        logger.info(f"Calculating diversity score for {system_id} (SIL {target_sil})")
+        logger.info("Calculating diversity score for %s (SIL %s)", system_id, target_sil)
 
         # Get requirements for SIL
         sil_requirements = self.SIL_DIVERSITY_REQUIREMENTS.get(target_sil, {})

@@ -500,7 +500,7 @@ class FuelToolsV2:
             result = handler(**arguments)
             return result
         except Exception as e:
-            logger.error(f"Tool {tool_name} failed: {e}")
+            logger.error("Tool %s failed: %s", tool_name, e)
             raise
 
     def get_tool_call_count(self) -> int:

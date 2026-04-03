@@ -641,7 +641,7 @@ class WasteGeneratedService:
         try:
             # Load configuration
             self.config = self._load_config()
-            logger.debug(f"Loaded config: {self.config}")
+            logger.debug("Loaded config: %s", self.config)
 
             # Initialize metrics tracker
             self.metrics = self._initialize_metrics()
@@ -656,7 +656,7 @@ class WasteGeneratedService:
             logger.info("WasteGeneratedService initialized successfully")
 
         except Exception as e:
-            logger.error(f"Failed to initialize WasteGeneratedService: {e}", exc_info=True)
+            logger.error("Failed to initialize WasteGeneratedService: %s", e, exc_info=True)
             raise
 
     def _load_config(self) -> Dict[str, Any]:
@@ -754,10 +754,10 @@ class WasteGeneratedService:
             logger.info("WasteGeneratedPipelineEngine initialized")
 
         except ImportError as e:
-            logger.error(f"Failed to import engine: {e}", exc_info=True)
+            logger.error("Failed to import engine: %s", e, exc_info=True)
             raise
         except Exception as e:
-            logger.error(f"Failed to initialize engines: {e}", exc_info=True)
+            logger.error("Failed to initialize engines: %s", e, exc_info=True)
             raise
 
     # ========================================================================
@@ -793,7 +793,7 @@ class WasteGeneratedService:
             >>> assert response.success
         """
         start_time = datetime.now()
-        logger.info(f"Calculating waste emissions for {request.waste_id}")
+        logger.info("Calculating waste emissions for %s", request.waste_id)
 
         try:
             # Track metrics
@@ -830,7 +830,7 @@ class WasteGeneratedService:
                 self.metrics.increment('waste_generated.calculations.success')
                 self.metrics.histogram('waste_generated.processing_time_ms', processing_time_ms)
 
-            logger.info(f"Calculation {result['calculation_id']} completed in {processing_time_ms:.2f}ms")
+            logger.info("Calculation %s completed in %.2fms", result['calculation_id'], processing_time_ms)
 
             return WasteCalculateResponse(
                 success=True,
@@ -841,7 +841,7 @@ class WasteGeneratedService:
 
         except Exception as e:
             processing_time_ms = (datetime.now() - start_time).total_seconds() * 1000
-            logger.error(f"Waste calculation failed: {e}", exc_info=True)
+            logger.error("Waste calculation failed: %s", e, exc_info=True)
 
             if self.metrics:
                 self.metrics.increment('waste_generated.calculations.error')
@@ -874,7 +874,7 @@ class WasteGeneratedService:
             >>> assert response.successful_calculations == 3
         """
         start_time = datetime.now()
-        logger.info(f"Batch waste calculation: {len(request.calculations)} items, parallel={request.parallel}")
+        logger.info("Batch waste calculation: %s items, parallel=%s", len(request.calculations), request.parallel)
 
         try:
             if self.metrics:
@@ -898,7 +898,7 @@ class WasteGeneratedService:
                             result = future.result()
                             results.append(result)
                         except Exception as e:
-                            logger.error(f"Batch calculation item failed: {e}")
+                            logger.error("Batch calculation item failed: %s", e)
                             results.append(WasteCalculateResponse(
                                 success=False,
                                 calculation_id=str(uuid4()),
@@ -915,7 +915,7 @@ class WasteGeneratedService:
             failed = len(results) - successful
             processing_time_ms = (datetime.now() - start_time).total_seconds() * 1000
 
-            logger.info(f"Batch calculation completed: {successful} succeeded, {failed} failed")
+            logger.info("Batch calculation completed: %s succeeded, %s failed", successful, failed)
 
             if self.metrics:
                 self.metrics.increment('waste_generated.batch_calculations.success')
@@ -932,7 +932,7 @@ class WasteGeneratedService:
 
         except Exception as e:
             processing_time_ms = (datetime.now() - start_time).total_seconds() * 1000
-            logger.error(f"Batch waste calculation failed: {e}", exc_info=True)
+            logger.error("Batch waste calculation failed: %s", e, exc_info=True)
 
             if self.metrics:
                 self.metrics.increment('waste_generated.batch_calculations.error')
@@ -972,7 +972,7 @@ class WasteGeneratedService:
             >>> assert response.success
         """
         start_time = datetime.now()
-        logger.info(f"Calculating landfill emissions for {request.waste_id}")
+        logger.info("Calculating landfill emissions for %s", request.waste_id)
 
         try:
             if self.metrics:
@@ -1006,7 +1006,7 @@ class WasteGeneratedService:
             if self.metrics:
                 self.metrics.increment('waste_generated.landfill_calculations.success')
 
-            logger.info(f"Landfill calculation completed: {result['ch4_emissions_kg']:.2f} kg CH4")
+            logger.info("Landfill calculation completed: %.2f kg CH4", result['ch4_emissions_kg'])
 
             return LandfillResponse(
                 success=True,
@@ -1016,7 +1016,7 @@ class WasteGeneratedService:
 
         except Exception as e:
             processing_time_ms = (datetime.now() - start_time).total_seconds() * 1000
-            logger.error(f"Landfill calculation failed: {e}", exc_info=True)
+            logger.error("Landfill calculation failed: %s", e, exc_info=True)
 
             if self.metrics:
                 self.metrics.increment('waste_generated.landfill_calculations.error')
@@ -1052,7 +1052,7 @@ class WasteGeneratedService:
             >>> assert response.success
         """
         start_time = datetime.now()
-        logger.info(f"Calculating incineration emissions for {request.waste_id}")
+        logger.info("Calculating incineration emissions for %s", request.waste_id)
 
         try:
             if self.metrics:
@@ -1084,7 +1084,7 @@ class WasteGeneratedService:
             if self.metrics:
                 self.metrics.increment('waste_generated.incineration_calculations.success')
 
-            logger.info(f"Incineration calculation completed: {result['total_co2e_kg']:.2f} kg CO2e")
+            logger.info("Incineration calculation completed: %.2f kg CO2e", result['total_co2e_kg'])
 
             return IncinerationResponse(
                 success=True,
@@ -1094,7 +1094,7 @@ class WasteGeneratedService:
 
         except Exception as e:
             processing_time_ms = (datetime.now() - start_time).total_seconds() * 1000
-            logger.error(f"Incineration calculation failed: {e}", exc_info=True)
+            logger.error("Incineration calculation failed: %s", e, exc_info=True)
 
             if self.metrics:
                 self.metrics.increment('waste_generated.incineration_calculations.error')
@@ -1130,7 +1130,7 @@ class WasteGeneratedService:
             >>> assert response.success
         """
         start_time = datetime.now()
-        logger.info(f"Calculating recycling emissions for {request.waste_id}")
+        logger.info("Calculating recycling emissions for %s", request.waste_id)
 
         try:
             if self.metrics:
@@ -1160,7 +1160,7 @@ class WasteGeneratedService:
             if self.metrics:
                 self.metrics.increment('waste_generated.recycling_calculations.success')
 
-            logger.info(f"Recycling calculation completed: {result['net_emissions_kg']:.2f} kg CO2e net")
+            logger.info("Recycling calculation completed: %.2f kg CO2e net", result['net_emissions_kg'])
 
             return RecyclingCompostingResponse(
                 success=True,
@@ -1170,7 +1170,7 @@ class WasteGeneratedService:
 
         except Exception as e:
             processing_time_ms = (datetime.now() - start_time).total_seconds() * 1000
-            logger.error(f"Recycling calculation failed: {e}", exc_info=True)
+            logger.error("Recycling calculation failed: %s", e, exc_info=True)
 
             if self.metrics:
                 self.metrics.increment('waste_generated.recycling_calculations.error')
@@ -1204,7 +1204,7 @@ class WasteGeneratedService:
             >>> assert response.success
         """
         start_time = datetime.now()
-        logger.info(f"Calculating composting emissions for {request.waste_id}")
+        logger.info("Calculating composting emissions for %s", request.waste_id)
 
         try:
             if self.metrics:
@@ -1234,7 +1234,7 @@ class WasteGeneratedService:
             if self.metrics:
                 self.metrics.increment('waste_generated.composting_calculations.success')
 
-            logger.info(f"Composting calculation completed: {result['total_co2e_kg']:.2f} kg CO2e")
+            logger.info("Composting calculation completed: %.2f kg CO2e", result['total_co2e_kg'])
 
             return RecyclingCompostingResponse(
                 success=True,
@@ -1244,7 +1244,7 @@ class WasteGeneratedService:
 
         except Exception as e:
             processing_time_ms = (datetime.now() - start_time).total_seconds() * 1000
-            logger.error(f"Composting calculation failed: {e}", exc_info=True)
+            logger.error("Composting calculation failed: %s", e, exc_info=True)
 
             if self.metrics:
                 self.metrics.increment('waste_generated.composting_calculations.error')
@@ -1279,7 +1279,7 @@ class WasteGeneratedService:
             >>> assert response.success
         """
         start_time = datetime.now()
-        logger.info(f"Calculating anaerobic digestion emissions for {request.waste_id}")
+        logger.info("Calculating anaerobic digestion emissions for %s", request.waste_id)
 
         try:
             if self.metrics:
@@ -1309,7 +1309,7 @@ class WasteGeneratedService:
             if self.metrics:
                 self.metrics.increment('waste_generated.anaerobic_digestion_calculations.success')
 
-            logger.info(f"Anaerobic digestion calculation completed: {result['net_emissions_kg']:.2f} kg CO2e net")
+            logger.info("Anaerobic digestion calculation completed: %.2f kg CO2e net", result['net_emissions_kg'])
 
             return RecyclingCompostingResponse(
                 success=True,
@@ -1319,7 +1319,7 @@ class WasteGeneratedService:
 
         except Exception as e:
             processing_time_ms = (datetime.now() - start_time).total_seconds() * 1000
-            logger.error(f"Anaerobic digestion calculation failed: {e}", exc_info=True)
+            logger.error("Anaerobic digestion calculation failed: %s", e, exc_info=True)
 
             if self.metrics:
                 self.metrics.increment('waste_generated.anaerobic_digestion_calculations.error')
@@ -1355,7 +1355,7 @@ class WasteGeneratedService:
             >>> assert response.success
         """
         start_time = datetime.now()
-        logger.info(f"Calculating wastewater emissions for {request.waste_id}")
+        logger.info("Calculating wastewater emissions for %s", request.waste_id)
 
         try:
             if self.metrics:
@@ -1384,7 +1384,7 @@ class WasteGeneratedService:
             if self.metrics:
                 self.metrics.increment('waste_generated.wastewater_calculations.success')
 
-            logger.info(f"Wastewater calculation completed: {result['total_co2e_kg']:.2f} kg CO2e")
+            logger.info("Wastewater calculation completed: %.2f kg CO2e", result['total_co2e_kg'])
 
             return WastewaterResponse(
                 success=True,
@@ -1394,7 +1394,7 @@ class WasteGeneratedService:
 
         except Exception as e:
             processing_time_ms = (datetime.now() - start_time).total_seconds() * 1000
-            logger.error(f"Wastewater calculation failed: {e}", exc_info=True)
+            logger.error("Wastewater calculation failed: %s", e, exc_info=True)
 
             if self.metrics:
                 self.metrics.increment('waste_generated.wastewater_calculations.error')
@@ -1420,7 +1420,7 @@ class WasteGeneratedService:
             >>> assert response.success
             >>> print(response.calculation.total_co2e_kg)
         """
-        logger.info(f"Retrieving waste calculation {calculation_id}")
+        logger.info("Retrieving waste calculation %s", calculation_id)
 
         try:
             calc = self.waste_db_engine.get_calculation(calculation_id)
@@ -1437,7 +1437,7 @@ class WasteGeneratedService:
                 )
 
         except Exception as e:
-            logger.error(f"Get waste calculation failed: {e}", exc_info=True)
+            logger.error("Get waste calculation failed: %s", e, exc_info=True)
             return WasteCalculationDetailResponse(
                 success=False,
                 error=str(e)
@@ -1471,7 +1471,7 @@ class WasteGeneratedService:
             ... )
             >>> assert len(response.calculations) <= 50
         """
-        logger.info(f"Listing waste calculations for tenant {tenant_id}, page={page}, filters={filters}")
+        logger.info("Listing waste calculations for tenant %s, page=%s, filters=%s", tenant_id, page, filters)
 
         try:
             results = self.waste_db_engine.list_calculations(
@@ -1494,7 +1494,7 @@ class WasteGeneratedService:
             )
 
         except Exception as e:
-            logger.error(f"List waste calculations failed: {e}", exc_info=True)
+            logger.error("List waste calculations failed: %s", e, exc_info=True)
             return WasteCalculationListResponse(
                 success=False,
                 total_count=0,
@@ -1517,7 +1517,7 @@ class WasteGeneratedService:
             >>> response = service.delete_calculation("calc-001")
             >>> assert response.success
         """
-        logger.info(f"Deleting waste calculation {calculation_id}")
+        logger.info("Deleting waste calculation %s", calculation_id)
 
         try:
             # Track provenance
@@ -1539,7 +1539,7 @@ class WasteGeneratedService:
             )
 
         except Exception as e:
-            logger.error(f"Delete waste calculation failed: {e}", exc_info=True)
+            logger.error("Delete waste calculation failed: %s", e, exc_info=True)
             return DeleteResponse(
                 success=False,
                 deleted_id=calculation_id,
@@ -1571,7 +1571,7 @@ class WasteGeneratedService:
             ... )
             >>> assert all(f.waste_type == 'FOOD_WASTE' for f in response.factors)
         """
-        logger.info(f"Listing waste emission factors: filters={filters}")
+        logger.info("Listing waste emission factors: filters=%s", filters)
 
         try:
             results = self.waste_db_engine.list_emission_factors(
@@ -1593,7 +1593,7 @@ class WasteGeneratedService:
             )
 
         except Exception as e:
-            logger.error(f"List waste emission factors failed: {e}", exc_info=True)
+            logger.error("List waste emission factors failed: %s", e, exc_info=True)
             return WasteEmissionFactorListResponse(
                 success=False,
                 total_count=0,
@@ -1617,7 +1617,7 @@ class WasteGeneratedService:
             >>> response = service.get_emission_factor("FOOD_WASTE", "LANDFILL")
             >>> assert response.success
         """
-        logger.info(f"Retrieving waste emission factor: {waste_type} / {treatment_method}")
+        logger.info("Retrieving waste emission factor: %s / %s", waste_type, treatment_method)
 
         try:
             factor = self.waste_db_engine.get_emission_factor(waste_type, treatment_method)
@@ -1634,7 +1634,7 @@ class WasteGeneratedService:
                 )
 
         except Exception as e:
-            logger.error(f"Get waste emission factor failed: {e}", exc_info=True)
+            logger.error("Get waste emission factor failed: %s", e, exc_info=True)
             return WasteEmissionFactorDetailResponse(
                 success=False,
                 error=str(e)
@@ -1656,7 +1656,7 @@ class WasteGeneratedService:
         try:
             return self.waste_db_engine.list_waste_types()
         except Exception as e:
-            logger.error(f"List waste types failed: {e}", exc_info=True)
+            logger.error("List waste types failed: %s", e, exc_info=True)
             return []
 
     def list_treatment_methods(self) -> List[Dict[str, Any]]:
@@ -1675,7 +1675,7 @@ class WasteGeneratedService:
         try:
             return self.waste_db_engine.list_treatment_methods()
         except Exception as e:
-            logger.error(f"List treatment methods failed: {e}", exc_info=True)
+            logger.error("List treatment methods failed: %s", e, exc_info=True)
             return []
 
     def check_compliance(
@@ -1710,7 +1710,7 @@ class WasteGeneratedService:
             >>> assert response.overall_compliant
         """
         start_time = datetime.now()
-        logger.info(f"Checking compliance for waste calculation {calculation_id} against {frameworks}")
+        logger.info("Checking compliance for waste calculation %s against %s", calculation_id, frameworks)
 
         try:
             if self.metrics:
@@ -1745,7 +1745,7 @@ class WasteGeneratedService:
                 else:
                     self.metrics.increment('waste_generated.compliance_checks.non_compliant')
 
-            logger.info(f"Compliance check {check_id} completed: overall_compliant={overall_compliant}")
+            logger.info("Compliance check %s completed: overall_compliant=%s", check_id, overall_compliant)
 
             return ComplianceCheckResponse(
                 success=True,
@@ -1759,7 +1759,7 @@ class WasteGeneratedService:
 
         except Exception as e:
             processing_time_ms = (datetime.now() - start_time).total_seconds() * 1000
-            logger.error(f"Compliance check failed: {e}", exc_info=True)
+            logger.error("Compliance check failed: %s", e, exc_info=True)
 
             if self.metrics:
                 self.metrics.increment('waste_generated.compliance_checks.error')
@@ -1798,7 +1798,7 @@ class WasteGeneratedService:
             >>> assert response.uncertainty.uncertainty_percentage > 0
         """
         start_time = datetime.now()
-        logger.info(f"Analyzing uncertainty for waste calculation {calculation_id}")
+        logger.info("Analyzing uncertainty for waste calculation %s", calculation_id)
 
         try:
             if self.metrics:
@@ -1830,7 +1830,7 @@ class WasteGeneratedService:
             if self.metrics:
                 self.metrics.increment('waste_generated.uncertainty.success')
 
-            logger.info(f"Uncertainty analysis completed: {result['uncertainty_percentage']:.2f}%")
+            logger.info("Uncertainty analysis completed: %.2f%", result['uncertainty_percentage'])
 
             return UncertaintyResponse(
                 success=True,
@@ -1840,7 +1840,7 @@ class WasteGeneratedService:
 
         except Exception as e:
             processing_time_ms = (datetime.now() - start_time).total_seconds() * 1000
-            logger.error(f"Uncertainty analysis failed: {e}", exc_info=True)
+            logger.error("Uncertainty analysis failed: %s", e, exc_info=True)
 
             if self.metrics:
                 self.metrics.increment('waste_generated.uncertainty.error')
@@ -1883,7 +1883,7 @@ class WasteGeneratedService:
             >>> assert 'FOOD_WASTE' in response.aggregation.groups
         """
         start_time = datetime.now()
-        logger.info(f"Getting waste aggregations for {tenant_id}, group_by={group_by}")
+        logger.info("Getting waste aggregations for %s, group_by=%s", tenant_id, group_by)
 
         try:
             if self.metrics:
@@ -1916,7 +1916,7 @@ class WasteGeneratedService:
 
         except Exception as e:
             processing_time_ms = (datetime.now() - start_time).total_seconds() * 1000
-            logger.error(f"Waste aggregation failed: {e}", exc_info=True)
+            logger.error("Waste aggregation failed: %s", e, exc_info=True)
 
             if self.metrics:
                 self.metrics.increment('waste_generated.aggregations.error')
@@ -1956,7 +1956,7 @@ class WasteGeneratedService:
             >>> assert response.analysis.diversion_rate >= 0
         """
         start_time = datetime.now()
-        logger.info(f"Analyzing waste diversion for {tenant_id}, period={reporting_period}")
+        logger.info("Analyzing waste diversion for %s, period=%s", tenant_id, reporting_period)
 
         try:
             if self.metrics:
@@ -1988,7 +1988,7 @@ class WasteGeneratedService:
             if self.metrics:
                 self.metrics.increment('waste_generated.diversion_analysis.success')
 
-            logger.info(f"Diversion analysis completed: {result['diversion_rate']:.2%} diversion rate")
+            logger.info("Diversion analysis completed: %s diversion rate", result['diversion_rate'])
 
             return WasteDiversionResponse(
                 success=True,
@@ -1998,7 +1998,7 @@ class WasteGeneratedService:
 
         except Exception as e:
             processing_time_ms = (datetime.now() - start_time).total_seconds() * 1000
-            logger.error(f"Diversion analysis failed: {e}", exc_info=True)
+            logger.error("Diversion analysis failed: %s", e, exc_info=True)
 
             if self.metrics:
                 self.metrics.increment('waste_generated.diversion_analysis.error')
@@ -2026,7 +2026,7 @@ class WasteGeneratedService:
             >>> response = service.get_provenance("calc-001")
             >>> assert response.provenance.reproducible
         """
-        logger.info(f"Retrieving provenance for waste calculation {calculation_id}")
+        logger.info("Retrieving provenance for waste calculation %s", calculation_id)
 
         try:
             calc = self.waste_db_engine.get_calculation(calculation_id)
@@ -2050,7 +2050,7 @@ class WasteGeneratedService:
             )
 
         except Exception as e:
-            logger.error(f"Get provenance failed: {e}", exc_info=True)
+            logger.error("Get provenance failed: %s", e, exc_info=True)
             return ProvenanceResponse(
                 success=False,
                 error=str(e)
@@ -2103,7 +2103,7 @@ class WasteGeneratedService:
             )
 
         except Exception as e:
-            logger.error(f"Health check failed: {e}", exc_info=True)
+            logger.error("Health check failed: %s", e, exc_info=True)
             return HealthResponse(
                 status='unhealthy',
                 version='1.0.0',
@@ -2126,7 +2126,7 @@ class WasteGeneratedService:
             >>> response = service.get_stats(tenant_id="acme-corp")
             >>> print(f"Total calculations: {response.total_calculations}")
         """
-        logger.debug(f"Getting stats for tenant {tenant_id}")
+        logger.debug("Getting stats for tenant %s", tenant_id)
 
         try:
             stats = self.waste_db_engine.get_stats(tenant_id)
@@ -2142,7 +2142,7 @@ class WasteGeneratedService:
             )
 
         except Exception as e:
-            logger.error(f"Get stats failed: {e}", exc_info=True)
+            logger.error("Get stats failed: %s", e, exc_info=True)
             return StatsResponse(
                 total_calculations=0,
                 calculations_by_treatment={},
@@ -2223,7 +2223,7 @@ def get_router():
         from greenlang.agents.mrv.waste_generated.api.router import router
         return router
     except ImportError as e:
-        logger.error(f"Failed to import router: {e}")
+        logger.error("Failed to import router: %s", e)
         raise
 
 
@@ -2258,10 +2258,10 @@ def configure_waste_generated(app) -> None:
         # Initialize service (singleton)
         service = get_service()
 
-        logger.info(f"Waste generated service configured: {service._initialized}")
+        logger.info("Waste generated service configured: %s", service._initialized)
 
     except Exception as e:
-        logger.error(f"Failed to configure waste generated service: {e}", exc_info=True)
+        logger.error("Failed to configure waste generated service: %s", e, exc_info=True)
         raise
 
 

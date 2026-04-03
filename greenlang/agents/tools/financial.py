@@ -285,7 +285,7 @@ class FinancialMetricsTool(BaseTool):
             )
 
         except Exception as e:
-            self.logger.error(f"Financial calculation failed: {e}", exc_info=True)
+            logger.error("Financial calculation failed: %s", e, exc_info=True)
             return ToolResult(
                 success=False,
                 error=f"Financial calculation failed: {str(e)}"
@@ -321,7 +321,7 @@ class FinancialMetricsTool(BaseTool):
             # Use numpy's IRR calculation (more robust)
             return float(np.irr(cash_flows))
         except Exception as e:
-            self.logger.debug(f"Numpy IRR failed: {e}, trying Newton's method")
+            logger.debug("Numpy IRR failed: %s, trying Newton's method", e)
             try:
                 # Fallback to manual Newton's method
                 def npv_func(rate):
@@ -336,7 +336,7 @@ class FinancialMetricsTool(BaseTool):
                 else:
                     return None
             except Exception as e:
-                self.logger.warning(f"IRR calculation failed: {e}")
+                logger.warning("IRR calculation failed: %s", e)
                 return None
 
     def _calculate_simple_payback(self, cumulative_cash_flow: List[float]) -> Optional[float]:

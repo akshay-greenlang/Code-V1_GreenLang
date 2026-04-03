@@ -62,9 +62,9 @@ class CLIContext:
         self.orchestrator = Orchestrator()
 
         if verbose:
-            self.logger.debug(f"GreenLang CLI v{greenlang.__version__}")
-            self.logger.debug(f"Verbose mode: {verbose}")
-            self.logger.debug(f"Dry-run mode: {dry_run}")
+            logger.debug("GreenLang CLI v%s", greenlang.__version__)
+            logger.debug("Verbose mode: %s", verbose)
+            logger.debug("Dry-run mode: %s", dry_run)
 
         if dry_run:
             console.print("[yellow]DRY-RUN MODE: No changes will be made[/yellow]")
@@ -142,7 +142,7 @@ def agents_list(ctx: CLIContext) -> None:
     console.print(table)
 
     if ctx.verbose:
-        ctx.logger.info(f"Found {len(agents)} agents")
+        logger.info("Found %s agents", len(agents))
 
 
 @agents.command(name="info")
@@ -231,8 +231,8 @@ def run(
     )
 
     if ctx.verbose:
-        ctx.logger.info(f"Starting run: {run_id}")
-        ctx.logger.debug(f"Workflow: {workflow_file}")
+        logger.info("Starting run: %s", run_id)
+        logger.debug("Workflow: %s", workflow_file)
 
     try:
         # Load workflow
@@ -305,7 +305,7 @@ def report(
     """Generate reports in various formats"""
 
     if ctx.verbose:
-        ctx.logger.info(f"Generating {format.upper()} report from {input_file}")
+        logger.info("Generating %s report from %s", format.upper(), input_file)
 
     # Load input data
     with open(input_file, "r") as f:
@@ -407,7 +407,7 @@ def ask(ctx: CLIContext, question: tuple) -> None:
         # Process direct question
         query = " ".join(question)
         if ctx.verbose:
-            ctx.logger.info(f"Asking: {query}")
+            logger.info("Asking: %s", query)
 
         if ctx.dry_run:
             console.print(f"[yellow]DRY-RUN: Would ask AI: {query}[/yellow]")
@@ -450,7 +450,7 @@ def init(ctx: CLIContext) -> None:
     for dir_path in directories:
         Path(dir_path).mkdir(parents=True, exist_ok=True)
         if ctx.verbose:
-            ctx.logger.debug(f"Created directory: {dir_path}")
+            logger.debug("Created directory: %s", dir_path)
 
     # Create sample workflow
     sample_workflow = {

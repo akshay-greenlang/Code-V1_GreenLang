@@ -141,7 +141,7 @@ class CombustionOptimizer:
         self._o2_history: List[Tuple[datetime, float]] = []
         self._co_history: List[Tuple[datetime, float]] = []
 
-        logger.info(f"CombustionOptimizer initialized for {fuel_type}")
+        logger.info("CombustionOptimizer initialized for %s", fuel_type)
 
     def optimize(self, input_data: CombustionInput) -> CombustionOutput:
         """

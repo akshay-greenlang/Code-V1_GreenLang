@@ -488,7 +488,7 @@ class PopulationSampler:
                 str_row = {k: str(v) if v is not None else "" for k, v in row.items()}
                 writer.writerow(str_row)
 
-        logger.info(f"Exported population of {len(population)} items to {output_path}")
+        logger.info("Exported population of %s items to %s", len(population), output_path)
 
         return str(output_path)
 

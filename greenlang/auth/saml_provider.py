@@ -35,6 +35,7 @@ from dataclasses import dataclass, field
 from enum import Enum
 import xml.etree.ElementTree as ET
 from greenlang.utilities.determinism import deterministic_uuid, DeterministicClock
+from greenlang.utilities.exceptions.security import AuthenticationError as _SecurityAuthError
 
 try:
     from onelogin.saml2.auth import OneLogin_Saml2_Auth
@@ -301,7 +302,7 @@ class SAMLCertificateManager:
 
             return True
         except Exception as e:
-            logger.error(f"Certificate validation failed: {e}")
+            logger.error("Certificate validation failed: %s", e)
             return False
 
     @staticmethod
@@ -322,7 +323,7 @@ class SAMLCertificateManager:
                 "fingerprint": cert.fingerprint(hashes.SHA256()).hex(),
             }
         except Exception as e:
-            logger.error(f"Failed to extract certificate info: {e}")
+            logger.error("Failed to extract certificate info: %s", e)
             return {}
 
 
@@ -412,7 +413,7 @@ class SAMLProvider:
         # Initialize SAML settings
         self._saml_settings = self._build_saml_settings()
 
-        logger.info(f"Initialized SAML provider for {config.sp_entity_id}")
+        logger.info("Initialized SAML provider for %s", config.sp_entity_id)
 
     def _build_saml_settings(self) -> Dict[str, Any]:
         """Build python3-saml settings dictionary"""
@@ -508,11 +509,11 @@ class SAMLProvider:
             # Cache request ID for replay prevention
             self.request_cache.add_request(request_id)
 
-            logger.info(f"Generated SAML auth request: {request_id}")
+            logger.info("Generated SAML auth request: %s", request_id)
             return auth_url, request_id
 
         except Exception as e:
-            logger.error(f"Failed to generate auth request: {e}")
+            logger.error("Failed to generate auth request: %s", e)
             raise SAMLError(f"Auth request generation failed: {e}")
 
     def process_response(
@@ -543,7 +544,7 @@ class SAMLProvider:
             errors = auth.get_errors()
             if errors:
                 error_reason = auth.get_last_error_reason()
-                logger.error(f"SAML response errors: {errors}, reason: {error_reason}")
+                logger.error("SAML response errors: %s, reason: %s", errors, error_reason)
                 raise SAMLError(f"SAML validation failed: {error_reason}")
 
             # Check authentication
@@ -555,7 +556,7 @@ class SAMLProvider:
 
             # Check for replay attacks
             if request_id and not self.request_cache.has_request(request_id):
-                logger.warning(f"Potential replay attack detected: {request_id}")
+                logger.warning("Potential replay attack detected: %s", request_id)
                 # In strict mode, reject; in non-strict, log and continue
                 if self.config.strict:
                     raise SAMLError("Invalid or expired request ID")
@@ -567,14 +568,14 @@ class SAMLProvider:
             session = self._create_session(user, assertion)
             self.sessions[session.session_id] = session
 
-            logger.info(f"Successfully authenticated user: {user.email}")
+            logger.info("Successfully authenticated user: %s", user.email)
             return user
 
         except OneLogin_Saml2_Error as e:
-            logger.error(f"SAML processing error: {e}")
+            logger.error("SAML processing error: %s", e)
             raise SAMLError(f"SAML processing failed: {e}")
         except Exception as e:
-            logger.error(f"Unexpected error processing SAML response: {e}")
+            logger.error("Unexpected error processing SAML response: %s", e)
             raise SAMLError(f"Response processing failed: {e}")
 
     def _parse_assertion(self, auth: "OneLogin_Saml2_Auth") -> SAMLAssertion:
@@ -676,11 +677,11 @@ class SAMLProvider:
             # Remove session
             del self.sessions[session_id]
 
-            logger.info(f"Generated logout request for session: {session_id}")
+            logger.info("Generated logout request for session: %s", session_id)
             return logout_url
 
         except Exception as e:
-            logger.error(f"Failed to generate logout request: {e}")
+            logger.error("Failed to generate logout request: %s", e)
             raise SAMLError(f"Logout request generation failed: {e}")
 
     def process_logout_response(self, saml_response: str) -> bool:
@@ -697,14 +698,14 @@ class SAMLProvider:
 
             errors = auth.get_errors()
             if errors:
-                logger.error(f"Logout response errors: {errors}")
+                logger.error("Logout response errors: %s", errors)
                 return False
 
             logger.info("Successfully processed logout response")
             return True
 
         except Exception as e:
-            logger.error(f"Failed to process logout response: {e}")
+            logger.error("Failed to process logout response: %s", e)
             return False
 
     def get_metadata(self) -> str:
@@ -716,13 +717,13 @@ class SAMLProvider:
             # Validate metadata
             errors = settings.validate_metadata(metadata)
             if errors:
-                logger.error(f"Metadata validation errors: {errors}")
+                logger.error("Metadata validation errors: %s", errors)
                 raise SAMLError(f"Invalid metadata: {errors}")
 
             return metadata
 
         except Exception as e:
-            logger.error(f"Failed to generate metadata: {e}")
+            logger.error("Failed to generate metadata: %s", e)
             raise SAMLError(f"Metadata generation failed: {e}")
 
     def validate_session(self, session_id: str) -> bool:
@@ -766,11 +767,11 @@ class SAMLProvider:
         for sid in expired:
             del self.sessions[sid]
 
-        logger.info(f"Cleaned up {len(expired)} expired sessions")
+        logger.info("Cleaned up %s expired sessions", len(expired))
         return len(expired)
 
 
-class SAMLError(Exception):
+class SAMLError(_SecurityAuthError):
     """SAML-specific error"""
     pass
 

@@ -89,7 +89,10 @@ DELETE FROM agent_configs WHERE agent_key = $1
 # ---------------------------------------------------------------------------
 
 
-class ConfigVersionConflictError(Exception):
+from greenlang.utilities.exceptions.infrastructure import InfrastructureException as _InfrastructureException
+
+
+class ConfigVersionConflictError(_InfrastructureException):
     """Raised when an optimistic locking conflict occurs.
 
     Attributes:

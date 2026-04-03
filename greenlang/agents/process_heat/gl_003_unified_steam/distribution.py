@@ -633,7 +633,7 @@ class HeaderBalanceCalculator:
             return exergy_supply, exergy_demand, exergy_efficiency
 
         except Exception as e:
-            logger.warning(f"Exergy calculation failed: {e}")
+            logger.warning("Exergy calculation failed: %s", e)
             return None, None, None
 
     def _generate_adjustments(
@@ -810,7 +810,7 @@ class SteamDistributionOptimizer:
                 result = self.calculators[header_id].calculate_balance(reading)
                 results.append(result)
             else:
-                logger.warning(f"Skipping unknown header: {header_id}")
+                logger.warning("Skipping unknown header: %s", header_id)
 
         return results
 

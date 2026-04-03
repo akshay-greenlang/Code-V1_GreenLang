@@ -63,6 +63,7 @@ from greenlang.agents.eudr.qr_code_generator.models import (
 from greenlang.agents.eudr.qr_code_generator.provenance import (
     get_provenance_tracker,
 )
+from greenlang.utilities.exceptions.compliance import ComplianceException
 
 logger = logging.getLogger(__name__)
 
@@ -72,7 +73,7 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 
-class QREncoderError(Exception):
+class QREncoderError(ComplianceException):
     """Base exception for QR encoder operations."""
 
 

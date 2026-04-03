@@ -46,6 +46,7 @@ from .capabilities import (
     NETWORK_CLIENT_POLICY,
     FULL_ACCESS_POLICY,
 )
+from greenlang.utilities.exceptions.security import SecurityException
 
 logger = logging.getLogger(__name__)
 
@@ -93,7 +94,7 @@ class SandboxConfig:
         Path(self.temp_dir).mkdir(parents=True, exist_ok=True)
 
 
-class SandboxViolationError(Exception):
+class SandboxViolationError(SecurityException):
     """Raised when a capability violation occurs in strict mode"""
 
     def __init__(

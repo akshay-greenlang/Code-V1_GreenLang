@@ -140,7 +140,7 @@ class IRThermographySurvey:
         self._survey_count += 1
         survey_id = str(uuid.uuid4())
 
-        logger.info(f"Analyzing IR survey {survey_id} with {len(thermal_images)} images")
+        logger.info("Analyzing IR survey %s with %s images", survey_id, len(thermal_images))
 
         hot_spots: List[IRHotSpot] = []
         total_excess_heat_loss = 0.0
@@ -152,7 +152,7 @@ class IRThermographySurvey:
             baseline = baseline_inputs.get(image.location)
 
             if baseline is None:
-                logger.warning(f"No baseline for location: {image.location}")
+                logger.warning("No baseline for location: %s", image.location)
                 continue
 
             ambient_temps.append(image.ambient_temp_f)

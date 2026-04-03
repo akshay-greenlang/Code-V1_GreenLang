@@ -774,7 +774,7 @@ class PredictionAnomalyDetector:
                 self._detectors["mad"] = detector
 
         self._is_fitted = True
-        logger.info(f"Fitted {len(self._detectors)} detectors")
+        logger.info("Fitted %s detectors", len(self._detectors))
 
         return self
 

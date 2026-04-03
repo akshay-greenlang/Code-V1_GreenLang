@@ -237,8 +237,8 @@ class EcoinventPipeline(BasePipeline[EcoinventRecord]):
         if not self.export_path.exists():
             raise FileNotFoundError(f"Ecoinvent export not found: {self.export_path}")
 
-        logger.info(f"Reading Ecoinvent export: {self.export_path}")
-        logger.info(f"Format: {self.eco_config.export_format}, System Model: {self.eco_config.system_model}")
+        logger.info("Reading Ecoinvent export: %s", self.export_path)
+        logger.info("Format: %s, System Model: %s", self.eco_config.export_format, self.eco_config.system_model)
 
         # Parse based on export format
         if self.eco_config.export_format == EcoinventExportFormat.ECOSPOLD2:
@@ -253,7 +253,7 @@ class EcoinventPipeline(BasePipeline[EcoinventRecord]):
         # Apply filters
         records = self._apply_filters(records)
 
-        logger.info(f"Total records extracted from Ecoinvent: {len(records)}")
+        logger.info("Total records extracted from Ecoinvent: %s", len(records))
         return records
 
     async def _extract_ecospold2(self) -> List[EcoinventRecord]:
@@ -267,7 +267,7 @@ class EcoinventPipeline(BasePipeline[EcoinventRecord]):
 
         # Find all .spold files
         spold_files = list(datasets_path.glob("*.spold"))
-        logger.info(f"Found {len(spold_files)} EcoSpold2 files")
+        logger.info("Found %s EcoSpold2 files", len(spold_files))
 
         for spold_file in spold_files:
             try:
@@ -275,7 +275,7 @@ class EcoinventPipeline(BasePipeline[EcoinventRecord]):
                 if record:
                     records.append(record)
             except Exception as e:
-                logger.debug(f"Error parsing {spold_file.name}: {e}")
+                logger.debug("Error parsing %s: %s", spold_file.name, e)
                 continue
 
         return records
@@ -365,10 +365,10 @@ class EcoinventPipeline(BasePipeline[EcoinventRecord]):
             )
 
         except ET.ParseError as e:
-            logger.debug(f"XML parse error in {file_path}: {e}")
+            logger.debug("XML parse error in %s: %s", file_path, e)
             return None
         except Exception as e:
-            logger.debug(f"Error parsing EcoSpold2 file {file_path}: {e}")
+            logger.debug("Error parsing EcoSpold2 file %s: %s", file_path, e)
             return None
 
     def _extract_elementary_flow(
@@ -461,7 +461,7 @@ class EcoinventPipeline(BasePipeline[EcoinventRecord]):
             import pandas as pd
 
             csv_files = list(self.export_path.glob("*.csv"))
-            logger.info(f"Found {len(csv_files)} SimaPro CSV files")
+            logger.info("Found %s SimaPro CSV files", len(csv_files))
 
             for csv_file in csv_files:
                 try:
@@ -469,7 +469,7 @@ class EcoinventPipeline(BasePipeline[EcoinventRecord]):
                     file_records = self._parse_simapro_csv(df)
                     records.extend(file_records)
                 except Exception as e:
-                    logger.debug(f"Error parsing {csv_file.name}: {e}")
+                    logger.debug("Error parsing %s: %s", csv_file.name, e)
                     continue
 
         except ImportError:
@@ -515,7 +515,7 @@ class EcoinventPipeline(BasePipeline[EcoinventRecord]):
                 records.append(record)
 
             except Exception as e:
-                logger.debug(f"Error parsing SimaPro row {idx}: {e}")
+                logger.debug("Error parsing SimaPro row %s: %s", idx, e)
                 continue
 
         return records
@@ -525,7 +525,7 @@ class EcoinventPipeline(BasePipeline[EcoinventRecord]):
         records = []
 
         json_files = list(self.export_path.glob("*.json"))
-        logger.info(f"Found {len(json_files)} JSON-LD files")
+        logger.info("Found %s JSON-LD files", len(json_files))
 
         for json_file in json_files:
             try:
@@ -543,7 +543,7 @@ class EcoinventPipeline(BasePipeline[EcoinventRecord]):
                         records.append(record)
 
             except Exception as e:
-                logger.debug(f"Error parsing {json_file.name}: {e}")
+                logger.debug("Error parsing %s: %s", json_file.name, e)
                 continue
 
         return records
@@ -578,7 +578,7 @@ class EcoinventPipeline(BasePipeline[EcoinventRecord]):
             import pandas as pd
 
             excel_files = list(self.export_path.glob("*.xlsx")) + list(self.export_path.glob("*.xls"))
-            logger.info(f"Found {len(excel_files)} Excel files")
+            logger.info("Found %s Excel files", len(excel_files))
 
             for excel_file in excel_files:
                 try:
@@ -588,7 +588,7 @@ class EcoinventPipeline(BasePipeline[EcoinventRecord]):
                         sheet_records = self._parse_excel_sheet(df)
                         records.extend(sheet_records)
                 except Exception as e:
-                    logger.debug(f"Error parsing {excel_file.name}: {e}")
+                    logger.debug("Error parsing %s: %s", excel_file.name, e)
                     continue
 
         except ImportError:
@@ -768,7 +768,7 @@ class EcoinventPipeline(BasePipeline[EcoinventRecord]):
                 transformed.append(factor_dict)
 
             except Exception as e:
-                logger.warning(f"Error transforming Ecoinvent record: {e}")
+                logger.warning("Error transforming Ecoinvent record: %s", e)
                 self.metrics.warnings.append(f"Transform error: {e}")
                 continue
 
@@ -840,7 +840,7 @@ class EcoinventPipeline(BasePipeline[EcoinventRecord]):
             try:
                 inserted += 1
             except Exception as e:
-                logger.error(f"Error loading record: {e}")
+                logger.error("Error loading record: %s", e)
                 errors += 1
 
         return {

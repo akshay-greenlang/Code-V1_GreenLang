@@ -80,7 +80,7 @@ class ProvenanceRecord:
         with open(path, 'w') as f:
             f.write(self.to_json())
 
-        logger.info(f"Provenance record saved to {path}")
+        logger.info("Provenance record saved to %s", path)
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "ProvenanceRecord":

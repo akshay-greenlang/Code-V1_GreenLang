@@ -85,7 +85,7 @@ async def health_check(
             "components": health,
         }
     except Exception as exc:
-        logger.error(f"Health check failed: {exc}")
+        logger.error("Health check failed: %s", exc)
         return {
             "status": "degraded",
             "agent": "GL-EUDR-DDO-026",
@@ -128,7 +128,7 @@ async def metrics_summary(
             "metrics": metrics,
         }
     except Exception as exc:
-        logger.error(f"Metrics retrieval failed: {exc}")
+        logger.error("Metrics retrieval failed: %s", exc)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to retrieve metrics: {exc}",
@@ -243,7 +243,7 @@ async def get_circuit_breakers(
             },
         }
     except Exception as exc:
-        logger.error(f"Circuit breaker query failed: {exc}")
+        logger.error("Circuit breaker query failed: %s", exc)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to retrieve circuit breaker states: {exc}",
@@ -289,7 +289,7 @@ async def reset_circuit_breaker(
             detail=f"Agent not found: {agent_id}",
         )
     except Exception as exc:
-        logger.error(f"Circuit breaker reset failed: {exc}")
+        logger.error("Circuit breaker reset failed: %s", exc)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to reset circuit breaker: {exc}",
@@ -366,7 +366,7 @@ async def list_dead_letter_queue(
             ],
         }
     except Exception as exc:
-        logger.error(f"DLQ query failed: {exc}")
+        logger.error("DLQ query failed: %s", exc)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to retrieve dead letter queue: {exc}",

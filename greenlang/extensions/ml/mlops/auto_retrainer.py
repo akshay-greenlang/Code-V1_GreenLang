@@ -336,7 +336,7 @@ class AutoRetrainer:
         self._data_buffer.append((X, y))
         total_samples = sum(x.shape[0] for x, _ in self._data_buffer)
 
-        logger.debug(f"Added {X.shape[0]} samples, total buffer: {total_samples}")
+        logger.debug("Added %s samples, total buffer: %s", X.shape[0], total_samples)
         return total_samples
 
     def get_buffer_size(self) -> int:
@@ -370,25 +370,25 @@ class AutoRetrainer:
         """
         # Check drift threshold
         if drift_score is not None and drift_score > self.config.drift_threshold:
-            logger.info(f"Drift threshold exceeded: {drift_score:.4f}")
+            logger.info("Drift threshold exceeded: %.4f", drift_score)
             return (True, RetrainingTrigger.DRIFT)
 
         # Check performance threshold
         if (performance_metric is not None and
             performance_metric < self.config.performance_threshold):
-            logger.info(f"Performance below threshold: {performance_metric:.4f}")
+            logger.info("Performance below threshold: %.4f", performance_metric)
             return (True, RetrainingTrigger.PERFORMANCE)
 
         # Check data volume
         if self.get_buffer_size() >= self.config.min_new_samples:
-            logger.info(f"Data volume threshold reached: {self.get_buffer_size()}")
+            logger.info("Data volume threshold reached: %s", self.get_buffer_size())
             return (True, RetrainingTrigger.DATA_VOLUME)
 
         # Check schedule
         if self._last_retrain is not None:
             days_since = (datetime.utcnow() - self._last_retrain).days
             if days_since >= self.config.schedule_days:
-                logger.info(f"Scheduled retraining: {days_since} days since last")
+                logger.info("Scheduled retraining: %s days since last", days_since)
                 return (True, RetrainingTrigger.SCHEDULE)
 
         return (False, None)
@@ -428,7 +428,7 @@ class AutoRetrainer:
             started_at=datetime.utcnow()
         )
 
-        logger.info(f"Starting retraining job {job_id}, trigger={trigger.value}")
+        logger.info("Starting retraining job %s, trigger=%s", job_id, trigger.value)
 
         try:
             # Prepare training data
@@ -537,7 +537,7 @@ class AutoRetrainer:
             job.error_message = str(e)
             job.completed_at = datetime.utcnow()
             self._job_history.append(job)
-            logger.error(f"Retraining job {job_id} failed: {e}")
+            logger.error("Retraining job %s failed: %s", job_id, e)
 
         return job
 
@@ -603,7 +603,7 @@ class AutoRetrainer:
 
         self._monitor_thread = threading.Thread(target=monitor_loop, daemon=True)
         self._monitor_thread.start()
-        logger.info(f"Monitoring started (interval={check_interval_seconds}s)")
+        logger.info("Monitoring started (interval=%ss)", check_interval_seconds)
 
     def stop_monitoring(self) -> None:
         """Stop background monitoring."""

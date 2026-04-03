@@ -286,7 +286,7 @@ class {template.agent_class}(BaseAgent):
             return result
 
         except Exception as e:
-            self.logger.error(f"Error in AI agent execution: {e}")
+            logger.error("Error in AI agent execution: %s", e)
             return AgentResult(
                 success=False,
                 error=f"Failed to execute agent: {str(e)}",
@@ -370,7 +370,7 @@ class {template.agent_class}(BaseAgent):
             )
 
         except BudgetExceeded as e:
-            self.logger.error(f"Budget exceeded: {e}")
+            logger.error("Budget exceeded: %s", e)
             return AgentResult(
                 success=False,
                 error=f"AI budget exceeded: {str(e)}",

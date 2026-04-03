@@ -126,7 +126,7 @@ class EconomicThicknessOptimizer:
             EconomicThicknessResult with optimal thickness and economics
         """
         self._calculation_count += 1
-        logger.debug(f"Calculating economic thickness for {input_data.item_id}")
+        logger.debug("Calculating economic thickness for %s", input_data.item_id)
 
         # Determine material to use
         if material_id is None:
@@ -542,7 +542,7 @@ class EconomicThicknessOptimizer:
                 )
                 results[material_id] = result
             except Exception as e:
-                logger.warning(f"Failed to evaluate {material_id}: {e}")
+                logger.warning("Failed to evaluate %s: %s", material_id, e)
 
         return results
 

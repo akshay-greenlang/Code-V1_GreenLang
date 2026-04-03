@@ -177,7 +177,7 @@ Always:
             start_time = DeterministicClock.now()
 
             try:
-                self.logger.info(f"Analyzing query: {query[:100]}...")
+                logger.info("Analyzing query: %s...", query[)
                 self.metrics.increment("llm.analysis.started")
 
                 # Check budget
@@ -220,7 +220,7 @@ Always:
                     )
 
                     rag_context = [doc.content for doc in retrieved_docs]
-                    self.logger.info(f"Retrieved {len(rag_context)} RAG documents")
+                    logger.info("Retrieved %s RAG documents", len(rag_context))
 
                 # Build messages
                 messages = []
@@ -243,7 +243,7 @@ Always:
                     async for chunk in self.chat_session.stream(messages):
                         response_text += chunk
                         # Stream to caller (in real app, you'd yield here)
-                        self.logger.debug(f"Streamed chunk: {chunk}")
+                        logger.debug("Streamed chunk: %s", chunk)
                 else:
                     # Non-streaming response
                     response = await self.chat_session.chat(messages)
@@ -314,7 +314,7 @@ Always:
                 return analysis_result
 
             except Exception as e:
-                self.logger.error(f"Analysis error: {str(e)}", exc_info=True)
+                logger.error("Analysis error: %s", e, exc_info=True)
                 self.metrics.increment("llm.analysis.error")
                 raise
 
@@ -337,7 +337,7 @@ Always:
         Returns:
             List of AnalysisResult objects
         """
-        self.logger.info(f"Starting batch analysis of {len(queries)} queries")
+        logger.info("Starting batch analysis of %s queries", len(queries))
 
         if parallel:
             # Use semaphore to limit concurrency
@@ -447,7 +447,7 @@ Always:
 
         # Save provenance
         provenance_record = self.provenance.get_record()
-        self.logger.info(f"Provenance record: {provenance_record.record_id}")
+        logger.info("Provenance record: %s", provenance_record.record_id)
 
         # Shutdown telemetry
         self.telemetry.shutdown()

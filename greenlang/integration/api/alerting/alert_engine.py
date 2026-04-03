@@ -221,7 +221,7 @@ class AlertEngine:
             rule.json()
         )
 
-        logger.info(f"Added alert rule: {rule.id} ({rule.name})")
+        logger.info("Added alert rule: %s (%s)", rule.id, rule.name)
 
     async def remove_rule(self, rule_id: str) -> None:
         """Remove alert rule.
@@ -235,7 +235,7 @@ class AlertEngine:
         # Remove from Redis
         await self.redis_client.delete(f"alert:rule:{rule_id}")
 
-        logger.info(f"Removed alert rule: {rule_id}")
+        logger.info("Removed alert rule: %s", rule_id)
 
     async def silence_rule(self, rule_id: str, duration: int) -> None:
         """Silence alert rule for a duration.
@@ -256,7 +256,7 @@ class AlertEngine:
             rule.json()
         )
 
-        logger.info(f"Silenced rule {rule_id} until {rule.silenced_until}")
+        logger.info("Silenced rule %s until %s", rule_id, rule.silenced_until)
 
     async def get_active_alerts(self) -> List[Dict[str, Any]]:
         """Get all active alerts.
@@ -295,9 +295,9 @@ class AlertEngine:
                         rule = AlertRule.parse_raw(rule_data)
                         self.rules[rule.id] = rule
                     except Exception as e:
-                        logger.error(f"Error loading rule from {key}: {e}")
+                        logger.error("Error loading rule from %s: %s", key, e)
 
-        logger.info(f"Loaded {len(self.rules)} alert rules")
+        logger.info("Loaded %s alert rules", len(self.rules))
 
     async def _evaluate_rules(self) -> None:
         """Evaluate all alert rules periodically."""
@@ -313,7 +313,7 @@ class AlertEngine:
                 try:
                     await self._evaluate_rule(rule)
                 except Exception as e:
-                    logger.error(f"Error evaluating rule {rule.id}: {e}")
+                    logger.error("Error evaluating rule %s: %s", rule.id, e)
 
             await asyncio.sleep(1)
 
@@ -571,7 +571,7 @@ class AlertEngine:
                 elif channel == NotificationChannel.WEBHOOK.value:
                     await self._send_webhook_notification(rule, instance, config)
             except Exception as e:
-                logger.error(f"Error sending notification via {channel}: {e}")
+                logger.error("Error sending notification via %s: %s", channel, e)
 
         instance.last_notified = DeterministicClock.utcnow()
         instance.notification_count += 1
@@ -637,9 +637,9 @@ class AlertEngine:
 
                 server.send_message(msg)
 
-            logger.info(f"Sent email notification for alert {rule.id}")
+            logger.info("Sent email notification for alert %s", rule.id)
         except Exception as e:
-            logger.error(f"Failed to send email: {e}")
+            logger.error("Failed to send email: %s", e)
 
     async def _send_slack_notification(
         self,
@@ -688,9 +688,9 @@ class AlertEngine:
         async with aiohttp.ClientSession() as session:
             async with session.post(webhook_url, json=payload) as response:
                 if response.status != 200:
-                    logger.error(f"Failed to send Slack notification: {await response.text()}")
+                    logger.error("Failed to send Slack notification: %s", await response.text())
                 else:
-                    logger.info(f"Sent Slack notification for alert {rule.id}")
+                    logger.info("Sent Slack notification for alert %s", rule.id)
 
     async def _send_pagerduty_notification(
         self,
@@ -732,9 +732,9 @@ class AlertEngine:
         async with aiohttp.ClientSession() as session:
             async with session.post(url, json=event) as response:
                 if response.status != 202:
-                    logger.error(f"Failed to send PagerDuty event: {await response.text()}")
+                    logger.error("Failed to send PagerDuty event: %s", await response.text())
                 else:
-                    logger.info(f"Sent PagerDuty event for alert {rule.id}")
+                    logger.info("Sent PagerDuty event for alert %s", rule.id)
 
     async def _send_webhook_notification(
         self,
@@ -773,9 +773,9 @@ class AlertEngine:
         async with aiohttp.ClientSession() as session:
             async with session.post(webhook_url, json=payload) as response:
                 if response.status not in [200, 201, 202, 204]:
-                    logger.error(f"Webhook failed: {await response.text()}")
+                    logger.error("Webhook failed: %s", await response.text())
                 else:
-                    logger.info(f"Sent webhook for alert {rule.id}")
+                    logger.info("Sent webhook for alert %s", rule.id)
 
     async def _save_alert_history(self, rule: AlertRule, instance: AlertInstance) -> None:
         """Save alert to history.
@@ -825,4 +825,4 @@ class AlertEngine:
                 del self.alert_instances[fingerprint]
 
             if to_remove:
-                logger.info(f"Cleaned up {len(to_remove)} resolved alerts")
+                logger.info("Cleaned up %s resolved alerts", len(to_remove))

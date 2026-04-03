@@ -823,7 +823,7 @@ class SupplyChainRiskAssessor:
             if profile:
                 results[supplier_id] = profile
 
-        logger.info(f"Assessed risk for {len(results)} suppliers")
+        logger.info("Assessed risk for %s suppliers", len(results))
         return results
 
     def get_suppliers_by_risk_level(

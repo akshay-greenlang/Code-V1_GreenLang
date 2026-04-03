@@ -18,8 +18,10 @@ from jsonschema import (
     ValidationError as JSONSchemaValidationError,
 )
 
+from greenlang.exceptions import DataException
 
-class JSONValidationError(Exception):
+
+class JSONValidationError(DataException):
     """
     Raised when JSON validation fails
 

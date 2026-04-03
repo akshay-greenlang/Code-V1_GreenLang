@@ -75,11 +75,12 @@ from greenlang.infrastructure.api.graphql_schema import (
     create_process_heat_schema,
     STRAWBERRY_AVAILABLE,
 )
+from greenlang.utilities.exceptions.infrastructure import InfrastructureException
 
 logger = logging.getLogger(__name__)
 
 
-class GraphQLIntegrationError(Exception):
+class GraphQLIntegrationError(InfrastructureException):
     """Raised when GraphQL integration fails."""
     pass
 
@@ -165,7 +166,7 @@ class QueryExecutor:
             GraphQLIntegrationError: If query execution fails
         """
         try:
-            logger.debug(f"Executing query: {query[:100]}...")
+            logger.debug("Executing query: %s...", query[)
 
             result = await self.schema.execute(
                 query,
@@ -174,7 +175,7 @@ class QueryExecutor:
             )
 
             if result.errors:
-                logger.warning(f"Query execution errors: {result.errors}")
+                logger.warning("Query execution errors: %s", result.errors)
                 return {
                     "data": result.data,
                     "errors": [str(e) for e in result.errors]
@@ -184,7 +185,7 @@ class QueryExecutor:
             return {"data": result.data}
 
         except Exception as e:
-            logger.error(f"Query execution failed: {str(e)}", exc_info=True)
+            logger.error("Query execution failed: %s", e, exc_info=True)
             raise GraphQLIntegrationError(f"Query execution failed: {str(e)}") from e
 
     async def execute_mutation(
@@ -255,7 +256,7 @@ class SubscriptionRegistry:
                 auth_payload=auth_payload,
             )
 
-        logger.info(f"Registered WebSocket connection: {connection_id}")
+        logger.info("Registered WebSocket connection: %s", connection_id)
         return connection_id
 
     async def unregister_connection(self, connection_id: str) -> None:
@@ -305,7 +306,7 @@ class SubscriptionRegistry:
         async with self._lock:
             connection = self._connections.get(connection_id)
             if not connection:
-                logger.warning(f"Connection {connection_id} not found")
+                logger.warning("Connection %s not found", connection_id)
                 return False
 
             if subscription_id in connection.subscriptions:
@@ -326,7 +327,7 @@ class SubscriptionRegistry:
             )
             self._subscription_to_connection[subscription_id] = connection_id
 
-        logger.debug(f"Added subscription {subscription_id} to connection {connection_id}")
+        logger.debug("Added subscription %s to connection %s", subscription_id, connection_id)
         return True
 
     async def remove_subscription(
@@ -354,7 +355,7 @@ class SubscriptionRegistry:
                 if sub_info.task and not sub_info.task.done():
                     sub_info.task.cancel()
                 self._subscription_to_connection.pop(subscription_id, None)
-                logger.debug(f"Removed subscription {subscription_id}")
+                logger.debug("Removed subscription %s", subscription_id)
                 return True
 
         return False
@@ -496,7 +497,7 @@ class SubscriptionManager:
                         try:
                             authenticated = await authentication_handler(payload)
                         except Exception as e:
-                            logger.error(f"Authentication error: {e}")
+                            logger.error("Authentication error: %s", e)
                             authenticated = False
 
                     if not authenticated:
@@ -576,12 +577,12 @@ class SubscriptionManager:
                         )
 
                 else:
-                    logger.warning(f"Unknown message type: {message_type}")
+                    logger.warning("Unknown message type: %s", message_type)
 
         except WebSocketDisconnect:
-            logger.info(f"WebSocket disconnected: {connection_id}")
+            logger.info("WebSocket disconnected: %s", connection_id)
         except Exception as e:
-            logger.error(f"WebSocket error: {e}", exc_info=True)
+            logger.error("WebSocket error: %s", e, exc_info=True)
         finally:
             if connection_id:
                 await self.registry.unregister_connection(connection_id)
@@ -597,7 +598,7 @@ class SubscriptionManager:
     ) -> None:
         """Execute a GraphQL subscription and stream results."""
         try:
-            logger.debug(f"Starting subscription {subscription_id}")
+            logger.debug("Starting subscription %s", subscription_id)
 
             async for result in self.schema.subscribe(
                 query,
@@ -638,9 +639,9 @@ class SubscriptionManager:
             )
 
         except asyncio.CancelledError:
-            logger.debug(f"Subscription {subscription_id} cancelled")
+            logger.debug("Subscription %s cancelled", subscription_id)
         except Exception as e:
-            logger.error(f"Subscription error: {e}", exc_info=True)
+            logger.error("Subscription error: %s", e, exc_info=True)
             try:
                 await self._send_message(
                     websocket,
@@ -700,12 +701,12 @@ class SubscriptionManager:
                             )
                             conn.last_ping_at = datetime.utcnow()
                         except Exception as e:
-                            logger.debug(f"Ping failed for {conn.connection_id}: {e}")
+                            logger.debug("Ping failed for %s: %s", conn.connection_id, e)
 
             except asyncio.CancelledError:
                 break
             except Exception as e:
-                logger.error(f"Ping loop error: {e}")
+                logger.error("Ping loop error: %s", e)
 
     async def _broadcast_loop(self) -> None:
         """Background loop to broadcast events from the queue."""
@@ -724,7 +725,7 @@ class SubscriptionManager:
             except asyncio.CancelledError:
                 break
             except Exception as e:
-                logger.error(f"Broadcast loop error: {e}")
+                logger.error("Broadcast loop error: %s", e)
 
     async def _broadcast_event(self, event: Dict[str, Any]) -> None:
         """Broadcast an event to relevant subscribers."""
@@ -733,7 +734,7 @@ class SubscriptionManager:
 
         # This would be extended to match events with subscriptions
         # For now, log the broadcast
-        logger.debug(f"Broadcasting event: {event_type}")
+        logger.debug("Broadcasting event: %s", event_type)
 
     async def broadcast_job_progress(
         self,
@@ -898,7 +899,7 @@ def setup_graphql(
 
         # Include router in app
         app.include_router(graphql_router)
-        logger.info(f"GraphQL endpoint configured at {config.path}")
+        logger.info("GraphQL endpoint configured at %s", config.path)
 
         # Create executor for helper usage
         executor = QueryExecutor(schema)
@@ -920,7 +921,7 @@ def setup_graphql(
                     websocket, authentication_handler
                 )
 
-            logger.info(f"GraphQL WebSocket endpoint configured at {config.ws_path}")
+            logger.info("GraphQL WebSocket endpoint configured at %s", config.ws_path)
 
         # Add GraphQL status endpoint
         @app.get("/graphql/status")
@@ -948,7 +949,7 @@ def setup_graphql(
         return subscription_manager
 
     except Exception as e:
-        logger.error(f"GraphQL setup failed: {str(e)}", exc_info=True)
+        logger.error("GraphQL setup failed: %s", e, exc_info=True)
         raise GraphQLIntegrationError(f"GraphQL setup failed: {str(e)}") from e
 
 

@@ -314,7 +314,7 @@ class EventSchema:
             schema: Avro schema definition
         """
         cls._schemas[event_type] = schema
-        logger.info(f"Registered schema for event type: {event_type}")
+        logger.info("Registered schema for event type: %s", event_type)
 
     @classmethod
     def get_schema(cls, event_type: str) -> Dict:
@@ -380,7 +380,7 @@ class EventSchema:
         required_fields = ["event_type", "metadata", "data"]
         for field in required_fields:
             if not getattr(event, field, None):
-                logger.error(f"Event missing required field: {field}")
+                logger.error("Event missing required field: %s", field)
                 return False
 
         if not event.provenance_hash:

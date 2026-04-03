@@ -189,12 +189,12 @@ class FixHeuristics:
         prop = self.ir.get_property(path)
 
         if prop is None:
-            logger.debug(f"No property IR found for path {path}")
+            logger.debug("No property IR found for path %s", path)
             return None
 
         # Only suggest if there's a default value
         if not prop.has_default:
-            logger.debug(f"No default value for required field {path}")
+            logger.debug("No default value for required field %s", path)
             return None
 
         default_value = prop.default_value
@@ -842,7 +842,7 @@ class FixHeuristics:
 
         replacement = deprecation_info.get("replacement")
         if not replacement:
-            logger.debug(f"Deprecated field {path} has no replacement specified")
+            logger.debug("Deprecated field %s has no replacement specified", path)
             return None
 
         # Check if replacement field already exists
@@ -917,7 +917,7 @@ class FixHeuristics:
         # Check if new field already exists
         new_value = self._get_value_at_path(payload, new_path)
         if new_value is not None:
-            logger.debug(f"New field '{new_path}' already has a value")
+            logger.debug("New field '%s' already has a value", new_path)
             return None
 
         patches = self._generator.generate_field_rename(path, new_path)

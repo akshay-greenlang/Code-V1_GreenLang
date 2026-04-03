@@ -106,7 +106,7 @@ class RulesEngine:
             rule: Rule to add
         """
         self.rules.append(rule)
-        logger.debug(f"Added rule: {rule.name}")
+        logger.debug("Added rule: %s", rule.name)
 
     def add_rule_set(self, rule_set: RuleSet):
         """
@@ -116,7 +116,7 @@ class RulesEngine:
             rule_set: RuleSet to add
         """
         self.rule_sets[rule_set.name] = rule_set
-        logger.debug(f"Added rule set: {rule_set.name}")
+        logger.debug("Added rule set: %s", rule_set.name)
 
     def remove_rule(self, rule_name: str):
         """Remove a rule by name."""
@@ -194,7 +194,7 @@ class RulesEngine:
             try:
                 passed = op_func(field_value, rule.value)
             except (TypeError, ValueError) as e:
-                logger.warning(f"Comparison failed for rule {rule.name}: {str(e)}")
+                logger.warning("Comparison failed for rule %s: %s", rule.name, e)
                 passed = False
 
         elif rule.operator == RuleOperator.IN:
@@ -273,7 +273,7 @@ class RulesEngine:
                 if error:
                     result.add_error(error)
             except Exception as e:
-                logger.error(f"Rule evaluation failed for {rule.name}: {str(e)}", exc_info=True)
+                logger.error("Rule evaluation failed for %s: %s", rule.name, e, exc_info=True)
                 error = ValidationError(
                     field=rule.field,
                     message=f"Rule evaluation error: {str(e)}",

@@ -37,6 +37,8 @@ import resource
 import multiprocessing
 from concurrent.futures import ProcessPoolExecutor, TimeoutError as FutureTimeoutError
 
+from greenlang.utilities.exceptions.security import SecurityException
+
 logger = logging.getLogger(__name__)
 
 # Linux namespace constants
@@ -251,7 +253,7 @@ class SandboxMetrics:
     cleanup_time: float = 0.0
 
 
-class OSSandboxError(Exception):
+class OSSandboxError(SecurityException):
     """Base exception for OS sandbox errors"""
     pass
 
@@ -305,7 +307,7 @@ class OSSandbox:
         # Initialize backend
         self.backend = self._create_backend()
 
-        logger.info(f"Initialized sandbox with {self.config.isolation_type.value} isolation")
+        logger.info("Initialized sandbox with %s isolation", self.config.isolation_type.value)
 
     def _apply_security_level(self):
         """Apply preset configuration based on security level"""
@@ -331,7 +333,7 @@ class OSSandbox:
         if sys.platform == "win32":
             if self.config.isolation_type in [IsolationType.NAMESPACE, IsolationType.CHROOT]:
                 if self.config.fallback_to_basic:
-                    logger.warning(f"{self.config.isolation_type.value} not supported on Windows, using Docker")
+                    logger.warning("%s not supported on Windows, using Docker", self.config.isolation_type.value)
                     self.config.isolation_type = IsolationType.CONTAINER
                 else:
                     raise SandboxSetupError(f"{self.config.isolation_type.value} not supported on Windows")
@@ -477,7 +479,7 @@ class OSSandbox:
                 try:
                     self.backend.cleanup()
                 except Exception as e:
-                    logger.warning(f"Sandbox cleanup failed: {e}")
+                    logger.warning("Sandbox cleanup failed: %s", e)
                 self.metrics.cleanup_time = time.time() - cleanup_start
 
     def _start_escape_detection(self):
@@ -524,7 +526,7 @@ class OSSandbox:
                     json.dump(event, f)
                     f.write("\n")
             except Exception as e:
-                logger.warning(f"Failed to write audit log: {e}")
+                logger.warning("Failed to write audit log: %s", e)
 
     def _calculate_provenance(self, data: Dict[str, Any]) -> str:
         """Calculate SHA-256 hash for audit trail"""
@@ -537,7 +539,7 @@ class OSSandbox:
             try:
                 hook()
             except Exception as e:
-                logger.warning(f"Cleanup hook failed: {e}")
+                logger.warning("Cleanup hook failed: %s", e)
 
         for temp_dir in self.temp_dirs:
             try:
@@ -586,7 +588,7 @@ class SandboxBackend:
     def setup(self):
         """Setup sandbox environment - Must be implemented by subclasses"""
         # This is the implementation that replaces line 389
-        logger.info(f"Setting up {self.__class__.__name__}")
+        logger.info("Setting up %s", self.__class__.__name__)
         self._setup_complete = True
         # Subclasses should override this method with specific setup logic
 
@@ -598,7 +600,7 @@ class SandboxBackend:
 
         # Default implementation for basic execution
         # Subclasses should override this with isolation-specific logic
-        logger.info(f"Executing in {self.__class__.__name__}")
+        logger.info("Executing in %s", self.__class__.__name__)
 
         try:
             # Apply timeout if configured
@@ -629,7 +631,7 @@ class SandboxBackend:
     def cleanup(self):
         """Cleanup sandbox resources"""
         self._setup_complete = False
-        logger.info(f"Cleaning up {self.__class__.__name__}")
+        logger.info("Cleaning up %s", self.__class__.__name__)
 
 
 class BasicSandboxBackend(SandboxBackend):
@@ -695,7 +697,7 @@ class BasicSandboxBackend(SandboxBackend):
                     (self.config.limits.cpu_time_limit_seconds, self.config.limits.cpu_time_limit_seconds))
 
         except Exception as e:
-            logger.warning(f"Could not apply resource limits: {e}")
+            logger.warning("Could not apply resource limits: %s", e)
 
 
 class NamespaceSandboxBackend(SandboxBackend):
@@ -759,7 +761,7 @@ class NamespaceSandboxBackend(SandboxBackend):
                     capture_output=True
                 )
             except subprocess.CalledProcessError as e:
-                logger.warning(f"Failed to apply iptables rule '{rule}': {e}")
+                logger.warning("Failed to apply iptables rule '%s': %s", rule, e)
 
     def _load_seccomp_profile(self):
         """Load seccomp profile for syscall filtering"""
@@ -772,10 +774,10 @@ class NamespaceSandboxBackend(SandboxBackend):
 
             # Store profile for use during execution
             self._seccomp_profile = profile
-            logger.info(f"Loaded seccomp profile with {len(profile.get('syscalls', []))} rules")
+            logger.info("Loaded seccomp profile with %s rules", len(profile.get('syscalls', [])))
 
         except Exception as e:
-            logger.warning(f"Failed to load seccomp profile: {e}")
+            logger.warning("Failed to load seccomp profile: %s", e)
             self._seccomp_profile = None
 
     def _execute_in_namespaces(self, func: Callable, *args, **kwargs) -> Any:
@@ -865,7 +867,7 @@ class ContainerSandboxBackend(SandboxBackend):
     def setup(self):
         """Setup container sandbox"""
         super().setup()
-        logger.info(f"Setting up container sandbox with {self.config.container_runtime}")
+        logger.info("Setting up container sandbox with %s", self.config.container_runtime)
 
         # Verify container runtime
         if not self._verify_runtime():
@@ -905,7 +907,7 @@ class ContainerSandboxBackend(SandboxBackend):
 
             if result.returncode != 0:
                 # Pull image
-                logger.info(f"Pulling container image {self.config.container_image}")
+                logger.info("Pulling container image %s", self.config.container_image)
                 subprocess.run(
                     [self.config.container_runtime, "pull", self.config.container_image],
                     check=True,
@@ -1170,7 +1172,7 @@ class ChrootSandboxBackend(SandboxBackend):
             # Copy required libraries (simplified - would need ldd parsing)
             # This is a simplified version - production would need proper dependency resolution
         except Exception as e:
-            logger.warning(f"Failed to copy binaries to chroot: {e}")
+            logger.warning("Failed to copy binaries to chroot: %s", e)
 
     def _create_etc_files(self):
         """Create minimal /etc files"""

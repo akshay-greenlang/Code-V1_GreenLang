@@ -16,6 +16,7 @@ from dataclasses import dataclass, field
 from typing import List, Optional, Dict, Any
 from decimal import Decimal
 from greenlang.utilities.determinism import FinancialDecimal
+from greenlang.exceptions import CalculationException
 from .core_calculator import (
     CalculationRequest,
     CalculationResult,
@@ -25,7 +26,7 @@ from .core_calculator import (
 logger = logging.getLogger(__name__)
 
 
-class ValidationError(Exception):
+class ValidationError(CalculationException):
     """Raised when validation fails"""
     pass
 

@@ -14,9 +14,11 @@ from datetime import datetime
 from enum import Enum
 import re
 import json
-from pydantic import BaseModel, ValidationError, validator, Field
+from pydantic import BaseModel, ValidationError as PydanticValidationError, validator, Field
 import jsonschema
 from jsonschema import Draft7Validator
+
+from greenlang.exceptions import DataException
 
 logger = logging.getLogger(__name__)
 
@@ -52,7 +54,7 @@ class ValidationResult:
     metadata: Dict[str, Any] = field(default_factory=dict)
 
 
-class ValidationError(Exception):
+class ValidationError(DataException):
     """Custom validation error with details."""
     def __init__(self, message: str, errors: List[str], data: Any = None):
         self.message = message
@@ -236,7 +238,7 @@ class DataValidator:
             try:
                 validated = schema(**data)
                 result.cleaned_data = validated.dict()
-            except ValidationError as e:
+            except PydanticValidationError as e:
                 result.is_valid = False
                 for error in e.errors():
                     result.errors.append(
@@ -371,7 +373,7 @@ def validate_input(
                         )
                     elif validation_level == ValidationLevel.WARNING:
                         for error in result.errors:
-                            logger.warning(f"Validation warning in {func.__name__}: {error}")
+                            logger.warning("Validation warning in %s: %s", func.__name__, error)
                     # Update data with cleaned version if available
                     if result.cleaned_data is not None:
                         bound_args.arguments[parameter_name] = result.cleaned_data
@@ -388,7 +390,7 @@ def validate_input(
                         )
                     elif validation_level == ValidationLevel.WARNING:
                         for error in result.errors:
-                            logger.warning(f"Validation warning in {func.__name__}: {error}")
+                            logger.warning("Validation warning in %s: %s", func.__name__, error)
 
             # Call function with validated data
             return func(*bound_args.args, **bound_args.kwargs)
@@ -432,7 +434,7 @@ def validate_output(
                         )
                     else:
                         for error in validation_result.errors:
-                            logger.warning(f"Output validation warning in {func.__name__}: {error}")
+                            logger.warning("Output validation warning in %s: %s", func.__name__, error)
 
                 # Return cleaned data if available
                 if validation_result.cleaned_data is not None:
@@ -494,7 +496,7 @@ def validate_type_hints(validation_level: ValidationLevel = ValidationLevel.STRI
                                 )
                             else:
                                 for error in result.errors:
-                                    logger.warning(f"Type validation warning: {error}")
+                                    logger.warning("Type validation warning: %s", error)
 
                         # Update with cleaned value if coerced
                         if result.cleaned_data is not None and result.cleaned_data != param_value:

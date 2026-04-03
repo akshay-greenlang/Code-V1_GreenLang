@@ -58,6 +58,7 @@ from greenlang.agents.eudr.mobile_data_collector.models import (
 from greenlang.agents.eudr.mobile_data_collector.provenance import (
     get_provenance_tracker,
 )
+from greenlang.utilities.exceptions.compliance import ComplianceException
 
 logger = logging.getLogger(__name__)
 
@@ -87,7 +88,7 @@ MAX_PLOT_AREA_HA: float = 10000.0
 # ---------------------------------------------------------------------------
 
 
-class GPSCaptureEngineError(Exception):
+class GPSCaptureEngineError(ComplianceException):
     """Base exception for GPS capture engine operations."""
 
 

@@ -75,9 +75,9 @@ class PackRegistry:
                     for pack_data in data.get("packs", []):
                         pack = InstalledPack(**pack_data)
                         self.packs[pack.name] = pack
-                logger.info(f"Loaded {len(self.packs)} packs from registry")
+                logger.info("Loaded %s packs from registry", len(self.packs))
             except Exception as e:
-                logger.error(f"Failed to load registry: {e}")
+                logger.error("Failed to load registry: %s", e)
 
     def _save_registry(self):
         """Save registry to disk"""
@@ -89,9 +89,9 @@ class PackRegistry:
             }
             with open(self.registry_file, "w") as f:
                 json.dump(data, f, indent=2)
-            logger.info(f"Saved {len(self.packs)} packs to registry")
+            logger.info("Saved %s packs to registry", len(self.packs))
         except Exception as e:
-            logger.error(f"Failed to save registry: {e}")
+            logger.error("Failed to save registry: %s", e)
 
     def _discover_entry_points(self):
         """Discover packs installed as Python packages"""
@@ -143,10 +143,10 @@ class PackRegistry:
                     )
 
                 except Exception as e:
-                    logger.error(f"Failed to load entry point {ep.name}: {e}")
+                    logger.error("Failed to load entry point %s: %s", ep.name, e)
 
         except Exception as e:
-            logger.debug(f"No entry points found: {e}")
+            logger.debug("No entry points found: %s", e)
 
     def _discover_local_packs(self):
         """Discover packs in local directories"""
@@ -190,7 +190,7 @@ class PackRegistry:
                         )
 
                     except Exception as e:
-                        logger.error(f"Failed to load pack from {subdir}: {e}")
+                        logger.error("Failed to load pack from %s: %s", subdir, e)
 
     def _calculate_hash(self, content: str) -> str:
         """Calculate SHA256 hash of content"""
@@ -249,7 +249,7 @@ class PackRegistry:
         self.packs[manifest.name] = installed_pack
         self._save_registry()
 
-        logger.info(f"Registered pack: {manifest.name} v{manifest.version}")
+        logger.info("Registered pack: %s v%s", manifest.name, manifest.version)
         return installed_pack
 
     def unregister(self, pack_name: str):
@@ -257,7 +257,7 @@ class PackRegistry:
         if pack_name in self.packs:
             del self.packs[pack_name]
             self._save_registry()
-            logger.info(f"Unregistered pack: {pack_name}")
+            logger.info("Unregistered pack: %s", pack_name)
         else:
             raise ValueError(f"Pack not found: {pack_name}")
 
@@ -339,7 +339,7 @@ class PackRegistry:
             self._save_registry()
             return True
         else:
-            logger.warning(f"Pack verification failed: {pack_name}")
+            logger.warning("Pack verification failed: %s", pack_name)
             return False
 
     def list_pipelines(self) -> Dict[str, List[Dict[str, Any]]]:

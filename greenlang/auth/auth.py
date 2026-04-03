@@ -317,7 +317,7 @@ class AuthManager:
                         f"Run: chmod 600 {key_path}"
                     )
 
-            logger.info(f"Loading secret key from {key_path}")
+            logger.info("Loading secret key from %s", key_path)
             with open(key_path, "rb") as f:
                 stored_data = f.read()
 
@@ -339,13 +339,13 @@ class AuthManager:
                     return decrypted_key
                 except Exception as e:
                     # Might be an old unencrypted key, try using as-is
-                    logger.warning(f"Could not decrypt key (might be legacy unencrypted): {e}")
+                    logger.warning("Could not decrypt key (might be legacy unencrypted): %s", e)
                     return stored_data
             else:
                 return stored_data
 
         # Generate new key and save it
-        logger.info(f"Generating new secret key and saving to {key_path}")
+        logger.info("Generating new secret key and saving to %s", key_path)
 
         # Create directory if needed
         key_path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
@@ -388,7 +388,7 @@ class AuthManager:
             with open(key_path, "wb") as f:
                 f.write(key_to_store)
 
-        logger.info(f"Secret key saved securely to {key_path}")
+        logger.info("Secret key saved securely to %s", key_path)
         return key
 
     def create_user(
@@ -431,7 +431,7 @@ class AuthManager:
             **kwargs,
         }
 
-        logger.info(f"Created user: {user_id} ({username})")
+        logger.info("Created user: %s (%s)", user_id, username)
         return user_id
 
     def authenticate(
@@ -467,7 +467,7 @@ class AuthManager:
 
         # Check if account is active
         if not user.get("active", True):
-            logger.warning(f"Login attempt for inactive account: {username}")
+            logger.warning("Login attempt for inactive account: %s", username)
             return None
 
         # Verify password
@@ -478,7 +478,7 @@ class AuthManager:
         # Check MFA if enabled
         if user.get("mfa_enabled") and self.require_mfa:
             if not mfa_code or not self._verify_mfa(user["mfa_secret"], mfa_code):
-                logger.warning(f"Invalid MFA code for user: {username}")
+                logger.warning("Invalid MFA code for user: %s", username)
                 return None
 
         # Create token
@@ -498,7 +498,7 @@ class AuthManager:
             "last_activity": DeterministicClock.utcnow(),
         }
 
-        logger.info(f"User authenticated: {username}")
+        logger.info("User authenticated: %s", username)
         return token
 
     def create_token(
@@ -540,7 +540,7 @@ class AuthManager:
         # Store token
         self.tokens[token.token_value] = token
 
-        logger.info(f"Created token: {token.token_id}")
+        logger.info("Created token: %s", token.token_id)
         return token
 
     def validate_token(self, token_value: str) -> Optional[AuthToken]:
@@ -593,7 +593,7 @@ class AuthManager:
             if token.token_id in self.sessions:
                 del self.sessions[token.token_id]
 
-            logger.info(f"Revoked token: {token.token_id}")
+            logger.info("Revoked token: %s", token.token_id)
             return True
 
         return False
@@ -627,7 +627,7 @@ class AuthManager:
         # Store key
         self.api_keys[f"{key.key_id}.{key.key_secret}"] = key
 
-        logger.info(f"Created API key: {key.key_id}")
+        logger.info("Created API key: %s", key.key_id)
         return key
 
     def validate_api_key(self, key_string: str) -> Optional[APIKey]:
@@ -679,7 +679,7 @@ class AuthManager:
         # Store account
         self.service_accounts[account.account_id] = account
 
-        logger.info(f"Created service account: {account.account_id}")
+        logger.info("Created service account: %s", account.account_id)
         return account
 
     def _hash_password(self, password: str) -> str:
@@ -734,4 +734,4 @@ class AuthManager:
 
         # Log if too many attempts
         if len(self.failed_attempts[identifier]) > 5:
-            logger.warning(f"Multiple failed login attempts for: {identifier}")
+            logger.warning("Multiple failed login attempts for: %s", identifier)

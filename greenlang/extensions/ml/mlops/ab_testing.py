@@ -563,7 +563,7 @@ class ABTesting:
             >>> if result.is_significant and result.winner == "B":
             ...     print("Model B is significantly better!")
         """
-        logger.info(f"Starting A/B test: {self.config.test_name}")
+        logger.info("Starting A/B test: %s", self.config.test_name)
 
         n_samples = n_samples or len(X)
         early_stopped = False
@@ -573,7 +573,7 @@ class ABTesting:
 
             # Check early stopping
             if self._check_early_stopping():
-                logger.info(f"Early stopping at sample {i}")
+                logger.info("Early stopping at sample %s", i)
                 early_stopped = True
                 break
 
@@ -684,7 +684,7 @@ class ABTesting:
         self._results_b.clear()
         self._allocation_counts = {"A": 0, "B": 0}
         self._bandit_rewards = {"A": [], "B": []}
-        logger.info(f"A/B test reset: {self.config.test_name}")
+        logger.info("A/B test reset: %s", self.config.test_name)
 
 
 # Unit test stubs

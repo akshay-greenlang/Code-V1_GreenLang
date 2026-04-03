@@ -803,7 +803,7 @@ class BMSSequenceController:
         """Set current BMS sequence."""
         self._current_sequence = sequence
         self._sequence_start_time = datetime.now(timezone.utc)
-        logger.info(f"BMS sequence changed to: {sequence}")
+        logger.info("BMS sequence changed to: %s", sequence)
 
     def complete_purge(self) -> None:
         """Mark purge as complete."""
@@ -814,7 +814,7 @@ class BMSSequenceController:
         """Trigger BMS lockout."""
         self._current_sequence = BMSSequence.LOCKOUT
         self._sequence_start_time = None
-        logger.critical(f"BMS LOCKOUT triggered: {reason}")
+        logger.critical("BMS LOCKOUT triggered: %s", reason)
 
     def reset_lockout(self) -> bool:
         """

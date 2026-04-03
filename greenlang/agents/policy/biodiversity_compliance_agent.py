@@ -382,7 +382,7 @@ class BiodiversityComplianceAgent(BaseAgent):
         self._audit_trail: List[Dict[str, Any]] = []
 
         super().__init__(config)
-        logger.info(f"Initialized {self.AGENT_NAME} v{self.VERSION}")
+        logger.info("Initialized %s v%s", self.AGENT_NAME, self.VERSION)
 
     def execute(self, input_data: Dict[str, Any]) -> AgentResult:
         """Execute biodiversity compliance operation."""
@@ -414,7 +414,7 @@ class BiodiversityComplianceAgent(BaseAgent):
             )
 
         except Exception as e:
-            logger.error(f"Biodiversity compliance failed: {str(e)}", exc_info=True)
+            logger.error("Biodiversity compliance failed: %s", e, exc_info=True)
             return AgentResult(success=False, error=str(e))
 
     def _handle_leap_analysis(

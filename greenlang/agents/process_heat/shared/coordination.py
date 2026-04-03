@@ -338,7 +338,7 @@ class Blackboard:
                 try:
                     watcher(section, key, old_value, value)
                 except Exception as e:
-                    logger.error(f"Watcher error: {e}")
+                    logger.error("Watcher error: %s", e)
 
     def read(self, section: str, key: str) -> Optional[Any]:
         """Read a value from the blackboard."""
@@ -402,7 +402,7 @@ class MessageBroker:
         with self._lock:
             self._subscriptions[topic].add(agent_id)
             self._handlers[topic][agent_id] = handler
-            logger.debug(f"Agent {agent_id} subscribed to {topic}")
+            logger.debug("Agent %s subscribed to %s", agent_id, topic)
 
     def unsubscribe(self, topic: str, agent_id: str) -> None:
         """Unsubscribe from a topic."""
@@ -432,7 +432,7 @@ class MessageBroker:
                         handler(message)
                         delivered += 1
                     except Exception as e:
-                        logger.error(f"Handler error for {agent_id}: {e}")
+                        logger.error("Handler error for %s: %s", agent_id, e)
 
             return delivered
 
@@ -475,7 +475,7 @@ class ContractNetManager:
         with self._lock:
             self._pending_tasks[task.task_id] = task
             self._bids[task.task_id] = []
-            logger.info(f"Task announced: {task.task_id} ({task.task_type})")
+            logger.info("Task announced: %s (%s)", task.task_id, task.task_type)
             return task.task_id
 
     def submit_bid(self, bid: Bid) -> bool:
@@ -491,15 +491,15 @@ class ContractNetManager:
         with self._lock:
             task = self._pending_tasks.get(bid.task_id)
             if task is None:
-                logger.warning(f"Bid submitted for unknown task: {bid.task_id}")
+                logger.warning("Bid submitted for unknown task: %s", bid.task_id)
                 return False
 
             if bid.task_id in self._awards:
-                logger.warning(f"Bid submitted for already awarded task: {bid.task_id}")
+                logger.warning("Bid submitted for already awarded task: %s", bid.task_id)
                 return False
 
             self._bids[bid.task_id].append(bid)
-            logger.debug(f"Bid received from {bid.agent_id} for task {bid.task_id}")
+            logger.debug("Bid received from %s for task %s", bid.agent_id, bid.task_id)
             return True
 
     def evaluate_bids(
@@ -520,7 +520,7 @@ class ContractNetManager:
         with self._lock:
             bids = self._bids.get(task_id, [])
             if not bids:
-                logger.warning(f"No bids received for task {task_id}")
+                logger.warning("No bids received for task %s", task_id)
                 return None
 
             # Select winner based on strategy
@@ -543,7 +543,7 @@ class ContractNetManager:
                 winner = bids[0]
 
             self._awards[task_id] = winner.agent_id
-            logger.info(f"Task {task_id} awarded to {winner.agent_id}")
+            logger.info("Task %s awarded to %s", task_id, winner.agent_id)
             return winner.agent_id
 
     def report_result(self, result: TaskResult) -> None:
@@ -615,7 +615,7 @@ class DistributedLock:
 
                 # Check if expired
                 if datetime.now(timezone.utc) > expiry:
-                    logger.debug(f"Lock on {resource} expired, releasing")
+                    logger.debug("Lock on %s expired, releasing", resource)
                     del self._locks[resource]
                 elif holder == agent_id:
                     # Extend existing lock
@@ -633,7 +633,7 @@ class DistributedLock:
                 agent_id,
                 datetime.now(timezone.utc) + timedelta(seconds=timeout),
             )
-            logger.debug(f"Lock acquired on {resource} by {agent_id}")
+            logger.debug("Lock acquired on %s by %s", resource, agent_id)
             return True
 
     def release(self, resource: str, agent_id: str) -> bool:
@@ -659,7 +659,7 @@ class DistributedLock:
                 return False
 
             del self._locks[resource]
-            logger.debug(f"Lock released on {resource} by {agent_id}")
+            logger.debug("Lock released on %s by %s", resource, agent_id)
             return True
 
     def is_locked(self, resource: str) -> bool:
@@ -739,7 +739,7 @@ class MultiAgentCoordinator:
         self._event_log: List[Dict[str, Any]] = []
         self._coordinator_id = str(uuid.uuid4())
 
-        logger.info(f"MultiAgentCoordinator '{name}' initialized")
+        logger.info("MultiAgentCoordinator '%s' initialized", name)
 
     # =========================================================================
     # AGENT MANAGEMENT
@@ -757,7 +757,7 @@ class MultiAgentCoordinator:
         """
         with self._lock:
             if registration.agent_id in self._agents:
-                logger.warning(f"Agent {registration.agent_id} already registered")
+                logger.warning("Agent %s already registered", registration.agent_id)
                 return False
 
             self._agents[registration.agent_id] = registration
@@ -780,7 +780,7 @@ class MultiAgentCoordinator:
 
             del self._agents[agent_id]
             self._log_event("agent_deregistered", {"agent_id": agent_id})
-            logger.info(f"Agent deregistered: {agent_id}")
+            logger.info("Agent deregistered: %s", agent_id)
             return True
 
     def get_agent(self, agent_id: str) -> Optional[AgentRegistration]:
@@ -1023,7 +1023,7 @@ class MultiAgentCoordinator:
         """Send message to a specific agent."""
         # In production, this would use actual transport
         # Here we log and could trigger registered handlers
-        logger.debug(f"Message sent to {agent_id}: {message.message_type}")
+        logger.debug("Message sent to %s: %s", agent_id, message.message_type)
         return True
 
     def _log_event(self, event_type: str, data: Dict[str, Any]) -> None:

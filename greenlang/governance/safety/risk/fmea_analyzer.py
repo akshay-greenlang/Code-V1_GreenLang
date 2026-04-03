@@ -128,7 +128,7 @@ class FMEAAnalyzer:
         )
 
         self.studies[study.study_id] = study
-        logger.info(f"FMEA study created: {study.study_id}")
+        logger.info("FMEA study created: %s", study.study_id)
         return study
 
     def add_failure_mode(
@@ -155,7 +155,7 @@ class FMEAAnalyzer:
         if failure_mode.rpn >= study.rpn_threshold:
             study.high_rpn_count += 1
 
-        logger.info(f"Failure mode added: {failure_mode.fm_id}, RPN={failure_mode.rpn}")
+        logger.info("Failure mode added: %s, RPN=%s", failure_mode.fm_id, failure_mode.rpn)
         return failure_mode
 
     def update_after_action(
@@ -180,7 +180,7 @@ class FMEAAnalyzer:
                 fm.new_detection = new_detection or fm.detection
                 fm.new_rpn = fm.new_severity * fm.new_occurrence * fm.new_detection
 
-                logger.info(f"Failure mode updated: {fm_id}, new RPN={fm.new_rpn}")
+                logger.info("Failure mode updated: %s, new RPN=%s", fm_id, fm.new_rpn)
                 return fm
 
         raise ValueError(f"Failure mode not found: {fm_id}")

@@ -67,10 +67,14 @@ from __future__ import annotations
 
 import json
 import logging
-import os
-import threading
-from dataclasses import dataclass, field
-from typing import Any, Dict, Optional
+from dataclasses import dataclass
+from typing import Any, Dict
+
+from greenlang.data_commons.config_base import (
+    BaseDataConfig,
+    EnvReader,
+    create_config_singleton,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -113,62 +117,36 @@ _REQUIRED_WEIGHT_KEYS = frozenset(
 
 
 @dataclass
-class DataLineageTrackerConfig:
-    """Complete configuration for the GreenLang Data Lineage Tracker Agent SDK.
+class DataLineageTrackerConfig(BaseDataConfig):
+    """Configuration for the GreenLang Data Lineage Tracker Agent SDK.
 
-    Attributes are grouped by concern: connections, logging, asset/graph
-    capacity, traversal settings, snapshot scheduling, column lineage,
-    change detection, provenance tracking, performance tuning, batch
-    processing, lineage coverage quality, freshness constraints, quality
-    scoring, and metrics export.
+    Inherits shared connection, pool, batch, and logging fields from
+    ``BaseDataConfig``.  Only lineage-tracker-specific fields are declared here.
 
     All attributes can be overridden via environment variables using the
     ``GL_DLT_`` prefix (e.g. ``GL_DLT_MAX_ASSETS=200000``).
 
     Attributes:
-        database_url: PostgreSQL connection URL for persistent lineage storage.
-        redis_url: Redis connection URL for caching lineage queries and locks.
-        log_level: Logging verbosity level for the data lineage tracker service.
         max_assets: Maximum number of data assets tracked in the lineage graph.
         max_transformations: Maximum number of transformation records managed.
         max_edges: Maximum number of directed edges in the lineage graph.
-        max_graph_depth: Hard ceiling on graph traversal depth to prevent
-            runaway queries on deeply nested lineage chains.
-        default_traversal_depth: Default depth used for upstream/downstream
-            lineage queries when no explicit depth is specified by the caller.
-        snapshot_interval_minutes: Interval between automatic lineage graph
-            snapshots for point-in-time recovery and historical analysis.
-        enable_column_lineage: When True, the tracker records field-level
-            (column-level) lineage in addition to asset-level lineage.
-        enable_change_detection: When True, the tracker automatically detects
-            and records changes to lineage relationships over time.
-        enable_provenance: Whether to compute and store SHA-256 provenance
-            hashes for every lineage event and transformation record.
-        genesis_hash: Anchor string used as the root of every provenance chain.
-        pool_size: PostgreSQL connection pool size for the lineage service.
+        max_graph_depth: Hard ceiling on graph traversal depth.
+        default_traversal_depth: Default depth for upstream/downstream queries.
+        snapshot_interval_minutes: Interval between automatic lineage snapshots.
+        enable_column_lineage: Whether field-level lineage is recorded.
+        enable_change_detection: Whether lineage change detection is enabled.
+        enable_provenance: Whether SHA-256 provenance hashes are computed.
+        genesis_hash: Anchor string for every provenance chain.
+        pool_size: PostgreSQL connection pool size.
         cache_ttl: Time-to-live (s) for cached lineage query results.
-        rate_limit: Maximum inbound API requests allowed per minute.
+        rate_limit: Maximum inbound API requests per minute.
         batch_size: Maximum records per bulk lineage ingestion batch.
-        coverage_warn_threshold: Lineage coverage ratio below which a warning
-            is emitted (0.0 to 1.0). Indicates incomplete lineage documentation.
-        coverage_fail_threshold: Lineage coverage ratio below which a failure
-            is reported (0.0 to 1.0). Must be less than coverage_warn_threshold.
-        freshness_max_age_hours: Maximum acceptable age (hours) for lineage
-            data before it is considered stale and triggers a freshness alert.
-        quality_score_weights: JSON string defining the weight distribution
-            across quality scoring dimensions. Must contain exactly the keys:
-            source_credibility, transformation_depth, freshness, documentation,
-            manual_interventions. Weights must sum to 1.0.
-        enable_metrics: When True, Prometheus metrics are exported for the
-            data lineage tracker service under the ``gl_dlt_`` prefix.
+        coverage_warn_threshold: Lineage coverage warning threshold (0.0-1.0).
+        coverage_fail_threshold: Lineage coverage failure threshold (0.0-1.0).
+        freshness_max_age_hours: Maximum acceptable age (hours) for lineage data.
+        quality_score_weights: JSON string of quality score dimension weights.
+        enable_metrics: Whether Prometheus metrics are exported.
     """
-
-    # -- Connections ---------------------------------------------------------
-    database_url: str = ""
-    redis_url: str = ""
-
-    # -- Logging -------------------------------------------------------------
-    log_level: str = "INFO"
 
     # -- Asset / graph capacity ----------------------------------------------
     max_assets: int = 100_000
@@ -227,9 +205,6 @@ class DataLineageTrackerConfig:
         errors: list[str] = []
 
         # -- Connections -----------------------------------------------------
-        # database_url and redis_url are allowed to be empty at construction
-        # time (they may be injected at runtime by the service mesh), so we
-        # only emit a WARNING rather than raising.
         if not self.database_url:
             logger.warning(
                 "DataLineageTrackerConfig: database_url is empty; "
@@ -406,7 +381,7 @@ class DataLineageTrackerConfig:
         )
 
     # ------------------------------------------------------------------
-    # Factory helpers
+    # Factory
     # ------------------------------------------------------------------
 
     @classmethod
@@ -415,10 +390,6 @@ class DataLineageTrackerConfig:
 
         Every field can be overridden via ``GL_DLT_<FIELD_UPPER>``.
         Boolean values accept ``true/1/yes`` (case-insensitive).
-        Integer values are parsed via ``int()``.
-        Float values are parsed via ``float()``.
-        Unknown / malformed values fall back to the class-level default and
-        emit a WARNING log so the issue is visible in deployment logs.
 
         Returns:
             Populated DataLineageTrackerConfig instance, validated via
@@ -431,122 +402,72 @@ class DataLineageTrackerConfig:
             >>> cfg.max_assets
             200000
         """
-        prefix = _ENV_PREFIX
-
-        def _env(name: str, default: Any = None) -> Optional[str]:
-            return os.environ.get(f"{prefix}{name}", default)
-
-        def _bool(name: str, default: bool) -> bool:
-            val = _env(name)
-            if val is None:
-                return default
-            return val.strip().lower() in ("true", "1", "yes")
-
-        def _int(name: str, default: int) -> int:
-            val = _env(name)
-            if val is None:
-                return default
-            try:
-                return int(val.strip())
-            except ValueError:
-                logger.warning(
-                    "Invalid integer for %s%s=%r, using default %d",
-                    prefix,
-                    name,
-                    val,
-                    default,
-                )
-                return default
-
-        def _float(name: str, default: float) -> float:
-            val = _env(name)
-            if val is None:
-                return default
-            try:
-                return float(val.strip())
-            except ValueError:
-                logger.warning(
-                    "Invalid float for %s%s=%r, using default %f",
-                    prefix,
-                    name,
-                    val,
-                    default,
-                )
-                return default
-
-        def _str(name: str, default: str) -> str:
-            val = _env(name)
-            if val is None:
-                return default
-            return val.strip()
+        env = EnvReader(_ENV_PREFIX)
+        base_kwargs = cls._base_kwargs_from_env(env)
 
         config = cls(
-            # Connections
-            database_url=_str("DATABASE_URL", cls.database_url),
-            redis_url=_str("REDIS_URL", cls.redis_url),
-            # Logging
-            log_level=_str("LOG_LEVEL", cls.log_level),
+            **base_kwargs,
             # Asset / graph capacity
-            max_assets=_int("MAX_ASSETS", cls.max_assets),
-            max_transformations=_int(
+            max_assets=env.int("MAX_ASSETS", cls.max_assets),
+            max_transformations=env.int(
                 "MAX_TRANSFORMATIONS",
                 cls.max_transformations,
             ),
-            max_edges=_int("MAX_EDGES", cls.max_edges),
-            max_graph_depth=_int(
+            max_edges=env.int("MAX_EDGES", cls.max_edges),
+            max_graph_depth=env.int(
                 "MAX_GRAPH_DEPTH",
                 cls.max_graph_depth,
             ),
             # Traversal settings
-            default_traversal_depth=_int(
+            default_traversal_depth=env.int(
                 "DEFAULT_TRAVERSAL_DEPTH",
                 cls.default_traversal_depth,
             ),
             # Snapshot scheduling
-            snapshot_interval_minutes=_int(
+            snapshot_interval_minutes=env.int(
                 "SNAPSHOT_INTERVAL_MINUTES",
                 cls.snapshot_interval_minutes,
             ),
             # Column-level lineage
-            enable_column_lineage=_bool(
+            enable_column_lineage=env.bool(
                 "ENABLE_COLUMN_LINEAGE",
                 cls.enable_column_lineage,
             ),
             # Change detection
-            enable_change_detection=_bool(
+            enable_change_detection=env.bool(
                 "ENABLE_CHANGE_DETECTION",
                 cls.enable_change_detection,
             ),
             # Provenance tracking
-            enable_provenance=_bool("ENABLE_PROVENANCE", cls.enable_provenance),
-            genesis_hash=_str("GENESIS_HASH", cls.genesis_hash),
+            enable_provenance=env.bool("ENABLE_PROVENANCE", cls.enable_provenance),
+            genesis_hash=env.str("GENESIS_HASH", cls.genesis_hash),
             # Performance tuning
-            pool_size=_int("POOL_SIZE", cls.pool_size),
-            cache_ttl=_int("CACHE_TTL", cls.cache_ttl),
-            rate_limit=_int("RATE_LIMIT", cls.rate_limit),
+            pool_size=env.int("POOL_SIZE", cls.pool_size),
+            cache_ttl=env.int("CACHE_TTL", cls.cache_ttl),
+            rate_limit=env.int("RATE_LIMIT", cls.rate_limit),
             # Batch processing
-            batch_size=_int("BATCH_SIZE", cls.batch_size),
+            batch_size=env.int("BATCH_SIZE", cls.batch_size),
             # Lineage coverage quality
-            coverage_warn_threshold=_float(
+            coverage_warn_threshold=env.float(
                 "COVERAGE_WARN_THRESHOLD",
                 cls.coverage_warn_threshold,
             ),
-            coverage_fail_threshold=_float(
+            coverage_fail_threshold=env.float(
                 "COVERAGE_FAIL_THRESHOLD",
                 cls.coverage_fail_threshold,
             ),
             # Freshness constraints
-            freshness_max_age_hours=_int(
+            freshness_max_age_hours=env.int(
                 "FRESHNESS_MAX_AGE_HOURS",
                 cls.freshness_max_age_hours,
             ),
             # Quality scoring
-            quality_score_weights=_str(
+            quality_score_weights=env.str(
                 "QUALITY_SCORE_WEIGHTS",
                 cls.quality_score_weights,
             ),
             # Metrics export
-            enable_metrics=_bool("ENABLE_METRICS", cls.enable_metrics),
+            enable_metrics=env.bool("ENABLE_METRICS", cls.enable_metrics),
         )
 
         logger.info(
@@ -587,10 +508,6 @@ class DataLineageTrackerConfig:
 
     def to_dict(self) -> Dict[str, Any]:
         """Serialise the configuration to a plain Python dictionary.
-
-        The returned dictionary is safe to pass to ``json.dumps``,
-        ``yaml.dump``, or any structured logging framework.  All values
-        are JSON-serialisable primitives (str, int, float, bool).
 
         Sensitive connection strings (``database_url``, ``redis_url``) are
         redacted to prevent accidental credential leakage in logs.
@@ -665,78 +582,9 @@ class DataLineageTrackerConfig:
 # Thread-safe singleton accessor
 # ---------------------------------------------------------------------------
 
-_config_instance: Optional[DataLineageTrackerConfig] = None
-_config_lock = threading.Lock()
-
-
-def get_config() -> DataLineageTrackerConfig:
-    """Return the singleton DataLineageTrackerConfig, creating from env if needed.
-
-    Uses double-checked locking for thread safety with minimal
-    contention on the hot path.  The instance is created on first call
-    by reading all ``GL_DLT_*`` environment variables via
-    :meth:`DataLineageTrackerConfig.from_env`.
-
-    Returns:
-        DataLineageTrackerConfig singleton instance.
-
-    Example:
-        >>> cfg = get_config()
-        >>> cfg.max_assets
-        100000
-    """
-    global _config_instance
-    if _config_instance is None:
-        with _config_lock:
-            if _config_instance is None:
-                _config_instance = DataLineageTrackerConfig.from_env()
-    return _config_instance
-
-
-def set_config(config: DataLineageTrackerConfig) -> None:
-    """Replace the singleton DataLineageTrackerConfig.
-
-    Primarily intended for testing and dependency injection scenarios
-    where a custom configuration must be supplied without relying on
-    environment variables.
-
-    Args:
-        config: New :class:`DataLineageTrackerConfig` to install as the
-            singleton.
-
-    Example:
-        >>> cfg = DataLineageTrackerConfig(max_assets=500, enable_column_lineage=False)
-        >>> set_config(cfg)
-        >>> assert get_config().max_assets == 500
-    """
-    global _config_instance
-    with _config_lock:
-        _config_instance = config
-    logger.info(
-        "DataLineageTrackerConfig replaced programmatically: "
-        "max_assets=%d, max_graph_depth=%d, column_lineage=%s",
-        config.max_assets,
-        config.max_graph_depth,
-        config.enable_column_lineage,
-    )
-
-
-def reset_config() -> None:
-    """Reset the singleton DataLineageTrackerConfig to ``None``.
-
-    The next call to :func:`get_config` will re-read environment variables
-    and construct a fresh instance.  Intended for test teardown to prevent
-    state leakage between test cases.
-
-    Example:
-        >>> reset_config()
-        >>> cfg = get_config()  # re-reads GL_DLT_* env vars
-    """
-    global _config_instance
-    with _config_lock:
-        _config_instance = None
-    logger.debug("DataLineageTrackerConfig singleton reset")
-
+get_config, set_config, reset_config = create_config_singleton(
+    DataLineageTrackerConfig, _ENV_PREFIX,
+)
 
 # ---------------------------------------------------------------------------
 # Public surface

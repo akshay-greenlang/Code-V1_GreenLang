@@ -425,7 +425,7 @@ class TransportPipelineEngine:
             self.provenance.record_stage(
                 chain_id, PipelineStage.VALIDATE, request, validated_request, duration_ms
             )
-            logger.info(f"[{chain_id}] Stage VALIDATE completed in {duration_ms:.2f}ms")
+            logger.info("[%s] Stage VALIDATE completed in %.2fms", chain_id, duration_ms)
 
             # Stage 2: CLASSIFY
             start_time = datetime.now()
@@ -435,7 +435,7 @@ class TransportPipelineEngine:
             self.provenance.record_stage(
                 chain_id, PipelineStage.CLASSIFY, validated_request, classified_request, duration_ms
             )
-            logger.info(f"[{chain_id}] Stage CLASSIFY completed in {duration_ms:.2f}ms")
+            logger.info("[%s] Stage CLASSIFY completed in %.2fms", chain_id, duration_ms)
 
             # Stage 3: NORMALIZE
             start_time = datetime.now()
@@ -445,7 +445,7 @@ class TransportPipelineEngine:
             self.provenance.record_stage(
                 chain_id, PipelineStage.NORMALIZE, classified_request, normalized_request, duration_ms
             )
-            logger.info(f"[{chain_id}] Stage NORMALIZE completed in {duration_ms:.2f}ms")
+            logger.info("[%s] Stage NORMALIZE completed in %.2fms", chain_id, duration_ms)
 
             # Stage 4: RESOLVE_EFS
             start_time = datetime.now()
@@ -455,7 +455,7 @@ class TransportPipelineEngine:
             self.provenance.record_stage(
                 chain_id, PipelineStage.RESOLVE_EFS, normalized_request, ef_resolved_request, duration_ms
             )
-            logger.info(f"[{chain_id}] Stage RESOLVE_EFS completed in {duration_ms:.2f}ms")
+            logger.info("[%s] Stage RESOLVE_EFS completed in %.2fms", chain_id, duration_ms)
 
             # Stage 5: CALCULATE_LEGS
             start_time = datetime.now()
@@ -465,7 +465,7 @@ class TransportPipelineEngine:
             self.provenance.record_stage(
                 chain_id, PipelineStage.CALCULATE_LEGS, ef_resolved_request, leg_results, duration_ms
             )
-            logger.info(f"[{chain_id}] Stage CALCULATE_LEGS completed in {duration_ms:.2f}ms ({len(leg_results)} legs)")
+            logger.info("[%s] Stage CALCULATE_LEGS completed in %.2fms (%s legs)", chain_id, duration_ms, len(leg_results))
 
             # Stage 6: CALCULATE_HUBS
             start_time = datetime.now()
@@ -475,7 +475,7 @@ class TransportPipelineEngine:
             self.provenance.record_stage(
                 chain_id, PipelineStage.CALCULATE_HUBS, ef_resolved_request, hub_results, duration_ms
             )
-            logger.info(f"[{chain_id}] Stage CALCULATE_HUBS completed in {duration_ms:.2f}ms ({len(hub_results)} hubs)")
+            logger.info("[%s] Stage CALCULATE_HUBS completed in %.2fms (%s hubs)", chain_id, duration_ms, len(hub_results))
 
             # Stage 7: ALLOCATE
             start_time = datetime.now()
@@ -490,7 +490,7 @@ class TransportPipelineEngine:
                 {"legs": allocated_legs, "hubs": allocated_hubs},
                 duration_ms
             )
-            logger.info(f"[{chain_id}] Stage ALLOCATE completed in {duration_ms:.2f}ms")
+            logger.info("[%s] Stage ALLOCATE completed in %.2fms", chain_id, duration_ms)
 
             # Stage 8: COMPLIANCE
             start_time = datetime.now()
@@ -505,7 +505,7 @@ class TransportPipelineEngine:
                 compliance_results,
                 duration_ms
             )
-            logger.info(f"[{chain_id}] Stage COMPLIANCE completed in {duration_ms:.2f}ms")
+            logger.info("[%s] Stage COMPLIANCE completed in %.2fms", chain_id, duration_ms)
 
             # Stage 9: AGGREGATE
             start_time = datetime.now()
@@ -518,7 +518,7 @@ class TransportPipelineEngine:
                 aggregation,
                 duration_ms
             )
-            logger.info(f"[{chain_id}] Stage AGGREGATE completed in {duration_ms:.2f}ms")
+            logger.info("[%s] Stage AGGREGATE completed in %.2fms", chain_id, duration_ms)
 
             # Calculate totals
             total_co2 = sum(leg.emissions_kg_co2 for leg in allocated_legs)
@@ -552,7 +552,7 @@ class TransportPipelineEngine:
             duration_ms = (datetime.now() - start_time).total_seconds() * 1000
             stage_durations["SEAL"] = duration_ms
             result.provenance_hash = provenance_hash
-            logger.info(f"[{chain_id}] Stage SEAL completed in {duration_ms:.2f}ms")
+            logger.info("[%s] Stage SEAL completed in %.2fms", chain_id, duration_ms)
 
             logger.info(
                 f"[{chain_id}] Pipeline completed successfully. "
@@ -562,7 +562,7 @@ class TransportPipelineEngine:
             return result
 
         except Exception as e:
-            logger.error(f"[{chain_id}] Pipeline execution failed: {str(e)}", exc_info=True)
+            logger.error("[%s] Pipeline execution failed: %s", chain_id, e, exc_info=True)
             errors.append(f"Pipeline execution failed: {str(e)}")
 
             # Return partial result

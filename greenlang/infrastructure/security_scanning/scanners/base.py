@@ -56,7 +56,10 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 
-class ScannerError(Exception):
+from greenlang.utilities.exceptions.security import SecurityException as _SecurityException
+
+
+class ScannerError(_SecurityException):
     """Base exception for scanner errors."""
 
     pass

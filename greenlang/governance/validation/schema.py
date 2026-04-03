@@ -10,6 +10,7 @@ import logging
 import json
 
 from .framework import ValidationResult, ValidationError, ValidationSeverity
+from greenlang.utilities.exceptions.agent import AgentException
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +23,7 @@ except ImportError:
     logger.warning("jsonschema not available, schema validation will be limited")
 
 
-class SchemaValidationError(Exception):
+class SchemaValidationError(AgentException):
     """Exception raised for schema validation errors."""
     pass
 

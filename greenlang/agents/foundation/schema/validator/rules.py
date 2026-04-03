@@ -417,7 +417,7 @@ class ExpressionEvaluator:
                 return expression.value
 
             # Unknown operator
-            logger.warning(f"Unknown operator '{op}' in expression")
+            logger.warning("Unknown operator '%s' in expression", op)
             return False
 
         finally:
@@ -460,7 +460,7 @@ class ExpressionEvaluator:
 
         # JSON Pointer must start with /
         if not path.startswith("/"):
-            logger.warning(f"Invalid JSON Pointer '{path}' - must start with '/'")
+            logger.warning("Invalid JSON Pointer '%s' - must start with '/'", path)
             return None
 
         # Split path and resolve
@@ -521,7 +521,7 @@ class ExpressionEvaluator:
         # Get operator function
         op_func = self.OPERATORS.get(op)
         if op_func is None:
-            logger.warning(f"Unknown comparison operator: {op}")
+            logger.warning("Unknown comparison operator: %s", op)
             return False
 
         # Handle None cases for numeric comparisons
@@ -537,7 +537,7 @@ class ExpressionEvaluator:
         try:
             return op_func(left, right)
         except (TypeError, ValueError) as e:
-            logger.debug(f"Comparison error ({op}): {e}")
+            logger.debug("Comparison error (%s): %s", op, e)
             return False
 
     def _evaluate_comparison_expr(
@@ -621,7 +621,7 @@ class ExpressionEvaluator:
 
         elif op == "not":
             if len(operands) != 1:
-                logger.warning(f"'not' operator expects 1 operand, got {len(operands)}")
+                logger.warning("'not' operator expects 1 operand, got %s", len(operands))
                 return False
             return not self.evaluate(operands[0], payload)
 
@@ -845,7 +845,7 @@ class RuleValidator:
                 if rule is not None:
                     rules_to_eval.append(rule)
 
-        logger.debug(f"Evaluating {len(rules_to_eval)} rules against payload")
+        logger.debug("Evaluating %s rules against payload", len(rules_to_eval))
 
         # Evaluate each rule
         for rule in rules_to_eval:
@@ -859,7 +859,7 @@ class RuleValidator:
 
                 # Check max errors
                 if self.options.max_errors > 0 and len(self._findings) >= self.options.max_errors:
-                    logger.info(f"Reached max errors limit ({self.options.max_errors})")
+                    logger.info("Reached max errors limit (%s)", self.options.max_errors)
                     break
 
         elapsed_ms = (time.perf_counter() - start_time) * 1000
@@ -903,7 +903,7 @@ class RuleValidator:
                 condition_met = self._evaluator.evaluate(rule.when, payload)
                 if not condition_met:
                     # Condition not met, rule doesn't apply
-                    logger.debug(f"Rule {rule.rule_id} condition not met, skipping")
+                    logger.debug("Rule %s condition not met, skipping", rule.rule_id)
                     return None
 
             # Evaluate 'check' expression
@@ -916,7 +916,7 @@ class RuleValidator:
             return None
 
         except Exception as e:
-            logger.error(f"Error evaluating rule {rule.rule_id}: {e}", exc_info=True)
+            logger.error("Error evaluating rule %s: %s", rule.rule_id, e, exc_info=True)
             # Create error finding for rule evaluation failure
             return Finding(
                 code=ERROR_CODE_RULE_VIOLATION,
@@ -1090,7 +1090,7 @@ class RuleValidator:
             # Parse 'check' expression
             check_expr = self._parse_expression_dict(binding.check)
             if check_expr is None:
-                logger.warning(f"Failed to parse check expression for rule {binding.rule_id}")
+                logger.warning("Failed to parse check expression for rule %s", binding.rule_id)
                 return None
 
             return Rule(
@@ -1103,7 +1103,7 @@ class RuleValidator:
             )
 
         except Exception as e:
-            logger.error(f"Failed to parse rule binding {binding.rule_id}: {e}")
+            logger.error("Failed to parse rule binding %s: %s", binding.rule_id, e)
             return None
 
     def _parse_expression_dict(
@@ -1191,11 +1191,11 @@ class RuleValidator:
                     field=ref_path,
                 )
 
-            logger.warning(f"Unknown expression format: {expr_dict}")
+            logger.warning("Unknown expression format: %s", expr_dict)
             return None
 
         except Exception as e:
-            logger.error(f"Failed to parse expression: {e}")
+            logger.error("Failed to parse expression: %s", e)
             return None
 
 

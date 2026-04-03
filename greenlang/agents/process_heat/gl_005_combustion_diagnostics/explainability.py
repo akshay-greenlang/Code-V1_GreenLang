@@ -312,7 +312,7 @@ class LIMECombustionExplainer:
             "r_squared": r_squared,
         })
 
-        logger.info(f"CQI explanation generated: {explanation_id} (R^2={r_squared:.3f})")
+        logger.info("CQI explanation generated: %s (R^2=%.3f)", explanation_id, r_squared)
 
         return explanation
 
@@ -403,7 +403,7 @@ class LIMECombustionExplainer:
             "r_squared": r_squared,
         })
 
-        logger.info(f"Anomaly explanation generated: {explanation_id}")
+        logger.info("Anomaly explanation generated: %s", explanation_id)
 
         return explanation
 
@@ -496,7 +496,7 @@ class LIMECombustionExplainer:
             "health_score": target_value,
         })
 
-        logger.info(f"Maintenance explanation generated: {explanation_id}")
+        logger.info("Maintenance explanation generated: %s", explanation_id)
 
         return explanation
 

@@ -199,7 +199,7 @@ class EmissionsController:
             EmissionsAnalysis with complete results
         """
         self._calculation_count += 1
-        logger.debug(f"Analyzing emissions: O2={o2_pct}%, CO={co_ppm} ppm")
+        logger.debug("Analyzing emissions: O2=%s%, CO=%s ppm", o2_pct, co_ppm)
 
         fuel_key = fuel_type.lower().replace(" ", "_").replace("-", "_")
 

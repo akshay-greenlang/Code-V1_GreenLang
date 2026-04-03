@@ -53,7 +53,7 @@ class AIAssistant:
                 self._rag_assistant = RAGAssistant(api_key=api_key)
                 self._use_rag = True
             except Exception as e:
-                logger.warning(f"Could not initialize RAG assistant: {e}")
+                logger.warning("Could not initialize RAG assistant: %s", e)
                 self._use_rag = False
         else:
             self._use_rag = False
@@ -66,7 +66,7 @@ class AIAssistant:
                 self.client = OpenAI(api_key=self.api_key)
                 self.llm_available = True
             except Exception as e:
-                logger.warning(f"Could not initialize OpenAI client: {e}")
+                logger.warning("Could not initialize OpenAI client: %s", e)
                 self.llm_available = False
         else:
             self.llm_available = False

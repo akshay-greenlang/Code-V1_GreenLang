@@ -462,7 +462,7 @@ class AnthropicProvider(LLMProvider):
                     # Validate JSON
                     validated_json = parse_and_validate(text, json_schema)
                     json_tracker.record_success(attempt, validated_json)
-                    logger.info(f"JSON validation succeeded on attempt {attempt + 1}")
+                    logger.info("JSON validation succeeded on attempt %s", attempt + 1)
                     break
                 except Exception as e:
                     json_tracker.record_failure(attempt, e)

@@ -155,7 +155,7 @@ class GCPCloudKMSProvider(BaseKMSProvider):
             key_name = self._get_key_resource_name()
             try:
                 key = client.get_crypto_key(request={"name": key_name})
-                logger.info(f"Connected to GCP KMS: {key_name}")
+                logger.info("Connected to GCP KMS: %s", key_name)
             except NotFound:
                 raise KMSKeyNotFoundError(f"Key {self.key_name} not found")
             except GoogleAPIError as e:
@@ -226,7 +226,7 @@ class GCPCloudKMSProvider(BaseKMSProvider):
                     )
                     public_key = public_key_response.pem.encode() if public_key_response.pem else None
                 except Exception as e:
-                    logger.warning(f"Could not retrieve public key: {e}")
+                    logger.warning("Could not retrieve public key: %s", e)
 
             key_info = KMSKeyInfo(
                 key_id=key_name,
@@ -311,7 +311,7 @@ class GCPCloudKMSProvider(BaseKMSProvider):
 
             # Verify the signature was created by the expected key version
             if hasattr(response, 'name') and response.name != version_name:
-                logger.warning(f"Signature created by different version: {response.name}")
+                logger.warning("Signature created by different version: %s", response.name)
 
             return KMSSignResult(
                 signature=response.signature,
@@ -403,7 +403,7 @@ class GCPCloudKMSProvider(BaseKMSProvider):
         except ImportError:
             raise KMSProviderError("cryptography library required for verification")
         except Exception as e:
-            logger.debug(f"Signature verification failed: {e}")
+            logger.debug("Signature verification failed: %s", e)
             return False
 
     def rotate_key(self, key_id: Optional[str] = None) -> str:
@@ -444,7 +444,7 @@ class GCPCloudKMSProvider(BaseKMSProvider):
 
             # Extract version number
             version_num = new_version.name.split('/')[-1]
-            logger.info(f"Created new key version for {key_name}: {version_num}")
+            logger.info("Created new key version for %s: %s", key_name, version_num)
 
             return version_num
 
@@ -533,7 +533,7 @@ class GCPCloudKMSProvider(BaseKMSProvider):
             # Invalidate cache
             self.cache.invalidate(resource_name)
 
-            logger.info(f"Enabled rotation for {key_name} with period {rotation_period_days} days")
+            logger.info("Enabled rotation for %s with period %s days", key_name, rotation_period_days)
             return True
 
         except Exception as e:
@@ -565,7 +565,7 @@ class GCPCloudKMSProvider(BaseKMSProvider):
                 request={"name": version_name}
             )
 
-            logger.warning(f"Scheduled destruction of key version {version_name}")
+            logger.warning("Scheduled destruction of key version %s", version_name)
             return response.state == kms.CryptoKeyVersion.CryptoKeyVersionState.DESTROY_SCHEDULED
 
         except Exception as e:

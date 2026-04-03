@@ -345,7 +345,7 @@ class OperationalBenchmarkingAgent(BaseAgent):
         self._total_comparisons = 0
         self._total_analyses = 0
 
-        self.logger.info(f"Initialized {self.AGENT_ID}: {self.AGENT_NAME}")
+        logger.info("Initialized %s: %s", self.AGENT_ID, self.AGENT_NAME)
 
     def _load_default_benchmarks(self):
         """Load default industry benchmarks."""
@@ -380,7 +380,7 @@ class OperationalBenchmarkingAgent(BaseAgent):
             )
 
         except Exception as e:
-            self.logger.error(f"Benchmarking operation failed: {e}", exc_info=True)
+            logger.error("Benchmarking operation failed: %s", e, exc_info=True)
             processing_time_ms = (time.time() - start_time) * 1000
 
             return AgentResult(

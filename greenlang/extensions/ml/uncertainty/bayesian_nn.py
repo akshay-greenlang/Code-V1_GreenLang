@@ -485,7 +485,7 @@ class BayesianNeuralNetwork:
         Example:
             >>> bnn.fit(X_train, y_train, X_val=X_val, y_val=y_val)
         """
-        logger.info(f"Training BNN with {len(X)} samples")
+        logger.info("Training BNN with %s samples", len(X))
 
         n_samples = len(X)
         n_batches = max(1, n_samples // self.config.batch_size)
@@ -515,7 +515,7 @@ class BayesianNeuralNetwork:
 
             if verbose and (epoch + 1) % 10 == 0:
                 avg_loss = epoch_loss / n_batches
-                logger.info(f"Epoch {epoch + 1}/{self.config.n_epochs}, Loss: {avg_loss:.4f}")
+                logger.info("Epoch %s/%s, Loss: %.4f", epoch + 1, self.config.n_epochs, avg_loss)
 
         self._is_fitted = True
         logger.info("BNN training complete")

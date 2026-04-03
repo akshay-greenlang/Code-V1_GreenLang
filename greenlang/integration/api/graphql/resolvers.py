@@ -823,7 +823,7 @@ class Mutation:
         # Remove agent from orchestrator
         if id in context.orchestrator.agents:
             del context.orchestrator.agents[id]
-            logger.info(f"Deleted agent: {id}")
+            logger.info("Deleted agent: %s", id)
             return True
 
         return False
@@ -998,7 +998,7 @@ class Mutation:
 
         if id in context.orchestrator.workflows:
             del context.orchestrator.workflows[id]
-            logger.info(f"Deleted workflow: {id}")
+            logger.info("Deleted workflow: %s", id)
             return True
 
         return False
@@ -1077,7 +1077,7 @@ class Mutation:
             )
 
         except Exception as e:
-            logger.error(f"Workflow execution failed: {e}")
+            logger.error("Workflow execution failed: %s", e)
             # Create failed execution
             execution = Execution(
                 id=strawberry.ID(str(deterministic_uuid(__name__, str(DeterministicClock.now())))),
@@ -1160,7 +1160,7 @@ class Mutation:
             )
 
         except Exception as e:
-            logger.error(f"Agent execution failed: {e}")
+            logger.error("Agent execution failed: %s", e)
             raise
 
     @strawberry.mutation
@@ -1440,7 +1440,7 @@ class Mutation:
         for key_string, key_obj in context.auth_manager.api_keys.items():
             if key_obj.key_id == key_id:
                 key_obj.active = False
-                logger.info(f"Revoked API key: {key_id}")
+                logger.info("Revoked API key: %s", key_id)
                 return True
 
         return False
@@ -1472,7 +1472,7 @@ class Mutation:
                 new_key_string = f"{key_obj.key_id}.{new_secret}"
                 context.auth_manager.api_keys[new_key_string] = key_obj
 
-                logger.info(f"Rotated API key: {key_id}")
+                logger.info("Rotated API key: %s", key_id)
                 return _convert_api_key(key_obj)
 
         raise ValueError(f"API key {key_id} not found")
@@ -1500,7 +1500,7 @@ class Mutation:
                 agent = await self.create_agent(info, input_data)
                 agents.append(agent)
             except Exception as e:
-                logger.error(f"Failed to create agent {input_data.name}: {e}")
+                logger.error("Failed to create agent %s: %s", input_data.name, e)
 
         return agents
 
@@ -1523,7 +1523,7 @@ class Mutation:
 
         # For now, return count (would need persistent storage)
         deleted_count = len(ids)
-        logger.info(f"Batch deleted {deleted_count} executions")
+        logger.info("Batch deleted %s executions", deleted_count)
 
         return deleted_count
 

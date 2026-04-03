@@ -34,6 +34,8 @@ from enum import Enum
 from typing import Any, Callable, Optional
 from dataclasses import dataclass
 
+from greenlang.exceptions import InfrastructureException
+
 logger = logging.getLogger(__name__)
 
 
@@ -56,7 +58,7 @@ class CircuitBreakerStats:
     failed_calls: int
 
 
-class CircuitBreakerError(Exception):
+class CircuitBreakerError(InfrastructureException):
     """Raised when circuit is open"""
 
     def __init__(self, stats: CircuitBreakerStats):
@@ -210,7 +212,7 @@ class CircuitBreaker:
             self._failure_count = 0
             self._success_count = 0
 
-        logger.info(f"Circuit breaker: {old_state.value} → {new_state.value}")
+        logger.info("Circuit breaker: %s → %s", old_state.value, new_state.value)
 
     def get_stats(self) -> CircuitBreakerStats:
         """Get circuit breaker statistics"""

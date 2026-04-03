@@ -225,7 +225,7 @@ class AuditLogger:
         self.alert_rules: List[Dict[str, Any]] = []
         self.alert_handlers: List[Any] = []
 
-        logger.info(f"AuditLogger initialized with storage at {self.storage_path}")
+        logger.info("AuditLogger initialized with storage at %s", self.storage_path)
 
     def log(self, event: AuditEvent):
         """
@@ -250,7 +250,7 @@ class AuditLogger:
             try:
                 handler(event)
             except Exception as e:
-                logger.error(f"Error in audit handler: {e}")
+                logger.error("Error in audit handler: %s", e)
 
         # Check alert rules
         self._check_alerts(event)
@@ -478,7 +478,7 @@ class AuditLogger:
             with open(log_file, "a") as f:
                 f.write(event.to_json() + "\n")
         except Exception as e:
-            logger.error(f"Failed to write audit event to storage: {e}")
+            logger.error("Failed to write audit event to storage: %s", e)
 
     def _check_alerts(self, event: AuditEvent):
         """Check if event triggers any alerts"""
@@ -507,7 +507,7 @@ class AuditLogger:
             try:
                 handler(event, rule)
             except Exception as e:
-                logger.error(f"Error in alert handler: {e}")
+                logger.error("Error in alert handler: %s", e)
 
     def cleanup_old_logs(self):
         """Remove old audit logs based on retention policy"""
@@ -521,9 +521,9 @@ class AuditLogger:
 
                 if file_date < cutoff_date:
                     log_file.unlink()
-                    logger.info(f"Removed old audit log: {log_file}")
+                    logger.info("Removed old audit log: %s", log_file)
             except Exception as e:
-                logger.error(f"Error cleaning up audit log {log_file}: {e}")
+                logger.error("Error cleaning up audit log %s: %s", log_file, e)
 
     async def async_log(self, event: AuditEvent):
         """Asynchronously log event"""
@@ -542,7 +542,7 @@ class AuditLogger:
                 event = await self.async_queue.get()
                 self.log(event)
             except Exception as e:
-                logger.error(f"Error processing async audit event: {e}")
+                logger.error("Error processing async audit event: %s", e)
 
 
 class ComplianceReporter:

@@ -335,7 +335,7 @@ class MLflowExperimentManager:
             )
             return False
         except Exception as e:
-            logger.error(f"Failed to initialize MLflow: {e}")
+            logger.error("Failed to initialize MLflow: %s", e)
             return False
 
     def _compute_sha256(self, data: Any) -> str:
@@ -489,12 +489,12 @@ class MLflowExperimentManager:
                 for key, value in system_info.items():
                     self._mlflow.set_tag(f"system.{key}", value)
 
-            logger.info(f"Started run: {self._current_run_id} ({run_name})")
+            logger.info("Started run: %s (%s)", self._current_run_id, run_name)
 
             yield run
 
         except Exception as e:
-            logger.error(f"Run failed: {e}")
+            logger.error("Run failed: %s", e)
             raise
         finally:
             # Log provenance chain
@@ -559,7 +559,7 @@ class MLflowExperimentManager:
         for key, value in params.items():
             self._mlflow.log_param(key, value)
 
-        logger.debug(f"Logged params: {list(params.keys())}")
+        logger.debug("Logged params: %s", list(params.keys()))
 
     def log_metrics(
         self,
@@ -595,7 +595,7 @@ class MLflowExperimentManager:
         for key, value in metrics.items():
             self._mlflow.log_metric(key, value, step=step)
 
-        logger.debug(f"Logged metrics: {list(metrics.keys())}")
+        logger.debug("Logged metrics: %s", list(metrics.keys()))
 
     def log_artifact(
         self,
@@ -638,7 +638,7 @@ class MLflowExperimentManager:
         artifact_name = Path(local_path).name
         self._mlflow.set_tag(f"artifact.{artifact_name}.sha256", artifact_hash)
 
-        logger.debug(f"Logged artifact: {local_path} (hash: {artifact_hash[:16]}...)")
+        logger.debug("Logged artifact: %s (hash: %s...)", local_path, artifact_hash[)
         return artifact_hash
 
     def log_agent_run(
@@ -877,7 +877,7 @@ class MLflowExperimentManager:
             artifact_uri = model_info.model_uri if model_info else ""
 
         except Exception as e:
-            logger.error(f"Failed to log model: {e}")
+            logger.error("Failed to log model: %s", e)
             raise
 
         # Get registered version
@@ -887,7 +887,7 @@ class MLflowExperimentManager:
             if versions:
                 version = str(max(int(v.version) for v in versions))
         except Exception as e:
-            logger.warning(f"Could not get model version: {e}")
+            logger.warning("Could not get model version: %s", e)
 
         # Set model tags
         try:
@@ -914,7 +914,7 @@ class MLflowExperimentManager:
                     description=description
                 )
         except Exception as e:
-            logger.warning(f"Could not set model tags: {e}")
+            logger.warning("Could not set model tags: %s", e)
 
         # Log metrics
         if metrics:
@@ -997,7 +997,7 @@ class MLflowExperimentManager:
             return True
 
         except Exception as e:
-            logger.error(f"Failed to promote model: {e}")
+            logger.error("Failed to promote model: %s", e)
             return False
 
     def get_production_model(
@@ -1033,7 +1033,7 @@ class MLflowExperimentManager:
                     break
 
             if not production_version:
-                logger.warning(f"No production model found for {name}")
+                logger.warning("No production model found for %s", name)
                 return None
 
             # Load model
@@ -1046,7 +1046,7 @@ class MLflowExperimentManager:
             return model
 
         except Exception as e:
-            logger.error(f"Failed to load production model: {e}")
+            logger.error("Failed to load production model: %s", e)
             return None
 
     def get_model_by_version(
@@ -1072,11 +1072,11 @@ class MLflowExperimentManager:
             model_uri = f"models:/{name}/{version}"
             model = self._mlflow.pyfunc.load_model(model_uri)
 
-            logger.info(f"Loaded model: {name} v{version}")
+            logger.info("Loaded model: %s v%s", name, version)
             return model
 
         except Exception as e:
-            logger.error(f"Failed to load model: {e}")
+            logger.error("Failed to load model: %s", e)
             return None
 
     def list_experiments(self) -> List[Dict[str, Any]]:
@@ -1096,7 +1096,7 @@ class MLflowExperimentManager:
                 for e in experiments
             ]
         except Exception as e:
-            logger.error(f"Failed to list experiments: {e}")
+            logger.error("Failed to list experiments: %s", e)
             return []
 
     def list_models(self) -> List[Dict[str, Any]]:
@@ -1122,7 +1122,7 @@ class MLflowExperimentManager:
                 for m in models
             ]
         except Exception as e:
-            logger.error(f"Failed to list models: {e}")
+            logger.error("Failed to list models: %s", e)
             return []
 
     def search_runs(
@@ -1163,7 +1163,7 @@ class MLflowExperimentManager:
                 for r in runs
             ]
         except Exception as e:
-            logger.error(f"Failed to search runs: {e}")
+            logger.error("Failed to search runs: %s", e)
             return []
 
     def compare_models(
@@ -1203,7 +1203,7 @@ class MLflowExperimentManager:
                 }
 
         except Exception as e:
-            logger.error(f"Failed to compare models: {e}")
+            logger.error("Failed to compare models: %s", e)
 
         return comparison
 

@@ -117,7 +117,7 @@ class EmissionsMonitor(IntelligenceMixin):
             regulatory_context="EPA 40 CFR, RATA, EU ETS",
         ))
 
-        logger.info(f"EmissionsMonitor initialized for {source_id}")
+        logger.info("EmissionsMonitor initialized for %s", source_id)
 
     def get_intelligence_level(self) -> IntelligenceLevel:
         """Return the agent's intelligence level."""
@@ -279,7 +279,7 @@ class EmissionsMonitor(IntelligenceMixin):
         )
 
         # Log explanation generation
-        logger.debug(f"Generated explanation for {input_data.source_id}")
+        logger.debug("Generated explanation for %s", input_data.source_id)
 
         return EmissionsOutput(
             source_id=input_data.source_id,
