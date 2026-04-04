@@ -427,7 +427,8 @@
       "WebFetch(domain:www.usetappr.com)",
       "WebFetch(domain:www.nortonrosefulbright.com)",
       "Bash(for agent in stationary_combustion mobile_combustion fugitive_emissions refrigerants_fgas land_use_emissions waste_generated waste_treatment_emissions process_emissions agricultural_emissions)",
-      "Bash(/tmp/precommit_sizes2.sh:*)"
+      "Bash(/tmp/precommit_sizes2.sh:*)",
+      "Bash(node -e:*)"
     ],
     "deny": [],
     "ask": []

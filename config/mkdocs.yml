@@ -76,10 +76,139 @@ nav:
     - gl policy: docs/cli/policy.md
 
   - API Reference:
-    - Python API: docs/api/python.md
+    - Overview: docs/api/API_DOCUMENTATION.md
+    - API Catalog: docs/api/API_CATALOG.md
+    - Python SDK: docs/api/python.md
     - REST API: docs/api/rest.md
     - Pack Manifest: docs/api/manifest.md
     - Pipeline Schema: docs/api/pipeline.md
+    - OpenAPI Specs:
+      - Process Heat: docs/api/openapi/process_heat_openapi.yaml
+    - Foundation Agents:
+      - Overview: docs/api/agents/foundation/index.md
+      - Orchestrator: docs/api/agents/foundation/orchestrator.md
+      - Schema Compiler: docs/api/agents/foundation/schema_compiler.md
+      - Unit Normalizer: docs/api/agents/foundation/unit_normalizer.md
+      - Assumptions Registry: docs/api/agents/foundation/assumptions_registry.md
+      - Citations & Evidence: docs/api/agents/foundation/citations_evidence.md
+      - Access & Policy Guard: docs/api/agents/foundation/access_policy.md
+      - Agent Registry: docs/api/agents/foundation/agent_registry.md
+      - Reproducibility: docs/api/agents/foundation/reproducibility.md
+      - QA Test Harness: docs/api/agents/foundation/qa_harness.md
+      - Observability: docs/api/agents/foundation/observability.md
+    - Data Agents:
+      - Overview: docs/api/agents/data/index.md
+      - PDF Extractor: docs/api/agents/data/pdf_extractor.md
+      - Excel Normalizer: docs/api/agents/data/excel_normalizer.md
+      - ERP Connector: docs/api/agents/data/erp_connector.md
+      - API Gateway: docs/api/agents/data/api_gateway.md
+      - EUDR Traceability: docs/api/agents/data/eudr_traceability.md
+      - GIS Mapping: docs/api/agents/data/gis_mapping.md
+      - Satellite Connector: docs/api/agents/data/satellite_connector.md
+      - Questionnaire Processor: docs/api/agents/data/questionnaire_processor.md
+      - Spend Categorizer: docs/api/agents/data/spend_categorizer.md
+      - Data Quality Profiler: docs/api/agents/data/data_quality_profiler.md
+      - Duplicate Detection: docs/api/agents/data/duplicate_detection.md
+      - Missing Value Imputer: docs/api/agents/data/missing_value_imputer.md
+      - Outlier Detection: docs/api/agents/data/outlier_detection.md
+      - Time Series Gap Filler: docs/api/agents/data/time_series_gap_filler.md
+      - Cross-Source Reconciliation: docs/api/agents/data/cross_source_reconciliation.md
+      - Data Freshness Monitor: docs/api/agents/data/data_freshness_monitor.md
+      - Schema Migration: docs/api/agents/data/schema_migration.md
+      - Data Lineage Tracker: docs/api/agents/data/data_lineage_tracker.md
+      - Validation Rule Engine: docs/api/agents/data/validation_rule_engine.md
+      - Climate Hazard Connector: docs/api/agents/data/climate_hazard_connector.md
+    - MRV Agents:
+      - Overview: docs/api/agents/mrv/index.md
+      - Scope 1:
+        - Stationary Combustion: docs/api/agents/mrv/stationary_combustion.md
+        - Refrigerants & F-Gas: docs/api/agents/mrv/refrigerants_fgas.md
+        - Mobile Combustion: docs/api/agents/mrv/mobile_combustion.md
+        - Process Emissions: docs/api/agents/mrv/process_emissions.md
+        - Fugitive Emissions: docs/api/agents/mrv/fugitive_emissions.md
+        - Land Use: docs/api/agents/mrv/land_use.md
+        - Waste Emissions: docs/api/agents/mrv/waste_emissions.md
+        - Agricultural: docs/api/agents/mrv/agricultural.md
+      - Scope 2:
+        - Location-Based: docs/api/agents/mrv/scope2_location.md
+        - Market-Based: docs/api/agents/mrv/scope2_market.md
+        - Steam: docs/api/agents/mrv/steam.md
+        - Cooling: docs/api/agents/mrv/cooling.md
+        - Dual Reporting: docs/api/agents/mrv/dual_reporting.md
+      - Scope 3:
+        - Purchased Goods & Services: docs/api/agents/mrv/purchased_goods_services.md
+        - Capital Goods: docs/api/agents/mrv/capital_goods.md
+        - Fuel & Energy: docs/api/agents/mrv/fuel_energy.md
+        - Upstream Transportation: docs/api/agents/mrv/upstream_transportation.md
+        - Waste Generated: docs/api/agents/mrv/waste_generated.md
+        - Business Travel: docs/api/agents/mrv/business_travel.md
+        - Employee Commuting: docs/api/agents/mrv/employee_commuting.md
+      - Cross-Cutting:
+        - Category Mapper: docs/api/agents/mrv/category_mapper.md
+        - Audit Trail & Lineage: docs/api/agents/mrv/audit_trail_lineage.md
+    - EUDR Agents:
+      - Overview: docs/api/agents/eudr/index.md
+      - Traceability:
+        - Supply Chain Mapper: docs/api/agents/eudr/supply_chain_mapper.md
+        - Geolocation Verification: docs/api/agents/eudr/geolocation_verification.md
+        - Satellite Monitoring: docs/api/agents/eudr/satellite_monitoring.md
+        - Forest Cover Analysis: docs/api/agents/eudr/forest_cover_analysis.md
+        - Chain of Custody: docs/api/agents/eudr/chain_of_custody.md
+        - Mass Balance Calculator: docs/api/agents/eudr/mass_balance_calculator.md
+        - Document Authentication: docs/api/agents/eudr/document_authentication.md
+        - Blockchain Integration: docs/api/agents/eudr/blockchain_integration.md
+      - Risk Assessment:
+        - Country Risk Evaluator: docs/api/agents/eudr/country_risk_evaluator.md
+        - Supplier Risk Scorer: docs/api/agents/eudr/supplier_risk_scorer.md
+        - Commodity Risk Analyzer: docs/api/agents/eudr/commodity_risk_analyzer.md
+        - Deforestation Alert System: docs/api/agents/eudr/deforestation_alert_system.md
+        - Risk Assessment Engine: docs/api/agents/eudr/risk_assessment_engine.md
+      - Due Diligence:
+        - Legal Compliance Verifier: docs/api/agents/eudr/legal_compliance_verifier.md
+        - Third-Party Audit Manager: docs/api/agents/eudr/third_party_audit_manager.md
+        - Due Diligence Orchestrator: docs/api/agents/eudr/due_diligence_orchestrator.md
+        - DDS Creator: docs/api/agents/eudr/due_diligence_statement_creator.md
+    - Infrastructure:
+      - Overview: docs/api/infrastructure/index.md
+      - Authentication (JWT): docs/api/infrastructure/auth_service.md
+      - Auth Admin: docs/api/infrastructure/auth_admin.md
+      - Authorization (RBAC): docs/api/infrastructure/rbac_service.md
+      - Agent Factory: docs/api/infrastructure/agent_factory.md
+      - Feature Flags: docs/api/infrastructure/feature_flags.md
+      - Audit Logging: docs/api/infrastructure/audit_service.md
+      - Encryption: docs/api/infrastructure/encryption_service.md
+      - Secrets Management: docs/api/infrastructure/secrets_service.md
+      - Security Scanning: docs/api/infrastructure/security_scanning.md
+      - PII Detection: docs/api/infrastructure/pii_service.md
+      - SOC 2 Preparation: docs/api/infrastructure/soc2_preparation.md
+      - Incident Response: docs/api/infrastructure/incident_response.md
+      - Schema Validator: docs/api/infrastructure/schema_validator.md
+      - Orchestrator: docs/api/infrastructure/orchestrator.md
+    - Applications:
+      - Overview: docs/api/applications/index.md
+      - CSRD: docs/api/applications/gl-csrd-app.md
+      - CBAM: docs/api/applications/gl-cbam-app.md
+      - EUDR: docs/api/applications/gl-eudr-app.md
+      - GHG: docs/api/applications/gl-ghg-app.md
+      - VCCI Carbon: docs/api/applications/gl-vcci-carbon-app.md
+      - ISO 14064: docs/api/applications/gl-iso14064-app.md
+      - CDP: docs/api/applications/gl-cdp-app.md
+      - TCFD: docs/api/applications/gl-tcfd-app.md
+      - SBTi: docs/api/applications/gl-sbti-app.md
+      - EU Taxonomy: docs/api/applications/gl-taxonomy-app.md
+      - CBAM Pack MVP: docs/api/cbam-pack/endpoints.md
+    - Cross-Cutting:
+      - Authentication Guide: docs/api/authentication.md
+      - Error Codes: docs/api/error-codes.md
+      - Pagination: docs/api/pagination.md
+      - Rate Limiting: docs/api/rate-limiting.md
+      - API Versioning: docs/api/versioning.md
+    - Endpoint Reference:
+      - Emissions: docs/api/endpoints/emissions.md
+      - Compliance: docs/api/endpoints/compliance.md
+      - Orchestrator: docs/api/endpoints/orchestrator.md
+    - Schemas:
+      - Common Models: docs/api/schemas/common_models.md
 
   - Examples:
     - Basic Examples: examples/README.md
