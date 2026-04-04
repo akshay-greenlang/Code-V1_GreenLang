@@ -30,6 +30,15 @@ def _fake_run_v2_backend(profile_key: str, input_path: Path, output_dir: Path, s
     elif profile_key == "ghg":
         artifact = "ghg_inventory.json"
         payload = {"app_id": "GL-GHG-APP", "status": "ok"}
+    elif profile_key == "iso14064":
+        artifact = "iso14064_verification_report.json"
+        payload = {"app_id": "GL-ISO14064-APP", "status": "ok"}
+    elif profile_key == "sb253":
+        artifact = "sb253_disclosure.json"
+        payload = {"app_id": "GL-SB253-APP", "status": "ok"}
+    elif profile_key == "taxonomy":
+        artifact = "taxonomy_alignment.json"
+        payload = {"app_id": "GL-Taxonomy-APP", "status": "ok"}
     else:
         artifact = "iso14064_verification_report.json"
         payload = {"app_id": "GL-ISO14064-APP", "status": "ok"}
@@ -44,6 +53,8 @@ def test_v2_workspace_routes_render() -> None:
     assert client.get("/apps/eudr").status_code == 200
     assert client.get("/apps/ghg").status_code == 200
     assert client.get("/apps/iso14064").status_code == 200
+    assert client.get("/apps/sb253").status_code == 200
+    assert client.get("/apps/taxonomy").status_code == 200
 
 
 def test_v2_run_endpoints_create_runs(monkeypatch) -> None:
@@ -53,13 +64,19 @@ def test_v2_run_endpoints_create_runs(monkeypatch) -> None:
     eudr = client.post("/api/v1/apps/eudr/run", files={"input_file": ("eudr.json", b"{}", "application/json")})
     ghg = client.post("/api/v1/apps/ghg/run", files={"input_file": ("ghg.json", b"{}", "application/json")})
     iso = client.post("/api/v1/apps/iso14064/run", files={"input_file": ("iso.json", b"{}", "application/json")})
+    sb = client.post("/api/v1/apps/sb253/run", files={"input_file": ("sb.json", b"{}", "application/json")})
+    tax = client.post("/api/v1/apps/taxonomy/run", files={"input_file": ("tax.json", b"{}", "application/json")})
 
     assert eudr.status_code == 200
     assert ghg.status_code == 200
     assert iso.status_code == 200
+    assert sb.status_code == 200
+    assert tax.status_code == 200
     assert eudr.json()["app_id"] == "eudr"
     assert ghg.json()["app_id"] == "ghg"
     assert iso.json()["app_id"] == "iso14064"
+    assert sb.json()["app_id"] == "sb253"
+    assert tax.json()["app_id"] == "taxonomy"
 
 
 def test_v2_blocked_run_disables_bundle_export(monkeypatch) -> None:

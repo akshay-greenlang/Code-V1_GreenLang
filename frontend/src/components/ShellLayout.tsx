@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link as RouterLink, Outlet } from "react-router-dom";
+import Alert from "@mui/material/Alert";
 import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
@@ -9,11 +10,16 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogTitle from "@mui/material/DialogTitle";
 import InputBase from "@mui/material/InputBase";
 import Link from "@mui/material/Link";
+import Paper from "@mui/material/Paper";
+import FormControl from "@mui/material/FormControl";
+import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
 import Select from "@mui/material/Select";
 import Stack from "@mui/material/Stack";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
+import { ShellConnectorIncidentsAlert } from "@greenlang/shell-ui";
+import { fetchShellChromeContext, type ShellChromeContext } from "../api";
 import { readRoleFromStorage, roleRouteAllowlist, type ShellRole, writeRoleToStorage } from "../authz";
 
 const links = [
@@ -23,6 +29,8 @@ const links = [
   { label: "EUDR", to: "/apps/eudr" },
   { label: "GHG", to: "/apps/ghg" },
   { label: "ISO14064", to: "/apps/iso14064" },
+  { label: "SB253", to: "/apps/sb253" },
+  { label: "Taxonomy", to: "/apps/taxonomy" },
   { label: "Runs", to: "/runs" },
   { label: "Governance", to: "/governance" },
   { label: "Admin", to: "/admin" }
@@ -33,6 +41,45 @@ export function ShellLayout() {
   const [query, setQuery] = useState("");
   const [role, setRole] = useState<ShellRole>(readRoleFromStorage());
   const [highContrast, setHighContrast] = useState(false);
+  const [apiHealthy, setApiHealthy] = useState<boolean | null>(null);
+  const [chromeContext, setChromeContext] = useState<ShellChromeContext | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    const ping = async () => {
+      try {
+        const response = await fetch("/health", { method: "GET", cache: "no-store" });
+        if (!cancelled) setApiHealthy(response.ok);
+      } catch {
+        if (!cancelled) setApiHealthy(false);
+      }
+    };
+    void ping();
+    const timer = window.setInterval(() => void ping(), 60_000);
+    return () => {
+      cancelled = true;
+      window.clearInterval(timer);
+    };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    const load = () => {
+      fetchShellChromeContext()
+        .then((ctx) => {
+          if (!cancelled) setChromeContext(ctx);
+        })
+        .catch(() => {
+          if (!cancelled) setChromeContext(null);
+        });
+    };
+    load();
+    const timer = window.setInterval(load, 90_000);
+    return () => {
+      cancelled = true;
+      window.clearInterval(timer);
+    };
+  }, []);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -99,22 +146,28 @@ export function ShellLayout() {
             ))}
           </Stack>
           <Stack direction="row" spacing={1} sx={{ ml: "auto" }}>
-            <Select
-              size="small"
-              value={role}
-              aria-label="Role selector"
-              onChange={(event) => {
-                const nextRole = event.target.value as ShellRole;
-                setRole(nextRole);
-                writeRoleToStorage(nextRole);
-              }}
-              sx={{ color: "white", minWidth: 140 }}
-            >
-              <MenuItem value="operator">Operator</MenuItem>
-              <MenuItem value="auditor">Auditor</MenuItem>
-              <MenuItem value="compliance">Compliance Lead</MenuItem>
-              <MenuItem value="admin">Admin</MenuItem>
-            </Select>
+            <FormControl size="small" sx={{ minWidth: 160 }} variant="outlined">
+              <InputLabel id="gl-shell-role-label" sx={{ color: "#e2e8f0" }}>
+                Role
+              </InputLabel>
+              <Select
+                labelId="gl-shell-role-label"
+                id="gl-shell-role"
+                label="Role"
+                value={role}
+                onChange={(event) => {
+                  const nextRole = event.target.value as ShellRole;
+                  setRole(nextRole);
+                  writeRoleToStorage(nextRole);
+                }}
+                sx={{ color: "white" }}
+              >
+                <MenuItem value="operator">Operator</MenuItem>
+                <MenuItem value="auditor">Auditor</MenuItem>
+                <MenuItem value="compliance">Compliance Lead</MenuItem>
+                <MenuItem value="admin">Admin</MenuItem>
+              </Select>
+            </FormControl>
             <Button size="small" variant="outlined" color="inherit" onClick={() => setHighContrast((v) => !v)}>
               Contrast
             </Button>
@@ -124,14 +177,66 @@ export function ShellLayout() {
           </Stack>
         </Toolbar>
       </AppBar>
+      {apiHealthy === false && (
+        <Alert severity="warning" role="status" sx={{ borderRadius: 0 }}>
+          API health check failed. Navigation may work, but runs and governance data may be stale until the service
+          recovers.
+        </Alert>
+      )}
+      {chromeContext && (
+        <Paper
+          component="aside"
+          square
+          elevation={0}
+          sx={{
+            borderBottom: "1px solid",
+            borderColor: "divider",
+            px: 2,
+            py: 1,
+            bgcolor: "background.paper"
+          }}
+          aria-label="Compliance and policy summary"
+        >
+          <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap" useFlexGap>
+            <Typography variant="caption" color="text.secondary">
+              Managed packs: <strong>{chromeContext.compliance_rail.managed_pack_count}</strong>
+            </Typography>
+            <Typography variant="caption" color="text.secondary">
+              Policy bundles: <strong>{chromeContext.compliance_rail.policy_bundle_count}</strong>
+            </Typography>
+            <Typography variant="caption" color="text.secondary">
+              Deprecated agents: <strong>{chromeContext.compliance_rail.deprecated_agent_count}</strong>
+            </Typography>
+            <Link component={RouterLink} to="/governance" variant="caption" underline="hover">
+              Open governance center
+            </Link>
+          </Stack>
+        </Paper>
+      )}
+      <ShellConnectorIncidentsAlert
+        incidents={chromeContext?.connector_incidents ?? []}
+        adminLink={
+          chromeContext?.connector_incidents?.length ? (
+            <Link component={RouterLink} to="/admin" variant="body2" sx={{ mt: 0.5, display: "inline-block" }}>
+              View admin console for registry details
+            </Link>
+          ) : undefined
+        }
+      />
       <Container maxWidth="xl" sx={{ py: 2 }} id="main-content" component="main" aria-label="Workspace content">
-        <Typography variant="caption" color="text.secondary">
+        <Typography variant="caption" color="text.secondary" aria-live="polite">
           Active role: {role}
         </Typography>
         <Outlet />
       </Container>
-      <Dialog open={paletteOpen} onClose={() => setPaletteOpen(false)} fullWidth maxWidth="sm">
-        <DialogTitle>Command Palette</DialogTitle>
+      <Dialog
+        open={paletteOpen}
+        onClose={() => setPaletteOpen(false)}
+        fullWidth
+        maxWidth="sm"
+        aria-labelledby="command-palette-title"
+      >
+        <DialogTitle id="command-palette-title">Command Palette</DialogTitle>
         <DialogContent>
           <InputBase
             autoFocus

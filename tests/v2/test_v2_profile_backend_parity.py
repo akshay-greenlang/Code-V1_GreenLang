@@ -8,12 +8,14 @@ def _smoke_input(profile: str) -> Path:
         "eudr": Path("applications/GL-EUDR-APP/v2/smoke_input.json"),
         "ghg": Path("applications/GL-GHG-APP/v2/smoke_input.json"),
         "iso14064": Path("applications/GL-ISO14064-APP/v2/smoke_input.json"),
+        "sb253": Path("applications/GL-SB253-APP/v2/smoke_input.json"),
+        "taxonomy": Path("applications/GL-Taxonomy-APP/v2/smoke_input.json"),
     }
     return mapping[profile]
 
 
 def test_v2_regulated_profiles_native_success(tmp_path: Path) -> None:
-    for profile in ("eudr", "ghg", "iso14064"):
+    for profile in ("eudr", "ghg", "iso14064", "sb253", "taxonomy"):
         result = run_v2_profile_backend(
             profile_key=profile,
             input_path=_smoke_input(profile),
@@ -34,6 +36,8 @@ def test_v2_regulated_profiles_blocked_exit_consistent(tmp_path: Path) -> None:
         "eudr": '{"suppliers": [], "policy_block": true}',
         "ghg": '{"activities": [], "policy_block": true}',
         "iso14064": '{"controls": [], "policy_block": true}',
+        "sb253": '{"activities": [], "policy_block": true}',
+        "taxonomy": '{"activities": [], "policy_block": true}',
     }
     for profile, payload in payloads.items():
         input_path = tmp_path / f"{profile}_blocked.json"

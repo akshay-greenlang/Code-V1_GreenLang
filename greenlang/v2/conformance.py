@@ -86,7 +86,7 @@ def runtime_convention_checks(app_dirs: Iterable[Path] = V2_APP_PROFILE_DIRS) ->
 
 def runtime_execution_checks() -> list[CheckResult]:
     checks: list[CheckResult] = []
-    regulated_profiles = ["eudr", "ghg", "iso14064"]
+    regulated_profiles = ["eudr", "ghg", "iso14064", "sb253", "taxonomy"]
     for key in regulated_profiles:
         profile = V2_APP_PROFILES[key]
         smoke_input = profile.v2_dir / "smoke_input.json"
@@ -290,6 +290,8 @@ def _determinism_input_for_profile(profile_key: str, target: Path) -> None:
         "eudr": {"suppliers": [{"id": "S1", "risk": "low"}]},
         "ghg": {"activities": [{"quantity": 10, "emission_factor": 1.5}]},
         "iso14064": {"controls": [{"id": "C1", "passed": True}]},
+        "sb253": {"activities": [{"quantity": 10, "emission_factor": 1.5}]},
+        "taxonomy": {"activities": [{"quantity": 10, "emission_factor": 1.5}]},
     }
     target.write_text(json.dumps(payloads[profile_key], indent=2), encoding="utf-8")
 
@@ -300,7 +302,7 @@ def determinism_contract_checks(output_root: Path | None = None) -> list[CheckRe
         output_root = Path(tempfile.mkdtemp(prefix="greenlang_v2_determinism_"))
     output_root.mkdir(parents=True, exist_ok=True)
 
-    regulated_profiles = ["eudr", "ghg", "iso14064"]
+    regulated_profiles = ["eudr", "ghg", "iso14064", "sb253", "taxonomy"]
     for profile_key in regulated_profiles:
         profile = V2_APP_PROFILES[profile_key]
         run1 = output_root / profile_key / "run1"

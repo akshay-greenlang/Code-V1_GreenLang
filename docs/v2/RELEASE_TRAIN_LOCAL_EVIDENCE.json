@@ -237,5 +237,7 @@
       ]
     }
   ],
+  "shell_contract_refresh_utc": "2026-04-04T00:00:00Z",
+  "shell_contract_notes": "Chrome-context API, SB253/Taxonomy v2 apps, 35-pack tier registry scale, connector SLO/runbook fields.",
   "generated_at_utc": "2026-04-02T13:07:40.142658Z"
 }

@@ -3,11 +3,22 @@ export type ShellRole = "operator" | "auditor" | "compliance" | "admin";
 export const defaultShellRole: ShellRole = "operator";
 export const shellRoleStorageKey = "gl.v2.shell.role";
 
+const appRoutes = [
+  "/apps/cbam",
+  "/apps/csrd",
+  "/apps/vcci",
+  "/apps/eudr",
+  "/apps/ghg",
+  "/apps/iso14064",
+  "/apps/sb253",
+  "/apps/taxonomy"
+] as const;
+
 export const roleRouteAllowlist: Record<ShellRole, string[]> = {
-  operator: ["/apps/cbam", "/apps/csrd", "/apps/vcci", "/apps/eudr", "/apps/ghg", "/apps/iso14064", "/runs"],
-  auditor: ["/apps/cbam", "/apps/csrd", "/apps/vcci", "/apps/eudr", "/apps/ghg", "/apps/iso14064", "/runs", "/governance"],
-  compliance: ["/apps/cbam", "/apps/csrd", "/apps/vcci", "/apps/eudr", "/apps/ghg", "/apps/iso14064", "/runs", "/governance"],
-  admin: ["/apps/cbam", "/apps/csrd", "/apps/vcci", "/apps/eudr", "/apps/ghg", "/apps/iso14064", "/runs", "/governance", "/admin"]
+  operator: [...appRoutes, "/runs"],
+  auditor: [...appRoutes, "/runs", "/governance"],
+  compliance: [...appRoutes, "/runs", "/governance"],
+  admin: [...appRoutes, "/runs", "/governance", "/admin"]
 };
 
 export function readRoleFromStorage(): ShellRole {

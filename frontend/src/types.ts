@@ -1,4 +1,13 @@
-export type AppKey = "cbam" | "csrd" | "vcci" | "eudr" | "ghg" | "iso14064";
+export type AppKey = "cbam" | "csrd" | "vcci" | "eudr" | "ghg" | "iso14064" | "sb253" | "taxonomy";
+
+/** Server-derived lifecycle; UI may also use loading/retrying locally. */
+export type RunLifecycleState = "completed" | "failed" | "blocked" | "partial_success";
+
+export interface RunErrorEnvelope {
+  title: string;
+  message: string;
+  details?: string[];
+}
 
 export interface RunRecord {
   run_id: string;
@@ -9,6 +18,10 @@ export interface RunRecord {
   created_at_ts?: number;
   artifacts?: string[];
   can_export?: boolean;
+  run_state?: RunLifecycleState | string;
+  lifecycle_phase?: string;
+  status_chip?: string;
+  error_envelope?: RunErrorEnvelope | null;
 }
 
 export interface RunResponse {
@@ -19,6 +32,11 @@ export interface RunResponse {
   can_export?: boolean;
   errors?: string[];
   warnings?: string[];
+  success?: boolean;
+  run_state?: RunLifecycleState | string;
+  lifecycle_phase?: string;
+  status_chip?: string;
+  error_envelope?: RunErrorEnvelope | null;
 }
 
 export interface PackTierRecord {

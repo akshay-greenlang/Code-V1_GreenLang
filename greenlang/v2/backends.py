@@ -212,6 +212,114 @@ def _run_ghg_backend_local(input_path: Path, output_dir: Path) -> BackendRunResu
     )
 
 
+def _run_sb253_backend_local(input_path: Path, output_dir: Path) -> BackendRunResult:
+    payload = _load_json_input(input_path)
+    activities = payload.get("activities", [])
+    total_emissions = 0.0
+    records = 0
+    if isinstance(activities, list):
+        for row in activities:
+            if not isinstance(row, dict):
+                continue
+            records += 1
+            quantity = float(row.get("quantity", 0) or 0)
+            factor = float(row.get("emission_factor", 0) or 0)
+            total_emissions += quantity * factor
+    status = "blocked" if bool(payload.get("policy_block", False)) else "ok"
+    report = {
+        "app_id": "GL-SB253-APP",
+        "pipeline_id": "sb253-disclosure-v2",
+        "status": status,
+        "records_processed": records,
+        "total_emissions_kgco2e": round(total_emissions, 6),
+    }
+    (output_dir / "sb253_disclosure.json").write_text(
+        json.dumps(report, indent=2, sort_keys=True),
+        encoding="utf-8",
+    )
+    artifacts = _required_artifacts("sb253")
+    _write_audit_bundle(
+        output_dir=output_dir,
+        app_id="GL-SB253-APP",
+        pipeline_id="sb253-disclosure-v2",
+        artifacts=artifacts,
+        status=status,
+    )
+    if status == "blocked":
+        return BackendRunResult(
+            success=True,
+            exit_code=V2_BLOCKED_EXIT_CODE,
+            artifacts=artifacts,
+            errors=[],
+            warnings=["policy gate blocked SB253 export"],
+            native_backend_used=True,
+            fallback_used=False,
+        )
+    return BackendRunResult(
+        success=True,
+        exit_code=0,
+        artifacts=artifacts,
+        errors=[],
+        warnings=[],
+        native_backend_used=True,
+        fallback_used=True,
+    )
+
+
+def _run_taxonomy_backend_local(input_path: Path, output_dir: Path) -> BackendRunResult:
+    payload = _load_json_input(input_path)
+    activities = payload.get("activities", [])
+    total_emissions = 0.0
+    records = 0
+    if isinstance(activities, list):
+        for row in activities:
+            if not isinstance(row, dict):
+                continue
+            records += 1
+            quantity = float(row.get("quantity", 0) or 0)
+            factor = float(row.get("emission_factor", 0) or 0)
+            total_emissions += quantity * factor
+    status = "blocked" if bool(payload.get("policy_block", False)) else "ok"
+    report = {
+        "app_id": "GL-Taxonomy-APP",
+        "pipeline_id": "eu-taxonomy-alignment-v2",
+        "status": status,
+        "records_processed": records,
+        "total_emissions_kgco2e": round(total_emissions, 6),
+    }
+    (output_dir / "taxonomy_alignment.json").write_text(
+        json.dumps(report, indent=2, sort_keys=True),
+        encoding="utf-8",
+    )
+    artifacts = _required_artifacts("taxonomy")
+    _write_audit_bundle(
+        output_dir=output_dir,
+        app_id="GL-Taxonomy-APP",
+        pipeline_id="eu-taxonomy-alignment-v2",
+        artifacts=artifacts,
+        status=status,
+    )
+    if status == "blocked":
+        return BackendRunResult(
+            success=True,
+            exit_code=V2_BLOCKED_EXIT_CODE,
+            artifacts=artifacts,
+            errors=[],
+            warnings=["policy gate blocked taxonomy export"],
+            native_backend_used=True,
+            fallback_used=False,
+        )
+    return BackendRunResult(
+        success=True,
+        exit_code=0,
+        artifacts=artifacts,
+        errors=[],
+        warnings=[],
+        native_backend_used=True,
+        fallback_used=True,
+    )
+
+
 def _run_iso14064_backend_local(input_path: Path, output_dir: Path) -> BackendRunResult:
     payload = _load_json_input(input_path)
     controls = payload.get("controls", [])
@@ -598,6 +706,148 @@ def run_v2_profile_backend(
                     )
                 result = _run_iso14064_backend_local(input_path=input_path, output_dir=output_dir)
                 result.warnings = result.warnings + ["iso14064 fallback adapter engaged"]
+        except ValueError as exc:
+            return BackendRunResult(
+                success=False,
+                exit_code=2,
+                artifacts=[],
+                errors=[str(exc)],
+                warnings=[],
+                native_backend_used=False,
+                fallback_used=False,
+            )
+    elif key == "sb253":
+        try:
+            app_dir = REPO_ROOT / "applications" / "GL-SB253-APP"
+            entrypoint = app_dir / "v2" / "runtime_backend.py"
+            if entrypoint.exists():
+                code, output = _run_native_v2_backend(
+                    app_dir=app_dir,
+                    input_path=input_path,
+                    output_dir=output_dir,
+                )
+                if code == 0:
+                    artifacts = _required_artifacts("sb253")
+                    payload = json.loads(
+                        (output_dir / "sb253_disclosure.json").read_text(encoding="utf-8")
+                    )
+                    blocked = payload.get("status") == "blocked"
+                    _write_audit_bundle(
+                        output_dir=output_dir,
+                        app_id="GL-SB253-APP",
+                        pipeline_id="sb253-disclosure-v2",
+                        artifacts=artifacts,
+                        status="blocked" if blocked else "ok",
+                    )
+                    result = BackendRunResult(
+                        success=True,
+                        exit_code=V2_BLOCKED_EXIT_CODE if blocked else 0,
+                        artifacts=artifacts,
+                        errors=[],
+                        warnings=["policy gate blocked SB253 export"] if blocked else [],
+                        native_backend_used=True,
+                        fallback_used=False,
+                    )
+                else:
+                    native_failures.append(f"sb253 native backend failed: {code}")
+                    native_failures.append(output[-800:])
+                    if strict and not allow_fallback:
+                        return BackendRunResult(
+                            success=False,
+                            exit_code=code or 1,
+                            artifacts=[],
+                            errors=native_failures,
+                            warnings=[],
+                            native_backend_used=False,
+                            fallback_used=False,
+                        )
+                    result = _run_sb253_backend_local(input_path=input_path, output_dir=output_dir)
+                    result.errors = native_failures + result.errors
+                    result.warnings = result.warnings + ["sb253 fallback adapter engaged"]
+            else:
+                if strict and not allow_fallback:
+                    return BackendRunResult(
+                        success=False,
+                        exit_code=1,
+                        artifacts=[],
+                        errors=["sb253 native backend missing: applications/GL-SB253-APP/v2/runtime_backend.py"],
+                        warnings=[],
+                        native_backend_used=False,
+                        fallback_used=False,
+                    )
+                result = _run_sb253_backend_local(input_path=input_path, output_dir=output_dir)
+                result.warnings = result.warnings + ["sb253 fallback adapter engaged"]
+        except ValueError as exc:
+            return BackendRunResult(
+                success=False,
+                exit_code=2,
+                artifacts=[],
+                errors=[str(exc)],
+                warnings=[],
+                native_backend_used=False,
+                fallback_used=False,
+            )
+    elif key == "taxonomy":
+        try:
+            app_dir = REPO_ROOT / "applications" / "GL-Taxonomy-APP"
+            entrypoint = app_dir / "v2" / "runtime_backend.py"
+            if entrypoint.exists():
+                code, output = _run_native_v2_backend(
+                    app_dir=app_dir,
+                    input_path=input_path,
+                    output_dir=output_dir,
+                )
+                if code == 0:
+                    artifacts = _required_artifacts("taxonomy")
+                    payload = json.loads(
+                        (output_dir / "taxonomy_alignment.json").read_text(encoding="utf-8")
+                    )
+                    blocked = payload.get("status") == "blocked"
+                    _write_audit_bundle(
+                        output_dir=output_dir,
+                        app_id="GL-Taxonomy-APP",
+                        pipeline_id="eu-taxonomy-alignment-v2",
+                        artifacts=artifacts,
+                        status="blocked" if blocked else "ok",
+                    )
+                    result = BackendRunResult(
+                        success=True,
+                        exit_code=V2_BLOCKED_EXIT_CODE if blocked else 0,
+                        artifacts=artifacts,
+                        errors=[],
+                        warnings=["policy gate blocked taxonomy export"] if blocked else [],
+                        native_backend_used=True,
+                        fallback_used=False,
+                    )
+                else:
+                    native_failures.append(f"taxonomy native backend failed: {code}")
+                    native_failures.append(output[-800:])
+                    if strict and not allow_fallback:
+                        return BackendRunResult(
+                            success=False,
+                            exit_code=code or 1,
+                            artifacts=[],
+                            errors=native_failures,
+                            warnings=[],
+                            native_backend_used=False,
+                            fallback_used=False,
+                        )
+                    result = _run_taxonomy_backend_local(input_path=input_path, output_dir=output_dir)
+                    result.errors = native_failures + result.errors
+                    result.warnings = result.warnings + ["taxonomy fallback adapter engaged"]
+            else:
+                if strict and not allow_fallback:
+                    return BackendRunResult(
+                        success=False,
+                        exit_code=1,
+                        artifacts=[],
+                        errors=["taxonomy native backend missing: applications/GL-Taxonomy-APP/v2/runtime_backend.py"],
+                        warnings=[],
+                        native_backend_used=False,
+                        fallback_used=False,
+                    )
+                result = _run_taxonomy_backend_local(input_path=input_path, output_dir=output_dir)
+                result.warnings = result.warnings + ["taxonomy fallback adapter engaged"]
         except ValueError as exc:
             return BackendRunResult(
                 success=False,

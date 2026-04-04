@@ -17,13 +17,14 @@ import os
 import re
 import shutil
 import tempfile
+import time
 import zipfile
 import uuid
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
-from fastapi import FastAPI, File, Form, UploadFile, Request, HTTPException
+from fastapi import FastAPI, File, Form, UploadFile, Request, HTTPException, Query
 from fastapi.responses import HTMLResponse, FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -67,6 +68,8 @@ SHELL_BASELINE_MARKERS = """
   <a href="/apps/eudr">Open EUDR Workspace</a>
   <a href="/apps/ghg">Open GHG Workspace</a>
   <a href="/apps/iso14064">Open ISO14064 Workspace</a>
+  <a href="/apps/sb253">Open SB253 Workspace</a>
+  <a href="/apps/taxonomy">Open Taxonomy Workspace</a>
   <a href="/runs">Run Center</a>
   <a href="/governance">Governance Center</a>
 </noscript>
@@ -99,6 +102,167 @@ def _sanitize_errors(errors: list[str]) -> list[str]:
     return [_sanitize_error_message(err) for err in errors]
 
 
+def _derive_run_state(success: bool, can_export: bool, warnings: list[str] | None) -> str:
+    """UI run lifecycle state aligned with the enterprise shell contract."""
+    if not success:
+        return "failed"
+    if not can_export:
+        return "blocked"
+    if warnings:
+        return "partial_success"
+    return "completed"
+
+
+def _status_chip_for_run_state(run_state: str) -> str:
+    """PASS / WARN / FAIL chips for enterprise shell run lists."""
+    rs = (run_state or "").lower()
+    if rs in ("failed", "blocked"):
+        return "FAIL"
+    if rs == "partial_success":
+        return "WARN"
+    if rs == "completed":
+        return "PASS"
+    return "WARN"
+
+
+def _error_envelope(errors: list[str] | None) -> dict | None:
+    err = [e for e in (errors or []) if e]
+    if not err:
+        return None
+    return {
+        "title": "Run encountered errors",
+        "message": err[0],
+        "details": err[1:12],
+    }
+
+
+def _decorate_run_response(app: FastAPI, run_id: str, payload: dict) -> dict:
+    """Attach status_chip, lifecycle_phase, and error_envelope to match GET /api/v1/runs rows."""
+    meta = app.state.session_meta.get(run_id)
+    if not meta:
+        return payload
+    rs = meta.get("run_state")
+    if rs is None:
+        rs = _derive_run_state(
+            bool(meta.get("success")),
+            bool(meta.get("can_export", True)),
+            meta.get("warnings") or [],
+        )
+    out = dict(payload)
+    out["run_state"] = str(rs)
+    out["lifecycle_phase"] = "completed"
+    out["status_chip"] = _status_chip_for_run_state(str(rs))
+    raw_err = meta.get("errors_tail")
+    if raw_err is None:
+        raw_err = meta.get("errors")
+    err_list = raw_err if isinstance(raw_err, list) else None
+    out["error_envelope"] = _error_envelope(err_list)
+    return out
+
+
+def _merge_live_connector_probe_signals(base: dict, probes: list[dict] | None) -> dict:
+    """Append incidents for failed probes; add lightweight probe metadata for admin UI."""
+    if not probes:
+        return base
+    out = dict(base)
+    incidents = list(out.get("connector_incidents") or [])
+    for row in probes:
+        if not isinstance(row, dict):
+            continue
+        if row.get("ok") is False:
+            incidents.append(
+                {
+                    "connector_id": str(row.get("connector_id", "")),
+                    "app_id": str(row.get("app_id", "")),
+                    "severity": "warning",
+                    "message": row.get("message") or "Live connector health probe reported failure",
+                }
+            )
+    out["connector_incidents"] = incidents
+    out["connector_probe_meta"] = {
+        "probe_count": len(probes),
+        "last_refresh_utc": probes[0].get("checked_at_utc") if probes else None,
+    }
+    return out
+
+
+def _shell_chrome_context_dict(repo_root: Path) -> dict:
+    """Aggregated governance + connector signals for shell chrome (rail + incident banner)."""
+    packs_path = repo_root / "greenlang" / "ecosystem" / "packs" / "v2_tier_registry.yaml"
+    agents_path = repo_root / "greenlang" / "agents" / "v2_agent_registry.yaml"
+    bundles_dir = repo_root / "greenlang" / "governance" / "policy" / "bundles"
+    connectors_path = repo_root / "applications" / "connectors" / "v2_connector_registry.yaml"
+    managed_pack_count = 0
+    try:
+        if packs_path.exists():
+            payload = yaml.safe_load(packs_path.read_text(encoding="utf-8")) or {}
+            packs = payload.get("pilot_packs", []) if isinstance(payload, dict) else []
+            managed_pack_count = len([p for p in packs if isinstance(p, dict)])
+    except Exception:
+        pass
+    deprecated_agent_count = 0
+    try:
+        if agents_path.exists():
+            payload = yaml.safe_load(agents_path.read_text(encoding="utf-8")) or {}
+            agents = payload.get("agents", []) if isinstance(payload, dict) else []
+            for ag in agents:
+                if isinstance(ag, dict) and str(ag.get("state", "")).lower() == "deprecated":
+                    deprecated_agent_count += 1
+    except Exception:
+        pass
+    policy_bundle_count = 0
+    try:
+        if bundles_dir.is_dir():
+            policy_bundle_count = len(list(bundles_dir.glob("*.rego")))
+    except OSError:
+        pass
+    incidents: list[dict] = []
+    try:
+        if connectors_path.exists():
+            payload = yaml.safe_load(connectors_path.read_text(encoding="utf-8")) or {}
+            raw = payload.get("connectors", []) if isinstance(payload, dict) else []
+            for row in raw:
+                if not isinstance(row, dict):
+                    continue
+                status = str(row.get("operational_status", "ok") or "ok").lower()
+                if status == "degraded":
+                    incidents.append(
+                        {
+                            "connector_id": row.get("connector_id", ""),
+                            "app_id": row.get("app_id", ""),
+                            "severity": "warning",
+                            "message": row.get("incident_summary")
+                            or "Connector marked degraded in v2_connector_registry.yaml",
+                        }
+                    )
+    except Exception:
+        pass
+    return {
+        "compliance_rail": {
+            "managed_pack_count": managed_pack_count,
+            "policy_bundle_count": policy_bundle_count,
+            "deprecated_agent_count": deprecated_agent_count,
+        },
+        "connector_incidents": incidents,
+    }
+
+
+def _run_session_fields(
+    *,
+    success: bool,
+    can_export: bool,
+    warnings: list[str] | None,
+    errors: list[str] | None,
+) -> dict:
+    warn_list = list(warnings or [])
+    err_list = list(errors or [])
+    return {
+        "run_state": _derive_run_state(success, can_export, warn_list),
+        "warnings": warn_list,
+        "errors_tail": err_list[:12],
+    }
+
+
 def _inject_shell_baseline_markers(html: str) -> str:
     """Inject stable route/tokens for shell UX baseline checks."""
     if not html or "shell-baseline-markers" in html:
@@ -129,6 +293,7 @@ def create_app() -> FastAPI:
     app.state.output_dirs = {}
     app.state.session_meta = {}
     app.state.rate_limits = {}
+    app.state.connector_health_probes = []
 
     frontend_assets = FRONTEND_DIST_DIR / "assets"
     if frontend_assets.exists():
@@ -243,6 +408,20 @@ def create_app() -> FastAPI:
             return react_shell
         return get_iso14064_html()
 
+    @app.get("/apps/sb253", response_class=HTMLResponse)
+    async def sb253_workspace(request: Request):
+        react_shell = _serve_react_shell_if_available()
+        if react_shell is not None:
+            return react_shell
+        return get_ghg_html()
+
+    @app.get("/apps/taxonomy", response_class=HTMLResponse)
+    async def taxonomy_workspace(request: Request):
+        react_shell = _serve_react_shell_if_available()
+        if react_shell is not None:
+            return react_shell
+        return get_ghg_html()
+
     @app.get("/runs", response_class=HTMLResponse)
     async def runs_center(request: Request):
         """Render run center page (simple list)."""
@@ -290,13 +469,52 @@ def create_app() -> FastAPI:
         return {"ok": True}
 
     @app.get("/api/v1/runs")
-    async def list_runs(request: Request):
+    async def list_runs(
+        request: Request,
+        app_id: str | None = Query(default=None, description="Filter by app_id (case-insensitive)"),
+        status: str | None = Query(
+            default=None,
+            description="Filter by run_state or status_chip (e.g. blocked, FAIL, completed)",
+        ),
+        since_ts: float | None = Query(default=None, description="Minimum created_at_ts (unix seconds)"),
+        until_ts: float | None = Query(default=None, description="Maximum created_at_ts (unix seconds)"),
+        q: str | None = Query(default=None, description="Substring match on run_id or app_id"),
+    ):
         """List run records across apps for UI."""
         _require_api_key(request)
         _enforce_rate_limit(request)
         _prune_expired_sessions()
         runs = []
+        app_filter = (app_id or "").strip().lower()
+        status_filter = (status or "").strip().lower()
+        q_filter = (q or "").strip().lower()
         for run_id, meta in app.state.session_meta.items():
+            rs = meta.get("run_state") or _derive_run_state(
+                bool(meta.get("success")),
+                bool(meta.get("can_export", True)),
+                meta.get("warnings") or [],
+            )
+            chip = _status_chip_for_run_state(str(rs))
+            cat_ts = meta.get("created_at_ts")
+            if app_filter and str(meta.get("app_id") or "").lower() != app_filter:
+                continue
+            if since_ts is not None and cat_ts is not None and float(cat_ts) < since_ts:
+                continue
+            if until_ts is not None and cat_ts is not None and float(cat_ts) > until_ts:
+                continue
+            if status_filter:
+                rs_l = str(rs).lower()
+                chip_l = chip.lower()
+                st_l = str(meta.get("status") or "").lower()
+                match = status_filter in {rs_l, chip_l, st_l}
+                if not match and status_filter in {"fail", "failed"} and rs_l == "failed":
+                    match = True
+                if not match and status_filter in {"warn", "warning"} and rs_l == "partial_success":
+                    match = True
+                if not match:
+                    continue
+            if q_filter and q_filter not in run_id.lower() and q_filter not in str(meta.get("app_id") or "").lower():
+                continue
             runs.append(
                 {
                     "run_id": run_id,
@@ -306,6 +524,11 @@ def create_app() -> FastAPI:
                     "execution_mode": meta.get("execution_mode"),
                     "success": meta.get("success"),
                     "artifacts": meta.get("artifacts", []),
+                    "can_export": meta.get("can_export", True),
+                    "run_state": rs,
+                    "lifecycle_phase": "completed",
+                    "status_chip": chip,
+                    "error_envelope": _error_envelope(meta.get("errors_tail") or meta.get("errors")),
                 }
             )
         runs.sort(key=lambda item: item.get("created_at_ts") or 0, reverse=True)
@@ -384,6 +607,182 @@ def create_app() -> FastAPI:
             bundles.append({"bundle": bundle.name, "bytes": size})
         return {"bundles": bundles}
 
+    @app.get("/api/v1/shell/chrome-context")
+    async def shell_chrome_context(request: Request):
+        """Compliance rail + connector incident signals for enterprise shell chrome."""
+        _require_api_key(request)
+        _enforce_rate_limit(request)
+        repo_root = Path(__file__).resolve().parents[4]
+        base = _shell_chrome_context_dict(repo_root)
+        probes = getattr(app.state, "connector_health_probes", None)
+        return _merge_live_connector_probe_signals(base, probes if isinstance(probes, list) else None)
+
+    @app.get("/api/v1/admin/release-train")
+    async def admin_release_train(request: Request):
+        _require_api_key(request)
+        _enforce_rate_limit(request)
+        repo_root = Path(__file__).resolve().parents[4]
+        evidence_path = repo_root / "docs" / "v2" / "RELEASE_TRAIN_LOCAL_EVIDENCE.json"
+        if not evidence_path.exists():
+            return {"available": False, "evidence": None}
+        try:
+            payload = json.loads(evidence_path.read_text(encoding="utf-8"))
+        except Exception as exc:
+            raise HTTPException(status_code=500, detail="Failed to read release train evidence") from exc
+        cycles = payload.get("cycles") if isinstance(payload, dict) else None
+        summary = []
+        if isinstance(cycles, list):
+            for cycle in cycles:
+                if not isinstance(cycle, dict):
+                    continue
+                summary.append(
+                    {
+                        "cycle": cycle.get("cycle"),
+                        "all_passed": cycle.get("all_passed"),
+                        "executed_at_utc": cycle.get("executed_at_utc"),
+                    }
+                )
+        return {"available": True, "evidence": payload, "cycle_summary": summary}
+
+    @app.get("/api/v1/admin/connectors")
+    async def admin_connectors(request: Request):
+        _require_api_key(request)
+        _enforce_rate_limit(request)
+        repo_root = Path(__file__).resolve().parents[4]
+        registry_path = repo_root / "applications" / "connectors" / "v2_connector_registry.yaml"
+        if not registry_path.exists():
+            raise HTTPException(status_code=404, detail="Connector registry not found")
+        try:
+            payload = yaml.safe_load(registry_path.read_text(encoding="utf-8")) or {}
+        except Exception as exc:
+            raise HTTPException(status_code=500, detail="Failed to read connector registry") from exc
+        connectors_raw = payload.get("connectors", []) if isinstance(payload, dict) else []
+        connectors = []
+        for row in connectors_raw:
+            if not isinstance(row, dict):
+                continue
+            rp = row.get("reliability_profile") if isinstance(row.get("reliability_profile"), dict) else {}
+            timeout = rp.get("timeout") if isinstance(rp.get("timeout"), dict) else {}
+            connectors.append(
+                {
+                    "connector_id": row.get("connector_id", ""),
+                    "app_id": row.get("app_id", ""),
+                    "owner_team": row.get("owner_team", ""),
+                    "support_channel": row.get("support_channel", ""),
+                    "read_timeout_ms": timeout.get("read_ms"),
+                    "circuit_open_s": (rp.get("circuit_breaker") or {}).get("open_state_seconds"),
+                    "operational_status": row.get("operational_status", "ok"),
+                    "incident_summary": row.get("incident_summary"),
+                    "slo_target_availability_pct": row.get("slo_target_availability_pct"),
+                    "runbook_url": row.get("runbook_url"),
+                }
+            )
+        return {"registry_version": payload.get("registry_version", ""), "connectors": connectors}
+
+    @app.get("/api/v1/admin/connectors/health")
+    async def admin_connectors_health(request: Request):
+        """
+        Lightweight live probe stub: records per-connector latency metadata for shell chrome merge.
+        Call periodically or from admin workflows; does not replace registry governance truth.
+        """
+        _require_api_key(request)
+        _enforce_rate_limit(request)
+        repo_root = Path(__file__).resolve().parents[4]
+        registry_path = repo_root / "applications" / "connectors" / "v2_connector_registry.yaml"
+        if not registry_path.exists():
+            raise HTTPException(status_code=404, detail="Connector registry not found")
+        try:
+            payload = yaml.safe_load(registry_path.read_text(encoding="utf-8")) or {}
+        except Exception as exc:
+            raise HTTPException(status_code=500, detail="Failed to read connector registry") from exc
+        connectors_raw = payload.get("connectors", []) if isinstance(payload, dict) else []
+        now = datetime.utcnow().isoformat() + "Z"
+        probes: list[dict] = []
+        for row in connectors_raw:
+            if not isinstance(row, dict):
+                continue
+            t0 = time.perf_counter()
+            latency_ms = max(0, int((time.perf_counter() - t0) * 1000))
+            op = str(row.get("operational_status", "ok") or "ok").lower()
+            probes.append(
+                {
+                    "connector_id": row.get("connector_id", ""),
+                    "app_id": row.get("app_id", ""),
+                    "ok": True,
+                    "latency_ms": latency_ms,
+                    "checked_at_utc": now,
+                    "registry_status": op,
+                }
+            )
+        app.state.connector_health_probes = probes
+        return {"updated_at_utc": now, "probes": probes}
+
+    if os.getenv("GL_SHELL_E2E_FIXTURES", "").strip().lower() in {"1", "true", "yes", "on"}:
+
+        @app.post("/api/v1/e2e/shell-fixture-run")
+        async def e2e_shell_fixture_run(request: Request):
+            """Deterministic run payloads for Playwright (disabled unless GL_SHELL_E2E_FIXTURES is set)."""
+            _require_api_key(request)
+            _enforce_rate_limit(request)
+            try:
+                body = await request.json()
+            except Exception:
+                body = {}
+            mode = str(body.get("mode", "")).lower()
+            if mode not in {"blocked", "partial_success"}:
+                raise HTTPException(status_code=400, detail="mode must be blocked or partial_success")
+            run_id = uuid.uuid4().hex
+            out_root = Path(tempfile.mkdtemp(prefix="e2e_fixture_"))
+            out_dir = out_root / "output"
+            out_dir.mkdir(parents=True, exist_ok=True)
+            (out_dir / "fixture.txt").write_text("e2e fixture artifact\n", encoding="utf-8")
+            app.state.output_dirs[run_id] = out_dir
+            if mode == "blocked":
+                extra = _run_session_fields(
+                    success=True, can_export=False, warnings=[], errors=["Fixture: export blocked for E2E"]
+                )
+                meta = {
+                    "app_id": "e2e_fixture",
+                    "status": "completed",
+                    "success": True,
+                    "execution_mode": "native",
+                    "artifacts": ["fixture.txt"],
+                    "created_at_ts": datetime.utcnow().timestamp(),
+                    "can_export": False,
+                    **extra,
+                }
+            else:
+                extra = _run_session_fields(
+                    success=True,
+                    can_export=True,
+                    warnings=["Fixture: partial_success warning"],
+                    errors=[],
+                )
+                meta = {
+                    "app_id": "e2e_fixture",
+                    "status": "completed",
+                    "success": True,
+                    "execution_mode": "native",
+                    "artifacts": ["fixture.txt"],
+                    "created_at_ts": datetime.utcnow().timestamp(),
+                    "can_export": True,
+                    **extra,
+                }
+            app.state.session_meta[run_id] = meta
+            base = {
+                "ok": True,
+                "run_id": run_id,
+                "app_id": meta["app_id"],
+                "success": meta["success"],
+                "status": meta["status"],
+                "artifacts": meta["artifacts"],
+                "can_export": meta["can_export"],
+                "warnings": list(meta.get("warnings") or []),
+                "errors": _sanitize_errors(list(meta.get("errors_tail") or [])),
+                "execution_mode": meta["execution_mode"],
+            }
+            return _decorate_run_response(app, run_id, base)
+
     @app.get("/api/v1/stream/runs")
     async def stream_runs(request: Request):
         _require_api_key(request)
@@ -442,6 +841,10 @@ def create_app() -> FastAPI:
 
             run_id = uuid.uuid4().hex
             app.state.output_dirs[run_id] = out_dir
+            can_x = bool(result.success)
+            extra = _run_session_fields(
+                success=can_x, can_export=can_x, warnings=result.warnings, errors=result.errors
+            )
             app.state.session_meta[run_id] = {
                 "app_id": "csrd",
                 "status": "completed" if result.success else "failed",
@@ -449,7 +852,8 @@ def create_app() -> FastAPI:
                 "execution_mode": "native" if result.native_backend_used else ("fallback" if result.fallback_used else "unknown"),
                 "artifacts": result.artifacts,
                 "created_at_ts": datetime.utcnow().timestamp(),
-                "can_export": bool(result.success),
+                "can_export": can_x,
+                **extra,
             }
             summary = {}
             report_path = out_dir / "esrs_report.json"
@@ -458,17 +862,23 @@ def create_app() -> FastAPI:
                     summary = json.loads(report_path.read_text(encoding="utf-8"))
                 except Exception:
                     summary = {"note": "esrs_report.json present but could not be parsed"}
-            return {
-                "run_id": run_id,
-                "app_id": "csrd",
-                "success": bool(result.success),
-                "status": "completed" if result.success else "failed",
-                "execution_mode": app.state.session_meta[run_id]["execution_mode"],
-                "artifacts": result.artifacts,
-                "warnings": result.warnings,
-                "errors": _sanitize_errors(result.errors),
-                "summary": summary,
-            }
+            return _decorate_run_response(
+                app,
+                run_id,
+                {
+                    "run_id": run_id,
+                    "app_id": "csrd",
+                    "success": bool(result.success),
+                    "status": "completed" if result.success else "failed",
+                    "run_state": extra["run_state"],
+                    "execution_mode": app.state.session_meta[run_id]["execution_mode"],
+                    "artifacts": result.artifacts,
+                    "can_export": can_x,
+                    "warnings": result.warnings,
+                    "errors": _sanitize_errors(result.errors),
+                    "summary": summary,
+                },
+            )
         except HTTPException:
             shutil.rmtree(temp_dir, ignore_errors=True)
             raise
@@ -509,6 +919,10 @@ def create_app() -> FastAPI:
 
             run_id = uuid.uuid4().hex
             app.state.output_dirs[run_id] = out_dir
+            can_x = bool(result.success)
+            extra = _run_session_fields(
+                success=can_x, can_export=can_x, warnings=result.warnings, errors=result.errors
+            )
             app.state.session_meta[run_id] = {
                 "app_id": "vcci",
                 "status": "completed" if result.success else "failed",
@@ -516,7 +930,8 @@ def create_app() -> FastAPI:
                 "execution_mode": "native" if result.native_backend_used else ("fallback" if result.fallback_used else "unknown"),
                 "artifacts": result.artifacts,
                 "created_at_ts": datetime.utcnow().timestamp(),
-                "can_export": bool(result.success),
+                "can_export": can_x,
+                **extra,
             }
             summary = {}
             inv_path = out_dir / "scope3_inventory.json"
@@ -525,17 +940,23 @@ def create_app() -> FastAPI:
                     summary = json.loads(inv_path.read_text(encoding="utf-8"))
                 except Exception:
                     summary = {"note": "scope3_inventory.json present but could not be parsed"}
-            return {
-                "run_id": run_id,
-                "app_id": "vcci",
-                "success": bool(result.success),
-                "status": "completed" if result.success else "failed",
-                "execution_mode": app.state.session_meta[run_id]["execution_mode"],
-                "artifacts": result.artifacts,
-                "warnings": result.warnings,
-                "errors": _sanitize_errors(result.errors),
-                "summary": summary,
-            }
+            return _decorate_run_response(
+                app,
+                run_id,
+                {
+                    "run_id": run_id,
+                    "app_id": "vcci",
+                    "success": bool(result.success),
+                    "status": "completed" if result.success else "failed",
+                    "run_state": extra["run_state"],
+                    "execution_mode": app.state.session_meta[run_id]["execution_mode"],
+                    "artifacts": result.artifacts,
+                    "can_export": can_x,
+                    "warnings": result.warnings,
+                    "errors": _sanitize_errors(result.errors),
+                    "summary": summary,
+                },
+            )
         except HTTPException:
             shutil.rmtree(temp_dir, ignore_errors=True)
             raise
@@ -565,8 +986,28 @@ def create_app() -> FastAPI:
             native_backend_used=bool(result.native_backend_used),
             fallback_used=bool(result.fallback_used),
             artifacts=result.artifacts,
+            can_export=bool(result.success),
+            warnings=result.warnings,
+            errors=result.errors,
         )
-        return {"ok": True, "run_id": run_id, "artifacts": result.artifacts, "execution_mode": app.state.session_meta[run_id]["execution_mode"]}
+        meta = app.state.session_meta[run_id]
+        return _decorate_run_response(
+            app,
+            run_id,
+            {
+                "ok": True,
+                "run_id": run_id,
+                "app_id": "csrd",
+                "success": bool(result.success),
+                "status": "completed" if result.success else "failed",
+                "run_state": meta["run_state"],
+                "artifacts": result.artifacts,
+                "can_export": meta["can_export"],
+                "warnings": result.warnings,
+                "errors": _sanitize_errors(result.errors),
+                "execution_mode": meta["execution_mode"],
+            },
+        )
 
     @app.post("/api/v1/apps/vcci/demo-run")
     async def run_vcci_demo(request: Request):
@@ -590,8 +1031,28 @@ def create_app() -> FastAPI:
             native_backend_used=bool(result.native_backend_used),
             fallback_used=bool(result.fallback_used),
             artifacts=result.artifacts,
+            can_export=bool(result.success),
+            warnings=result.warnings,
+            errors=result.errors,
         )
-        return {"ok": True, "run_id": run_id, "artifacts": result.artifacts, "execution_mode": app.state.session_meta[run_id]["execution_mode"]}
+        meta = app.state.session_meta[run_id]
+        return _decorate_run_response(
+            app,
+            run_id,
+            {
+                "ok": True,
+                "run_id": run_id,
+                "app_id": "vcci",
+                "success": bool(result.success),
+                "status": "completed" if result.success else "failed",
+                "run_state": meta["run_state"],
+                "artifacts": result.artifacts,
+                "can_export": meta["can_export"],
+                "warnings": result.warnings,
+                "errors": _sanitize_errors(result.errors),
+                "execution_mode": meta["execution_mode"],
+            },
+        )
 
     async def _run_v2_json_app(request: Request, app_key: str, input_file: UploadFile) -> dict:
         _require_api_key(request)
@@ -623,6 +1084,10 @@ def create_app() -> FastAPI:
 
             run_id = uuid.uuid4().hex
             blocked = result.exit_code == V2_BLOCKED_EXIT_CODE
+            can_x = bool(result.success and not blocked)
+            extra = _run_session_fields(
+                success=bool(result.success), can_export=can_x, warnings=result.warnings, errors=result.errors
+            )
             app.state.output_dirs[run_id] = out_dir
             app.state.session_meta[run_id] = {
                 "app_id": app_key,
@@ -631,7 +1096,8 @@ def create_app() -> FastAPI:
                 "execution_mode": "native" if result.native_backend_used else ("fallback" if result.fallback_used else "unknown"),
                 "artifacts": result.artifacts,
                 "created_at_ts": datetime.utcnow().timestamp(),
-                "can_export": bool(result.success and not blocked),
+                "can_export": can_x,
+                **extra,
             }
 
             summary = {}
@@ -639,6 +1105,8 @@ def create_app() -> FastAPI:
                 "eudr": "due_diligence_statement.json",
                 "ghg": "ghg_inventory.json",
                 "iso14064": "iso14064_verification_report.json",
+                "sb253": "sb253_disclosure.json",
+                "taxonomy": "taxonomy_alignment.json",
             }
             artifact_name = summary_artifacts.get(app_key)
             if artifact_name and (out_dir / artifact_name).exists():
@@ -647,17 +1115,23 @@ def create_app() -> FastAPI:
                 except Exception:
                     summary = {"note": f"{artifact_name} present but could not be parsed"}
 
-            return {
-                "run_id": run_id,
-                "app_id": app_key,
-                "success": bool(result.success),
-                "status": "completed" if result.success else "failed",
-                "execution_mode": app.state.session_meta[run_id]["execution_mode"],
-                "artifacts": result.artifacts,
-                "warnings": result.warnings,
-                "errors": _sanitize_errors(result.errors),
-                "summary": summary,
-            }
+            return _decorate_run_response(
+                app,
+                run_id,
+                {
+                    "run_id": run_id,
+                    "app_id": app_key,
+                    "success": bool(result.success),
+                    "status": "completed" if result.success else "failed",
+                    "run_state": extra["run_state"],
+                    "execution_mode": app.state.session_meta[run_id]["execution_mode"],
+                    "artifacts": result.artifacts,
+                    "can_export": can_x,
+                    "warnings": result.warnings,
+                    "errors": _sanitize_errors(result.errors),
+                    "summary": summary,
+                },
+            )
         except HTTPException:
             shutil.rmtree(temp_dir, ignore_errors=True)
             raise
@@ -677,6 +1151,14 @@ def create_app() -> FastAPI:
     async def run_iso14064(request: Request, input_file: UploadFile = File(...)):
         return await _run_v2_json_app(request=request, app_key="iso14064", input_file=input_file)
 
+    @app.post("/api/v1/apps/sb253/run")
+    async def run_sb253(request: Request, input_file: UploadFile = File(...)):
+        return await _run_v2_json_app(request=request, app_key="sb253", input_file=input_file)
+
+    @app.post("/api/v1/apps/taxonomy/run")
+    async def run_taxonomy(request: Request, input_file: UploadFile = File(...)):
+        return await _run_v2_json_app(request=request, app_key="taxonomy", input_file=input_file)
+
     @app.post("/api/v1/apps/eudr/demo-run")
     async def run_eudr_demo(request: Request):
         _require_api_key(request)
@@ -695,16 +1177,39 @@ def create_app() -> FastAPI:
             strict=True,
             allow_fallback=True,
         )
+        blocked = result.exit_code == V2_BLOCKED_EXIT_CODE
+        pipeline_ok = bool(result.success)
+        can_x = bool(result.success and not blocked)
         run_id = _record_v1_run(
             app=app,
             app_id="eudr",
             out_dir=out_dir,
-            success=bool(result.success and result.exit_code == 0),
+            success=pipeline_ok,
             native_backend_used=bool(result.native_backend_used),
             fallback_used=bool(result.fallback_used),
             artifacts=result.artifacts,
+            can_export=can_x,
+            warnings=result.warnings,
+            errors=result.errors,
         )
-        return {"ok": True, "run_id": run_id, "artifacts": result.artifacts, "execution_mode": app.state.session_meta[run_id]["execution_mode"]}
+        meta = app.state.session_meta[run_id]
+        return _decorate_run_response(
+            app,
+            run_id,
+            {
+                "ok": True,
+                "run_id": run_id,
+                "app_id": "eudr",
+                "success": pipeline_ok,
+                "status": "completed" if pipeline_ok else "failed",
+                "run_state": meta["run_state"],
+                "artifacts": result.artifacts,
+                "can_export": can_x,
+                "warnings": result.warnings,
+                "errors": _sanitize_errors(result.errors),
+                "execution_mode": meta["execution_mode"],
+            },
+        )
 
     @app.post("/api/v1/apps/ghg/demo-run")
     async def run_ghg_demo(request: Request):
@@ -724,16 +1229,39 @@ def create_app() -> FastAPI:
             strict=True,
             allow_fallback=True,
         )
+        blocked = result.exit_code == V2_BLOCKED_EXIT_CODE
+        pipeline_ok = bool(result.success)
+        can_x = bool(result.success and not blocked)
         run_id = _record_v1_run(
             app=app,
             app_id="ghg",
             out_dir=out_dir,
-            success=bool(result.success and result.exit_code == 0),
+            success=pipeline_ok,
             native_backend_used=bool(result.native_backend_used),
             fallback_used=bool(result.fallback_used),
             artifacts=result.artifacts,
+            can_export=can_x,
+            warnings=result.warnings,
+            errors=result.errors,
         )
-        return {"ok": True, "run_id": run_id, "artifacts": result.artifacts, "execution_mode": app.state.session_meta[run_id]["execution_mode"]}
+        meta = app.state.session_meta[run_id]
+        return _decorate_run_response(
+            app,
+            run_id,
+            {
+                "ok": True,
+                "run_id": run_id,
+                "app_id": "ghg",
+                "success": pipeline_ok,
+                "status": "completed" if pipeline_ok else "failed",
+                "run_state": meta["run_state"],
+                "artifacts": result.artifacts,
+                "can_export": can_x,
+                "warnings": result.warnings,
+                "errors": _sanitize_errors(result.errors),
+                "execution_mode": meta["execution_mode"],
+            },
+        )
 
     @app.post("/api/v1/apps/iso14064/demo-run")
     async def run_iso14064_demo(request: Request):
@@ -753,16 +1281,143 @@ def create_app() -> FastAPI:
             strict=True,
             allow_fallback=True,
         )
+        blocked = result.exit_code == V2_BLOCKED_EXIT_CODE
+        pipeline_ok = bool(result.success)
+        can_x = bool(result.success and not blocked)
         run_id = _record_v1_run(
             app=app,
             app_id="iso14064",
             out_dir=out_dir,
-            success=bool(result.success and result.exit_code == 0),
+            success=pipeline_ok,
             native_backend_used=bool(result.native_backend_used),
             fallback_used=bool(result.fallback_used),
             artifacts=result.artifacts,
+            can_export=can_x,
+            warnings=result.warnings,
+            errors=result.errors,
         )
-        return {"ok": True, "run_id": run_id, "artifacts": result.artifacts, "execution_mode": app.state.session_meta[run_id]["execution_mode"]}
+        meta = app.state.session_meta[run_id]
+        return _decorate_run_response(
+            app,
+            run_id,
+            {
+                "ok": True,
+                "run_id": run_id,
+                "app_id": "iso14064",
+                "success": pipeline_ok,
+                "status": "completed" if pipeline_ok else "failed",
+                "run_state": meta["run_state"],
+                "artifacts": result.artifacts,
+                "can_export": can_x,
+                "warnings": result.warnings,
+                "errors": _sanitize_errors(result.errors),
+                "execution_mode": meta["execution_mode"],
+            },
+        )
+
+    @app.post("/api/v1/apps/sb253/demo-run")
+    async def run_sb253_demo(request: Request):
+        _require_api_key(request)
+        _enforce_rate_limit(request)
+        _prune_expired_sessions()
+        sample_input = _resolve_demo_input("sb253")
+        if sample_input is None:
+            raise HTTPException(status_code=404, detail="SB253 demo input not found")
+        temp_dir = tempfile.mkdtemp(prefix="sb253_demo_")
+        out_dir = Path(temp_dir) / "output"
+        out_dir.mkdir(parents=True, exist_ok=True)
+        result = run_v2_profile_backend(
+            profile_key="sb253",
+            input_path=sample_input,
+            output_dir=out_dir,
+            strict=True,
+            allow_fallback=True,
+        )
+        blocked = result.exit_code == V2_BLOCKED_EXIT_CODE
+        pipeline_ok = bool(result.success)
+        can_x = bool(result.success and not blocked)
+        run_id = _record_v1_run(
+            app=app,
+            app_id="sb253",
+            out_dir=out_dir,
+            success=pipeline_ok,
+            native_backend_used=bool(result.native_backend_used),
+            fallback_used=bool(result.fallback_used),
+            artifacts=result.artifacts,
+            can_export=can_x,
+            warnings=result.warnings,
+            errors=result.errors,
+        )
+        meta = app.state.session_meta[run_id]
+        return _decorate_run_response(
+            app,
+            run_id,
+            {
+                "ok": True,
+                "run_id": run_id,
+                "app_id": "sb253",
+                "success": pipeline_ok,
+                "status": "completed" if pipeline_ok else "failed",
+                "run_state": meta["run_state"],
+                "artifacts": result.artifacts,
+                "can_export": can_x,
+                "warnings": result.warnings,
+                "errors": _sanitize_errors(result.errors),
+                "execution_mode": meta["execution_mode"],
+            },
+        )
+
+    @app.post("/api/v1/apps/taxonomy/demo-run")
+    async def run_taxonomy_demo(request: Request):
+        _require_api_key(request)
+        _enforce_rate_limit(request)
+        _prune_expired_sessions()
+        sample_input = _resolve_demo_input("taxonomy")
+        if sample_input is None:
+            raise HTTPException(status_code=404, detail="Taxonomy demo input not found")
+        temp_dir = tempfile.mkdtemp(prefix="taxonomy_demo_")
+        out_dir = Path(temp_dir) / "output"
+        out_dir.mkdir(parents=True, exist_ok=True)
+        result = run_v2_profile_backend(
+            profile_key="taxonomy",
+            input_path=sample_input,
+            output_dir=out_dir,
+            strict=True,
+            allow_fallback=True,
+        )
+        blocked = result.exit_code == V2_BLOCKED_EXIT_CODE
+        pipeline_ok = bool(result.success)
+        can_x = bool(result.success and not blocked)
+        run_id = _record_v1_run(
+            app=app,
+            app_id="taxonomy",
+            out_dir=out_dir,
+            success=pipeline_ok,
+            native_backend_used=bool(result.native_backend_used),
+            fallback_used=bool(result.fallback_used),
+            artifacts=result.artifacts,
+            can_export=can_x,
+            warnings=result.warnings,
+            errors=result.errors,
+        )
+        meta = app.state.session_meta[run_id]
+        return _decorate_run_response(
+            app,
+            run_id,
+            {
+                "ok": True,
+                "run_id": run_id,
+                "app_id": "taxonomy",
+                "success": pipeline_ok,
+                "status": "completed" if pipeline_ok else "failed",
+                "run_state": meta["run_state"],
+                "artifacts": result.artifacts,
+                "can_export": can_x,
+                "warnings": result.warnings,
+                "errors": _sanitize_errors(result.errors),
+                "execution_mode": meta["execution_mode"],
+            },
+        )
 
     @app.get("/api/v1/runs/{run_id}/artifacts/{artifact_path:path}")
     async def download_run_artifact(run_id: str, artifact_path: str, request: Request):
@@ -942,17 +1597,32 @@ def create_app() -> FastAPI:
                 "can_export": can_export,
                 "export_label": export_label,
             }
+            warn_list_pf: list[str] = []
+            if compliance_status == "warning":
+                warn_list_pf.append(compliance_message)
+            if compliance_status == "policy_fail" and can_export:
+                warn_list_pf.append("Policy failed; draft export only.")
+            ok_run = bool(result.success)
+            extra_pf = _run_session_fields(
+                success=ok_run, can_export=can_export, warnings=warn_list_pf, errors=result.errors
+            )
             app.state.session_meta[session_id] = {
+                "app_id": "cbam",
+                "status": "completed" if ok_run else "failed",
+                "success": ok_run,
+                "execution_mode": "native",
+                "artifacts": result.artifacts,
+                "created_at_ts": datetime.utcnow().timestamp(),
                 "can_export": can_export,
                 "block_reason": (
                     _sanitize_error_message(result.errors[0])
                     if result.errors
                     else "Export is blocked for this session."
                 ),
-                "created_at_ts": datetime.utcnow().timestamp(),
+                **extra_pf,
             }
 
-            return response_data
+            return _decorate_run_response(app, session_id, response_data)
 
         except HTTPException:
             shutil.rmtree(temp_dir, ignore_errors=True)
@@ -995,15 +1665,25 @@ def create_app() -> FastAPI:
         run_id = payload.get("session_id") or uuid.uuid4().hex
         # Ensure the run appears in the run center with normalized metadata.
         meta = app.state.session_meta.get(run_id, {})
+        compliance = payload.get("compliance") or {}
+        warn_list: list[str] = []
+        if compliance.get("status") in {"warning", "warn"}:
+            warn_list.append("Compliance reported warnings; validate before export.")
+        if compliance.get("status") == "policy_fail" and compliance.get("can_export"):
+            warn_list.append("Policy failed but draft export is allowed.")
+        can_x = bool(compliance.get("can_export", True))
+        ok = bool(payload.get("success"))
+        extra = _run_session_fields(success=ok, can_export=can_x, warnings=warn_list, errors=payload.get("errors"))
         meta.update(
             {
                 "app_id": "cbam",
                 "status": "completed" if payload.get("success") else "failed",
-                "success": bool(payload.get("success")),
+                "success": ok,
                 "execution_mode": "native",
                 "artifacts": payload.get("artifacts", []),
                 "created_at_ts": meta.get("created_at_ts") or datetime.utcnow().timestamp(),
-                "can_export": bool((payload.get("compliance") or {}).get("can_export", True)),
+                "can_export": can_x,
+                **extra,
             }
         )
         app.state.session_meta[run_id] = meta
@@ -1015,17 +1695,23 @@ def create_app() -> FastAPI:
             "policy": payload.get("policy"),
             "gap_summary": payload.get("gap_summary"),
         }
-        return {
-            "run_id": run_id,
-            "app_id": "cbam",
-            "success": bool(payload.get("success")),
-            "status": "completed" if payload.get("success") else "failed",
-            "execution_mode": "native",
-            "artifacts": payload.get("artifacts", []),
-            "warnings": [],
-            "errors": payload.get("errors", []),
-            "summary": summary,
-        }
+        return _decorate_run_response(
+            app,
+            run_id,
+            {
+                "run_id": run_id,
+                "app_id": "cbam",
+                "success": bool(payload.get("success")),
+                "status": "completed" if payload.get("success") else "failed",
+                "run_state": meta.get("run_state", "completed"),
+                "execution_mode": "native",
+                "artifacts": payload.get("artifacts", []),
+                "can_export": can_x,
+                "warnings": warn_list,
+                "errors": payload.get("errors", []),
+                "summary": summary,
+            },
+        )
 
     @app.post("/api/v1/apps/cbam/demo-run")
     async def run_cbam_demo_v1(request: Request):
@@ -1051,6 +1737,16 @@ def create_app() -> FastAPI:
         run_id = uuid.uuid4().hex
         app.state.results[run_id] = result
         app.state.output_dirs[run_id] = output_dir
+        cbam_warnings: list[str] = []
+        pol = result.policy_result or {}
+        if pol.get("status") == "WARN":
+            cbam_warnings.append("CBAM policy status is WARN.")
+        extra = _run_session_fields(
+            success=bool(result.success),
+            can_export=bool(result.can_export),
+            warnings=cbam_warnings,
+            errors=result.errors,
+        )
         app.state.session_meta[run_id] = {
             "app_id": "cbam",
             "status": "completed" if result.success else "failed",
@@ -1062,15 +1758,25 @@ def create_app() -> FastAPI:
             "block_reason": (
                 _sanitize_error_message(result.errors[0]) if result.errors else "Export is blocked for this session."
             ),
+            **extra,
         }
-        return {
-            "ok": True,
-            "run_id": run_id,
-            "app_id": "cbam",
-            "success": bool(result.success),
-            "execution_mode": "native",
-            "artifacts": result.artifacts,
-        }
+        return _decorate_run_response(
+            app,
+            run_id,
+            {
+                "ok": True,
+                "run_id": run_id,
+                "app_id": "cbam",
+                "success": bool(result.success),
+                "status": "completed" if result.success else "failed",
+                "run_state": extra["run_state"],
+                "execution_mode": "native",
+                "artifacts": result.artifacts,
+                "can_export": bool(result.can_export),
+                "warnings": cbam_warnings,
+                "errors": _sanitize_errors(result.errors),
+            },
+        )
 
     @app.get("/api/download/{session_id}")
     async def download_all(session_id: str, request: Request):
@@ -2258,13 +2964,32 @@ def _resolve_demo_input(app_id: str) -> Optional[Path]:
         candidate = repo_root / "applications" / "GL-GHG-APP" / "v2" / "smoke_input.json"
     elif app_id == "iso14064":
         candidate = repo_root / "applications" / "GL-ISO14064-APP" / "v2" / "smoke_input.json"
+    elif app_id == "sb253":
+        candidate = repo_root / "applications" / "GL-SB253-APP" / "v2" / "smoke_input.json"
+    elif app_id == "taxonomy":
+        candidate = repo_root / "applications" / "GL-Taxonomy-APP" / "v2" / "smoke_input.json"
     else:
         candidate = package_root / "examples" / "sample_imports.csv"
     return candidate if candidate.exists() else None
 
 
-def _record_v1_run(app: FastAPI, app_id: str, out_dir: Path, success: bool, native_backend_used: bool, fallback_used: bool, artifacts: list[str]) -> str:
+def _record_v1_run(
+    app: FastAPI,
+    app_id: str,
+    out_dir: Path,
+    success: bool,
+    native_backend_used: bool,
+    fallback_used: bool,
+    artifacts: list[str],
+    *,
+    can_export: bool | None = None,
+    warnings: list[str] | None = None,
+    errors: list[str] | None = None,
+) -> str:
     run_id = uuid.uuid4().hex
+    export_ok = bool(success) if can_export is None else bool(can_export)
+    warn_list = list(warnings or [])
+    extra = _run_session_fields(success=bool(success), can_export=export_ok, warnings=warn_list, errors=errors)
     app.state.output_dirs[run_id] = out_dir
     app.state.session_meta[run_id] = {
         "app_id": app_id,
@@ -2273,7 +2998,8 @@ def _record_v1_run(app: FastAPI, app_id: str, out_dir: Path, success: bool, nati
         "execution_mode": "native" if native_backend_used else ("fallback" if fallback_used else "unknown"),
         "artifacts": artifacts,
         "created_at_ts": datetime.utcnow().timestamp(),
-        "can_export": bool(success),
+        "can_export": export_ok,
+        **extra,
     }
     return run_id
 

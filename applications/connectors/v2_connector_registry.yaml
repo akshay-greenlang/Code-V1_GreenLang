@@ -4,6 +4,9 @@ connectors:
     app_id: "GL-VCCI-Carbon-APP"
     owner_team: "data-integration"
     support_channel: "#gl-vcci-oncall"
+    operational_status: ok
+    slo_target_availability_pct: 99.9
+    runbook_url: "docs/v2/ONCALL_AND_SLOS.md"
     reliability_profile:
       retry:
         max_attempts: 3
@@ -23,6 +26,9 @@ connectors:
     app_id: "GL-VCCI-Carbon-APP"
     owner_team: "data-integration"
     support_channel: "#gl-vcci-oncall"
+    operational_status: ok
+    slo_target_availability_pct: 99.9
+    runbook_url: "docs/v2/ONCALL_AND_SLOS.md"
     reliability_profile:
       retry:
         max_attempts: 3
@@ -42,6 +48,9 @@ connectors:
     app_id: "GL-CSRD-APP"
     owner_team: "data-integration"
     support_channel: "#gl-csrd-oncall"
+    operational_status: ok
+    slo_target_availability_pct: 99.5
+    runbook_url: "docs/v2/ONCALL_AND_SLOS.md"
     reliability_profile:
       retry:
         max_attempts: 4
@@ -61,6 +70,10 @@ connectors:
     app_id: "GL-EUDR-APP"
     owner_team: "app-reliability"
     support_channel: "#gl-eudr-oncall"
+    operational_status: degraded
+    incident_summary: "Synthetic probe failures elevated; validate ERP bridge credentials and circuit breaker thresholds."
+    slo_target_availability_pct: 99.5
+    runbook_url: "docs/v2/ONCALL_AND_SLOS.md#connector-escalation"
     reliability_profile:
       retry:
         max_attempts: 3

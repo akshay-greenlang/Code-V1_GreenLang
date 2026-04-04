@@ -52,6 +52,18 @@ V2_APP_PROFILES: dict[str, V2AppProfile] = {
         v2_dir=Path("applications/GL-ISO14064-APP/v2"),
         command_template="gl run iso14064 <input.json> <output_dir>",
     ),
+    "sb253": V2AppProfile(
+        app_id="GL-SB253-APP",
+        key="sb253",
+        v2_dir=Path("applications/GL-SB253-APP/v2"),
+        command_template="gl run sb253 <input.json> <output_dir>",
+    ),
+    "taxonomy": V2AppProfile(
+        app_id="GL-Taxonomy-APP",
+        key="taxonomy",
+        v2_dir=Path("applications/GL-Taxonomy-APP/v2"),
+        command_template="gl run taxonomy <input.json> <output_dir>",
+    ),
 }
 
 

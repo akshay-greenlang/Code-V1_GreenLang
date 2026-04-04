@@ -11,14 +11,24 @@ on:
       - "cbam-pack-mvp/src/cbam_pack/web/**"
       - "cbam-pack-mvp/tests/test_web_*.py"
       - "applications/GL-VCCI-Carbon-APP/VCCI-Scope3-Platform/frontend/**"
+      - "frontend/e2e/**"
+      - "frontend/playwright.config.ts"
       - ".github/workflows/v2-frontend-ux-ci.yml"
+      - ".github/workflows/v2-shell-visual-snapshots.yml"
+      - "docs/v2/UX_ENTERPRISE_SHELL.md"
+      - "docs/v2/WCAG_SHELL_CHECKLIST.md"
   pull_request:
     paths:
       - "frontend/**"
       - "cbam-pack-mvp/src/cbam_pack/web/**"
       - "cbam-pack-mvp/tests/test_web_*.py"
       - "applications/GL-VCCI-Carbon-APP/VCCI-Scope3-Platform/frontend/**"
+      - "frontend/e2e/**"
+      - "frontend/playwright.config.ts"
       - ".github/workflows/v2-frontend-ux-ci.yml"
+      - ".github/workflows/v2-shell-visual-snapshots.yml"
+      - "docs/v2/UX_ENTERPRISE_SHELL.md"
+      - "docs/v2/WCAG_SHELL_CHECKLIST.md"
 
 jobs:
   v2-shell-e2e-visual:
@@ -37,8 +47,9 @@ jobs:
           pip install -e "./cbam-pack-mvp[dev,web]"
       - name: Run web e2e and visual baseline tests
         run: |
-          pytest -q cbam-pack-mvp/tests/test_web_multiapp_shell.py cbam-pack-mvp/tests/test_web_v1_contract.py cbam-pack-mvp/tests/test_web_v1_csrd_vcci_endpoints.py cbam-pack-mvp/tests/test_web_v2_eudr_ghg_iso_endpoints.py cbam-pack-mvp/tests/test_web_visual_regression.py cbam-pack-mvp/tests/test_web_ux_budgets.py cbam-pack-mvp/tests/test_web_governance_endpoints.py
+          pytest -q cbam-pack-mvp/tests/test_web_multiapp_shell.py cbam-pack-mvp/tests/test_web_v1_contract.py cbam-pack-mvp/tests/test_web_v1_csrd_vcci_endpoints.py cbam-pack-mvp/tests/test_web_v2_eudr_ghg_iso_endpoints.py cbam-pack-mvp/tests/test_web_visual_regression.py cbam-pack-mvp/tests/test_web_ux_budgets.py cbam-pack-mvp/tests/test_web_governance_endpoints.py cbam-pack-mvp/tests/test_web_admin_endpoints.py
 
+  # Legacy VCCI Scope3 frontend package (app-local). Canonical enterprise shell quality gates are `v2-2-shell-quality` on `frontend/`.
   v2-frontend-quality:
     runs-on: ubuntu-latest
     defaults:
@@ -63,13 +74,23 @@ jobs:
           npm run build
 
   v2-2-shell-quality:
-    runs-on: ubuntu-latest
+    # Playwright screenshot baselines are committed per runner OS (win32 in-repo); keep this job on Windows so pixel compares match.
+    runs-on: windows-latest
     defaults:
       run:
         working-directory: frontend
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install Python deps for Playwright webServer
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .
+          pip install -e "./cbam-pack-mvp[dev,web]"
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
@@ -83,3 +104,12 @@ jobs:
           npm run lint
           npm run test
           npm run build
+      - name: Storybook static build
+        run: npm run build-storybook
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Playwright E2E
+        run: npm run test:e2e
+        env:
+          CI: "true"
+          PLAYWRIGHT_PREBUILT: "1"

@@ -1,0 +1,9 @@
+{
+  "activities": [
+    {
+      "scope": "scope1",
+      "quantity": 10.0,
+      "emission_factor": 1.0
+    }
+  ]
+}

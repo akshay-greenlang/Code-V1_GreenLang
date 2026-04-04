@@ -196,3 +196,6 @@ trufflehog*.json*
 fix_pypirc.py
 pypi_diagnostic.py
 PYPI_UPLOAD_DIAGNOSIS.md
+
+# V2 shell Storybook static output (local builds)
+frontend/storybook-static/

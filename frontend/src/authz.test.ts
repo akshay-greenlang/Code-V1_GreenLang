@@ -13,4 +13,8 @@ describe("role route guards", () => {
   it("allows admin route for admin role", () => {
     expect(hasRouteAccess("admin", "/admin")).toBe(true);
   });
+
+  it("allows SB253 workspace for operator", () => {
+    expect(hasRouteAccess("operator", "/apps/sb253")).toBe(true);
+  });
 });
