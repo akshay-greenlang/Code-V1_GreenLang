@@ -27,7 +27,7 @@ httpx==0.25.2
 requests==2.31.0
 
 # Development Dependencies
-pytest==7.4.3
+pytest==9.0.3
 pytest-asyncio==0.21.1
 pytest-cov==4.1.0
 black==26.3.1
