@@ -1,0 +1,14 @@
+[
+  {
+    "id": "g1",
+    "activity": "diesel combustion stationary US",
+    "expected_fuel_type": "diesel",
+    "geography": "US"
+  },
+  {
+    "id": "g2",
+    "activity": "electricity consumption grid US",
+    "expected_fuel_type": "electricity",
+    "geography": "US"
+  }
+]

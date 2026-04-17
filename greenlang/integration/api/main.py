@@ -11,7 +11,10 @@ Performance requirements:
 - Horizontal scaling support
 """
 
-from fastapi import FastAPI, HTTPException, Query, Depends, Request, status
+import hashlib
+import json as jsonlib
+
+from fastapi import FastAPI, HTTPException, Query, Depends, Request, Response, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.responses import JSONResponse
@@ -42,6 +45,18 @@ from .models import (
     EmissionFactorSummary,
     FactorListResponse,
     FactorSearchResponse,
+    FactorSearchFacetsResponse,
+    FactorProvenanceResponse,
+    EditionSummary,
+    EditionListResponse,
+    EditionChangelogResponse,
+    EditionCompareResponse,
+    FactorReplacementsResponse,
+    FactorMatchRequest,
+    FactorMatchResponse,
+    FactorMatchCandidate,
+    SourceRegistryListResponse,
+    SourceRegistryEntryResponse,
     StatsResponse,
     CoverageStats,
     HealthResponse,
@@ -51,6 +66,8 @@ from .models import (
     SourceInfo,
     CacheStats,
 )
+from greenlang.factors.metering import GLOBAL_METER
+from greenlang.factors.service import FactorCatalogService, resolve_edition_id
 
 # ==================== LOGGING ====================
 
@@ -118,7 +135,7 @@ app.add_middleware(
 # Trusted host middleware
 app.add_middleware(
     TrustedHostMiddleware,
-    allowed_hosts=["*.greenlang.io", "localhost", "127.0.0.1"]
+    allowed_hosts=["*.greenlang.io", "localhost", "127.0.0.1", "testserver"],
 )
 
 # Rate limiting
@@ -133,6 +150,7 @@ security = HTTPBearer(auto_error=False)
 
 # Emission factor database (initialized on startup)
 emission_db: Optional[EmissionFactorDatabase] = None
+catalog_service: Optional[FactorCatalogService] = None
 
 # Application metrics
 app_start_time = time.time()
@@ -143,7 +161,7 @@ calculation_counter = 0
 @app.on_event("startup")
 async def startup_event():
     """Initialize resources on startup"""
-    global emission_db
+    global emission_db, catalog_service
 
     logger.info("Starting GreenLang Emission Factor API v1.0.0")
 
@@ -153,9 +171,14 @@ async def startup_event():
         cache_size=1000,
         cache_ttl=3600  # 1 hour
     )
+    catalog_service = FactorCatalogService.from_environment(emission_db)
 
     logger.info("Loaded %s emission factors", len(emission_db.factors))
     logger.info("Cache enabled: %s", emission_db.enable_cache)
+    logger.info(
+        "Factor catalog backend: %s",
+        type(catalog_service.repo).__name__,
+    )
     logger.info("API ready to serve requests")
 
 
@@ -208,9 +231,23 @@ async def get_current_user(
         if token.startswith("gl_"):
             # API key validation - check prefix and minimum length
             if len(token) >= 32:
-                # In production, validate against key store
-                logger.info("API key authentication: %s...", token[)
-                return {"user_id": f"apikey:{token[:12]}", "tenant_id": "default"}
+                allowed = {
+                    x.strip()
+                    for x in os.getenv("GL_API_KEYS", "").split(",")
+                    if x.strip()
+                }
+                if allowed and token not in allowed:
+                    raise HTTPException(
+                        status_code=status.HTTP_401_UNAUTHORIZED,
+                        detail="Unknown API key",
+                    )
+                logger.info("API key authentication: prefix=%s...", token[:8])
+                tier = os.getenv("GL_FACTORS_TIER", "community")
+                return {
+                    "user_id": f"apikey:{token[:12]}",
+                    "tenant_id": "default",
+                    "tier": tier,
+                }
             else:
                 raise HTTPException(
                     status_code=status.HTTP_401_UNAUTHORIZED,
@@ -223,7 +260,8 @@ async def get_current_user(
                 payload = jwt.decode(token, jwt_secret, algorithms=["HS256"])
                 return {
                     "user_id": payload.get("sub", "unknown"),
-                    "tenant_id": payload.get("tenant_id", "default")
+                    "tenant_id": payload.get("tenant_id", "default"),
+                    "tier": payload.get("tier", os.getenv("GL_FACTORS_TIER", "community")),
                 }
             except jwt.ExpiredSignatureError:
                 raise HTTPException(
@@ -239,7 +277,11 @@ async def get_current_user(
     # Development/staging: allow anonymous with warning
     if env in ("development", "staging", "test"):
         logger.warning("SECURITY: Anonymous access allowed in non-production environment")
-        return {"user_id": "anonymous", "tenant_id": "default"}
+        return {
+            "user_id": "anonymous",
+            "tenant_id": "default",
+            "tier": os.getenv("GL_FACTORS_TIER", "community"),
+        }
 
     # Production without valid credentials
     raise HTTPException(
@@ -264,11 +306,141 @@ async def add_request_tracking(request: Request, call_next):
 
     response.headers["X-Request-ID"] = request_id
     response.headers["X-Response-Time"] = f"{process_time:.2f}ms"
+    GLOBAL_METER.record(request.url.path)
+    try:
+        from greenlang.factors.billing.usage_sink import record_path_hit
+
+        record_path_hit(
+            str(request.url.path),
+            None,
+            request.headers.get("x-gl-tier") or request.headers.get("X-GL-Tier"),
+        )
+    except Exception:
+        pass
 
     return response
 
 
 # ==================== FACTOR QUERY ENDPOINTS ====================
+
+def _factor_catalog_service() -> FactorCatalogService:
+    """Return catalog service; lazily wire if startup did not run (e.g. partial tests)."""
+    global catalog_service, emission_db
+    if catalog_service is None:
+        if emission_db is None:
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Factor catalog not initialized",
+            )
+        catalog_service = FactorCatalogService.from_environment(emission_db)
+    return catalog_service
+
+
+@app.get(
+    "/api/v1/editions",
+    response_model=EditionListResponse,
+    summary="List factor catalog editions",
+    tags=["Factors", "Editions"],
+)
+@limiter.limit("200/minute")
+async def list_editions(
+    request: Request,
+    include_pending: bool = Query(True),
+    current_user: dict = Depends(get_current_user),
+) -> EditionListResponse:
+    svc = _factor_catalog_service()
+    rows = svc.repo.list_editions(include_pending=include_pending)
+    editions = [
+        EditionSummary(
+            edition_id=r.edition_id,
+            status=r.status,
+            label=r.label,
+            manifest_hash=r.manifest_hash,
+        )
+        for r in rows
+    ]
+    return EditionListResponse(
+        editions=editions,
+        default_edition_id=svc.repo.get_default_edition_id(),
+    )
+
+
+@app.get(
+    "/api/v1/editions/{edition_id}/changelog",
+    response_model=EditionChangelogResponse,
+    summary="Changelog for a catalog edition",
+    tags=["Factors", "Editions"],
+)
+@limiter.limit("200/minute")
+async def edition_changelog(
+    request: Request,
+    edition_id: str,
+    current_user: dict = Depends(get_current_user),
+) -> EditionChangelogResponse:
+    svc = _factor_catalog_service()
+    return EditionChangelogResponse(
+        edition_id=edition_id,
+        changelog=svc.repo.get_changelog(edition_id),
+    )
+
+
+@app.get(
+    "/api/v1/editions/compare",
+    response_model=EditionCompareResponse,
+    summary="Compare two catalog editions",
+    tags=["Factors", "Editions"],
+)
+@limiter.limit("60/minute")
+async def compare_editions(
+    request: Request,
+    left: str = Query(..., description="Left edition id"),
+    right: str = Query(..., description="Right edition id"),
+    current_user: dict = Depends(get_current_user),
+) -> EditionCompareResponse:
+    svc = _factor_catalog_service()
+    diff = svc.compare_editions(left, right)
+    return EditionCompareResponse(**diff)
+
+
+@app.get(
+    "/api/v1/factors/source-registry",
+    response_model=SourceRegistryListResponse,
+    summary="CTO source registry (rights + cadence metadata)",
+    tags=["Factors"],
+)
+@limiter.limit("120/minute")
+async def list_source_registry(
+    request: Request,
+    current_user: dict = Depends(get_current_user),
+) -> SourceRegistryListResponse:
+    from greenlang.factors.source_registry import load_source_registry
+
+    rows = load_source_registry()
+    return SourceRegistryListResponse(
+        sources=[
+            SourceRegistryEntryResponse(
+                source_id=e.source_id,
+                display_name=e.display_name,
+                connector_only=e.connector_only,
+                license_class=e.license_class,
+                cadence=e.cadence,
+                watch_mechanism=e.watch_mechanism,
+                watch_url=e.watch_url,
+                watch_file_type=e.watch_file_type,
+                redistribution_allowed=e.redistribution_allowed,
+                derivative_works_allowed=e.derivative_works_allowed,
+                commercial_use_allowed=e.commercial_use_allowed,
+                attribution_required=e.attribution_required,
+                citation_text=e.citation_text,
+                approval_required_for_certified=e.approval_required_for_certified,
+                legal_signoff_artifact=e.legal_signoff_artifact,
+                legal_signoff_version=e.legal_signoff_version,
+                public_bulk_export_allowed=e.public_bulk_export_allowed(),
+            )
+            for e in rows
+        ]
+    )
+
 
 @app.get(
     "/api/v1/factors",
@@ -285,13 +457,23 @@ async def add_request_tracking(request: Request, call_next):
 @limiter.limit("1000/minute")
 async def list_factors(
     request: Request,
+    response: Response,
     fuel_type: Optional[str] = Query(None, description="Filter by fuel type"),
     geography: Optional[str] = Query(None, description="Filter by geography"),
     scope: Optional[str] = Query(None, description="Filter by scope (1, 2, or 3)"),
     boundary: Optional[str] = Query(None, description="Filter by boundary"),
     page: int = Query(1, ge=1, description="Page number"),
     limit: int = Query(100, ge=1, le=500, description="Items per page (max 500)"),
-    current_user: dict = Depends(get_current_user)
+    include_preview: bool = Query(False, description="Include preview-status factors"),
+    include_connector: bool = Query(
+        False,
+        description="Include connector_only rows (enterprise / licensed use)",
+    ),
+    edition: Optional[str] = Query(
+        None,
+        description="Catalog edition id (overridden by X-Factors-Edition header when set)",
+    ),
+    current_user: dict = Depends(get_current_user),
 ) -> FactorListResponse:
     """
     List emission factors with filtering and pagination.
@@ -299,98 +481,56 @@ async def list_factors(
     Returns paginated list of factors matching the specified filters.
     """
     try:
-        # Get all factors matching filters
-        all_factors = emission_db.list_factors(
-            fuel_type=fuel_type,
-            geography=geography
+        svc = _factor_catalog_service()
+        hdr = request.headers.get("x-factors-edition") or request.headers.get(
+            "X-Factors-Edition"
         )
+        try:
+            edition_id, _src = resolve_edition_id(svc.repo, hdr, edition)
+        except ValueError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=str(exc),
+            ) from exc
 
-        # Apply additional filters
-        filtered_factors = []
-        for factor in all_factors:
-            if scope and factor.scope.value != scope:
-                continue
-            if boundary and factor.boundary.value != boundary:
-                continue
-            filtered_factors.append(factor)
+        tier = (current_user or {}).get("tier", "community")
+        if include_connector and tier not in ("enterprise", "internal"):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="include_connector requires enterprise tier",
+            )
 
-        # Calculate pagination
-        total_count = len(filtered_factors)
-        total_pages = (total_count + limit - 1) // limit
-        start_idx = (page - 1) * limit
-        end_idx = start_idx + limit
+        page_factors, total_count = svc.repo.list_factors(
+            edition_id,
+            fuel_type=fuel_type,
+            geography=geography,
+            scope=scope,
+            boundary=boundary,
+            page=page,
+            limit=limit,
+            include_preview=include_preview,
+            include_connector=include_connector,
+        )
+        total_pages = (total_count + limit - 1) // limit if total_count else 0
+        factor_summaries = [_factor_to_summary(factor) for factor in page_factors]
 
-        # Get page of factors
-        page_factors = filtered_factors[start_idx:end_idx]
-
-        # Convert to summary models
-        factor_summaries = [
-            _factor_to_summary(factor)
-            for factor in page_factors
-        ]
-
+        response.headers["X-Factors-Edition"] = edition_id
         return FactorListResponse(
             factors=factor_summaries,
             total_count=total_count,
             page=page,
             page_size=len(factor_summaries),
-            total_pages=total_pages
+            total_pages=total_pages,
+            edition_id=edition_id,
         )
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error("Error listing factors: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Internal error retrieving factors"
-        )
-
-
-@app.get(
-    "/api/v1/factors/{factor_id}",
-    response_model=EmissionFactorResponse,
-    summary="Get emission factor by ID",
-    description="Retrieve detailed information for a specific emission factor",
-    tags=["Factors"],
-    responses={
-        200: {"description": "Successfully retrieved factor"},
-        404: {"model": ErrorResponse, "description": "Factor not found"},
-        429: {"description": "Rate limit exceeded"}
-    }
-)
-@limiter.limit("1000/minute")
-async def get_factor(
-    request: Request,
-    factor_id: str,
-    current_user: dict = Depends(get_current_user)
-) -> EmissionFactorResponse:
-    """
-    Get detailed emission factor by ID.
-
-    Returns complete factor record with all metadata.
-    """
-    try:
-        # Find factor by ID
-        factor = None
-        for f in emission_db.factors.values():
-            if f.factor_id == factor_id:
-                factor = f
-                break
-
-        if not factor:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Factor '{factor_id}' not found"
-            )
-
-        return _factor_to_response(factor)
-
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error("Error retrieving factor %s: %s", factor_id, e, exc_info=True)
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Internal error retrieving factor"
         )
 
 
@@ -408,10 +548,16 @@ async def get_factor(
 @limiter.limit("500/minute")
 async def search_factors(
     request: Request,
+    response: Response,
     q: str = Query(..., min_length=2, description="Search query"),
     geography: Optional[str] = Query(None, description="Filter by geography"),
     limit: int = Query(20, ge=1, le=100, description="Maximum results"),
-    current_user: dict = Depends(get_current_user)
+    include_preview: bool = Query(False),
+    include_connector: bool = Query(False),
+    factor_status: Optional[str] = Query(None, description="Exact factor_status filter"),
+    source_id: Optional[str] = Query(None, description="Filter by source_id column when set"),
+    edition: Optional[str] = Query(None, description="Catalog edition id"),
+    current_user: dict = Depends(get_current_user),
 ) -> FactorSearchResponse:
     """
     Search emission factors by text query.
@@ -420,47 +566,379 @@ async def search_factors(
     """
     try:
         start_time = time.time()
+        svc = _factor_catalog_service()
+        hdr = request.headers.get("x-factors-edition") or request.headers.get(
+            "X-Factors-Edition"
+        )
+        try:
+            edition_id, _src = resolve_edition_id(svc.repo, hdr, edition)
+        except ValueError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=str(exc),
+            ) from exc
 
-        # Simple text search (case-insensitive)
-        q_lower = q.lower()
-        results = []
+        tier = (current_user or {}).get("tier", "community")
+        if include_connector and tier not in ("enterprise", "internal"):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="include_connector requires enterprise tier",
+            )
 
-        for factor in emission_db.factors.values():
-            # Apply geography filter
-            if geography and factor.geography != geography:
-                continue
-
-            # Search in relevant fields
-            searchable_text = " ".join([
-                factor.fuel_type,
-                factor.geography,
-                factor.scope.value,
-                factor.boundary.value,
-                " ".join(factor.tags),
-                factor.notes or ""
-            ]).lower()
-
-            if q_lower in searchable_text:
-                results.append(factor)
-
-                if len(results) >= limit:
-                    break
-
+        results = svc.repo.search_factors(
+            edition_id,
+            query=q,
+            geography=geography,
+            limit=limit,
+            include_preview=include_preview,
+            include_connector=include_connector,
+            factor_status=factor_status,
+            source_id=source_id,
+        )
         search_time_ms = (time.time() - start_time) * 1000
-
+        response.headers["X-Factors-Edition"] = edition_id
         return FactorSearchResponse(
             query=q,
             factors=[_factor_to_summary(f) for f in results],
             count=len(results),
-            search_time_ms=search_time_ms
+            search_time_ms=search_time_ms,
+            edition_id=edition_id,
         )
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error("Error searching factors: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Internal error searching factors"
         )
+
+
+@app.get(
+    "/api/v1/factors/search/v2",
+    response_model=FactorSearchResponse,
+    summary="Faceted search (A1): v2 filters on top of lexical search",
+    tags=["Factors"],
+    responses={
+        200: {"description": "Search results"},
+        400: {"model": ErrorResponse, "description": "Invalid parameters"},
+    },
+)
+@limiter.limit("500/minute")
+async def search_factors_v2(
+    request: Request,
+    response: Response,
+    q: str = Query(..., min_length=2, description="Search query"),
+    geography: Optional[str] = Query(None),
+    limit: int = Query(20, ge=1, le=100),
+    include_preview: bool = Query(False),
+    include_connector: bool = Query(False),
+    factor_status: Optional[str] = Query(None),
+    source_id: Optional[str] = Query(None),
+    unit: Optional[str] = Query(None, description="Filter by activity unit denominator"),
+    scope: Optional[str] = Query(None, description="Filter by GHG scope 1/2/3"),
+    methodology: Optional[str] = Query(None, description="Substring match on provenance methodology"),
+    valid_year: Optional[int] = Query(None, ge=1990, le=2050, description="Match valid_from year"),
+    edition: Optional[str] = Query(None),
+    current_user: dict = Depends(get_current_user),
+) -> FactorSearchResponse:
+    """Search v2: same lexical core as /search with optional post-filters (M2)."""
+    try:
+        start_time = time.time()
+        svc = _factor_catalog_service()
+        hdr = request.headers.get("x-factors-edition") or request.headers.get("X-Factors-Edition")
+        try:
+            edition_id, _src = resolve_edition_id(svc.repo, hdr, edition)
+        except ValueError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
+        tier = (current_user or {}).get("tier", "community")
+        if include_connector and tier not in ("enterprise", "internal"):
+            raise HTTPException(status_code=403, detail="include_connector requires enterprise tier")
+        wide = min(500, max(limit * 15, limit))
+        results = svc.repo.search_factors(
+            edition_id,
+            query=q,
+            geography=geography,
+            limit=wide,
+            include_preview=include_preview,
+            include_connector=include_connector,
+            factor_status=factor_status,
+            source_id=source_id,
+        )
+        filtered = []
+        for f in results:
+            if unit and f.unit.lower() != unit.lower():
+                continue
+            if scope and f.scope.value != scope:
+                continue
+            if methodology and methodology.lower() not in (f.provenance.methodology.value or "").lower():
+                continue
+            if valid_year is not None and f.valid_from.year != valid_year:
+                continue
+            filtered.append(f)
+            if len(filtered) >= limit:
+                break
+        search_time_ms = (time.time() - start_time) * 1000
+        response.headers["X-Factors-Edition"] = edition_id
+        return FactorSearchResponse(
+            query=q,
+            factors=[_factor_to_summary(f) for f in filtered],
+            count=len(filtered),
+            search_time_ms=search_time_ms,
+            edition_id=edition_id,
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error("Error in search v2: %s", e, exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal error searching factors",
+        )
+
+
+@app.get(
+    "/api/v1/factors/search/facets",
+    response_model=FactorSearchFacetsResponse,
+    summary="Facet counts for factor filters (M2)",
+    tags=["Factors"],
+)
+@limiter.limit("240/minute")
+async def search_factor_facets(
+    request: Request,
+    include_preview: bool = Query(False),
+    include_connector: bool = Query(False),
+    max_values: int = Query(80, ge=10, le=200),
+    edition: Optional[str] = Query(None, description="Catalog edition id"),
+    current_user: dict = Depends(get_current_user),
+) -> FactorSearchFacetsResponse:
+    svc = _factor_catalog_service()
+    hdr = request.headers.get("x-factors-edition") or request.headers.get("X-Factors-Edition")
+    try:
+        edition_id, _ = resolve_edition_id(svc.repo, hdr, edition)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    tier = (current_user or {}).get("tier", "community")
+    if include_connector and tier not in ("enterprise", "internal"):
+        raise HTTPException(
+            status_code=403,
+            detail="include_connector requires enterprise tier",
+        )
+    raw = svc.repo.search_facets(
+        edition_id,
+        include_preview=include_preview,
+        include_connector=include_connector,
+        max_values=max_values,
+    )
+    return FactorSearchFacetsResponse(
+        edition_id=str(raw.get("edition_id") or edition_id),
+        facets=dict(raw.get("facets") or {}),
+    )
+
+
+@app.post(
+    "/api/v1/factors/match",
+    response_model=FactorMatchResponse,
+    summary="Hybrid activity → factor match (deterministic core)",
+    tags=["Factors"],
+)
+@limiter.limit("120/minute")
+async def match_factors(
+    request: Request,
+    response: Response,
+    body: FactorMatchRequest,
+    edition: Optional[str] = Query(None),
+    include_preview: bool = Query(False),
+    include_connector: bool = Query(False),
+    current_user: dict = Depends(get_current_user),
+) -> FactorMatchResponse:
+    from greenlang.factors.matching.pipeline import MatchRequest, run_match
+
+    svc = _factor_catalog_service()
+    hdr = request.headers.get("x-factors-edition") or request.headers.get("X-Factors-Edition")
+    try:
+        edition_id, _ = resolve_edition_id(svc.repo, hdr, edition)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    tier = (current_user or {}).get("tier", "community")
+    if include_connector and tier not in ("enterprise", "internal"):
+        raise HTTPException(status_code=403, detail="include_connector requires enterprise tier")
+    mreq = MatchRequest(
+        activity_description=body.activity_description,
+        geography=body.geography,
+        fuel_type=body.fuel_type,
+        scope=body.scope,
+        limit=body.limit,
+    )
+    raw = run_match(
+        svc.repo,
+        edition_id,
+        mreq,
+        include_preview=include_preview,
+        include_connector=include_connector,
+    )
+    response.headers["X-Factors-Edition"] = edition_id
+    return FactorMatchResponse(
+        edition_id=edition_id,
+        candidates=[FactorMatchCandidate(**c) for c in raw],
+    )
+
+
+@app.get(
+    "/api/v1/factors/{factor_id}/replacements",
+    response_model=FactorReplacementsResponse,
+    summary="Deprecation replacement chain",
+    tags=["Factors"],
+)
+@limiter.limit("200/minute")
+async def factor_replacements(
+    request: Request,
+    response: Response,
+    factor_id: str,
+    edition: Optional[str] = Query(None),
+    current_user: dict = Depends(get_current_user),
+) -> FactorReplacementsResponse:
+    svc = _factor_catalog_service()
+    hdr = request.headers.get("x-factors-edition") or request.headers.get("X-Factors-Edition")
+    try:
+        edition_id, _ = resolve_edition_id(svc.repo, hdr, edition)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    chain = svc.replacement_chain(edition_id, factor_id)
+    response.headers["X-Factors-Edition"] = edition_id
+    return FactorReplacementsResponse(
+        edition_id=edition_id,
+        seed_factor_id=factor_id,
+        chain=chain,
+    )
+
+
+@app.get(
+    "/api/v1/factors/{factor_id}/provenance",
+    response_model=FactorProvenanceResponse,
+    summary="Provenance and license for a factor",
+    tags=["Factors"],
+)
+@limiter.limit("500/minute")
+async def get_factor_provenance(
+    request: Request,
+    response: Response,
+    factor_id: str,
+    edition: Optional[str] = Query(None),
+    current_user: dict = Depends(get_current_user),
+) -> FactorProvenanceResponse:
+    svc = _factor_catalog_service()
+    hdr = request.headers.get("x-factors-edition") or request.headers.get(
+        "X-Factors-Edition"
+    )
+    try:
+        edition_id, _ = resolve_edition_id(svc.repo, hdr, edition)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    factor = svc.repo.get_factor(edition_id, factor_id)
+    if not factor:
+        raise HTTPException(status_code=404, detail=f"Factor '{factor_id}' not found")
+    response.headers["X-Factors-Edition"] = edition_id
+    lic = factor.license_info
+    return FactorProvenanceResponse(
+        factor_id=factor.factor_id,
+        content_hash=factor.content_hash,
+        provenance={
+            "source_org": factor.provenance.source_org,
+            "source_publication": factor.provenance.source_publication,
+            "source_year": str(factor.provenance.source_year),
+            "methodology": factor.provenance.methodology.value,
+            "version": factor.provenance.version,
+            "citation": factor.provenance.citation,
+        },
+        license_info={
+            "license": lic.license,
+            "redistribution_allowed": lic.redistribution_allowed,
+            "commercial_use_allowed": lic.commercial_use_allowed,
+            "attribution_required": lic.attribution_required,
+        },
+        edition_id=edition_id,
+    )
+
+
+@app.get(
+    "/api/v1/factors/{factor_id}",
+    response_model=EmissionFactorResponse,
+    summary="Get emission factor by ID",
+    description="Retrieve detailed information for a specific emission factor",
+    tags=["Factors"],
+    responses={
+        200: {"description": "Successfully retrieved factor"},
+        404: {"model": ErrorResponse, "description": "Factor not found"},
+        429: {"description": "Rate limit exceeded"}
+    }
+)
+@limiter.limit("1000/minute")
+async def get_factor(
+    request: Request,
+    response: Response,
+    factor_id: str,
+    edition: Optional[str] = Query(None, description="Catalog edition id"),
+    current_user: dict = Depends(get_current_user),
+) -> EmissionFactorResponse:
+    """
+    Get detailed emission factor by ID.
+
+    Returns complete factor record with all metadata.
+    """
+    try:
+        svc = _factor_catalog_service()
+        hdr = request.headers.get("x-factors-edition") or request.headers.get(
+            "X-Factors-Edition"
+        )
+        try:
+            edition_id, _src = resolve_edition_id(svc.repo, hdr, edition)
+        except ValueError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=str(exc),
+            ) from exc
+
+        factor = svc.repo.get_factor(edition_id, factor_id)
+        if not factor:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Factor '{factor_id}' not found",
+            )
+
+        response.headers["X-Factors-Edition"] = edition_id
+        resp_model = _factor_to_response(factor)
+        dumped = (
+            resp_model.model_dump()
+            if hasattr(resp_model, "model_dump")
+            else resp_model.dict()
+        )
+        payload = jsonlib.dumps(dumped, sort_keys=True, default=str)
+        response.headers["ETag"] = hashlib.sha256(payload.encode("utf-8")).hexdigest()
+        return resp_model
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error("Error retrieving factor %s: %s", factor_id, e, exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal error retrieving factor"
+        )
+
+
+@app.get(
+    "/api/v1/system/factors-metering",
+    summary="In-process request counters for Factors routes (ops/debug)",
+    tags=["System"],
+)
+@limiter.limit("60/minute")
+async def factors_metering_snapshot(
+    request: Request,
+    current_user: dict = Depends(get_current_user),
+) -> dict:
+    return {"paths": GLOBAL_METER.snapshot()}
 
 
 @app.get(
@@ -473,20 +951,26 @@ async def search_factors(
 @limiter.limit("1000/minute")
 async def get_by_fuel_type(
     request: Request,
+    response: Response,
     fuel_type: str,
     geography: Optional[str] = Query(None),
-    current_user: dict = Depends(get_current_user)
+    edition: Optional[str] = Query(None),
+    current_user: dict = Depends(get_current_user),
 ) -> FactorListResponse:
     """Get all factors for a specific fuel type"""
     return await list_factors(
         request=request,
+        response=response,
         fuel_type=fuel_type,
         geography=geography,
         scope=None,
         boundary=None,
         page=1,
         limit=100,
-        current_user=current_user
+        include_preview=False,
+        include_connector=False,
+        edition=edition,
+        current_user=current_user,
     )
 
 
@@ -500,19 +984,25 @@ async def get_by_fuel_type(
 @limiter.limit("1000/minute")
 async def get_by_scope(
     request: Request,
+    response: Response,
     scope: str,
-    current_user: dict = Depends(get_current_user)
+    edition: Optional[str] = Query(None),
+    current_user: dict = Depends(get_current_user),
 ) -> FactorListResponse:
     """Get all factors for a specific scope"""
     return await list_factors(
         request=request,
+        response=response,
         fuel_type=None,
         geography=None,
         scope=scope,
         boundary=None,
         page=1,
         limit=100,
-        current_user=current_user
+        include_preview=False,
+        include_connector=False,
+        edition=edition,
+        current_user=current_user,
     )
 
 
@@ -806,9 +1296,14 @@ async def get_statistics(
             max_size=cache_stats_dict.get("max_size", 0)
         )
 
+        svc = _factor_catalog_service()
+        eid = svc.repo.get_default_edition_id()
+        cov = svc.repo.coverage_stats(eid)
+        total_cat = int(cov.get("total_factors", 0))
+
         return StatsResponse(
             version="1.0.0",
-            total_factors=len(emission_db.factors),
+            total_factors=total_cat or len(emission_db.factors),
             calculations_today=calculation_counter,
             cache_stats=cache_stats,
             uptime_seconds=time.time() - app_start_time,
@@ -837,29 +1332,21 @@ async def get_coverage_stats(
 ) -> CoverageStats:
     """Get coverage statistics"""
     try:
-        geographies = set()
-        fuel_types = set()
-        scopes = {"1": 0, "2": 0, "3": 0}
-        boundaries = {}
-        by_geography = {}
-        by_fuel_type = {}
-
-        for factor in emission_db.factors.values():
-            geographies.add(factor.geography)
-            fuel_types.add(factor.fuel_type)
-            scopes[factor.scope.value] = scopes.get(factor.scope.value, 0) + 1
-            boundaries[factor.boundary.value] = boundaries.get(factor.boundary.value, 0) + 1
-            by_geography[factor.geography] = by_geography.get(factor.geography, 0) + 1
-            by_fuel_type[factor.fuel_type] = by_fuel_type.get(factor.fuel_type, 0) + 1
-
+        svc = _factor_catalog_service()
+        eid = svc.repo.get_default_edition_id()
+        cov = svc.repo.coverage_stats(eid)
         return CoverageStats(
-            total_factors=len(emission_db.factors),
-            geographies=len(geographies),
-            fuel_types=len(fuel_types),
-            scopes=scopes,
-            boundaries=boundaries,
-            by_geography=by_geography,
-            by_fuel_type=by_fuel_type
+            total_factors=int(cov["total_factors"]),
+            total_catalog=int(cov.get("total_catalog", cov["total_factors"])),
+            certified=int(cov.get("certified", cov["total_factors"])),
+            preview=int(cov.get("preview", 0)),
+            connector_visible=int(cov.get("connector_visible", 0)),
+            geographies=int(cov["geographies"]),
+            fuel_types=int(cov["fuel_types"]),
+            scopes=cov["scopes"],
+            boundaries=cov["boundaries"],
+            by_geography=cov["by_geography"],
+            by_fuel_type=cov["by_fuel_type"],
         )
 
     except Exception as e:
@@ -964,7 +1451,13 @@ def _factor_to_summary(factor: EmissionFactorRecord) -> EmissionFactorSummary:
         source=factor.provenance.source_org,
         source_year=factor.provenance.source_year,
         data_quality_score=factor.dqs.overall_score,
-        uncertainty_percent=factor.uncertainty_95ci * 100
+        uncertainty_percent=factor.uncertainty_95ci * 100,
+        factor_status=getattr(factor, "factor_status", "certified") or "certified",
+        source_id=getattr(factor, "source_id", None),
+        release_version=getattr(factor, "release_version", None),
+        license_class=getattr(factor, "license_class", None),
+        activity_tags=list(getattr(factor, "activity_tags", []) or []),
+        sector_tags=list(getattr(factor, "sector_tags", []) or []),
     )
 
 
@@ -1008,7 +1501,17 @@ def _factor_to_response(factor: EmissionFactorRecord) -> EmissionFactorResponse:
         license=factor.license_info.license,
         compliance_frameworks=factor.compliance_frameworks,
         tags=factor.tags,
-        notes=factor.notes
+        notes=factor.notes,
+        factor_status=getattr(factor, "factor_status", None),
+        source_id=getattr(factor, "source_id", None),
+        source_release=getattr(factor, "source_release", None),
+        source_record_id=getattr(factor, "source_record_id", None),
+        release_version=getattr(factor, "release_version", None),
+        replacement_factor_id=getattr(factor, "replacement_factor_id", None),
+        license_class=getattr(factor, "license_class", None),
+        activity_tags=list(getattr(factor, "activity_tags", []) or []),
+        sector_tags=list(getattr(factor, "sector_tags", []) or []),
+        redistribution_allowed=factor.license_info.redistribution_allowed,
     )
 
 

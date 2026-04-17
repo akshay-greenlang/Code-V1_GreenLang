@@ -1,0 +1,34 @@
+# Factor catalog row status (CTO proposal §5)
+# API default: return only certified unless client passes include_preview=true (and has entitlement).
+
+statuses:
+  certified:
+    description: QA-complete, production-default, full lineage and citation.
+    default_api_exposure: true
+    bulk_open_export: true
+  preview:
+    description: Normalized and searchable; pending deeper QA or methodology review.
+    default_api_exposure: false
+    bulk_open_export: false
+  connector_only:
+    description: Metadata or values require customer/partner license; never open redistribution.
+    default_api_exposure: false
+    bulk_open_export: false
+  deprecated:
+    description: Superseded; use replacement_factor_id.
+    default_api_exposure: false
+    bulk_open_export: false
+
+promotion_rules:
+  preview_to_certified:
+    - "All Q1–Q6 gates pass"
+    - "Methodology lead sign-off"
+    - "Legal confirms license_class for intended use"
+  certified_to_deprecated:
+    - "replacement_factor_id set"
+    - "Changelog entry in next release"
+
+demotion_rules:
+  certified_to_preview:
+    - "Material methodology doubt opened"
+    - "Source retraction or license change"

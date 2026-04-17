@@ -1,0 +1,3455 @@
+[
+  {
+    "id": "g001",
+    "activity": "diesel combustion stationary US",
+    "expected_fuel_type": "diesel",
+    "geography": "US"
+  },
+  {
+    "id": "g002",
+    "activity": "electricity consumption grid US",
+    "expected_fuel_type": "electricity",
+    "geography": "US"
+  },
+  {
+    "id": "g003",
+    "activity": "natural gas heating",
+    "expected_fuel_type": "natural_gas",
+    "geography": "US"
+  },
+  {
+    "id": "g004",
+    "activity": "coal combustion boiler",
+    "expected_fuel_type": "coal",
+    "geography": "US"
+  },
+  {
+    "id": "g005",
+    "activity": "gasoline vehicle fleet",
+    "expected_fuel_type": "gasoline",
+    "geography": "US"
+  },
+  {
+    "id": "g006",
+    "activity": "diesel fuel transport",
+    "expected_fuel_type": "diesel",
+    "geography": "US"
+  },
+  {
+    "id": "g007",
+    "activity": "electricity purchased EU grid",
+    "expected_fuel_type": "electricity",
+    "geography": "EU"
+  },
+  {
+    "id": "g008",
+    "activity": "UK electricity consumption",
+    "expected_fuel_type": "electricity",
+    "geography": "UK"
+  },
+  {
+    "id": "g009",
+    "activity": "diesel stationary generator",
+    "expected_fuel_type": "diesel",
+    "geography": "US"
+  },
+  {
+    "id": "g010",
+    "activity": "natural gas boiler",
+    "expected_fuel_type": "natural_gas",
+    "geography": "US"
+  },
+  {
+    "id": "g011",
+    "activity": "US coal power plant",
+    "expected_fuel_type": "coal",
+    "geography": "US"
+  },
+  {
+    "id": "g012",
+    "activity": "petrol car fleet",
+    "expected_fuel_type": "gasoline",
+    "geography": "US"
+  },
+  {
+    "id": "g013",
+    "activity": "diesel liters mobile",
+    "expected_fuel_type": "diesel",
+    "geography": "US"
+  },
+  {
+    "id": "g014",
+    "activity": "diesel gallons stationary combustion",
+    "expected_fuel_type": "diesel",
+    "geography": "US"
+  },
+  {
+    "id": "g015",
+    "activity": "grid electricity US",
+    "expected_fuel_type": "electricity",
+    "geography": "US"
+  },
+  {
+    "id": "g016",
+    "activity": "natural gas therms US",
+    "expected_fuel_type": "natural_gas",
+    "geography": "US"
+  },
+  {
+    "id": "g017",
+    "activity": "coal tons US fossil",
+    "expected_fuel_type": "coal",
+    "geography": "US"
+  },
+  {
+    "id": "g018",
+    "activity": "gasoline gallons US transport",
+    "expected_fuel_type": "gasoline",
+    "geography": "US"
+  },
+  {
+    "id": "g019",
+    "activity": "electricity kwh EU",
+    "expected_fuel_type": "electricity",
+    "geography": "EU"
+  },
+  {
+    "id": "g020",
+    "activity": "electricity kwh UK",
+    "expected_fuel_type": "electricity",
+    "geography": "UK"
+  },
+  {
+    "id": "g021",
+    "activity": "diesel fuel oil",
+    "expected_fuel_type": "diesel",
+    "geography": null
+  },
+  {
+    "id": "g022",
+    "activity": "electricity purchased",
+    "expected_fuel_type": "electricity",
+    "geography": null
+  },
+  {
+    "id": "g023",
+    "activity": "nat gas",
+    "expected_fuel_type": "natural_gas",
+    "geography": null
+  },
+  {
+    "id": "g024",
+    "activity": "coal burning",
+    "expected_fuel_type": "coal",
+    "geography": null
+  },
+  {
+    "id": "g025",
+    "activity": "gas petrol",
+    "expected_fuel_type": "gasoline",
+    "geography": null
+  },
+  {
+    "id": "g026",
+    "activity": "diesel",
+    "expected_fuel_type": "diesel",
+    "geography": null
+  },
+  {
+    "id": "g027",
+    "activity": "electricity",
+    "expected_fuel_type": "electricity",
+    "geography": null
+  },
+  {
+    "id": "g028",
+    "activity": "natural gas",
+    "expected_fuel_type": "natural_gas",
+    "geography": null
+  },
+  {
+    "id": "g029",
+    "activity": "coal",
+    "expected_fuel_type": "coal",
+    "geography": null
+  },
+  {
+    "id": "g030",
+    "activity": "gasoline",
+    "expected_fuel_type": "gasoline",
+    "geography": null
+  },
+  {
+    "id": "g031",
+    "activity": "stationary combustion diesel generator US",
+    "expected_fuel_type": "diesel",
+    "geography": "US"
+  },
+  {
+    "id": "g032",
+    "activity": "scope 2 electricity grid average US",
+    "expected_fuel_type": "electricity",
+    "geography": "US"
+  },
+  {
+    "id": "g033",
+    "activity": "scope 1 natural gas heating therms",
+    "expected_fuel_type": "natural_gas",
+    "geography": "US"
+  },
+  {
+    "id": "g034",
+    "activity": "scope 1 coal stationary",
+    "expected_fuel_type": "coal",
+    "geography": "US"
+  },
+  {
+    "id": "g035",
+    "activity": "scope 1 gasoline mobile fleet",
+    "expected_fuel_type": "gasoline",
+    "geography": "US"
+  },
+  {
+    "id": "g036",
+    "activity": "diesel fuel litres transport tier1",
+    "expected_fuel_type": "diesel",
+    "geography": "US"
+  },
+  {
+    "id": "g037",
+    "activity": "EU purchased electricity kwh",
+    "expected_fuel_type": "electricity",
+    "geography": "EU"
+  },
+  {
+    "id": "g038",
+    "activity": "Great Britain electricity grid",
+    "expected_fuel_type": "electricity",
+    "geography": "UK"
+  },
+  {
+    "id": "g039",
+    "activity": "diesel fossil combustion",
+    "expected_fuel_type": "diesel",
+    "geography": null
+  },
+  {
+    "id": "g040",
+    "activity": "gas natural heating US",
+    "expected_fuel_type": "natural_gas",
+    "geography": "US"
+  },
+  {
+    "id": "g041",
+    "activity": "diesel generator backup power",
+    "expected_fuel_type": "diesel",
+    "geography": null
+  },
+  {
+    "id": "g042",
+    "activity": "electricity scope 2 purchased",
+    "expected_fuel_type": "electricity",
+    "geography": null
+  },
+  {
+    "id": "g043",
+    "activity": "gas boiler natural",
+    "expected_fuel_type": "natural_gas",
+    "geography": null
+  },
+  {
+    "id": "g044",
+    "activity": "bituminous coal combustion US",
+    "expected_fuel_type": "coal",
+    "geography": "US"
+  },
+  {
+    "id": "g045",
+    "activity": "motor gasoline fleet vehicles",
+    "expected_fuel_type": "gasoline",
+    "geography": null
+  },
+  {
+    "id": "g046",
+    "activity": "diesel engines mobile equipment",
+    "expected_fuel_type": "diesel",
+    "geography": null
+  },
+  {
+    "id": "g047",
+    "activity": "power purchased grid electricity",
+    "expected_fuel_type": "electricity",
+    "geography": null
+  },
+  {
+    "id": "g048",
+    "activity": "natural gas furnace",
+    "expected_fuel_type": "natural_gas",
+    "geography": null
+  },
+  {
+    "id": "g049",
+    "activity": "coal fired boiler",
+    "expected_fuel_type": "coal",
+    "geography": null
+  },
+  {
+    "id": "g050",
+    "activity": "petrol gasoline cars",
+    "expected_fuel_type": "gasoline",
+    "geography": null
+  },
+  {
+    "id": "g051",
+    "activity": "deisel fuel",
+    "expected_fuel_type": "diesel",
+    "geography": null
+  },
+  {
+    "id": "g052",
+    "activity": "electrcity grid",
+    "expected_fuel_type": "electricity",
+    "geography": null
+  },
+  {
+    "id": "g053",
+    "activity": "natual gas",
+    "expected_fuel_type": "natural_gas",
+    "geography": null
+  },
+  {
+    "id": "g054",
+    "activity": "gasolene fuel",
+    "expected_fuel_type": "gasoline",
+    "geography": null
+  },
+  {
+    "id": "g055",
+    "activity": "diesel fuel combustion scope 1",
+    "expected_fuel_type": "diesel",
+    "geography": null
+  },
+  {
+    "id": "g056",
+    "activity": "scope2 electricity",
+    "expected_fuel_type": "electricity",
+    "geography": null
+  },
+  {
+    "id": "g057",
+    "activity": "scope1 gas heating",
+    "expected_fuel_type": "natural_gas",
+    "geography": null
+  },
+  {
+    "id": "g058",
+    "activity": "coal scope1 stationary",
+    "expected_fuel_type": "coal",
+    "geography": null
+  },
+  {
+    "id": "g059",
+    "activity": "gasoline scope1 transport",
+    "expected_fuel_type": "gasoline",
+    "geography": null
+  },
+  {
+    "id": "g060",
+    "activity": "diesel US gallons",
+    "expected_fuel_type": "diesel",
+    "geography": "US"
+  },
+  {
+    "id": "g061",
+    "activity": "US electricity grid average",
+    "expected_fuel_type": "electricity",
+    "geography": "US"
+  },
+  {
+    "id": "g062",
+    "activity": "US natural gas therms boiler",
+    "expected_fuel_type": "natural_gas",
+    "geography": "US"
+  },
+  {
+    "id": "g063",
+    "activity": "coal US tons stationary",
+    "expected_fuel_type": "coal",
+    "geography": "US"
+  },
+  {
+    "id": "g064",
+    "activity": "US gasoline gallons vehicles",
+    "expected_fuel_type": "gasoline",
+    "geography": "US"
+  },
+  {
+    "id": "g065",
+    "activity": "diesel fuel mobile combustion gallons",
+    "expected_fuel_type": "diesel",
+    "geography": null
+  },
+  {
+    "id": "g066",
+    "activity": "purchased electricity kwh scope 2",
+    "expected_fuel_type": "electricity",
+    "geography": null
+  },
+  {
+    "id": "g067",
+    "activity": "boiler gas natural therms",
+    "expected_fuel_type": "natural_gas",
+    "geography": null
+  },
+  {
+    "id": "g068",
+    "activity": "coal fossil stationary scope 1 tons",
+    "expected_fuel_type": "coal",
+    "geography": null
+  },
+  {
+    "id": "g069",
+    "activity": "fleet vehicles gasoline gallons",
+    "expected_fuel_type": "gasoline",
+    "geography": null
+  },
+  {
+    "id": "g070",
+    "activity": "EU electricity",
+    "expected_fuel_type": "electricity",
+    "geography": "EU"
+  },
+  {
+    "id": "g071",
+    "activity": "UK electricity",
+    "expected_fuel_type": "electricity",
+    "geography": "UK"
+  },
+  {
+    "id": "g072",
+    "activity": "European Union electricity kwh",
+    "expected_fuel_type": "electricity",
+    "geography": "EU"
+  },
+  {
+    "id": "g073",
+    "activity": "United Kingdom power",
+    "expected_fuel_type": "electricity",
+    "geography": "UK"
+  },
+  {
+    "id": "g074",
+    "activity": "diesel liters US scope 1",
+    "expected_fuel_type": "diesel",
+    "geography": "US"
+  },
+  {
+    "id": "g075",
+    "activity": "electricity kwh US grid scope 2",
+    "expected_fuel_type": "electricity",
+    "geography": "US"
+  },
+  {
+    "id": "g076",
+    "activity": "heating natural gas US therms",
+    "expected_fuel_type": "natural_gas",
+    "geography": "US"
+  },
+  {
+    "id": "g077",
+    "activity": "US coal stationary combustion tons",
+    "expected_fuel_type": "coal",
+    "geography": "US"
+  },
+  {
+    "id": "g078",
+    "activity": "US gasoline transport fleet",
+    "expected_fuel_type": "gasoline",
+    "geography": "US"
+  },
+  {
+    "id": "g079",
+    "activity": "diesel fuel oil combustion",
+    "expected_fuel_type": "diesel",
+    "geography": null
+  },
+  {
+    "id": "g080",
+    "activity": "grid average electricity purchased",
+    "expected_fuel_type": "electricity",
+    "geography": null
+  },
+  {
+    "id": "g081",
+    "activity": "pipeline natural gas",
+    "expected_fuel_type": "natural_gas",
+    "geography": null
+  },
+  {
+    "id": "g082",
+    "activity": "sub-bituminous coal",
+    "expected_fuel_type": "coal",
+    "geography": null
+  },
+  {
+    "id": "g083",
+    "activity": "E10 gasoline blend",
+    "expected_fuel_type": "gasoline",
+    "geography": null
+  },
+  {
+    "id": "g084",
+    "activity": "ULSD diesel ultra low sulfur",
+    "expected_fuel_type": "diesel",
+    "geography": null
+  },
+  {
+    "id": "g085",
+    "activity": "commercial electricity",
+    "expected_fuel_type": "electricity",
+    "geography": null
+  },
+  {
+    "id": "g086",
+    "activity": "residential natural gas",
+    "expected_fuel_type": "natural_gas",
+    "geography": null
+  },
+  {
+    "id": "g087",
+    "activity": "industrial coal furnace",
+    "expected_fuel_type": "coal",
+    "geography": null
+  },
+  {
+    "id": "g088",
+    "activity": "road transport gasoline",
+    "expected_fuel_type": "gasoline",
+    "geography": null
+  },
+  {
+    "id": "g089",
+    "activity": "backup generator diesel fuel",
+    "expected_fuel_type": "diesel",
+    "geography": null
+  },
+  {
+    "id": "g090",
+    "activity": "facility electricity consumption",
+    "expected_fuel_type": "electricity",
+    "geography": null
+  },
+  {
+    "id": "g091",
+    "activity": "HVAC natural gas heating system",
+    "expected_fuel_type": "natural_gas",
+    "geography": null
+  },
+  {
+    "id": "g092",
+    "activity": "coal combustion emissions",
+    "expected_fuel_type": "coal",
+    "geography": null
+  },
+  {
+    "id": "g093",
+    "activity": "company car petrol fuel",
+    "expected_fuel_type": "gasoline",
+    "geography": null
+  },
+  {
+    "id": "g094",
+    "activity": "diesel combustion EU",
+    "expected_fuel_type": "diesel",
+    "geography": null
+  },
+  {
+    "id": "g095",
+    "activity": "electricity EU grid average",
+    "expected_fuel_type": "electricity",
+    "geography": "EU"
+  },
+  {
+    "id": "g096",
+    "activity": "UK grid electricity kwh",
+    "expected_fuel_type": "electricity",
+    "geography": "UK"
+  },
+  {
+    "id": "g097",
+    "activity": "US diesel transport fuel combustion",
+    "expected_fuel_type": "diesel",
+    "geography": "US"
+  },
+  {
+    "id": "g098",
+    "activity": "scope 2 US grid electricity kwh",
+    "expected_fuel_type": "electricity",
+    "geography": "US"
+  },
+  {
+    "id": "g099",
+    "activity": "natural gas scope 1 US stationary therms",
+    "expected_fuel_type": "natural_gas",
+    "geography": "US"
+  },
+  {
+    "id": "g100",
+    "activity": "US coal scope 1 boiler combustion",
+    "expected_fuel_type": "coal",
+    "geography": "US"
+  },
+  {
+    "id": "g101",
+    "activity": "US gasoline scope 1 mobile fleet gallons",
+    "expected_fuel_type": "gasoline",
+    "geography": "US"
+  },
+  {
+    "id": "g102",
+    "activity": "diesl fuel",
+    "expected_fuel_type": "diesel",
+    "geography": null
+  },
+  {
+    "id": "g103",
+    "activity": "elecricity",
+    "expected_fuel_type": "electricity",
+    "geography": null
+  },
+  {
+    "id": "g104",
+    "activity": "natrual gas",
+    "expected_fuel_type": "natural_gas",
+    "geography": null
+  },
+  {
+    "id": "g105",
+    "activity": "gasolne",
+    "expected_fuel_type": "gasoline",
+    "geography": null
+  },
+  {
+    "id": "g106",
+    "activity": "diesel fuel combustion",
+    "expected_fuel_type": "diesel",
+    "geography": "US",
+    "domain": "energy"
+  },
+  {
+    "id": "g107",
+    "activity": "diesel oil stationary",
+    "expected_fuel_type": "diesel",
+    "geography": "US",
+    "domain": "energy"
+  },
+  {
+    "id": "g108",
+    "activity": "diesel generator power",
+    "expected_fuel_type": "diesel",
+    "geography": "US",
+    "domain": "energy"
+  },
+  {
+    "id": "g109",
+    "activity": "#2 fuel oil combustion",
+    "expected_fuel_type": "diesel",
+    "geography": "US",
+    "domain": "energy"
+  },
+  {
+    "id": "g110",
+    "activity": "DERV diesel road vehicle",
+    "expected_fuel_type": "diesel",
+    "geography": "US",
+    "domain": "energy"
+  },
+  {
+    "id": "g111",
+    "activity": "gas oil heating",
+    "expected_fuel_type": "diesel",
+    "geography": "US",
+    "domain": "energy"
+  },
+  {
+    "id": "g112",
+    "activity": "diesel backup generator",
+    "expected_fuel_type": "diesel",
+    "geography": "US",
+    "domain": "energy"
+  },
+  {
+    "id": "g113",
+    "activity": "diesel fuel combustion",
+    "expected_fuel_type": "diesel",
+    "geography": "EU",
+    "domain": "energy"
+  },
+  {
+    "id": "g114",
+    "activity": "diesel oil stationary",
+    "expected_fuel_type": "diesel",
+    "geography": "EU",
+    "domain": "energy"
+  },
+  {
+    "id": "g115",
+    "activity": "diesel generator power",
+    "expected_fuel_type": "diesel",
+    "geography": "EU",
+    "domain": "energy"
+  },
+  {
+    "id": "g116",
+    "activity": "#2 fuel oil combustion",
+    "expected_fuel_type": "diesel",
+    "geography": "EU",
+    "domain": "energy"
+  },
+  {
+    "id": "g117",
+    "activity": "DERV diesel road vehicle",
+    "expected_fuel_type": "diesel",
+    "geography": "EU",
+    "domain": "energy"
+  },
+  {
+    "id": "g118",
+    "activity": "gas oil heating",
+    "expected_fuel_type": "diesel",
+    "geography": "EU",
+    "domain": "energy"
+  },
+  {
+    "id": "g119",
+    "activity": "diesel backup generator",
+    "expected_fuel_type": "diesel",
+    "geography": "EU",
+    "domain": "energy"
+  },
+  {
+    "id": "g120",
+    "activity": "diesel fuel combustion",
+    "expected_fuel_type": "diesel",
+    "geography": "UK",
+    "domain": "energy"
+  },
+  {
+    "id": "g121",
+    "activity": "diesel oil stationary",
+    "expected_fuel_type": "diesel",
+    "geography": "UK",
+    "domain": "energy"
+  },
+  {
+    "id": "g122",
+    "activity": "diesel generator power",
+    "expected_fuel_type": "diesel",
+    "geography": "UK",
+    "domain": "energy"
+  },
+  {
+    "id": "g123",
+    "activity": "#2 fuel oil combustion",
+    "expected_fuel_type": "diesel",
+    "geography": "UK",
+    "domain": "energy"
+  },
+  {
+    "id": "g124",
+    "activity": "DERV diesel road vehicle",
+    "expected_fuel_type": "diesel",
+    "geography": "UK",
+    "domain": "energy"
+  },
+  {
+    "id": "g125",
+    "activity": "gas oil heating",
+    "expected_fuel_type": "diesel",
+    "geography": "UK",
+    "domain": "energy"
+  },
+  {
+    "id": "g126",
+    "activity": "diesel backup generator",
+    "expected_fuel_type": "diesel",
+    "geography": "UK",
+    "domain": "energy"
+  },
+  {
+    "id": "g127",
+    "activity": "diesel fuel combustion",
+    "expected_fuel_type": "diesel",
+    "domain": "energy"
+  },
+  {
+    "id": "g128",
+    "activity": "diesel oil stationary",
+    "expected_fuel_type": "diesel",
+    "domain": "energy"
+  },
+  {
+    "id": "g129",
+    "activity": "diesel generator power",
+    "expected_fuel_type": "diesel",
+    "domain": "energy"
+  },
+  {
+    "id": "g130",
+    "activity": "#2 fuel oil combustion",
+    "expected_fuel_type": "diesel",
+    "domain": "energy"
+  },
+  {
+    "id": "g131",
+    "activity": "DERV diesel road vehicle",
+    "expected_fuel_type": "diesel",
+    "domain": "energy"
+  },
+  {
+    "id": "g132",
+    "activity": "gas oil heating",
+    "expected_fuel_type": "diesel",
+    "domain": "energy"
+  },
+  {
+    "id": "g133",
+    "activity": "diesel backup generator",
+    "expected_fuel_type": "diesel",
+    "domain": "energy"
+  },
+  {
+    "id": "g134",
+    "activity": "natural gas heating",
+    "expected_fuel_type": "natural_gas",
+    "geography": "US",
+    "domain": "energy"
+  },
+  {
+    "id": "g135",
+    "activity": "methane combustion boiler",
+    "expected_fuel_type": "natural_gas",
+    "geography": "US",
+    "domain": "energy"
+  },
+  {
+    "id": "g136",
+    "activity": "pipeline gas furnace",
+    "expected_fuel_type": "natural_gas",
+    "geography": "US",
+    "domain": "energy"
+  },
+  {
+    "id": "g137",
+    "activity": "natural gas therms",
+    "expected_fuel_type": "natural_gas",
+    "geography": "US",
+    "domain": "energy"
+  },
+  {
+    "id": "g138",
+    "activity": "gas fired boiler",
+    "expected_fuel_type": "natural_gas",
+    "geography": "US",
+    "domain": "energy"
+  },
+  {
+    "id": "g139",
+    "activity": "CNG compressed natural gas",
+    "expected_fuel_type": "natural_gas",
+    "geography": "US",
+    "domain": "energy"
+  },
+  {
+    "id": "g140",
+    "activity": "LNG liquefied natural gas",
+    "expected_fuel_type": "natural_gas",
+    "geography": "US",
+    "domain": "energy"
+  },
+  {
+    "id": "g141",
+    "activity": "natural gas heating",
+    "expected_fuel_type": "natural_gas",
+    "geography": "EU",
+    "domain": "energy"
+  },
+  {
+    "id": "g142",
+    "activity": "methane combustion boiler",
+    "expected_fuel_type": "natural_gas",
+    "geography": "EU",
+    "domain": "energy"
+  },
+  {
+    "id": "g143",
+    "activity": "pipeline gas furnace",
+    "expected_fuel_type": "natural_gas",
+    "geography": "EU",
+    "domain": "energy"
+  },
+  {
+    "id": "g144",
+    "activity": "natural gas therms",
+    "expected_fuel_type": "natural_gas",
+    "geography": "EU",
+    "domain": "energy"
+  },
+  {
+    "id": "g145",
+    "activity": "gas fired boiler",
+    "expected_fuel_type": "natural_gas",
+    "geography": "EU",
+    "domain": "energy"
+  },
+  {
+    "id": "g146",
+    "activity": "CNG compressed natural gas",
+    "expected_fuel_type": "natural_gas",
+    "geography": "EU",
+    "domain": "energy"
+  },
+  {
+    "id": "g147",
+    "activity": "LNG liquefied natural gas",
+    "expected_fuel_type": "natural_gas",
+    "geography": "EU",
+    "domain": "energy"
+  },
+  {
+    "id": "g148",
+    "activity": "natural gas heating",
+    "expected_fuel_type": "natural_gas",
+    "geography": "UK",
+    "domain": "energy"
+  },
+  {
+    "id": "g149",
+    "activity": "methane combustion boiler",
+    "expected_fuel_type": "natural_gas",
+    "geography": "UK",
+    "domain": "energy"
+  },
+  {
+    "id": "g150",
+    "activity": "pipeline gas furnace",
+    "expected_fuel_type": "natural_gas",
+    "geography": "UK",
+    "domain": "energy"
+  },
+  {
+    "id": "g151",
+    "activity": "natural gas therms",
+    "expected_fuel_type": "natural_gas",
+    "geography": "UK",
+    "domain": "energy"
+  },
+  {
+    "id": "g152",
+    "activity": "gas fired boiler",
+    "expected_fuel_type": "natural_gas",
+    "geography": "UK",
+    "domain": "energy"
+  },
+  {
+    "id": "g153",
+    "activity": "CNG compressed natural gas",
+    "expected_fuel_type": "natural_gas",
+    "geography": "UK",
+    "domain": "energy"
+  },
+  {
+    "id": "g154",
+    "activity": "LNG liquefied natural gas",
+    "expected_fuel_type": "natural_gas",
+    "geography": "UK",
+    "domain": "energy"
+  },
+  {
+    "id": "g155",
+    "activity": "natural gas heating",
+    "expected_fuel_type": "natural_gas",
+    "domain": "energy"
+  },
+  {
+    "id": "g156",
+    "activity": "methane combustion boiler",
+    "expected_fuel_type": "natural_gas",
+    "domain": "energy"
+  },
+  {
+    "id": "g157",
+    "activity": "pipeline gas furnace",
+    "expected_fuel_type": "natural_gas",
+    "domain": "energy"
+  },
+  {
+    "id": "g158",
+    "activity": "natural gas therms",
+    "expected_fuel_type": "natural_gas",
+    "domain": "energy"
+  },
+  {
+    "id": "g159",
+    "activity": "gas fired boiler",
+    "expected_fuel_type": "natural_gas",
+    "domain": "energy"
+  },
+  {
+    "id": "g160",
+    "activity": "CNG compressed natural gas",
+    "expected_fuel_type": "natural_gas",
+    "domain": "energy"
+  },
+  {
+    "id": "g161",
+    "activity": "LNG liquefied natural gas",
+    "expected_fuel_type": "natural_gas",
+    "domain": "energy"
+  },
+  {
+    "id": "g162",
+    "activity": "electricity grid consumption",
+    "expected_fuel_type": "electricity",
+    "geography": "US",
+    "domain": "energy",
+    "scope": "2"
+  },
+  {
+    "id": "g163",
+    "activity": "purchased electricity",
+    "expected_fuel_type": "electricity",
+    "geography": "US",
+    "domain": "energy",
+    "scope": "2"
+  },
+  {
+    "id": "g164",
+    "activity": "grid power",
+    "expected_fuel_type": "electricity",
+    "geography": "US",
+    "domain": "energy",
+    "scope": "2"
+  },
+  {
+    "id": "g165",
+    "activity": "electrical power consumption",
+    "expected_fuel_type": "electricity",
+    "geography": "US",
+    "domain": "energy",
+    "scope": "2"
+  },
+  {
+    "id": "g166",
+    "activity": "mains electricity supply",
+    "expected_fuel_type": "electricity",
+    "geography": "US",
+    "domain": "energy",
+    "scope": "2"
+  },
+  {
+    "id": "g167",
+    "activity": "electric utility",
+    "expected_fuel_type": "electricity",
+    "geography": "US",
+    "domain": "energy",
+    "scope": "2"
+  },
+  {
+    "id": "g168",
+    "activity": "kWh electricity purchased",
+    "expected_fuel_type": "electricity",
+    "geography": "US",
+    "domain": "energy",
+    "scope": "2"
+  },
+  {
+    "id": "g169",
+    "activity": "electricity grid consumption",
+    "expected_fuel_type": "electricity",
+    "geography": "EU",
+    "domain": "energy",
+    "scope": "2"
+  },
+  {
+    "id": "g170",
+    "activity": "purchased electricity",
+    "expected_fuel_type": "electricity",
+    "geography": "EU",
+    "domain": "energy",
+    "scope": "2"
+  },
+  {
+    "id": "g171",
+    "activity": "grid power",
+    "expected_fuel_type": "electricity",
+    "geography": "EU",
+    "domain": "energy",
+    "scope": "2"
+  },
+  {
+    "id": "g172",
+    "activity": "electrical power consumption",
+    "expected_fuel_type": "electricity",
+    "geography": "EU",
+    "domain": "energy",
+    "scope": "2"
+  },
+  {
+    "id": "g173",
+    "activity": "mains electricity supply",
+    "expected_fuel_type": "electricity",
+    "geography": "EU",
+    "domain": "energy",
+    "scope": "2"
+  },
+  {
+    "id": "g174",
+    "activity": "electric utility",
+    "expected_fuel_type": "electricity",
+    "geography": "EU",
+    "domain": "energy",
+    "scope": "2"
+  },
+  {
+    "id": "g175",
+    "activity": "kWh electricity purchased",
+    "expected_fuel_type": "electricity",
+    "geography": "EU",
+    "domain": "energy",
+    "scope": "2"
+  },
+  {
+    "id": "g176",
+    "activity": "electricity grid consumption",
+    "expected_fuel_type": "electricity",
+    "geography": "UK",
+    "domain": "energy",
+    "scope": "2"
+  },
+  {
+    "id": "g177",
+    "activity": "purchased electricity",
+    "expected_fuel_type": "electricity",
+    "geography": "UK",
+    "domain": "energy",
+    "scope": "2"
+  },
+  {
+    "id": "g178",
+    "activity": "grid power",
+    "expected_fuel_type": "electricity",
+    "geography": "UK",
+    "domain": "energy",
+    "scope": "2"
+  },
+  {
+    "id": "g179",
+    "activity": "electrical power consumption",
+    "expected_fuel_type": "electricity",
+    "geography": "UK",
+    "domain": "energy",
+    "scope": "2"
+  },
+  {
+    "id": "g180",
+    "activity": "mains electricity supply",
+    "expected_fuel_type": "electricity",
+    "geography": "UK",
+    "domain": "energy",
+    "scope": "2"
+  },
+  {
+    "id": "g181",
+    "activity": "electric utility",
+    "expected_fuel_type": "electricity",
+    "geography": "UK",
+    "domain": "energy",
+    "scope": "2"
+  },
+  {
+    "id": "g182",
+    "activity": "kWh electricity purchased",
+    "expected_fuel_type": "electricity",
+    "geography": "UK",
+    "domain": "energy",
+    "scope": "2"
+  },
+  {
+    "id": "g183",
+    "activity": "electricity grid consumption",
+    "expected_fuel_type": "electricity",
+    "domain": "energy",
+    "scope": "2"
+  },
+  {
+    "id": "g184",
+    "activity": "purchased electricity",
+    "expected_fuel_type": "electricity",
+    "domain": "energy",
+    "scope": "2"
+  },
+  {
+    "id": "g185",
+    "activity": "grid power",
+    "expected_fuel_type": "electricity",
+    "domain": "energy",
+    "scope": "2"
+  },
+  {
+    "id": "g186",
+    "activity": "electrical power consumption",
+    "expected_fuel_type": "electricity",
+    "domain": "energy",
+    "scope": "2"
+  },
+  {
+    "id": "g187",
+    "activity": "mains electricity supply",
+    "expected_fuel_type": "electricity",
+    "domain": "energy",
+    "scope": "2"
+  },
+  {
+    "id": "g188",
+    "activity": "electric utility",
+    "expected_fuel_type": "electricity",
+    "domain": "energy",
+    "scope": "2"
+  },
+  {
+    "id": "g189",
+    "activity": "kWh electricity purchased",
+    "expected_fuel_type": "electricity",
+    "domain": "energy",
+    "scope": "2"
+  },
+  {
+    "id": "g190",
+    "activity": "bituminous coal combustion",
+    "expected_fuel_type": "coal",
+    "geography": "US",
+    "domain": "energy"
+  },
+  {
+    "id": "g191",
+    "activity": "coal fired boiler",
+    "expected_fuel_type": "coal",
+    "geography": "US",
+    "domain": "energy"
+  },
+  {
+    "id": "g192",
+    "activity": "anthracite coal burning",
+    "expected_fuel_type": "coal",
+    "geography": "US",
+    "domain": "energy"
+  },
+  {
+    "id": "g193",
+    "activity": "hard coal combustion",
+    "expected_fuel_type": "coal",
+    "geography": "US",
+    "domain": "energy"
+  },
+  {
+    "id": "g194",
+    "activity": "thermal coal stationary",
+    "expected_fuel_type": "coal",
+    "geography": "US",
+    "domain": "energy"
+  },
+  {
+    "id": "g195",
+    "activity": "coal power generation",
+    "expected_fuel_type": "coal",
+    "geography": "US",
+    "domain": "energy"
+  },
+  {
+    "id": "g196",
+    "activity": "solid fossil fuel coal",
+    "expected_fuel_type": "coal",
+    "geography": "US",
+    "domain": "energy"
+  },
+  {
+    "id": "g197",
+    "activity": "steam coal boiler",
+    "expected_fuel_type": "coal",
+    "geography": "US",
+    "domain": "energy"
+  },
+  {
+    "id": "g198",
+    "activity": "coal combustion tons",
+    "expected_fuel_type": "coal",
+    "geography": "US",
+    "domain": "energy"
+  },
+  {
+    "id": "g199",
+    "activity": "lignite brown coal",
+    "expected_fuel_type": "coal",
+    "geography": "US",
+    "domain": "energy"
+  },
+  {
+    "id": "g200",
+    "activity": "bituminous coal combustion",
+    "expected_fuel_type": "coal",
+    "domain": "energy"
+  },
+  {
+    "id": "g201",
+    "activity": "coal fired boiler",
+    "expected_fuel_type": "coal",
+    "domain": "energy"
+  },
+  {
+    "id": "g202",
+    "activity": "anthracite coal burning",
+    "expected_fuel_type": "coal",
+    "domain": "energy"
+  },
+  {
+    "id": "g203",
+    "activity": "hard coal combustion",
+    "expected_fuel_type": "coal",
+    "domain": "energy"
+  },
+  {
+    "id": "g204",
+    "activity": "thermal coal stationary",
+    "expected_fuel_type": "coal",
+    "domain": "energy"
+  },
+  {
+    "id": "g205",
+    "activity": "coal power generation",
+    "expected_fuel_type": "coal",
+    "domain": "energy"
+  },
+  {
+    "id": "g206",
+    "activity": "solid fossil fuel coal",
+    "expected_fuel_type": "coal",
+    "domain": "energy"
+  },
+  {
+    "id": "g207",
+    "activity": "steam coal boiler",
+    "expected_fuel_type": "coal",
+    "domain": "energy"
+  },
+  {
+    "id": "g208",
+    "activity": "coal combustion tons",
+    "expected_fuel_type": "coal",
+    "domain": "energy"
+  },
+  {
+    "id": "g209",
+    "activity": "lignite brown coal",
+    "expected_fuel_type": "coal",
+    "domain": "energy"
+  },
+  {
+    "id": "g210",
+    "activity": "gasoline vehicle fleet",
+    "expected_fuel_type": "gasoline",
+    "geography": "US",
+    "domain": "energy"
+  },
+  {
+    "id": "g211",
+    "activity": "petrol car transport",
+    "expected_fuel_type": "gasoline",
+    "geography": "US",
+    "domain": "energy"
+  },
+  {
+    "id": "g212",
+    "activity": "motor gasoline",
+    "expected_fuel_type": "gasoline",
+    "geography": "US",
+    "domain": "energy"
+  },
+  {
+    "id": "g213",
+    "activity": "unleaded petrol",
+    "expected_fuel_type": "gasoline",
+    "geography": "US",
+    "domain": "energy"
+  },
+  {
+    "id": "g214",
+    "activity": "E10 gasoline blend",
+    "expected_fuel_type": "gasoline",
+    "geography": "US",
+    "domain": "energy"
+  },
+  {
+    "id": "g215",
+    "activity": "premium gasoline fuel",
+    "expected_fuel_type": "gasoline",
+    "geography": "US",
+    "domain": "energy"
+  },
+  {
+    "id": "g216",
+    "activity": "regular gasoline gallons",
+    "expected_fuel_type": "gasoline",
+    "geography": "US",
+    "domain": "energy"
+  },
+  {
+    "id": "g217",
+    "activity": "petrol fuel cars",
+    "expected_fuel_type": "gasoline",
+    "geography": "US",
+    "domain": "energy"
+  },
+  {
+    "id": "g218",
+    "activity": "automobile gasoline",
+    "expected_fuel_type": "gasoline",
+    "geography": "US",
+    "domain": "energy"
+  },
+  {
+    "id": "g219",
+    "activity": "gasoline spark ignition",
+    "expected_fuel_type": "gasoline",
+    "geography": "US",
+    "domain": "energy"
+  },
+  {
+    "id": "g220",
+    "activity": "gasoline vehicle fleet",
+    "expected_fuel_type": "gasoline",
+    "domain": "energy"
+  },
+  {
+    "id": "g221",
+    "activity": "petrol car transport",
+    "expected_fuel_type": "gasoline",
+    "domain": "energy"
+  },
+  {
+    "id": "g222",
+    "activity": "motor gasoline",
+    "expected_fuel_type": "gasoline",
+    "domain": "energy"
+  },
+  {
+    "id": "g223",
+    "activity": "unleaded petrol",
+    "expected_fuel_type": "gasoline",
+    "domain": "energy"
+  },
+  {
+    "id": "g224",
+    "activity": "E10 gasoline blend",
+    "expected_fuel_type": "gasoline",
+    "domain": "energy"
+  },
+  {
+    "id": "g225",
+    "activity": "premium gasoline fuel",
+    "expected_fuel_type": "gasoline",
+    "domain": "energy"
+  },
+  {
+    "id": "g226",
+    "activity": "regular gasoline gallons",
+    "expected_fuel_type": "gasoline",
+    "domain": "energy"
+  },
+  {
+    "id": "g227",
+    "activity": "petrol fuel cars",
+    "expected_fuel_type": "gasoline",
+    "domain": "energy"
+  },
+  {
+    "id": "g228",
+    "activity": "automobile gasoline",
+    "expected_fuel_type": "gasoline",
+    "domain": "energy"
+  },
+  {
+    "id": "g229",
+    "activity": "gasoline spark ignition",
+    "expected_fuel_type": "gasoline",
+    "domain": "energy"
+  },
+  {
+    "id": "g230",
+    "activity": "diesel truck freight",
+    "expected_fuel_type": "diesel",
+    "geography": "US",
+    "domain": "transport"
+  },
+  {
+    "id": "g231",
+    "activity": "diesel vehicle road",
+    "expected_fuel_type": "diesel",
+    "geography": "US",
+    "domain": "transport"
+  },
+  {
+    "id": "g232",
+    "activity": "diesel locomotive rail",
+    "expected_fuel_type": "diesel",
+    "geography": "US",
+    "domain": "transport"
+  },
+  {
+    "id": "g233",
+    "activity": "marine diesel fuel",
+    "expected_fuel_type": "diesel",
+    "geography": "US",
+    "domain": "transport"
+  },
+  {
+    "id": "g234",
+    "activity": "diesel bus fleet",
+    "expected_fuel_type": "diesel",
+    "geography": "US",
+    "domain": "transport"
+  },
+  {
+    "id": "g235",
+    "activity": "gasoline car commuting",
+    "expected_fuel_type": "gasoline",
+    "geography": "US",
+    "domain": "transport"
+  },
+  {
+    "id": "g236",
+    "activity": "petrol vehicle passenger",
+    "expected_fuel_type": "gasoline",
+    "geography": "US",
+    "domain": "transport"
+  },
+  {
+    "id": "g237",
+    "activity": "gasoline fleet vehicles",
+    "expected_fuel_type": "gasoline",
+    "geography": "US",
+    "domain": "transport"
+  },
+  {
+    "id": "g238",
+    "activity": "diesel truck freight",
+    "expected_fuel_type": "diesel",
+    "geography": "EU",
+    "domain": "transport"
+  },
+  {
+    "id": "g239",
+    "activity": "diesel vehicle road",
+    "expected_fuel_type": "diesel",
+    "geography": "EU",
+    "domain": "transport"
+  },
+  {
+    "id": "g240",
+    "activity": "diesel locomotive rail",
+    "expected_fuel_type": "diesel",
+    "geography": "EU",
+    "domain": "transport"
+  },
+  {
+    "id": "g241",
+    "activity": "marine diesel fuel",
+    "expected_fuel_type": "diesel",
+    "geography": "EU",
+    "domain": "transport"
+  },
+  {
+    "id": "g242",
+    "activity": "diesel bus fleet",
+    "expected_fuel_type": "diesel",
+    "geography": "EU",
+    "domain": "transport"
+  },
+  {
+    "id": "g243",
+    "activity": "gasoline car commuting",
+    "expected_fuel_type": "gasoline",
+    "geography": "EU",
+    "domain": "transport"
+  },
+  {
+    "id": "g244",
+    "activity": "petrol vehicle passenger",
+    "expected_fuel_type": "gasoline",
+    "geography": "EU",
+    "domain": "transport"
+  },
+  {
+    "id": "g245",
+    "activity": "gasoline fleet vehicles",
+    "expected_fuel_type": "gasoline",
+    "geography": "EU",
+    "domain": "transport"
+  },
+  {
+    "id": "g246",
+    "activity": "diesel truck freight",
+    "expected_fuel_type": "diesel",
+    "domain": "transport"
+  },
+  {
+    "id": "g247",
+    "activity": "diesel vehicle road",
+    "expected_fuel_type": "diesel",
+    "domain": "transport"
+  },
+  {
+    "id": "g248",
+    "activity": "diesel locomotive rail",
+    "expected_fuel_type": "diesel",
+    "domain": "transport"
+  },
+  {
+    "id": "g249",
+    "activity": "marine diesel fuel",
+    "expected_fuel_type": "diesel",
+    "domain": "transport"
+  },
+  {
+    "id": "g250",
+    "activity": "diesel bus fleet",
+    "expected_fuel_type": "diesel",
+    "domain": "transport"
+  },
+  {
+    "id": "g251",
+    "activity": "gasoline car commuting",
+    "expected_fuel_type": "gasoline",
+    "domain": "transport"
+  },
+  {
+    "id": "g252",
+    "activity": "petrol vehicle passenger",
+    "expected_fuel_type": "gasoline",
+    "domain": "transport"
+  },
+  {
+    "id": "g253",
+    "activity": "gasoline fleet vehicles",
+    "expected_fuel_type": "gasoline",
+    "domain": "transport"
+  },
+  {
+    "id": "g254",
+    "activity": "coal furnace industrial",
+    "expected_fuel_type": "coal",
+    "geography": "US",
+    "domain": "industry"
+  },
+  {
+    "id": "g255",
+    "activity": "natural gas process heat",
+    "expected_fuel_type": "natural_gas",
+    "geography": "US",
+    "domain": "industry"
+  },
+  {
+    "id": "g256",
+    "activity": "diesel forklift warehouse",
+    "expected_fuel_type": "diesel",
+    "geography": "US",
+    "domain": "industry"
+  },
+  {
+    "id": "g257",
+    "activity": "industrial electricity consumption",
+    "expected_fuel_type": "electricity",
+    "geography": "US",
+    "domain": "industry",
+    "scope": "2"
+  },
+  {
+    "id": "g258",
+    "activity": "factory power usage",
+    "expected_fuel_type": "electricity",
+    "geography": "US",
+    "domain": "industry",
+    "scope": "2"
+  },
+  {
+    "id": "g259",
+    "activity": "manufacturing natural gas",
+    "expected_fuel_type": "natural_gas",
+    "geography": "US",
+    "domain": "industry"
+  },
+  {
+    "id": "g260",
+    "activity": "process steam coal fired",
+    "expected_fuel_type": "coal",
+    "geography": "US",
+    "domain": "industry"
+  },
+  {
+    "id": "g261",
+    "activity": "industrial diesel generator",
+    "expected_fuel_type": "diesel",
+    "geography": "US",
+    "domain": "industry"
+  },
+  {
+    "id": "g262",
+    "activity": "coal furnace industrial",
+    "expected_fuel_type": "coal",
+    "geography": "EU",
+    "domain": "industry"
+  },
+  {
+    "id": "g263",
+    "activity": "natural gas process heat",
+    "expected_fuel_type": "natural_gas",
+    "geography": "EU",
+    "domain": "industry"
+  },
+  {
+    "id": "g264",
+    "activity": "diesel forklift warehouse",
+    "expected_fuel_type": "diesel",
+    "geography": "EU",
+    "domain": "industry"
+  },
+  {
+    "id": "g265",
+    "activity": "industrial electricity consumption",
+    "expected_fuel_type": "electricity",
+    "geography": "EU",
+    "domain": "industry",
+    "scope": "2"
+  },
+  {
+    "id": "g266",
+    "activity": "factory power usage",
+    "expected_fuel_type": "electricity",
+    "geography": "EU",
+    "domain": "industry",
+    "scope": "2"
+  },
+  {
+    "id": "g267",
+    "activity": "manufacturing natural gas",
+    "expected_fuel_type": "natural_gas",
+    "geography": "EU",
+    "domain": "industry"
+  },
+  {
+    "id": "g268",
+    "activity": "process steam coal fired",
+    "expected_fuel_type": "coal",
+    "geography": "EU",
+    "domain": "industry"
+  },
+  {
+    "id": "g269",
+    "activity": "industrial diesel generator",
+    "expected_fuel_type": "diesel",
+    "geography": "EU",
+    "domain": "industry"
+  },
+  {
+    "id": "g270",
+    "activity": "coal furnace industrial",
+    "expected_fuel_type": "coal",
+    "domain": "industry"
+  },
+  {
+    "id": "g271",
+    "activity": "natural gas process heat",
+    "expected_fuel_type": "natural_gas",
+    "domain": "industry"
+  },
+  {
+    "id": "g272",
+    "activity": "diesel forklift warehouse",
+    "expected_fuel_type": "diesel",
+    "domain": "industry"
+  },
+  {
+    "id": "g273",
+    "activity": "industrial electricity consumption",
+    "expected_fuel_type": "electricity",
+    "domain": "industry",
+    "scope": "2"
+  },
+  {
+    "id": "g274",
+    "activity": "factory power usage",
+    "expected_fuel_type": "electricity",
+    "domain": "industry",
+    "scope": "2"
+  },
+  {
+    "id": "g275",
+    "activity": "manufacturing natural gas",
+    "expected_fuel_type": "natural_gas",
+    "domain": "industry"
+  },
+  {
+    "id": "g276",
+    "activity": "process steam coal fired",
+    "expected_fuel_type": "coal",
+    "domain": "industry"
+  },
+  {
+    "id": "g277",
+    "activity": "industrial diesel generator",
+    "expected_fuel_type": "diesel",
+    "domain": "industry"
+  },
+  {
+    "id": "g278",
+    "activity": "office building electricity",
+    "expected_fuel_type": "electricity",
+    "geography": "US",
+    "domain": "buildings",
+    "scope": "2"
+  },
+  {
+    "id": "g279",
+    "activity": "building heating natural gas",
+    "expected_fuel_type": "natural_gas",
+    "geography": "US",
+    "domain": "buildings"
+  },
+  {
+    "id": "g280",
+    "activity": "commercial HVAC gas",
+    "expected_fuel_type": "natural_gas",
+    "geography": "US",
+    "domain": "buildings"
+  },
+  {
+    "id": "g281",
+    "activity": "building diesel backup",
+    "expected_fuel_type": "diesel",
+    "geography": "US",
+    "domain": "buildings"
+  },
+  {
+    "id": "g282",
+    "activity": "office lighting power",
+    "expected_fuel_type": "electricity",
+    "geography": "US",
+    "domain": "buildings",
+    "scope": "2"
+  },
+  {
+    "id": "g283",
+    "activity": "office building electricity",
+    "expected_fuel_type": "electricity",
+    "geography": "EU",
+    "domain": "buildings",
+    "scope": "2"
+  },
+  {
+    "id": "g284",
+    "activity": "building heating natural gas",
+    "expected_fuel_type": "natural_gas",
+    "geography": "EU",
+    "domain": "buildings"
+  },
+  {
+    "id": "g285",
+    "activity": "commercial HVAC gas",
+    "expected_fuel_type": "natural_gas",
+    "geography": "EU",
+    "domain": "buildings"
+  },
+  {
+    "id": "g286",
+    "activity": "building diesel backup",
+    "expected_fuel_type": "diesel",
+    "geography": "EU",
+    "domain": "buildings"
+  },
+  {
+    "id": "g287",
+    "activity": "office lighting power",
+    "expected_fuel_type": "electricity",
+    "geography": "EU",
+    "domain": "buildings",
+    "scope": "2"
+  },
+  {
+    "id": "g288",
+    "activity": "office building electricity",
+    "expected_fuel_type": "electricity",
+    "geography": "UK",
+    "domain": "buildings",
+    "scope": "2"
+  },
+  {
+    "id": "g289",
+    "activity": "building heating natural gas",
+    "expected_fuel_type": "natural_gas",
+    "geography": "UK",
+    "domain": "buildings"
+  },
+  {
+    "id": "g290",
+    "activity": "commercial HVAC gas",
+    "expected_fuel_type": "natural_gas",
+    "geography": "UK",
+    "domain": "buildings"
+  },
+  {
+    "id": "g291",
+    "activity": "building diesel backup",
+    "expected_fuel_type": "diesel",
+    "geography": "UK",
+    "domain": "buildings"
+  },
+  {
+    "id": "g292",
+    "activity": "office lighting power",
+    "expected_fuel_type": "electricity",
+    "geography": "UK",
+    "domain": "buildings",
+    "scope": "2"
+  },
+  {
+    "id": "g293",
+    "activity": "office building electricity",
+    "expected_fuel_type": "electricity",
+    "domain": "buildings",
+    "scope": "2"
+  },
+  {
+    "id": "g294",
+    "activity": "building heating natural gas",
+    "expected_fuel_type": "natural_gas",
+    "domain": "buildings"
+  },
+  {
+    "id": "g295",
+    "activity": "commercial HVAC gas",
+    "expected_fuel_type": "natural_gas",
+    "domain": "buildings"
+  },
+  {
+    "id": "g296",
+    "activity": "building diesel backup",
+    "expected_fuel_type": "diesel",
+    "domain": "buildings"
+  },
+  {
+    "id": "g297",
+    "activity": "office lighting power",
+    "expected_fuel_type": "electricity",
+    "domain": "buildings",
+    "scope": "2"
+  },
+  {
+    "id": "g298",
+    "activity": "farm diesel equipment",
+    "expected_fuel_type": "diesel",
+    "geography": "US",
+    "domain": "agriculture"
+  },
+  {
+    "id": "g299",
+    "activity": "agricultural diesel tractor",
+    "expected_fuel_type": "diesel",
+    "geography": "US",
+    "domain": "agriculture"
+  },
+  {
+    "id": "g300",
+    "activity": "farm electricity irrigation",
+    "expected_fuel_type": "electricity",
+    "geography": "US",
+    "domain": "agriculture",
+    "scope": "2"
+  },
+  {
+    "id": "g301",
+    "activity": "grain drying natural gas",
+    "expected_fuel_type": "natural_gas",
+    "geography": "US",
+    "domain": "agriculture"
+  },
+  {
+    "id": "g302",
+    "activity": "livestock heating gas",
+    "expected_fuel_type": "natural_gas",
+    "geography": "US",
+    "domain": "agriculture"
+  },
+  {
+    "id": "g303",
+    "activity": "farm gasoline ATV",
+    "expected_fuel_type": "gasoline",
+    "geography": "US",
+    "domain": "agriculture"
+  },
+  {
+    "id": "g304",
+    "activity": "greenhouse heating gas",
+    "expected_fuel_type": "natural_gas",
+    "geography": "US",
+    "domain": "agriculture"
+  },
+  {
+    "id": "g305",
+    "activity": "farm diesel equipment",
+    "expected_fuel_type": "diesel",
+    "domain": "agriculture"
+  },
+  {
+    "id": "g306",
+    "activity": "agricultural diesel tractor",
+    "expected_fuel_type": "diesel",
+    "domain": "agriculture"
+  },
+  {
+    "id": "g307",
+    "activity": "farm electricity irrigation",
+    "expected_fuel_type": "electricity",
+    "domain": "agriculture",
+    "scope": "2"
+  },
+  {
+    "id": "g308",
+    "activity": "grain drying natural gas",
+    "expected_fuel_type": "natural_gas",
+    "domain": "agriculture"
+  },
+  {
+    "id": "g309",
+    "activity": "livestock heating gas",
+    "expected_fuel_type": "natural_gas",
+    "domain": "agriculture"
+  },
+  {
+    "id": "g310",
+    "activity": "farm gasoline ATV",
+    "expected_fuel_type": "gasoline",
+    "domain": "agriculture"
+  },
+  {
+    "id": "g311",
+    "activity": "greenhouse heating gas",
+    "expected_fuel_type": "natural_gas",
+    "domain": "agriculture"
+  },
+  {
+    "id": "g312",
+    "activity": "deisel fule",
+    "expected_fuel_type": "diesel",
+    "domain": "misspelling",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g313",
+    "activity": "disel combust",
+    "expected_fuel_type": "diesel",
+    "domain": "misspelling",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g314",
+    "activity": "electrcity grd",
+    "expected_fuel_type": "electricity",
+    "domain": "misspelling",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g315",
+    "activity": "elctricity",
+    "expected_fuel_type": "electricity",
+    "domain": "misspelling",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g316",
+    "activity": "natual gass",
+    "expected_fuel_type": "natural_gas",
+    "domain": "misspelling",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g317",
+    "activity": "natrual gas heatng",
+    "expected_fuel_type": "natural_gas",
+    "domain": "misspelling",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g318",
+    "activity": "gasoline gasolene",
+    "expected_fuel_type": "gasoline",
+    "domain": "misspelling",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g319",
+    "activity": "petral car",
+    "expected_fuel_type": "gasoline",
+    "domain": "misspelling",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g320",
+    "activity": "cole burning",
+    "expected_fuel_type": "coal",
+    "domain": "misspelling",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g321",
+    "activity": "coel combustion",
+    "expected_fuel_type": "coal",
+    "domain": "misspelling",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g322",
+    "activity": "diesel fual oil",
+    "expected_fuel_type": "diesel",
+    "domain": "misspelling",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g323",
+    "activity": "elektricty",
+    "expected_fuel_type": "electricity",
+    "domain": "misspelling",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g324",
+    "activity": "naturel gas",
+    "expected_fuel_type": "natural_gas",
+    "domain": "misspelling",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g325",
+    "activity": "gasoleen",
+    "expected_fuel_type": "gasoline",
+    "domain": "misspelling",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g326",
+    "activity": "charcoal coal",
+    "expected_fuel_type": "coal",
+    "domain": "misspelling",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g327",
+    "activity": "diesle generator",
+    "expected_fuel_type": "diesel",
+    "domain": "misspelling",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g328",
+    "activity": "electricty kwh",
+    "expected_fuel_type": "electricity",
+    "domain": "misspelling",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g329",
+    "activity": "nateral gas therms",
+    "expected_fuel_type": "natural_gas",
+    "domain": "misspelling",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g330",
+    "activity": "gazoline fuel",
+    "expected_fuel_type": "gasoline",
+    "domain": "misspelling",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g331",
+    "activity": "anthrcite coal",
+    "expected_fuel_type": "coal",
+    "domain": "misspelling",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g332",
+    "activity": "diesel fue combuston",
+    "expected_fuel_type": "diesel",
+    "domain": "misspelling",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g333",
+    "activity": "elctricity purchsed",
+    "expected_fuel_type": "electricity",
+    "domain": "misspelling",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g334",
+    "activity": "nateral gaz",
+    "expected_fuel_type": "natural_gas",
+    "domain": "misspelling",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g335",
+    "activity": "gasolin vehicle",
+    "expected_fuel_type": "gasoline",
+    "domain": "misspelling",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g336",
+    "activity": "diesal truck",
+    "expected_fuel_type": "diesel",
+    "domain": "misspelling",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g337",
+    "activity": "NG boiler",
+    "expected_fuel_type": "natural_gas",
+    "domain": "abbreviation",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g338",
+    "activity": "nat gas",
+    "expected_fuel_type": "natural_gas",
+    "domain": "abbreviation",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g339",
+    "activity": "elec grid",
+    "expected_fuel_type": "electricity",
+    "domain": "abbreviation",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g340",
+    "activity": "pwr purchased",
+    "expected_fuel_type": "electricity",
+    "domain": "abbreviation",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g341",
+    "activity": "dsl generator",
+    "expected_fuel_type": "diesel",
+    "domain": "abbreviation",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g342",
+    "activity": "gas mobile",
+    "expected_fuel_type": "gasoline",
+    "domain": "abbreviation",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g343",
+    "activity": "NG therms",
+    "expected_fuel_type": "natural_gas",
+    "domain": "abbreviation",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g344",
+    "activity": "elec kwh",
+    "expected_fuel_type": "electricity",
+    "domain": "abbreviation",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g345",
+    "activity": "dsl fuel oil",
+    "expected_fuel_type": "diesel",
+    "domain": "abbreviation",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g346",
+    "activity": "pet gasoline",
+    "expected_fuel_type": "gasoline",
+    "domain": "abbreviation",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g347",
+    "activity": "NatGas heating",
+    "expected_fuel_type": "natural_gas",
+    "domain": "abbreviation",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g348",
+    "activity": "NG combustion",
+    "expected_fuel_type": "natural_gas",
+    "domain": "abbreviation",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g349",
+    "activity": "dsl combustion stat",
+    "expected_fuel_type": "diesel",
+    "domain": "abbreviation",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g350",
+    "activity": "elec consumption",
+    "expected_fuel_type": "electricity",
+    "domain": "abbreviation",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g351",
+    "activity": "HFO heavy fuel oil",
+    "expected_fuel_type": "diesel",
+    "domain": "abbreviation",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g352",
+    "activity": "MGO marine gas oil",
+    "expected_fuel_type": "diesel",
+    "domain": "abbreviation",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g353",
+    "activity": "LPG propane",
+    "expected_fuel_type": "natural_gas",
+    "domain": "abbreviation",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g354",
+    "activity": "CNG fleet",
+    "expected_fuel_type": "natural_gas",
+    "domain": "abbreviation",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g355",
+    "activity": "E85 fuel blend",
+    "expected_fuel_type": "gasoline",
+    "domain": "abbreviation",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g356",
+    "activity": "bio diesel blend",
+    "expected_fuel_type": "diesel",
+    "domain": "abbreviation",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g357",
+    "activity": "fuel combustion",
+    "expected_fuel_type": "diesel",
+    "domain": "ambiguous",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g358",
+    "activity": "gas heating",
+    "expected_fuel_type": "natural_gas",
+    "domain": "ambiguous",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g359",
+    "activity": "energy consumption",
+    "expected_fuel_type": "electricity",
+    "domain": "ambiguous",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g360",
+    "activity": "fossil fuel burning",
+    "expected_fuel_type": "coal",
+    "domain": "ambiguous",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g361",
+    "activity": "liquid fuel",
+    "expected_fuel_type": "diesel",
+    "domain": "ambiguous",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g362",
+    "activity": "solid fuel",
+    "expected_fuel_type": "coal",
+    "domain": "ambiguous",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g363",
+    "activity": "heating fuel",
+    "expected_fuel_type": "natural_gas",
+    "domain": "ambiguous",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g364",
+    "activity": "motor fuel",
+    "expected_fuel_type": "gasoline",
+    "domain": "ambiguous",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g365",
+    "activity": "power generation",
+    "expected_fuel_type": "electricity",
+    "domain": "ambiguous",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g366",
+    "activity": "fuel oil",
+    "expected_fuel_type": "diesel",
+    "domain": "ambiguous",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g367",
+    "activity": "combustion stationary",
+    "expected_fuel_type": "natural_gas",
+    "domain": "ambiguous",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g368",
+    "activity": "fuel transport mobile",
+    "expected_fuel_type": "diesel",
+    "domain": "ambiguous",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g369",
+    "activity": "grid energy",
+    "expected_fuel_type": "electricity",
+    "domain": "ambiguous",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g370",
+    "activity": "thermal fuel",
+    "expected_fuel_type": "natural_gas",
+    "domain": "ambiguous",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g371",
+    "activity": "liquid petroleum",
+    "expected_fuel_type": "diesel",
+    "domain": "ambiguous",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g372",
+    "activity": "American diesel",
+    "expected_fuel_type": "diesel",
+    "geography": "US",
+    "domain": "cross_geography",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g373",
+    "activity": "European electricity",
+    "expected_fuel_type": "electricity",
+    "geography": "EU",
+    "domain": "cross_geography",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g374",
+    "activity": "British gas",
+    "expected_fuel_type": "natural_gas",
+    "geography": "UK",
+    "domain": "cross_geography",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g375",
+    "activity": "USA coal",
+    "expected_fuel_type": "coal",
+    "geography": "US",
+    "domain": "cross_geography",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g376",
+    "activity": "United States gasoline",
+    "expected_fuel_type": "gasoline",
+    "geography": "US",
+    "domain": "cross_geography",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g377",
+    "activity": "EU grid electricity",
+    "expected_fuel_type": "electricity",
+    "geography": "EU",
+    "domain": "cross_geography",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g378",
+    "activity": "UK power grid",
+    "expected_fuel_type": "electricity",
+    "geography": "UK",
+    "domain": "cross_geography",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g379",
+    "activity": "US natural gas pipeline",
+    "expected_fuel_type": "natural_gas",
+    "geography": "US",
+    "domain": "cross_geography",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g380",
+    "activity": "continental Europe electricity",
+    "expected_fuel_type": "electricity",
+    "geography": "EU",
+    "domain": "cross_geography",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g381",
+    "activity": "England electricity grid",
+    "expected_fuel_type": "electricity",
+    "geography": "UK",
+    "domain": "cross_geography",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g382",
+    "activity": "North American diesel",
+    "expected_fuel_type": "diesel",
+    "geography": "US",
+    "domain": "cross_geography",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g383",
+    "activity": "Western Europe gas",
+    "expected_fuel_type": "natural_gas",
+    "geography": "EU",
+    "domain": "cross_geography",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g384",
+    "activity": "Britain electricity",
+    "expected_fuel_type": "electricity",
+    "geography": "UK",
+    "domain": "cross_geography",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g385",
+    "activity": "CONUS grid power",
+    "expected_fuel_type": "electricity",
+    "geography": "US",
+    "domain": "cross_geography",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g386",
+    "activity": "Americas diesel fuel",
+    "expected_fuel_type": "diesel",
+    "geography": "US",
+    "domain": "cross_geography",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g387",
+    "activity": "Old world electricity",
+    "expected_fuel_type": "electricity",
+    "geography": "EU",
+    "domain": "cross_geography",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g388",
+    "activity": "Great Britain power",
+    "expected_fuel_type": "electricity",
+    "geography": "UK",
+    "domain": "cross_geography",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g389",
+    "activity": "European Union electricity",
+    "expected_fuel_type": "electricity",
+    "geography": "EU",
+    "domain": "cross_geography",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g390",
+    "activity": "United Kingdom gas",
+    "expected_fuel_type": "natural_gas",
+    "geography": "UK",
+    "domain": "cross_geography",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g391",
+    "activity": "US EPA diesel factor",
+    "expected_fuel_type": "diesel",
+    "geography": "US",
+    "domain": "cross_geography",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g392",
+    "activity": "scope 1 diesel combustion",
+    "expected_fuel_type": "diesel",
+    "geography": "US",
+    "domain": "scoped",
+    "scope": "1"
+  },
+  {
+    "id": "g393",
+    "activity": "scope 2 electricity grid",
+    "expected_fuel_type": "electricity",
+    "geography": "US",
+    "domain": "scoped",
+    "scope": "2"
+  },
+  {
+    "id": "g394",
+    "activity": "scope 1 natural gas stationary",
+    "expected_fuel_type": "natural_gas",
+    "geography": "US",
+    "domain": "scoped",
+    "scope": "1"
+  },
+  {
+    "id": "g395",
+    "activity": "scope 1 coal boiler",
+    "expected_fuel_type": "coal",
+    "geography": "US",
+    "domain": "scoped",
+    "scope": "1"
+  },
+  {
+    "id": "g396",
+    "activity": "scope 1 gasoline mobile",
+    "expected_fuel_type": "gasoline",
+    "geography": "US",
+    "domain": "scoped",
+    "scope": "1"
+  },
+  {
+    "id": "g397",
+    "activity": "direct emissions diesel",
+    "expected_fuel_type": "diesel",
+    "geography": "US",
+    "domain": "scoped",
+    "scope": "1"
+  },
+  {
+    "id": "g398",
+    "activity": "indirect emissions electricity",
+    "expected_fuel_type": "electricity",
+    "geography": "US",
+    "domain": "scoped",
+    "scope": "2"
+  },
+  {
+    "id": "g399",
+    "activity": "Scope 1 stationary combustion gas",
+    "expected_fuel_type": "natural_gas",
+    "geography": "US",
+    "domain": "scoped",
+    "scope": "1"
+  },
+  {
+    "id": "g400",
+    "activity": "market-based electricity",
+    "expected_fuel_type": "electricity",
+    "geography": "US",
+    "domain": "scoped",
+    "scope": "2"
+  },
+  {
+    "id": "g401",
+    "activity": "location-based grid power",
+    "expected_fuel_type": "electricity",
+    "geography": "US",
+    "domain": "scoped",
+    "scope": "2"
+  },
+  {
+    "id": "g402",
+    "activity": "scope 1 diesel combustion",
+    "expected_fuel_type": "diesel",
+    "domain": "scoped",
+    "scope": "1"
+  },
+  {
+    "id": "g403",
+    "activity": "scope 2 electricity grid",
+    "expected_fuel_type": "electricity",
+    "domain": "scoped",
+    "scope": "2"
+  },
+  {
+    "id": "g404",
+    "activity": "scope 1 natural gas stationary",
+    "expected_fuel_type": "natural_gas",
+    "domain": "scoped",
+    "scope": "1"
+  },
+  {
+    "id": "g405",
+    "activity": "scope 1 coal boiler",
+    "expected_fuel_type": "coal",
+    "domain": "scoped",
+    "scope": "1"
+  },
+  {
+    "id": "g406",
+    "activity": "scope 1 gasoline mobile",
+    "expected_fuel_type": "gasoline",
+    "domain": "scoped",
+    "scope": "1"
+  },
+  {
+    "id": "g407",
+    "activity": "direct emissions diesel",
+    "expected_fuel_type": "diesel",
+    "domain": "scoped",
+    "scope": "1"
+  },
+  {
+    "id": "g408",
+    "activity": "indirect emissions electricity",
+    "expected_fuel_type": "electricity",
+    "domain": "scoped",
+    "scope": "2"
+  },
+  {
+    "id": "g409",
+    "activity": "Scope 1 stationary combustion gas",
+    "expected_fuel_type": "natural_gas",
+    "domain": "scoped",
+    "scope": "1"
+  },
+  {
+    "id": "g410",
+    "activity": "market-based electricity",
+    "expected_fuel_type": "electricity",
+    "domain": "scoped",
+    "scope": "2"
+  },
+  {
+    "id": "g411",
+    "activity": "location-based grid power",
+    "expected_fuel_type": "electricity",
+    "domain": "scoped",
+    "scope": "2"
+  },
+  {
+    "id": "g412",
+    "activity": "diesel gallons",
+    "expected_fuel_type": "diesel",
+    "geography": "US",
+    "domain": "units"
+  },
+  {
+    "id": "g413",
+    "activity": "diesel liters",
+    "expected_fuel_type": "diesel",
+    "geography": "US",
+    "domain": "units"
+  },
+  {
+    "id": "g414",
+    "activity": "electricity kwh",
+    "expected_fuel_type": "electricity",
+    "geography": "US",
+    "domain": "units"
+  },
+  {
+    "id": "g415",
+    "activity": "natural gas therms",
+    "expected_fuel_type": "natural_gas",
+    "geography": "US",
+    "domain": "units"
+  },
+  {
+    "id": "g416",
+    "activity": "coal short tons",
+    "expected_fuel_type": "coal",
+    "geography": "US",
+    "domain": "units"
+  },
+  {
+    "id": "g417",
+    "activity": "gasoline gallons",
+    "expected_fuel_type": "gasoline",
+    "geography": "US",
+    "domain": "units"
+  },
+  {
+    "id": "g418",
+    "activity": "diesel litres",
+    "expected_fuel_type": "diesel",
+    "geography": "EU",
+    "domain": "units"
+  },
+  {
+    "id": "g419",
+    "activity": "electricity megawatt hours",
+    "expected_fuel_type": "electricity",
+    "geography": "EU",
+    "domain": "units"
+  },
+  {
+    "id": "g420",
+    "activity": "natural gas cubic meters",
+    "expected_fuel_type": "natural_gas",
+    "domain": "units"
+  },
+  {
+    "id": "g421",
+    "activity": "coal metric tonnes",
+    "expected_fuel_type": "coal",
+    "domain": "units"
+  },
+  {
+    "id": "g422",
+    "activity": "diesel barrels",
+    "expected_fuel_type": "diesel",
+    "domain": "units"
+  },
+  {
+    "id": "g423",
+    "activity": "gasoline liters",
+    "expected_fuel_type": "gasoline",
+    "domain": "units"
+  },
+  {
+    "id": "g424",
+    "activity": "natural gas mmbtu",
+    "expected_fuel_type": "natural_gas",
+    "geography": "US",
+    "domain": "units"
+  },
+  {
+    "id": "g425",
+    "activity": "coal btu",
+    "expected_fuel_type": "coal",
+    "geography": "US",
+    "domain": "units"
+  },
+  {
+    "id": "g426",
+    "activity": "electricity mwh",
+    "expected_fuel_type": "electricity",
+    "domain": "units"
+  },
+  {
+    "id": "g427",
+    "activity": "diesel kg",
+    "expected_fuel_type": "diesel",
+    "domain": "units"
+  },
+  {
+    "id": "g428",
+    "activity": "natural gas GJ",
+    "expected_fuel_type": "natural_gas",
+    "domain": "units"
+  },
+  {
+    "id": "g429",
+    "activity": "coal GJ energy",
+    "expected_fuel_type": "coal",
+    "domain": "units"
+  },
+  {
+    "id": "g430",
+    "activity": "gasoline kg",
+    "expected_fuel_type": "gasoline",
+    "domain": "units"
+  },
+  {
+    "id": "g431",
+    "activity": "electricity GWh",
+    "expected_fuel_type": "electricity",
+    "domain": "units"
+  },
+  {
+    "id": "g432",
+    "activity": "our fleet uses diesel fuel for delivery trucks in the US",
+    "expected_fuel_type": "diesel",
+    "geography": "US",
+    "domain": "transport"
+  },
+  {
+    "id": "g433",
+    "activity": "we buy electricity from the local utility company",
+    "expected_fuel_type": "electricity",
+    "domain": "energy"
+  },
+  {
+    "id": "g434",
+    "activity": "the boiler runs on natural gas for space heating",
+    "expected_fuel_type": "natural_gas",
+    "domain": "buildings"
+  },
+  {
+    "id": "g435",
+    "activity": "we burn coal in our power plant",
+    "expected_fuel_type": "coal",
+    "domain": "energy"
+  },
+  {
+    "id": "g436",
+    "activity": "company vehicles run on gasoline",
+    "expected_fuel_type": "gasoline",
+    "domain": "transport"
+  },
+  {
+    "id": "g437",
+    "activity": "backup diesel generators at our data center",
+    "expected_fuel_type": "diesel",
+    "geography": "US",
+    "domain": "industry"
+  },
+  {
+    "id": "g438",
+    "activity": "European office electricity consumption",
+    "expected_fuel_type": "electricity",
+    "geography": "EU",
+    "domain": "buildings"
+  },
+  {
+    "id": "g439",
+    "activity": "UK warehouse heating with gas",
+    "expected_fuel_type": "natural_gas",
+    "geography": "UK",
+    "domain": "buildings"
+  },
+  {
+    "id": "g440",
+    "activity": "diesel-powered construction equipment on site",
+    "expected_fuel_type": "diesel",
+    "domain": "industry"
+  },
+  {
+    "id": "g441",
+    "activity": "electricity for server rooms",
+    "expected_fuel_type": "electricity",
+    "domain": "industry"
+  },
+  {
+    "id": "g442",
+    "activity": "natural gas turbine for CHP",
+    "expected_fuel_type": "natural_gas",
+    "geography": "US",
+    "domain": "energy"
+  },
+  {
+    "id": "g443",
+    "activity": "coal combustion for district heating",
+    "expected_fuel_type": "coal",
+    "domain": "buildings"
+  },
+  {
+    "id": "g444",
+    "activity": "gasoline-powered lawn care",
+    "expected_fuel_type": "gasoline",
+    "domain": "agriculture"
+  },
+  {
+    "id": "g445",
+    "activity": "diesel fuel for agricultural machinery",
+    "expected_fuel_type": "diesel",
+    "geography": "US",
+    "domain": "agriculture"
+  },
+  {
+    "id": "g446",
+    "activity": "purchased grid electricity for manufacturing",
+    "expected_fuel_type": "electricity",
+    "domain": "industry"
+  },
+  {
+    "id": "g447",
+    "activity": "natural gas for food processing",
+    "expected_fuel_type": "natural_gas",
+    "domain": "industry"
+  },
+  {
+    "id": "g448",
+    "activity": "coal boiler in cement factory",
+    "expected_fuel_type": "coal",
+    "geography": "US",
+    "domain": "industry"
+  },
+  {
+    "id": "g449",
+    "activity": "fleet of gasoline cars for sales",
+    "expected_fuel_type": "gasoline",
+    "geography": "US",
+    "domain": "transport"
+  },
+  {
+    "id": "g450",
+    "activity": "diesel buses for employee shuttle",
+    "expected_fuel_type": "diesel",
+    "domain": "transport"
+  },
+  {
+    "id": "g451",
+    "activity": "electricity consumed in retail stores",
+    "expected_fuel_type": "electricity",
+    "geography": "US",
+    "domain": "buildings"
+  },
+  {
+    "id": "g452",
+    "activity": "Scope 1 stationary combustion diesel",
+    "expected_fuel_type": "diesel",
+    "geography": "US",
+    "domain": "ghg_protocol"
+  },
+  {
+    "id": "g453",
+    "activity": "Scope 1 mobile combustion gasoline",
+    "expected_fuel_type": "gasoline",
+    "geography": "US",
+    "domain": "ghg_protocol"
+  },
+  {
+    "id": "g454",
+    "activity": "Scope 2 location-based electricity",
+    "expected_fuel_type": "electricity",
+    "geography": "US",
+    "domain": "ghg_protocol"
+  },
+  {
+    "id": "g455",
+    "activity": "Scope 2 market-based electricity",
+    "expected_fuel_type": "electricity",
+    "geography": "EU",
+    "domain": "ghg_protocol"
+  },
+  {
+    "id": "g456",
+    "activity": "Scope 1 coal process emissions",
+    "expected_fuel_type": "coal",
+    "domain": "ghg_protocol"
+  },
+  {
+    "id": "g457",
+    "activity": "direct GHG emissions diesel",
+    "expected_fuel_type": "diesel",
+    "domain": "ghg_protocol"
+  },
+  {
+    "id": "g458",
+    "activity": "indirect GHG emissions electricity",
+    "expected_fuel_type": "electricity",
+    "domain": "ghg_protocol"
+  },
+  {
+    "id": "g459",
+    "activity": "energy indirect GHG scope 2",
+    "expected_fuel_type": "electricity",
+    "domain": "ghg_protocol"
+  },
+  {
+    "id": "g460",
+    "activity": "WRI GHG Protocol scope 1 diesel",
+    "expected_fuel_type": "diesel",
+    "geography": "US",
+    "domain": "ghg_protocol"
+  },
+  {
+    "id": "g461",
+    "activity": "ISO 14064 direct coal emissions",
+    "expected_fuel_type": "coal",
+    "domain": "ghg_protocol"
+  },
+  {
+    "id": "g462",
+    "activity": "GRI 305-1 direct gasoline",
+    "expected_fuel_type": "gasoline",
+    "domain": "ghg_protocol"
+  },
+  {
+    "id": "g463",
+    "activity": "GRI 305-2 electricity indirect",
+    "expected_fuel_type": "electricity",
+    "domain": "ghg_protocol"
+  },
+  {
+    "id": "g464",
+    "activity": "CDP diesel consumption report",
+    "expected_fuel_type": "diesel",
+    "domain": "ghg_protocol"
+  },
+  {
+    "id": "g465",
+    "activity": "TCFD climate diesel reporting",
+    "expected_fuel_type": "diesel",
+    "domain": "ghg_protocol"
+  },
+  {
+    "id": "g466",
+    "activity": "SBTi target natural gas",
+    "expected_fuel_type": "natural_gas",
+    "domain": "ghg_protocol"
+  },
+  {
+    "id": "g467",
+    "activity": "EPA emission factor diesel",
+    "expected_fuel_type": "diesel",
+    "geography": "US",
+    "domain": "regulatory"
+  },
+  {
+    "id": "g468",
+    "activity": "DEFRA electricity factor UK",
+    "expected_fuel_type": "electricity",
+    "geography": "UK",
+    "domain": "regulatory"
+  },
+  {
+    "id": "g469",
+    "activity": "IPCC default natural gas",
+    "expected_fuel_type": "natural_gas",
+    "domain": "regulatory"
+  },
+  {
+    "id": "g470",
+    "activity": "EU ETS coal factor",
+    "expected_fuel_type": "coal",
+    "geography": "EU",
+    "domain": "regulatory"
+  },
+  {
+    "id": "g471",
+    "activity": "CARB gasoline factor",
+    "expected_fuel_type": "gasoline",
+    "geography": "US",
+    "domain": "regulatory"
+  },
+  {
+    "id": "g472",
+    "activity": "eGRID electricity factor",
+    "expected_fuel_type": "electricity",
+    "geography": "US",
+    "domain": "regulatory"
+  },
+  {
+    "id": "g473",
+    "activity": "DEFRA diesel conversion",
+    "expected_fuel_type": "diesel",
+    "geography": "UK",
+    "domain": "regulatory"
+  },
+  {
+    "id": "g474",
+    "activity": "BEIS gas conversion factor",
+    "expected_fuel_type": "natural_gas",
+    "geography": "UK",
+    "domain": "regulatory"
+  },
+  {
+    "id": "g475",
+    "activity": "EPA AP-42 diesel",
+    "expected_fuel_type": "diesel",
+    "geography": "US",
+    "domain": "regulatory"
+  },
+  {
+    "id": "g476",
+    "activity": "NAEI UK electricity",
+    "expected_fuel_type": "electricity",
+    "geography": "UK",
+    "domain": "regulatory"
+  },
+  {
+    "id": "g477",
+    "activity": "diesel verbrennung",
+    "expected_fuel_type": "diesel",
+    "geography": "EU",
+    "domain": "multilingual",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g478",
+    "activity": "strom verbrauch",
+    "expected_fuel_type": "electricity",
+    "geography": "EU",
+    "domain": "multilingual",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g479",
+    "activity": "charbon combustion",
+    "expected_fuel_type": "coal",
+    "geography": "EU",
+    "domain": "multilingual",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g480",
+    "activity": "essence carburant",
+    "expected_fuel_type": "gasoline",
+    "geography": "EU",
+    "domain": "multilingual",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g481",
+    "activity": "gaz naturel chauffage",
+    "expected_fuel_type": "natural_gas",
+    "geography": "EU",
+    "domain": "multilingual",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g482",
+    "activity": "gasolio combustione",
+    "expected_fuel_type": "diesel",
+    "geography": "EU",
+    "domain": "multilingual",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g483",
+    "activity": "elettricita consumo",
+    "expected_fuel_type": "electricity",
+    "geography": "EU",
+    "domain": "multilingual",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g484",
+    "activity": "carbon combustible",
+    "expected_fuel_type": "coal",
+    "geography": "EU",
+    "domain": "multilingual",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g485",
+    "activity": "gasolina vehiculo",
+    "expected_fuel_type": "gasoline",
+    "geography": "EU",
+    "domain": "multilingual",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g486",
+    "activity": "gas natural calefaccion",
+    "expected_fuel_type": "natural_gas",
+    "geography": "EU",
+    "domain": "multilingual",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g487",
+    "activity": "winter heating natural gas",
+    "expected_fuel_type": "natural_gas",
+    "geography": "US",
+    "domain": "temporal"
+  },
+  {
+    "id": "g488",
+    "activity": "summer cooling electricity",
+    "expected_fuel_type": "electricity",
+    "geography": "US",
+    "domain": "temporal"
+  },
+  {
+    "id": "g489",
+    "activity": "annual diesel consumption",
+    "expected_fuel_type": "diesel",
+    "domain": "temporal"
+  },
+  {
+    "id": "g490",
+    "activity": "monthly electricity bill",
+    "expected_fuel_type": "electricity",
+    "domain": "temporal"
+  },
+  {
+    "id": "g491",
+    "activity": "quarterly gasoline purchase",
+    "expected_fuel_type": "gasoline",
+    "geography": "US",
+    "domain": "temporal"
+  },
+  {
+    "id": "g492",
+    "activity": "2024 coal consumption",
+    "expected_fuel_type": "coal",
+    "geography": "US",
+    "domain": "temporal"
+  },
+  {
+    "id": "g493",
+    "activity": "FY2025 electricity usage",
+    "expected_fuel_type": "electricity",
+    "domain": "temporal"
+  },
+  {
+    "id": "g494",
+    "activity": "Q4 natural gas heating",
+    "expected_fuel_type": "natural_gas",
+    "domain": "temporal"
+  },
+  {
+    "id": "g495",
+    "activity": "year-round diesel fleet",
+    "expected_fuel_type": "diesel",
+    "geography": "US",
+    "domain": "temporal"
+  },
+  {
+    "id": "g496",
+    "activity": "peak season electricity",
+    "expected_fuel_type": "electricity",
+    "domain": "temporal"
+  },
+  {
+    "id": "g497",
+    "activity": "red diesel",
+    "expected_fuel_type": "diesel",
+    "geography": "UK",
+    "domain": "edge",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g498",
+    "activity": "white diesel",
+    "expected_fuel_type": "diesel",
+    "domain": "edge",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g499",
+    "activity": "heating oil kerosene",
+    "expected_fuel_type": "diesel",
+    "domain": "edge",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g500",
+    "activity": "town gas",
+    "expected_fuel_type": "natural_gas",
+    "geography": "UK",
+    "domain": "edge",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g501",
+    "activity": "propane LPG gas",
+    "expected_fuel_type": "natural_gas",
+    "domain": "edge",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g502",
+    "activity": "bunker fuel marine",
+    "expected_fuel_type": "diesel",
+    "domain": "edge",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g503",
+    "activity": "jet fuel kerosene",
+    "expected_fuel_type": "diesel",
+    "domain": "edge",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g504",
+    "activity": "avgas aviation gasoline",
+    "expected_fuel_type": "gasoline",
+    "domain": "edge",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g505",
+    "activity": "brown coal lignite",
+    "expected_fuel_type": "coal",
+    "domain": "edge",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g506",
+    "activity": "sub-bituminous coal",
+    "expected_fuel_type": "coal",
+    "domain": "edge",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g507",
+    "activity": "woodchip biomass",
+    "expected_fuel_type": "coal",
+    "domain": "edge",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g508",
+    "activity": "biogas methane",
+    "expected_fuel_type": "natural_gas",
+    "domain": "edge",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g509",
+    "activity": "renewable electricity",
+    "expected_fuel_type": "electricity",
+    "domain": "edge",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g510",
+    "activity": "green electricity tariff",
+    "expected_fuel_type": "electricity",
+    "geography": "UK",
+    "domain": "edge",
+    "difficulty": "hard"
+  },
+  {
+    "id": "g511",
+    "activity": "off-peak electricity",
+    "expected_fuel_type": "electricity",
+    "domain": "edge",
+    "difficulty": "hard"
+  }
+]

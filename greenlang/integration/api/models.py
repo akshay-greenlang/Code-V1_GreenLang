@@ -7,7 +7,7 @@ Pydantic models for REST API requests and responses.
 
 from pydantic import Field, validator
 from greenlang.schemas import GreenLangBase, utcnow, new_uuid
-from typing import Optional, List, Dict
+from typing import Any, Dict, List, Optional
 from datetime import date, datetime
 from enum import Enum
 
@@ -204,6 +204,12 @@ class EmissionFactorSummary(GreenLangBase):
     source_year: int
     data_quality_score: float = Field(..., description="Data quality score (1-5)")
     uncertainty_percent: float = Field(..., description="Uncertainty as percentage")
+    factor_status: str = Field("certified", description="certified|preview|connector_only|deprecated")
+    source_id: Optional[str] = Field(None, description="Upstream registry source_id when set")
+    release_version: Optional[str] = None
+    license_class: Optional[str] = Field(None, description="Registry license_class when set")
+    activity_tags: List[str] = Field(default_factory=list)
+    sector_tags: List[str] = Field(default_factory=list)
 
 
 class CalculationResponse(GreenLangBase):
@@ -310,6 +316,18 @@ class EmissionFactorResponse(GreenLangBase):
     compliance_frameworks: List[str]
     tags: List[str]
     notes: Optional[str] = None
+    factor_status: Optional[str] = Field(None, description="Catalog governance status")
+    source_id: Optional[str] = None
+    source_release: Optional[str] = None
+    source_record_id: Optional[str] = None
+    release_version: Optional[str] = None
+    replacement_factor_id: Optional[str] = None
+    license_class: Optional[str] = None
+    activity_tags: List[str] = Field(default_factory=list)
+    sector_tags: List[str] = Field(default_factory=list)
+    redistribution_allowed: Optional[bool] = Field(
+        None, description="From LicenseInfo; export guard signal"
+    )
 
     class Config:
         schema_extra = {
@@ -361,6 +379,10 @@ class FactorListResponse(GreenLangBase):
     page: int = Field(..., description="Current page number")
     page_size: int = Field(..., description="Items per page")
     total_pages: int = Field(..., description="Total number of pages")
+    edition_id: Optional[str] = Field(
+        None,
+        description="Pinned catalog edition for this response",
+    )
 
 
 class FactorSearchResponse(GreenLangBase):
@@ -369,11 +391,62 @@ class FactorSearchResponse(GreenLangBase):
     factors: List[EmissionFactorSummary]
     count: int = Field(..., description="Number of results")
     search_time_ms: float = Field(..., description="Search execution time in ms")
+    edition_id: Optional[str] = Field(
+        None,
+        description="Pinned catalog edition for this response",
+    )
+
+
+class FactorSearchFacetsResponse(GreenLangBase):
+    """Facet value counts for filter UX (search v2 / M2)."""
+
+    edition_id: str
+    facets: Dict[str, Dict[str, int]] = Field(
+        default_factory=dict,
+        description="facet_name -> {value: count}; large cardinalities may include _other",
+    )
+
+
+class EditionSummary(GreenLangBase):
+    """One published or pending factor edition."""
+
+    edition_id: str
+    status: str
+    label: str
+    manifest_hash: str = Field(default="", description="Fingerprint of manifest payload")
+
+
+class EditionListResponse(GreenLangBase):
+    """All catalog editions visible to the caller."""
+
+    editions: List[EditionSummary]
+    default_edition_id: str
+
+
+class EditionChangelogResponse(GreenLangBase):
+    """Human and machine changelog lines for an edition."""
+
+    edition_id: str
+    changelog: List[str]
+
+
+class FactorProvenanceResponse(GreenLangBase):
+    """Provenance and licensing for audit exports."""
+
+    factor_id: str
+    content_hash: str
+    provenance: Dict[str, Optional[str]]
+    license_info: Dict[str, Any]
+    edition_id: str
 
 
 class CoverageStats(GreenLangBase):
     """Coverage statistics"""
     total_factors: int
+    total_catalog: int = Field(0, description="All rows regardless of label semantics")
+    certified: int = Field(0, description="Rows with factor_status=certified")
+    preview: int = Field(0, description="Rows with factor_status=preview")
+    connector_visible: int = Field(0, description="Rows with factor_status=connector_only")
     geographies: int
     fuel_types: int
     scopes: Dict[str, int]
@@ -422,6 +495,76 @@ class HealthResponse(GreenLangBase):
                 "uptime_seconds": 86400.0
             }
         }
+
+
+class EditionCompareResponse(GreenLangBase):
+    """Diff two catalog editions (A2)."""
+
+    left_edition_id: str
+    right_edition_id: str
+    added_factor_ids: List[str]
+    removed_factor_ids: List[str]
+    changed_factor_ids: List[str]
+    unchanged_count: int
+
+
+class FactorReplacementsResponse(GreenLangBase):
+    """Deprecation replacement chain (A3)."""
+
+    edition_id: str
+    seed_factor_id: str
+    chain: List[str]
+
+
+class FactorMatchRequest(GreenLangBase):
+    """Hybrid match request (M2/M6); numeric path stays deterministic."""
+
+    activity_description: str = Field(..., min_length=2)
+    geography: Optional[str] = None
+    fuel_type: Optional[str] = None
+    scope: Optional[str] = None
+    limit: int = Field(10, ge=1, le=50)
+
+
+class FactorMatchCandidate(GreenLangBase):
+    factor_id: str
+    score: float
+    explanation: Dict[str, Any]
+
+
+class FactorMatchResponse(GreenLangBase):
+    edition_id: str
+    candidates: List[FactorMatchCandidate]
+
+
+class SourceRegistryEntryResponse(GreenLangBase):
+    source_id: str
+    display_name: str
+    connector_only: bool
+    license_class: str
+    cadence: str
+    watch_mechanism: str
+    watch_url: Optional[str] = None
+    watch_file_type: Optional[str] = Field(None, description="Expected artifact shape when known")
+    redistribution_allowed: bool = False
+    derivative_works_allowed: bool = False
+    commercial_use_allowed: bool = False
+    attribution_required: bool = True
+    citation_text: str = ""
+    approval_required_for_certified: bool = True
+    legal_signoff_artifact: Optional[str] = None
+    legal_signoff_version: Optional[str] = Field(
+        None,
+        description="Version or hash of the legal sign-off document when artifact is set",
+    )
+    public_bulk_export_allowed: bool = Field(
+        False,
+        description="True only when redistribution is allowed and not connector_only",
+    )
+
+
+class SourceRegistryListResponse(GreenLangBase):
+    sources: List[SourceRegistryEntryResponse]
 
 
 class ErrorResponse(GreenLangBase):

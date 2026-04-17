@@ -1,0 +1,9 @@
+# Example: link Policy Graph rule ids to catalog factor_ids for edition review.
+# Copy to policy_factor_map.yaml and mount path via GL_POLICY_FACTOR_MAP_PATH (optional hook for ops).
+
+associations:
+  - policy_rule_id: EXAMPLE_CBAM_METHODOLOGY_2026
+    factor_ids:
+      - EF:CBAM:steel:CN:2024:v1
+      - EF:CBAM:steel:IN:2024:v1
+    notes: "Illustrative mapping only."

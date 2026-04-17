@@ -12,7 +12,7 @@ import os
 import sys
 import typer
 from pathlib import Path
-from typing import Optional
+from typing import List, Optional
 from rich.console import Console
 from click.core import Parameter
 from typer.core import TyperArgument, TyperOption
@@ -639,6 +639,75 @@ def verify(
         console.print(f"Using signature: {signature}")
 
     console.print("[green][OK][/green] Artifact verified")
+
+
+factors_app = typer.Typer(help="GreenLang Factors catalog (FY27)")
+app.add_typer(factors_app, name="factors")
+
+
+@factors_app.command("inventory")
+def factors_inventory(
+    out: Path = typer.Option(
+        Path("greenlang/factors/artifacts/coverage_matrix.json"),
+        "--out",
+        help="Output JSON path",
+    ),
+):
+    """Write factor source coverage matrix."""
+    from greenlang.factors.inventory import write_coverage_matrix
+
+    data = write_coverage_matrix(out)
+    console.print(f"[green]Wrote[/green] {out} ({data.get('totals')})")
+
+
+@factors_app.command("manifest")
+def factors_manifest(
+    edition_id: str = typer.Option(..., "--edition-id"),
+    out: Path = typer.Option(..., "--out"),
+    status: str = typer.Option("stable", "--status"),
+    message: str = typer.Option("", "--message"),
+):
+    """Build EditionManifest JSON from built-in EmissionFactorDatabase."""
+    from greenlang.data.emission_factor_database import EmissionFactorDatabase
+    from greenlang.factors.edition_manifest import build_manifest_for_factors
+
+    db = EmissionFactorDatabase(enable_cache=False)
+    m = build_manifest_for_factors(
+        edition_id,
+        status,
+        list(db.factors.values()),
+        changelog=[message or f"Manifest {edition_id}"],
+    )
+    out.write_text(m.to_json(), encoding="utf-8")
+    console.print(f"[green]Wrote[/green] {out} fingerprint={m.manifest_fingerprint()}")
+
+
+@factors_app.command("ingest-builtin")
+def factors_ingest_builtin(
+    sqlite: Path = typer.Option(..., "--sqlite"),
+    edition_id: str = typer.Option(..., "--edition-id"),
+    label: str = typer.Option("Built-in v2 EmissionFactorDatabase", "--label"),
+):
+    """Load built-in factors into SQLite catalog."""
+    from greenlang.factors.etl.ingest import ingest_builtin_database
+
+    n = ingest_builtin_database(sqlite, edition_id, label=label)
+    console.print(f"[green]Ingested[/green] {n} rows -> {sqlite}")
+
+
+@factors_app.command("ingest-paths")
+def factors_ingest_paths(
+    sqlite: Path = typer.Option(..., "--sqlite"),
+    edition_id: str = typer.Option(..., "--edition-id"),
+    paths: List[Path] = typer.Argument(...),
+    label: str = typer.Option("ETL bundle", "--label"),
+    status: str = typer.Option("stable", "--status"),
+):
+    """Normalize JSON files and ingest into SQLite."""
+    from greenlang.factors.etl.ingest import ingest_from_paths
+
+    n = ingest_from_paths(sqlite, edition_id, paths, label=label, status=status)
+    console.print(f"[green]Ingested[/green] {n} rows -> {sqlite}")
 
 
 def main():

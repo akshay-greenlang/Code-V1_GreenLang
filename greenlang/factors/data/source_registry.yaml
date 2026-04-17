@@ -1,0 +1,171 @@
+# Source registry (G1–G6). Legal sign-off: path in legal_signoff_artifact; optional legal_signoff_version.
+# connector_only: true → never in public bulk export; API may return metadata only without values.
+
+sources:
+  - source_id: epa_hub
+    display_name: EPA GHG Emission Factors Hub
+    connector_only: false
+    license_class: public_us_government
+    redistribution_allowed: true
+    attribution_required: true
+    citation_text: "U.S. Environmental Protection Agency, GHG Emission Factors Hub."
+    cadence: quarterly
+    watch:
+      mechanism: http_head
+      url: "https://www.epa.gov/ghgemissionfactors"
+    approval_required_for_certified: true
+    legal_signoff_artifact: null
+
+  - source_id: egrid
+    display_name: eGRID
+    connector_only: false
+    license_class: public_us_government
+    redistribution_allowed: true
+    attribution_required: true
+    citation_text: "U.S. EPA eGRID subregion emission rates."
+    cadence: annual
+    watch:
+      mechanism: http_head
+      url: "https://www.epa.gov/egrid"
+    approval_required_for_certified: true
+    legal_signoff_artifact: null
+
+  - source_id: desnz_ghg_conversion
+    display_name: DESNZ GHG conversion factors
+    connector_only: false
+    license_class: uk_open_government
+    redistribution_allowed: true
+    attribution_required: true
+    citation_text: "UK Department for Energy Security and Net Zero, GHG conversion factors."
+    cadence: annual
+    watch:
+      mechanism: http_head
+      url: "https://www.gov.uk/government/collections/government-conversion-factors-for-company-reporting-of-greenhouse-gas-emissions"
+    approval_required_for_certified: true
+    legal_signoff_artifact: null
+
+  - source_id: tcr_grp_defaults
+    display_name: TCR / GRP default factors
+    connector_only: false
+    license_class: registry_terms
+    redistribution_allowed: false
+    attribution_required: true
+    citation_text: "Per The Climate Registry / GHGRP guidance; verify current terms."
+    cadence: annual
+    watch:
+      mechanism: manual
+      url: null
+    approval_required_for_certified: true
+    legal_signoff_artifact: null
+
+  - source_id: green_e_residual
+    display_name: Green-e residual mix
+    connector_only: true
+    license_class: commercial_connector
+    redistribution_allowed: false
+    attribution_required: true
+    citation_text: "Green-e; values via licensed connector only."
+    cadence: annual
+    watch:
+      mechanism: api
+      url: null
+    approval_required_for_certified: true
+    legal_signoff_artifact: null
+
+  - source_id: ghgp_method_refs
+    display_name: GHG Protocol methodological references
+    connector_only: false
+    license_class: wri_wbcsd_terms
+    redistribution_allowed: false
+    attribution_required: true
+    citation_text: "GHG Protocol (WRI/WBCSD)."
+    cadence: ad_hoc
+    watch:
+      mechanism: html_diff
+      url: "https://ghgprotocol.org/"
+    approval_required_for_certified: true
+    legal_signoff_artifact: null
+
+  - source_id: electricity_maps
+    display_name: Electricity Maps (connector)
+    connector_only: true
+    license_class: commercial_connector
+    redistribution_allowed: false
+    attribution_required: true
+    citation_text: "Electricity Maps; via connector under customer license."
+    cadence: daily
+    watch:
+      mechanism: api
+      url: null
+    approval_required_for_certified: true
+    legal_signoff_artifact: null
+
+  - source_id: iea
+    display_name: IEA statistics / factors
+    connector_only: true
+    license_class: commercial_connector
+    redistribution_allowed: false
+    attribution_required: true
+    citation_text: "International Energy Agency; licensed use only."
+    cadence: annual
+    watch:
+      mechanism: manual
+      url: null
+    approval_required_for_certified: true
+    legal_signoff_artifact: null
+
+  - source_id: ecoinvent
+    display_name: ecoinvent database
+    connector_only: true
+    license_class: commercial_connector
+    redistribution_allowed: false
+    attribution_required: true
+    citation_text: "ecoinvent Association; licensed use only."
+    cadence: quarterly
+    watch:
+      mechanism: manual
+      url: null
+    approval_required_for_certified: true
+    legal_signoff_artifact: null
+
+  - source_id: defra_conversion
+    display_name: DEFRA environmental reporting factors
+    connector_only: false
+    license_class: uk_open_government
+    redistribution_allowed: true
+    attribution_required: true
+    citation_text: "UK DEFRA/DESNZ environmental reporting factors."
+    cadence: annual
+    watch:
+      mechanism: http_head
+      url: "https://www.gov.uk/government/publications/greenhouse-gas-reporting-conversion-factors-2025"
+    approval_required_for_certified: true
+    legal_signoff_artifact: null
+
+  - source_id: eu_cbam
+    display_name: EU CBAM default values
+    connector_only: false
+    license_class: eu_publication
+    redistribution_allowed: true
+    attribution_required: true
+    citation_text: "European Commission, CBAM default values."
+    cadence: event_driven
+    watch:
+      mechanism: http_head
+      url: "https://taxation-customs.ec.europa.eu/carbon-border-adjustment-mechanism_en"
+    approval_required_for_certified: true
+    legal_signoff_artifact: null
+
+  - source_id: greenlang_builtin
+    display_name: GreenLang curated built-in factors
+    connector_only: false
+    license_class: greenlang_terms
+    redistribution_allowed: true
+    attribution_required: true
+    citation_text: "GreenLang Factors curated edition."
+    cadence: on_release
+    watch:
+      mechanism: internal
+      url: null
+    approval_required_for_certified: true
+    legal_signoff_artifact: null

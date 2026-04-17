@@ -1,0 +1,29 @@
+# Release semantics (CTO proposal §7)
+# Encoded in edition metadata (semver field) and changelog.
+
+semver:
+  major:
+    triggers:
+      - "Schema meaning change for canonical factor"
+      - "Methodology boundary change affecting comparability"
+      - "Breaking API contract for factors endpoints"
+  minor:
+    triggers:
+      - "New factor families or geographies"
+      - "New source version ingested with material coverage change"
+  patch:
+    triggers:
+      - "Numeric correction"
+      - "Metadata or citation fix"
+      - "Broken URL repair"
+      - "Policy note correction without applicability change"
+
+cadence:
+  stable_monthly_tag: true
+  weekly_source_parse_diff_batch: true
+  daily_source_artifact_watch: true
+  hotfix_sla_hours: 24
+
+human_gates:
+  promote_to_stable: "Release manager + methodology lead approval"
+  changelog_publish: "Human approves auto-generated draft"

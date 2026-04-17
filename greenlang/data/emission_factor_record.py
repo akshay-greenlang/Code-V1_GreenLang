@@ -56,7 +56,7 @@ Example:
 
 from dataclasses import dataclass, field, asdict
 from datetime import date, datetime
-from typing import Optional, Dict, List, Literal, Union, ClassVar
+from typing import Optional, Dict, List, Literal, Union, ClassVar, Any
 from decimal import Decimal, ROUND_HALF_UP
 from enum import Enum
 import json
@@ -898,6 +898,18 @@ class EmissionFactorRecord:
     # Tags for searching/filtering
     tags: List[str] = field(default_factory=list)
 
+    # ==================== CATALOG GOVERNANCE (CTO canonical v0.1) ====================
+    factor_status: str = "certified"  # certified | preview | connector_only | deprecated
+    source_id: Optional[str] = None
+    source_release: Optional[str] = None
+    source_record_id: Optional[str] = None
+    release_version: Optional[str] = None
+    validation_flags: Dict[str, Any] = field(default_factory=dict)
+    replacement_factor_id: Optional[str] = None
+    license_class: Optional[str] = None
+    activity_tags: List[str] = field(default_factory=list)
+    sector_tags: List[str] = field(default_factory=list)
+
     # ==================== CALCULATED FIELDS ====================
     content_hash: str = field(init=False, default="")  # SHA-256 of factor data
 
@@ -939,10 +951,20 @@ class EmissionFactorRecord:
             },
             'scope': self.scope.value,
             'boundary': self.boundary.value,
-            'valid_from': self.valid_from.isoformat()
+            'valid_from': self.valid_from.isoformat(),
+            'factor_status': self.factor_status,
+            'source_id': self.source_id,
+            'source_release': self.source_release,
+            'source_record_id': self.source_record_id,
+            'release_version': self.release_version,
+            'validation_flags': self.validation_flags,
+            'replacement_factor_id': self.replacement_factor_id,
+            'license_class': self.license_class,
+            'activity_tags': list(self.activity_tags or []),
+            'sector_tags': list(self.sector_tags or []),
         }
 
-        hash_str = json.dumps(hash_data, sort_keys=True)
+        hash_str = json.dumps(hash_data, sort_keys=True, default=str)
         return hashlib.sha256(hash_str.encode()).hexdigest()
 
     def to_dict(self) -> Dict:
@@ -968,6 +990,8 @@ class EmissionFactorRecord:
         data['created_at'] = self.created_at.isoformat()
         data['updated_at'] = self.updated_at.isoformat()
 
+        data.pop("content_hash", None)
+
         return data
 
     def to_json(self) -> str:
@@ -977,6 +1001,24 @@ class EmissionFactorRecord:
     @classmethod
     def from_dict(cls, data: Dict) -> 'EmissionFactorRecord':
         """Create from dictionary"""
+        data = dict(data)
+        data.pop("content_hash", None)
+        data.setdefault("factor_status", "certified")
+        data.setdefault("source_id", None)
+        data.setdefault("source_release", None)
+        data.setdefault("source_record_id", None)
+        data.setdefault("release_version", None)
+        data.setdefault("validation_flags", {})
+        data.setdefault("replacement_factor_id", None)
+        data.setdefault("license_class", None)
+        data.setdefault("activity_tags", [])
+        data.setdefault("sector_tags", [])
+        if not isinstance(data.get("activity_tags"), list):
+            data["activity_tags"] = []
+        if not isinstance(data.get("sector_tags"), list):
+            data["sector_tags"] = []
+        if not isinstance(data.get("validation_flags"), dict):
+            data["validation_flags"] = {}
         # Convert string enums back to enum types
         data['geography_level'] = GeographyLevel(data['geography_level'])
         data['scope'] = Scope(data['scope'])
@@ -1188,6 +1230,16 @@ class EmissionFactorRecord:
                 compliance_frameworks=self.compliance_frameworks,
                 tags=self.tags,
                 notes=f"Converted from {self.heating_value_basis.value} to {to_basis.value} (no adjustment needed for {self.unit})",
+                factor_status=self.factor_status,
+                source_id=self.source_id,
+                source_release=self.source_release,
+                source_record_id=self.source_record_id,
+                release_version=self.release_version,
+                validation_flags=dict(self.validation_flags or {}),
+                replacement_factor_id=self.replacement_factor_id,
+                license_class=self.license_class,
+                activity_tags=list(self.activity_tags or []),
+                sector_tags=list(self.sector_tags or []),
             )
 
         # Energy-based conversion
@@ -1273,4 +1325,14 @@ class EmissionFactorRecord:
             compliance_frameworks=self.compliance_frameworks,
             tags=self.tags + [f"converted_{to_basis.value.lower()}"],
             notes=f"Converted from {self.heating_value_basis.value} to {to_basis.value} using ratio {ratio:.3f} for {self.fuel_type}",
+            factor_status=self.factor_status,
+            source_id=self.source_id,
+            source_release=self.source_release,
+            source_record_id=self.source_record_id,
+            release_version=self.release_version,
+            validation_flags=dict(self.validation_flags or {}),
+            replacement_factor_id=self.replacement_factor_id,
+            license_class=self.license_class,
+            activity_tags=list(self.activity_tags or []),
+            sector_tags=list(self.sector_tags or []),
         )

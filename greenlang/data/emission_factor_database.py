@@ -31,6 +31,7 @@ Example:
 from typing import Optional, Dict, List, Tuple, Any
 from datetime import date, datetime, timedelta
 from pathlib import Path
+from decimal import Decimal
 import json
 import logging
 
@@ -1116,11 +1117,12 @@ class EmissionFactorDatabase:
             f":{source_factor.unit}:", f":{new_unit}:"
         )
 
-        # Convert vectors
+        # Convert vectors (Decimal-safe division)
+        cf = Decimal(str(conversion_factor))
         new_vectors = GHGVectors(
-            CO2=source_factor.vectors.CO2 / conversion_factor,
-            CH4=source_factor.vectors.CH4 / conversion_factor,
-            N2O=source_factor.vectors.N2O / conversion_factor,
+            CO2=source_factor.vectors.CO2 / cf,
+            CH4=source_factor.vectors.CH4 / cf,
+            N2O=source_factor.vectors.N2O / cf,
         )
 
         # Create new factor

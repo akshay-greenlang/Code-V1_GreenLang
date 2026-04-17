@@ -16,6 +16,7 @@ Please import from the specific submodules:
 - greenlang.exceptions.infrastructure - Database, cache, storage, and resilience exceptions
 - greenlang.exceptions.compliance - Regulatory compliance and audit trail exceptions
 - greenlang.exceptions.calculation - Emission calculation and measurement exceptions
+- greenlang.exceptions.factors - Factor catalog, governance, and matching exceptions
 - greenlang.exceptions.utils - Exception utilities
 
 This file provides backward-compatible re-exports.
@@ -76,12 +77,23 @@ Exception Hierarchy:
     │   ├── RegulatoryDeadlineError
     │   ├── AuditTrailError
     │   └── ProvenanceError
-    └── CalculationException
-        ├── EmissionCalculationError
-        ├── UnitConversionError
-        ├── FactorNotFoundError
-        ├── MethodologyError
-        └── BoundaryError
+    ├── CalculationException
+    │   ├── EmissionCalculationError
+    │   ├── UnitConversionError
+    │   ├── FactorNotFoundError
+    │   ├── MethodologyError
+    │   └── BoundaryError
+    └── FactorsException
+        ├── FactorValidationError
+        ├── FactorIngestionError
+        ├── FactorGovernanceError
+        ├── FactorEditionError
+        ├── FactorLicenseError
+        ├── FactorMatchingError
+        ├── SourceRegistryError
+        ├── ParserError
+        ├── QualityGateError
+        └── WatchError
 
 All exceptions include rich context:
 - error_code: Unique error identifier
@@ -209,6 +221,20 @@ from greenlang.utilities.exceptions.calculation import (
     BoundaryError,
 )
 
+from greenlang.utilities.exceptions.factors import (
+    FactorsException,
+    FactorValidationError,
+    FactorIngestionError,
+    FactorGovernanceError,
+    FactorEditionError,
+    FactorLicenseError,
+    FactorMatchingError,
+    SourceRegistryError,
+    ParserError,
+    QualityGateError,
+    WatchError,
+)
+
 from greenlang.utilities.exceptions.utils import (
     format_exception_chain,
     is_retriable,
@@ -296,6 +322,19 @@ __all__ = [
     'FactorNotFoundError',
     'MethodologyError',
     'BoundaryError',
+
+    # Factors Exceptions
+    'FactorsException',
+    'FactorValidationError',
+    'FactorIngestionError',
+    'FactorGovernanceError',
+    'FactorEditionError',
+    'FactorLicenseError',
+    'FactorMatchingError',
+    'SourceRegistryError',
+    'ParserError',
+    'QualityGateError',
+    'WatchError',
 
     # Utils
     'format_exception_chain',
