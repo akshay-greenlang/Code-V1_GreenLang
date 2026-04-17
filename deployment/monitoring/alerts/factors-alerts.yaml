@@ -1,0 +1,71 @@
+groups:
+  - name: factors-catalog
+    rules:
+      - alert: FactorsAPIHighErrorRate
+        expr: |
+          sum(rate(greenlang_factors_api_requests_total{status=~"5.."}[5m]))
+          / sum(rate(greenlang_factors_api_requests_total[5m]))
+          > 0.05
+        for: 5m
+        labels:
+          severity: critical
+          service: factors
+        annotations:
+          summary: "Factors API error rate > 5%"
+          description: "Error rate is {{ $value | humanizePercentage }} over the last 5 minutes."
+
+      - alert: FactorsAPIHighLatency
+        expr: |
+          histogram_quantile(0.95, rate(greenlang_factors_api_latency_seconds_bucket[5m]))
+          > 2.0
+        for: 5m
+        labels:
+          severity: warning
+          service: factors
+        annotations:
+          summary: "Factors API p95 latency > 2s"
+          description: "p95 latency is {{ $value | humanizeDuration }}."
+
+      - alert: FactorsLowMatchConfidence
+        expr: |
+          histogram_quantile(0.50, rate(greenlang_factors_match_score_top1_bucket[5m]))
+          < 0.4
+        for: 15m
+        labels:
+          severity: warning
+          service: factors
+        annotations:
+          summary: "Median match confidence below 40%"
+          description: "Median top-1 confidence is {{ $value | humanizePercentage }}."
+
+      - alert: FactorsQAGateFailures
+        expr: |
+          increase(greenlang_factors_qa_gate_failures_total[1h])
+          > 10
+        for: 0m
+        labels:
+          severity: warning
+          service: factors
+        annotations:
+          summary: "QA gate failures in last hour: {{ $value }}"
+          description: "Gate {{ $labels.gate_name }} has {{ $value }} failures."
+
+      - alert: FactorsEditionEmpty
+        expr: greenlang_factors_edition_factor_count == 0
+        for: 10m
+        labels:
+          severity: critical
+          service: factors
+        annotations:
+          summary: "Active edition has 0 factors"
+          description: "Edition {{ $labels.edition_id }} ({{ $labels.status }}) has no factors."
+
+      - alert: FactorsServiceDown
+        expr: up{job="factors-service"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          service: factors
+        annotations:
+          summary: "Factors service is down"
+          description: "The factors-service target has been unreachable for 2 minutes."

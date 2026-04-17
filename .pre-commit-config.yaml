@@ -365,6 +365,38 @@ repos:
         files: ^.*migrations\/.*\.py$
         pass_filenames: true
 
+      # Factors: lint check
+      - id: factors-lint
+        name: Factors Module Lint (ruff)
+        entry: ruff check greenlang/factors/ --select E,F,W --ignore E501
+        language: system
+        files: ^greenlang/factors/.*\.py$
+        pass_filenames: false
+
+      # Factors: type check
+      - id: factors-typecheck
+        name: Factors Module Type Check (mypy)
+        entry: mypy greenlang/factors/ --ignore-missing-imports
+        language: system
+        files: ^greenlang/factors/.*\.py$
+        pass_filenames: false
+
+      # Factors: validate source registry
+      - id: factors-validate-registry
+        name: Factors Validate Source Registry
+        entry: python -m greenlang.factors.cli validate-registry
+        language: system
+        files: ^greenlang/factors/data/source_registry\.yaml$
+        pass_filenames: false
+
+      # Factors: manifest fingerprint reproducibility
+      - id: factors-manifest-check
+        name: Factors Manifest Fingerprint Check
+        entry: python -c "from greenlang.factors.edition_manifest import EditionManifest; print('Manifest module OK')"
+        language: system
+        files: ^greenlang/factors/edition_manifest\.py$
+        pass_filenames: false
+
 # =============================================================================
 # CONFIGURATION NOTES
 # =============================================================================

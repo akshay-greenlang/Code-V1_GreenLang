@@ -1,0 +1,28 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: factors-service-ingress
+  namespace: greenlang-factors
+  labels:
+    app: factors-service
+  annotations:
+    kubernetes.io/ingress.class: kong
+    konghq.com/strip-path: "false"
+    konghq.com/plugins: rate-limiting,jwt-auth
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  tls:
+    - hosts:
+        - factors.greenlang.io
+      secretName: factors-tls
+  rules:
+    - host: factors.greenlang.io
+      http:
+        paths:
+          - path: /api/v1/factors
+            pathType: Prefix
+            backend:
+              service:
+                name: factors-service
+                port:
+                  number: 8080

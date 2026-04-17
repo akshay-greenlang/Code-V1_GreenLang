@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: factors-config
+  namespace: greenlang-factors
+  labels:
+    app: factors-service
+data:
+  ENVIRONMENT: "production"
+  LOG_LEVEL: "INFO"
+  WORKERS: "4"
+  APP_PORT: "8080"
+  METRICS_PORT: "9090"
+  GL_FACTORS_TIER: "enterprise"
+  GL_FACTORS_EDITION_DEFAULT: "latest"
+  GL_FACTORS_CACHE_TTL: "3600"
+  GL_FACTORS_SEARCH_MAX_RESULTS: "100"
+  GL_FACTORS_WATCH_INTERVAL: "86400"
+  GL_FACTORS_WATCH_ENABLED: "true"
+  GL_FACTORS_NOTIFY_CHANNELS: "slack"

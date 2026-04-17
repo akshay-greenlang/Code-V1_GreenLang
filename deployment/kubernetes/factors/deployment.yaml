@@ -1,0 +1,179 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: factors-service
+  namespace: greenlang-factors
+  labels:
+    app: factors-service
+    version: v1.0.0
+    tier: backend
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: factors-service
+  template:
+    metadata:
+      labels:
+        app: factors-service
+        version: v1.0.0
+        tier: backend
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: factors-service-sa
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
+
+      initContainers:
+        - name: wait-for-postgres
+          image: busybox:1.36
+          command: ["sh", "-c", "until nc -z postgres 5432; do sleep 2; done"]
+        - name: wait-for-redis
+          image: busybox:1.36
+          command: ["sh", "-c", "until nc -z redis 6379; do sleep 2; done"]
+
+      containers:
+        - name: factors-service
+          image: ghcr.io/greenlang/factors-service:1.0.0
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 8080
+            - name: http-metrics
+              containerPort: 9090
+          envFrom:
+            - configMapRef:
+                name: factors-config
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: factors-secrets
+                  key: database-url
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: factors-secrets
+                  key: redis-url
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: factors-secrets
+                  key: jwt-secret
+            - name: GL_FACTORS_SLACK_WEBHOOK_URL
+              valueFrom:
+                secretKeyRef:
+                  name: factors-secrets
+                  key: slack-webhook-url
+                  optional: true
+            - name: GL_FACTORS_LICENSE_IEA
+              valueFrom:
+                secretKeyRef:
+                  name: factors-secrets
+                  key: iea-license-key
+                  optional: true
+            - name: GL_FACTORS_LICENSE_ECOINVENT
+              valueFrom:
+                secretKeyRef:
+                  name: factors-secrets
+                  key: ecoinvent-license-key
+                  optional: true
+            - name: GL_FACTORS_LICENSE_ELECTRICITY_MAPS
+              valueFrom:
+                secretKeyRef:
+                  name: factors-secrets
+                  key: electricity-maps-api-key
+                  optional: true
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "500m"
+            limits:
+              memory: "1Gi"
+              cpu: "1000m"
+
+          livenessProbe:
+            httpGet:
+              path: /api/v1/factors/health
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+
+          readinessProbe:
+            httpGet:
+              path: /api/v1/factors/health
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+
+          startupProbe:
+            httpGet:
+              path: /api/v1/factors/health
+              port: 8080
+            periodSeconds: 5
+            failureThreshold: 30
+
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false
+            runAsNonRoot: true
+            runAsUser: 10001
+            capabilities:
+              drop: ["ALL"]
+
+          volumeMounts:
+            - name: cache
+              mountPath: /var/cache/greenlang
+            - name: logs
+              mountPath: /var/log/greenlang
+            - name: tmp
+              mountPath: /tmp
+
+      volumes:
+        - name: cache
+          emptyDir: { sizeLimit: 2Gi }
+        - name: logs
+          emptyDir: { sizeLimit: 500Mi }
+        - name: tmp
+          emptyDir: { sizeLimit: 500Mi }
+
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values: ["factors-service"]
+                topologyKey: kubernetes.io/hostname

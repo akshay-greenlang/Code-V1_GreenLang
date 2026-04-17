@@ -1,0 +1,275 @@
+# =============================================================================
+# GreenLang Factors Catalog CI
+# Emission Factor Catalog | FY27 Product
+# =============================================================================
+# Validates factors module: Python lint, type-check, unit tests, match eval
+# precision gate, registry validation, inventory smoke test, and coverage.
+# =============================================================================
+
+name: Factors Catalog CI
+
+on:
+  pull_request:
+    paths:
+      - 'greenlang/factors/**'
+      - 'greenlang/data/emission_factor_record.py'
+      - 'greenlang/data/emission_factor_database.py'
+      - 'tests/factors/**'
+      - 'scripts/factors_match_eval.py'
+      - 'scripts/factors_load_smoke.py'
+      - 'deployment/database/migrations/sql/V42[6-9]*.sql'
+      - 'deployment/database/migrations/sql/V430*.sql'
+  push:
+    branches: [master]
+    paths:
+      - 'greenlang/factors/**'
+      - 'tests/factors/**'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHON_VERSION: "3.11"
+
+jobs:
+  # -------------------------------------------------------------------------
+  # Job 1: Lint (ruff + black + isort)
+  # -------------------------------------------------------------------------
+  lint:
+    name: Lint (ruff + black + isort)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install linting tools
+        run: pip install --quiet ruff black isort
+
+      - name: Lint Python (ruff)
+        run: ruff check greenlang/factors/ --select E,F,W --ignore E501
+
+      - name: Check formatting (black)
+        run: black --check --diff greenlang/factors/ --line-length 100
+
+      - name: Check imports (isort)
+        run: isort --check-only --diff greenlang/factors/ --profile black --line-length 100
+
+  # -------------------------------------------------------------------------
+  # Job 2: Type Check (mypy)
+  # -------------------------------------------------------------------------
+  type-check:
+    name: Type Check (mypy)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install -e ".[dev]" 2>/dev/null || pip install \
+            mypy \
+            pydantic \
+            fastapi \
+            psycopg \
+            redis \
+            pyyaml \
+            types-PyYAML \
+            types-redis
+
+      - name: Run mypy
+        run: |
+          mypy greenlang/factors/ \
+            --ignore-missing-imports \
+            --no-error-summary \
+            --show-column-numbers
+
+  # -------------------------------------------------------------------------
+  # Job 3: Unit Tests
+  # -------------------------------------------------------------------------
+  unit-test:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install -e ".[dev]" 2>/dev/null || pip install \
+            pytest \
+            pytest-asyncio \
+            pytest-cov \
+            pydantic \
+            fastapi \
+            httpx \
+            psycopg \
+            redis \
+            pyyaml
+
+      - name: Run factors unit tests
+        run: |
+          pytest tests/factors/ -v --tb=short -q \
+            --junitxml=junit-factors.xml \
+            --cov=greenlang/factors \
+            --cov-report=term-missing \
+            --cov-report=xml:coverage-factors.xml
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: factors-test-results
+          path: |
+            junit-factors.xml
+            coverage-factors.xml
+          if-no-files-found: ignore
+
+  # -------------------------------------------------------------------------
+  # Job 4: Match Evaluation Precision Gate
+  # -------------------------------------------------------------------------
+  match-eval:
+    name: Match Evaluation (precision gate)
+    runs-on: ubuntu-latest
+    needs: [unit-test]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install -e ".[dev]" 2>/dev/null || pip install \
+            pydantic \
+            pyyaml
+
+      - name: Run match evaluation
+        run: |
+          if [ -f "scripts/factors_match_eval.py" ]; then
+            python scripts/factors_match_eval.py
+          else
+            echo "WARNING: factors_match_eval.py not found, skipping"
+          fi
+
+  # -------------------------------------------------------------------------
+  # Job 5: Registry Validation
+  # -------------------------------------------------------------------------
+  registry-validation:
+    name: Validate Source Registry
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install -e ".[dev]" 2>/dev/null || pip install \
+            pydantic \
+            pyyaml
+
+      - name: Validate source registry
+        run: python -m greenlang.factors.cli validate-registry
+
+  # -------------------------------------------------------------------------
+  # Job 6: Inventory Smoke Test
+  # -------------------------------------------------------------------------
+  inventory-smoke:
+    name: Inventory Smoke Test
+    runs-on: ubuntu-latest
+    needs: [unit-test]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install -e ".[dev]" 2>/dev/null || pip install \
+            pydantic \
+            pyyaml
+
+      - name: Run inventory coverage matrix
+        run: |
+          python -m greenlang.factors.cli inventory --out /tmp/coverage.json
+          echo "Inventory smoke test passed"
+          cat /tmp/coverage.json | python -m json.tool | head -30
+
+  # -------------------------------------------------------------------------
+  # Job 7: SQL Migration Validation
+  # -------------------------------------------------------------------------
+  migration-validation:
+    name: Validate SQL Migrations
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Validate factors migrations syntax
+        run: |
+          python3 << 'PYEOF'
+          import sys
+          from pathlib import Path
+
+          migration_dir = Path("deployment/database/migrations/sql")
+          factors_migrations = sorted(migration_dir.glob("V42[6-9]__factors_*.sql")) + \
+                               sorted(migration_dir.glob("V430__factors_*.sql"))
+
+          if not factors_migrations:
+              print("WARNING: No factors migrations found (V426-V430)")
+              sys.exit(0)
+
+          errors = []
+          for path in factors_migrations:
+              content = path.read_text(encoding="utf-8")
+              if len(content.strip()) < 10:
+                  errors.append(f"{path.name}: File is nearly empty")
+              if "factors_catalog" not in content:
+                  errors.append(f"{path.name}: Missing factors_catalog schema reference")
+              print(f"  OK: {path.name} ({len(content)} bytes)")
+
+          if errors:
+              print("Migration validation errors:")
+              for e in errors:
+                  print(f"  - {e}")
+              sys.exit(1)
+
+          print(f"All {len(factors_migrations)} factors migrations validated")
+          PYEOF

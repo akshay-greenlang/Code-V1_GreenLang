@@ -1,0 +1,21 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: factors-service
+  namespace: greenlang
+  labels:
+    app: factors-service
+    release: prometheus
+spec:
+  selector:
+    matchLabels:
+      app: factors-service
+  namespaceSelector:
+    matchNames:
+      - greenlang
+  endpoints:
+    - port: http-metrics
+      path: /metrics
+      interval: 15s
+      scrapeTimeout: 10s
+      honorLabels: true

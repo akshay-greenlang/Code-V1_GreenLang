@@ -1,0 +1,119 @@
+# syntax=docker/dockerfile:1.7
+# =============================================================================
+# GreenLang Factors Catalog Service
+# =============================================================================
+# API service for emission factor search, matching, and management.
+#
+# Build:
+#   docker build -f deployment/docker/Dockerfile.factors-service \
+#     -t greenlang/factors-service:1.0.0 .
+#
+# Targets:
+#   --target production   Hardened API server (default)
+#   --target worker       Watch/ingestion background worker
+# =============================================================================
+
+ARG PYTHON_VERSION=3.11-slim-bookworm
+
+# ── Stage 1: builder ────────────────────────────────────────────────
+FROM python:${PYTHON_VERSION} AS builder
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    VIRTUAL_ENV=/opt/venv
+
+RUN python -m venv $VIRTUAL_ENV
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        build-essential gcc g++ git curl pkg-config \
+        libssl-dev libffi-dev libpq-dev ca-certificates \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+RUN pip install --upgrade pip setuptools wheel
+
+COPY pyproject.toml README.md ./
+COPY core/ ./core/
+COPY greenlang/ ./greenlang/
+
+ARG GL_VERSION=1.0.0
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install --no-deps -e ".[server,data,security,monitoring]"
+
+# ── Stage 2: production ─────────────────────────────────────────────
+FROM python:${PYTHON_VERSION} AS production
+
+ARG GL_VERSION=1.0.0
+ARG BUILD_DATE=""
+ARG VCS_REF=""
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PYTHONFAULTHANDLER=1 \
+    VIRTUAL_ENV=/opt/venv \
+    PATH="/opt/venv/bin:$PATH" \
+    GL_HOME=/var/lib/greenlang \
+    GL_CACHE_DIR=/var/cache/greenlang \
+    GL_LOG_DIR=/var/log/greenlang \
+    GL_CONFIG_DIR=/etc/greenlang \
+    GL_VERSION=${GL_VERSION} \
+    GL_LOG_LEVEL=INFO \
+    GL_LOG_FORMAT=json \
+    ENVIRONMENT=production \
+    APP_NAME=factors-service \
+    APP_PORT=8080 \
+    METRICS_PORT=9090 \
+    WORKERS=4
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        ca-certificates tini curl libpq5 \
+    && apt-get upgrade -y \
+    && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/*
+
+COPY --from=builder ${VIRTUAL_ENV} ${VIRTUAL_ENV}
+COPY --chown=10001:10001 greenlang/ /app/greenlang/
+COPY --chown=10001:10001 core/ /app/core/
+
+RUN groupadd -g 10001 glapp \
+    && useradd -u 10001 -g 10001 -m -s /bin/bash glapp \
+    && mkdir -p ${GL_HOME} ${GL_CACHE_DIR} ${GL_LOG_DIR} ${GL_CONFIG_DIR} /app \
+    && chown -R glapp:glapp ${GL_HOME} ${GL_CACHE_DIR} ${GL_LOG_DIR} ${GL_CONFIG_DIR} /app
+
+USER glapp
+WORKDIR /app
+
+EXPOSE ${APP_PORT} ${METRICS_PORT}
+
+LABEL org.opencontainers.image.title="GreenLang Factors Service" \
+      org.opencontainers.image.version="${GL_VERSION}" \
+      org.opencontainers.image.created="${BUILD_DATE}" \
+      org.opencontainers.image.revision="${VCS_REF}" \
+      com.greenlang.app="factors-service"
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD curl -sf http://localhost:${APP_PORT}/api/v1/factors/health || exit 1
+
+VOLUME ["${GL_CACHE_DIR}", "${GL_LOG_DIR}"]
+
+ENTRYPOINT ["/usr/bin/tini", "--"]
+CMD uvicorn greenlang.factors.api:app \
+    --host 0.0.0.0 \
+    --port ${APP_PORT} \
+    --workers ${WORKERS} \
+    --access-log \
+    --proxy-headers
+
+# ── Stage 3: worker ─────────────────────────────────────────────────
+FROM production AS worker
+
+ENV APP_NAME=factors-worker \
+    WORKERS=2
+
+HEALTHCHECK --interval=60s --timeout=15s --start-period=30s --retries=3 \
+    CMD python -c "import sys; sys.exit(0)"
+
+CMD python -m greenlang.factors.cli watch-run --db /var/lib/greenlang/watch.db

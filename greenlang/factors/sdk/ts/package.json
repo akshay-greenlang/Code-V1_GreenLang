@@ -1,0 +1,37 @@
+{
+  "name": "@greenlang/factors-sdk",
+  "version": "1.0.0",
+  "description": "GreenLang Factors API TypeScript SDK - Emission factor catalog client",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "module": "dist/index.mjs",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "greenlang",
+    "emission-factors",
+    "ghg",
+    "carbon",
+    "sustainability",
+    "climate",
+    "api-client"
+  ],
+  "author": "GreenLang",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/greenlang/greenlang"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0"
+  }
+}

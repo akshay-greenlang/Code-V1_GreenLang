@@ -1,0 +1,125 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: factors-watch
+  namespace: greenlang-factors
+  labels:
+    app: factors-worker
+    component: watch
+spec:
+  schedule: "0 2 * * *"  # Daily at 02:00 UTC
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      activeDeadlineSeconds: 3600
+      template:
+        metadata:
+          labels:
+            app: factors-worker
+            component: watch
+        spec:
+          serviceAccountName: factors-service-sa
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 10001
+            runAsGroup: 10001
+          containers:
+            - name: watch-runner
+              image: ghcr.io/greenlang/factors-service:1.0.0
+              command:
+                - python
+                - -m
+                - greenlang.factors.cli
+                - watch-run
+                - --notify
+              envFrom:
+                - configMapRef:
+                    name: factors-config
+              env:
+                - name: DATABASE_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: factors-secrets
+                      key: database-url
+                - name: GL_FACTORS_SLACK_WEBHOOK_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: factors-secrets
+                      key: slack-webhook-url
+                      optional: true
+              resources:
+                requests:
+                  memory: "256Mi"
+                  cpu: "250m"
+                limits:
+                  memory: "512Mi"
+                  cpu: "500m"
+              securityContext:
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop: ["ALL"]
+          restartPolicy: Never
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: factors-ingestion
+  namespace: greenlang-factors
+  labels:
+    app: factors-worker
+    component: ingestion
+spec:
+  schedule: "0 4 * * 0"  # Weekly on Sunday at 04:00 UTC
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      activeDeadlineSeconds: 7200
+      template:
+        metadata:
+          labels:
+            app: factors-worker
+            component: ingestion
+        spec:
+          serviceAccountName: factors-service-sa
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 10001
+          containers:
+            - name: ingestion-runner
+              image: ghcr.io/greenlang/factors-service:1.0.0
+              command:
+                - python
+                - -m
+                - greenlang.factors.cli
+                - ingest-builtin
+                - --sqlite
+                - /var/lib/greenlang/factors.db
+                - --edition-id
+                - $(date +%Y-%m)
+              envFrom:
+                - configMapRef:
+                    name: factors-config
+              env:
+                - name: DATABASE_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: factors-secrets
+                      key: database-url
+              resources:
+                requests:
+                  memory: "512Mi"
+                  cpu: "500m"
+                limits:
+                  memory: "1Gi"
+                  cpu: "1000m"
+              securityContext:
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop: ["ALL"]
+          restartPolicy: Never

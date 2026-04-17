@@ -78,6 +78,102 @@ def _cmd_ingest_paths(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_watch_run(args: argparse.Namespace) -> int:
+    from greenlang.factors.notifications.webhook_notifier import build_watch_notify_callback
+    from greenlang.factors.watch.scheduler import run_watch, watch_summary
+
+    db_path = Path(args.db) if args.db else None
+    notify = build_watch_notify_callback() if args.notify else None
+    results = run_watch(db_path=db_path, store=bool(db_path), notify=notify)
+    summary = watch_summary(results)
+    print(json.dumps(summary, indent=2))
+    return 1 if summary["errors"] > 0 else 0
+
+
+def _cmd_release_prepare(args: argparse.Namespace) -> int:
+    from greenlang.factors.service import FactorCatalogService
+    from greenlang.factors.watch.release_orchestrator import prepare_release
+
+    svc = FactorCatalogService.from_environment()
+    report = prepare_release(
+        svc.repo,
+        args.edition_id,
+        previous_edition_id=args.previous,
+    )
+    if args.out:
+        Path(args.out).write_text(json.dumps(report.to_dict(), indent=2, default=str), encoding="utf-8")
+        print(json.dumps({"written": args.out, "status": report.status, "ready": report.is_ready()}, indent=2))
+    else:
+        print(json.dumps(report.to_dict(), indent=2, default=str))
+    return 0 if report.is_ready() else 1
+
+
+def _cmd_connector_list(args: argparse.Namespace) -> int:
+    from greenlang.factors.connectors import register_default_connectors
+
+    registry = register_default_connectors()
+    data = []
+    for sid in registry.list_source_ids():
+        c = registry.get(sid)
+        if c:
+            cap = c.capabilities
+            data.append({
+                "source_id": sid,
+                "requires_license": cap.requires_license,
+                "typical_factor_count": cap.typical_factor_count,
+                "supports_real_time": cap.supports_real_time,
+                "supports_batch": cap.supports_batch_fetch,
+            })
+    print(json.dumps(data, indent=2))
+    return 0
+
+
+def _cmd_connector_health(args: argparse.Namespace) -> int:
+    from greenlang.factors.connectors import register_default_connectors
+
+    registry = register_default_connectors()
+    c = registry.get(args.connector_id, license_key=args.license_key)
+    if not c:
+        print(json.dumps({"error": f"Unknown connector: {args.connector_id}"}, indent=2))
+        return 1
+    result = c.health_check()
+    print(json.dumps({
+        "connector_id": args.connector_id,
+        "status": result.status.value,
+        "latency_ms": result.latency_ms,
+        "message": result.message,
+        "checked_at": result.checked_at,
+    }, indent=2))
+    return 0 if result.status.value == "healthy" else 1
+
+
+def _cmd_connector_fetch_metadata(args: argparse.Namespace) -> int:
+    from greenlang.factors.connectors import register_default_connectors
+
+    registry = register_default_connectors()
+    c = registry.get(args.connector_id, license_key=args.license_key)
+    if not c:
+        print(json.dumps({"error": f"Unknown connector: {args.connector_id}"}, indent=2))
+        return 1
+    meta = c.fetch_metadata()
+    if args.out:
+        Path(args.out).write_text(json.dumps(meta, indent=2, default=str), encoding="utf-8")
+        print(json.dumps({"written": args.out, "count": len(meta)}, indent=2))
+    else:
+        print(json.dumps({"count": len(meta), "sample": meta[:5]}, indent=2))
+    return 0
+
+
+def _cmd_release_publish(args: argparse.Namespace) -> int:
+    from greenlang.factors.service import FactorCatalogService
+    from greenlang.factors.watch.release_orchestrator import publish_release
+
+    svc = FactorCatalogService.from_environment()
+    result = publish_release(svc.repo, args.edition_id, args.approved_by)
+    print(json.dumps(result, indent=2, default=str))
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(description="GreenLang Factors catalog tools")
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -112,6 +208,36 @@ def main(argv: list[str] | None = None) -> int:
     ip.add_argument("--label", default="ETL bundle")
     ip.add_argument("--status", default="stable")
     ip.set_defaults(func=_cmd_ingest_paths)
+
+    wr = sub.add_parser("watch-run", help="Run automated source watch (F050)")
+    wr.add_argument("--db", help="SQLite path to store watch results")
+    wr.add_argument("--notify", action="store_true", help="Enable Slack/email notifications")
+    wr.set_defaults(func=_cmd_watch_run)
+
+    rp = sub.add_parser("release-prepare", help="Prepare release report (F053)")
+    rp.add_argument("--edition-id", dest="edition_id", required=True)
+    rp.add_argument("--previous", help="Previous edition ID for changelog comparison")
+    rp.add_argument("--out", help="Output JSON path for release report")
+    rp.set_defaults(func=_cmd_release_prepare)
+
+    rpub = sub.add_parser("release-publish", help="Promote edition to stable (F053)")
+    rpub.add_argument("--edition-id", dest="edition_id", required=True)
+    rpub.add_argument("--approved-by", dest="approved_by", required=True, help="Approver email/username")
+    rpub.set_defaults(func=_cmd_release_publish)
+
+    cl = sub.add_parser("connector-list", help="List registered connectors (F060)")
+    cl.set_defaults(func=_cmd_connector_list)
+
+    ch = sub.add_parser("connector-health", help="Check connector health (F060)")
+    ch.add_argument("--connector-id", dest="connector_id", required=True)
+    ch.add_argument("--license-key", dest="license_key", help="License key (or use env var)")
+    ch.set_defaults(func=_cmd_connector_health)
+
+    cm = sub.add_parser("connector-metadata", help="Fetch connector metadata (F060)")
+    cm.add_argument("--connector-id", dest="connector_id", required=True)
+    cm.add_argument("--license-key", dest="license_key", help="License key (or use env var)")
+    cm.add_argument("--out", help="Output JSON path")
+    cm.set_defaults(func=_cmd_connector_fetch_metadata)
 
     args = p.parse_args(argv)
     logger.info("CLI command=%s", args.cmd)

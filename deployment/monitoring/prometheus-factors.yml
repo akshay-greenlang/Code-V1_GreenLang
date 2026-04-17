@@ -1,0 +1,32 @@
+# Prometheus scrape config for GreenLang Factors service.
+# Include in the main prometheus.yml via file_sd_configs or static_configs.
+
+scrape_configs:
+  - job_name: factors-service
+    scrape_interval: 15s
+    scrape_timeout: 10s
+    metrics_path: /metrics
+    scheme: http
+    static_configs:
+      - targets:
+          - "factors-service:8080"
+        labels:
+          service: factors
+          team: data-platform
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        regex: "(.+):\\d+"
+        replacement: "$1"
+
+  - job_name: factors-worker
+    scrape_interval: 30s
+    scrape_timeout: 10s
+    metrics_path: /metrics
+    scheme: http
+    static_configs:
+      - targets:
+          - "factors-worker:8081"
+        labels:
+          service: factors-worker
+          team: data-platform

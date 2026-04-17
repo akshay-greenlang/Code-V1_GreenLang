@@ -429,7 +429,8 @@
       "Bash(for agent in stationary_combustion mobile_combustion fugitive_emissions refrigerants_fgas land_use_emissions waste_generated waste_treatment_emissions process_emissions agricultural_emissions)",
       "Bash(/tmp/precommit_sizes2.sh:*)",
       "Bash(node -e:*)",
-      "Bash(if not exist \"C:\\\\Users\\\\aksha\\\\Code-V1_GreenLang\\\\greenlang\\\\factors\\\\ingestion\\\\parsers\" mkdir \"C:\\\\Users\\\\aksha\\\\Code-V1_GreenLang\\\\greenlang\\\\factors\\\\ingestion\\\\parsers\")"
+      "Bash(if not exist \"C:\\\\Users\\\\aksha\\\\Code-V1_GreenLang\\\\greenlang\\\\factors\\\\ingestion\\\\parsers\" mkdir \"C:\\\\Users\\\\aksha\\\\Code-V1_GreenLang\\\\greenlang\\\\factors\\\\ingestion\\\\parsers\")",
+      "Bash(if not exist \"C:\\\\Users\\\\aksha\\\\Code-V1_GreenLang\\\\greenlang\\\\factors\\\\sdk\\\\ts\" mkdir \"C:\\\\Users\\\\aksha\\\\Code-V1_GreenLang\\\\greenlang\\\\factors\\\\sdk\\\\ts\")"
     ],
     "deny": [],
     "ask": []

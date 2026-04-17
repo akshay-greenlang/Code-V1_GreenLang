@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: factors-service
+  namespace: greenlang-factors
+  labels:
+    app: factors-service
+spec:
+  type: ClusterIP
+  selector:
+    app: factors-service
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+      protocol: TCP
+    - name: http-metrics
+      port: 9090
+      targetPort: 9090
+      protocol: TCP
