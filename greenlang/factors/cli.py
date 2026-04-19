@@ -174,6 +174,160 @@ def _cmd_release_publish(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_bulk_ingest(args: argparse.Namespace) -> int:
+    """Run the full ingestion pipeline via scripts/run_ingestion.py logic."""
+    import time
+
+    mode = args.mode
+    sqlite_path = Path(args.sqlite)
+    edition_id = args.edition_id
+    dry_run = args.dry_run
+
+    logger.info(
+        "bulk-ingest: mode=%s sqlite=%s edition=%s dry_run=%s",
+        mode, sqlite_path, edition_id, dry_run,
+    )
+
+    if mode == "builtin":
+        from greenlang.factors.etl.ingest import ingest_builtin_database
+
+        if dry_run:
+            from greenlang.data.emission_factor_database import EmissionFactorDatabase
+
+            db = EmissionFactorDatabase(enable_cache=False)
+            n = len(db.factors)
+            print(json.dumps({"dry_run": True, "mode": mode, "would_ingest": n}, indent=2))
+            return 0
+
+        n = ingest_builtin_database(sqlite_path, edition_id, label=args.label)
+        print(json.dumps({"ingested": n, "mode": mode, "sqlite": str(sqlite_path)}, indent=2))
+        return 0
+
+    elif mode == "synthetic":
+        from greenlang.factors.ingestion.synthetic_data import generate_and_validate
+        from greenlang.factors.etl.normalize import dict_to_emission_factor_record
+        from greenlang.factors.catalog_repository import SqliteFactorCatalogRepository
+        from greenlang.factors.edition_manifest import build_manifest_for_factors
+
+        count = args.count
+        seed = args.seed
+        years = [int(y.strip()) for y in args.years.split(",")]
+
+        t0 = time.monotonic()
+        valid_dicts, total_gen, total_rej = generate_and_validate(
+            count=count, seed=seed, years=years,
+        )
+
+        if dry_run:
+            elapsed = time.monotonic() - t0
+            print(json.dumps({
+                "dry_run": True,
+                "mode": mode,
+                "generated": total_gen,
+                "valid": len(valid_dicts),
+                "rejected": total_rej,
+                "elapsed_s": round(elapsed, 2),
+                "sample_ids": [fd["factor_id"] for fd in valid_dicts[:5]],
+            }, indent=2))
+            return 0
+
+        records = []
+        for fd in valid_dicts:
+            try:
+                records.append(dict_to_emission_factor_record(fd))
+            except Exception as exc:
+                logger.warning("Conversion error: %s", exc)
+
+        if not records:
+            print(json.dumps({"error": "No records survived conversion"}, indent=2))
+            return 1
+
+        repo = SqliteFactorCatalogRepository(sqlite_path)
+        manifest = build_manifest_for_factors(
+            edition_id, "stable", records,
+            changelog=[f"Synthetic bulk-ingest: {len(records)} factors (seed={seed})"],
+        )
+        repo.upsert_edition(edition_id, "stable", args.label, manifest.to_dict(), manifest.changelog)
+        repo.insert_factors(edition_id, records)
+
+        elapsed = time.monotonic() - t0
+        print(json.dumps({
+            "mode": mode,
+            "ingested": len(records),
+            "generated": total_gen,
+            "rejected": total_rej,
+            "elapsed_s": round(elapsed, 2),
+            "sqlite": str(sqlite_path),
+            "edition_id": edition_id,
+        }, indent=2))
+        return 0
+
+    elif mode == "full":
+        from greenlang.factors.etl.ingest import ingest_builtin_database
+        from greenlang.factors.ingestion.synthetic_data import generate_and_validate
+        from greenlang.factors.etl.normalize import dict_to_emission_factor_record
+        from greenlang.factors.catalog_repository import SqliteFactorCatalogRepository
+        from greenlang.factors.edition_manifest import build_manifest_for_factors
+
+        t0 = time.monotonic()
+
+        # Phase 1: builtin
+        if not dry_run:
+            n_builtin = ingest_builtin_database(sqlite_path, edition_id, label=args.label)
+        else:
+            from greenlang.data.emission_factor_database import EmissionFactorDatabase
+
+            n_builtin = len(EmissionFactorDatabase(enable_cache=False).factors)
+
+        # Phase 2: synthetic
+        count = args.count
+        seed = args.seed
+        years = [int(y.strip()) for y in args.years.split(",")]
+        valid_dicts, total_gen, total_rej = generate_and_validate(
+            count=count, seed=seed, years=years,
+        )
+
+        if dry_run:
+            elapsed = time.monotonic() - t0
+            print(json.dumps({
+                "dry_run": True,
+                "mode": mode,
+                "builtin_count": n_builtin,
+                "synthetic_generated": total_gen,
+                "synthetic_valid": len(valid_dicts),
+                "synthetic_rejected": total_rej,
+                "elapsed_s": round(elapsed, 2),
+            }, indent=2))
+            return 0
+
+        records = []
+        for fd in valid_dicts:
+            try:
+                records.append(dict_to_emission_factor_record(fd))
+            except Exception:
+                pass
+
+        if records:
+            repo = SqliteFactorCatalogRepository(sqlite_path)
+            repo.insert_factors(edition_id, records)
+
+        elapsed = time.monotonic() - t0
+        print(json.dumps({
+            "mode": mode,
+            "builtin_ingested": n_builtin,
+            "synthetic_ingested": len(records),
+            "total_ingested": n_builtin + len(records),
+            "elapsed_s": round(elapsed, 2),
+            "sqlite": str(sqlite_path),
+            "edition_id": edition_id,
+        }, indent=2))
+        return 0
+
+    else:
+        print(json.dumps({"error": f"Unknown mode: {mode}"}, indent=2))
+        return 1
+
+
 def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(description="GreenLang Factors catalog tools")
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -238,6 +392,34 @@ def main(argv: list[str] | None = None) -> int:
     cm.add_argument("--license-key", dest="license_key", help="License key (or use env var)")
     cm.add_argument("--out", help="Output JSON path")
     cm.set_defaults(func=_cmd_connector_fetch_metadata)
+
+    bi = sub.add_parser(
+        "bulk-ingest",
+        help="Bulk ingestion pipeline: builtin, synthetic, or full (F019)",
+    )
+    bi.add_argument(
+        "--mode",
+        choices=["builtin", "synthetic", "full"],
+        default="synthetic",
+        help="Ingestion mode (default: synthetic)",
+    )
+    bi.add_argument("--sqlite", required=True, help="SQLite database path")
+    bi.add_argument("--edition-id", dest="edition_id", required=True, help="Edition identifier")
+    bi.add_argument("--label", default="Bulk ingestion", help="Edition label")
+    bi.add_argument(
+        "--count",
+        type=int,
+        default=25000,
+        help="Number of synthetic factors (default: 25000)",
+    )
+    bi.add_argument("--seed", type=int, default=42, help="Random seed (default: 42)")
+    bi.add_argument(
+        "--years",
+        default="2022,2023,2024,2025",
+        help="Comma-separated years (default: 2022,2023,2024,2025)",
+    )
+    bi.add_argument("--dry-run", dest="dry_run", action="store_true", help="Validate without writing")
+    bi.set_defaults(func=_cmd_bulk_ingest)
 
     args = p.parse_args(argv)
     logger.info("CLI command=%s", args.cmd)

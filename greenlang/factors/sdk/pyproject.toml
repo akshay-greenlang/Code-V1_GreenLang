@@ -1,0 +1,54 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "greenlang-factors-sdk"
+version = "1.0.0"
+description = "Python SDK for the GreenLang Emission Factors API"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.9"
+authors = [
+    {name = "GreenLang", email = "support@greenlang.io"},
+]
+keywords = [
+    "greenlang",
+    "emission-factors",
+    "ghg",
+    "carbon",
+    "sustainability",
+    "climate",
+    "api-client",
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Typing :: Typed",
+]
+# No dependencies -- stdlib only
+dependencies = []
+
+[project.urls]
+Homepage = "https://greenlang.io"
+Documentation = "https://docs.greenlang.io/factors-sdk"
+Repository = "https://github.com/greenlang/greenlang"
+Changelog = "https://github.com/greenlang/greenlang/blob/master/CHANGELOG.md"
+"Bug Tracker" = "https://github.com/greenlang/greenlang/issues"
+
+[tool.setuptools]
+packages = ["greenlang_factors_sdk"]
+
+[tool.setuptools.package-dir]
+greenlang_factors_sdk = "."

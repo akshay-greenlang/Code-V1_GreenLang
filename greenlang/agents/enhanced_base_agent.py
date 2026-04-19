@@ -3,6 +3,12 @@
 GreenLang Enhanced BaseAgent - Production-Ready Foundation
 ==========================================================
 
+.. deprecated:: 0.1.0
+    This module is deprecated and will be removed in v1.0.
+    Use ``greenlang.agent_runtime.BaseAgent`` (sync) or
+    ``greenlang.agent_runtime.AsyncAgentBase`` (async) instead.
+    See ``greenlang/agents/MIGRATION_TO_AGENTSPECV2.md`` for details.
+
 This module implements the Enhanced BaseAgent that integrates ALL 95+ improvements
 across AI/ML, Engineering, Architecture, and Safety domains. All agents inheriting
 from this base achieve 95+/100 capability score.

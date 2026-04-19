@@ -430,7 +430,18 @@
       "Bash(/tmp/precommit_sizes2.sh:*)",
       "Bash(node -e:*)",
       "Bash(if not exist \"C:\\\\Users\\\\aksha\\\\Code-V1_GreenLang\\\\greenlang\\\\factors\\\\ingestion\\\\parsers\" mkdir \"C:\\\\Users\\\\aksha\\\\Code-V1_GreenLang\\\\greenlang\\\\factors\\\\ingestion\\\\parsers\")",
-      "Bash(if not exist \"C:\\\\Users\\\\aksha\\\\Code-V1_GreenLang\\\\greenlang\\\\factors\\\\sdk\\\\ts\" mkdir \"C:\\\\Users\\\\aksha\\\\Code-V1_GreenLang\\\\greenlang\\\\factors\\\\sdk\\\\ts\")"
+      "Bash(if not exist \"C:\\\\Users\\\\aksha\\\\Code-V1_GreenLang\\\\greenlang\\\\factors\\\\sdk\\\\ts\" mkdir \"C:\\\\Users\\\\aksha\\\\Code-V1_GreenLang\\\\greenlang\\\\factors\\\\sdk\\\\ts\")",
+      "Bash(cmd.exe /c \"dir /b C:\\\\Users\\\\aksha\\\\Code-V1_GreenLang\\\\packs\")",
+      "Bash(cmd.exe /c \"dir /b C:\\\\Users\\\\aksha\\\\Code-V1_GreenLang\\\\packs\\\\energy-efficiency\")",
+      "Bash(cmd.exe /c \"dir /b C:\\\\Users\\\\aksha\\\\Code-V1_GreenLang\\\\packs\\\\net-zero\")",
+      "Bash(cmd.exe /c \"dir /b C:\\\\Users\\\\aksha\\\\Code-V1_GreenLang\\\\packs\\\\ghg-accounting\")",
+      "Bash(cmd.exe /c \"dir /b C:\\\\Users\\\\aksha\\\\Code-V1_GreenLang\\\\packs\\\\eu-compliance\")",
+      "Bash(done)",
+      "Bash(git ls-files:*)",
+      "Bash(do git ls-files \"$d\")",
+      "Bash(Get-ChildItem -File -Filter \"*.py\")",
+      "Bash(Select-String:*)",
+      "Bash(Select-Object -Last 3)"
     ],
     "deny": [],
     "ask": []

@@ -1,14 +1,1102 @@
 [
   {
-    "id": "g1",
-    "activity": "diesel combustion stationary US",
+    "id": "s1_fuel_01",
+    "category": "scope1_fuels",
+    "activity": "burned 5000 gallons of diesel fuel in a backup generator",
     "expected_fuel_type": "diesel",
-    "geography": "US"
+    "geography": "US",
+    "scope": "1",
+    "difficulty": "easy",
+    "notes": "Standard stationary diesel combustion, clear fuel and activity type"
   },
   {
-    "id": "g2",
-    "activity": "electricity consumption grid US",
+    "id": "s1_fuel_02",
+    "category": "scope1_fuels",
+    "activity": "diesel consumed in on-site boiler for heating warehouse",
+    "expected_fuel_type": "diesel",
+    "geography": "US",
+    "scope": "1",
+    "difficulty": "easy",
+    "notes": "Stationary diesel with boiler context"
+  },
+  {
+    "id": "s1_fuel_03",
+    "category": "scope1_fuels",
+    "activity": "standby diesel generator ran for 120 hours during power outage",
+    "expected_fuel_type": "diesel",
+    "geography": "US",
+    "scope": "1",
+    "difficulty": "medium",
+    "notes": "Generator context without explicit fuel quantity"
+  },
+  {
+    "id": "s1_fuel_04",
+    "category": "scope1_fuels",
+    "activity": "diesel fuel combustion at manufacturing facility in EU",
+    "expected_fuel_type": "diesel",
+    "geography": "EU",
+    "scope": "1",
+    "difficulty": "medium",
+    "notes": "Diesel in EU geography, should fallback to US diesel factor"
+  },
+  {
+    "id": "s1_fuel_05",
+    "category": "scope1_fuels",
+    "activity": "natural gas consumed for space heating in office building",
+    "expected_fuel_type": "natural_gas",
+    "geography": "US",
+    "scope": "1",
+    "difficulty": "easy",
+    "notes": "Standard natural gas heating application"
+  },
+  {
+    "id": "s1_fuel_06",
+    "category": "scope1_fuels",
+    "activity": "burned 12000 therms of natural gas in industrial boiler",
+    "expected_fuel_type": "natural_gas",
+    "geography": "US",
+    "scope": "1",
+    "difficulty": "easy",
+    "notes": "Natural gas with unit explicitly matching DB (therms)"
+  },
+  {
+    "id": "s1_fuel_07",
+    "category": "scope1_fuels",
+    "activity": "natural gas fired combined heat and power CHP unit",
+    "expected_fuel_type": "natural_gas",
+    "geography": "US",
+    "scope": "1",
+    "difficulty": "medium",
+    "notes": "CHP application, should still match natural_gas"
+  },
+  {
+    "id": "s1_fuel_08",
+    "category": "scope1_fuels",
+    "activity": "gas furnace heating residential complex consuming 8500 therms",
+    "expected_fuel_type": "natural_gas",
+    "geography": "US",
+    "scope": "1",
+    "difficulty": "medium",
+    "notes": "Uses 'gas' without 'natural' prefix, therms hints at natural gas"
+  },
+  {
+    "id": "s1_fuel_09",
+    "category": "scope1_fuels",
+    "activity": "propane consumption for warehouse heating system",
+    "expected_fuel_type": "natural_gas",
+    "geography": "US",
+    "scope": "1",
+    "difficulty": "hard",
+    "notes": "Propane not in DB, closest match would be natural_gas or gasoline"
+  },
+  {
+    "id": "s1_fuel_10",
+    "category": "scope1_fuels",
+    "activity": "LPG used in forklift operations at distribution center",
+    "expected_fuel_type": "gasoline",
+    "geography": "US",
+    "scope": "1",
+    "difficulty": "hard",
+    "notes": "LPG not in DB as separate fuel type, nearest match unclear"
+  },
+  {
+    "id": "s1_fuel_11",
+    "category": "scope1_fuels",
+    "activity": "propane tanks refilled for construction site heaters",
+    "expected_fuel_type": "natural_gas",
+    "geography": "US",
+    "scope": "1",
+    "difficulty": "hard",
+    "notes": "Propane not explicitly in DB, should map to nearest fossil fuel"
+  },
+  {
+    "id": "s1_fuel_12",
+    "category": "scope1_fuels",
+    "activity": "bituminous coal burned in power plant boiler",
+    "expected_fuel_type": "coal",
+    "geography": "US",
+    "scope": "1",
+    "difficulty": "easy",
+    "notes": "Explicit coal combustion with coal subtype"
+  },
+  {
+    "id": "s1_fuel_13",
+    "category": "scope1_fuels",
+    "activity": "anthracite coal consumption for industrial furnace",
+    "expected_fuel_type": "coal",
+    "geography": "US",
+    "scope": "1",
+    "difficulty": "medium",
+    "notes": "Coal subtype (anthracite), should still match coal"
+  },
+  {
+    "id": "s1_fuel_14",
+    "category": "scope1_fuels",
+    "activity": "coal fired steam generation at steel mill",
+    "expected_fuel_type": "coal",
+    "geography": "US",
+    "scope": "1",
+    "difficulty": "easy",
+    "notes": "Clear coal combustion in industrial context"
+  },
+  {
+    "id": "s1_fuel_15",
+    "category": "scope1_fuels",
+    "activity": "fuel oil number 2 consumed in heating system",
+    "expected_fuel_type": "diesel",
+    "geography": "US",
+    "scope": "1",
+    "difficulty": "hard",
+    "notes": "Fuel oil #2 is very similar to diesel, should match diesel"
+  },
+  {
+    "id": "s1_fuel_16",
+    "category": "scope1_fuels",
+    "activity": "heavy fuel oil burned in marine boiler at port facility",
+    "expected_fuel_type": "diesel",
+    "geography": "US",
+    "scope": "1",
+    "difficulty": "hard",
+    "notes": "HFO not in DB, closest is diesel"
+  },
+  {
+    "id": "s1_fuel_17",
+    "category": "scope1_fuels",
+    "activity": "residual fuel oil consumption for industrial heating",
+    "expected_fuel_type": "diesel",
+    "geography": "US",
+    "scope": "1",
+    "difficulty": "hard",
+    "notes": "Residual fuel oil maps closest to diesel in minimal DB"
+  },
+  {
+    "id": "s1_fuel_18",
+    "category": "scope1_fuels",
+    "activity": "wood pellets burned in biomass boiler for district heating",
+    "expected_fuel_type": "coal",
+    "geography": "US",
+    "scope": "1",
+    "difficulty": "hard",
+    "notes": "Biomass not in DB, coal is nearest solid fuel"
+  },
+  {
+    "id": "s1_fuel_19",
+    "category": "scope1_fuels",
+    "activity": "kerosene heater fuel consumption in temporary office",
+    "expected_fuel_type": "diesel",
+    "geography": "US",
+    "scope": "1",
+    "difficulty": "hard",
+    "notes": "Kerosene not in DB, closest petroleum product is diesel"
+  },
+  {
+    "id": "s1_fuel_20",
+    "category": "scope1_fuels",
+    "activity": "biomass wood chips combustion in co-generation plant",
+    "expected_fuel_type": "coal",
+    "geography": "US",
+    "scope": "1",
+    "difficulty": "hard",
+    "notes": "Biomass solid fuel, nearest match is coal as solid fuel"
+  },
+  {
+    "id": "s1_mobile_01",
+    "category": "scope1_mobile",
+    "activity": "company fleet of 25 gasoline passenger vehicles driven 500000 miles",
+    "expected_fuel_type": "gasoline",
+    "geography": "US",
+    "scope": "1",
+    "difficulty": "easy",
+    "notes": "Standard fleet gasoline mobile combustion"
+  },
+  {
+    "id": "s1_mobile_02",
+    "category": "scope1_mobile",
+    "activity": "gasoline fuel purchased for company cars",
+    "expected_fuel_type": "gasoline",
+    "geography": "US",
+    "scope": "1",
+    "difficulty": "easy",
+    "notes": "Direct gasoline purchase for vehicles"
+  },
+  {
+    "id": "s1_mobile_03",
+    "category": "scope1_mobile",
+    "activity": "diesel fuel consumed by heavy-duty delivery trucks",
+    "expected_fuel_type": "diesel",
+    "geography": "US",
+    "scope": "1",
+    "difficulty": "easy",
+    "notes": "Diesel trucks, clear mobile combustion"
+  },
+  {
+    "id": "s1_mobile_04",
+    "category": "scope1_mobile",
+    "activity": "hybrid electric vehicles in corporate fleet using gasoline",
+    "expected_fuel_type": "gasoline",
+    "geography": "US",
+    "scope": "1",
+    "difficulty": "medium",
+    "notes": "Hybrid vehicles, gasoline component for mobile combustion"
+  },
+  {
+    "id": "s1_mobile_05",
+    "category": "scope1_mobile",
+    "activity": "diesel freight rail locomotives transporting goods",
+    "expected_fuel_type": "diesel",
+    "geography": "US",
+    "scope": "1",
+    "difficulty": "medium",
+    "notes": "Rail freight using diesel, mobile combustion"
+  },
+  {
+    "id": "s1_mobile_06",
+    "category": "scope1_mobile",
+    "activity": "diesel passenger rail commuter service operated by company",
+    "expected_fuel_type": "diesel",
+    "geography": "US",
+    "scope": "1",
+    "difficulty": "medium",
+    "notes": "Passenger rail diesel mobile combustion"
+  },
+  {
+    "id": "s1_mobile_07",
+    "category": "scope1_mobile",
+    "activity": "marine diesel fuel consumed by company-owned cargo vessel",
+    "expected_fuel_type": "diesel",
+    "geography": "US",
+    "scope": "1",
+    "difficulty": "medium",
+    "notes": "Marine shipping diesel combustion"
+  },
+  {
+    "id": "s1_mobile_08",
+    "category": "scope1_mobile",
+    "activity": "coastal ferry diesel fuel consumption for port-to-port routes",
+    "expected_fuel_type": "diesel",
+    "geography": "US",
+    "scope": "1",
+    "difficulty": "medium",
+    "notes": "Coastal marine diesel combustion"
+  },
+  {
+    "id": "s1_mobile_09",
+    "category": "scope1_mobile",
+    "activity": "jet fuel consumed by company-owned aircraft for domestic flights",
+    "expected_fuel_type": "diesel",
+    "geography": "US",
+    "scope": "1",
+    "difficulty": "hard",
+    "notes": "Jet fuel not in DB, closest petroleum product is diesel"
+  },
+  {
+    "id": "s1_mobile_10",
+    "category": "scope1_mobile",
+    "activity": "diesel fuel for off-road construction equipment and excavators",
+    "expected_fuel_type": "diesel",
+    "geography": "US",
+    "scope": "1",
+    "difficulty": "easy",
+    "notes": "Off-road equipment using diesel"
+  },
+  {
+    "id": "s2_elec_01",
+    "category": "scope2_electricity",
+    "activity": "purchased electricity from the US national grid",
     "expected_fuel_type": "electricity",
-    "geography": "US"
+    "geography": "US",
+    "scope": "2",
+    "difficulty": "easy",
+    "notes": "Standard US grid electricity purchase"
+  },
+  {
+    "id": "s2_elec_02",
+    "category": "scope2_electricity",
+    "activity": "electricity consumption at California data center from CAISO grid",
+    "expected_fuel_type": "electricity",
+    "geography": "US",
+    "scope": "2",
+    "difficulty": "medium",
+    "notes": "US-CA sub-national grid, should match US electricity"
+  },
+  {
+    "id": "s2_elec_03",
+    "category": "scope2_electricity",
+    "activity": "grid electricity consumed by Texas manufacturing plant ERCOT region",
+    "expected_fuel_type": "electricity",
+    "geography": "US",
+    "scope": "2",
+    "difficulty": "medium",
+    "notes": "US-TX sub-national grid, should match US electricity"
+  },
+  {
+    "id": "s2_elec_04",
+    "category": "scope2_electricity",
+    "activity": "electricity purchased for New York office building operations",
+    "expected_fuel_type": "electricity",
+    "geography": "US",
+    "scope": "2",
+    "difficulty": "medium",
+    "notes": "US-NY sub-national, should match US electricity"
+  },
+  {
+    "id": "s2_elec_05",
+    "category": "scope2_electricity",
+    "activity": "Florida warehouse electricity consumption from grid",
+    "expected_fuel_type": "electricity",
+    "geography": "US",
+    "scope": "2",
+    "difficulty": "medium",
+    "notes": "US-FL sub-national, should match US electricity"
+  },
+  {
+    "id": "s2_elec_06",
+    "category": "scope2_electricity",
+    "activity": "electricity purchased from UK national grid for London office",
+    "expected_fuel_type": "electricity",
+    "geography": "UK",
+    "scope": "2",
+    "difficulty": "easy",
+    "notes": "UK grid electricity, exact match in DB"
+  },
+  {
+    "id": "s2_elec_07",
+    "category": "scope2_electricity",
+    "activity": "grid electricity consumed at European Union manufacturing site",
+    "expected_fuel_type": "electricity",
+    "geography": "EU",
+    "scope": "2",
+    "difficulty": "easy",
+    "notes": "EU grid electricity, exact match in DB"
+  },
+  {
+    "id": "s2_elec_08",
+    "category": "scope2_electricity",
+    "activity": "purchased electricity from German grid for Berlin factory",
+    "expected_fuel_type": "electricity",
+    "geography": "EU",
+    "scope": "2",
+    "difficulty": "medium",
+    "notes": "Germany sub-national, should match EU electricity"
+  },
+  {
+    "id": "s2_elec_09",
+    "category": "scope2_electricity",
+    "activity": "electricity from national grid in India for Bangalore campus",
+    "expected_fuel_type": "electricity",
+    "geography": "US",
+    "scope": "2",
+    "difficulty": "hard",
+    "notes": "India not in DB, global fallback to US expected"
+  },
+  {
+    "id": "s2_elec_10",
+    "category": "scope2_electricity",
+    "activity": "electricity purchased from Brazilian grid for Sao Paulo warehouse",
+    "expected_fuel_type": "electricity",
+    "geography": "US",
+    "scope": "2",
+    "difficulty": "hard",
+    "notes": "Brazil not in DB, fallback to US electricity"
+  },
+  {
+    "id": "s2_elec_11",
+    "category": "scope2_electricity",
+    "activity": "China national grid electricity consumed at Shenzhen plant",
+    "expected_fuel_type": "electricity",
+    "geography": "US",
+    "scope": "2",
+    "difficulty": "hard",
+    "notes": "China not in DB, fallback geography expected"
+  },
+  {
+    "id": "s2_elec_12",
+    "category": "scope2_electricity",
+    "activity": "solar renewable energy certificates purchased for facility",
+    "expected_fuel_type": "electricity",
+    "geography": "US",
+    "scope": "2",
+    "difficulty": "hard",
+    "notes": "RECs for solar, should match electricity factor"
+  },
+  {
+    "id": "s2_elec_13",
+    "category": "scope2_electricity",
+    "activity": "wind power certificates procured for market-based accounting",
+    "expected_fuel_type": "electricity",
+    "geography": "US",
+    "scope": "2",
+    "difficulty": "hard",
+    "notes": "Wind RECs, should match electricity"
+  },
+  {
+    "id": "s2_elec_14",
+    "category": "scope2_electricity",
+    "activity": "purchased steam from district heating network for office complex",
+    "expected_fuel_type": "natural_gas",
+    "geography": "US",
+    "scope": "2",
+    "difficulty": "hard",
+    "notes": "Steam purchase, no direct factor, nearest is natural_gas or electricity"
+  },
+  {
+    "id": "s2_elec_15",
+    "category": "scope2_electricity",
+    "activity": "chilled water purchased from central cooling plant for building",
+    "expected_fuel_type": "electricity",
+    "geography": "US",
+    "scope": "2",
+    "difficulty": "hard",
+    "notes": "Purchased cooling, closest match is electricity"
+  },
+  {
+    "id": "s3_up_01",
+    "category": "scope3_upstream",
+    "activity": "purchased steel for construction project from domestic supplier",
+    "expected_fuel_type": "coal",
+    "geography": "US",
+    "scope": "3",
+    "difficulty": "hard",
+    "notes": "Steel production is coal-intensive, nearest fuel type in DB"
+  },
+  {
+    "id": "s3_up_02",
+    "category": "scope3_upstream",
+    "activity": "cement purchased for building foundation from local quarry",
+    "expected_fuel_type": "coal",
+    "geography": "US",
+    "scope": "3",
+    "difficulty": "hard",
+    "notes": "Cement production uses coal/fossil fuels, nearest match"
+  },
+  {
+    "id": "s3_up_03",
+    "category": "scope3_upstream",
+    "activity": "aluminum ingots purchased for manufacturing automotive parts",
+    "expected_fuel_type": "electricity",
+    "geography": "US",
+    "scope": "3",
+    "difficulty": "hard",
+    "notes": "Aluminum smelting is electricity-intensive"
+  },
+  {
+    "id": "s3_up_04",
+    "category": "scope3_upstream",
+    "activity": "plastic packaging materials purchased from polymer supplier",
+    "expected_fuel_type": "natural_gas",
+    "geography": "US",
+    "scope": "3",
+    "difficulty": "hard",
+    "notes": "Plastics derived from petroleum/natural gas feedstock"
+  },
+  {
+    "id": "s3_up_05",
+    "category": "scope3_upstream",
+    "activity": "capital goods purchased including new HVAC system for factory",
+    "expected_fuel_type": "electricity",
+    "geography": "US",
+    "scope": "3",
+    "difficulty": "hard",
+    "notes": "Capital goods manufacturing emissions, generic match"
+  },
+  {
+    "id": "s3_up_06",
+    "category": "scope3_upstream",
+    "activity": "new server hardware purchased for data center expansion",
+    "expected_fuel_type": "electricity",
+    "geography": "US",
+    "scope": "3",
+    "difficulty": "hard",
+    "notes": "Capital goods (IT equipment), electricity-intensive manufacturing"
+  },
+  {
+    "id": "s3_up_07",
+    "category": "scope3_upstream",
+    "activity": "heavy machinery capital equipment acquisition for mining operations",
+    "expected_fuel_type": "diesel",
+    "geography": "US",
+    "scope": "3",
+    "difficulty": "hard",
+    "notes": "Capital goods, heavy industry, diesel-related manufacturing"
+  },
+  {
+    "id": "s3_up_08",
+    "category": "scope3_upstream",
+    "activity": "transmission and distribution losses from grid electricity delivery",
+    "expected_fuel_type": "electricity",
+    "geography": "US",
+    "scope": "3",
+    "difficulty": "medium",
+    "notes": "T&D losses are electricity-related Scope 3 Category 3"
+  },
+  {
+    "id": "s3_up_09",
+    "category": "scope3_upstream",
+    "activity": "well-to-tank upstream emissions from diesel fuel procurement",
+    "expected_fuel_type": "diesel",
+    "geography": "US",
+    "scope": "3",
+    "difficulty": "medium",
+    "notes": "WTT emissions for diesel, Scope 3 Category 3"
+  },
+  {
+    "id": "s3_up_10",
+    "category": "scope3_upstream",
+    "activity": "upstream fuel and energy activities for natural gas supply chain",
+    "expected_fuel_type": "natural_gas",
+    "geography": "US",
+    "scope": "3",
+    "difficulty": "medium",
+    "notes": "WTT for natural gas, should match natural_gas factor"
+  },
+  {
+    "id": "s3_up_11",
+    "category": "scope3_upstream",
+    "activity": "freight transport of raw materials by diesel truck from supplier",
+    "expected_fuel_type": "diesel",
+    "geography": "US",
+    "scope": "3",
+    "difficulty": "medium",
+    "notes": "Upstream transportation Category 4, diesel freight"
+  },
+  {
+    "id": "s3_up_12",
+    "category": "scope3_upstream",
+    "activity": "road freight transportation of goods to warehouse by truck",
+    "expected_fuel_type": "diesel",
+    "geography": "US",
+    "scope": "3",
+    "difficulty": "medium",
+    "notes": "Road freight, diesel is default truck fuel"
+  },
+  {
+    "id": "s3_up_13",
+    "category": "scope3_upstream",
+    "activity": "rail freight shipment of bulk materials by diesel locomotive",
+    "expected_fuel_type": "diesel",
+    "geography": "US",
+    "scope": "3",
+    "difficulty": "medium",
+    "notes": "Rail freight diesel transport, Scope 3 Category 4"
+  },
+  {
+    "id": "s3_up_14",
+    "category": "scope3_upstream",
+    "activity": "waste sent to landfill from manufacturing operations",
+    "expected_fuel_type": "natural_gas",
+    "geography": "US",
+    "scope": "3",
+    "difficulty": "hard",
+    "notes": "Landfill waste emissions (methane), nearest is natural_gas"
+  },
+  {
+    "id": "s3_up_15",
+    "category": "scope3_upstream",
+    "activity": "incineration of industrial waste at waste-to-energy facility",
+    "expected_fuel_type": "coal",
+    "geography": "US",
+    "scope": "3",
+    "difficulty": "hard",
+    "notes": "Waste incineration, solid fuel combustion analogy to coal"
+  },
+  {
+    "id": "s3_up_16",
+    "category": "scope3_upstream",
+    "activity": "recycling of scrap metal and cardboard waste from facility",
+    "expected_fuel_type": "electricity",
+    "geography": "US",
+    "scope": "3",
+    "difficulty": "hard",
+    "notes": "Recycling processes are electricity-intensive"
+  },
+  {
+    "id": "s3_up_17",
+    "category": "scope3_upstream",
+    "activity": "employee business travel by commercial airline domestic flights",
+    "expected_fuel_type": "diesel",
+    "geography": "US",
+    "scope": "3",
+    "difficulty": "hard",
+    "notes": "Air travel, jet fuel closest to diesel in DB"
+  },
+  {
+    "id": "s3_up_18",
+    "category": "scope3_upstream",
+    "activity": "hotel stays for employees during business conferences",
+    "expected_fuel_type": "electricity",
+    "geography": "US",
+    "scope": "3",
+    "difficulty": "hard",
+    "notes": "Hotel energy consumption, electricity is primary energy source"
+  },
+  {
+    "id": "s3_up_19",
+    "category": "scope3_upstream",
+    "activity": "employee commuting by personal gasoline vehicles to office",
+    "expected_fuel_type": "gasoline",
+    "geography": "US",
+    "scope": "3",
+    "difficulty": "medium",
+    "notes": "Employee commuting Category 7, gasoline vehicles"
+  },
+  {
+    "id": "s3_up_20",
+    "category": "scope3_upstream",
+    "activity": "employees commuting via public transit bus and rail",
+    "expected_fuel_type": "diesel",
+    "geography": "US",
+    "scope": "3",
+    "difficulty": "hard",
+    "notes": "Public transit commuting, diesel buses are common"
+  },
+  {
+    "id": "cbam_01",
+    "category": "cbam",
+    "activity": "steel production emissions from blast furnace at EU steel mill",
+    "expected_fuel_type": "coal",
+    "geography": "EU",
+    "scope": "1",
+    "difficulty": "medium",
+    "notes": "CBAM steel production, coal-fired blast furnace"
+  },
+  {
+    "id": "cbam_02",
+    "category": "cbam",
+    "activity": "iron ore smelting in electric arc furnace for steel production",
+    "expected_fuel_type": "electricity",
+    "geography": "EU",
+    "scope": "1",
+    "difficulty": "hard",
+    "notes": "EAF steel, electricity-intensive process"
+  },
+  {
+    "id": "cbam_03",
+    "category": "cbam",
+    "activity": "crude steel produced via basic oxygen furnace using coke",
+    "expected_fuel_type": "coal",
+    "geography": "EU",
+    "scope": "1",
+    "difficulty": "hard",
+    "notes": "BOF steel uses coke (coal derivative)"
+  },
+  {
+    "id": "cbam_04",
+    "category": "cbam",
+    "activity": "cement clinker production in rotary kiln using coal",
+    "expected_fuel_type": "coal",
+    "geography": "EU",
+    "scope": "1",
+    "difficulty": "medium",
+    "notes": "Cement clinker production with coal"
+  },
+  {
+    "id": "cbam_05",
+    "category": "cbam",
+    "activity": "cement plant process emissions from limestone calcination",
+    "expected_fuel_type": "coal",
+    "geography": "EU",
+    "scope": "1",
+    "difficulty": "hard",
+    "notes": "Cement process emissions, coal is the energy source"
+  },
+  {
+    "id": "cbam_06",
+    "category": "cbam",
+    "activity": "aluminum smelting using Hall-Heroult process with electricity",
+    "expected_fuel_type": "electricity",
+    "geography": "EU",
+    "scope": "2",
+    "difficulty": "medium",
+    "notes": "Aluminum smelting is extremely electricity-intensive"
+  },
+  {
+    "id": "cbam_07",
+    "category": "cbam",
+    "activity": "alumina refining Bayer process for aluminum production",
+    "expected_fuel_type": "natural_gas",
+    "geography": "EU",
+    "scope": "1",
+    "difficulty": "hard",
+    "notes": "Alumina refining uses natural gas for heating"
+  },
+  {
+    "id": "cbam_08",
+    "category": "cbam",
+    "activity": "nitrogen fertilizer production using Haber-Bosch process",
+    "expected_fuel_type": "natural_gas",
+    "geography": "EU",
+    "scope": "1",
+    "difficulty": "hard",
+    "notes": "Ammonia/fertilizer production uses natural gas as feedstock"
+  },
+  {
+    "id": "cbam_09",
+    "category": "cbam",
+    "activity": "hydrogen production via steam methane reforming",
+    "expected_fuel_type": "natural_gas",
+    "geography": "EU",
+    "scope": "1",
+    "difficulty": "hard",
+    "notes": "Grey hydrogen from natural gas SMR"
+  },
+  {
+    "id": "cbam_10",
+    "category": "cbam",
+    "activity": "electricity imported into EU from non-EU country for industrial use",
+    "expected_fuel_type": "electricity",
+    "geography": "EU",
+    "scope": "2",
+    "difficulty": "medium",
+    "notes": "CBAM covers imported electricity into EU"
+  },
+  {
+    "id": "edge_01",
+    "category": "edge_case",
+    "activity": "energy used at facility",
+    "expected_fuel_type": "electricity",
+    "geography": "US",
+    "scope": null,
+    "difficulty": "hard",
+    "notes": "Highly ambiguous, 'energy' is generic, could be any fuel or electricity"
+  },
+  {
+    "id": "edge_02",
+    "category": "edge_case",
+    "activity": "natural gas and electricity consumed at mixed-use building",
+    "expected_fuel_type": "natural_gas",
+    "geography": "US",
+    "scope": null,
+    "difficulty": "hard",
+    "notes": "Multi-fuel description, both fuels mentioned"
+  },
+  {
+    "id": "edge_03",
+    "category": "edge_case",
+    "activity": "gas for heating the office",
+    "expected_fuel_type": "natural_gas",
+    "geography": "US",
+    "scope": "1",
+    "difficulty": "medium",
+    "notes": "Ambiguous 'gas' could mean natural gas or gasoline, heating context hints natural gas"
+  },
+  {
+    "id": "edge_04",
+    "category": "edge_case",
+    "activity": "gas for cars in the fleet",
+    "expected_fuel_type": "gasoline",
+    "geography": "US",
+    "scope": "1",
+    "difficulty": "medium",
+    "notes": "Ambiguous 'gas' in vehicle context means gasoline"
+  },
+  {
+    "id": "edge_05",
+    "category": "edge_case",
+    "activity": "consumed 50000 kWh of power for manufacturing",
+    "expected_fuel_type": "electricity",
+    "geography": "US",
+    "scope": "2",
+    "difficulty": "medium",
+    "notes": "kWh unit and 'power' strongly suggest electricity"
+  },
+  {
+    "id": "edge_06",
+    "category": "edge_case",
+    "activity": "used 3000 tonnes of fuel in our operations last year",
+    "expected_fuel_type": "diesel",
+    "geography": "US",
+    "scope": "1",
+    "difficulty": "hard",
+    "notes": "Generic 'fuel' with metric tonnes, ambiguous"
+  },
+  {
+    "id": "edge_07",
+    "category": "edge_case",
+    "activity": "350 gallons consumed weekly",
+    "expected_fuel_type": "diesel",
+    "geography": "US",
+    "scope": "1",
+    "difficulty": "hard",
+    "notes": "Only unit given, no fuel type specified, gallons could be diesel or gasoline"
+  },
+  {
+    "id": "edge_08",
+    "category": "edge_case",
+    "activity": "NG consumption for Q3 reporting period",
+    "expected_fuel_type": "natural_gas",
+    "geography": "US",
+    "scope": "1",
+    "difficulty": "hard",
+    "notes": "Abbreviation NG for natural gas"
+  },
+  {
+    "id": "edge_09",
+    "category": "edge_case",
+    "activity": "HFO burned in facility boiler",
+    "expected_fuel_type": "diesel",
+    "geography": "US",
+    "scope": "1",
+    "difficulty": "hard",
+    "notes": "Abbreviation HFO (heavy fuel oil), nearest is diesel"
+  },
+  {
+    "id": "edge_10",
+    "category": "edge_case",
+    "activity": "LPG tanks used for outdoor event catering",
+    "expected_fuel_type": "natural_gas",
+    "geography": "US",
+    "scope": "1",
+    "difficulty": "hard",
+    "notes": "Abbreviation LPG, nearest match natural_gas or gasoline"
+  },
+  {
+    "id": "neg_01",
+    "category": "negative",
+    "activity": "ordered office supplies including paper and pens",
+    "expected_fuel_type": "electricity",
+    "geography": "US",
+    "scope": null,
+    "difficulty": "hard",
+    "notes": "Completely unrelated to combustion, should match poorly or not at all"
+  },
+  {
+    "id": "neg_02",
+    "category": "negative",
+    "activity": "disel fuel combustion at plant",
+    "expected_fuel_type": "diesel",
+    "geography": "US",
+    "scope": "1",
+    "difficulty": "medium",
+    "notes": "Misspelling of diesel as 'disel'"
+  },
+  {
+    "id": "neg_03",
+    "category": "negative",
+    "activity": "naturel gas heating system",
+    "expected_fuel_type": "natural_gas",
+    "geography": "US",
+    "scope": "1",
+    "difficulty": "medium",
+    "notes": "Misspelling 'naturel' instead of 'natural'"
+  },
+  {
+    "id": "neg_04",
+    "category": "negative",
+    "activity": "electrcity consumption for UK factory",
+    "expected_fuel_type": "electricity",
+    "geography": "UK",
+    "scope": "2",
+    "difficulty": "medium",
+    "notes": "Misspelling 'electrcity' instead of 'electricity'"
+  },
+  {
+    "id": "neg_05",
+    "category": "negative",
+    "activity": "gasolene used in company vehicles",
+    "expected_fuel_type": "gasoline",
+    "geography": "US",
+    "scope": "1",
+    "difficulty": "medium",
+    "notes": "Alternate spelling 'gasolene' for gasoline"
+  },
+  {
+    "id": "neg_06",
+    "category": "negative",
+    "activity": "UK diesel fuel for fleet vehicles",
+    "expected_fuel_type": "diesel",
+    "geography": "UK",
+    "scope": "1",
+    "difficulty": "hard",
+    "notes": "UK diesel not in DB, should fall back to US diesel"
+  },
+  {
+    "id": "neg_07",
+    "category": "negative",
+    "activity": "consumption of deprecated R-12 refrigerant at HVAC facility",
+    "expected_fuel_type": "natural_gas",
+    "geography": "US",
+    "scope": "1",
+    "difficulty": "hard",
+    "notes": "Refrigerant gas, no factor in DB, very low match expected"
+  },
+  {
+    "id": "neg_08",
+    "category": "negative",
+    "activity": "purchased carbon offset credits from verified project",
+    "expected_fuel_type": "electricity",
+    "geography": "US",
+    "scope": null,
+    "difficulty": "hard",
+    "notes": "Carbon offsets, not a direct emission source"
+  },
+  {
+    "id": "neg_09",
+    "category": "negative",
+    "activity": "water consumption at manufacturing plant for cooling processes",
+    "expected_fuel_type": "electricity",
+    "geography": "US",
+    "scope": null,
+    "difficulty": "hard",
+    "notes": "Water use, not energy, very poor match expected"
+  },
+  {
+    "id": "neg_10",
+    "category": "negative",
+    "activity": "methane leakage from natural gas pipeline infrastructure",
+    "expected_fuel_type": "natural_gas",
+    "geography": "US",
+    "scope": "1",
+    "difficulty": "medium",
+    "notes": "Fugitive emissions, should match natural_gas as closest"
+  },
+  {
+    "id": "geo_01",
+    "category": "geography",
+    "activity": "diesel combustion in stationary generator",
+    "expected_fuel_type": "diesel",
+    "geography": "US",
+    "scope": "1",
+    "difficulty": "easy",
+    "notes": "US diesel, exact geography match"
+  },
+  {
+    "id": "geo_02",
+    "category": "geography",
+    "activity": "diesel fuel burned in UK manufacturing plant boiler",
+    "expected_fuel_type": "diesel",
+    "geography": "UK",
+    "scope": "1",
+    "difficulty": "hard",
+    "notes": "UK diesel not in DB, should fallback to US"
+  },
+  {
+    "id": "geo_03",
+    "category": "geography",
+    "activity": "diesel consumption at EU logistics depot in France",
+    "expected_fuel_type": "diesel",
+    "geography": "EU",
+    "scope": "1",
+    "difficulty": "hard",
+    "notes": "EU diesel not in DB, France sub-national of EU"
+  },
+  {
+    "id": "geo_04",
+    "category": "geography",
+    "activity": "diesel generator operation at global site in Australia",
+    "expected_fuel_type": "diesel",
+    "geography": "US",
+    "scope": "1",
+    "difficulty": "hard",
+    "notes": "Australia not in DB, fallback to US diesel"
+  },
+  {
+    "id": "geo_05",
+    "category": "geography",
+    "activity": "electricity consumed by California office building",
+    "expected_fuel_type": "electricity",
+    "geography": "US",
+    "scope": "2",
+    "difficulty": "easy",
+    "notes": "US-CA sub-national, should match US electricity"
+  },
+  {
+    "id": "geo_06",
+    "category": "geography",
+    "activity": "electricity consumed at Texas semiconductor fab",
+    "expected_fuel_type": "electricity",
+    "geography": "US",
+    "scope": "2",
+    "difficulty": "easy",
+    "notes": "US-TX sub-national, should match US electricity"
+  },
+  {
+    "id": "geo_07",
+    "category": "geography",
+    "activity": "electricity from German national grid for Munich operations",
+    "expected_fuel_type": "electricity",
+    "geography": "EU",
+    "scope": "2",
+    "difficulty": "medium",
+    "notes": "Germany (DE) maps to EU electricity"
+  },
+  {
+    "id": "geo_08",
+    "category": "geography",
+    "activity": "electricity purchased in France for Paris headquarters",
+    "expected_fuel_type": "electricity",
+    "geography": "EU",
+    "scope": "2",
+    "difficulty": "medium",
+    "notes": "France (FR) maps to EU electricity"
+  },
+  {
+    "id": "geo_09",
+    "category": "geography",
+    "activity": "natural gas heating for offices in United Kingdom",
+    "expected_fuel_type": "natural_gas",
+    "geography": "UK",
+    "scope": "1",
+    "difficulty": "hard",
+    "notes": "UK natural gas not in DB, should fallback to US"
+  },
+  {
+    "id": "geo_10",
+    "category": "geography",
+    "activity": "coal consumption at EU power generation facility in Poland",
+    "expected_fuel_type": "coal",
+    "geography": "EU",
+    "scope": "1",
+    "difficulty": "hard",
+    "notes": "EU coal not in DB, Poland sub-national of EU"
+  },
+  {
+    "id": "geo_11",
+    "category": "geography",
+    "activity": "gasoline fleet vehicles in EU member state operations",
+    "expected_fuel_type": "gasoline",
+    "geography": "EU",
+    "scope": "1",
+    "difficulty": "hard",
+    "notes": "EU gasoline not in DB, should fallback to US"
+  },
+  {
+    "id": "geo_12",
+    "category": "geography",
+    "activity": "grid electricity for OECD country operations in Japan",
+    "expected_fuel_type": "electricity",
+    "geography": "US",
+    "scope": "2",
+    "difficulty": "hard",
+    "notes": "Japan not in DB, OECD aggregate, fallback to US"
+  },
+  {
+    "id": "geo_13",
+    "category": "geography",
+    "activity": "electricity consumed at G7 summit venue in Canada",
+    "expected_fuel_type": "electricity",
+    "geography": "US",
+    "scope": "2",
+    "difficulty": "hard",
+    "notes": "Canada not in DB, G7 reference, fallback expected"
+  },
+  {
+    "id": "geo_14",
+    "category": "geography",
+    "activity": "diesel fuel for construction equipment in Middle East operations",
+    "expected_fuel_type": "diesel",
+    "geography": "US",
+    "scope": "1",
+    "difficulty": "hard",
+    "notes": "Middle East not in DB, should fallback to US diesel"
+  },
+  {
+    "id": "geo_15",
+    "category": "geography",
+    "activity": "natural gas consumption at EU27 aggregated facilities",
+    "expected_fuel_type": "natural_gas",
+    "geography": "EU",
+    "scope": "1",
+    "difficulty": "hard",
+    "notes": "EU27 regional aggregate, natural gas should match with fallback"
   }
 ]

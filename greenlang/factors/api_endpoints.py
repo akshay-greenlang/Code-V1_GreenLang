@@ -455,3 +455,72 @@ def check_etag_match(
     client = if_none_match.strip().strip('"').lstrip("W/").strip('"')
     server = current_etag.strip('"')
     return client == server
+
+
+def compute_list_etag(factors: List[Any], edition_id: str) -> str:
+    """
+    Compute ETag for list endpoint responses.
+
+    Combines content hashes of all factors in the page with the edition_id
+    to produce a deterministic ETag. Suitable for paginated list responses.
+
+    Args:
+        factors: List of EmissionFactorRecord or summary dicts from the page.
+        edition_id: Current edition identifier.
+
+    Returns:
+        Quoted ETag string (e.g. '"abc123..."').
+    """
+    parts = [edition_id]
+    for f in factors:
+        if hasattr(f, "content_hash"):
+            parts.append(f.content_hash)
+        elif isinstance(f, dict) and "content_hash" in f:
+            parts.append(f["content_hash"])
+        elif hasattr(f, "factor_id"):
+            parts.append(f.factor_id)
+        elif isinstance(f, dict) and "factor_id" in f:
+            parts.append(f["factor_id"])
+    combined = "|".join(parts)
+    digest = hashlib.sha256(combined.encode("utf-8")).hexdigest()
+    return f'"{digest}"'
+
+
+def compute_search_etag(query: str, results: List[Any], edition_id: str) -> str:
+    """
+    Compute ETag for search endpoint responses.
+
+    Incorporates the query string alongside result hashes so that
+    different queries produce distinct ETags even if they return the
+    same factors.
+
+    Args:
+        query: The search query string.
+        results: List of EmissionFactorRecord or summary dicts.
+        edition_id: Current edition identifier.
+
+    Returns:
+        Quoted ETag string (e.g. '"def456..."').
+    """
+    parts = [edition_id, query]
+    for r in results:
+        if hasattr(r, "content_hash"):
+            parts.append(r.content_hash)
+        elif isinstance(r, dict) and "content_hash" in r:
+            parts.append(r["content_hash"])
+        elif hasattr(r, "factor_id"):
+            parts.append(r.factor_id)
+        elif isinstance(r, dict) and "factor_id" in r:
+            parts.append(r["factor_id"])
+    combined = "|".join(parts)
+    digest = hashlib.sha256(combined.encode("utf-8")).hexdigest()
+    return f'"{digest}"'
+
+
+def cache_control_for_list() -> str:
+    """Return Cache-Control header value for list/search aggregate endpoints.
+
+    List and search responses aggregate multiple factors, so they use a
+    shorter max-age (5 minutes) than individual factor lookups.
+    """
+    return "public, max-age=300"

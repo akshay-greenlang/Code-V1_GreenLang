@@ -19,7 +19,7 @@ Example:
     >>> result = manager.assess_compliance(emissions)
 """
 
-from greenlang.compliance.eu import (
+from greenlang.governance.compliance.eu import (
     IEDComplianceManager,
     IEDAnnexIActivity,
     ComplianceStatus,

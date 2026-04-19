@@ -12,7 +12,7 @@ Example:
     >>> manager = IEDComplianceManager(installation_id="INST-001")
 """
 
-from greenlang.compliance.eu.ied_compliance import (
+from greenlang.governance.compliance.eu.ied_compliance import (
     IEDComplianceManager,
     IEDAnnexIActivity,
     ComplianceStatus,

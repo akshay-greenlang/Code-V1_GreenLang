@@ -1,0 +1,260 @@
+# =============================================================================
+# GreenLang Factors SDK Publish Pipeline
+# Emission Factor SDK | Python (PyPI) + TypeScript (npm)
+# =============================================================================
+# Triggered on tags matching 'factors-sdk-v*'. Validates, tests, builds,
+# and publishes both the Python SDK to PyPI and the TypeScript SDK to npm.
+#
+# Prerequisites:
+#   - PyPI: PYPI_API_TOKEN secret configured
+#   - npm: NPM_TOKEN secret configured
+#   - Tag format: factors-sdk-v1.0.0
+# =============================================================================
+
+name: Factors SDK Publish
+
+on:
+  push:
+    tags:
+      - 'factors-sdk-v*'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sdk-publish-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  PYTHON_VERSION: "3.11"
+  NODE_VERSION: "20"
+
+jobs:
+  # -------------------------------------------------------------------------
+  # Job 1: Validate tag version
+  # -------------------------------------------------------------------------
+  validate:
+    name: Validate Tag Version
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.extract.outputs.version }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Extract version from tag
+        id: extract
+        run: |
+          TAG="${GITHUB_REF#refs/tags/factors-sdk-v}"
+          echo "version=$TAG" >> "$GITHUB_OUTPUT"
+          echo "Extracted version: $TAG"
+
+      - name: Validate Python SDK version matches tag
+        run: |
+          TAG_VERSION="${{ steps.extract.outputs.version }}"
+          SDK_VERSION=$(python3 -c "
+          import tomllib
+          with open('greenlang/factors/sdk/pyproject.toml', 'rb') as f:
+              data = tomllib.load(f)
+          print(data['project']['version'])
+          ")
+          echo "Tag version: $TAG_VERSION"
+          echo "Python SDK version: $SDK_VERSION"
+          if [ "$TAG_VERSION" != "$SDK_VERSION" ]; then
+            echo "ERROR: Tag version ($TAG_VERSION) does not match pyproject.toml version ($SDK_VERSION)"
+            exit 1
+          fi
+
+      - name: Validate TypeScript SDK version matches tag
+        run: |
+          TAG_VERSION="${{ steps.extract.outputs.version }}"
+          TS_VERSION=$(node -e "console.log(require('./greenlang/factors/sdk/ts/package.json').version)")
+          echo "Tag version: $TAG_VERSION"
+          echo "TypeScript SDK version: $TS_VERSION"
+          if [ "$TAG_VERSION" != "$TS_VERSION" ]; then
+            echo "ERROR: Tag version ($TAG_VERSION) does not match package.json version ($TS_VERSION)"
+            exit 1
+          fi
+
+      - name: Validate Python SDK __init__.py version matches tag
+        run: |
+          TAG_VERSION="${{ steps.extract.outputs.version }}"
+          INIT_VERSION=$(python3 -c "
+          import re
+          with open('greenlang/factors/sdk/__init__.py') as f:
+              content = f.read()
+          m = re.search(r'SDK_VERSION\s*=\s*\"(.+?)\"', content)
+          print(m.group(1) if m else 'NOT_FOUND')
+          ")
+          echo "Tag version: $TAG_VERSION"
+          echo "__init__.py SDK_VERSION: $INIT_VERSION"
+          if [ "$TAG_VERSION" != "$INIT_VERSION" ]; then
+            echo "ERROR: Tag version ($TAG_VERSION) does not match SDK_VERSION in __init__.py ($INIT_VERSION)"
+            exit 1
+          fi
+
+  # -------------------------------------------------------------------------
+  # Job 2: Build and publish Python SDK to PyPI
+  # -------------------------------------------------------------------------
+  publish-python:
+    name: Publish Python SDK to PyPI
+    runs-on: ubuntu-latest
+    needs: [validate]
+    environment: pypi
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install build tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install build twine
+
+      - name: Run SDK smoke tests
+        run: |
+          python3 -c "
+          import sys
+          sys.path.insert(0, 'greenlang/factors/sdk')
+          # Import the SDK module to verify it loads without errors
+          sys.path.insert(0, '.')
+          from greenlang.factors.sdk import (
+              FactorsClient,
+              FactorsConfig,
+              FactorsApiError,
+              FactorsConnectionError,
+              SDK_VERSION,
+          )
+          assert SDK_VERSION == '${{ needs.validate.outputs.version }}', (
+              f'SDK_VERSION mismatch: {SDK_VERSION} != ${{ needs.validate.outputs.version }}'
+          )
+          # Verify client instantiation
+          cfg = FactorsConfig(base_url='https://api.greenlang.io/api/v1')
+          client = FactorsClient(cfg)
+          print(f'Python SDK v{SDK_VERSION} smoke test passed')
+          "
+
+      - name: Build Python package
+        working-directory: greenlang/factors/sdk
+        run: python -m build
+
+      - name: Verify package
+        working-directory: greenlang/factors/sdk
+        run: |
+          twine check dist/*
+          echo "Package contents:"
+          ls -la dist/
+
+      - name: Publish to PyPI
+        working-directory: greenlang/factors/sdk
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+        run: twine upload dist/*
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-sdk-dist
+          path: greenlang/factors/sdk/dist/
+          retention-days: 30
+
+  # -------------------------------------------------------------------------
+  # Job 3: Build and publish TypeScript SDK to npm
+  # -------------------------------------------------------------------------
+  publish-typescript:
+    name: Publish TypeScript SDK to npm
+    runs-on: ubuntu-latest
+    needs: [validate]
+    environment: npm
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        working-directory: greenlang/factors/sdk/ts
+        run: npm ci
+
+      - name: Type check
+        working-directory: greenlang/factors/sdk/ts
+        run: npm run typecheck
+
+      - name: Build
+        working-directory: greenlang/factors/sdk/ts
+        run: npm run build
+
+      - name: Verify build output
+        working-directory: greenlang/factors/sdk/ts
+        run: |
+          echo "Build output:"
+          ls -la dist/
+          # Verify declaration file exists
+          test -f dist/index.d.ts || (echo "ERROR: Missing dist/index.d.ts" && exit 1)
+          test -f dist/index.js || (echo "ERROR: Missing dist/index.js" && exit 1)
+          echo "Build verification passed"
+
+      - name: Publish to npm
+        working-directory: greenlang/factors/sdk/ts
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --access public
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: typescript-sdk-dist
+          path: greenlang/factors/sdk/ts/dist/
+          retention-days: 30
+
+  # -------------------------------------------------------------------------
+  # Job 4: Post-publish verification
+  # -------------------------------------------------------------------------
+  verify:
+    name: Post-Publish Verification
+    runs-on: ubuntu-latest
+    needs: [validate, publish-python, publish-typescript]
+    steps:
+      - name: Wait for registry propagation
+        run: sleep 30
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Verify Python package on PyPI
+        run: |
+          VERSION="${{ needs.validate.outputs.version }}"
+          pip install "greenlang-factors-sdk==$VERSION" --dry-run || echo "WARNING: Package not yet visible on PyPI (propagation delay)"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Verify npm package
+        run: |
+          VERSION="${{ needs.validate.outputs.version }}"
+          npm view "@greenlang/factors-sdk@$VERSION" version || echo "WARNING: Package not yet visible on npm (propagation delay)"
+
+      - name: Summary
+        run: |
+          VERSION="${{ needs.validate.outputs.version }}"
+          echo "## SDK Publish Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Version:** $VERSION" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Package | Registry | Install |" >> $GITHUB_STEP_SUMMARY
+          echo "|---------|----------|---------|" >> $GITHUB_STEP_SUMMARY
+          echo "| greenlang-factors-sdk | PyPI | \`pip install greenlang-factors-sdk==$VERSION\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| @greenlang/factors-sdk | npm | \`npm install @greenlang/factors-sdk@$VERSION\` |" >> $GITHUB_STEP_SUMMARY

@@ -365,3 +365,51 @@ def create_access_token(
     }
 
     return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
+
+
+# ==================== Factor Service Dependency ====================
+
+_factor_service = None
+
+
+def get_factor_service():
+    """
+    Return the singleton FactorCatalogService.
+
+    Auto-resolves backend from environment:
+    - GL_FACTORS_SQLITE_PATH -> SQLite
+    - fallback -> in-memory EmissionFactorDatabase
+    """
+    global _factor_service
+    if _factor_service is None:
+        from greenlang.factors.service import FactorCatalogService
+
+        _factor_service = FactorCatalogService.from_environment()
+        logger.info("FactorCatalogService initialized")
+    return _factor_service
+
+
+# Backward-compat alias used by route stubs
+get_emission_database = get_factor_service
+
+
+# ==================== Rate Limiter Dependency ====================
+
+# Default tier-based limits (per-minute)
+_TIER_LIMITS = {
+    "community": 60,
+    "pro": 600,
+    "enterprise": 6000,
+    "internal": 60000,
+}
+
+_rate_limiters: Dict[str, RateLimiter] = {}
+
+
+def get_limiter(tier: str = "community") -> RateLimiter:
+    """Return a RateLimiter instance for the given tier."""
+    t = tier.lower().strip() if tier else "community"
+    if t not in _rate_limiters:
+        calls = _TIER_LIMITS.get(t, 60)
+        _rate_limiters[t] = RateLimiter(calls=calls, period=60)
+    return _rate_limiters[t]

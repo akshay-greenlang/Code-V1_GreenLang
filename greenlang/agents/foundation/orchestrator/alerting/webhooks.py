@@ -155,7 +155,7 @@ class WebhookConfig(GreenLangBase):
         default_factory=list, description="Subscribed event types"
     )
     severity_threshold: AlertSeverity = Field(
-        default=AlertSeverity.MEDIUM, description="Minimum severity threshold"
+        default=AlertSeverity.WARNING, description="Minimum severity threshold"
     )
     retries: int = Field(default=3, ge=0, le=10, description="Retry attempts")
     timeout_seconds: int = Field(default=30, ge=1, le=300, description="Request timeout")

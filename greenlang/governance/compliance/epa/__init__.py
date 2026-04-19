@@ -32,7 +32,7 @@ Example:
     >>> result = checker.check_subpart_d(facility, emissions)
 """
 
-from greenlang.compliance.epa.part60_nsps import (
+from greenlang.governance.compliance.epa.part60_nsps import (
     NSPSComplianceChecker,
     FuelType,
     BoilerType,

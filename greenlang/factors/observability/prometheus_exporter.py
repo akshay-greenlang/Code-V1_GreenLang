@@ -59,7 +59,7 @@ class FactorsMetrics:
                 "greenlang_factors_api_latency_seconds",
                 "Factors API request latency",
                 ["method", "path"],
-                buckets=(0.01, 0.05, 0.1, 0.25, 0.5, 1.0, 2.5, 5.0, 10.0),
+                buckets=(0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1.0, 2.5, 5.0),
             )
             self._search_results = Histogram(
                 "greenlang_factors_search_results_count",
