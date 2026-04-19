@@ -1,0 +1,39 @@
+## Dev overrides for greenlang-factors
+
+api:
+  replicaCount: 1
+  autoscaling:
+    enabled: false
+  podDisruptionBudget:
+    enabled: false
+  networkPolicy:
+    enabled: false
+  resources:
+    requests:
+      cpu: 200m
+      memory: 512Mi
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+
+workers:
+  watch:
+    enabled: false
+
+externalSecrets:
+  enabled: false
+
+ingress:
+  enabled: false
+  tls:
+    enabled: false
+
+smokeTest:
+  enabled: false
+
+migration:
+  enabled: false
+
+config:
+  logLevel: DEBUG
+  workers: 2

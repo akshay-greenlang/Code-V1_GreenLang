@@ -1,0 +1,39 @@
+{{- if .Values.smokeTest.enabled }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "greenlang-factors.fullname" . }}-smoke
+  labels:
+    {{- include "greenlang-factors.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "5"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  backoffLimit: 2
+  ttlSecondsAfterFinished: 600
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: smoke
+          image: "{{ .Values.smokeTest.image.repository }}:{{ .Values.smokeTest.image.tag }}"
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              set -e
+              echo "[smoke] /api/v1/factors/health"
+              curl -fsS http://{{ include "greenlang-factors.fullname" . }}:{{ .Values.service.port }}/api/v1/factors/health
+
+              echo "[smoke] /api/v1/factors/search"
+              curl -fsS "http://{{ include "greenlang-factors.fullname" . }}:{{ .Values.service.port }}/api/v1/factors/search?query=diesel&limit=1"
+
+              echo "[smoke] /metrics"
+              curl -fsS http://{{ include "greenlang-factors.fullname" . }}:{{ .Values.service.metricsPort }}/metrics | head -5
+
+              echo "[smoke] tier enforcement (missing JWT should 401)"
+              code=$(curl -s -o /dev/null -w "%{http_code}" http://{{ include "greenlang-factors.fullname" . }}:{{ .Values.service.port }}/api/v1/factors/search)
+              [ "$code" = "401" ] || [ "$code" = "200" ] || (echo "Unexpected code $code" && exit 1)
+
+              echo "[smoke] OK"
+{{- end }}

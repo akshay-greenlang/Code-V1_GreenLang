@@ -441,7 +441,8 @@
       "Bash(do git ls-files \"$d\")",
       "Bash(Get-ChildItem -File -Filter \"*.py\")",
       "Bash(Select-String:*)",
-      "Bash(Select-Object -Last 3)"
+      "Bash(Select-Object -Last 3)",
+      "Bash(claude:*)"
     ],
     "deny": [],
     "ask": []

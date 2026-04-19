@@ -1,0 +1,39 @@
+## Production overrides for greenlang-factors
+
+api:
+  replicaCount: 5
+  resources:
+    requests:
+      cpu: 1000m
+      memory: 2Gi
+    limits:
+      cpu: 4000m
+      memory: 4Gi
+  autoscaling:
+    minReplicas: 3
+    maxReplicas: 30
+
+workers:
+  watch:
+    enabled: true
+    replicaCount: 2
+  ingest:
+    enabled: true
+    replicaCount: 4
+    mode: ingest
+  embed:
+    enabled: true
+    replicaCount: 2
+    mode: embed
+
+externalSecrets:
+  enabled: true
+
+ingress:
+  host: factors.greenlang.io
+  tls:
+    enabled: true
+
+config:
+  logLevel: WARNING
+  workers: 8

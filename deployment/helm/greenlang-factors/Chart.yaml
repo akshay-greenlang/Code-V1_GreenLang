@@ -1,0 +1,16 @@
+apiVersion: v2
+name: greenlang-factors
+description: GreenLang Factors Catalog Service (API + ingestion workers)
+type: application
+version: 0.1.0
+appVersion: "1.0.0"
+keywords:
+  - greenlang
+  - emissions
+  - compliance
+  - factors
+maintainers:
+  - name: GreenLang Factors Team
+    email: factors@greenlang.io
+sources:
+  - https://github.com/greenlang/greenlang

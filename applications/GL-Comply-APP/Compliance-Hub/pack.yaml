@@ -1,0 +1,42 @@
+apiVersion: greenlang.io/v1
+kind: Pack
+metadata:
+  name: gl-comply-hub
+  version: 0.1.0
+  description: Unified compliance hub orchestrating 10 framework-specific GreenLang apps.
+  maintainers:
+    - GreenLang Compliance Team
+spec:
+  layer: L4-SectorCloud
+  dependencies:
+    # Child packs — the 10 framework-specific apps
+    - name: gl-csrd-reporting
+      version: ">=1.0.0"
+    - name: gl-cbam-importer
+      version: ">=1.0.0"
+    - name: gl-eudr-deforestation
+      version: ">=1.0.0"
+    - name: gl-ghg-accounting
+      version: ">=1.0.0"
+    - name: gl-iso14064-verification
+      version: ">=1.0.0"
+    - name: gl-sb253-disclosure
+      version: ">=1.0.0"
+    - name: gl-sbti-targets
+      version: ">=1.0.0"
+    - name: gl-eu-taxonomy
+      version: ">=1.0.0"
+    - name: gl-tcfd-reporting
+      version: ">=1.0.0"
+    - name: gl-cdp-disclosure
+      version: ">=1.0.0"
+  infrastructure:
+    requires:
+      - postgres
+      - redis
+      - s3
+      - kong
+  tiers:
+    community: false
+    pro: true
+    enterprise: true

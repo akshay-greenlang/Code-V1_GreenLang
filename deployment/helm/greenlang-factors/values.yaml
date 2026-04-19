@@ -1,0 +1,126 @@
+## greenlang-factors default values. Override per environment via
+## values-dev.yaml / values-staging.yaml / values-prod.yaml.
+
+image:
+  repository: greenlang/factors-service
+  tag: 1.0.0
+  pullPolicy: IfNotPresent
+
+imagePullSecrets: []
+
+serviceAccount:
+  create: true
+  name: greenlang-factors
+
+api:
+  replicaCount: 3
+  resources:
+    requests:
+      cpu: 500m
+      memory: 1Gi
+    limits:
+      cpu: 2000m
+      memory: 2Gi
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 20
+    targetCPUUtilizationPercentage: 70
+    targetMemoryUtilizationPercentage: 80
+  podDisruptionBudget:
+    enabled: true
+    minAvailable: 1
+  networkPolicy:
+    enabled: true
+    allowedIngress:
+      - namespaceSelector:
+          matchLabels:
+            name: greenlang-gateway
+
+workers:
+  watch:
+    enabled: true
+    replicaCount: 1
+    mode: watch
+  ingest:
+    enabled: false
+    replicaCount: 0
+    mode: ingest
+  embed:
+    enabled: false
+    replicaCount: 0
+    mode: embed
+
+service:
+  type: ClusterIP
+  port: 80
+  metricsPort: 9090
+
+ingress:
+  enabled: true
+  className: kong
+  host: factors.greenlang.io
+  tls:
+    enabled: true
+    secretName: factors-tls
+  rateLimits:
+    community:
+      requestsPerDay: 100
+    pro:
+      requestsPerDay: 10000
+    enterprise:
+      requestsPerDay: 0  # unlimited
+
+config:
+  logLevel: INFO
+  logFormat: json
+  metricsPort: 9090
+  appPort: 8080
+  workers: 4
+
+## ExternalSecrets integration (SEC-006). Set enabled=true in prod.
+externalSecrets:
+  enabled: false
+  secretStoreRef:
+    name: vault-backend
+    kind: ClusterSecretStore
+  refreshInterval: 1h
+  keys:
+    databaseUrl: greenlang/factors/database_url
+    redisUrl: greenlang/factors/redis_url
+    jwtSigningKey: greenlang/factors/jwt_signing_key
+    s3AccessKey: greenlang/factors/s3_access_key
+    s3SecretKey: greenlang/factors/s3_secret_key
+
+serviceMonitor:
+  enabled: true
+  namespace: monitoring
+  interval: 30s
+
+prometheusRule:
+  enabled: true
+  namespace: monitoring
+
+migration:
+  enabled: true
+  image:
+    repository: flyway/flyway
+    tag: 10-alpine
+  sqlPath: deployment/database/migrations/sql
+
+smokeTest:
+  enabled: true
+  image:
+    repository: curlimages/curl
+    tag: 8.5.0
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 10001
+  fsGroup: 10001
+
+containerSecurityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop: ["ALL"]

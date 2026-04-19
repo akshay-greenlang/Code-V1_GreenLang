@@ -1,0 +1,27 @@
+version: "3.9"
+services:
+  comply-hub:
+    build:
+      context: ../../..
+      dockerfile: applications/GL-Comply-APP/Compliance-Hub/Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - DATABASE_URL=postgresql://gl:gl@postgres:5432/gl_comply
+      - REDIS_URL=redis://redis:6379/0
+      - LOG_LEVEL=INFO
+    depends_on:
+      - postgres
+      - redis
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: gl
+      POSTGRES_PASSWORD: gl
+      POSTGRES_DB: gl_comply
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+  redis:
+    image: redis:7-alpine
+volumes:
+  pg-data:

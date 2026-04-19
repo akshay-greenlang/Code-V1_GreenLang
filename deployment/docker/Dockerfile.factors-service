@@ -13,7 +13,15 @@
 #   --target worker       Watch/ingestion background worker
 # =============================================================================
 
+# Base image pinned by digest for reproducibility. Update digest when
+# bumping PYTHON_VERSION; use `docker pull python:3.11-slim-bookworm` +
+# `docker inspect --format='{{index .RepoDigests 0}}' python:3.11-slim-bookworm`
 ARG PYTHON_VERSION=3.11-slim-bookworm
+ARG PYTHON_BASE_DIGEST=sha256:0000000000000000000000000000000000000000000000000000000000000000
+
+# Build-time supply-chain attestations (see .github/workflows/factors-deploy.yml)
+ARG SBOM_ENABLED=true
+ARG COSIGN_SIGN=true
 
 # ── Stage 1: builder ────────────────────────────────────────────────
 FROM python:${PYTHON_VERSION} AS builder
@@ -108,12 +116,40 @@ CMD uvicorn greenlang.factors.api:app \
     --proxy-headers
 
 # ── Stage 3: worker ─────────────────────────────────────────────────
+# One image serves multiple background-worker modes; pick mode via WORKER_MODE:
+#   watch     - change detection + release orchestrator (default)
+#   ingest    - source parser batch execution (task A1 #2)
+#   embed     - MiniLM/MPNet embedding generation (task A1 #5)
+#   backfill  - re-embed/re-index existing factors
+#   dedupe    - cross-source dedup job (task A1 #4)
 FROM production AS worker
 
 ENV APP_NAME=factors-worker \
-    WORKERS=2
+    WORKERS=2 \
+    WORKER_MODE=watch \
+    WATCH_DB=/var/lib/greenlang/watch.db
 
 HEALTHCHECK --interval=60s --timeout=15s --start-period=30s --retries=3 \
     CMD python -c "import sys; sys.exit(0)"
 
-CMD python -m greenlang.factors.cli watch-run --db /var/lib/greenlang/watch.db
+# Shell-form CMD so WORKER_MODE env substitution works at runtime
+CMD case "$WORKER_MODE" in \
+      watch)    exec python -m greenlang.factors.cli watch-run --db $WATCH_DB ;; \
+      ingest)   exec python -m greenlang.factors.cli ingest ;; \
+      embed)    exec python -m greenlang.factors.cli embed ;; \
+      backfill) exec python -m greenlang.factors.backfill ;; \
+      dedupe)   exec python -m greenlang.factors.cli dedupe ;; \
+      *) echo "Unknown WORKER_MODE=$WORKER_MODE (expected watch|ingest|embed|backfill|dedupe)" >&2; exit 2 ;; \
+    esac
+
+# ── Stage 4: sbom (optional, triggered by CI) ───────────────────────
+# `docker buildx build --target sbom ...` emits an SPDX SBOM alongside
+# the production image. Relies on syft available at build time; CI runs
+# this separately and uploads the SBOM as a build artifact.
+FROM production AS sbom
+USER root
+RUN apt-get update && apt-get install -y --no-install-recommends curl \
+    && curl -fsSL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin \
+    && syft /opt/venv -o spdx-json=/sbom-factors-service.spdx.json \
+    && apt-get purge -y curl && apt-get autoremove -y && rm -rf /var/lib/apt/lists/*
+USER glapp

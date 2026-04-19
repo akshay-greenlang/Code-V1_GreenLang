@@ -1,0 +1,83 @@
+{{- if .Values.ingress.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "greenlang-factors.fullname" . }}
+  labels:
+    {{- include "greenlang-factors.labels" . | nindent 4 }}
+  annotations:
+    konghq.com/plugins: {{ include "greenlang-factors.fullname" . }}-ratelimit,{{ include "greenlang-factors.fullname" . }}-jwt,{{ include "greenlang-factors.fullname" . }}-cors,{{ include "greenlang-factors.fullname" . }}-prometheus
+    {{- if .Values.ingress.tls.enabled }}
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    {{- end }}
+spec:
+  ingressClassName: {{ .Values.ingress.className }}
+  {{- if .Values.ingress.tls.enabled }}
+  tls:
+    - hosts:
+        - {{ .Values.ingress.host }}
+      secretName: {{ .Values.ingress.tls.secretName }}
+  {{- end }}
+  rules:
+    - host: {{ .Values.ingress.host }}
+      http:
+        paths:
+          - path: /api/v1/factors
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "greenlang-factors.fullname" . }}
+                port:
+                  name: http
+---
+apiVersion: configuration.konghq.com/v1
+kind: KongPlugin
+metadata:
+  name: {{ include "greenlang-factors.fullname" . }}-ratelimit
+plugin: rate-limiting-advanced
+config:
+  limit:
+    - {{ .Values.ingress.rateLimits.community.requestsPerDay }}
+    - {{ .Values.ingress.rateLimits.pro.requestsPerDay }}
+  window_size:
+    - 86400
+    - 86400
+  identifier: header
+  header_name: X-Tier
+  sync_rate: 10
+  strategy: redis
+---
+apiVersion: configuration.konghq.com/v1
+kind: KongPlugin
+metadata:
+  name: {{ include "greenlang-factors.fullname" . }}-jwt
+plugin: jwt
+config:
+  claims_to_verify:
+    - exp
+---
+apiVersion: configuration.konghq.com/v1
+kind: KongPlugin
+metadata:
+  name: {{ include "greenlang-factors.fullname" . }}-cors
+plugin: cors
+config:
+  origins:
+    - "*"
+  methods:
+    - GET
+    - POST
+    - OPTIONS
+  headers:
+    - Accept
+    - Authorization
+    - Content-Type
+  credentials: true
+  max_age: 3600
+---
+apiVersion: configuration.konghq.com/v1
+kind: KongPlugin
+metadata:
+  name: {{ include "greenlang-factors.fullname" . }}-prometheus
+plugin: prometheus
+{{- end }}

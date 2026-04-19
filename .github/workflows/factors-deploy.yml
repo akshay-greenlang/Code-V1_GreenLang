@@ -1,0 +1,158 @@
+name: factors-deploy
+
+on:
+  workflow_run:
+    workflows: ["factors-tests"]
+    types: [completed]
+    branches: [master]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Target environment
+        type: choice
+        options: [dev, staging, prod]
+        default: dev
+      image_tag:
+        description: Image tag to deploy (default - derived from commit SHA)
+        type: string
+        default: ""
+
+permissions:
+  contents: read
+  packages: write
+  id-token: write
+
+env:
+  IMAGE_REPO: ghcr.io/${{ github.repository_owner }}/factors-service
+  HELM_CHART: deployment/helm/greenlang-factors
+  COSIGN_EXPERIMENTAL: "1"
+
+jobs:
+  build:
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    outputs:
+      image_tag: ${{ steps.tag.outputs.tag }}
+      image_digest: ${{ steps.push.outputs.digest }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Compute image tag
+        id: tag
+        run: |
+          if [ -n "${{ inputs.image_tag }}" ]; then
+            echo "tag=${{ inputs.image_tag }}" >> $GITHUB_OUTPUT
+          else
+            echo "tag=${GITHUB_SHA::12}" >> $GITHUB_OUTPUT
+          fi
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build + push multi-stage image
+        id: push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: deployment/docker/Dockerfile.factors-service
+          target: production
+          push: true
+          tags: |
+            ${{ env.IMAGE_REPO }}:${{ steps.tag.outputs.tag }}
+            ${{ env.IMAGE_REPO }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          provenance: true
+          sbom: true
+
+      - name: Cosign sign image
+        uses: sigstore/cosign-installer@v3
+      - run: cosign sign --yes ${{ env.IMAGE_REPO }}@${{ steps.push.outputs.digest }}
+
+  scan:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Trivy scan (blocking on CRITICAL)
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.IMAGE_REPO }}:${{ needs.build.outputs.image_tag }}
+          format: sarif
+          output: trivy.sarif
+          severity: CRITICAL,HIGH
+          exit-code: "1"
+          ignore-unfixed: true
+      - uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: trivy.sarif
+      - name: Grype vuln scan
+        uses: anchore/scan-action@v3
+        with:
+          image: ${{ env.IMAGE_REPO }}:${{ needs.build.outputs.image_tag }}
+          severity-cutoff: high
+          fail-build: true
+
+  helm-lint:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: azure/setup-helm@v4
+      - name: Helm lint (all value files)
+        run: |
+          helm lint ${{ env.HELM_CHART }} -f ${{ env.HELM_CHART }}/values-dev.yaml
+          helm lint ${{ env.HELM_CHART }} -f ${{ env.HELM_CHART }}/values-staging.yaml
+          helm lint ${{ env.HELM_CHART }} -f ${{ env.HELM_CHART }}/values-prod.yaml
+      - name: Helm template diff (prod)
+        run: |
+          helm template greenlang-factors ${{ env.HELM_CHART }} \
+            -f ${{ env.HELM_CHART }}/values-prod.yaml \
+            > /tmp/rendered-prod.yaml
+          echo "Rendered prod manifests: $(wc -l < /tmp/rendered-prod.yaml) lines"
+
+  deploy-dev:
+    needs: [build, scan, helm-lint]
+    runs-on: ubuntu-latest
+    environment: dev
+    if: github.event.inputs.environment == 'dev' || github.event_name == 'workflow_run'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: azure/setup-helm@v4
+      - name: Trigger ArgoCD sync (dev)
+        run: |
+          curl -sf -X POST \
+            -H "Authorization: Bearer ${{ secrets.ARGOCD_TOKEN_DEV }}" \
+            "${{ secrets.ARGOCD_URL }}/api/v1/applications/greenlang-factors-dev/sync"
+
+  deploy-staging:
+    needs: deploy-dev
+    runs-on: ubuntu-latest
+    environment: staging
+    if: github.event.inputs.environment == 'staging' || github.event_name == 'workflow_run'
+    steps:
+      - name: Trigger ArgoCD sync (staging)
+        run: |
+          curl -sf -X POST \
+            -H "Authorization: Bearer ${{ secrets.ARGOCD_TOKEN_STAGING }}" \
+            "${{ secrets.ARGOCD_URL }}/api/v1/applications/greenlang-factors-staging/sync"
+
+  deploy-prod:
+    needs: deploy-staging
+    runs-on: ubuntu-latest
+    environment: prod  # requires manual approval via GitHub environment protection rules
+    if: github.event.inputs.environment == 'prod'
+    steps:
+      - name: Trigger ArgoCD sync (prod)
+        run: |
+          curl -sf -X POST \
+            -H "Authorization: Bearer ${{ secrets.ARGOCD_TOKEN_PROD }}" \
+            "${{ secrets.ARGOCD_URL }}/api/v1/applications/greenlang-factors-prod/sync"

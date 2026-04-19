@@ -1,0 +1,47 @@
+{{- if .Values.prometheusRule.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: {{ include "greenlang-factors.fullname" . }}
+  namespace: {{ .Values.prometheusRule.namespace }}
+  labels:
+    {{- include "greenlang-factors.labels" . | nindent 4 }}
+spec:
+  groups:
+    - name: greenlang-factors.slo
+      interval: 30s
+      rules:
+        - alert: FactorsHighErrorRate
+          expr: |
+            sum(rate(http_requests_total{job="greenlang-factors",status=~"5.."}[5m]))
+              / sum(rate(http_requests_total{job="greenlang-factors"}[5m])) > 0.05
+          for: 10m
+          labels:
+            severity: page
+          annotations:
+            summary: "Factors API 5xx error rate > 5%"
+        - alert: FactorsSearchLatencyP99
+          expr: |
+            histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket{job="greenlang-factors",endpoint=~"/api/v1/factors/search.*"}[5m])) by (le)) > 0.5
+          for: 10m
+          labels:
+            severity: page
+          annotations:
+            summary: "Factors search P99 latency > 500ms"
+        - alert: FactorsTier429Spike
+          expr: sum(rate(http_requests_total{job="greenlang-factors",status="429"}[5m])) > 10
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "High 429 tier-limit rate on Factors API"
+        - alert: FactorsCacheHitRateLow
+          expr: |
+            sum(rate(factors_cache_hits_total[5m]))
+              / (sum(rate(factors_cache_hits_total[5m])) + sum(rate(factors_cache_misses_total[5m]))) < 0.8
+          for: 30m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Factors cache hit rate below 80%"
+{{- end }}

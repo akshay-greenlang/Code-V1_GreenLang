@@ -1,0 +1,55 @@
+{{- if .Values.migration.enabled }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "greenlang-factors.fullname" . }}-migrate
+  labels:
+    {{- include "greenlang-factors.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-weight": "-5"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  backoffLimit: 3
+  template:
+    metadata:
+      labels:
+        {{- include "greenlang-factors.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: migration
+    spec:
+      restartPolicy: Never
+      serviceAccountName: {{ include "greenlang-factors.serviceAccountName" . }}
+      initContainers:
+        - name: wait-for-postgres
+          image: postgres:16-alpine
+          command: ["/bin/sh", "-c"]
+          args:
+            - until pg_isready -h ${POSTGRES_HOST} -p 5432 -U ${POSTGRES_USER}; do echo "waiting for postgres..."; sleep 2; done
+          envFrom:
+            {{- if .Values.externalSecrets.enabled }}
+            - secretRef:
+                name: {{ include "greenlang-factors.fullname" . }}-secrets
+            {{- end }}
+      containers:
+        - name: flyway
+          image: "{{ .Values.migration.image.repository }}:{{ .Values.migration.image.tag }}"
+          command:
+            - flyway
+            - migrate
+          envFrom:
+            {{- if .Values.externalSecrets.enabled }}
+            - secretRef:
+                name: {{ include "greenlang-factors.fullname" . }}-secrets
+            {{- end }}
+          env:
+            - name: FLYWAY_LOCATIONS
+              value: filesystem:/flyway/sql
+          volumeMounts:
+            - name: sql
+              mountPath: /flyway/sql
+      volumes:
+        - name: sql
+          configMap:
+            name: {{ include "greenlang-factors.fullname" . }}-migrations
+            optional: true
+{{- end }}

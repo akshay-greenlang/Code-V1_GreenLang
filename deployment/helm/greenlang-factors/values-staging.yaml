@@ -1,0 +1,24 @@
+## Staging overrides for greenlang-factors
+
+api:
+  replicaCount: 2
+  autoscaling:
+    minReplicas: 1
+    maxReplicas: 5
+
+workers:
+  watch:
+    enabled: true
+    replicaCount: 1
+  ingest:
+    enabled: true
+    replicaCount: 1
+
+externalSecrets:
+  enabled: true
+
+ingress:
+  host: factors.staging.greenlang.io
+
+config:
+  logLevel: INFO

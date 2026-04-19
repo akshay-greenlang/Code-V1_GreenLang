@@ -1,0 +1,50 @@
+{{- range $name, $config := .Values.workers }}
+{{- if $config.enabled }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "greenlang-factors.fullname" $ }}-worker-{{ $name }}
+  labels:
+    {{- include "greenlang-factors.labels" $ | nindent 4 }}
+    app.kubernetes.io/component: worker-{{ $name }}
+spec:
+  replicas: {{ $config.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "greenlang-factors.selectorLabels" $ | nindent 6 }}
+      app.kubernetes.io/component: worker-{{ $name }}
+  template:
+    metadata:
+      labels:
+        {{- include "greenlang-factors.selectorLabels" $ | nindent 8 }}
+        app.kubernetes.io/component: worker-{{ $name }}
+    spec:
+      serviceAccountName: {{ include "greenlang-factors.serviceAccountName" $ }}
+      securityContext:
+        {{- toYaml $.Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: worker
+          image: "{{ $.Values.image.repository }}:{{ $.Values.image.tag }}"
+          imagePullPolicy: {{ $.Values.image.pullPolicy }}
+          env:
+            - name: WORKER_MODE
+              value: {{ $config.mode | quote }}
+          envFrom:
+            - configMapRef:
+                name: {{ include "greenlang-factors.fullname" $ }}-config
+            {{- if $.Values.externalSecrets.enabled }}
+            - secretRef:
+                name: {{ include "greenlang-factors.fullname" $ }}-secrets
+            {{- end }}
+          resources:
+            requests:
+              cpu: 500m
+              memory: 1Gi
+            limits:
+              cpu: 4000m
+              memory: 8Gi
+          securityContext:
+            {{- toYaml $.Values.containerSecurityContext | nindent 12 }}
+{{- end }}
+{{- end }}

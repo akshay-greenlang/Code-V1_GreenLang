@@ -1,0 +1,46 @@
+{{- if .Values.api.networkPolicy.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "greenlang-factors.fullname" . }}-api
+  labels:
+    {{- include "greenlang-factors.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      {{- include "greenlang-factors.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: api
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        {{- toYaml .Values.api.networkPolicy.allowedIngress | nindent 8 }}
+      ports:
+        - protocol: TCP
+          port: {{ .Values.config.appPort }}
+        - protocol: TCP
+          port: {{ .Values.config.metricsPort }}
+  egress:
+    # Egress to DNS
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+      ports:
+        - protocol: UDP
+          port: 53
+    # Egress to Postgres + Redis (in-cluster)
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: postgres
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: redis
+    # Egress to S3 + licensed-connector APIs (external)
+    - to: []
+      ports:
+        - protocol: TCP
+          port: 443
+{{- end }}

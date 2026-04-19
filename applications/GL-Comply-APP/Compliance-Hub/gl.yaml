@@ -1,0 +1,21 @@
+apiVersion: greenlang.io/v1
+kind: Pipeline
+metadata:
+  name: unified-compliance-run
+spec:
+  entrypoint: agents.orchestrator_agent:ComplianceOrchestrator
+  inputs:
+    - name: request
+      schema: schemas.models:ComplianceRequest
+  outputs:
+    - name: report
+      schema: schemas.models:UnifiedComplianceReport
+  stages:
+    - id: applicability
+      agent: services.applicability:evaluate
+    - id: normalize
+      agent: services.normalizer:normalize
+    - id: dispatch
+      agent: ComplianceOrchestrator.run
+    - id: unified_report
+      agent: agents.unified_report_agent:UnifiedReportAgent  # COMPLY-APP 5
