@@ -910,6 +910,28 @@ class EmissionFactorRecord:
     activity_tags: List[str] = field(default_factory=list)
     sector_tags: List[str] = field(default_factory=list)
 
+    # ==================== CTO CANONICAL v2 EXTENSIONS (Phase F1) ====================
+    # See greenlang/data/canonical_v2.py for the full type definitions.
+    # All fields are Optional to preserve backward compatibility with ~25 600
+    # lines of existing YAML factor data.  Downstream products (method packs,
+    # resolution engine, explain endpoint) prefer these over the legacy fields.
+    factor_family: Optional[str] = None             # enum: canonical_v2.FactorFamily
+    factor_name: Optional[str] = None               # human-readable display name
+    method_profile: Optional[str] = None            # enum: canonical_v2.MethodProfile
+    factor_version: Optional[str] = None            # semver for this factor row
+    formula_type: Optional[str] = None              # enum: canonical_v2.FormulaType
+    jurisdiction: Optional[Any] = None              # canonical_v2.Jurisdiction
+    activity_schema: Optional[Any] = None           # canonical_v2.ActivitySchema
+    parameters: Optional[Any] = None                # canonical_v2.FactorParameters
+    verification: Optional[Any] = None              # canonical_v2.Verification
+    explainability: Optional[Any] = None            # canonical_v2.Explainability
+    primary_data_flag: Optional[str] = None         # enum: canonical_v2.PrimaryDataFlag
+    uncertainty_distribution: Optional[str] = None  # enum: canonical_v2.UncertaintyDistribution
+    redistribution_class: Optional[str] = None      # enum: canonical_v2.RedistributionClass
+    raw_record_ref: Optional[Any] = None            # canonical_v2.RawRecordRef
+    change_log: List[Any] = field(default_factory=list)  # [canonical_v2.ChangeLogEntry]
+    next_review_date: Optional[date] = None
+
     # ==================== CALCULATED FIELDS ====================
     content_hash: str = field(init=False, default="")  # SHA-256 of factor data
 

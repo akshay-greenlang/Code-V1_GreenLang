@@ -34,6 +34,18 @@ class SourceRegistryEntry:
     approval_required_for_certified: bool
     legal_signoff_artifact: Optional[str]
     legal_signoff_version: Optional[str]
+    # ---- CTO Phase F1 extensions (all optional: backward compatible with
+    #      existing source_registry.yaml entries) ----
+    publisher: Optional[str] = None                 # e.g. "EPA", "DESNZ"
+    jurisdiction: Optional[str] = None              # e.g. "US", "EU", "UK"
+    dataset_version: Optional[str] = None           # e.g. "2024-Q4"
+    publication_date: Optional[str] = None          # ISO-8601
+    validity_period: Optional[str] = None           # e.g. "2024-01-01/2024-12-31"
+    ingestion_date: Optional[str] = None            # when we last pulled it
+    source_type: Optional[str] = None               # canonical_v2.SourceType enum
+    verification_status: Optional[str] = None       # canonical_v2.VerificationStatus
+    change_log_uri: Optional[str] = None            # link to source-side changelog
+    legal_notes: Optional[str] = None               # free-form counsel notes
 
     def public_bulk_export_allowed(self) -> bool:
         return self.redistribution_allowed and not self.connector_only
@@ -80,6 +92,17 @@ def load_source_registry(path: Optional[Path] = None) -> List[SourceRegistryEntr
                 approval_required_for_certified=bool(item.get("approval_required_for_certified", True)),
                 legal_signoff_artifact=item.get("legal_signoff_artifact"),
                 legal_signoff_version=item.get("legal_signoff_version"),
+                # ---- Phase F1 optional extensions ----
+                publisher=item.get("publisher"),
+                jurisdiction=item.get("jurisdiction"),
+                dataset_version=item.get("dataset_version"),
+                publication_date=item.get("publication_date"),
+                validity_period=item.get("validity_period"),
+                ingestion_date=item.get("ingestion_date"),
+                source_type=item.get("source_type"),
+                verification_status=item.get("verification_status"),
+                change_log_uri=item.get("change_log_uri"),
+                legal_notes=item.get("legal_notes"),
             )
         )
     logger.debug("Loaded %d source registry entries from %s", len(out), p)

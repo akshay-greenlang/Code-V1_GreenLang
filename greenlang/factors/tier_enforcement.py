@@ -24,6 +24,7 @@ logger = logging.getLogger(__name__)
 class Tier(str, Enum):
     COMMUNITY = "community"
     PRO = "pro"
+    CONSULTING = "consulting"        # Phase F8 — white-label / multi-tenant reseller
     ENTERPRISE = "enterprise"
     INTERNAL = "internal"
 
@@ -58,6 +59,18 @@ class TierVisibility:
                 include_deprecated=False,
                 max_export_rows=100_000,
                 audit_bundle_allowed=True,
+                bulk_export_allowed=True,
+            )
+        if t == "consulting":
+            # White-label / reseller: multi-tenant, higher limits than pro,
+            # private-registry + override rights but NO connector-only + NO
+            # audit bundles (customer-facing audit lives at enterprise).
+            return cls(
+                include_preview=True,
+                include_connector=False,
+                include_deprecated=False,
+                max_export_rows=50_000,
+                audit_bundle_allowed=False,
                 bulk_export_allowed=True,
             )
         if t == "pro":

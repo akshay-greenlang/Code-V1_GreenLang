@@ -1,6 +1,6 @@
 {
   "name": "@greenlang/factors-sdk",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "GreenLang Factors API TypeScript SDK - Emission factor catalog client",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

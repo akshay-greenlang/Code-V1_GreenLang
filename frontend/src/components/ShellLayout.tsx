@@ -35,7 +35,13 @@ const links = [
   { label: "Governance", to: "/governance" },
   { label: "Admin", to: "/admin" },
   { label: "Factors", to: "/factors/explorer" },
-  { label: "Catalog", to: "/factors/status" }
+  { label: "Catalog", to: "/factors/status" },
+  { label: "Sources", to: "/factors/sources" },
+  { label: "Mapping", to: "/factors/mapping" },
+  { label: "QA", to: "/factors/qa" },
+  { label: "Approvals", to: "/factors/approvals" },
+  { label: "Overrides", to: "/factors/overrides" },
+  { label: "Impact", to: "/factors/impact" }
 ];
 
 export function ShellLayout() {

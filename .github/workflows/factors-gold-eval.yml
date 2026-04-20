@@ -2,6 +2,12 @@ name: Factors Gold-Set Evaluation
 
 # Phase 5.2: weekly evaluation of the factor-matching pipeline against
 # the curated gold set. Also runs on any change to the matcher code.
+#
+# Phase F10 addition: enforces the FACTORS_EXECUTION_PLAN exit-bar
+# "gold-eval ≥ 90 %" gate AND runs the factor-invariants checker
+# (scripts/check_factor_invariants.py) so deprecated factors without a
+# replacement, or certified factors without validity / source version,
+# fail CI.
 
 on:
   schedule:
@@ -10,19 +16,32 @@ on:
   pull_request:
     paths:
       - "greenlang/factors/matching/**"
+      - "greenlang/factors/resolution/**"
+      - "greenlang/factors/method_packs/**"
+      - "greenlang/factors/mapping/**"
+      - "greenlang/factors/ingestion/parsers/**"
+      - "data/emission_factors*.yaml"
       - "tests/factors/fixtures/gold_eval_*.json"
       - "scripts/curate_gold_eval.py"
+      - "scripts/check_factor_invariants.py"
       - ".github/workflows/factors-gold-eval.yml"
   workflow_dispatch:
 
 permissions:
   contents: read
 
+env:
+  # FACTORS_EXECUTION_PLAN exit-bar.  Overall pass rate must be >= this.
+  GOLD_EVAL_MIN_PASS_RATE: "0.90"
+  # Maximum tolerated drop vs the previous merged report (percentage points).
+  # Exceeds this -> CI fails even if absolute pass-rate is above the floor.
+  GOLD_EVAL_MAX_REGRESSION_PP: "2.0"
+
 jobs:
   evaluate:
     name: Evaluate matcher against curated gold set
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
 
@@ -39,21 +58,33 @@ jobs:
           # so CI finishes in < 5 minutes.
           pip install -e ".[test]"
 
+      # --------------------------------------------------------------
+      # Phase F10: factor-catalog invariants (runs before the matcher
+      # so structural issues fail fast).
+      # --------------------------------------------------------------
+      - name: Check factor-catalog invariants (Phase F10 gate)
+        run: |
+          python scripts/check_factor_invariants.py --root data
+
+      # --------------------------------------------------------------
+      # Phase 5.2: gold-set audit + bit-reproducible curation.
+      # --------------------------------------------------------------
       - name: Audit raw gold set
         run: |
           python scripts/curate_gold_eval.py --audit-only
 
       - name: Regenerate curated gold set + verify bit-reproducibility
         run: |
-          # Back up the committed curated file, rewrite it, and diff.
           cp tests/factors/fixtures/gold_eval_curated.json /tmp/gold_eval_committed.json
           python scripts/curate_gold_eval.py
           diff -u /tmp/gold_eval_committed.json tests/factors/fixtures/gold_eval_curated.json
           echo "Curated gold set is bit-reproducible."
 
-      - name: Run evaluator (best-effort)
+      # --------------------------------------------------------------
+      # Evaluator run + results extraction.
+      # --------------------------------------------------------------
+      - name: Run evaluator
         id: eval
-        continue-on-error: true
         run: |
           mkdir -p results
           python - <<'PY'
@@ -63,7 +94,12 @@ jobs:
           try:
               from greenlang.factors.matching.evaluation import MatchEvaluator
           except ImportError as exc:
-              print(f"evaluator not available ({exc}); skipping matcher run")
+              print(f"::warning::evaluator not importable ({exc}); writing placeholder report")
+              Path("results/eval_report.json").write_text(json.dumps({
+                  "status": "evaluator_unavailable",
+                  "pass_rate_overall": None,
+                  "total_cases": 0,
+              }, indent=2))
               sys.exit(0)
           evaluator = MatchEvaluator()
           curated = json.loads(
@@ -71,10 +107,90 @@ jobs:
           )
           cases = curated.get("cases") or curated
           report = evaluator.evaluate(cases)
+          if isinstance(report, dict):
+              payload = report
+          else:
+              payload = {
+                  "pass_rate_overall": getattr(report, "pass_rate_overall", None),
+                  "total_cases": getattr(report, "total_cases", len(cases)),
+                  "raw": str(report),
+              }
           Path("results/eval_report.json").write_text(
-              json.dumps(report, indent=2, default=str)
+              json.dumps(payload, indent=2, default=str)
           )
-          print(f"Evaluator produced: {report}")
+          print(f"Evaluator produced: {payload}")
+          PY
+
+      # --------------------------------------------------------------
+      # Download the previous merged report to compute regression delta.
+      # We look for the most recent "main" branch run's artifact.
+      # --------------------------------------------------------------
+      - name: Download previous merged gold-eval report (best-effort)
+        id: prev
+        continue-on-error: true
+        uses: dawidd6/action-download-artifact@v6
+        with:
+          workflow: factors-gold-eval.yml
+          branch: main
+          name: factors-gold-eval-report
+          path: previous
+          search_artifacts: true
+
+      # --------------------------------------------------------------
+      # FACTORS_EXECUTION_PLAN exit-bar: overall pass-rate >= 0.90 AND
+      # regression vs previous merged run <= 2 percentage points.
+      # --------------------------------------------------------------
+      - name: Enforce gold-eval thresholds (exit-bar gate)
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          floor = float(os.environ["GOLD_EVAL_MIN_PASS_RATE"])
+          max_reg_pp = float(os.environ["GOLD_EVAL_MAX_REGRESSION_PP"])
+
+          current = json.loads(Path("results/eval_report.json").read_text())
+          pass_rate = current.get("pass_rate_overall")
+
+          if current.get("status") == "evaluator_unavailable":
+              print("::warning::evaluator unavailable; skipping pass-rate gate")
+              raise SystemExit(0)
+
+          if pass_rate is None:
+              print("::error::eval report has no 'pass_rate_overall'; failing gate")
+              raise SystemExit(1)
+
+          print(f"Current pass_rate_overall = {pass_rate:.4f}")
+          print(f"Floor                     = {floor:.4f}")
+
+          prev_path = Path("previous/eval_report.json")
+          if prev_path.exists():
+              try:
+                  prev = json.loads(prev_path.read_text())
+                  prev_rate = prev.get("pass_rate_overall")
+                  if prev_rate is not None:
+                      delta_pp = (pass_rate - prev_rate) * 100.0
+                      print(f"Previous pass_rate        = {prev_rate:.4f}")
+                      print(f"Delta                     = {delta_pp:+.2f} pp")
+                      if -delta_pp > max_reg_pp:
+                          print(
+                              f"::error::regression {-delta_pp:.2f} pp > tolerance "
+                              f"{max_reg_pp:.2f} pp"
+                          )
+                          raise SystemExit(1)
+              except Exception as exc:
+                  print(f"::warning::could not compare to previous report: {exc}")
+          else:
+              print("No previous report available; skipping regression check.")
+
+          if pass_rate < floor:
+              print(
+                  f"::error::pass_rate_overall {pass_rate:.4f} < floor {floor:.4f}; "
+                  "block the merge until the matcher is restored."
+              )
+              raise SystemExit(1)
+          print("Gold-eval gate PASSED.")
           PY
 
       - name: Upload eval report
@@ -85,3 +201,13 @@ jobs:
           path: results/eval_report.json
           if-no-files-found: ignore
           retention-days: 90
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "## Factors Gold-Eval Report" >> "$GITHUB_STEP_SUMMARY"
+          if [ -f results/eval_report.json ]; then
+            echo '```json' >> "$GITHUB_STEP_SUMMARY"
+            cat results/eval_report.json >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+          fi

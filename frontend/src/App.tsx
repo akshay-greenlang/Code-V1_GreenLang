@@ -2,8 +2,15 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import { RoleGuard } from "./components/RoleGuard";
 import { ShellLayout } from "./components/ShellLayout";
 import { AdminPage } from "./pages/AdminPage";
+import { FactorsApprovalQueue } from "./pages/FactorsApprovalQueue";
 import { FactorsCatalogStatus } from "./pages/FactorsCatalogStatus";
+import { FactorsDiffViewer } from "./pages/FactorsDiffViewer";
 import { FactorsExplorer } from "./pages/FactorsExplorer";
+import { FactorsImpactSimulator } from "./pages/FactorsImpactSimulator";
+import { FactorsMappingWorkbench } from "./pages/FactorsMappingWorkbench";
+import { FactorsOverrideManager } from "./pages/FactorsOverrideManager";
+import { FactorsQADashboard } from "./pages/FactorsQADashboard";
+import { FactorsSourceConsole } from "./pages/FactorsSourceConsole";
 import { GovernancePage } from "./pages/GovernancePage";
 import { RunsPage } from "./pages/RunsPage";
 import { WorkspacePage } from "./pages/WorkspacePage";
@@ -27,6 +34,14 @@ export default function App() {
         <Route path="/factors/explorer" element={<RoleGuard><FactorsExplorer /></RoleGuard>} />
         {/* Public: no auth guard on the catalog-status dashboard. */}
         <Route path="/factors/status" element={<FactorsCatalogStatus />} />
+        {/* Phase F7 operator pages */}
+        <Route path="/factors/sources" element={<RoleGuard><FactorsSourceConsole /></RoleGuard>} />
+        <Route path="/factors/mapping" element={<RoleGuard><FactorsMappingWorkbench /></RoleGuard>} />
+        <Route path="/factors/qa" element={<RoleGuard><FactorsQADashboard /></RoleGuard>} />
+        <Route path="/factors/diff" element={<RoleGuard><FactorsDiffViewer /></RoleGuard>} />
+        <Route path="/factors/approvals" element={<RoleGuard><FactorsApprovalQueue /></RoleGuard>} />
+        <Route path="/factors/overrides" element={<RoleGuard><FactorsOverrideManager /></RoleGuard>} />
+        <Route path="/factors/impact" element={<RoleGuard><FactorsImpactSimulator /></RoleGuard>} />
       </Route>
     </Routes>
   );

@@ -30,7 +30,7 @@ from urllib.parse import urlencode
 
 logger = logging.getLogger(__name__)
 
-SDK_VERSION = "1.0.0"
+SDK_VERSION = "1.1.0"
 
 
 class FactorsApiError(Exception):
