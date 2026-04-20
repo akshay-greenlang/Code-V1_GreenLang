@@ -31,14 +31,257 @@ Status: v3 Stub
 
 from __future__ import annotations
 
+import json
 import logging
+import sqlite3
+import threading
 from collections import defaultdict, deque
-from typing import Any, Optional
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any, Optional, Union
 
 from greenlang.entity_graph.models import EntityEdge, EntityNode
+from greenlang.entity_graph.types import NodeType
 from greenlang.schemas.base import new_uuid
 
 logger = logging.getLogger(__name__)
+
+
+# ---------------------------------------------------------------------------
+# SQLite backend
+# ---------------------------------------------------------------------------
+
+
+_SQLITE_SCHEMA = """
+CREATE TABLE IF NOT EXISTS entity_nodes (
+    node_id     TEXT PRIMARY KEY,
+    graph_id    TEXT NOT NULL,
+    node_type   TEXT NOT NULL,
+    name        TEXT NOT NULL,
+    geography   TEXT,
+    attributes  TEXT NOT NULL DEFAULT '{}',
+    deleted_at  TEXT,
+    created_at  TEXT NOT NULL,
+    updated_at  TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_node_type ON entity_nodes (node_type);
+CREATE INDEX IF NOT EXISTS idx_node_graph ON entity_nodes (graph_id);
+CREATE INDEX IF NOT EXISTS idx_node_alive ON entity_nodes (deleted_at);
+
+CREATE TABLE IF NOT EXISTS entity_edges (
+    edge_id     TEXT PRIMARY KEY,
+    graph_id    TEXT NOT NULL,
+    source_id   TEXT NOT NULL,
+    target_id   TEXT NOT NULL,
+    edge_type   TEXT NOT NULL,
+    weight      REAL NOT NULL DEFAULT 1.0,
+    attributes  TEXT NOT NULL DEFAULT '{}',
+    valid_from  TEXT,
+    valid_to    TEXT,
+    deleted_at  TEXT,
+    created_at  TEXT NOT NULL,
+    updated_at  TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_edge_source ON entity_edges (source_id);
+CREATE INDEX IF NOT EXISTS idx_edge_target ON entity_edges (target_id);
+CREATE INDEX IF NOT EXISTS idx_edge_type ON entity_edges (edge_type);
+CREATE INDEX IF NOT EXISTS idx_edge_graph ON entity_edges (graph_id);
+CREATE INDEX IF NOT EXISTS idx_edge_alive ON entity_edges (deleted_at);
+"""
+
+
+class _SQLiteGraphBackend:
+    """Append + soft-delete SQLite persistence for the Entity Graph."""
+
+    def __init__(self, sqlite_path: Union[str, Path]) -> None:
+        self.sqlite_path = Path(sqlite_path)
+        self.sqlite_path.parent.mkdir(parents=True, exist_ok=True)
+        self._lock = threading.Lock()
+        self._conn = sqlite3.connect(
+            str(self.sqlite_path),
+            isolation_level=None,
+            check_same_thread=False,
+        )
+        self._conn.execute("PRAGMA journal_mode=WAL")
+        self._conn.execute("PRAGMA synchronous=NORMAL")
+        self._conn.execute("PRAGMA foreign_keys=OFF")
+        self._conn.executescript(_SQLITE_SCHEMA)
+
+    # ---------------- nodes
+
+    def upsert_node(self, graph_id: str, node: EntityNode) -> None:
+        now = datetime.now(timezone.utc).isoformat()
+        created = (node.created_at.isoformat() if node.created_at else now)
+        updated = (node.updated_at.isoformat() if node.updated_at else now)
+        with self._lock:
+            self._conn.execute(
+                """
+                INSERT INTO entity_nodes (
+                    node_id, graph_id, node_type, name, geography,
+                    attributes, deleted_at, created_at, updated_at
+                ) VALUES (?, ?, ?, ?, ?, ?, NULL, ?, ?)
+                ON CONFLICT(node_id) DO UPDATE SET
+                    graph_id   = excluded.graph_id,
+                    node_type  = excluded.node_type,
+                    name       = excluded.name,
+                    geography  = excluded.geography,
+                    attributes = excluded.attributes,
+                    deleted_at = NULL,
+                    updated_at = excluded.updated_at
+                """,
+                (
+                    node.node_id,
+                    graph_id,
+                    node.node_type,
+                    node.name,
+                    node.geography,
+                    json.dumps(node.attributes or {}, sort_keys=True, default=str),
+                    created,
+                    updated,
+                ),
+            )
+
+    def soft_delete_node(self, node_id: str) -> bool:
+        now = datetime.now(timezone.utc).isoformat()
+        with self._lock:
+            cur = self._conn.execute(
+                "UPDATE entity_nodes SET deleted_at=? WHERE node_id=? AND deleted_at IS NULL",
+                (now, node_id),
+            )
+            return cur.rowcount > 0
+
+    def hard_delete_node(self, node_id: str) -> bool:
+        with self._lock:
+            cur = self._conn.execute(
+                "DELETE FROM entity_nodes WHERE node_id=?",
+                (node_id,),
+            )
+            return cur.rowcount > 0
+
+    def list_nodes(self, graph_id: str, include_deleted: bool = False) -> list[dict]:
+        sql = (
+            "SELECT node_id, graph_id, node_type, name, geography, attributes, "
+            "deleted_at, created_at, updated_at FROM entity_nodes "
+            "WHERE graph_id=?"
+        )
+        if not include_deleted:
+            sql += " AND deleted_at IS NULL"
+        sql += " ORDER BY created_at ASC"
+        with self._lock:
+            rows = list(self._conn.execute(sql, (graph_id,)))
+        return [self._row_to_node(r) for r in rows]
+
+    # ---------------- edges
+
+    def upsert_edge(self, graph_id: str, edge: EntityEdge) -> None:
+        now = datetime.now(timezone.utc).isoformat()
+        with self._lock:
+            self._conn.execute(
+                """
+                INSERT INTO entity_edges (
+                    edge_id, graph_id, source_id, target_id, edge_type,
+                    weight, attributes, valid_from, valid_to,
+                    deleted_at, created_at, updated_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, ?, ?)
+                ON CONFLICT(edge_id) DO UPDATE SET
+                    graph_id   = excluded.graph_id,
+                    source_id  = excluded.source_id,
+                    target_id  = excluded.target_id,
+                    edge_type  = excluded.edge_type,
+                    weight     = excluded.weight,
+                    attributes = excluded.attributes,
+                    valid_from = excluded.valid_from,
+                    valid_to   = excluded.valid_to,
+                    deleted_at = NULL,
+                    updated_at = excluded.updated_at
+                """,
+                (
+                    edge.edge_id,
+                    graph_id,
+                    edge.source_id,
+                    edge.target_id,
+                    edge.edge_type,
+                    edge.weight,
+                    json.dumps(edge.attributes or {}, sort_keys=True, default=str),
+                    edge.valid_from.isoformat() if edge.valid_from else None,
+                    edge.valid_to.isoformat() if edge.valid_to else None,
+                    now,
+                    now,
+                ),
+            )
+
+    def soft_delete_edge(self, edge_id: str) -> bool:
+        now = datetime.now(timezone.utc).isoformat()
+        with self._lock:
+            cur = self._conn.execute(
+                "UPDATE entity_edges SET deleted_at=? WHERE edge_id=? AND deleted_at IS NULL",
+                (now, edge_id),
+            )
+            return cur.rowcount > 0
+
+    def list_edges(self, graph_id: str, include_deleted: bool = False) -> list[dict]:
+        sql = (
+            "SELECT edge_id, graph_id, source_id, target_id, edge_type, weight, "
+            "attributes, valid_from, valid_to, deleted_at, created_at, updated_at "
+            "FROM entity_edges WHERE graph_id=?"
+        )
+        if not include_deleted:
+            sql += " AND deleted_at IS NULL"
+        sql += " ORDER BY created_at ASC"
+        with self._lock:
+            rows = list(self._conn.execute(sql, (graph_id,)))
+        return [self._row_to_edge(r) for r in rows]
+
+    # ---------------- lifecycle
+
+    def close(self) -> None:
+        with self._lock:
+            self._conn.close()
+
+    # ---------------- helpers
+
+    @staticmethod
+    def _row_to_node(row: tuple) -> dict:
+        (
+            node_id, graph_id, node_type, name, geography,
+            attributes, deleted_at, created_at, updated_at,
+        ) = row
+        return {
+            "node_id": node_id,
+            "graph_id": graph_id,
+            "node_type": node_type,
+            "name": name,
+            "geography": geography,
+            "attributes": json.loads(attributes) if attributes else {},
+            "deleted_at": deleted_at,
+            "created_at": created_at,
+            "updated_at": updated_at,
+        }
+
+    @staticmethod
+    def _row_to_edge(row: tuple) -> dict:
+        (
+            edge_id, graph_id, source_id, target_id, edge_type, weight,
+            attributes, valid_from, valid_to,
+            deleted_at, created_at, updated_at,
+        ) = row
+        return {
+            "edge_id": edge_id,
+            "graph_id": graph_id,
+            "source_id": source_id,
+            "target_id": target_id,
+            "edge_type": edge_type,
+            "weight": weight,
+            "attributes": json.loads(attributes) if attributes else {},
+            "valid_from": valid_from,
+            "valid_to": valid_to,
+            "deleted_at": deleted_at,
+            "created_at": created_at,
+            "updated_at": updated_at,
+        }
+
+
+_SUPPORTED_BACKENDS = {"memory", "sqlite"}
 
 
 class EntityGraph:
@@ -55,41 +298,140 @@ class EntityGraph:
     # Construction
     # ------------------------------------------------------------------
 
-    def __init__(self, graph_id: str = "default") -> None:
-        """Initialize an empty EntityGraph.
+    def __init__(
+        self,
+        graph_id: str = "default",
+        storage_backend: str = "memory",
+        sqlite_path: Optional[Union[str, Path]] = None,
+    ) -> None:
+        """Initialize an EntityGraph.
 
         Args:
             graph_id: Unique identifier for this graph instance.
+            storage_backend: ``"memory"`` (default) or ``"sqlite"``.
+            sqlite_path: Required when ``storage_backend == "sqlite"``.
         """
+        if storage_backend not in _SUPPORTED_BACKENDS:
+            raise ValueError(
+                "Unsupported storage_backend %r; choose from %s"
+                % (storage_backend, sorted(_SUPPORTED_BACKENDS))
+            )
+
         self.graph_id: str = graph_id
+        self.storage_backend: str = storage_backend
         self._nodes: dict[str, EntityNode] = {}
         self._edges: dict[str, EntityEdge] = {}
-        # adjacency: node_id -> list[edge_id]
         self._outgoing: dict[str, list[str]] = defaultdict(list)
         self._incoming: dict[str, list[str]] = defaultdict(list)
-        logger.info("EntityGraph '%s' initialized", graph_id)
+
+        self.sqlite_backend: Optional[_SQLiteGraphBackend] = None
+        if storage_backend == "sqlite":
+            if sqlite_path is None:
+                raise ValueError("storage_backend='sqlite' requires sqlite_path")
+            self.sqlite_backend = _SQLiteGraphBackend(sqlite_path)
+            # Hydrate in-memory structures from SQLite so queries are fast.
+            self._hydrate_from_sqlite()
+
+        logger.info(
+            "EntityGraph '%s' initialized (backend=%s)",
+            graph_id,
+            storage_backend,
+        )
 
     # ------------------------------------------------------------------
     # Mutation
     # ------------------------------------------------------------------
 
-    def add_node(self, node: EntityNode) -> str:
-        """Add a node to the graph.
-
-        If ``node.node_id`` is already present the existing node is
-        silently overwritten (upsert semantics).
+    def add_node(self, node: EntityNode, *, validate_type: bool = True) -> str:
+        """Add or upsert a node to the graph.
 
         Args:
             node: The node to add.
+            validate_type: When True (default), the ``node_type`` must be
+                one of the canonical ``NodeType.ALL`` values.  Set False
+                for free-form prototyping.
 
         Returns:
             The ``node_id`` of the added node.
+
+        Raises:
+            ValueError: If ``validate_type`` is True and ``node.node_type``
+                is not a recognised ``NodeType``.
         """
         if not node.node_id:
             node = node.model_copy(update={"node_id": new_uuid()})
+        if validate_type and not NodeType.is_valid(node.node_type):
+            raise ValueError(
+                "Unknown node_type %r; expected one of %s"
+                % (node.node_type, NodeType.ALL)
+            )
         self._nodes[node.node_id] = node
+        if self.sqlite_backend is not None:
+            self.sqlite_backend.upsert_node(self.graph_id, node)
         logger.debug("Node added: %s (%s)", node.node_id, node.node_type)
         return node.node_id
+
+    def update_node(
+        self,
+        node_id: str,
+        *,
+        name: Optional[str] = None,
+        geography: Optional[str] = None,
+        attributes: Optional[dict[str, Any]] = None,
+    ) -> EntityNode:
+        """Update mutable fields on an existing node.
+
+        Returns the updated ``EntityNode``.  Raises ``KeyError`` if the
+        node does not exist.
+        """
+        node = self._nodes.get(node_id)
+        if node is None:
+            raise KeyError(f"Node '{node_id}' not found")
+        updates: dict[str, Any] = {"updated_at": datetime.now(timezone.utc)}
+        if name is not None:
+            updates["name"] = name
+        if geography is not None:
+            updates["geography"] = geography
+        if attributes is not None:
+            merged = dict(node.attributes or {})
+            merged.update(attributes)
+            updates["attributes"] = merged
+        new_node = node.model_copy(update=updates)
+        self._nodes[node_id] = new_node
+        if self.sqlite_backend is not None:
+            self.sqlite_backend.upsert_node(self.graph_id, new_node)
+        return new_node
+
+    def delete_node(self, node_id: str, *, soft: bool = True) -> bool:
+        """Remove a node.
+
+        ``soft=True`` (default) keeps the row in SQLite with a
+        ``deleted_at`` timestamp so audit history is preserved.  In-memory
+        adjacency is always purged.  ``soft=False`` hard-deletes (SQLite
+        only) — in-memory behaviour is the same either way.
+
+        Returns True if the node existed.
+        """
+        existed = node_id in self._nodes
+        self._nodes.pop(node_id, None)
+        # Purge adjacency entries pointing at this node.
+        for eid in list(self._outgoing.get(node_id, [])):
+            self._edges.pop(eid, None)
+        for eid in list(self._incoming.get(node_id, [])):
+            self._edges.pop(eid, None)
+        self._outgoing.pop(node_id, None)
+        self._incoming.pop(node_id, None)
+        # Also remove any residual edges that still reference this node.
+        for edge_id, edge in list(self._edges.items()):
+            if edge.source_id == node_id or edge.target_id == node_id:
+                self._edges.pop(edge_id, None)
+
+        if self.sqlite_backend is not None:
+            if soft:
+                self.sqlite_backend.soft_delete_node(node_id)
+            else:
+                self.sqlite_backend.hard_delete_node(node_id)
+        return existed
 
     def add_edge(self, edge: EntityEdge) -> str:
         """Add a directed edge to the graph.
@@ -121,6 +463,8 @@ class EntityGraph:
         self._edges[edge.edge_id] = edge
         self._outgoing[edge.source_id].append(edge.edge_id)
         self._incoming[edge.target_id].append(edge.edge_id)
+        if self.sqlite_backend is not None:
+            self.sqlite_backend.upsert_edge(self.graph_id, edge)
         logger.debug(
             "Edge added: %s  %s -[%s]-> %s",
             edge.edge_id,
@@ -129,6 +473,82 @@ class EntityGraph:
             edge.target_id,
         )
         return edge.edge_id
+
+    def delete_edge(self, edge_id: str, *, soft: bool = True) -> bool:
+        """Remove an edge.  Mirror of ``delete_node``."""
+        existed = edge_id in self._edges
+        edge = self._edges.pop(edge_id, None)
+        if edge is not None:
+            if edge_id in self._outgoing.get(edge.source_id, []):
+                self._outgoing[edge.source_id].remove(edge_id)
+            if edge_id in self._incoming.get(edge.target_id, []):
+                self._incoming[edge.target_id].remove(edge_id)
+        if self.sqlite_backend is not None:
+            if soft:
+                self.sqlite_backend.soft_delete_edge(edge_id)
+        return existed
+
+    # ------------------------------------------------------------------
+    # Persistence helpers
+    # ------------------------------------------------------------------
+
+    def _hydrate_from_sqlite(self) -> None:
+        """Load non-deleted nodes and edges from SQLite into memory."""
+        if self.sqlite_backend is None:
+            return
+        for row in self.sqlite_backend.list_nodes(self.graph_id):
+            try:
+                created = (
+                    datetime.fromisoformat(row["created_at"])
+                    if row["created_at"] else None
+                )
+                updated = (
+                    datetime.fromisoformat(row["updated_at"])
+                    if row["updated_at"] else None
+                )
+                node = EntityNode(
+                    node_id=row["node_id"],
+                    node_type=row["node_type"],
+                    name=row["name"],
+                    geography=row["geography"],
+                    attributes=row["attributes"] or {},
+                    created_at=created,
+                    updated_at=updated,
+                )
+                self._nodes[node.node_id] = node
+            except Exception as exc:  # noqa: BLE001
+                logger.warning("Skipped malformed node during hydrate: %s", exc)
+        for row in self.sqlite_backend.list_edges(self.graph_id):
+            try:
+                vf = (
+                    datetime.fromisoformat(row["valid_from"])
+                    if row["valid_from"] else None
+                )
+                vt = (
+                    datetime.fromisoformat(row["valid_to"])
+                    if row["valid_to"] else None
+                )
+                edge = EntityEdge(
+                    edge_id=row["edge_id"],
+                    source_id=row["source_id"],
+                    target_id=row["target_id"],
+                    edge_type=row["edge_type"],
+                    weight=row["weight"],
+                    attributes=row["attributes"] or {},
+                    valid_from=vf,
+                    valid_to=vt,
+                )
+                self._edges[edge.edge_id] = edge
+                self._outgoing[edge.source_id].append(edge.edge_id)
+                self._incoming[edge.target_id].append(edge.edge_id)
+            except Exception as exc:  # noqa: BLE001
+                logger.warning("Skipped malformed edge during hydrate: %s", exc)
+
+    def close(self) -> None:
+        """Close the SQLite connection (safe to call multiple times)."""
+        if self.sqlite_backend is not None:
+            self.sqlite_backend.close()
+            self.sqlite_backend = None
 
     # ------------------------------------------------------------------
     # Queries

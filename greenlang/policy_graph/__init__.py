@@ -47,6 +47,12 @@ from greenlang.policy_graph.compliance import (
     ComplianceAssessment,
 )
 from greenlang.policy_graph.rules import RuleSet
+from greenlang.policy_graph.graph import (
+    PolicyGraph,
+    ApplicabilityResult,
+    RegulationApplicability,
+    DEFAULT_RULES,
+)
 
 __version__ = "0.1.0"
 
@@ -55,6 +61,11 @@ __all__ = [
     "PolicyEngine",
     "ComplianceRegistry",
     "RuleSet",
+    # v3 applies_to API (Phase 2.4)
+    "PolicyGraph",
+    "ApplicabilityResult",
+    "RegulationApplicability",
+    "DEFAULT_RULES",
     # Re-exported compliance models
     "IEDComplianceManager",
     "ComplianceStatus",

@@ -54,6 +54,79 @@ class FactorCatalogService:
             "unchanged_count": len(unchanged),
         }
 
+    def status_summary(self, edition_id: str) -> Dict[str, Any]:
+        """Aggregate factor counts by three-label coverage (Phase 5.3).
+
+        Returns the counts in the public dashboard shape::
+
+            {
+              "edition_id": "<id>",
+              "totals": {
+                "certified": 245, "preview": 78,
+                "connector_only": 12, "deprecated": 5, "all": 340,
+              },
+              "by_source": [
+                {"source_id": "epa_hub", "certified": 100, "preview": 20, ...},
+                ...
+              ],
+              "generated_at": "<iso>",
+            }
+
+        The aggregation pulls every factor in the edition once and folds
+        it by ``factor_status`` and ``source_id``.  In memory-backed
+        catalogs (tests / CI) this is cheap; in the SQLite-backed
+        catalog we stream via ``list_factors(limit=…)`` in one pass.
+        """
+        from datetime import datetime, timezone
+
+        self.repo.resolve_edition(edition_id)
+        factors, _total = self.repo.list_factors(
+            edition_id,
+            page=1,
+            limit=1_000_000,
+            include_preview=True,
+            include_connector=True,
+        )
+
+        totals: Dict[str, int] = {
+            "certified": 0,
+            "preview": 0,
+            "connector_only": 0,
+            "deprecated": 0,
+        }
+        by_source: Dict[str, Dict[str, int]] = {}
+        for factor in factors:
+            status = str(
+                getattr(factor, "factor_status", "certified") or "certified"
+            ).lower()
+            if status not in totals:
+                status = "certified"
+            totals[status] += 1
+
+            source_id = getattr(factor, "source_id", None) or "unknown"
+            source_bucket = by_source.setdefault(
+                source_id,
+                {
+                    "source_id": source_id,
+                    "certified": 0,
+                    "preview": 0,
+                    "connector_only": 0,
+                    "deprecated": 0,
+                    "all": 0,
+                },
+            )
+            source_bucket[status] += 1
+            source_bucket["all"] += 1
+
+        totals["all"] = sum(totals.values())
+        by_source_rows = sorted(by_source.values(), key=lambda r: r["source_id"])
+        return {
+            "edition_id": edition_id,
+            "totals": totals,
+            "by_source": by_source_rows,
+            "generated_at": datetime.now(timezone.utc).isoformat(),
+        }
+
     def replacement_chain(self, edition_id: str, factor_id: str, max_depth: int = 32) -> List[str]:
         """Walk replacement_factor_id links (A3)."""
         chain: List[str] = []

@@ -1753,47 +1753,49 @@ class CalculationLibrary:
 
 class EnhancedBaseAgent(ABC, Generic[T_Input, T_Output]):
     """
-    Enhanced BaseAgent - Foundation for all GreenLang agents.
+    .. deprecated:: 0.1.0
+        ``EnhancedBaseAgent`` is deprecated and will be removed in v1.0.
 
-    This abstract base class provides a complete foundation for building
-    production-ready agents with integrated AI/ML, Engineering, Architecture,
-    and Safety capabilities. All agents inheriting from this base achieve
-    95+/100 capability score.
+        Pick a replacement from the canonical v3 hierarchy exposed by
+        ``greenlang.agent_runtime``:
 
-    Core Methods:
-        - initialize(): Async initialization sequence
-        - execute(input): Main execution entry point
-        - shutdown(): Graceful shutdown sequence
+        - ``BaseAgent`` — simple sync lifecycle, no LLM
+        - ``DeterministicAgent`` — zero-hallucination CRITICAL PATH
+        - ``ReasoningAgent`` — LLM reasoning (RECOMMENDATION PATH)
+        - ``InsightAgent`` — hybrid deterministic + AI
+        - ``IntelligentAgentBase`` — BaseAgent + LLM provider + RAG
+        - ``AsyncAgentBase[InT, OutT]`` — async I/O-heavy agents
+        - ``AgentSpecV2Base[InT, OutT]`` + category mixin — typed, schema-validated
+
+        Migration guide: ``docs/migration/AGENT_BASE_CONSOLIDATION.md``.
+        Subclassing this class now emits a runtime ``DeprecationWarning``.
+
+    Legacy abstract base class. See the deprecation notice above for the
+    canonical v3 replacements. Original capabilities preserved below for
+    reference while callers migrate.
 
     Abstract Methods (must implement):
         - _process(input): Core processing logic
         - _get_safety_functions(): Safety function definitions
         - _get_api_routes(): API route definitions
-
-    Integrated Components:
-        - AI/ML: Explainability, Uncertainty, Self-Learning, Drift Detection
-        - Engineering: Calculation Library, Thermodynamics Validation
-        - Architecture: Protocol Management, Event Bus, API Router
-        - Safety: Safety Monitor, SIL Validator, Fail-Safe Handler
-        - Observability: Metrics, Tracing, Logging, Audit Trail
-
-    Example:
-        >>> class MyAgent(EnhancedBaseAgent[MyInput, MyOutput]):
-        ...     async def _process(self, input_data: MyInput) -> MyOutput:
-        ...         # Your processing logic here
-        ...         return MyOutput(...)
-        ...
-        ...     def _get_safety_functions(self) -> List[SafetyFunction]:
-        ...         return [SafetyFunction(...)]
-        ...
-        ...     def _get_api_routes(self) -> List[APIRoute]:
-        ...         return [APIRoute(...)]
-        >>>
-        >>> agent = MyAgent(config)
-        >>> await agent.initialize()
-        >>> result = await agent.execute(input_data)
-        >>> await agent.shutdown()
     """
+
+    def __init_subclass__(cls, **kwargs: Any) -> None:
+        super().__init_subclass__(**kwargs)
+        import warnings as _warnings
+
+        _warnings.warn(
+            (
+                f"{cls.__module__}.{cls.__qualname__} subclasses EnhancedBaseAgent, "
+                "which is deprecated and will be removed in v1.0. Migrate to one "
+                "of the canonical bases exposed by greenlang.agent_runtime "
+                "(BaseAgent / DeterministicAgent / ReasoningAgent / InsightAgent / "
+                "IntelligentAgentBase / AsyncAgentBase / AgentSpecV2Base). See "
+                "docs/migration/AGENT_BASE_CONSOLIDATION.md."
+            ),
+            DeprecationWarning,
+            stacklevel=2,
+        )
 
     def __init__(self, config: AgentConfig) -> None:
         """

@@ -17,6 +17,87 @@ app = typer.Typer()
 console = Console()
 
 
+# ---------------------------------------------------------------------------
+# v3 Policy Graph: applies_to API (Phase 2.4)
+# ---------------------------------------------------------------------------
+
+
+@app.command("applies-to")
+def applies_to(
+    entity_json: str = typer.Argument(..., help="Entity attributes as inline JSON"),
+    activity_json: str = typer.Argument(..., help="Activity attributes as inline JSON"),
+    jurisdiction: str = typer.Argument(..., help="Jurisdiction (EU, US-CA, GB, GLOBAL…)"),
+    date: str = typer.Argument(..., help="Reporting date in ISO format (YYYY-MM-DD)"),
+    rules_file: Optional[str] = typer.Option(
+        None, "--rules-file", help="Optional YAML file of additional declarative rules"
+    ),
+    output: Optional[str] = typer.Option(
+        None, "--output", help="Write full ApplicabilityResult JSON to this path"
+    ),
+) -> None:
+    """Evaluate which regulations apply to (entity, activity, jurisdiction, date)."""
+    from greenlang.policy_graph import PolicyGraph
+
+    try:
+        entity = json.loads(entity_json)
+        activity = json.loads(activity_json)
+    except json.JSONDecodeError as exc:
+        console.print(f"[red]entity / activity must be valid JSON: {exc}[/red]")
+        raise typer.Exit(2)
+
+    pg = PolicyGraph()
+    if rules_file:
+        try:
+            added = pg.register_rule_file(rules_file)
+            console.print(f"[cyan]Loaded {added} rule(s) from {rules_file}[/cyan]")
+        except Exception as exc:  # noqa: BLE001
+            console.print(f"[red]Could not load --rules-file: {exc}[/red]")
+            raise typer.Exit(2)
+
+    result = pg.applies_to(entity, activity, jurisdiction, date)
+
+    table = Table(title=f"Regulations applicable on {date}")
+    table.add_column("regulation")
+    table.add_column("jurisdiction")
+    table.add_column("deadline")
+    table.add_column("required factor classes")
+    for reg in result.applicable_regulations:
+        table.add_row(
+            reg.name,
+            reg.jurisdiction,
+            reg.deadline or "rolling",
+            ", ".join(reg.required_factor_classes) or "-",
+        )
+    console.print(table)
+    console.print(f"[green]{len(result.applicable_regulations)} regulation(s) apply[/green]")
+
+    if output:
+        out_path = Path(output)
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        out_path.write_text(
+            json.dumps(result.model_dump(), indent=2, sort_keys=True, default=str),
+            encoding="utf-8",
+        )
+        console.print(f"[green][OK][/green] Full verdict written -> {out_path}")
+
+
+@app.command("evaluate")
+def evaluate(
+    entity_json: str = typer.Argument(..., help="Entity attributes as inline JSON"),
+    activity_json: str = typer.Argument(..., help="Activity attributes as inline JSON"),
+    jurisdiction: str = typer.Argument(..., help="Jurisdiction identifier"),
+    date: str = typer.Argument(..., help="Reporting date YYYY-MM-DD"),
+) -> None:
+    """Print the full ApplicabilityResult JSON (alias of applies-to --output -)."""
+    from greenlang.policy_graph import PolicyGraph
+
+    entity = json.loads(entity_json)
+    activity = json.loads(activity_json)
+    pg = PolicyGraph()
+    result = pg.applies_to(entity, activity, jurisdiction, date)
+    console.print_json(data=result.model_dump())
+
+
 @app.command("check")
 def check(
     pack_path: Optional[Path] = typer.Argument(

@@ -454,6 +454,81 @@ async def search_facets(
     )
 
 
+# ==================== Public: three-label catalog status (Phase 5.3) ====================
+
+
+@router.get(
+    "/status/summary",
+    summary="Catalog status summary (three-label dashboard)",
+    description=(
+        "Public (unauthenticated) counts of factors by coverage label "
+        "(Certified / Preview / Connector-only / Deprecated), plus per-source "
+        "breakdown. Backs the FactorsCatalogStatus frontend page. "
+        "Cacheable for 5 minutes."
+    ),
+    responses={200: {"description": "Counts by label and source"}},
+)
+async def status_summary(
+    request: Request,
+    response: Response,
+    edition: Optional[str] = Query(None, description="Pin to specific edition"),
+    svc=Depends(get_factor_service),
+) -> Dict[str, Any]:
+    """Return count-by-label aggregation for the public dashboard.
+
+    Intentionally unauthenticated: the coverage matrix is a public trust
+    signal and must be reachable without credentials.
+    """
+    try:
+        edition_id = _resolve_edition(svc, request, edition)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+    summary = svc.status_summary(edition_id)
+
+    response.headers["Cache-Control"] = "public, max-age=300"
+    response.headers["X-Factors-Edition"] = edition_id
+    # Row-count hint for the auth/metering middleware (not authenticated here).
+    response.headers["X-Row-Count"] = str(summary["totals"].get("all", 0))
+    return summary
+
+
+# ==================== Public: watch pipeline status (Phase 5.4) ====================
+
+
+@router.get(
+    "/watch/status",
+    summary="Watch-pipeline status (per-source results)",
+    description=(
+        "Public (unauthenticated) snapshot of the source-watch pipeline. "
+        "Returns up to N recent check results per source (default 10). "
+        "Backed by the ``watch_results`` table (migration V430). "
+        "Cacheable for 5 minutes."
+    ),
+    responses={200: {"description": "Per-source watch result snapshot"}},
+)
+async def watch_status(
+    request: Request,
+    response: Response,
+    limit_per_source: int = Query(
+        10, ge=1, le=50, description="Recent results per source (max 50)"
+    ),
+) -> Dict[str, Any]:
+    """Return the last N watch-result rows per source.
+
+    Intentionally unauthenticated: the watch status is a public trust
+    signal ("are our factor sources healthy?").  Local-dev uses the
+    ``GL_FACTORS_WATCH_SQLITE`` path; production pulls from Postgres via
+    ``GL_FACTORS_DATABASE_URL``.
+    """
+    from greenlang.factors.watch.status_api import collect_watch_status
+
+    summary = collect_watch_status(limit_per_source=limit_per_source)
+    response.headers["Cache-Control"] = "public, max-age=300"
+    response.headers["X-Row-Count"] = str(summary.get("source_count", 0))
+    return summary
+
+
 @router.post(
     "/match",
     response_model=FactorMatchResponse,

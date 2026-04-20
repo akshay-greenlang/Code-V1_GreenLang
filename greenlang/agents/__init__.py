@@ -3,28 +3,30 @@
 GreenLang Agents Module
 ========================
 
-This module provides the agent framework and all available agents.
+This module hosts the concrete agents and the underlying base-class
+implementations. **For new code, import base classes from
+``greenlang.agent_runtime``**, which is the canonical v3 surface and
+re-exports every supported base class and mixin.
 
-Base Classes:
-- BaseAgent: Original base agent class (legacy - do not use for new agents)
-- IntelligentAgentBase: NEW - AI-native base class with LLM intelligence
-- AgentSpecV2Base: Standardized base class for AgentSpec v2 compliant agents
+Why: ``greenlang.agent_runtime`` is tagged ``CANONICAL_V3 = True`` and is
+the only import path stable across future re-organisations of this module.
 
-Intelligence Framework (NEW - Solves Intelligence Paradox):
-- IntelligentAgentBase: Base class with built-in LLM intelligence
-- IntelligenceMixin: Add intelligence to existing agents (retrofit)
-- IntelligenceInterface: Mandatory contract for AI-native agents
+Canonical v3 hierarchy (exported by ``greenlang.agent_runtime``):
+    BaseAgent                  — lifecycle, metrics, provenance
+      ├── DeterministicAgent   — zero-hallucination (CRITICAL PATH)
+      ├── ReasoningAgent       — LLM reasoning (RECOMMENDATION PATH)
+      └── InsightAgent         — hybrid deterministic + AI
+    AgentSpecV2Base[InT, OutT] + DeterministicMixin | ReasoningMixin | InsightMixin
+    AsyncAgentBase[InT, OutT]  — async lifecycle
+    IntelligentAgentBase       — BaseAgent + LLM provider + RAG
 
-Category Mixins (AgentSpec v2 Pattern):
-- DeterministicMixin: Zero-hallucination calculation agents
-- ReasoningMixin: AI-powered reasoning agents
-- InsightMixin: Hybrid calculation + AI agents
+Deprecated: ``EnhancedBaseAgent`` (removal scheduled for v1.0; subclassing
+emits a runtime ``DeprecationWarning``).
 
-Migration Guide:
-See greenlang/agents/MIGRATION_TO_AGENTSPECV2.md for migration instructions.
-
-NEW AGENTS: Must extend IntelligentAgentBase, not BaseAgent.
-EXISTING AGENTS: Add IntelligenceMixin to retrofit with LLM intelligence.
+Migration guides:
+    - ``docs/architecture/agent_inheritance_audit.md``    (current state)
+    - ``docs/migration/AGENT_BASE_CONSOLIDATION.md``      (file-by-file plan)
+    - ``greenlang/agents/MIGRATION_TO_AGENTSPECV2.md``    (per-pattern steps)
 """
 
 # Lazy imports to avoid requiring analytics dependencies at import time

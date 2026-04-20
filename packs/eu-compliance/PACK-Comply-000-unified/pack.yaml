@@ -1,0 +1,76 @@
+name: gl-comply-unified
+version: 0.1.0
+kind: meta
+summary: >
+  GreenLang Comply — unified FY27 Compliance Cloud meta-pack.  Composes CSRD,
+  CBAM, Scope 1/2/3, and supporting regulatory packs under a single
+  Comply orchestrator that chains Policy Graph + Scope Engine + Evidence
+  Vault + Climate Ledger.
+
+maintainers:
+  - name: GreenLang Platform Team
+    email: maintainers@greenlang.io
+
+license: Apache-2.0
+
+# The unified pack is a *meta*-pack: it doesn't ship agents of its own.
+# It declares the FY27-active compliance packs that must be installed
+# alongside it and wires them into a single orchestrator entry point.
+dependencies:
+  # CSRD + ESRS (core Comply path)
+  - gl-csrd-starter             # PACK-001
+  - gl-csrd-professional        # PACK-002
+  - gl-csrd-enterprise          # PACK-003
+  - gl-csrd-financial-service   # PACK-012
+  - gl-csrd-manufacturing       # PACK-013
+  - gl-csrd-retail              # PACK-014
+  - gl-double-materiality       # PACK-015
+  - gl-esrs-e1-climate          # PACK-016
+  - gl-esrs-full-coverage       # PACK-017
+  # CBAM
+  - gl-cbam-readiness           # PACK-004
+  - gl-cbam-complete            # PACK-005
+  # Scope 1/2/3 accounting (feeds scope_engine)
+  - gl-scope-1-2-complete       # PACK-041
+  - gl-scope-3-starter          # PACK-042
+  - gl-scope-3-complete         # PACK-043
+
+# The orchestrator is implemented in greenlang/comply/ and exposed via
+# the `gl comply run` CLI command.  Packs listed above contribute rules,
+# rule-libraries, and agents; the meta-pack doesn't duplicate them.
+entry_points:
+  cli: greenlang.cli.cmd_comply:app
+  orchestrator: greenlang.comply:ComplyOrchestrator
+
+# Substrate modules this orchestrator binds (all FY27 L1-L3 substrate).
+substrate:
+  policy_graph: greenlang.policy_graph:PolicyGraph
+  scope_engine: greenlang.scope_engine:ScopeEngineService
+  evidence_vault: greenlang.evidence_vault:EvidenceVault
+  climate_ledger: greenlang.climate_ledger:ClimateLedger
+  entity_graph: greenlang.entity_graph:EntityGraph
+  factors: greenlang.factors
+
+# Regulations covered by the default ruleset (Policy Graph default rules).
+# Additional jurisdictions can be added by registering YAML rule files
+# via PolicyGraph.register_rule_file().
+regulations:
+  - CBAM
+  - CSRD
+  - SB-253
+  - TCFD
+  - SBTi
+  - ISO-14064
+  - GHG-Protocol
+  - EU-Taxonomy
+  - CDP
+  - EUDR   # scope-decision pending (Phase 6.1); listed for completeness
+
+docs:
+  overview: docs/REPO_TOUR.md
+  cli: docs/CLI_REFERENCE.md
+  sales: docs/sales/COMPLY_BATTLECARD.md   # Phase 3.4 deliverable
+
+fy_scope:
+  launch: FY27
+  tier: CommercialWedge

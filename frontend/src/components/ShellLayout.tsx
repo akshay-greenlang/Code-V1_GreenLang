@@ -33,7 +33,9 @@ const links = [
   { label: "Taxonomy", to: "/apps/taxonomy" },
   { label: "Runs", to: "/runs" },
   { label: "Governance", to: "/governance" },
-  { label: "Admin", to: "/admin" }
+  { label: "Admin", to: "/admin" },
+  { label: "Factors", to: "/factors/explorer" },
+  { label: "Catalog", to: "/factors/status" }
 ];
 
 export function ShellLayout() {

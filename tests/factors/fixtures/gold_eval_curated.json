@@ -1,0 +1,3097 @@
+{
+  "actual_size": 380,
+  "cases": [
+    {
+      "activity": "diesel combustion stationary US",
+      "difficulty": "medium",
+      "domain": "energy",
+      "expected_fuel_type": "diesel",
+      "geography": "US",
+      "id": "g001"
+    },
+    {
+      "activity": "electricity consumption grid US",
+      "difficulty": "medium",
+      "domain": "energy",
+      "expected_fuel_type": "electricity",
+      "geography": "US",
+      "id": "g002"
+    },
+    {
+      "activity": "natural gas heating",
+      "difficulty": "easy",
+      "domain": "buildings",
+      "expected_fuel_type": "natural_gas",
+      "geography": "US",
+      "id": "g003"
+    },
+    {
+      "activity": "coal combustion boiler",
+      "difficulty": "easy",
+      "domain": "industry",
+      "expected_fuel_type": "coal",
+      "geography": "US",
+      "id": "g004"
+    },
+    {
+      "activity": "gasoline vehicle fleet",
+      "difficulty": "easy",
+      "domain": "transport",
+      "expected_fuel_type": "gasoline",
+      "geography": "US",
+      "id": "g005"
+    },
+    {
+      "activity": "diesel fuel transport",
+      "difficulty": "easy",
+      "domain": "transport",
+      "expected_fuel_type": "diesel",
+      "geography": "US",
+      "id": "g006"
+    },
+    {
+      "activity": "electricity purchased EU grid",
+      "difficulty": "medium",
+      "domain": "energy",
+      "expected_fuel_type": "electricity",
+      "geography": "EU",
+      "id": "g007"
+    },
+    {
+      "activity": "UK electricity consumption",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "electricity",
+      "geography": "UK",
+      "id": "g008"
+    },
+    {
+      "activity": "diesel stationary generator",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "diesel",
+      "geography": "US",
+      "id": "g009"
+    },
+    {
+      "activity": "natural gas boiler",
+      "difficulty": "easy",
+      "domain": "industry",
+      "expected_fuel_type": "natural_gas",
+      "geography": "US",
+      "id": "g010"
+    },
+    {
+      "activity": "US coal power plant",
+      "difficulty": "medium",
+      "domain": "energy",
+      "expected_fuel_type": "coal",
+      "geography": "US",
+      "id": "g011"
+    },
+    {
+      "activity": "petrol car fleet",
+      "difficulty": "easy",
+      "domain": "transport",
+      "expected_fuel_type": "gasoline",
+      "geography": "US",
+      "id": "g012"
+    },
+    {
+      "activity": "diesel liters mobile",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "diesel",
+      "geography": "US",
+      "id": "g013"
+    },
+    {
+      "activity": "diesel gallons stationary combustion",
+      "difficulty": "medium",
+      "domain": "energy",
+      "expected_fuel_type": "diesel",
+      "geography": "US",
+      "id": "g014"
+    },
+    {
+      "activity": "grid electricity US",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "electricity",
+      "geography": "US",
+      "id": "g015"
+    },
+    {
+      "activity": "natural gas therms US",
+      "difficulty": "medium",
+      "domain": "energy",
+      "expected_fuel_type": "natural_gas",
+      "geography": "US",
+      "id": "g016"
+    },
+    {
+      "activity": "coal tons US fossil",
+      "difficulty": "medium",
+      "domain": "energy",
+      "expected_fuel_type": "coal",
+      "geography": "US",
+      "id": "g017"
+    },
+    {
+      "activity": "gasoline gallons US transport",
+      "difficulty": "medium",
+      "domain": "transport",
+      "expected_fuel_type": "gasoline",
+      "geography": "US",
+      "id": "g018"
+    },
+    {
+      "activity": "electricity kwh EU",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "electricity",
+      "geography": "EU",
+      "id": "g019"
+    },
+    {
+      "activity": "electricity kwh UK",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "electricity",
+      "geography": "UK",
+      "id": "g020"
+    },
+    {
+      "activity": "diesel fuel oil",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "diesel",
+      "geography": "US",
+      "id": "g021"
+    },
+    {
+      "activity": "electricity purchased",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "electricity",
+      "geography": "US",
+      "id": "g022"
+    },
+    {
+      "activity": "nat gas",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "natural_gas",
+      "geography": "US",
+      "id": "g023"
+    },
+    {
+      "activity": "coal burning",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "coal",
+      "geography": "US",
+      "id": "g024"
+    },
+    {
+      "activity": "gas petrol",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "gasoline",
+      "geography": "US",
+      "id": "g025"
+    },
+    {
+      "activity": "diesel",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "diesel",
+      "geography": "US",
+      "id": "g026"
+    },
+    {
+      "activity": "electricity",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "electricity",
+      "geography": "US",
+      "id": "g027"
+    },
+    {
+      "activity": "natural gas",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "natural_gas",
+      "geography": "US",
+      "id": "g028"
+    },
+    {
+      "activity": "coal",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "coal",
+      "geography": "US",
+      "id": "g029"
+    },
+    {
+      "activity": "gasoline",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "gasoline",
+      "geography": "US",
+      "id": "g030"
+    },
+    {
+      "activity": "stationary combustion diesel generator US",
+      "difficulty": "medium",
+      "domain": "energy",
+      "expected_fuel_type": "diesel",
+      "geography": "US",
+      "id": "g031"
+    },
+    {
+      "activity": "scope 2 electricity grid average US",
+      "difficulty": "medium",
+      "domain": "energy",
+      "expected_fuel_type": "electricity",
+      "geography": "US",
+      "id": "g032"
+    },
+    {
+      "activity": "scope 1 natural gas heating therms",
+      "difficulty": "medium",
+      "domain": "buildings",
+      "expected_fuel_type": "natural_gas",
+      "geography": "US",
+      "id": "g033"
+    },
+    {
+      "activity": "scope 1 coal stationary",
+      "difficulty": "medium",
+      "domain": "energy",
+      "expected_fuel_type": "coal",
+      "geography": "US",
+      "id": "g034"
+    },
+    {
+      "activity": "scope 1 gasoline mobile fleet",
+      "difficulty": "medium",
+      "domain": "transport",
+      "expected_fuel_type": "gasoline",
+      "geography": "US",
+      "id": "g035"
+    },
+    {
+      "activity": "diesel fuel litres transport tier1",
+      "difficulty": "medium",
+      "domain": "transport",
+      "expected_fuel_type": "diesel",
+      "geography": "US",
+      "id": "g036"
+    },
+    {
+      "activity": "EU purchased electricity kwh",
+      "difficulty": "medium",
+      "domain": "energy",
+      "expected_fuel_type": "electricity",
+      "geography": "EU",
+      "id": "g037"
+    },
+    {
+      "activity": "Great Britain electricity grid",
+      "difficulty": "medium",
+      "domain": "energy",
+      "expected_fuel_type": "electricity",
+      "geography": "UK",
+      "id": "g038"
+    },
+    {
+      "activity": "diesel fossil combustion",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "diesel",
+      "geography": "US",
+      "id": "g039"
+    },
+    {
+      "activity": "gas natural heating US",
+      "difficulty": "medium",
+      "domain": "buildings",
+      "expected_fuel_type": "natural_gas",
+      "geography": "US",
+      "id": "g040"
+    },
+    {
+      "activity": "diesel generator backup power",
+      "difficulty": "medium",
+      "domain": "energy",
+      "expected_fuel_type": "diesel",
+      "geography": "US",
+      "id": "g041"
+    },
+    {
+      "activity": "electricity scope 2 purchased",
+      "difficulty": "medium",
+      "domain": "energy",
+      "expected_fuel_type": "electricity",
+      "geography": "US",
+      "id": "g042"
+    },
+    {
+      "activity": "gas boiler natural",
+      "difficulty": "easy",
+      "domain": "industry",
+      "expected_fuel_type": "natural_gas",
+      "geography": "US",
+      "id": "g043"
+    },
+    {
+      "activity": "bituminous coal combustion US",
+      "difficulty": "medium",
+      "domain": "energy",
+      "expected_fuel_type": "coal",
+      "geography": "US",
+      "id": "g044"
+    },
+    {
+      "activity": "motor gasoline fleet vehicles",
+      "difficulty": "medium",
+      "domain": "transport",
+      "expected_fuel_type": "gasoline",
+      "geography": "US",
+      "id": "g045"
+    },
+    {
+      "activity": "diesel engines mobile equipment",
+      "difficulty": "medium",
+      "domain": "energy",
+      "expected_fuel_type": "diesel",
+      "geography": "US",
+      "id": "g046"
+    },
+    {
+      "activity": "power purchased grid electricity",
+      "difficulty": "medium",
+      "domain": "energy",
+      "expected_fuel_type": "electricity",
+      "geography": "US",
+      "id": "g047"
+    },
+    {
+      "activity": "natural gas furnace",
+      "difficulty": "easy",
+      "domain": "industry",
+      "expected_fuel_type": "natural_gas",
+      "geography": "US",
+      "id": "g048"
+    },
+    {
+      "activity": "coal fired boiler",
+      "difficulty": "easy",
+      "domain": "industry",
+      "expected_fuel_type": "coal",
+      "geography": "US",
+      "id": "g049"
+    },
+    {
+      "activity": "petrol gasoline cars",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "gasoline",
+      "geography": "US",
+      "id": "g050"
+    },
+    {
+      "activity": "deisel fuel",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "diesel",
+      "geography": "US",
+      "id": "g051"
+    },
+    {
+      "activity": "electrcity grid",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "electricity",
+      "geography": "US",
+      "id": "g052"
+    },
+    {
+      "activity": "natual gas",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "natural_gas",
+      "geography": "US",
+      "id": "g053"
+    },
+    {
+      "activity": "gasolene fuel",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "gasoline",
+      "geography": "US",
+      "id": "g054"
+    },
+    {
+      "activity": "diesel fuel combustion scope 1",
+      "difficulty": "medium",
+      "domain": "energy",
+      "expected_fuel_type": "diesel",
+      "geography": "US",
+      "id": "g055"
+    },
+    {
+      "activity": "scope2 electricity",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "electricity",
+      "geography": "US",
+      "id": "g056"
+    },
+    {
+      "activity": "scope1 gas heating",
+      "difficulty": "easy",
+      "domain": "buildings",
+      "expected_fuel_type": "natural_gas",
+      "geography": "US",
+      "id": "g057"
+    },
+    {
+      "activity": "coal scope1 stationary",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "coal",
+      "geography": "US",
+      "id": "g058"
+    },
+    {
+      "activity": "gasoline scope1 transport",
+      "difficulty": "easy",
+      "domain": "transport",
+      "expected_fuel_type": "gasoline",
+      "geography": "US",
+      "id": "g059"
+    },
+    {
+      "activity": "diesel US gallons",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "diesel",
+      "geography": "US",
+      "id": "g060"
+    },
+    {
+      "activity": "US electricity grid average",
+      "difficulty": "medium",
+      "domain": "energy",
+      "expected_fuel_type": "electricity",
+      "geography": "US",
+      "id": "g061"
+    },
+    {
+      "activity": "US natural gas therms boiler",
+      "difficulty": "medium",
+      "domain": "industry",
+      "expected_fuel_type": "natural_gas",
+      "geography": "US",
+      "id": "g062"
+    },
+    {
+      "activity": "coal US tons stationary",
+      "difficulty": "medium",
+      "domain": "energy",
+      "expected_fuel_type": "coal",
+      "geography": "US",
+      "id": "g063"
+    },
+    {
+      "activity": "US gasoline gallons vehicles",
+      "difficulty": "medium",
+      "domain": "transport",
+      "expected_fuel_type": "gasoline",
+      "geography": "US",
+      "id": "g064"
+    },
+    {
+      "activity": "diesel fuel mobile combustion gallons",
+      "difficulty": "medium",
+      "domain": "energy",
+      "expected_fuel_type": "diesel",
+      "geography": "US",
+      "id": "g065"
+    },
+    {
+      "activity": "purchased electricity kwh scope 2",
+      "difficulty": "medium",
+      "domain": "energy",
+      "expected_fuel_type": "electricity",
+      "geography": "US",
+      "id": "g066"
+    },
+    {
+      "activity": "boiler gas natural therms",
+      "difficulty": "medium",
+      "domain": "industry",
+      "expected_fuel_type": "natural_gas",
+      "geography": "US",
+      "id": "g067"
+    },
+    {
+      "activity": "coal fossil stationary scope 1 tons",
+      "difficulty": "medium",
+      "domain": "energy",
+      "expected_fuel_type": "coal",
+      "geography": "US",
+      "id": "g068"
+    },
+    {
+      "activity": "fleet vehicles gasoline gallons",
+      "difficulty": "medium",
+      "domain": "transport",
+      "expected_fuel_type": "gasoline",
+      "geography": "US",
+      "id": "g069"
+    },
+    {
+      "activity": "EU electricity",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "electricity",
+      "geography": "EU",
+      "id": "g070"
+    },
+    {
+      "activity": "UK electricity",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "electricity",
+      "geography": "UK",
+      "id": "g071"
+    },
+    {
+      "activity": "European Union electricity kwh",
+      "difficulty": "medium",
+      "domain": "energy",
+      "expected_fuel_type": "electricity",
+      "geography": "EU",
+      "id": "g072"
+    },
+    {
+      "activity": "United Kingdom power",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "electricity",
+      "geography": "UK",
+      "id": "g073"
+    },
+    {
+      "activity": "diesel liters US scope 1",
+      "difficulty": "medium",
+      "domain": "energy",
+      "expected_fuel_type": "diesel",
+      "geography": "US",
+      "id": "g074"
+    },
+    {
+      "activity": "electricity kwh US grid scope 2",
+      "difficulty": "medium",
+      "domain": "energy",
+      "expected_fuel_type": "electricity",
+      "geography": "US",
+      "id": "g075"
+    },
+    {
+      "activity": "heating natural gas US therms",
+      "difficulty": "medium",
+      "domain": "buildings",
+      "expected_fuel_type": "natural_gas",
+      "geography": "US",
+      "id": "g076"
+    },
+    {
+      "activity": "US coal stationary combustion tons",
+      "difficulty": "medium",
+      "domain": "energy",
+      "expected_fuel_type": "coal",
+      "geography": "US",
+      "id": "g077"
+    },
+    {
+      "activity": "US gasoline transport fleet",
+      "difficulty": "medium",
+      "domain": "transport",
+      "expected_fuel_type": "gasoline",
+      "geography": "US",
+      "id": "g078"
+    },
+    {
+      "activity": "diesel fuel oil combustion",
+      "difficulty": "medium",
+      "domain": "energy",
+      "expected_fuel_type": "diesel",
+      "geography": "US",
+      "id": "g079"
+    },
+    {
+      "activity": "grid average electricity purchased",
+      "difficulty": "medium",
+      "domain": "energy",
+      "expected_fuel_type": "electricity",
+      "geography": "US",
+      "id": "g080"
+    },
+    {
+      "activity": "pipeline natural gas",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "natural_gas",
+      "geography": "US",
+      "id": "g081"
+    },
+    {
+      "activity": "sub-bituminous coal",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "coal",
+      "geography": "US",
+      "id": "g082"
+    },
+    {
+      "activity": "E10 gasoline blend",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "gasoline",
+      "geography": "US",
+      "id": "g083"
+    },
+    {
+      "activity": "ULSD diesel ultra low sulfur",
+      "difficulty": "medium",
+      "domain": "energy",
+      "expected_fuel_type": "diesel",
+      "geography": "US",
+      "id": "g084"
+    },
+    {
+      "activity": "commercial electricity",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "electricity",
+      "geography": "US",
+      "id": "g085"
+    },
+    {
+      "activity": "residential natural gas",
+      "difficulty": "easy",
+      "domain": "buildings",
+      "expected_fuel_type": "natural_gas",
+      "geography": "US",
+      "id": "g086"
+    },
+    {
+      "activity": "industrial coal furnace",
+      "difficulty": "easy",
+      "domain": "industry",
+      "expected_fuel_type": "coal",
+      "geography": "US",
+      "id": "g087"
+    },
+    {
+      "activity": "road transport gasoline",
+      "difficulty": "easy",
+      "domain": "transport",
+      "expected_fuel_type": "gasoline",
+      "geography": "US",
+      "id": "g088"
+    },
+    {
+      "activity": "backup generator diesel fuel",
+      "difficulty": "medium",
+      "domain": "energy",
+      "expected_fuel_type": "diesel",
+      "geography": "US",
+      "id": "g089"
+    },
+    {
+      "activity": "facility electricity consumption",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "electricity",
+      "geography": "US",
+      "id": "g090"
+    },
+    {
+      "activity": "HVAC natural gas heating system",
+      "difficulty": "medium",
+      "domain": "buildings",
+      "expected_fuel_type": "natural_gas",
+      "geography": "US",
+      "id": "g091"
+    },
+    {
+      "activity": "coal combustion emissions",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "coal",
+      "geography": "US",
+      "id": "g092"
+    },
+    {
+      "activity": "company car petrol fuel",
+      "difficulty": "medium",
+      "domain": "transport",
+      "expected_fuel_type": "gasoline",
+      "geography": "US",
+      "id": "g093"
+    },
+    {
+      "activity": "diesel combustion EU",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "diesel",
+      "geography": "EU",
+      "id": "g094"
+    },
+    {
+      "activity": "electricity EU grid average",
+      "difficulty": "medium",
+      "domain": "energy",
+      "expected_fuel_type": "electricity",
+      "geography": "EU",
+      "id": "g095"
+    },
+    {
+      "activity": "UK grid electricity kwh",
+      "difficulty": "medium",
+      "domain": "energy",
+      "expected_fuel_type": "electricity",
+      "geography": "UK",
+      "id": "g096"
+    },
+    {
+      "activity": "US diesel transport fuel combustion",
+      "difficulty": "medium",
+      "domain": "transport",
+      "expected_fuel_type": "diesel",
+      "geography": "US",
+      "id": "g097"
+    },
+    {
+      "activity": "scope 2 US grid electricity kwh",
+      "difficulty": "medium",
+      "domain": "energy",
+      "expected_fuel_type": "electricity",
+      "geography": "US",
+      "id": "g098"
+    },
+    {
+      "activity": "natural gas scope 1 US stationary therms",
+      "difficulty": "medium",
+      "domain": "energy",
+      "expected_fuel_type": "natural_gas",
+      "geography": "US",
+      "id": "g099"
+    },
+    {
+      "activity": "US coal scope 1 boiler combustion",
+      "difficulty": "medium",
+      "domain": "industry",
+      "expected_fuel_type": "coal",
+      "geography": "US",
+      "id": "g100"
+    },
+    {
+      "activity": "US gasoline scope 1 mobile fleet gallons",
+      "difficulty": "medium",
+      "domain": "transport",
+      "expected_fuel_type": "gasoline",
+      "geography": "US",
+      "id": "g101"
+    },
+    {
+      "activity": "diesl fuel",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "diesel",
+      "geography": "US",
+      "id": "g102"
+    },
+    {
+      "activity": "elecricity",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "electricity",
+      "geography": "US",
+      "id": "g103"
+    },
+    {
+      "activity": "natrual gas",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "natural_gas",
+      "geography": "US",
+      "id": "g104"
+    },
+    {
+      "activity": "gasolne",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "gasoline",
+      "geography": "US",
+      "id": "g105"
+    },
+    {
+      "activity": "diesel fuel combustion",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "diesel",
+      "geography": "US",
+      "id": "g106"
+    },
+    {
+      "activity": "diesel oil stationary",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "diesel",
+      "geography": "US",
+      "id": "g107"
+    },
+    {
+      "activity": "diesel generator power",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "diesel",
+      "geography": "US",
+      "id": "g108"
+    },
+    {
+      "activity": "#2 fuel oil combustion",
+      "difficulty": "medium",
+      "domain": "energy",
+      "expected_fuel_type": "diesel",
+      "geography": "US",
+      "id": "g109"
+    },
+    {
+      "activity": "DERV diesel road vehicle",
+      "difficulty": "medium",
+      "domain": "energy",
+      "expected_fuel_type": "diesel",
+      "geography": "US",
+      "id": "g110"
+    },
+    {
+      "activity": "gas oil heating",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "diesel",
+      "geography": "US",
+      "id": "g111"
+    },
+    {
+      "activity": "diesel backup generator",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "diesel",
+      "geography": "US",
+      "id": "g112"
+    },
+    {
+      "activity": "diesel fuel combustion",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "diesel",
+      "geography": "EU",
+      "id": "g113"
+    },
+    {
+      "activity": "diesel oil stationary",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "diesel",
+      "geography": "EU",
+      "id": "g114"
+    },
+    {
+      "activity": "diesel generator power",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "diesel",
+      "geography": "EU",
+      "id": "g115"
+    },
+    {
+      "activity": "#2 fuel oil combustion",
+      "difficulty": "medium",
+      "domain": "energy",
+      "expected_fuel_type": "diesel",
+      "geography": "EU",
+      "id": "g116"
+    },
+    {
+      "activity": "DERV diesel road vehicle",
+      "difficulty": "medium",
+      "domain": "energy",
+      "expected_fuel_type": "diesel",
+      "geography": "EU",
+      "id": "g117"
+    },
+    {
+      "activity": "gas oil heating",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "diesel",
+      "geography": "EU",
+      "id": "g118"
+    },
+    {
+      "activity": "diesel backup generator",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "diesel",
+      "geography": "EU",
+      "id": "g119"
+    },
+    {
+      "activity": "diesel fuel combustion",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "diesel",
+      "geography": "UK",
+      "id": "g120"
+    },
+    {
+      "activity": "diesel oil stationary",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "diesel",
+      "geography": "UK",
+      "id": "g121"
+    },
+    {
+      "activity": "diesel generator power",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "diesel",
+      "geography": "UK",
+      "id": "g122"
+    },
+    {
+      "activity": "#2 fuel oil combustion",
+      "difficulty": "medium",
+      "domain": "energy",
+      "expected_fuel_type": "diesel",
+      "geography": "UK",
+      "id": "g123"
+    },
+    {
+      "activity": "DERV diesel road vehicle",
+      "difficulty": "medium",
+      "domain": "energy",
+      "expected_fuel_type": "diesel",
+      "geography": "UK",
+      "id": "g124"
+    },
+    {
+      "activity": "gas oil heating",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "diesel",
+      "geography": "UK",
+      "id": "g125"
+    },
+    {
+      "activity": "diesel backup generator",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "diesel",
+      "geography": "UK",
+      "id": "g126"
+    },
+    {
+      "activity": "diesel fuel combustion",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "diesel",
+      "geography": "US",
+      "id": "g127"
+    },
+    {
+      "activity": "diesel oil stationary",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "diesel",
+      "geography": "US",
+      "id": "g128"
+    },
+    {
+      "activity": "diesel generator power",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "diesel",
+      "geography": "US",
+      "id": "g129"
+    },
+    {
+      "activity": "#2 fuel oil combustion",
+      "difficulty": "medium",
+      "domain": "energy",
+      "expected_fuel_type": "diesel",
+      "geography": "US",
+      "id": "g130"
+    },
+    {
+      "activity": "DERV diesel road vehicle",
+      "difficulty": "medium",
+      "domain": "energy",
+      "expected_fuel_type": "diesel",
+      "geography": "US",
+      "id": "g131"
+    },
+    {
+      "activity": "gas oil heating",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "diesel",
+      "geography": "US",
+      "id": "g132"
+    },
+    {
+      "activity": "diesel backup generator",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "diesel",
+      "geography": "US",
+      "id": "g133"
+    },
+    {
+      "activity": "natural gas heating",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "natural_gas",
+      "geography": "US",
+      "id": "g134"
+    },
+    {
+      "activity": "methane combustion boiler",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "natural_gas",
+      "geography": "US",
+      "id": "g135"
+    },
+    {
+      "activity": "pipeline gas furnace",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "natural_gas",
+      "geography": "US",
+      "id": "g136"
+    },
+    {
+      "activity": "natural gas therms",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "natural_gas",
+      "geography": "US",
+      "id": "g137"
+    },
+    {
+      "activity": "gas fired boiler",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "natural_gas",
+      "geography": "US",
+      "id": "g138"
+    },
+    {
+      "activity": "CNG compressed natural gas",
+      "difficulty": "medium",
+      "domain": "energy",
+      "expected_fuel_type": "natural_gas",
+      "geography": "US",
+      "id": "g139"
+    },
+    {
+      "activity": "LNG liquefied natural gas",
+      "difficulty": "medium",
+      "domain": "energy",
+      "expected_fuel_type": "natural_gas",
+      "geography": "US",
+      "id": "g140"
+    },
+    {
+      "activity": "natural gas heating",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "natural_gas",
+      "geography": "EU",
+      "id": "g141"
+    },
+    {
+      "activity": "methane combustion boiler",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "natural_gas",
+      "geography": "EU",
+      "id": "g142"
+    },
+    {
+      "activity": "pipeline gas furnace",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "natural_gas",
+      "geography": "EU",
+      "id": "g143"
+    },
+    {
+      "activity": "natural gas therms",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "natural_gas",
+      "geography": "EU",
+      "id": "g144"
+    },
+    {
+      "activity": "gas fired boiler",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "natural_gas",
+      "geography": "EU",
+      "id": "g145"
+    },
+    {
+      "activity": "CNG compressed natural gas",
+      "difficulty": "medium",
+      "domain": "energy",
+      "expected_fuel_type": "natural_gas",
+      "geography": "EU",
+      "id": "g146"
+    },
+    {
+      "activity": "LNG liquefied natural gas",
+      "difficulty": "medium",
+      "domain": "energy",
+      "expected_fuel_type": "natural_gas",
+      "geography": "EU",
+      "id": "g147"
+    },
+    {
+      "activity": "natural gas heating",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "natural_gas",
+      "geography": "UK",
+      "id": "g148"
+    },
+    {
+      "activity": "methane combustion boiler",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "natural_gas",
+      "geography": "UK",
+      "id": "g149"
+    },
+    {
+      "activity": "pipeline gas furnace",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "natural_gas",
+      "geography": "UK",
+      "id": "g150"
+    },
+    {
+      "activity": "natural gas therms",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "natural_gas",
+      "geography": "UK",
+      "id": "g151"
+    },
+    {
+      "activity": "gas fired boiler",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "natural_gas",
+      "geography": "UK",
+      "id": "g152"
+    },
+    {
+      "activity": "CNG compressed natural gas",
+      "difficulty": "medium",
+      "domain": "energy",
+      "expected_fuel_type": "natural_gas",
+      "geography": "UK",
+      "id": "g153"
+    },
+    {
+      "activity": "LNG liquefied natural gas",
+      "difficulty": "medium",
+      "domain": "energy",
+      "expected_fuel_type": "natural_gas",
+      "geography": "UK",
+      "id": "g154"
+    },
+    {
+      "activity": "natural gas heating",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "natural_gas",
+      "geography": "US",
+      "id": "g155"
+    },
+    {
+      "activity": "methane combustion boiler",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "natural_gas",
+      "geography": "US",
+      "id": "g156"
+    },
+    {
+      "activity": "pipeline gas furnace",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "natural_gas",
+      "geography": "US",
+      "id": "g157"
+    },
+    {
+      "activity": "natural gas therms",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "natural_gas",
+      "geography": "US",
+      "id": "g158"
+    },
+    {
+      "activity": "gas fired boiler",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "natural_gas",
+      "geography": "US",
+      "id": "g159"
+    },
+    {
+      "activity": "CNG compressed natural gas",
+      "difficulty": "medium",
+      "domain": "energy",
+      "expected_fuel_type": "natural_gas",
+      "geography": "US",
+      "id": "g160"
+    },
+    {
+      "activity": "LNG liquefied natural gas",
+      "difficulty": "medium",
+      "domain": "energy",
+      "expected_fuel_type": "natural_gas",
+      "geography": "US",
+      "id": "g161"
+    },
+    {
+      "activity": "electricity grid consumption",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "electricity",
+      "geography": "US",
+      "id": "g162",
+      "scope": "2"
+    },
+    {
+      "activity": "purchased electricity",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "electricity",
+      "geography": "US",
+      "id": "g163",
+      "scope": "2"
+    },
+    {
+      "activity": "grid power",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "electricity",
+      "geography": "US",
+      "id": "g164",
+      "scope": "2"
+    },
+    {
+      "activity": "electrical power consumption",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "electricity",
+      "geography": "US",
+      "id": "g165",
+      "scope": "2"
+    },
+    {
+      "activity": "mains electricity supply",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "electricity",
+      "geography": "US",
+      "id": "g166",
+      "scope": "2"
+    },
+    {
+      "activity": "electric utility",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "electricity",
+      "geography": "US",
+      "id": "g167",
+      "scope": "2"
+    },
+    {
+      "activity": "kWh electricity purchased",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "electricity",
+      "geography": "US",
+      "id": "g168",
+      "scope": "2"
+    },
+    {
+      "activity": "electricity grid consumption",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "electricity",
+      "geography": "EU",
+      "id": "g169",
+      "scope": "2"
+    },
+    {
+      "activity": "purchased electricity",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "electricity",
+      "geography": "EU",
+      "id": "g170",
+      "scope": "2"
+    },
+    {
+      "activity": "grid power",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "electricity",
+      "geography": "EU",
+      "id": "g171",
+      "scope": "2"
+    },
+    {
+      "activity": "electrical power consumption",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "electricity",
+      "geography": "EU",
+      "id": "g172",
+      "scope": "2"
+    },
+    {
+      "activity": "mains electricity supply",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "electricity",
+      "geography": "EU",
+      "id": "g173",
+      "scope": "2"
+    },
+    {
+      "activity": "electric utility",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "electricity",
+      "geography": "EU",
+      "id": "g174",
+      "scope": "2"
+    },
+    {
+      "activity": "kWh electricity purchased",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "electricity",
+      "geography": "EU",
+      "id": "g175",
+      "scope": "2"
+    },
+    {
+      "activity": "electricity grid consumption",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "electricity",
+      "geography": "UK",
+      "id": "g176",
+      "scope": "2"
+    },
+    {
+      "activity": "purchased electricity",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "electricity",
+      "geography": "UK",
+      "id": "g177",
+      "scope": "2"
+    },
+    {
+      "activity": "grid power",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "electricity",
+      "geography": "UK",
+      "id": "g178",
+      "scope": "2"
+    },
+    {
+      "activity": "electrical power consumption",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "electricity",
+      "geography": "UK",
+      "id": "g179",
+      "scope": "2"
+    },
+    {
+      "activity": "mains electricity supply",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "electricity",
+      "geography": "UK",
+      "id": "g180",
+      "scope": "2"
+    },
+    {
+      "activity": "electric utility",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "electricity",
+      "geography": "UK",
+      "id": "g181",
+      "scope": "2"
+    },
+    {
+      "activity": "kWh electricity purchased",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "electricity",
+      "geography": "UK",
+      "id": "g182",
+      "scope": "2"
+    },
+    {
+      "activity": "electricity grid consumption",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "electricity",
+      "geography": "US",
+      "id": "g183",
+      "scope": "2"
+    },
+    {
+      "activity": "purchased electricity",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "electricity",
+      "geography": "US",
+      "id": "g184",
+      "scope": "2"
+    },
+    {
+      "activity": "grid power",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "electricity",
+      "geography": "US",
+      "id": "g185",
+      "scope": "2"
+    },
+    {
+      "activity": "electrical power consumption",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "electricity",
+      "geography": "US",
+      "id": "g186",
+      "scope": "2"
+    },
+    {
+      "activity": "mains electricity supply",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "electricity",
+      "geography": "US",
+      "id": "g187",
+      "scope": "2"
+    },
+    {
+      "activity": "electric utility",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "electricity",
+      "geography": "US",
+      "id": "g188",
+      "scope": "2"
+    },
+    {
+      "activity": "kWh electricity purchased",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "electricity",
+      "geography": "US",
+      "id": "g189",
+      "scope": "2"
+    },
+    {
+      "activity": "bituminous coal combustion",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "coal",
+      "geography": "US",
+      "id": "g190"
+    },
+    {
+      "activity": "coal fired boiler",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "coal",
+      "geography": "US",
+      "id": "g191"
+    },
+    {
+      "activity": "anthracite coal burning",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "coal",
+      "geography": "US",
+      "id": "g192"
+    },
+    {
+      "activity": "hard coal combustion",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "coal",
+      "geography": "US",
+      "id": "g193"
+    },
+    {
+      "activity": "thermal coal stationary",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "coal",
+      "geography": "US",
+      "id": "g194"
+    },
+    {
+      "activity": "coal power generation",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "coal",
+      "geography": "US",
+      "id": "g195"
+    },
+    {
+      "activity": "solid fossil fuel coal",
+      "difficulty": "medium",
+      "domain": "energy",
+      "expected_fuel_type": "coal",
+      "geography": "US",
+      "id": "g196"
+    },
+    {
+      "activity": "steam coal boiler",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "coal",
+      "geography": "US",
+      "id": "g197"
+    },
+    {
+      "activity": "coal combustion tons",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "coal",
+      "geography": "US",
+      "id": "g198"
+    },
+    {
+      "activity": "lignite brown coal",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "coal",
+      "geography": "US",
+      "id": "g199"
+    },
+    {
+      "activity": "bituminous coal combustion",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "coal",
+      "geography": "US",
+      "id": "g200"
+    },
+    {
+      "activity": "coal fired boiler",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "coal",
+      "geography": "US",
+      "id": "g201"
+    },
+    {
+      "activity": "anthracite coal burning",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "coal",
+      "geography": "US",
+      "id": "g202"
+    },
+    {
+      "activity": "hard coal combustion",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "coal",
+      "geography": "US",
+      "id": "g203"
+    },
+    {
+      "activity": "thermal coal stationary",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "coal",
+      "geography": "US",
+      "id": "g204"
+    },
+    {
+      "activity": "coal power generation",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "coal",
+      "geography": "US",
+      "id": "g205"
+    },
+    {
+      "activity": "solid fossil fuel coal",
+      "difficulty": "medium",
+      "domain": "energy",
+      "expected_fuel_type": "coal",
+      "geography": "US",
+      "id": "g206"
+    },
+    {
+      "activity": "steam coal boiler",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "coal",
+      "geography": "US",
+      "id": "g207"
+    },
+    {
+      "activity": "coal combustion tons",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "coal",
+      "geography": "US",
+      "id": "g208"
+    },
+    {
+      "activity": "lignite brown coal",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "coal",
+      "geography": "US",
+      "id": "g209"
+    },
+    {
+      "activity": "gasoline vehicle fleet",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "gasoline",
+      "geography": "US",
+      "id": "g210"
+    },
+    {
+      "activity": "petrol car transport",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "gasoline",
+      "geography": "US",
+      "id": "g211"
+    },
+    {
+      "activity": "motor gasoline",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "gasoline",
+      "geography": "US",
+      "id": "g212"
+    },
+    {
+      "activity": "unleaded petrol",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "gasoline",
+      "geography": "US",
+      "id": "g213"
+    },
+    {
+      "activity": "E10 gasoline blend",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "gasoline",
+      "geography": "US",
+      "id": "g214"
+    },
+    {
+      "activity": "premium gasoline fuel",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "gasoline",
+      "geography": "US",
+      "id": "g215"
+    },
+    {
+      "activity": "regular gasoline gallons",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "gasoline",
+      "geography": "US",
+      "id": "g216"
+    },
+    {
+      "activity": "petrol fuel cars",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "gasoline",
+      "geography": "US",
+      "id": "g217"
+    },
+    {
+      "activity": "automobile gasoline",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "gasoline",
+      "geography": "US",
+      "id": "g218"
+    },
+    {
+      "activity": "gasoline spark ignition",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "gasoline",
+      "geography": "US",
+      "id": "g219"
+    },
+    {
+      "activity": "gasoline vehicle fleet",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "gasoline",
+      "geography": "US",
+      "id": "g220"
+    },
+    {
+      "activity": "petrol car transport",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "gasoline",
+      "geography": "US",
+      "id": "g221"
+    },
+    {
+      "activity": "motor gasoline",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "gasoline",
+      "geography": "US",
+      "id": "g222"
+    },
+    {
+      "activity": "unleaded petrol",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "gasoline",
+      "geography": "US",
+      "id": "g223"
+    },
+    {
+      "activity": "E10 gasoline blend",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "gasoline",
+      "geography": "US",
+      "id": "g224"
+    },
+    {
+      "activity": "premium gasoline fuel",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "gasoline",
+      "geography": "US",
+      "id": "g225"
+    },
+    {
+      "activity": "regular gasoline gallons",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "gasoline",
+      "geography": "US",
+      "id": "g226"
+    },
+    {
+      "activity": "petrol fuel cars",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "gasoline",
+      "geography": "US",
+      "id": "g227"
+    },
+    {
+      "activity": "automobile gasoline",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "gasoline",
+      "geography": "US",
+      "id": "g228"
+    },
+    {
+      "activity": "gasoline spark ignition",
+      "difficulty": "easy",
+      "domain": "energy",
+      "expected_fuel_type": "gasoline",
+      "geography": "US",
+      "id": "g229"
+    },
+    {
+      "activity": "diesel truck freight",
+      "difficulty": "easy",
+      "domain": "transport",
+      "expected_fuel_type": "diesel",
+      "geography": "US",
+      "id": "g230"
+    },
+    {
+      "activity": "diesel vehicle road",
+      "difficulty": "easy",
+      "domain": "transport",
+      "expected_fuel_type": "diesel",
+      "geography": "US",
+      "id": "g231"
+    },
+    {
+      "activity": "diesel locomotive rail",
+      "difficulty": "easy",
+      "domain": "transport",
+      "expected_fuel_type": "diesel",
+      "geography": "US",
+      "id": "g232"
+    },
+    {
+      "activity": "marine diesel fuel",
+      "difficulty": "easy",
+      "domain": "transport",
+      "expected_fuel_type": "diesel",
+      "geography": "US",
+      "id": "g233"
+    },
+    {
+      "activity": "diesel bus fleet",
+      "difficulty": "easy",
+      "domain": "transport",
+      "expected_fuel_type": "diesel",
+      "geography": "US",
+      "id": "g234"
+    },
+    {
+      "activity": "gasoline car commuting",
+      "difficulty": "easy",
+      "domain": "transport",
+      "expected_fuel_type": "gasoline",
+      "geography": "US",
+      "id": "g235"
+    },
+    {
+      "activity": "petrol vehicle passenger",
+      "difficulty": "easy",
+      "domain": "transport",
+      "expected_fuel_type": "gasoline",
+      "geography": "US",
+      "id": "g236"
+    },
+    {
+      "activity": "gasoline fleet vehicles",
+      "difficulty": "easy",
+      "domain": "transport",
+      "expected_fuel_type": "gasoline",
+      "geography": "US",
+      "id": "g237"
+    },
+    {
+      "activity": "diesel truck freight",
+      "difficulty": "easy",
+      "domain": "transport",
+      "expected_fuel_type": "diesel",
+      "geography": "EU",
+      "id": "g238"
+    },
+    {
+      "activity": "diesel vehicle road",
+      "difficulty": "easy",
+      "domain": "transport",
+      "expected_fuel_type": "diesel",
+      "geography": "EU",
+      "id": "g239"
+    },
+    {
+      "activity": "diesel locomotive rail",
+      "difficulty": "easy",
+      "domain": "transport",
+      "expected_fuel_type": "diesel",
+      "geography": "EU",
+      "id": "g240"
+    },
+    {
+      "activity": "marine diesel fuel",
+      "difficulty": "easy",
+      "domain": "transport",
+      "expected_fuel_type": "diesel",
+      "geography": "EU",
+      "id": "g241"
+    },
+    {
+      "activity": "diesel bus fleet",
+      "difficulty": "easy",
+      "domain": "transport",
+      "expected_fuel_type": "diesel",
+      "geography": "EU",
+      "id": "g242"
+    },
+    {
+      "activity": "gasoline car commuting",
+      "difficulty": "easy",
+      "domain": "transport",
+      "expected_fuel_type": "gasoline",
+      "geography": "EU",
+      "id": "g243"
+    },
+    {
+      "activity": "petrol vehicle passenger",
+      "difficulty": "easy",
+      "domain": "transport",
+      "expected_fuel_type": "gasoline",
+      "geography": "EU",
+      "id": "g244"
+    },
+    {
+      "activity": "gasoline fleet vehicles",
+      "difficulty": "easy",
+      "domain": "transport",
+      "expected_fuel_type": "gasoline",
+      "geography": "EU",
+      "id": "g245"
+    },
+    {
+      "activity": "diesel truck freight",
+      "difficulty": "easy",
+      "domain": "transport",
+      "expected_fuel_type": "diesel",
+      "geography": "US",
+      "id": "g246"
+    },
+    {
+      "activity": "diesel vehicle road",
+      "difficulty": "easy",
+      "domain": "transport",
+      "expected_fuel_type": "diesel",
+      "geography": "US",
+      "id": "g247"
+    },
+    {
+      "activity": "diesel locomotive rail",
+      "difficulty": "easy",
+      "domain": "transport",
+      "expected_fuel_type": "diesel",
+      "geography": "US",
+      "id": "g248"
+    },
+    {
+      "activity": "gasoline car commuting",
+      "difficulty": "easy",
+      "domain": "transport",
+      "expected_fuel_type": "gasoline",
+      "geography": "US",
+      "id": "g251"
+    },
+    {
+      "activity": "factory power usage",
+      "difficulty": "easy",
+      "domain": "industry",
+      "expected_fuel_type": "electricity",
+      "geography": "US",
+      "id": "g258",
+      "scope": "2"
+    },
+    {
+      "activity": "industrial diesel generator",
+      "difficulty": "easy",
+      "domain": "industry",
+      "expected_fuel_type": "diesel",
+      "geography": "US",
+      "id": "g261"
+    },
+    {
+      "activity": "coal furnace industrial",
+      "difficulty": "easy",
+      "domain": "industry",
+      "expected_fuel_type": "coal",
+      "geography": "EU",
+      "id": "g262"
+    },
+    {
+      "activity": "natural gas process heat",
+      "difficulty": "medium",
+      "domain": "industry",
+      "expected_fuel_type": "natural_gas",
+      "geography": "EU",
+      "id": "g263"
+    },
+    {
+      "activity": "diesel forklift warehouse",
+      "difficulty": "easy",
+      "domain": "industry",
+      "expected_fuel_type": "diesel",
+      "geography": "EU",
+      "id": "g264"
+    },
+    {
+      "activity": "industrial electricity consumption",
+      "difficulty": "easy",
+      "domain": "industry",
+      "expected_fuel_type": "electricity",
+      "geography": "EU",
+      "id": "g265",
+      "scope": "2"
+    },
+    {
+      "activity": "factory power usage",
+      "difficulty": "easy",
+      "domain": "industry",
+      "expected_fuel_type": "electricity",
+      "geography": "EU",
+      "id": "g266",
+      "scope": "2"
+    },
+    {
+      "activity": "manufacturing natural gas",
+      "difficulty": "easy",
+      "domain": "industry",
+      "expected_fuel_type": "natural_gas",
+      "geography": "EU",
+      "id": "g267"
+    },
+    {
+      "activity": "process steam coal fired",
+      "difficulty": "medium",
+      "domain": "industry",
+      "expected_fuel_type": "coal",
+      "geography": "EU",
+      "id": "g268"
+    },
+    {
+      "activity": "industrial diesel generator",
+      "difficulty": "easy",
+      "domain": "industry",
+      "expected_fuel_type": "diesel",
+      "geography": "EU",
+      "id": "g269"
+    },
+    {
+      "activity": "coal furnace industrial",
+      "difficulty": "easy",
+      "domain": "industry",
+      "expected_fuel_type": "coal",
+      "geography": "US",
+      "id": "g270"
+    },
+    {
+      "activity": "manufacturing natural gas",
+      "difficulty": "easy",
+      "domain": "industry",
+      "expected_fuel_type": "natural_gas",
+      "geography": "US",
+      "id": "g275"
+    },
+    {
+      "activity": "process steam coal fired",
+      "difficulty": "medium",
+      "domain": "industry",
+      "expected_fuel_type": "coal",
+      "geography": "US",
+      "id": "g276"
+    },
+    {
+      "activity": "office building electricity",
+      "difficulty": "easy",
+      "domain": "buildings",
+      "expected_fuel_type": "electricity",
+      "geography": "US",
+      "id": "g278",
+      "scope": "2"
+    },
+    {
+      "activity": "commercial HVAC gas",
+      "difficulty": "easy",
+      "domain": "buildings",
+      "expected_fuel_type": "natural_gas",
+      "geography": "US",
+      "id": "g280"
+    },
+    {
+      "activity": "building diesel backup",
+      "difficulty": "easy",
+      "domain": "buildings",
+      "expected_fuel_type": "diesel",
+      "geography": "US",
+      "id": "g281"
+    },
+    {
+      "activity": "office lighting power",
+      "difficulty": "easy",
+      "domain": "buildings",
+      "expected_fuel_type": "electricity",
+      "geography": "US",
+      "id": "g282",
+      "scope": "2"
+    },
+    {
+      "activity": "office building electricity",
+      "difficulty": "easy",
+      "domain": "buildings",
+      "expected_fuel_type": "electricity",
+      "geography": "EU",
+      "id": "g283",
+      "scope": "2"
+    },
+    {
+      "activity": "building heating natural gas",
+      "difficulty": "medium",
+      "domain": "buildings",
+      "expected_fuel_type": "natural_gas",
+      "geography": "EU",
+      "id": "g284"
+    },
+    {
+      "activity": "commercial HVAC gas",
+      "difficulty": "easy",
+      "domain": "buildings",
+      "expected_fuel_type": "natural_gas",
+      "geography": "EU",
+      "id": "g285"
+    },
+    {
+      "activity": "building diesel backup",
+      "difficulty": "easy",
+      "domain": "buildings",
+      "expected_fuel_type": "diesel",
+      "geography": "EU",
+      "id": "g286"
+    },
+    {
+      "activity": "office lighting power",
+      "difficulty": "easy",
+      "domain": "buildings",
+      "expected_fuel_type": "electricity",
+      "geography": "EU",
+      "id": "g287",
+      "scope": "2"
+    },
+    {
+      "activity": "office building electricity",
+      "difficulty": "easy",
+      "domain": "buildings",
+      "expected_fuel_type": "electricity",
+      "geography": "UK",
+      "id": "g288",
+      "scope": "2"
+    },
+    {
+      "activity": "building heating natural gas",
+      "difficulty": "medium",
+      "domain": "buildings",
+      "expected_fuel_type": "natural_gas",
+      "geography": "UK",
+      "id": "g289"
+    },
+    {
+      "activity": "commercial HVAC gas",
+      "difficulty": "easy",
+      "domain": "buildings",
+      "expected_fuel_type": "natural_gas",
+      "geography": "UK",
+      "id": "g290"
+    },
+    {
+      "activity": "building diesel backup",
+      "difficulty": "easy",
+      "domain": "buildings",
+      "expected_fuel_type": "diesel",
+      "geography": "UK",
+      "id": "g291"
+    },
+    {
+      "activity": "office lighting power",
+      "difficulty": "easy",
+      "domain": "buildings",
+      "expected_fuel_type": "electricity",
+      "geography": "UK",
+      "id": "g292",
+      "scope": "2"
+    },
+    {
+      "activity": "office building electricity",
+      "difficulty": "easy",
+      "domain": "buildings",
+      "expected_fuel_type": "electricity",
+      "geography": "US",
+      "id": "g293",
+      "scope": "2"
+    },
+    {
+      "activity": "office lighting power",
+      "difficulty": "easy",
+      "domain": "buildings",
+      "expected_fuel_type": "electricity",
+      "geography": "US",
+      "id": "g297",
+      "scope": "2"
+    },
+    {
+      "activity": "farm diesel equipment",
+      "difficulty": "easy",
+      "domain": "agriculture",
+      "expected_fuel_type": "diesel",
+      "geography": "US",
+      "id": "g298"
+    },
+    {
+      "activity": "agricultural diesel tractor",
+      "difficulty": "easy",
+      "domain": "agriculture",
+      "expected_fuel_type": "diesel",
+      "geography": "US",
+      "id": "g299"
+    },
+    {
+      "activity": "grain drying natural gas",
+      "difficulty": "medium",
+      "domain": "agriculture",
+      "expected_fuel_type": "natural_gas",
+      "geography": "US",
+      "id": "g301"
+    },
+    {
+      "activity": "greenhouse heating gas",
+      "difficulty": "easy",
+      "domain": "agriculture",
+      "expected_fuel_type": "natural_gas",
+      "geography": "US",
+      "id": "g304"
+    },
+    {
+      "activity": "agricultural diesel tractor",
+      "difficulty": "easy",
+      "domain": "agriculture",
+      "expected_fuel_type": "diesel",
+      "geography": "US",
+      "id": "g306"
+    },
+    {
+      "activity": "farm electricity irrigation",
+      "difficulty": "easy",
+      "domain": "agriculture",
+      "expected_fuel_type": "electricity",
+      "geography": "US",
+      "id": "g307",
+      "scope": "2"
+    },
+    {
+      "activity": "grain drying natural gas",
+      "difficulty": "medium",
+      "domain": "agriculture",
+      "expected_fuel_type": "natural_gas",
+      "geography": "US",
+      "id": "g308"
+    },
+    {
+      "activity": "natrual gas heatng",
+      "difficulty": "hard",
+      "domain": "misspelling",
+      "expected_fuel_type": "natural_gas",
+      "geography": "US",
+      "id": "g317"
+    },
+    {
+      "activity": "gasoline gasolene",
+      "difficulty": "hard",
+      "domain": "misspelling",
+      "expected_fuel_type": "gasoline",
+      "geography": "US",
+      "id": "g318"
+    },
+    {
+      "activity": "coel combustion",
+      "difficulty": "hard",
+      "domain": "misspelling",
+      "expected_fuel_type": "coal",
+      "geography": "US",
+      "id": "g321"
+    },
+    {
+      "activity": "naturel gas",
+      "difficulty": "hard",
+      "domain": "misspelling",
+      "expected_fuel_type": "natural_gas",
+      "geography": "US",
+      "id": "g324"
+    },
+    {
+      "activity": "gasoleen",
+      "difficulty": "hard",
+      "domain": "misspelling",
+      "expected_fuel_type": "gasoline",
+      "geography": "US",
+      "id": "g325"
+    },
+    {
+      "activity": "diesle generator",
+      "difficulty": "hard",
+      "domain": "misspelling",
+      "expected_fuel_type": "diesel",
+      "geography": "US",
+      "id": "g327"
+    },
+    {
+      "activity": "electricty kwh",
+      "difficulty": "hard",
+      "domain": "misspelling",
+      "expected_fuel_type": "electricity",
+      "geography": "US",
+      "id": "g328"
+    },
+    {
+      "activity": "gazoline fuel",
+      "difficulty": "hard",
+      "domain": "misspelling",
+      "expected_fuel_type": "gasoline",
+      "geography": "US",
+      "id": "g330"
+    },
+    {
+      "activity": "gas mobile",
+      "difficulty": "hard",
+      "domain": "abbreviation",
+      "expected_fuel_type": "gasoline",
+      "geography": "US",
+      "id": "g342"
+    },
+    {
+      "activity": "CNG fleet",
+      "difficulty": "hard",
+      "domain": "abbreviation",
+      "expected_fuel_type": "natural_gas",
+      "geography": "US",
+      "id": "g354"
+    },
+    {
+      "activity": "E85 fuel blend",
+      "difficulty": "hard",
+      "domain": "abbreviation",
+      "expected_fuel_type": "gasoline",
+      "geography": "US",
+      "id": "g355"
+    },
+    {
+      "activity": "bio diesel blend",
+      "difficulty": "hard",
+      "domain": "abbreviation",
+      "expected_fuel_type": "diesel",
+      "geography": "US",
+      "id": "g356"
+    },
+    {
+      "activity": "gas heating",
+      "difficulty": "hard",
+      "domain": "ambiguous",
+      "expected_fuel_type": "natural_gas",
+      "geography": "US",
+      "id": "g358"
+    },
+    {
+      "activity": "fossil fuel burning",
+      "difficulty": "hard",
+      "domain": "ambiguous",
+      "expected_fuel_type": "coal",
+      "geography": "US",
+      "id": "g360"
+    },
+    {
+      "activity": "power generation",
+      "difficulty": "hard",
+      "domain": "ambiguous",
+      "expected_fuel_type": "electricity",
+      "geography": "US",
+      "id": "g365"
+    },
+    {
+      "activity": "fuel transport mobile",
+      "difficulty": "hard",
+      "domain": "ambiguous",
+      "expected_fuel_type": "diesel",
+      "geography": "US",
+      "id": "g368"
+    },
+    {
+      "activity": "thermal fuel",
+      "difficulty": "hard",
+      "domain": "ambiguous",
+      "expected_fuel_type": "natural_gas",
+      "geography": "US",
+      "id": "g370"
+    },
+    {
+      "activity": "European electricity",
+      "difficulty": "hard",
+      "domain": "cross_geography",
+      "expected_fuel_type": "electricity",
+      "geography": "EU",
+      "id": "g373"
+    },
+    {
+      "activity": "British gas",
+      "difficulty": "hard",
+      "domain": "cross_geography",
+      "expected_fuel_type": "natural_gas",
+      "geography": "UK",
+      "id": "g374"
+    },
+    {
+      "activity": "USA coal",
+      "difficulty": "hard",
+      "domain": "cross_geography",
+      "expected_fuel_type": "coal",
+      "geography": "US",
+      "id": "g375"
+    },
+    {
+      "activity": "United States gasoline",
+      "difficulty": "hard",
+      "domain": "cross_geography",
+      "expected_fuel_type": "gasoline",
+      "geography": "US",
+      "id": "g376"
+    },
+    {
+      "activity": "EU grid electricity",
+      "difficulty": "hard",
+      "domain": "cross_geography",
+      "expected_fuel_type": "electricity",
+      "geography": "EU",
+      "id": "g377"
+    },
+    {
+      "activity": "UK power grid",
+      "difficulty": "hard",
+      "domain": "cross_geography",
+      "expected_fuel_type": "electricity",
+      "geography": "UK",
+      "id": "g378"
+    },
+    {
+      "activity": "US natural gas pipeline",
+      "difficulty": "hard",
+      "domain": "cross_geography",
+      "expected_fuel_type": "natural_gas",
+      "geography": "US",
+      "id": "g379"
+    },
+    {
+      "activity": "continental Europe electricity",
+      "difficulty": "hard",
+      "domain": "cross_geography",
+      "expected_fuel_type": "electricity",
+      "geography": "EU",
+      "id": "g380"
+    },
+    {
+      "activity": "England electricity grid",
+      "difficulty": "hard",
+      "domain": "cross_geography",
+      "expected_fuel_type": "electricity",
+      "geography": "UK",
+      "id": "g381"
+    },
+    {
+      "activity": "Western Europe gas",
+      "difficulty": "hard",
+      "domain": "cross_geography",
+      "expected_fuel_type": "natural_gas",
+      "geography": "EU",
+      "id": "g383"
+    },
+    {
+      "activity": "Britain electricity",
+      "difficulty": "hard",
+      "domain": "cross_geography",
+      "expected_fuel_type": "electricity",
+      "geography": "UK",
+      "id": "g384"
+    },
+    {
+      "activity": "Old world electricity",
+      "difficulty": "hard",
+      "domain": "cross_geography",
+      "expected_fuel_type": "electricity",
+      "geography": "EU",
+      "id": "g387"
+    },
+    {
+      "activity": "Great Britain power",
+      "difficulty": "hard",
+      "domain": "cross_geography",
+      "expected_fuel_type": "electricity",
+      "geography": "UK",
+      "id": "g388"
+    },
+    {
+      "activity": "European Union electricity",
+      "difficulty": "hard",
+      "domain": "cross_geography",
+      "expected_fuel_type": "electricity",
+      "geography": "EU",
+      "id": "g389"
+    },
+    {
+      "activity": "United Kingdom gas",
+      "difficulty": "hard",
+      "domain": "cross_geography",
+      "expected_fuel_type": "natural_gas",
+      "geography": "UK",
+      "id": "g390"
+    },
+    {
+      "activity": "US EPA diesel factor",
+      "difficulty": "hard",
+      "domain": "cross_geography",
+      "expected_fuel_type": "diesel",
+      "geography": "US",
+      "id": "g391"
+    },
+    {
+      "activity": "scope 2 electricity grid",
+      "difficulty": "hard",
+      "domain": "scoped",
+      "expected_fuel_type": "electricity",
+      "geography": "US",
+      "id": "g393",
+      "scope": "2"
+    },
+    {
+      "activity": "scope 1 natural gas stationary",
+      "difficulty": "hard",
+      "domain": "scoped",
+      "expected_fuel_type": "natural_gas",
+      "geography": "US",
+      "id": "g394",
+      "scope": "1"
+    },
+    {
+      "activity": "scope 1 gasoline mobile",
+      "difficulty": "hard",
+      "domain": "scoped",
+      "expected_fuel_type": "gasoline",
+      "geography": "US",
+      "id": "g396",
+      "scope": "1"
+    },
+    {
+      "activity": "indirect emissions electricity",
+      "difficulty": "hard",
+      "domain": "scoped",
+      "expected_fuel_type": "electricity",
+      "geography": "US",
+      "id": "g398",
+      "scope": "2"
+    },
+    {
+      "activity": "location-based grid power",
+      "difficulty": "hard",
+      "domain": "scoped",
+      "expected_fuel_type": "electricity",
+      "geography": "US",
+      "id": "g401",
+      "scope": "2"
+    },
+    {
+      "activity": "scope 1 coal boiler",
+      "difficulty": "hard",
+      "domain": "scoped",
+      "expected_fuel_type": "coal",
+      "geography": "US",
+      "id": "g405",
+      "scope": "1"
+    },
+    {
+      "activity": "direct emissions diesel",
+      "difficulty": "hard",
+      "domain": "scoped",
+      "expected_fuel_type": "diesel",
+      "geography": "US",
+      "id": "g407",
+      "scope": "1"
+    },
+    {
+      "activity": "indirect emissions electricity",
+      "difficulty": "hard",
+      "domain": "scoped",
+      "expected_fuel_type": "electricity",
+      "geography": "US",
+      "id": "g408",
+      "scope": "2"
+    },
+    {
+      "activity": "diesel gallons",
+      "difficulty": "hard",
+      "domain": "units",
+      "expected_fuel_type": "diesel",
+      "geography": "US",
+      "id": "g412"
+    },
+    {
+      "activity": "diesel liters",
+      "difficulty": "hard",
+      "domain": "units",
+      "expected_fuel_type": "diesel",
+      "geography": "US",
+      "id": "g413"
+    },
+    {
+      "activity": "electricity kwh",
+      "difficulty": "hard",
+      "domain": "units",
+      "expected_fuel_type": "electricity",
+      "geography": "US",
+      "id": "g414"
+    },
+    {
+      "activity": "natural gas therms",
+      "difficulty": "hard",
+      "domain": "units",
+      "expected_fuel_type": "natural_gas",
+      "geography": "US",
+      "id": "g415"
+    },
+    {
+      "activity": "gasoline gallons",
+      "difficulty": "hard",
+      "domain": "units",
+      "expected_fuel_type": "gasoline",
+      "geography": "US",
+      "id": "g417"
+    },
+    {
+      "activity": "diesel litres",
+      "difficulty": "hard",
+      "domain": "units",
+      "expected_fuel_type": "diesel",
+      "geography": "EU",
+      "id": "g418"
+    },
+    {
+      "activity": "electricity megawatt hours",
+      "difficulty": "hard",
+      "domain": "units",
+      "expected_fuel_type": "electricity",
+      "geography": "EU",
+      "id": "g419"
+    },
+    {
+      "activity": "gasoline liters",
+      "difficulty": "hard",
+      "domain": "units",
+      "expected_fuel_type": "gasoline",
+      "geography": "US",
+      "id": "g423"
+    },
+    {
+      "activity": "natural gas mmbtu",
+      "difficulty": "hard",
+      "domain": "units",
+      "expected_fuel_type": "natural_gas",
+      "geography": "US",
+      "id": "g424"
+    },
+    {
+      "activity": "gasoline kg",
+      "difficulty": "hard",
+      "domain": "units",
+      "expected_fuel_type": "gasoline",
+      "geography": "US",
+      "id": "g430"
+    },
+    {
+      "activity": "electricity GWh",
+      "difficulty": "hard",
+      "domain": "units",
+      "expected_fuel_type": "electricity",
+      "geography": "US",
+      "id": "g431"
+    },
+    {
+      "activity": "we burn coal in our power plant",
+      "difficulty": "medium",
+      "domain": "energy",
+      "expected_fuel_type": "coal",
+      "geography": "IN",
+      "id": "g435"
+    },
+    {
+      "activity": "European office electricity consumption",
+      "difficulty": "medium",
+      "domain": "buildings",
+      "expected_fuel_type": "electricity",
+      "geography": "EU",
+      "id": "g438"
+    },
+    {
+      "activity": "UK warehouse heating with gas",
+      "difficulty": "medium",
+      "domain": "buildings",
+      "expected_fuel_type": "natural_gas",
+      "geography": "UK",
+      "id": "g439"
+    },
+    {
+      "activity": "Scope 1 mobile combustion gasoline",
+      "difficulty": "medium",
+      "domain": "ghg_protocol",
+      "expected_fuel_type": "gasoline",
+      "geography": "US",
+      "id": "g453"
+    },
+    {
+      "activity": "Scope 2 market-based electricity",
+      "difficulty": "medium",
+      "domain": "ghg_protocol",
+      "expected_fuel_type": "electricity",
+      "geography": "EU",
+      "id": "g455"
+    },
+    {
+      "activity": "Scope 1 coal process emissions",
+      "difficulty": "medium",
+      "domain": "ghg_protocol",
+      "expected_fuel_type": "coal",
+      "geography": "US",
+      "id": "g456"
+    },
+    {
+      "activity": "GRI 305-1 direct gasoline",
+      "difficulty": "medium",
+      "domain": "ghg_protocol",
+      "expected_fuel_type": "gasoline",
+      "geography": "US",
+      "id": "g462"
+    },
+    {
+      "activity": "GRI 305-2 electricity indirect",
+      "difficulty": "medium",
+      "domain": "ghg_protocol",
+      "expected_fuel_type": "electricity",
+      "geography": "US",
+      "id": "g463"
+    },
+    {
+      "activity": "CDP diesel consumption report",
+      "difficulty": "medium",
+      "domain": "ghg_protocol",
+      "expected_fuel_type": "diesel",
+      "geography": "US",
+      "id": "g464"
+    },
+    {
+      "activity": "SBTi target natural gas",
+      "difficulty": "medium",
+      "domain": "ghg_protocol",
+      "expected_fuel_type": "natural_gas",
+      "geography": "US",
+      "id": "g466"
+    },
+    {
+      "activity": "EPA emission factor diesel",
+      "difficulty": "medium",
+      "domain": "regulatory",
+      "expected_fuel_type": "diesel",
+      "geography": "US",
+      "id": "g467"
+    },
+    {
+      "activity": "DEFRA electricity factor UK",
+      "difficulty": "medium",
+      "domain": "regulatory",
+      "expected_fuel_type": "electricity",
+      "geography": "UK",
+      "id": "g468"
+    },
+    {
+      "activity": "EU ETS coal factor",
+      "difficulty": "medium",
+      "domain": "regulatory",
+      "expected_fuel_type": "coal",
+      "geography": "EU",
+      "id": "g470"
+    },
+    {
+      "activity": "eGRID electricity factor",
+      "difficulty": "easy",
+      "domain": "regulatory",
+      "expected_fuel_type": "electricity",
+      "geography": "US",
+      "id": "g472"
+    },
+    {
+      "activity": "DEFRA diesel conversion",
+      "difficulty": "easy",
+      "domain": "regulatory",
+      "expected_fuel_type": "diesel",
+      "geography": "UK",
+      "id": "g473"
+    },
+    {
+      "activity": "BEIS gas conversion factor",
+      "difficulty": "medium",
+      "domain": "regulatory",
+      "expected_fuel_type": "natural_gas",
+      "geography": "UK",
+      "id": "g474"
+    },
+    {
+      "activity": "EPA AP-42 diesel",
+      "difficulty": "easy",
+      "domain": "regulatory",
+      "expected_fuel_type": "diesel",
+      "geography": "US",
+      "id": "g475"
+    },
+    {
+      "activity": "NAEI UK electricity",
+      "difficulty": "easy",
+      "domain": "regulatory",
+      "expected_fuel_type": "electricity",
+      "geography": "UK",
+      "id": "g476"
+    },
+    {
+      "activity": "diesel verbrennung",
+      "difficulty": "hard",
+      "domain": "multilingual",
+      "expected_fuel_type": "diesel",
+      "geography": "EU",
+      "id": "g477"
+    },
+    {
+      "activity": "strom verbrauch",
+      "difficulty": "hard",
+      "domain": "multilingual",
+      "expected_fuel_type": "electricity",
+      "geography": "EU",
+      "id": "g478"
+    },
+    {
+      "activity": "charbon combustion",
+      "difficulty": "hard",
+      "domain": "multilingual",
+      "expected_fuel_type": "coal",
+      "geography": "EU",
+      "id": "g479"
+    },
+    {
+      "activity": "essence carburant",
+      "difficulty": "hard",
+      "domain": "multilingual",
+      "expected_fuel_type": "gasoline",
+      "geography": "EU",
+      "id": "g480"
+    },
+    {
+      "activity": "gaz naturel chauffage",
+      "difficulty": "hard",
+      "domain": "multilingual",
+      "expected_fuel_type": "natural_gas",
+      "geography": "EU",
+      "id": "g481"
+    },
+    {
+      "activity": "gasolio combustione",
+      "difficulty": "hard",
+      "domain": "multilingual",
+      "expected_fuel_type": "diesel",
+      "geography": "EU",
+      "id": "g482"
+    },
+    {
+      "activity": "elettricita consumo",
+      "difficulty": "hard",
+      "domain": "multilingual",
+      "expected_fuel_type": "electricity",
+      "geography": "EU",
+      "id": "g483"
+    },
+    {
+      "activity": "carbon combustible",
+      "difficulty": "hard",
+      "domain": "multilingual",
+      "expected_fuel_type": "coal",
+      "geography": "EU",
+      "id": "g484"
+    },
+    {
+      "activity": "gasolina vehiculo",
+      "difficulty": "hard",
+      "domain": "multilingual",
+      "expected_fuel_type": "gasoline",
+      "geography": "EU",
+      "id": "g485"
+    },
+    {
+      "activity": "gas natural calefaccion",
+      "difficulty": "hard",
+      "domain": "multilingual",
+      "expected_fuel_type": "natural_gas",
+      "geography": "EU",
+      "id": "g486"
+    },
+    {
+      "activity": "summer cooling electricity",
+      "difficulty": "hard",
+      "domain": "temporal",
+      "expected_fuel_type": "electricity",
+      "geography": "US",
+      "id": "g488"
+    },
+    {
+      "activity": "quarterly gasoline purchase",
+      "difficulty": "hard",
+      "domain": "temporal",
+      "expected_fuel_type": "gasoline",
+      "geography": "US",
+      "id": "g491"
+    },
+    {
+      "activity": "2024 coal consumption",
+      "difficulty": "hard",
+      "domain": "temporal",
+      "expected_fuel_type": "coal",
+      "geography": "US",
+      "id": "g492"
+    },
+    {
+      "activity": "FY2025 electricity usage",
+      "difficulty": "hard",
+      "domain": "temporal",
+      "expected_fuel_type": "electricity",
+      "geography": "US",
+      "id": "g493"
+    },
+    {
+      "activity": "Q4 natural gas heating",
+      "difficulty": "hard",
+      "domain": "temporal",
+      "expected_fuel_type": "natural_gas",
+      "geography": "US",
+      "id": "g494"
+    },
+    {
+      "activity": "red diesel",
+      "difficulty": "hard",
+      "domain": "edge",
+      "expected_fuel_type": "diesel",
+      "geography": "UK",
+      "id": "g497"
+    },
+    {
+      "activity": "heating oil kerosene",
+      "difficulty": "hard",
+      "domain": "edge",
+      "expected_fuel_type": "diesel",
+      "geography": "US",
+      "id": "g499"
+    },
+    {
+      "activity": "town gas",
+      "difficulty": "hard",
+      "domain": "edge",
+      "expected_fuel_type": "natural_gas",
+      "geography": "UK",
+      "id": "g500"
+    },
+    {
+      "activity": "propane LPG gas",
+      "difficulty": "hard",
+      "domain": "edge",
+      "expected_fuel_type": "natural_gas",
+      "geography": "US",
+      "id": "g501"
+    },
+    {
+      "activity": "jet fuel kerosene",
+      "difficulty": "hard",
+      "domain": "edge",
+      "expected_fuel_type": "diesel",
+      "geography": "US",
+      "id": "g503"
+    },
+    {
+      "activity": "avgas aviation gasoline",
+      "difficulty": "hard",
+      "domain": "edge",
+      "expected_fuel_type": "gasoline",
+      "geography": "US",
+      "id": "g504"
+    },
+    {
+      "activity": "woodchip biomass",
+      "difficulty": "hard",
+      "domain": "edge",
+      "expected_fuel_type": "coal",
+      "geography": "US",
+      "id": "g507"
+    },
+    {
+      "activity": "biogas methane",
+      "difficulty": "hard",
+      "domain": "edge",
+      "expected_fuel_type": "natural_gas",
+      "geography": "US",
+      "id": "g508"
+    },
+    {
+      "activity": "green electricity tariff",
+      "difficulty": "hard",
+      "domain": "edge",
+      "expected_fuel_type": "electricity",
+      "geography": "UK",
+      "id": "g510"
+    },
+    {
+      "activity": "off-peak electricity",
+      "difficulty": "hard",
+      "domain": "edge",
+      "expected_fuel_type": "electricity",
+      "geography": "US",
+      "id": "g511"
+    }
+  ],
+  "curation_seed": 20260420,
+  "generated_from": "tests/factors/fixtures/gold_eval_full.json",
+  "schema_version": "1.0",
+  "target_size": 380
+}

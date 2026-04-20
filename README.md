@@ -136,19 +136,31 @@ Outputs in `out/`:
 
 ### Use the Factors SDK
 
-```python
-from greenlang.factors.sdk import FactorsClient
+```bash
+# Python
+pip install greenlang-factors-sdk
+# TypeScript
+npm install @greenlang/factors-sdk
+```
 
-client = FactorsClient(api_key="...")
-factor = client.match(
+```python
+from greenlang_factors_sdk import FactorsClient
+
+client = FactorsClient(
+    base_url="https://factors.greenlang.io",
+    api_key="gl_live_sk_...",
+)
+match = client.match(
     activity="diesel combustion, stationary",
     geography="IN",
     quantity=1000, unit="L",
 )
-print(factor.co2e_kg, factor.source, factor.license, factor.edition)
+print(match.co2e_kg, match.source, match.license, match.edition)
 ```
 
-The SDK and its TypeScript counterpart are zero-dependency and FY27 target the hosted Factors API.
+Both SDKs are zero-runtime-dependency and published via the `factors-sdk-v*` tag.
+See [`docs/factors/sdk.md`](docs/factors/sdk.md) for full docs and
+[`docs/factors/hosted_api.md`](docs/factors/hosted_api.md) for hosted-API deployment.
 
 ### Repository tour
 

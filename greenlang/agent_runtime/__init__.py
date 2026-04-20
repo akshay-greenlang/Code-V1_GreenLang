@@ -54,6 +54,19 @@ from __future__ import annotations
 
 __version__ = "0.1.0"
 
+# Canonical v3 hierarchy declaration. When True, callers can rely on this
+# module as the single source of truth for the agent base-class surface.
+# The underlying modules in greenlang.agents.* remain importable for backward
+# compatibility but new code MUST import from greenlang.agent_runtime.
+#
+# See docs/architecture/agent_inheritance_audit.md for the current state and
+# docs/migration/AGENT_BASE_CONSOLIDATION.md for the file-by-file migration.
+CANONICAL_V3 = True
+
+# Base classes that are deprecated and scheduled for removal in v1.0.
+# Subclassing any of these will emit a runtime DeprecationWarning.
+DEPRECATED_BASES = frozenset({"EnhancedBaseAgent"})
+
 # ---------------------------------------------------------------------------
 # Canonical base class + result types (183+ importers)
 # ---------------------------------------------------------------------------

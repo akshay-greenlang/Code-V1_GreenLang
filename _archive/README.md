@@ -15,7 +15,7 @@
 | 05 | `duplicate_agent_versions/` | Duplicate agent variants (_v2, _v3, _v4, _ai, _intelligent, _async, _sync) |
 | 06 | `fy28_plus_premature_apps/` | GL-016 to GL-020, GL Agents, gl_agents, GL-Agent-Factory, GL-VCCI-Carbon-APP, etc. |
 | 07 | `fy29_plus_premature_packs/` | 36 packs not in FY27 scope: energy-efficiency, net-zero, GHG 044-050, EU 006-011/018-020 |
-| 08 | `legacy_v1_v2_runtime/` | greenlang/v1/, greenlang/v2/ legacy runtimes |
+| 08 | `legacy_v1_v2_runtime/` | greenlang/v1/, greenlang/v2/ legacy runtimes + `cli/cmd_v1.py`, `cmd_v2.py` + `.github/workflows/greenlang-v2-platform-ci.yml`, `v2-release-train.yml` (Phase 6.2, 2026-04-20) |
 | 09 | `tmp_smoke_outputs/` | tmp_v1_smoke/, test_out_csrd/, phase1_evidence/, out/, logs/, test-reports/, reports/ |
 | 10 | `misc_prd_mvp/` | 2026_PRD_MVP/, GreenLang_Agents_PRD_402/ |
 | 11 | `ralphy_and_extras/` | ralphy-agent/, .ralphy/ |

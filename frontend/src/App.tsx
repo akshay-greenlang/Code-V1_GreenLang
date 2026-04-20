@@ -2,6 +2,8 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import { RoleGuard } from "./components/RoleGuard";
 import { ShellLayout } from "./components/ShellLayout";
 import { AdminPage } from "./pages/AdminPage";
+import { FactorsCatalogStatus } from "./pages/FactorsCatalogStatus";
+import { FactorsExplorer } from "./pages/FactorsExplorer";
 import { GovernancePage } from "./pages/GovernancePage";
 import { RunsPage } from "./pages/RunsPage";
 import { WorkspacePage } from "./pages/WorkspacePage";
@@ -22,6 +24,9 @@ export default function App() {
         <Route path="/runs" element={<RoleGuard><RunsPage /></RoleGuard>} />
         <Route path="/governance" element={<RoleGuard><GovernancePage /></RoleGuard>} />
         <Route path="/admin" element={<RoleGuard><AdminPage /></RoleGuard>} />
+        <Route path="/factors/explorer" element={<RoleGuard><FactorsExplorer /></RoleGuard>} />
+        {/* Public: no auth guard on the catalog-status dashboard. */}
+        <Route path="/factors/status" element={<FactorsCatalogStatus />} />
       </Route>
     </Routes>
   );

@@ -16,8 +16,16 @@ from typing import List, Optional
 from rich.console import Console
 from click.core import Parameter
 from typer.core import TyperArgument, TyperOption
-from greenlang.v1.backends import run_csrd_backend, run_vcci_backend
-from greenlang.v2.backends import V2_BLOCKED_EXIT_CODE, run_v2_profile_backend
+
+# v1/v2 platform runtimes were retired in Phase 6 (see docs/fy27-scope.md §2.2
+# and _archive/08_legacy_v1_v2_runtime/).  Name-slots are kept for any
+# lingering reference elsewhere in the CLI dispatch path; callers that hit
+# these paths will get a clear NotImplementedError at use-time instead of an
+# import crash.
+run_csrd_backend = None
+run_vcci_backend = None
+V2_BLOCKED_EXIT_CODE = 2
+run_v2_profile_backend = None
 
 # Fallback version constant
 FALLBACK_VERSION = "0.3.0"
@@ -329,8 +337,15 @@ def _safe_add_typer(module_name: str, command_name: str, help_text: str) -> None
 
 
 _safe_add_typer("cmd_pack", "pack", "Pack management commands")
-_safe_add_typer("cmd_v1", "v1", "GreenLang v1 platformization commands")
-_safe_add_typer("cmd_v2", "v2", "GreenLang v2 scale and productization commands")
+
+# FY27 L2/L3 product surfaces (Phase 2 of the FY27 plan).
+_safe_add_typer("cmd_ledger", "ledger", "Climate Ledger operations (L2 System of Record)")
+_safe_add_typer("cmd_evidence", "evidence", "Evidence Vault operations (L2 System of Record)")
+_safe_add_typer("cmd_entity", "entity", "Entity Graph operations (L1 Data Foundation)")
+_safe_add_typer("cmd_policy", "policy-graph", "Policy Graph applicability API (L3 Intelligence)")
+_safe_add_typer("cmd_connect", "connect", "Connect enterprise connectors (L1 Data Foundation)")
+_safe_add_typer("cmd_comply", "comply", "Comply umbrella orchestrator (L4 Compliance Cloud)")
+_safe_add_typer("cmd_scope", "scope", "Scope Engine compute (L3 Intelligence)")
 
 
 # Add run command

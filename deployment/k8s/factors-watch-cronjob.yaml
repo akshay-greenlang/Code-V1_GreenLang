@@ -1,0 +1,98 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: factors-watch-daily
+  namespace: greenlang-factors
+  labels:
+    app.kubernetes.io/name: greenlang-factors
+    app.kubernetes.io/component: watch
+    greenlang.io/cadence: daily
+spec:
+  # 06:00 UTC daily. Adjust in per-environment overlays if desired.
+  schedule: "0 6 * * *"
+  timeZone: Etc/UTC
+  concurrencyPolicy: Forbid           # No overlapping runs.
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 7
+  startingDeadlineSeconds: 600        # Skip if the controller is > 10m late.
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      activeDeadlineSeconds: 1800     # Hard-kill at 30 minutes.
+      template:
+        metadata:
+          labels:
+            app.kubernetes.io/name: greenlang-factors
+            app.kubernetes.io/component: watch
+        spec:
+          restartPolicy: OnFailure
+          serviceAccountName: greenlang-factors
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
+            fsGroup: 1000
+            seccompProfile:
+              type: RuntimeDefault
+          containers:
+            - name: factors-watch
+              image: ghcr.io/greenlang/factors:latest
+              imagePullPolicy: IfNotPresent
+              command:
+                - python
+                - -m
+                - greenlang.factors.cli
+                - watch-run
+              env:
+                - name: GL_FACTORS_SQLITE_PATH
+                  valueFrom:
+                    configMapKeyRef:
+                      name: greenlang-factors-env
+                      key: GL_FACTORS_SQLITE_PATH
+                      optional: true
+                - name: GL_FACTORS_DATABASE_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: factors-db
+                      key: dsn
+                      optional: true
+                - name: GL_FACTORS_WATCH_SCHEDULE_SOURCE
+                  value: k8s-cronjob
+              resources:
+                requests:
+                  cpu: "200m"
+                  memory: "256Mi"
+                limits:
+                  cpu: "1000m"
+                  memory: "1Gi"
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                capabilities:
+                  drop: ["ALL"]
+              volumeMounts:
+                - name: tmp
+                  mountPath: /tmp
+          volumes:
+            - name: tmp
+              emptyDir:
+                medium: Memory
+                sizeLimit: 128Mi
+---
+# Optional: per-source cadence overlay for sources that DON'T follow the
+# default daily schedule.  Matches the `cadence:` field in
+# greenlang/factors/data/source_registry.yaml.  The watcher reads the
+# registry internally and skips non-due sources, so this CronJob is
+# always safe to run daily even for annual sources.
+#
+# Source cadence (as of 2026-04-20):
+#   epa_hub             : quarterly
+#   egrid               : annual
+#   desnz_ghg_conversion: annual
+#   tcr_grp_defaults    : annual
+#   ipcc                : major releases (manual)
+#   green_e             : annual
+#   cbam_registry       : quarterly
+#   electricity_maps    : daily (connector-only)
+#
+# See docs/factors/watch-pipeline-ops.md for the operator guide.

@@ -27,27 +27,54 @@ from __future__ import annotations
 class NodeType:
     """Allowed node types for the Entity Graph.
 
-    Each constant represents a category of organizational entity that
-    can participate in the v3 Entity Graph.
+    The canonical v3 hierarchy is ``organization → facility → asset → meter``.
+    Additional categories cover supply-chain, product, activity, emission,
+    and geographic anchoring.
     """
 
+    # Core organizational hierarchy (v3 spec).
     ORGANIZATION = "organization"
     FACILITY = "facility"
+    ASSET = "asset"
+    METER = "meter"
+
+    # Extended categories.
     SUPPLIER = "supplier"
     PRODUCT = "product"
     ACTIVITY = "activity"
     EMISSION_SOURCE = "emission_source"
     GEOGRAPHY = "geography"
 
+    # Canonical allowed parent for each node type.  Empty tuple == no parent constraint.
+    # Used by EntityGraph.validate_hierarchy() to detect misrooted graphs.
+    ALLOWED_PARENTS: dict[str, tuple[str, ...]] = {
+        ORGANIZATION: (),
+        FACILITY: (ORGANIZATION,),
+        ASSET: (FACILITY,),
+        METER: (ASSET, FACILITY),
+        SUPPLIER: (ORGANIZATION,),
+        PRODUCT: (ORGANIZATION, FACILITY),
+        ACTIVITY: (FACILITY, ASSET),
+        EMISSION_SOURCE: (FACILITY, ASSET, ACTIVITY),
+        GEOGRAPHY: (),
+    }
+
     ALL: list[str] = [
         ORGANIZATION,
         FACILITY,
+        ASSET,
+        METER,
         SUPPLIER,
         PRODUCT,
         ACTIVITY,
         EMISSION_SOURCE,
         GEOGRAPHY,
     ]
+
+    @classmethod
+    def is_valid(cls, value: str) -> bool:
+        """Return True if ``value`` is a recognised node type."""
+        return value in cls.ALL
 
 
 class EdgeType:

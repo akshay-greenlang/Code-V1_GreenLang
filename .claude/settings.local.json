@@ -442,7 +442,9 @@
       "Bash(Get-ChildItem -File -Filter \"*.py\")",
       "Bash(Select-String:*)",
       "Bash(Select-Object -Last 3)",
-      "Bash(claude:*)"
+      "Bash(claude:*)",
+      "Read(//c/tmp/**)",
+      "Bash(rm -f /tmp/test_ledger.sqlite /tmp/test_ledger_export.json python -m greenlang.cli.main ledger record emission e-001 calculate abc123 --sqlite /tmp/test_ledger.sqlite --metadata '{\"framework\":\"CBAM\"}')"
     ],
     "deny": [],
     "ask": []
