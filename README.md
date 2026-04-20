@@ -1,384 +1,113 @@
 # GreenLang
 
-**Enterprise Climate Intelligence Platform** - 100+ AI agents powering carbon accounting, ESG compliance, and regulatory reporting
+**Climate intelligence substrate — Factors, Ledger, Policy Graph, Agent Runtime — plus CBAM, CSRD, and Scope Engine applications on top.**
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12-blue.svg)](https://www.python.org/downloads/)
 [![Version](https://img.shields.io/badge/version-0.3.0-green.svg)](https://github.com/akshay-greenlang/Code-V1_GreenLang/releases)
-[![Agents](https://img.shields.io/badge/AI%20agents-100%2B-brightgreen.svg)](#what-weve-built)
-[![Tests](https://img.shields.io/badge/tests-21%2C931%2B%20passing-brightgreen.svg)](#platform-statistics)
-[![Migrations](https://img.shields.io/badge/DB%20migrations-128-blue.svg)](#database--migrations)
+[![Climate OS](https://img.shields.io/badge/Climate%20OS-Substrate%20%2B%20Applications-brightgreen.svg)](#2-the-four-layers)
+[![FY27](https://img.shields.io/badge/FY27-Compliance%20Cloud-blue.svg)](#3-fy27-products)
 
 ---
 
-## About Us
+## 1. What is GreenLang
 
-**GreenLang is a pre-seed climate technology company building the world's most comprehensive open-source climate intelligence platform.**
+GreenLang is the **climate operating system** for regulated enterprises: one auditable substrate for emission factors, activity data, and policy logic, with sector applications — CBAM, CSRD, Scope Engine — built on top.
 
-We believe that accurate, auditable, and automated climate accounting is the foundation for meaningful climate action. Today, enterprises face a tsunami of climate regulations - CSRD, EUDR, CBAM, GHG Protocol, ISO 14064, CDP, TCFD, SBTi, EU Taxonomy, California SB 253 - each with complex, overlapping requirements. Most organizations are stuck with spreadsheets, consultants, and fragmented tools that can't scale.
+Climate compliance is a moving target. CBAM's definitive period is live, CSRD is in year one for thousands of companies, California SB 253 hits **10 August 2026**, and India's CCTS is notifying its first ~490 obligated entities. Enterprises are trying to meet this with spreadsheets, consultants, and disconnected point tools. Factor choices are not defended, evidence is not auditable, and every new regulation forces a manual rebuild.
 
-**GreenLang changes this.** We're building a deterministic execution engine and agent-based platform where every calculation is reproducible, every number is traceable, and every output is audit-ready. Our platform is not a black box - it's an open, inspectable infrastructure that enterprises can trust for regulatory compliance.
+GreenLang is the substrate underneath, not another report generator:
 
-### Our Vision
+- Every activity and emission is written once, **signed, and reproducible**.
+- Every factor carries **source lineage, license, and review history**.
+- Every claim is backed by a retrievable **evidence bundle**.
+- Every regulation — CBAM, CSRD, SB 253, TCFD, SBTi, ISO 14064 — is expressed as **applicability logic**, not a frozen report template.
 
-> **Make climate compliance as automated and reliable as financial accounting.**
-
-We envision a world where:
-- Every enterprise can accurately measure, report, and reduce their emissions across all scopes
-- Regulatory compliance is automated, not manual - adapting in real-time as regulations evolve
-- Supply chain transparency is the default, not the exception
-- Climate data is deterministic, reproducible, and audit-ready by design
-
-### Why We're Building This
-
-The climate compliance market is exploding. The EU alone is rolling out CSRD (50,000+ companies), EUDR (every importer of 7 commodities), CBAM (all carbon-intensive imports), and EU Taxonomy (all financial institutions). In the US, California's SB 253 mandates Scope 1-3 reporting for 5,000+ companies. These regulations have hard deadlines, steep penalties, and no room for error.
-
-Yet the tooling landscape is fragmented: point solutions that cover one regulation, require manual data entry, and produce non-auditable outputs. GreenLang is the horizontal platform that powers compliance across all of these regulations from a single, unified data and calculation layer.
+**Vision.** Make climate compliance as automated and reliable as financial accounting.
 
 ---
 
-## What We've Built
+## 2. The four layers
 
-In 6 months of intensive development, we've built a production-grade platform with **100+ specialized AI agents**, **10 compliance applications**, **128 database migrations**, and **21,931+ automated tests**. Here's what exists today:
-
-### MVP Quick Start (CBAM Flagship Loop)
-
-Canonical operator path: `gl run cbam` from the repository root.
-Compatibility path: `gl-cbam` for standalone CBAM package usage.
-
-```bash
-# Canonical path (recommended)
-python -m greenlang.cli.main run cbam "cbam-pack-mvp/examples/sample_config.yaml" "cbam-pack-mvp/examples/sample_imports.csv" out
-
-# Compatibility path (standalone CBAM package)
-cd cbam-pack-mvp
-pip install -e ".[web,dev]"
-gl-cbam run cbam --config examples/sample_config.yaml --imports examples/sample_imports.csv --out ./out
-
-# Optional: launch web UI
-gl-cbam web --host 127.0.0.1 --port 8000
-```
-
-CBAM outputs are generated in the selected output directory:
-- `cbam_report.xml`
-- `report_summary.xlsx`
-- `audit/*` (claims, lineage, assumptions, policy validation, run manifest, checksums)
-- `evidence/*` (immutable copies of inputs)
-
-### Infrastructure Layer (10 Components - All Production Ready)
-
-The foundation that everything runs on:
-
-| Component | Technology | What It Does |
-|-----------|-----------|-------------|
-| **Container Orchestration** | Kubernetes on EKS | Auto-scaling agent deployment with Helm charts |
-| **Primary Database** | PostgreSQL + TimescaleDB | Time-series emissions data with hypertable partitioning |
-| **Caching Layer** | Redis Cluster | Sub-millisecond emission factor lookups, session management |
-| **Object Storage** | S3-compatible | Document storage for PDFs, satellite imagery, reports |
-| **Vector Database** | pgvector (HNSW) | Semantic search across 100K+ emission factors (384d/768d/1536d embeddings) |
-| **API Gateway** | Kong | Rate limiting, auth, request routing for all 100+ agents |
-| **CI/CD** | GitHub Actions | Automated testing, security scanning, deployment pipelines |
-| **Feature Flags** | Custom engine | Gradual rollout of new calculation methodologies |
-| **Log Aggregation** | Loki + Promtail | Centralized logging across all agent instances |
-| **Agent Factory** | Custom framework | Dynamic agent instantiation, lifecycle management, health checks |
-
-### Security Layer (11 Components - All Complete)
-
-Enterprise-grade security built from day one:
-
-| Component | Implementation | Details |
-|-----------|---------------|---------|
-| **Authentication** | JWT with RS256 | Token-based auth with refresh rotation |
-| **Authorization** | RBAC | 10 roles, 61 permissions, hierarchical access control |
-| **Encryption at Rest** | AES-256-GCM | All sensitive data encrypted with key rotation |
-| **Transport Security** | TLS 1.3 | End-to-end encryption, certificate management |
-| **Audit Logging** | Custom engine | 70+ auditable event types with tamper-proof storage |
-| **Secrets Management** | HashiCorp Vault | Dynamic secrets, lease management, auto-rotation |
-| **Security Scanning** | SAST/DAST/SCA pipeline | Automated vulnerability detection in CI/CD |
-| **Security Policies** | 18 policy documents | Incident response, data classification, access control |
-| **SOC 2 Preparation** | Type II readiness | Controls mapping, evidence collection, gap analysis |
-| **Security Operations** | Automated response | Threat detection, incident triage, automated remediation |
-| **PII Protection** | Detection & Redaction | Pattern-based PII detection across all data pipelines |
-
-### Observability Layer (5 Components - All Complete)
-
-Full visibility into platform operations:
-
-| Component | Technology | Capabilities |
-|-----------|-----------|-------------|
-| **Metrics** | Prometheus HA + Thanos | Long-term metrics storage, cross-cluster federation |
-| **Dashboards** | Grafana 11.4 | Pre-built dashboards for every agent and application |
-| **Distributed Tracing** | OpenTelemetry + Tempo | Request tracing across agent pipelines |
-| **Alerting** | Multi-channel | Slack, email, PagerDuty, webhooks, Teams, SMS |
-| **SLO/SLI** | Error budget tracking | Burn-rate alerts, availability targets per service |
-
-### Foundation Agents (10 Agents - All Complete)
-
-The cross-cutting agents that every other agent depends on:
-
-| Agent | Purpose |
-|-------|---------|
-| **Orchestrator** | DAG-based pipeline execution, dependency resolution, parallel processing |
-| **Schema Compiler** | Validates all data against GreenLang schemas before processing |
-| **Unit Normalizer** | Converts between 1000+ unit combinations (kg, tonnes, MWh, GJ, etc.) |
-| **Assumptions Registry** | Tracks every assumption made in calculations with justification |
-| **Citations Engine** | Links every output to its authoritative source (IPCC, DEFRA, EPA) |
-| **Access Policy Guard** | Enforces RBAC at the agent level, data-level access control |
-| **Agent Registry** | Service catalog, health monitoring, version management for all agents |
-| **Reproducibility Agent** | Ensures byte-identical results across runs with same inputs |
-| **QA Test Harness** | Automated validation of agent outputs against known baselines |
-| **Telemetry Agent** | Per-agent metrics, traces, and logging integration |
-
-### Data Agents (20 Agents - All Complete)
-
-Everything needed to ingest, clean, validate, and transform enterprise data:
-
-**Data Intake (7 agents):**
-- PDF & Invoice Extractor - Extracts emissions data from invoices, utility bills, transport docs
-- Excel/CSV Normalizer - Handles 50+ column naming conventions across industries
-- ERP/Finance Connector - SAP, Oracle, Workday integration for spend and activity data
-- API Gateway Agent - RESTful data ingestion with schema validation
-- EUDR Traceability Connector - Supply chain data from EUDR-specific sources
-- GIS/Mapping Connector - Geospatial data for land use and deforestation monitoring
-- Satellite Imagery Connector - Sentinel-2, Landsat integration for forest cover analysis
-
-**Data Quality (12 agents):**
-- Supplier Questionnaire Processor - Parses and validates supplier sustainability surveys
-- Spend Data Categorizer - Maps procurement data to GHG Protocol categories
-- Data Quality Profiler - Statistical profiling, completeness scoring, anomaly flagging
-- Duplicate Detection - Fuzzy matching to prevent double-counting emissions
-- Missing Value Imputer - Statistical imputation with uncertainty propagation
-- Outlier Detection - Z-score, IQR, isolation forest methods for emissions anomalies
-- Time Series Gap Filler - Interpolation for missing monthly/quarterly data
-- Cross-Source Reconciliation - Validates data consistency across multiple sources
-- Data Freshness Monitor - Alerts when data sources go stale
-- Schema Migration Agent - Handles evolving data schemas without data loss
-- Data Lineage Tracker - Full provenance from raw input to final output
-- Validation Rule Engine - 500+ configurable validation rules
-
-**Geospatial (1 agent):**
-- Climate Hazard Connector - Physical risk data from climate models
-
-### MRV Agents (30 Agents - All Complete)
-
-Full GHG Protocol coverage across all scopes and categories:
-
-**Scope 1 - Direct Emissions (8 agents):**
-
-| Agent | GHG Category | Methodologies |
-|-------|-------------|---------------|
-| Stationary Combustion | Boilers, furnaces, generators | IPCC Tier 1-3, EPA Part 98 |
-| Mobile Combustion | Fleet vehicles, equipment | DEFRA, EPA, distance/fuel-based |
-| Process Emissions | Chemical/industrial processes | Sector-specific factors |
-| Fugitive Emissions | Leaks from equipment, pipelines | EPA Method 21, LDAR |
-| Refrigerants & F-Gas | HFC, PFC, SF6 releases | IPCC AR6 GWP values |
-| Land Use Change | LULUCF activities | IPCC Land Use guidance |
-| Waste Treatment | On-site waste processing | IPCC Waste sector methods |
-| Agricultural Emissions | Enteric fermentation, manure, soil | IPCC Agriculture guidance |
-
-**Scope 2 - Indirect Energy (5 agents):**
-
-| Agent | Approach | Standards |
-|-------|----------|-----------|
-| Location-Based | Grid average factors | IEA, EPA eGRID, national grids |
-| Market-Based | Contractual instruments | RE-DISS, GOs, RECs, PPAs |
-| Steam/Heat Purchase | District heating, CHP | IPCC stationary combustion |
-| Cooling Purchase | District cooling | Efficiency-adjusted factors |
-| Dual Reporting Reconciliation | Location vs market comparison | GHG Protocol Scope 2 Guidance |
-
-**Scope 3 - Value Chain (15 agents):**
-
-| Cat | Agent | Coverage |
-|-----|-------|----------|
-| 1 | Purchased Goods & Services | Spend-based, hybrid, supplier-specific methods |
-| 2 | Capital Goods | Asset-level lifecycle emissions |
-| 3 | Fuel & Energy Activities | T&D losses, WTT factors |
-| 4 | Upstream Transportation | tonne-km, vehicle-km methods |
-| 5 | Waste Generated in Operations | Landfill, incineration, recycling, composting |
-| 6 | Business Travel | Air, rail, hotel, car rental emissions |
-| 7 | Employee Commuting | Survey-based, distance-based, national averages |
-| 8 | Upstream Leased Assets | Asset-specific, area-based methods |
-| 9 | Downstream Transportation | Customer distribution emissions |
-| 10 | Processing of Sold Products | Intermediate product transformation |
-| 11 | Use of Sold Products | Direct/indirect use-phase emissions |
-| 12 | End-of-Life Treatment | Disposal pathway modeling |
-| 13 | Downstream Leased Assets | Tenant emission allocation |
-| 14 | Franchises | Franchise-level Scope 1+2 rollup |
-| 15 | Investments | Equity, debt, project finance methods |
-
-**Cross-Cutting (2 agents):**
-- Scope 3 Category Mapper - Auto-categorizes activities to the correct Scope 3 category
-- Audit Trail & Lineage - Complete calculation provenance for auditor review
-
-### EUDR Agents (40 Agents - All Complete)
-
-The most comprehensive EU Deforestation Regulation compliance suite available:
-
-**Supply Chain Traceability (15 agents):**
-GPS Coordinate Validator, Plot Boundary Mapper, Geolocation Verification, Forest Cover Analysis, Satellite Monitoring, Land Use Change Detector, Supply Chain Mapper, Chain of Custody Tracker, Mass Balance Calculator, Segregation Verifier, Multi-Tier Supplier Manager, QR Code Generator, Reference Number Generator, Blockchain Integration, Mobile Data Collector
-
-**Risk Assessment (5 agents):**
-Country Risk Evaluator, Commodity Risk Analyzer, Corruption Index Monitor, Deforestation Alert System, Supplier Risk Scorer
-
-**Due Diligence (6 agents):**
-Risk Assessment Engine, Information Gathering Coordinator, Due Diligence Statement Creator, Legal Compliance Verifier, Protected Area Validator, Document Authentication
-
-**Support & Workflow (14 agents):**
-Risk Mitigation Advisor, Improvement Plan Creator, Mitigation Measure Designer, Stakeholder Engagement, Indigenous Rights Checker, Grievance Mechanism Manager, Third-Party Audit Manager, Customs Declaration Support, EU Information System Interface, Annual Review Scheduler, Continuous Monitoring, Documentation Generator, Authority Communication Manager, Due Diligence Orchestrator
-
-### Compliance Applications (10 Apps - All Built)
-
-Production-ready applications built on the agent platform:
-
-| Application | Regulation | Status | Key Features |
-|------------|-----------|--------|-------------|
-| **GL-CSRD-APP** v1.1 | EU Corporate Sustainability Reporting Directive | Production | ESRS standards, double materiality, XBRL export |
-| **GL-CBAM-APP** v1.1 | EU Carbon Border Adjustment Mechanism | Production | Quarterly reporting, embedded emissions, XML export |
-| **GL-VCCI-APP** v1.1 | Value Chain Carbon Intelligence | Production | Scope 3 hotspot analysis, supplier engagement |
-| **GL-EUDR-APP** v1.0 | EU Deforestation Regulation | Built | Due diligence statements, geolocation verification |
-| **GL-GHG-APP** v1.0 | GHG Protocol Corporate Standard | Built | Scope 1-3 inventory, organizational boundaries |
-| **GL-ISO14064-APP** v1.0 | ISO 14064 Verification | Built | Verification-ready reports, uncertainty analysis |
-| **GL-CDP-APP** v1.0 | CDP Climate Disclosure | Beta | Questionnaire automation, scoring optimization |
-| **GL-TCFD-APP** v1.0 | Task Force on Climate Disclosures | Beta | Scenario analysis, physical/transition risk |
-| **GL-SBTi-APP** v1.0 | Science Based Targets Initiative | Beta | Target setting, progress tracking, SDA/ACA methods |
-| **GL-Taxonomy-APP** v1.0 | EU Taxonomy Alignment | Alpha | DNSH assessment, substantial contribution, GAR/BTAR |
-
-### Database & Migrations
-
-**128 versioned SQL migrations** covering the entire platform:
-
-| Range | Coverage |
-|-------|----------|
-| V001-V006 | Core schema, tenants, organizations |
-| V007-V008 | Feature flags, agent factory |
-| V009-V018 | Security (auth, RBAC, encryption, audit, vault) |
-| V019-V020 | Observability (metrics, dashboards) |
-| V021-V030 | Foundation agents (orchestrator, schema, registry) |
-| V031-V050 | Data agents (intake, quality, lineage) |
-| V051-V081 | MRV agents (Scope 1, 2, 3 - all 30 agents) |
-| V082-V088 | Applications (EUDR, GHG, ISO14064, CDP, TCFD, SBTi, Taxonomy) |
-| V089-V128 | EUDR agents (40 agents - traceability, risk, due diligence) |
-
----
-
-## Platform Statistics
-
-| Metric | Value |
-|--------|-------|
-| **Total AI Agents** | 100+ (10 foundation + 20 data + 30 MRV + 40 EUDR) |
-| **Python Files** | 28,000+ |
-| **Core Library Files** | 4,400+ |
-| **Test Files** | 2,500+ |
-| **Automated Tests** | 21,931+ passing |
-| **Database Migrations** | 128 |
-| **Compliance Applications** | 10 |
-| **Infrastructure Components** | 10 (all production ready) |
-| **Security Components** | 11 (all complete) |
-| **Observability Components** | 5 (all complete) |
-| **EUDR Agent Files** | 964 |
-| **Emission Factors** | 1,000+ (IPCC, DEFRA, EPA, GHG Protocol) |
-| **Supported Regulations** | 10 (CSRD, EUDR, CBAM, GHG, ISO 14064, CDP, TCFD, SBTi, Taxonomy, SB253) |
-| **License** | Apache 2.0 |
-
----
-
-## Architecture
+GreenLang is organized into four layers. Layer 1 powers Layer 2, which grounds Layer 3, which powers the Layer 4 sector applications customers buy.
 
 ```
-+=====================================================================+
-|                        APPLICATIONS (10)                             |
-|  CSRD | CBAM | VCCI | EUDR | GHG | ISO14064 | CDP | TCFD | SBTi | Tax |
-+=====================================================================+
-                                |
-+=====================================================================+
-|                     AGENT LAYERS (100+ Agents)                       |
-|  +------------------+  +------------------+  +------------------+   |
-|  | EUDR Agents (40) |  | MRV Agents (30)  |  | Data Agents (20) |   |
-|  | Traceability     |  | Scope 1 (8)      |  | Intake (7)       |   |
-|  | Risk Assessment  |  | Scope 2 (5)      |  | Quality (12)     |   |
-|  | Due Diligence    |  | Scope 3 (15)     |  | Geospatial (1)   |   |
-|  | Workflow (14)    |  | Cross-Cut (2)    |  |                  |   |
-|  +------------------+  +------------------+  +------------------+   |
-|                    Foundation Agents (10)                             |
-|  Orchestrator | Schema | Units | Assumptions | Citations | RBAC     |
-|  Registry | Reproducibility | QA Harness | Telemetry                |
-+=====================================================================+
-                                |
-+=====================================================================+
-|                     INFRASTRUCTURE                                    |
-|  +------------+  +------------+  +------------+  +------------+     |
-|  | Security   |  |Observabil- |  | Data       |  | Deployment |     |
-|  | (11 comp.) |  |ity (5)     |  | (Postgres, |  | (K8s, EKS, |    |
-|  | JWT, RBAC, |  | Prometheus,|  |  Redis,    |  |  Helm,     |     |
-|  | AES-256,   |  | Grafana,   |  |  pgvector, |  |  Terraform)|    |
-|  | Vault, PII |  | OTel, SLO  |  |  S3)       |  |            |     |
-|  +------------+  +------------+  +------------+  +------------+     |
-+=====================================================================+
++========================================================================+
+|  L4 — Sector Clouds (applications)                                      |
+|    FY27: Comply · CBAM · Scope Engine                                   |
+|    FY28+: SupplierOS · PCF Studio · DPP Hub · PlantOS · BuildingOS ...  |
++========================================================================+
+|  L3 — Intelligence                                                      |
+|    Policy Graph  ·  Agent Runtime + Eval  ·  Scenario/Benchmark         |
++========================================================================+
+|  L2 — System of record                                                  |
+|    Climate Ledger  ·  Evidence Vault  ·  Proof Hub (FY29)               |
++========================================================================+
+|  L1 — Data foundation                                                   |
+|    Factors  ·  Connect  ·  Entity Graph  ·  IoT Schemas                 |
++========================================================================+
 ```
 
----
+### L1 — Data foundation
 
-## Technology Stack
+- **Factors** — Versioned emission-factor catalog across EPA GHG Hub, eGRID, DESNZ, IPCC, Green-e, TCR, GHG Protocol, and CBAM. Source registry with license class, redistribution rights, and watch cadence. Semantic matching (pgvector + LLM rerank). Three coverage labels: **Certified / Preview / Connector-only**.
+- **Connect** — Enterprise system connectors (SAP S/4HANA, Snowflake, AWS Cost Explorer, with Workday and Databricks on the roadmap) for procurement, utility, and IoT data intake.
+- **Entity Graph** — Multi-tier organization model (entity → facility → asset → meter) that every Ledger write and Policy Graph evaluation resolves against.
+- **IoT Schemas** — Canonical event schemas for OPC-UA / MQTT / Modbus streams.
 
-| Layer | Technologies |
-|-------|-------------|
-| **Language** | Python 3.10, 3.11, 3.12 |
-| **Framework** | FastAPI, Pydantic v2 |
-| **Database** | PostgreSQL 16 + TimescaleDB + pgvector |
-| **Cache** | Redis 7 Cluster |
-| **Search** | pgvector HNSW (cosine similarity) |
-| **Orchestration** | Kubernetes (EKS), Helm, Kustomize |
-| **IaC** | Terraform |
-| **CI/CD** | GitHub Actions |
-| **Monitoring** | Prometheus, Grafana 11.4, OpenTelemetry, Tempo, Loki |
-| **Security** | JWT (RS256), RBAC, AES-256-GCM, TLS 1.3, HashiCorp Vault |
-| **Testing** | pytest, pytest-asyncio, hypothesis |
-| **AI/ML** | LLM integration (OpenAI, Anthropic), satellite ML models |
+### L2 — System of record
 
----
+- **Climate Ledger** — Append-only, content-addressed, signed record of every activity and emission. Reproducible line back to the exact Factors edition and Policy Graph decision used.
+- **Evidence Vault** — Customer-facing vault for raw source artifacts, parser logs, reviewer decisions, and attached documents. One command returns a signed auditor bundle.
 
-## 2026 Roadmap
+### L3 — Intelligence
 
-### Q1 2026 (Completed)
-- [x] EUDR Agent Suite (40 agents) - supply chain traceability, risk assessment, due diligence
-- [x] MRV Agent Suite (30 agents) - full GHG Protocol Scope 1, 2, 3 coverage
-- [x] 10 compliance applications (CSRD, CBAM, VCCI, EUDR, GHG, ISO14064, CDP, TCFD, SBTi, Taxonomy)
-- [x] Complete security stack (11 components, SOC 2 readiness)
-- [x] Full observability platform (Prometheus, Grafana, OTel, alerting, SLO/SLI)
-- [x] 128 database migrations deployed
+- **Policy Graph** — Given `(entity, activity, jurisdiction, date)`, the Policy Graph returns which regulations apply, which factor classes are required, and what the reporting deadline is. Rules for CBAM, CSRD, SB 253, TCFD, SBTi, and ISO 14064 are expressed as applicability logic, not report templates.
+- **Agent Runtime + Eval** — Deterministic calculation where numbers must clear audit, AI reasoning where it helps (source parsing, factor matching, policy diff). Single canonical base class, versioned agent specs, reproducible eval harness.
 
-### Q2 2026 (In Progress)
-- [ ] GL-SB253-APP - California SB 253 climate disclosure (deadline: June 30, 2026)
-- [ ] GL-BuildingBPS-APP - Building Performance Standards compliance
-- [ ] Production deployment and beta testing with pilot customers
-- [ ] Pack Hub marketplace launch - reusable agent bundles
-- [ ] Performance optimization and load testing at scale
+### L4 — Sector clouds
 
-### Q3-Q4 2026 (Planned)
-- [ ] GL-CSDDD-APP - EU Corporate Sustainability Due Diligence (deadline: July 2027)
-- [ ] GL-GreenClaims-APP - Greenwashing compliance (deadline: Sept 2026)
-- [ ] GL-ProductPCF-APP - Product Carbon Footprint & Digital Product Passports
-- [ ] Multi-tenant SaaS deployment for enterprise customers
-- [ ] Advanced ML models for satellite-based deforestation detection
-- [ ] Real-time supply chain monitoring and alerting
-- [ ] Integration marketplace (SAP, Oracle, Workday connectors)
+- **Comply** — Unified CSRD + ESRS + TCFD + SBTi + ISO 14064 + CDP + EU Taxonomy reporting. One substrate, many frameworks.
+- **CBAM** — EU Carbon Border Adjustment reporting with embedded emissions calculation, XML export, and audit-ready evidence.
+- **Scope Engine** — Unified Scope 1/2/3 engine with adapters for GHG Protocol, ISO 14064, SBTi, CSRD E1, and CBAM.
+
+FY28 onward adds Supply Chain (SupplierOS, PCF Studio, DPP Hub), Operations (PlantOS, BuildingOS, DataCenter CarbonOps), Mobility (FleetOS, Freight Carbon API), Land/Water/Nature, Risk, and Finance & Markets clouds — 36 modules across 8 clouds by FY31.
 
 ---
 
-## Quick Start
+## 3. FY27 products
+
+FY27 launches the substrate plus the first commercial wedge: Compliance Cloud.
+
+| Product | Status | Role |
+|---|---|---|
+| **Factors** | Ready | Versioned catalog + semantic matching + source watch. Hosted API with auth, rate limits, and three-label coverage dashboard is the FY27 go-to-market vehicle. |
+| **CBAM** | Ready | Largest application in the repo. Operator path: `gl run cbam`. The strongest wedge for Indian exporters into EU supply chains. |
+| **Comply (CSRD / ESRS + SB 253 + TCFD + SBTi + ISO 14064)** | Partial → bundling | Strong ESRS bones across 9 CSRD packs and 6 supporting apps; being unified into one Comply umbrella that shares the Ledger, Vault, and Policy Graph. |
+| **Scope Engine** | Partial → packaging | Engine + adapters built; unified `gl scope compute` CLI and pack wiring in progress. |
+| **Climate Ledger · Evidence Vault · Entity Graph · Policy Graph** | Stubs → hardening | Modules exist; production SQLite/Postgres backends, signed writes, bundle export, and `applies_to()` API are the substrate work for the launch. |
+| **Connect** | Stubs → implementations | SAP / Snowflake / AWS connectors scaffolded; real integrations and credential-store wiring in progress. |
+| **SDK / API / CLI** | Ready → consolidating | Python + TypeScript SDK publish-ready. `gl` CLI consolidation is tracked in [`docs/CLI_REFERENCE.md`](docs/CLI_REFERENCE.md). |
+
+**FY27 go-to-market.** India-linked EU exporters (steel, aluminium, cement, fertilizers) facing CBAM; Indian subsidiaries of EU parents facing CSRD cascade; California SB 253 Scope 1+2 reporters for August 2026; consultancies buying a Factors API instead of maintaining spreadsheets internally.
+
+---
+
+## 4. Quick start
 
 ### Prerequisites
+
 - Python 3.10, 3.11, or 3.12
-- pip (latest version)
+- pip (latest)
 - (Optional) Docker for containerized deployment
 
-### Installation
+### Install
 
 ```bash
-# Install from PyPI
+# From PyPI
 pip install greenlang-cli
 
-# Or install from source
+# Or from source
 git clone https://github.com/akshay-greenlang/Code-V1_GreenLang.git
 cd Code-V1_GreenLang
 pip install -e ".[full]"
@@ -387,64 +116,120 @@ pip install -e ".[full]"
 gl --version
 ```
 
-### Run Your First Calculation
+### Run the CBAM flagship loop
+
+Canonical operator path: `gl run cbam`.
+
+```bash
+python -m greenlang.cli.main run cbam \
+  "applications/GL-CBAM-APP/examples/sample_config.yaml" \
+  "applications/GL-CBAM-APP/examples/sample_imports.csv" \
+  out
+```
+
+Outputs in `out/`:
+
+- `cbam_report.xml` — CBAM XML report
+- `report_summary.xlsx` — operator-readable summary
+- `audit/*` — claims, lineage, assumptions, policy validation, run manifest, checksums
+- `evidence/*` — immutable copies of inputs
+
+### Use the Factors SDK
 
 ```python
-from greenlang.agents.calculation.emissions import EmissionsCalculator
+from greenlang.factors.sdk import FactorsClient
 
-calculator = EmissionsCalculator()
-result = calculator.calculate(
-    activity_type="fuel_combustion",
-    fuel_type="natural_gas",
-    quantity=1000,  # kWh
-    unit="kWh"
+client = FactorsClient(api_key="...")
+factor = client.match(
+    activity="diesel combustion, stationary",
+    geography="IN",
+    quantity=1000, unit="L",
 )
-
-print(f"CO2e Emissions: {result.emissions_co2e} kg")
-print(f"Source: {result.factor_source}")
-# Output: CO2e Emissions: 184.0 kg
-# Output: Source: DEFRA 2024
+print(factor.co2e_kg, factor.source, factor.license, factor.edition)
 ```
+
+The SDK and its TypeScript counterpart are zero-dependency and FY27 target the hosted Factors API.
+
+### Repository tour
+
+Pick one file to orient yourself: [`docs/REPO_TOUR.md`](docs/REPO_TOUR.md) maps every top-level directory to the v3 layer it implements and to its entry point.
 
 ---
 
-## Development
+## 5. Architecture at a glance
+
+```
++------------------------------------------------------------------------+
+|  Applications                                                           |
+|    GL-CBAM-APP  ·  GL-CSRD-APP  ·  GL-Comply-APP  ·  GL-GHG-APP         |
+|    GL-SB253-APP · GL-SBTi-APP   · GL-TCFD-APP     · GL-ISO14064-APP     |
++------------------------------------------------------------------------+
+|  greenlang/                                                             |
+|    L3: policy_graph/  scope_engine/  agents/  agent_runtime/  intel/    |
+|    L2: climate_ledger/  evidence_vault/  provenance/                    |
+|    L1: factors/  connect/  entity_graph/  data/  data_commons/          |
++------------------------------------------------------------------------+
+|  Infrastructure                                                         |
+|    security/  infrastructure/  monitoring/  telemetry/  db/             |
+|    K8s + Helm (deployment/helm/greenlang-factors/)                      |
+|    PostgreSQL + TimescaleDB + pgvector  ·  Redis  ·  S3  ·  Kong        |
++------------------------------------------------------------------------+
+```
+
+**Technology stack.** Python 3.10–3.12 · FastAPI · Pydantic v2 · PostgreSQL + TimescaleDB + pgvector · Redis · Kubernetes (EKS) · Helm · Terraform · Prometheus / Grafana / OpenTelemetry · JWT / RBAC / AES-256-GCM / TLS 1.3 / HashiCorp Vault · pytest · OpenAI & Anthropic LLM integration.
+
+---
+
+## 6. FY31 roadmap
+
+By FY31 the roadmap is **36 modules across 8 clouds**, $95M end ARR target, 520 paying logos. Launch cadence:
+
+| FY | Focus | New products |
+|---|---|---|
+| **FY27** | Substrate + Compliance wedge | Factors, Connect, Entity Graph, Climate Ledger, Evidence Vault, Policy Graph, Agent Runtime + Eval, SDK/API/CLI, Comply, CBAM, Scope Engine |
+| **FY28** | Supply Chain + Operations | SupplierOS, PCF Studio, DPP Hub, PlantOS, BuildingOS |
+| **FY29** | Ops + Mobility + Risk + Finance | DataCenter CarbonOps, PowerOS, FleetOS, Proof Hub, RiskOS, FinanceOS, MRV Studio |
+| **FY30** | Land/Water/Nature + Advanced ops | AgriLandOS, WaterOS, Methane & Nitrogen Monitor, FlexOS, Microgrid Planner, Freight Carbon API, Transition Finance Studio, Carbon Markets Hub, Adaptation Planner |
+| **FY31** | Closing the portfolio | Nature/TNFD Hub, CityOS, CDR Portfolio Manager, Circularity Hub |
+
+For strategy detail, see the `GreenLang_Climate_OS_v3_Business_Plan_2026_2031.pdf` at repo root. For the current reality gap, see [`FY27_vs_Reality_Analysis.md`](FY27_vs_Reality_Analysis.md).
+
+---
+
+## 7. Development
 
 ```bash
-# Setup
 git clone https://github.com/akshay-greenlang/Code-V1_GreenLang.git
 cd Code-V1_GreenLang
 python -m venv venv
-venv\Scripts\activate        # Windows
-# source venv/bin/activate   # Linux/Mac
+# Windows: venv\Scripts\activate
+source venv/bin/activate
 pip install -e ".[dev]"
 
-# Run tests
-pytest tests/                 # All tests
-pytest tests/ -x --tb=short  # Stop on first failure
-pytest --cov=greenlang       # With coverage
+# Tests
+pytest tests/
+pytest tests/factors/       # Factors-specific
+pytest --cov=greenlang      # With coverage
 
 # Code quality
-ruff check .                 # Linting
-black greenlang/             # Formatting
-mypy greenlang/              # Type checking
+ruff check .
+black greenlang/
+mypy greenlang/
 ```
 
----
-
-## License
-
-Apache License 2.0 - See [LICENSE](LICENSE) for details.
+All dependencies live in a single root `pyproject.toml` (21 optional groups: `analytics`, `cli`, `data`, `pdf`, `visualization`, `nlp`, `graph`, `llm`, `ml`, `vector-db`, `ai-full`, `server`, `security`, `sbom`, `supply-chain`, `monitoring`, `test`, `dev`, `doc`, `full`, `all`). Pre-commit is configured at repo root (`.pre-commit-config.yaml`).
 
 ---
 
-## Contact
+## 8. License & contact
 
-- **GitHub Issues**: [Report bugs or request features](https://github.com/akshay-greenlang/Code-V1_GreenLang/issues)
-- **Security**: security@greenlang.io
+- **License:** Apache 2.0 — see [LICENSE](LICENSE).
+- **Issues:** [GitHub Issues](https://github.com/akshay-greenlang/Code-V1_GreenLang/issues)
+- **Security:** security@greenlang.io
+- **Homepage:** https://greenlang.io
 
 ---
 
-**Version**: 0.3.0 | **Last Updated**: March 2026 | **Stage**: Pre-Seed
+**Version:** 0.3.0 · **Stage:** Pre-Seed · **Last updated:** 20 Apr 2026
 
-**GreenLang** - Measure what matters. Act on what you measure.
+**GreenLang** — Measure what matters. Write it once. Clear audit.
