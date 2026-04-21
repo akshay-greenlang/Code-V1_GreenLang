@@ -1,0 +1,147 @@
+# ---------------------------------------------------------------------------
+# ISIC Rev.4 <-> NAICS 2022 crosswalk
+# ---------------------------------------------------------------------------
+# NAICS is production-oriented while ISIC is activity-oriented, so the match
+# is never perfectly 1:1 even at Section level. This file lists the principal
+# correspondence at 4-digit ISIC -> 6-digit NAICS for priority sectors.
+#
+# match_quality:
+#   - "identical"   : conceptual match is complete
+#   - "primary"     : NAICS code is the best single match (most coverage)
+#   - "split"       : ISIC class maps to multiple NAICS codes
+#   - "partial"     : only part of the ISIC scope is covered by this NAICS code
+#
+# Source: U.S. Census Bureau concordance tables + UNSD crosswalks.
+# License: Public domain.
+# ---------------------------------------------------------------------------
+metadata:
+  from_system: "isic"
+  from_revision: "Rev.4"
+  to_system: "naics"
+  to_revision: "2022"
+  source: "US Census Bureau / UNSD"
+  license: "Public domain"
+
+# 2-digit Division crosswalks (note NAICS is 2-3 digit equivalent)
+divisions:
+  "01": {to: ["111", "112"], match_quality: "split"}
+  "02": {to: "113", match_quality: "primary"}
+  "03": {to: "114", match_quality: "primary"}
+  "05": {to: "2121", match_quality: "primary"}
+  "06": {to: "211", match_quality: "primary"}
+  "07": {to: "2122", match_quality: "primary"}
+  "08": {to: "2123", match_quality: "primary"}
+  "09": {to: "213", match_quality: "primary"}
+  "10": {to: "311", match_quality: "identical"}
+  "11": {to: "312", match_quality: "primary"}
+  "12": {to: "3122", match_quality: "primary"}
+  "13": {to: ["313", "314"], match_quality: "split"}
+  "14": {to: "315", match_quality: "identical"}
+  "15": {to: "316", match_quality: "identical"}
+  "16": {to: "321", match_quality: "identical"}
+  "17": {to: "322", match_quality: "identical"}
+  "18": {to: "323", match_quality: "identical"}
+  "19": {to: "324", match_quality: "identical"}
+  "20": {to: "325", match_quality: "primary"}
+  "21": {to: "3254", match_quality: "primary"}
+  "22": {to: "326", match_quality: "identical"}
+  "23": {to: "327", match_quality: "identical"}
+  "24": {to: "331", match_quality: "identical"}
+  "25": {to: "332", match_quality: "identical"}
+  "26": {to: "334", match_quality: "primary"}
+  "27": {to: "335", match_quality: "primary"}
+  "28": {to: "333", match_quality: "primary"}
+  "29": {to: "336", match_quality: "partial"}
+  "30": {to: "336", match_quality: "partial"}
+  "31": {to: "337", match_quality: "identical"}
+  "32": {to: "339", match_quality: "identical"}
+  "33": {to: "811", match_quality: "partial"}
+  "35": {to: "221", match_quality: "primary"}
+  "49": {to: ["482", "484", "485", "486"], match_quality: "split"}
+  "50": {to: "483", match_quality: "primary"}
+  "51": {to: "481", match_quality: "primary"}
+  "52": {to: ["488", "493"], match_quality: "split"}
+  "53": {to: ["491", "492"], match_quality: "split"}
+  "64": {to: ["521", "522", "523"], match_quality: "split"}
+  "65": {to: "524", match_quality: "primary"}
+  "66": {to: ["523", "524", "525"], match_quality: "split"}
+
+# 4-digit ISIC class to 6-digit NAICS class crosswalks
+classes:
+  # Mining
+  "0510": {to: ["212114", "212115"], match_quality: "split"}
+  "0610": {to: "211120", match_quality: "identical"}
+  "0620": {to: "211130", match_quality: "identical"}
+  "0710": {to: "212210", match_quality: "identical"}
+  "0721": {to: "212290", match_quality: "partial"}
+  "0729": {to: "212230", match_quality: "primary"}
+  "0810": {to: ["212311", "212312", "212313", "212319", "212321"], match_quality: "split"}
+  "0891": {to: "212390", match_quality: "primary"}
+  "0892": {to: "212390", match_quality: "partial"}
+  "0893": {to: "212390", match_quality: "partial"}
+  "0910": {to: ["213111", "213112"], match_quality: "split"}
+  # Manufacturing (a handful of priority examples)
+  "1050": {to: "311511", match_quality: "primary"}
+  "1072": {to: "311313", match_quality: "primary"}
+  "1101": {to: "312140", match_quality: "primary"}
+  "1102": {to: "312130", match_quality: "primary"}
+  "1103": {to: "312120", match_quality: "primary"}
+  "1104": {to: "312111", match_quality: "primary"}
+  "1200": {to: "312230", match_quality: "identical"}
+  "1311": {to: "313110", match_quality: "primary"}
+  "1312": {to: "313210", match_quality: "primary"}
+  "1313": {to: "313310", match_quality: "primary"}
+  "1410": {to: "315250", match_quality: "primary"}
+  "1511": {to: "316110", match_quality: "primary"}
+  "1520": {to: ["316210"], match_quality: "primary"}
+  "1701": {to: ["322110", "322121", "322122", "322130"], match_quality: "split"}
+  "1702": {to: "322211", match_quality: "primary"}
+  "1910": {to: "324199", match_quality: "partial"}
+  "1920": {to: "324110", match_quality: "primary"}
+  "2011": {to: ["325110", "325120", "325180", "325193", "325199"], match_quality: "split"}
+  "2012": {to: ["325311", "325312"], match_quality: "split"}
+  "2013": {to: ["325211", "325220"], match_quality: "split"}
+  "2021": {to: "325320", match_quality: "identical"}
+  "2022": {to: "325510", match_quality: "identical"}
+  "2023": {to: "325611", match_quality: "primary"}
+  "2100": {to: ["325411", "325412"], match_quality: "split"}
+  "2211": {to: "326211", match_quality: "identical"}
+  "2220": {to: ["326111", "326199"], match_quality: "split"}
+  "2310": {to: ["327211", "327213", "327215"], match_quality: "split"}
+  "2392": {to: "327120", match_quality: "primary"}
+  "2394": {to: ["327310", "327410"], match_quality: "split"}
+  "2395": {to: ["327320", "327331", "327390"], match_quality: "split"}
+  "2410": {to: ["331110", "331210", "331221"], match_quality: "split"}
+  "2420": {to: ["331313", "331314", "331410", "331420", "331492"], match_quality: "split"}
+  "2431": {to: "331511", match_quality: "primary"}
+  "2432": {to: ["331513"], match_quality: "primary"}
+  # Energy
+  "3510": {to: ["221111", "221112", "221113", "221114", "221115", "221116", "221117", "221118", "221121", "221122"], match_quality: "split"}
+  "3520": {to: "221210", match_quality: "primary"}
+  "3530": {to: "221330", match_quality: "identical"}
+  # Transport
+  "4911": {to: ["485111", "485112"], match_quality: "split"}
+  "4912": {to: ["482111", "482112"], match_quality: "split"}
+  "4921": {to: ["485113", "485111", "485112"], match_quality: "split"}
+  "4922": {to: ["485310", "485410"], match_quality: "split"}
+  "4923": {to: ["484110", "484121", "484122", "484220", "484230"], match_quality: "split"}
+  "4930": {to: ["486110", "486210"], match_quality: "split"}
+  "5011": {to: ["483112", "483114"], match_quality: "split"}
+  "5012": {to: ["483111", "483113"], match_quality: "split"}
+  "5110": {to: "481111", match_quality: "primary"}
+  "5120": {to: "481112", match_quality: "primary"}
+  "5210": {to: ["493110", "493120", "493130", "493190"], match_quality: "split"}
+  "5310": {to: "491110", match_quality: "identical"}
+  "5320": {to: ["492110", "492210"], match_quality: "split"}
+  # Finance
+  "6411": {to: "521110", match_quality: "identical"}
+  "6419": {to: ["522110", "522120", "522130"], match_quality: "split"}
+  "6492": {to: ["522291", "522292"], match_quality: "split"}
+  "6499": {to: "522220", match_quality: "primary"}
+  "6511": {to: "524113", match_quality: "identical"}
+  "6512": {to: ["524114", "524126", "524127"], match_quality: "split"}
+  "6520": {to: "524130", match_quality: "identical"}
+  "6530": {to: "525110", match_quality: "primary"}
+  "6611": {to: "523210", match_quality: "primary"}
+  "6612": {to: ["523110", "523150", "523160"], match_quality: "split"}
+  "6622": {to: "524210", match_quality: "identical"}

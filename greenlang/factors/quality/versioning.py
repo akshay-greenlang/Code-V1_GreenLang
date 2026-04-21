@@ -247,6 +247,79 @@ class FactorVersionChain:
         with self._lock:
             self._conn.close()
 
+    # ------------------------------------------------------------------
+    # GAP-5 additions: rollback-aware helpers
+    #
+    # These read-only additions surface the version chain to the
+    # rollback workflow without touching the append-only invariants.
+    # ------------------------------------------------------------------
+
+    def get_version_chain(self, factor_id: str) -> List[VersionEntry]:
+        """Alias for :meth:`chain` — preferred name used by rollback.py."""
+        return self.chain(factor_id)
+
+    def get_version_entry(
+        self, factor_id: str, factor_version: str
+    ) -> Optional[VersionEntry]:
+        """Return a specific version entry, or ``None`` if absent."""
+        for entry in self.chain(factor_id):
+            if entry.factor_version == factor_version:
+                return entry
+        return None
+
+    def is_rollback_available(
+        self, factor_id: str, factor_version: str
+    ) -> bool:
+        """True when ``factor_version`` exists *earlier* in the chain.
+
+        A version is eligible for rollback iff a later version has
+        superseded it — i.e. it is not the current head.
+        """
+        entries = self.chain(factor_id)
+        if not entries:
+            return False
+        target = next(
+            (e for e in entries if e.factor_version == factor_version), None
+        )
+        if target is None:
+            return False
+        head = entries[-1]
+        return head.factor_version != factor_version
+
+    def mark_rollback_available(
+        self, factor_id: str, factor_version: str
+    ) -> Dict[str, Any]:
+        """Rollback-eligibility hook consulted by the rollback service.
+
+        The hook is intentionally a pure read: it reports whether the
+        named version can be used as a rollback target and surfaces the
+        current head for the caller's plan UI.  It does **not** mutate
+        the chain — that remains append-only per CTO non-negotiable #2.
+        """
+        entries = self.chain(factor_id)
+        if not entries:
+            return {
+                "factor_id": factor_id,
+                "factor_version": factor_version,
+                "available": False,
+                "reason": "no version chain",
+                "current_version": None,
+            }
+        head = entries[-1]
+        available = self.is_rollback_available(factor_id, factor_version)
+        reason = "ok" if available else (
+            "target is current head" if head.factor_version == factor_version
+            else "version not in chain"
+        )
+        return {
+            "factor_id": factor_id,
+            "factor_version": factor_version,
+            "available": available,
+            "reason": reason,
+            "current_version": head.factor_version,
+            "current_content_hash": head.content_hash,
+        }
+
 
 __all__ = [
     "FactorVersionChain",

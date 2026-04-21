@@ -733,3 +733,490 @@ schema {
   mutation: Mutation
   subscription: Subscription
 }
+
+# ==============================================================================
+# ============================= Factors ========================================
+# ==============================================================================
+#
+# GAP-12: Factors surface for GraphQL.  Mirror of the Factors REST
+# endpoints under /api/v1/factors.  Resolvers live in
+# ``resolvers_factors.py``; full commentary is in ``schema_factors.graphql``.
+# Keep this section in sync with that partial — code-generators rely on
+# both being identical.
+# ==============================================================================
+
+# ---------- Enums ----------
+
+enum FactorStatus {
+  CERTIFIED
+  PREVIEW
+  CONNECTOR_ONLY
+  DEPRECATED
+}
+
+enum EditionStatus {
+  PUBLISHED
+  PENDING
+  DEPRECATED
+}
+
+enum FactorScope {
+  SCOPE_1
+  SCOPE_2
+  SCOPE_3
+}
+
+enum BatchJobStatus {
+  QUEUED
+  RUNNING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+enum FactorSortField {
+  RELEVANCE
+  FACTOR_ID
+  CO2E_PER_UNIT
+  DATA_QUALITY
+  VALID_FROM
+  SOURCE_YEAR
+}
+
+enum TimeGranularity {
+  ANNUAL
+  QUARTERLY
+  MONTHLY
+  DAILY
+  HOURLY
+  SEASONAL
+}
+
+enum RegulatoryFramework {
+  GHG_PROTOCOL_CORPORATE
+  GHG_PROTOCOL_SCOPE2_LOCATION_BASED
+  GHG_PROTOCOL_SCOPE2_MARKET_BASED
+  GHG_PROTOCOL_SCOPE3
+  GHG_PROTOCOL_PRODUCT
+  ISO_14064_1
+  ISO_14064_2
+  ISO_14067
+  ISO_14083
+  EU_CBAM
+  EU_CSRD
+  EU_ESRS_E1
+  EU_TAXONOMY
+  EU_PEF
+  EU_OEF
+  UK_PAS_2050
+  UK_SECR
+  US_SEC_CLIMATE
+  US_CA_SB253
+  US_CA_SB261
+  TCFD
+  IFRS_S2
+  CDP
+  SBTI
+  PCAF
+}
+
+enum FactorEventKind {
+  SOURCE_ARTIFACT_CHANGED
+  SOURCE_UNAVAILABLE
+  SOURCE_BREAKING_CHANGE
+  FACTOR_ADDED
+  FACTOR_UPDATED
+  FACTOR_REMOVED
+  FACTOR_DEPRECATED
+  LICENSE_CHANGED
+  METHODOLOGY_CHANGED
+  EDITION_PUBLISHED
+}
+
+# ---------- Value objects ----------
+
+type Jurisdiction {
+  code: String!
+  name: String
+  level: String
+}
+
+type ActivitySchema {
+  activityId: String!
+  label: String
+  unit: String
+  category: String
+  description: String
+}
+
+type QualityScore {
+  overallScore: Float!
+  rating: String
+  temporal: Float
+  geographical: Float
+  technological: Float
+  representativeness: Float
+  methodological: Float
+}
+
+type Uncertainty {
+  ci95: Float
+  distribution: String
+  stdDev: Float
+  sampleSize: Int
+}
+
+type GasBreakdown {
+  co2: Float
+  ch4: Float
+  n2o: Float
+  hfcs: Float
+  pfcs: Float
+  sf6: Float
+  nf3: Float
+  biogenicCo2: Float
+  ch4Gwp: Float
+  n2oGwp: Float
+}
+
+# ---------- Core entities ----------
+
+type Source {
+  sourceId: ID!
+  organization: String
+  publication: String
+  year: Int
+  url: String
+  methodology: String
+  license: String
+  version: String
+}
+
+type MethodPack {
+  methodPackId: ID!
+  name: String
+  version: String
+  scope: String
+  description: String
+  jurisdictions: [String!]!
+}
+
+type Edition {
+  editionId: ID!
+  status: String
+  label: String
+  manifestHash: String
+  publishedAt: DateTime
+}
+
+type Factor {
+  factorId: ID!
+  fuelType: String
+  unit: String
+  geography: String
+  geographyLevel: String
+  scope: String
+  boundary: String
+
+  co2PerUnit: Float
+  ch4PerUnit: Float
+  n2oPerUnit: Float
+  co2ePerUnit: Float
+
+  dataQuality: QualityScore
+  source: Source
+  uncertainty95ci: Float
+
+  validFrom: String
+  validTo: String
+
+  timeGranularity: TimeGranularity
+
+  factorStatus: String
+  license: String
+  licenseClass: String
+  complianceFrameworks: [String!]!
+  regulatoryFrameworks: [RegulatoryFramework!]!
+  tags: [String!]!
+  activityTags: [String!]!
+  sectorTags: [String!]!
+  notes: String
+
+  editionId: String
+  sourceId: String
+  sourceRelease: String
+  releaseVersion: String
+  replacementFactorId: String
+  contentHash: String
+}
+
+type FactorMatch {
+  factorId: ID!
+  score: Float!
+  explanation: JSON
+}
+
+type UnitConversion {
+  targetUnit: String
+  factor: Float
+  convertedCo2ePerUnit: Float
+  path: [String!]!
+  note: String
+}
+
+type ResolvedFactor {
+  chosenFactorId: String
+  factorId: String
+  factorVersion: String
+  methodProfile: String
+  methodPackVersion: String
+
+  fallbackRank: Int
+  stepLabel: String
+  whyChosen: String
+
+  qualityScore: QualityScore
+  uncertainty: Uncertainty
+  gasBreakdown: GasBreakdown
+  co2eBasis: String
+
+  assumptions: [String!]!
+  alternates: JSON
+
+  deprecationStatus: String
+  deprecationReplacement: String
+
+  unitConversion: UnitConversion
+
+  explain: JSON
+  editionId: String
+}
+
+type FactorDiff {
+  factorId: ID!
+  leftEdition: String!
+  rightEdition: String!
+  status: String!
+  leftExists: Boolean
+  rightExists: Boolean
+  changes: JSON
+  leftContentHash: String
+  rightContentHash: String
+}
+
+type AuditBundle {
+  factorId: ID!
+  editionId: String!
+  contentHash: String
+  payloadSha256: String
+  normalizedRecord: JSON
+  provenance: JSON
+  licenseInfo: JSON
+  quality: JSON
+  verificationChain: JSON
+  rawArtifactUri: String
+  parserLog: String
+  qaErrors: [String!]!
+  reviewerDecision: String
+}
+
+type Override {
+  overlayId: ID!
+  tenantId: ID!
+  factorId: String!
+  overrideValue: Float!
+  overrideUnit: String
+  validFrom: String
+  validTo: String
+  source: String
+  notes: String
+  createdBy: String
+  createdAt: String
+  updatedAt: String
+  active: Boolean!
+}
+
+type CoverageReport {
+  totalFactors: Int
+  byGeography: JSON
+  byScope: JSON
+  byFuelType: JSON
+  bySource: JSON
+  editionId: String
+}
+
+type BatchJobHandle {
+  jobId: ID!
+  status: String!
+  totalItems: Int
+  processedItems: Int
+  progressPercent: Float
+  resultsUrl: String
+  createdAt: DateTime
+  completedAt: DateTime
+  errorMessage: String
+}
+
+# ---------- Connections ----------
+
+type FactorEdge {
+  node: Factor!
+  cursor: String!
+}
+
+type FactorConnection {
+  edges: [FactorEdge!]!
+  nodes: [Factor!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+  editionId: String
+  searchTimeMs: Float
+}
+
+# ---------- Input types ----------
+
+input FactorFilterInput {
+  fuelType: String
+  geography: String
+  scope: String
+  boundary: String
+  sourceId: String
+  factorStatus: String
+  licenseClass: String
+  edition: String
+  activityTags: [String!]
+  sectorTags: [String!]
+  dqsMin: Float
+  validOnDate: String
+  includePreview: Boolean = false
+  includeConnector: Boolean = false
+  regulatoryFramework: RegulatoryFramework
+  regulatoryFrameworks: [RegulatoryFramework!]
+  timeGranularity: TimeGranularity
+}
+
+input FactorSortInput {
+  field: FactorSortField! = RELEVANCE
+  order: SortOrder! = DESC
+}
+
+input ResolutionRequestInput {
+  activity: String!
+  methodProfile: String!
+  jurisdiction: String
+  reportingDate: String
+  supplierId: String
+  facilityId: String
+  utilityOrGridRegion: String
+  preferredSources: [String!]
+  extras: JSON
+  edition: String
+  includePreview: Boolean = false
+  includeConnector: Boolean = false
+  timeGranularity: TimeGranularity = ANNUAL
+  reportingHour: Int
+  reportingMonth: Int
+  targetUnit: String
+}
+
+input SearchFactorsInput {
+  query: String!
+  filter: FactorFilterInput
+  sort: FactorSortInput
+  first: Int
+  after: String
+}
+
+input MatchInput {
+  activityDescription: String!
+  geography: String
+  fuelType: String
+  scope: String
+  limit: Int = 10
+  edition: String
+}
+
+input OverrideInput {
+  factorId: ID!
+  tenantId: ID
+  co2ePerUnit: Float!
+  overrideUnit: String = "kg_co2e"
+  justification: String
+  effectiveFrom: String
+  effectiveTo: String
+  source: String
+  metadata: JSON
+}
+
+# ---------- Query extensions ----------
+
+extend type Query {
+  factor(id: ID!, edition: String): Factor
+  factors(
+    filter: FactorFilterInput
+    first: Int = 20
+    after: String
+    sort: FactorSortInput
+  ): FactorConnection!
+  searchFactors(input: SearchFactorsInput!): FactorConnection!
+  resolveFactor(request: ResolutionRequestInput!): ResolvedFactor!
+    @auth(requires: "pro")
+  resolveFactorExplain(
+    request: ResolutionRequestInput!
+    alternatesLimit: Int = 5
+  ): ResolvedFactor! @auth(requires: "pro")
+  factorAlternates(factorId: ID!, limit: Int = 5): [Factor!]!
+    @auth(requires: "pro")
+  factorDiff(
+    factorId: ID!
+    fromEdition: String!
+    toEdition: String!
+  ): FactorDiff!
+  factorAuditBundle(factorId: ID!, edition: String): AuditBundle
+    @auth(requires: "enterprise")
+  editions(status: EditionStatus): [Edition!]!
+  edition(id: ID!): Edition
+  sources: [Source!]!
+  source(id: ID!): Source
+  methodPacks: [MethodPack!]!
+  methodPack(id: ID!): MethodPack
+  factorCoverage(methodProfile: String, edition: String): CoverageReport!
+}
+
+# ---------- Mutation extensions ----------
+
+extend type Mutation {
+  setFactorOverride(input: OverrideInput!): Override!
+    @auth(requires: "consulting")
+  removeFactorOverride(tenantId: ID!, factorId: ID!): Boolean!
+    @auth(requires: "consulting")
+  submitBatchResolution(requests: [ResolutionRequestInput!]!): BatchJobHandle!
+    @auth(requires: "pro")
+  matchFactor(input: MatchInput!): [Factor!]!
+}
+
+# ---------- Subscription extensions ----------
+
+type RegulatoryChangeEvent {
+  eventId: ID!
+  eventKind: FactorEventKind!
+  sourceId: String!
+  detectedAt: DateTime!
+  severity: String!
+  factorId: String
+  oldValue: Float
+  newValue: Float
+  unit: String
+  requiresHumanReview: Boolean!
+  reviewReason: String
+}
+
+extend type Subscription {
+  factorEventStream(
+    sourceId: String
+    eventKinds: [FactorEventKind!]
+    tenantId: ID
+  ): RegulatoryChangeEvent! @auth(requires: "pro")
+
+  editionPublished: Edition! @auth(requires: "pro")
+}

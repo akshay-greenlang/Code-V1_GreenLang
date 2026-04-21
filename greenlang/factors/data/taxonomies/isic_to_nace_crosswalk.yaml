@@ -1,0 +1,166 @@
+# ---------------------------------------------------------------------------
+# ISIC Rev.4 <-> NACE Rev.2 crosswalk
+# ---------------------------------------------------------------------------
+# NACE Rev.2 is derived from ISIC Rev.4 and is identical at the 2-digit
+# Division level. At 3/4-digit depth NACE disaggregates further so one ISIC
+# class may map to multiple NACE classes. We list the principal 4-digit
+# equivalences for the priority sectors.
+#
+# match_quality:
+#   - "identical"   : codes are literally the same (most 2-digit Divisions)
+#   - "one_to_one"  : 1:1 at 4-digit with identical scope
+#   - "split"       : ISIC 4-digit splits into multiple NACE 4-digit codes
+#   - "merge"       : several ISIC 4-digit codes merge into a single NACE code
+#
+# Source: Eurostat correspondence tables (RAMON), NACE Rev.2 Introductory Guide.
+# License: Public / attribution.
+# ---------------------------------------------------------------------------
+metadata:
+  from_system: "isic"
+  from_revision: "Rev.4"
+  to_system: "nace"
+  to_revision: "Rev.2"
+  source: "Eurostat RAMON correspondence tables"
+  license: "Public / attribution"
+
+# 2-digit Division crosswalks (all identical)
+divisions:
+  "01": {to: "01", match_quality: "identical"}
+  "02": {to: "02", match_quality: "identical"}
+  "03": {to: "03", match_quality: "identical"}
+  "05": {to: "05", match_quality: "identical"}
+  "06": {to: "06", match_quality: "identical"}
+  "07": {to: "07", match_quality: "identical"}
+  "08": {to: "08", match_quality: "identical"}
+  "09": {to: "09", match_quality: "identical"}
+  "10": {to: "10", match_quality: "identical"}
+  "11": {to: "11", match_quality: "identical"}
+  "12": {to: "12", match_quality: "identical"}
+  "13": {to: "13", match_quality: "identical"}
+  "14": {to: "14", match_quality: "identical"}
+  "15": {to: "15", match_quality: "identical"}
+  "16": {to: "16", match_quality: "identical"}
+  "17": {to: "17", match_quality: "identical"}
+  "18": {to: "18", match_quality: "identical"}
+  "19": {to: "19", match_quality: "identical"}
+  "20": {to: "20", match_quality: "identical"}
+  "21": {to: "21", match_quality: "identical"}
+  "22": {to: "22", match_quality: "identical"}
+  "23": {to: "23", match_quality: "identical"}
+  "24": {to: "24", match_quality: "identical"}
+  "25": {to: "25", match_quality: "identical"}
+  "26": {to: "26", match_quality: "identical"}
+  "27": {to: "27", match_quality: "identical"}
+  "28": {to: "28", match_quality: "identical"}
+  "29": {to: "29", match_quality: "identical"}
+  "30": {to: "30", match_quality: "identical"}
+  "31": {to: "31", match_quality: "identical"}
+  "32": {to: "32", match_quality: "identical"}
+  "33": {to: "33", match_quality: "identical"}
+  "35": {to: "35", match_quality: "identical"}
+  "49": {to: "49", match_quality: "identical"}
+  "50": {to: "50", match_quality: "identical"}
+  "51": {to: "51", match_quality: "identical"}
+  "52": {to: "52", match_quality: "identical"}
+  "53": {to: "53", match_quality: "identical"}
+  "64": {to: "64", match_quality: "identical"}
+  "65": {to: "65", match_quality: "identical"}
+  "66": {to: "66", match_quality: "identical"}
+
+# 4-digit class crosswalks (selected high-signal examples)
+classes:
+  # Mining
+  "0510": {to: "0510", match_quality: "one_to_one"}
+  "0520": {to: "0520", match_quality: "one_to_one"}
+  "0610": {to: "0610", match_quality: "one_to_one"}
+  "0620": {to: "0620", match_quality: "one_to_one"}
+  "0710": {to: "0710", match_quality: "one_to_one"}
+  "0721": {to: "0721", match_quality: "one_to_one"}
+  "0729": {to: "0729", match_quality: "one_to_one"}
+  "0810": {to: ["0811", "0812"], match_quality: "split"}
+  "0891": {to: "0891", match_quality: "one_to_one"}
+  "0892": {to: "0892", match_quality: "one_to_one"}
+  "0893": {to: "0893", match_quality: "one_to_one"}
+  "0899": {to: "0899", match_quality: "one_to_one"}
+  "0910": {to: "0910", match_quality: "one_to_one"}
+  "0990": {to: "0990", match_quality: "one_to_one"}
+  # Manufacturing priority examples
+  "1010": {to: ["1011", "1012", "1013"], match_quality: "split"}
+  "1020": {to: "1020", match_quality: "one_to_one"}
+  "1030": {to: ["1031", "1032", "1039"], match_quality: "split"}
+  "1040": {to: ["1041", "1042"], match_quality: "split"}
+  "1050": {to: ["1051", "1052"], match_quality: "split"}
+  "1061": {to: "1061", match_quality: "one_to_one"}
+  "1062": {to: "1062", match_quality: "one_to_one"}
+  "1071": {to: ["1071", "1072"], match_quality: "split"}
+  "1072": {to: "1081", match_quality: "one_to_one"}
+  "1073": {to: "1082", match_quality: "one_to_one"}
+  "1200": {to: "1200", match_quality: "one_to_one"}
+  "1311": {to: "1310", match_quality: "one_to_one"}
+  "1312": {to: "1320", match_quality: "one_to_one"}
+  "1313": {to: "1330", match_quality: "one_to_one"}
+  "1410": {to: ["1411", "1412", "1413", "1414", "1419"], match_quality: "split"}
+  "1511": {to: "1511", match_quality: "one_to_one"}
+  "1520": {to: "1520", match_quality: "one_to_one"}
+  "1610": {to: "1610", match_quality: "one_to_one"}
+  "1701": {to: ["1711", "1712"], match_quality: "split"}
+  "1910": {to: "1910", match_quality: "one_to_one"}
+  "1920": {to: "1920", match_quality: "one_to_one"}
+  "2011": {to: ["2011", "2012", "2013", "2014"], match_quality: "split"}
+  "2012": {to: "2015", match_quality: "one_to_one"}
+  "2013": {to: ["2016", "2017"], match_quality: "split"}
+  "2021": {to: "2020", match_quality: "one_to_one"}
+  "2022": {to: "2030", match_quality: "one_to_one"}
+  "2023": {to: ["2041", "2042"], match_quality: "split"}
+  "2030": {to: "2060", match_quality: "one_to_one"}
+  "2100": {to: ["2110", "2120"], match_quality: "split"}
+  "2211": {to: "2211", match_quality: "one_to_one"}
+  "2219": {to: "2219", match_quality: "one_to_one"}
+  "2220": {to: ["2221", "2222", "2223", "2229"], match_quality: "split"}
+  "2310": {to: ["2311", "2312", "2313", "2314", "2319"], match_quality: "split"}
+  "2391": {to: "2320", match_quality: "one_to_one"}
+  "2394": {to: ["2351", "2352"], match_quality: "split"}
+  "2395": {to: ["2361", "2362", "2363", "2364", "2365", "2369"], match_quality: "split"}
+  "2396": {to: "2370", match_quality: "one_to_one"}
+  "2410": {to: ["2410", "2420", "2431", "2432", "2433", "2434"], match_quality: "split"}
+  "2420": {to: ["2441", "2442", "2443", "2444", "2445", "2446"], match_quality: "split"}
+  "2431": {to: ["2451", "2452"], match_quality: "split"}
+  "2432": {to: ["2453", "2454"], match_quality: "split"}
+  # Energy
+  "3510": {to: ["3511", "3512", "3513", "3514"], match_quality: "split"}
+  "3520": {to: ["3521", "3522", "3523"], match_quality: "split"}
+  "3530": {to: "3530", match_quality: "one_to_one"}
+  # Transport
+  "4911": {to: "4910", match_quality: "one_to_one"}
+  "4912": {to: "4920", match_quality: "one_to_one"}
+  "4921": {to: "4931", match_quality: "one_to_one"}
+  "4922": {to: ["4932", "4939"], match_quality: "split"}
+  "4923": {to: ["4941", "4942"], match_quality: "split"}
+  "4930": {to: "4950", match_quality: "one_to_one"}
+  "5011": {to: "5010", match_quality: "one_to_one"}
+  "5012": {to: "5020", match_quality: "one_to_one"}
+  "5021": {to: "5030", match_quality: "one_to_one"}
+  "5022": {to: "5040", match_quality: "one_to_one"}
+  "5110": {to: "5110", match_quality: "one_to_one"}
+  "5120": {to: ["5121", "5122"], match_quality: "split"}
+  "5310": {to: "5310", match_quality: "one_to_one"}
+  "5320": {to: "5320", match_quality: "one_to_one"}
+  # Finance
+  "6411": {to: "6411", match_quality: "one_to_one"}
+  "6419": {to: "6419", match_quality: "one_to_one"}
+  "6420": {to: "6420", match_quality: "one_to_one"}
+  "6430": {to: "6430", match_quality: "one_to_one"}
+  "6491": {to: "6491", match_quality: "one_to_one"}
+  "6492": {to: "6492", match_quality: "one_to_one"}
+  "6499": {to: "6499", match_quality: "one_to_one"}
+  "6511": {to: "6511", match_quality: "one_to_one"}
+  "6512": {to: "6512", match_quality: "one_to_one"}
+  "6520": {to: "6520", match_quality: "one_to_one"}
+  "6530": {to: "6530", match_quality: "one_to_one"}
+  "6611": {to: "6611", match_quality: "one_to_one"}
+  "6612": {to: "6612", match_quality: "one_to_one"}
+  "6619": {to: "6619", match_quality: "one_to_one"}
+  "6621": {to: "6621", match_quality: "one_to_one"}
+  "6622": {to: "6622", match_quality: "one_to_one"}
+  "6629": {to: "6629", match_quality: "one_to_one"}
+  "6630": {to: "6630", match_quality: "one_to_one"}

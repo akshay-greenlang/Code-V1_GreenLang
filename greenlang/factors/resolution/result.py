@@ -82,6 +82,13 @@ class ResolvedFactor(GreenLangBase):
     factor_unit_denominator: Optional[str] = None
     primary_data_flag: Optional[str] = None
 
+    # Unit conversion (populated when the request supplies ``target_unit``).
+    target_unit: Optional[str] = None
+    converted_co2e_per_unit: Optional[float] = None
+    unit_conversion_factor: Optional[float] = None
+    unit_conversion_path: List[str] = Field(default_factory=list)
+    unit_conversion_note: Optional[str] = None
+
     # Tracing.
     resolved_at: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc)
@@ -117,6 +124,17 @@ class ResolvedFactor(GreenLangBase):
             },
             "uncertainty": self.uncertainty.model_dump(),
             "emissions": self.gas_breakdown.model_dump(),
+            "unit_conversion": (
+                None
+                if self.target_unit is None
+                else {
+                    "target_unit": self.target_unit,
+                    "factor": self.unit_conversion_factor,
+                    "converted_co2e_per_unit": self.converted_co2e_per_unit,
+                    "path": list(self.unit_conversion_path),
+                    "note": self.unit_conversion_note,
+                }
+            ),
             "alternates": [a.model_dump() for a in self.alternates],
             "meta": {
                 "resolved_at": self.resolved_at.isoformat(),

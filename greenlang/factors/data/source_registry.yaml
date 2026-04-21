@@ -72,6 +72,70 @@ sources:
     approval_required_for_certified: true
     legal_signoff_artifact: null
 
+  # -------------------------------------------------------------------------
+  # GAP-10 Wave 2 — residual-mix expansion to US/CA, AU, JP
+  # -------------------------------------------------------------------------
+  - source_id: green_e_residual_mix
+    display_name: Green-e Energy Residual Mix
+    authority: Green-e (Center for Resource Solutions)
+    publisher: Center for Resource Solutions
+    jurisdiction: [US, CA]
+    connector_only: false
+    license_class: restricted
+    redistribution_class: restricted
+    redistribution_allowed: false
+    attribution_required: true
+    verification_status: external_verified
+    citation_text: "Green-e Energy Residual Mix, Center for Resource Solutions (annual)."
+    publication_frequency: annual
+    cadence: annual
+    watch:
+      mechanism: http_head
+      url: "https://www.green-e.org/residual-mix"
+    approval_required_for_certified: true
+    legal_notes: "Attribution required; no commercial redistribution without license"
+    legal_signoff_artifact: null
+
+  - source_id: australia_nga_factors
+    display_name: Australian National Greenhouse Accounts Factors
+    authority: Australian DCCEEW
+    publisher: Department of Climate Change, Energy, the Environment and Water
+    jurisdiction: [AU]
+    connector_only: false
+    license_class: open
+    redistribution_class: open
+    redistribution_allowed: true
+    attribution_required: true
+    verification_status: regulator_approved
+    citation_text: "National Greenhouse Accounts Factors, Australian Government DCCEEW (annual)."
+    publication_frequency: annual
+    cadence: annual
+    watch:
+      mechanism: http_head
+      url: "https://www.dcceew.gov.au/climate-change/publications/national-greenhouse-accounts-factors"
+    approval_required_for_certified: true
+    legal_signoff_artifact: null
+
+  - source_id: japan_meti_electric_emission_factors
+    display_name: Japan METI Electric Utility Emission Factors
+    authority: Japan METI
+    publisher: Ministry of Economy, Trade and Industry
+    jurisdiction: [JP]
+    connector_only: false
+    license_class: open
+    redistribution_class: open
+    redistribution_allowed: true
+    attribution_required: true
+    verification_status: regulator_approved
+    citation_text: "Electric Utility Emission Factors, Japan METI & MOEJ (annual)."
+    publication_frequency: annual
+    cadence: annual
+    watch:
+      mechanism: http_head
+      url: "https://ghg-santeikohyo.env.go.jp/calc"
+    approval_required_for_certified: true
+    legal_signoff_artifact: null
+
   - source_id: ghgp_method_refs
     display_name: GHG Protocol methodological references
     connector_only: false

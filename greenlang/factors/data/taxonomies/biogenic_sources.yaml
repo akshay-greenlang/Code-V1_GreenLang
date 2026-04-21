@@ -1,0 +1,246 @@
+# ---------------------------------------------------------------------------
+# Biogenic feedstock source factors
+# ---------------------------------------------------------------------------
+# Covers the principal biomass, biogas and waste-derived bio-feedstocks
+# used by the GreenLang bioenergy method profiles. Each entry captures:
+#   - moisture content (wet-basis fraction)
+#   - lower heating value (GJ / tonne as-received)
+#   - carbon content (kg C / kg dry matter)
+#   - CO2 accounting treatment: "carbon_neutral" (IPCC default for sustainable
+#     short-rotation biomass) or "short_rotation_sequestration" (explicit
+#     sequestration credit for multi-year rotation, e.g. SRF)
+#   - biogenic_share (always 1.0 for pure biomass sources)
+#
+# Sources:
+#   - IEA Bioenergy Task 32 "Fuel properties database" (2022)
+#   - IPCC 2019 Refinement, Vol 4, Ch. 2 (Generic methodologies)
+#   - EU Renewable Energy Directive (RED III) Annex VI
+#   - RSB sustainability criteria v4.3
+#   - USDA Forest Products Laboratory "Wood Handbook" (2021 ed.)
+#
+# License: Public / attribution.
+# ---------------------------------------------------------------------------
+metadata:
+  version: "1.0"
+  last_updated: "2026-04-01"
+  units:
+    moisture_content: "fraction wet basis (0-1)"
+    lhv: "GJ per tonne, as-received"
+    carbon_content: "kg C per kg dry matter"
+
+sources:
+
+  wood_pellets:
+    category: "wood"
+    description: "Industrial wood pellets (EN Plus A1 grade)"
+    moisture_content: 0.08
+    lhv_gj_per_t: 17.0
+    carbon_content: 0.505
+    co2_accounting: "carbon_neutral"
+    biogenic_share: 1.0
+    typical_certs: ["FSC", "PEFC", "SBP"]
+
+  wood_chips:
+    category: "wood"
+    description: "Green wood chips (30-45% MC)"
+    moisture_content: 0.35
+    lhv_gj_per_t: 10.5
+    carbon_content: 0.500
+    co2_accounting: "carbon_neutral"
+    biogenic_share: 1.0
+    typical_certs: ["FSC", "PEFC"]
+
+  wood_firewood_dry:
+    category: "wood"
+    description: "Seasoned firewood (<20% MC)"
+    moisture_content: 0.18
+    lhv_gj_per_t: 14.5
+    carbon_content: 0.500
+    co2_accounting: "carbon_neutral"
+    biogenic_share: 1.0
+
+  short_rotation_coppice:
+    category: "dedicated_energy_crop"
+    description: "SRC willow / poplar for energy"
+    moisture_content: 0.50
+    lhv_gj_per_t: 8.5
+    carbon_content: 0.485
+    co2_accounting: "short_rotation_sequestration"
+    biogenic_share: 1.0
+    typical_certs: ["RSB"]
+
+  miscanthus:
+    category: "dedicated_energy_crop"
+    description: "Miscanthus grass bales"
+    moisture_content: 0.15
+    lhv_gj_per_t: 15.8
+    carbon_content: 0.475
+    co2_accounting: "short_rotation_sequestration"
+    biogenic_share: 1.0
+    typical_certs: ["RSB"]
+
+  straw_cereal:
+    category: "crop_residue"
+    description: "Wheat / barley straw, field-collected"
+    moisture_content: 0.15
+    lhv_gj_per_t: 14.5
+    carbon_content: 0.470
+    co2_accounting: "carbon_neutral"
+    biogenic_share: 1.0
+
+  rice_husk:
+    category: "crop_residue"
+    description: "Rice husk, milling by-product"
+    moisture_content: 0.10
+    lhv_gj_per_t: 14.0
+    carbon_content: 0.380
+    co2_accounting: "carbon_neutral"
+    biogenic_share: 1.0
+
+  bagasse:
+    category: "crop_residue"
+    description: "Sugarcane bagasse"
+    moisture_content: 0.50
+    lhv_gj_per_t: 7.4
+    carbon_content: 0.470
+    co2_accounting: "carbon_neutral"
+    biogenic_share: 1.0
+    typical_certs: ["Bonsucro"]
+
+  corn_stover:
+    category: "crop_residue"
+    description: "Corn stover (leaves + stalks)"
+    moisture_content: 0.30
+    lhv_gj_per_t: 12.0
+    carbon_content: 0.450
+    co2_accounting: "carbon_neutral"
+    biogenic_share: 1.0
+
+  manure_cattle:
+    category: "manure"
+    description: "Cattle manure slurry (dairy)"
+    moisture_content: 0.88
+    lhv_gj_per_t: 1.8
+    carbon_content: 0.400
+    co2_accounting: "carbon_neutral"
+    biogenic_share: 1.0
+    methane_potential_m3_ch4_per_kgvs: 0.23
+
+  manure_pig:
+    category: "manure"
+    description: "Swine manure slurry"
+    moisture_content: 0.92
+    lhv_gj_per_t: 1.4
+    carbon_content: 0.390
+    co2_accounting: "carbon_neutral"
+    biogenic_share: 1.0
+    methane_potential_m3_ch4_per_kgvs: 0.36
+
+  manure_poultry:
+    category: "manure"
+    description: "Poultry litter"
+    moisture_content: 0.25
+    lhv_gj_per_t: 10.2
+    carbon_content: 0.360
+    co2_accounting: "carbon_neutral"
+    biogenic_share: 1.0
+
+  msw_organic:
+    category: "municipal_waste_organic"
+    description: "Source-separated organic MSW (food + green)"
+    moisture_content: 0.65
+    lhv_gj_per_t: 4.0
+    carbon_content: 0.380
+    co2_accounting: "carbon_neutral"
+    biogenic_share: 1.0
+
+  msw_mixed:
+    category: "municipal_waste_organic"
+    description: "Mixed residual MSW (biogenic fraction only)"
+    moisture_content: 0.30
+    lhv_gj_per_t: 9.0
+    carbon_content: 0.350
+    co2_accounting: "carbon_neutral"
+    biogenic_share: 0.55
+
+  palm_empty_fruit_bunch:
+    category: "crop_residue"
+    description: "Oil palm empty fruit bunches"
+    moisture_content: 0.65
+    lhv_gj_per_t: 6.5
+    carbon_content: 0.460
+    co2_accounting: "carbon_neutral"
+    biogenic_share: 1.0
+    typical_certs: ["RSPO"]
+
+  algae_microalgae:
+    category: "algae"
+    description: "Cultivated microalgae (dry)"
+    moisture_content: 0.05
+    lhv_gj_per_t: 21.0
+    carbon_content: 0.510
+    co2_accounting: "carbon_neutral"
+    biogenic_share: 1.0
+
+  algae_macroalgae:
+    category: "algae"
+    description: "Cultivated seaweed (kelp, dry)"
+    moisture_content: 0.12
+    lhv_gj_per_t: 11.0
+    carbon_content: 0.400
+    co2_accounting: "short_rotation_sequestration"
+    biogenic_share: 1.0
+
+  biogas_anaerobic:
+    category: "biogas"
+    description: "Raw biogas (60% CH4, 40% CO2)"
+    moisture_content: 0.0
+    lhv_gj_per_t: 18.0
+    carbon_content: 0.410
+    co2_accounting: "carbon_neutral"
+    biogenic_share: 1.0
+
+  biomethane:
+    category: "biogas"
+    description: "Upgraded biomethane (pipeline-grade)"
+    moisture_content: 0.0
+    lhv_gj_per_t: 50.0
+    carbon_content: 0.750
+    co2_accounting: "carbon_neutral"
+    biogenic_share: 1.0
+
+  black_liquor:
+    category: "pulping_byproduct"
+    description: "Kraft pulping black liquor"
+    moisture_content: 0.30
+    lhv_gj_per_t: 11.5
+    carbon_content: 0.350
+    co2_accounting: "carbon_neutral"
+    biogenic_share: 1.0
+    typical_certs: ["FSC", "PEFC"]
+
+certifications:
+  FSC:
+    full_name: "Forest Stewardship Council"
+    scope: ["wood", "pulp_paper", "biomass_wood"]
+    url: "https://fsc.org"
+  PEFC:
+    full_name: "Programme for the Endorsement of Forest Certification"
+    scope: ["wood", "pulp_paper", "biomass_wood"]
+    url: "https://pefc.org"
+  RSPO:
+    full_name: "Roundtable on Sustainable Palm Oil"
+    scope: ["palm_oil", "palm_biomass"]
+    url: "https://rspo.org"
+  Bonsucro:
+    full_name: "Bonsucro (sugarcane)"
+    scope: ["bagasse", "ethanol_sugarcane"]
+    url: "https://bonsucro.com"
+  RSB:
+    full_name: "Roundtable on Sustainable Biomaterials"
+    scope: ["energy_crop", "advanced_biofuel"]
+    url: "https://rsb.org"
+  SBP:
+    full_name: "Sustainable Biomass Program"
+    scope: ["wood_pellets", "industrial_biomass"]
+    url: "https://sbp-cert.org"

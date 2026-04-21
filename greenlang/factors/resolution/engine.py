@@ -30,6 +30,11 @@ from greenlang.data.canonical_v2 import (
     enforce_license_class_homogeneity,
 )
 from greenlang.factors.method_packs import MethodPack, get_pack
+from greenlang.factors.ontology.unit_graph import (
+    DEFAULT_GRAPH,
+    UnitConversionError,
+    UnitGraph,
+)
 from greenlang.factors.resolution.request import ResolutionRequest
 from greenlang.factors.resolution.result import (
     AlternateCandidate,
@@ -58,12 +63,14 @@ class ResolutionEngine:
         *,
         candidate_source: Optional[CandidateSource] = None,
         tenant_overlay_reader: Optional[Callable[[ResolutionRequest], Optional[Any]]] = None,
+        unit_graph: Optional[UnitGraph] = None,
     ) -> None:
         # A default candidate source exists so tests + smoke runs work even
         # without a full Factors repository wired in.  Production callers
         # inject a real source backed by ``FactorCatalogService``.
         self._candidate_source = candidate_source or _empty_candidate_source
         self._tenant_overlay_reader = tenant_overlay_reader or _default_tenant_lookup
+        self._unit_graph = unit_graph or DEFAULT_GRAPH
 
     # ------------------------------------------------------------------
     # Public API
@@ -94,10 +101,16 @@ class ResolutionEngine:
                 continue
 
             # Score every eligible candidate; pick the lowest-score winner.
+            request_granularity = getattr(
+                getattr(request, "time_granularity", None), "value", None
+            )
             scored: List[Tuple[int, Any, TieBreakReasons]] = []
             for cand in eligible:
                 tb = build_tiebreak(
-                    cand, request_geo=request_geo, request_date=request_date
+                    cand,
+                    request_geo=request_geo,
+                    request_date=request_date,
+                    request_granularity=request_granularity,
                 )
                 scored.append((tb.score(), cand, tb))
             scored.sort(key=lambda triple: triple[0])
@@ -111,9 +124,11 @@ class ResolutionEngine:
             # license class.  If not, drop any alternate that doesn't match.
             enforce_license_class_homogeneity([winner, *eligible[:9]])
 
-            return self._build_resolved_factor(
+            resolved = self._build_resolved_factor(
                 winner, winning_tb, alternates, pack, rank, label
             )
+            self._apply_unit_conversion(resolved, winner, request)
+            return resolved
 
         # Every step exhausted.
         raise ResolutionError(
@@ -146,6 +161,86 @@ class ResolutionEngine:
     # ------------------------------------------------------------------
     # Packaging
     # ------------------------------------------------------------------
+
+    # ------------------------------------------------------------------
+    # Unit conversion
+    # ------------------------------------------------------------------
+
+    def _apply_unit_conversion(
+        self,
+        resolved: ResolvedFactor,
+        record: Any,
+        request: ResolutionRequest,
+    ) -> None:
+        """Populate ``resolved.target_unit`` + related fields when the
+        caller asked for a unit that differs from the factor's native
+        denominator.
+
+        The conversion is applied to the CO2e-per-unit basis (numerator
+        stays in kg CO2e — denominator changes).  Callers that need
+        per-gas breakdowns in the new unit can multiply by the same
+        factor on their side; the engine only exposes the aggregated
+        ``converted_co2e_per_unit`` to keep the explain payload small.
+        """
+        target = (request.target_unit or "").strip()
+        if not target:
+            return
+        native = (resolved.factor_unit_denominator or "").strip()
+        if not native:
+            resolved.unit_conversion_note = (
+                "target_unit requested but the factor has no native denominator"
+            )
+            return
+        if native.lower() == target.lower():
+            resolved.target_unit = native
+            resolved.unit_conversion_factor = 1.0
+            resolved.converted_co2e_per_unit = _safe_float(
+                getattr(getattr(record, "gwp_100yr", None), "co2e_total", None)
+            )
+            resolved.unit_conversion_path = [native]
+            resolved.unit_conversion_note = "native unit matches target"
+            return
+
+        try:
+            path = self._unit_graph.shortest_path(from_unit=target, to_unit=native)
+        except Exception as exc:  # pragma: no cover — defensive
+            resolved.unit_conversion_note = (
+                f"unit_graph error during shortest_path: {exc}"
+            )
+            return
+        if path is None:
+            resolved.target_unit = target
+            resolved.unit_conversion_note = (
+                f"no conversion path from {target!r} to {native!r}; "
+                "returning factor in native unit"
+            )
+            return
+
+        try:
+            conv = self._unit_graph.convert(
+                value=1.0, from_unit=target, to_unit=native
+            )
+        except UnitConversionError as exc:
+            resolved.target_unit = target
+            resolved.unit_conversion_note = (
+                f"conversion requires material context ({exc}); "
+                "returning factor in native unit"
+            )
+            return
+
+        co2e_native = _safe_float(
+            getattr(getattr(record, "gwp_100yr", None), "co2e_total", None)
+        )
+        resolved.target_unit = target
+        resolved.unit_conversion_factor = conv
+        resolved.unit_conversion_path = [target] + [e.target_unit for e in path]
+        if co2e_native is not None:
+            # CO2e is per native unit; 1 target_unit = `conv` native units
+            # → CO2e per target_unit = co2e_native * conv.
+            resolved.converted_co2e_per_unit = co2e_native * conv
+        resolved.unit_conversion_note = (
+            f"converted {target} → {native} via {len(path)}-edge path"
+        )
 
     @staticmethod
     def _to_alternate(

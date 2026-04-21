@@ -1,0 +1,258 @@
+# ---------------------------------------------------------------------------
+# Land-Use Change (LUC) commodity factors by commodity x production region
+# ---------------------------------------------------------------------------
+# Each commodity block gives:
+#   - base LUC factor (tCO2e / tonne product) under moderate-risk assumptions
+#   - regional overrides keyed by ISO-3 country code + ecoregion when relevant
+#   - deforestation risk tier: high / medium / low / negligible
+#   - permanence class: ephemeral / short / medium / long (IPCC 2019 Refinement)
+#
+# Factors are annualised over a 20-year amortisation window per the
+# GHG Protocol Land Sector and Removals Guidance (draft, 2023) and IPCC
+# 2019 Refinement. They include both biogenic CO2 and fossil CO2 where
+# agriculture uses fossil inputs; biogenic_share is given separately.
+#
+# Sources:
+#   - IPCC 2019 Refinement to the 2006 Guidelines, Vol 4 (AFOLU)
+#   - FAO FAOSTAT land-use emissions by country, 2023
+#   - GHG Protocol Land Sector and Removals Guidance (v0.1 draft)
+#   - Curtis et al. 2018 "Classifying drivers of global forest loss"
+#   - EUDR risk benchmarking draft (European Commission, 2024)
+#
+# License: Public / attribution (IPCC/FAO/GHGP all permit redistribution).
+# ---------------------------------------------------------------------------
+metadata:
+  version: "1.0"
+  last_updated: "2026-04-01"
+  amortisation_years: 20
+  gwp_basis: "AR6 GWP100"
+  license: "Public / attribution"
+
+commodities:
+
+  palm_oil:
+    cbam_covered: false
+    eudr_covered: true
+    base_luc_tco2e_per_t_product: 4.5
+    biogenic_share: 0.95
+    permanence_class: "medium"
+    regions:
+      IDN:
+        label: "Indonesia"
+        risk_tier: "high"
+        luc_tco2e_per_t_product: 8.2
+        notes: "Peatland conversion dominates; much higher when peat loss included"
+      MYS:
+        label: "Malaysia"
+        risk_tier: "high"
+        luc_tco2e_per_t_product: 5.6
+      COL:
+        label: "Colombia"
+        risk_tier: "medium"
+        luc_tco2e_per_t_product: 3.0
+      NGA:
+        label: "Nigeria"
+        risk_tier: "medium"
+        luc_tco2e_per_t_product: 2.6
+      THA:
+        label: "Thailand"
+        risk_tier: "low"
+        luc_tco2e_per_t_product: 1.1
+
+  soy:
+    cbam_covered: false
+    eudr_covered: true
+    base_luc_tco2e_per_t_product: 0.9
+    biogenic_share: 0.80
+    permanence_class: "medium"
+    regions:
+      BRA:
+        label: "Brazil"
+        risk_tier: "high"
+        luc_tco2e_per_t_product: 2.8
+        notes: "Cerrado + Amazon conversion; moratorium areas excluded from highs"
+      ARG:
+        label: "Argentina"
+        risk_tier: "medium"
+        luc_tco2e_per_t_product: 1.4
+      PRY:
+        label: "Paraguay"
+        risk_tier: "high"
+        luc_tco2e_per_t_product: 3.2
+      USA:
+        label: "United States"
+        risk_tier: "low"
+        luc_tco2e_per_t_product: 0.15
+      CHN:
+        label: "China"
+        risk_tier: "low"
+        luc_tco2e_per_t_product: 0.10
+
+  beef:
+    cbam_covered: false
+    eudr_covered: true
+    base_luc_tco2e_per_t_product: 14.0
+    biogenic_share: 0.70
+    permanence_class: "medium"
+    regions:
+      BRA:
+        label: "Brazil"
+        risk_tier: "high"
+        luc_tco2e_per_t_product: 45.0
+        notes: "Amazon + Cerrado pasture expansion"
+      ARG:
+        label: "Argentina"
+        risk_tier: "medium"
+        luc_tco2e_per_t_product: 12.0
+      USA:
+        label: "United States"
+        risk_tier: "low"
+        luc_tco2e_per_t_product: 2.5
+      AUS:
+        label: "Australia"
+        risk_tier: "medium"
+        luc_tco2e_per_t_product: 6.0
+      IRL:
+        label: "Ireland"
+        risk_tier: "negligible"
+        luc_tco2e_per_t_product: 0.3
+
+  cocoa:
+    cbam_covered: false
+    eudr_covered: true
+    base_luc_tco2e_per_t_product: 2.8
+    biogenic_share: 0.90
+    permanence_class: "long"
+    regions:
+      CIV:
+        label: "Cote d'Ivoire"
+        risk_tier: "high"
+        luc_tco2e_per_t_product: 6.8
+      GHA:
+        label: "Ghana"
+        risk_tier: "high"
+        luc_tco2e_per_t_product: 5.5
+      IDN:
+        label: "Indonesia"
+        risk_tier: "medium"
+        luc_tco2e_per_t_product: 3.2
+      ECU:
+        label: "Ecuador"
+        risk_tier: "medium"
+        luc_tco2e_per_t_product: 2.4
+      CMR:
+        label: "Cameroon"
+        risk_tier: "high"
+        luc_tco2e_per_t_product: 5.0
+
+  coffee:
+    cbam_covered: false
+    eudr_covered: true
+    base_luc_tco2e_per_t_product: 1.8
+    biogenic_share: 0.92
+    permanence_class: "long"
+    regions:
+      BRA:
+        label: "Brazil"
+        risk_tier: "medium"
+        luc_tco2e_per_t_product: 1.5
+      VNM:
+        label: "Vietnam"
+        risk_tier: "medium"
+        luc_tco2e_per_t_product: 2.9
+      COL:
+        label: "Colombia"
+        risk_tier: "low"
+        luc_tco2e_per_t_product: 0.9
+      ETH:
+        label: "Ethiopia"
+        risk_tier: "medium"
+        luc_tco2e_per_t_product: 1.6
+      HND:
+        label: "Honduras"
+        risk_tier: "medium"
+        luc_tco2e_per_t_product: 1.4
+
+  rubber:
+    cbam_covered: false
+    eudr_covered: true
+    base_luc_tco2e_per_t_product: 2.3
+    biogenic_share: 0.88
+    permanence_class: "long"
+    regions:
+      THA:
+        label: "Thailand"
+        risk_tier: "medium"
+        luc_tco2e_per_t_product: 2.1
+      IDN:
+        label: "Indonesia"
+        risk_tier: "high"
+        luc_tco2e_per_t_product: 4.8
+      MYS:
+        label: "Malaysia"
+        risk_tier: "medium"
+        luc_tco2e_per_t_product: 2.6
+      VNM:
+        label: "Vietnam"
+        risk_tier: "medium"
+        luc_tco2e_per_t_product: 2.9
+      CIV:
+        label: "Cote d'Ivoire"
+        risk_tier: "high"
+        luc_tco2e_per_t_product: 3.8
+
+  pulp_paper:
+    cbam_covered: false
+    eudr_covered: true
+    base_luc_tco2e_per_t_product: 0.6
+    biogenic_share: 0.96
+    permanence_class: "medium"
+    regions:
+      BRA:
+        label: "Brazil (eucalypt plantation)"
+        risk_tier: "medium"
+        luc_tco2e_per_t_product: 0.7
+      IDN:
+        label: "Indonesia (acacia plantation on peat)"
+        risk_tier: "high"
+        luc_tco2e_per_t_product: 3.9
+      USA:
+        label: "United States"
+        risk_tier: "low"
+        luc_tco2e_per_t_product: 0.15
+      SWE:
+        label: "Sweden"
+        risk_tier: "negligible"
+        luc_tco2e_per_t_product: 0.05
+      FIN:
+        label: "Finland"
+        risk_tier: "negligible"
+        luc_tco2e_per_t_product: 0.05
+
+  wood:
+    cbam_covered: false
+    eudr_covered: true
+    base_luc_tco2e_per_t_product: 0.4
+    biogenic_share: 0.97
+    permanence_class: "long"
+    regions:
+      BRA:
+        label: "Brazil"
+        risk_tier: "high"
+        luc_tco2e_per_t_product: 2.6
+      COG:
+        label: "Republic of the Congo"
+        risk_tier: "high"
+        luc_tco2e_per_t_product: 3.3
+      RUS:
+        label: "Russia"
+        risk_tier: "medium"
+        luc_tco2e_per_t_product: 0.8
+      CAN:
+        label: "Canada"
+        risk_tier: "low"
+        luc_tco2e_per_t_product: 0.12
+      NZL:
+        label: "New Zealand"
+        risk_tier: "negligible"
+        luc_tco2e_per_t_product: 0.05

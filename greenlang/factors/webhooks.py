@@ -33,12 +33,26 @@ logger = logging.getLogger(__name__)
 class WebhookEventType:
     FACTOR_DEPRECATED = "factor.deprecated"
     FACTOR_UPDATED = "factor.updated"
+    FACTOR_ADDED = "factor.added"
+    FACTOR_REMOVED = "factor.removed"
     LICENSE_CHANGED = "license.changed"
+    METHODOLOGY_CHANGED = "methodology.changed"
+    SOURCE_ARTIFACT_CHANGED = "source.artifact_changed"
+    SOURCE_UNAVAILABLE = "source.unavailable"
+    SOURCE_BREAKING_CHANGE = "source.breaking_change"
+    EDITION_PUBLISHED = "edition.published"
     IMPACT_SIMULATION_COMPLETE = "impact_simulation.complete"
     ALL = [
         FACTOR_DEPRECATED,
         FACTOR_UPDATED,
+        FACTOR_ADDED,
+        FACTOR_REMOVED,
         LICENSE_CHANGED,
+        METHODOLOGY_CHANGED,
+        SOURCE_ARTIFACT_CHANGED,
+        SOURCE_UNAVAILABLE,
+        SOURCE_BREAKING_CHANGE,
+        EDITION_PUBLISHED,
         IMPACT_SIMULATION_COMPLETE,
     ]
 
@@ -212,10 +226,153 @@ def sign_webhook_payload(payload: Dict[str, Any], secret: str) -> str:
     return hmac.new(secret.encode("utf-8"), body, hashlib.sha256).hexdigest()
 
 
+def deliver_webhook(
+    subscription: "WebhookSubscription",
+    event: "WebhookEvent",
+    *,
+    max_attempts: int = 4,
+    base_delay_s: float = 1.0,
+    timeout_s: float = 10.0,
+    sleep: Optional[Any] = None,
+    transport: Optional[Any] = None,
+) -> Dict[str, Any]:
+    """Deliver a webhook with exponential-backoff retry.
+
+    Returns a delivery receipt dict with keys ``attempts``, ``status`` ("ok"
+    or "failed"), ``last_http_status``, ``last_error``, ``signature`` and
+    the ISO timestamps bracketing the delivery window.
+
+    ``sleep`` is injectable so unit tests do not have to wait.
+    ``transport`` is an optional callable ``(url, body_bytes, headers) ->
+    (status_code, response_text)`` used to bypass urllib during tests.
+    """
+    import time
+    import urllib.error
+    import urllib.request
+
+    body = {
+        "event": event.event_type,
+        "triggered_at": event.triggered_at,
+        "payload": event.payload,
+    }
+    raw = json.dumps(body, sort_keys=True, default=str).encode("utf-8")
+    signature = sign_webhook_payload(body, subscription.secret)
+    headers = {
+        "Content-Type": "application/json",
+        "User-Agent": "GreenLang-Factors-Webhooks/1.0",
+        "X-GL-Event": event.event_type,
+        "X-GL-Signature": f"sha256={signature}",
+        "X-GL-Subscription-Id": subscription.subscription_id,
+    }
+
+    _sleep = sleep or time.sleep
+    started_at = datetime.now(timezone.utc).isoformat()
+    last_status: Optional[int] = None
+    last_error: Optional[str] = None
+    attempts = 0
+
+    for attempt in range(1, max_attempts + 1):
+        attempts = attempt
+        try:
+            if transport is not None:
+                last_status, response_text = transport(  # type: ignore[misc]
+                    subscription.target_url, raw, headers
+                )
+                last_error = None
+            else:
+                req = urllib.request.Request(
+                    subscription.target_url,
+                    data=raw,
+                    headers=headers,
+                    method="POST",
+                )
+                with urllib.request.urlopen(req, timeout=timeout_s) as resp:  # nosec B310
+                    last_status = int(getattr(resp, "status", resp.getcode()))
+                    last_error = None
+            if last_status is not None and 200 <= last_status < 300:
+                logger.info(
+                    "Webhook delivered: subscription=%s event=%s attempts=%d status=%d",
+                    subscription.subscription_id, event.event_type, attempts, last_status,
+                )
+                return {
+                    "subscription_id": subscription.subscription_id,
+                    "event_type": event.event_type,
+                    "status": "ok",
+                    "attempts": attempts,
+                    "last_http_status": last_status,
+                    "last_error": None,
+                    "signature": signature,
+                    "started_at": started_at,
+                    "finished_at": datetime.now(timezone.utc).isoformat(),
+                }
+            last_error = f"http_status:{last_status}"
+            # 4xx (except 408/425/429) are permanent client errors — do not retry.
+            if (
+                last_status is not None
+                and 400 <= last_status < 500
+                and last_status not in (408, 425, 429)
+            ):
+                break
+        except urllib.error.HTTPError as exc:
+            last_status = int(exc.code)
+            last_error = f"http_error:{exc.reason}"
+            if last_status not in (408, 425, 429) and 400 <= last_status < 500:
+                break
+        except Exception as exc:  # network / TLS / DNS / timeout
+            last_status = None
+            last_error = f"transport_error:{type(exc).__name__}:{exc}"
+
+        if attempt >= max_attempts:
+            break
+        delay = base_delay_s * (2 ** (attempt - 1))
+        logger.warning(
+            "Webhook attempt %d/%d failed: subscription=%s last_error=%s; retrying in %.1fs",
+            attempt, max_attempts, subscription.subscription_id, last_error, delay,
+        )
+        _sleep(delay)
+
+    return {
+        "subscription_id": subscription.subscription_id,
+        "event_type": event.event_type,
+        "status": "failed",
+        "attempts": attempts,
+        "last_http_status": last_status,
+        "last_error": last_error,
+        "signature": signature,
+        "started_at": started_at,
+        "finished_at": datetime.now(timezone.utc).isoformat(),
+    }
+
+
+def dispatch_event(
+    registry: "WebhookRegistry",
+    event: "WebhookEvent",
+    *,
+    tenant_filter: Optional[Iterable[str]] = None,
+    **kwargs: Any,
+) -> List[Dict[str, Any]]:
+    """Fan an event out to every active subscription.
+
+    ``tenant_filter`` restricts delivery to a subset of tenants; unset
+    means "every tenant subscribed to this event type".  Additional
+    keyword arguments flow through to :func:`deliver_webhook`.
+    """
+    subs = registry.subscribers_for_event(event.event_type)
+    if tenant_filter is not None:
+        allowed = set(tenant_filter)
+        subs = [s for s in subs if s.tenant_id in allowed]
+    receipts: List[Dict[str, Any]] = []
+    for sub in subs:
+        receipts.append(deliver_webhook(sub, event, **kwargs))
+    return receipts
+
+
 __all__ = [
     "WebhookEventType",
     "WebhookSubscription",
     "WebhookEvent",
     "WebhookRegistry",
     "sign_webhook_payload",
+    "deliver_webhook",
+    "dispatch_event",
 ]

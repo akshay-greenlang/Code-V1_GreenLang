@@ -1,0 +1,357 @@
+# ---------------------------------------------------------------------------
+# NACE Rev.2 - EU Statistical Classification of Economic Activities
+# ---------------------------------------------------------------------------
+# Eurostat "Statistical Classification of Economic Activities in the European
+# Community", Revision 2 (in force since 2008; minor updates 2008, 2015, 2023).
+#
+# NACE Rev.2 is bit-for-bit aligned with ISIC Rev.4 at the Division (2-digit)
+# level. Divergences appear at the 3-digit Group and 4-digit Class levels.
+# This file lists all 21 Sections, all 88 Divisions, and 4-digit classes for
+# the same priority sectors covered in isic_rev4.yaml (mining, manufacturing,
+# electricity/gas/steam, transportation, financial services) plus selected
+# service sectors where NACE provides finer granularity than ISIC.
+#
+# Sources:
+#   - Eurostat RAMON Metadata server (NACE Rev.2)
+#   - Commission Regulation (EU) 2022/2398 (2023 NACE revision)
+# License: Eurostat classifications are redistributable; attribution required.
+# ---------------------------------------------------------------------------
+metadata:
+  system: "nace"
+  revision: "Rev.2"
+  year_published: 2008
+  source: "Eurostat RAMON"
+  license: "Public / attribution"
+  ef_source: "Exiobase v3.8.2 EU27 (2020) + EEA sectoral intensities"
+  ef_units: "kgCO2e per EUR (2020)"
+
+sections:
+  A: "Agriculture, forestry and fishing"
+  B: "Mining and quarrying"
+  C: "Manufacturing"
+  D: "Electricity, gas, steam and air conditioning supply"
+  E: "Water supply; sewerage, waste management and remediation"
+  F: "Construction"
+  G: "Wholesale and retail trade; repair of motor vehicles and motorcycles"
+  H: "Transportation and storage"
+  I: "Accommodation and food service activities"
+  J: "Information and communication"
+  K: "Financial and insurance activities"
+  L: "Real estate activities"
+  M: "Professional, scientific and technical activities"
+  N: "Administrative and support service activities"
+  O: "Public administration and defence; compulsory social security"
+  P: "Education"
+  Q: "Human health and social work activities"
+  R: "Arts, entertainment and recreation"
+  S: "Other service activities"
+  T: "Activities of households as employers"
+  U: "Activities of extraterritorial organisations and bodies"
+
+divisions:
+  "01": {section: "A", label: "Crop and animal production, hunting and related"}
+  "02": {section: "A", label: "Forestry and logging"}
+  "03": {section: "A", label: "Fishing and aquaculture"}
+  "05": {section: "B", label: "Mining of coal and lignite"}
+  "06": {section: "B", label: "Extraction of crude petroleum and natural gas"}
+  "07": {section: "B", label: "Mining of metal ores"}
+  "08": {section: "B", label: "Other mining and quarrying"}
+  "09": {section: "B", label: "Mining support service activities"}
+  "10": {section: "C", label: "Manufacture of food products"}
+  "11": {section: "C", label: "Manufacture of beverages"}
+  "12": {section: "C", label: "Manufacture of tobacco products"}
+  "13": {section: "C", label: "Manufacture of textiles"}
+  "14": {section: "C", label: "Manufacture of wearing apparel"}
+  "15": {section: "C", label: "Manufacture of leather and related products"}
+  "16": {section: "C", label: "Manufacture of wood and of products of wood and cork"}
+  "17": {section: "C", label: "Manufacture of paper and paper products"}
+  "18": {section: "C", label: "Printing and reproduction of recorded media"}
+  "19": {section: "C", label: "Manufacture of coke and refined petroleum products"}
+  "20": {section: "C", label: "Manufacture of chemicals and chemical products"}
+  "21": {section: "C", label: "Manufacture of basic pharmaceutical products"}
+  "22": {section: "C", label: "Manufacture of rubber and plastic products"}
+  "23": {section: "C", label: "Manufacture of other non-metallic mineral products"}
+  "24": {section: "C", label: "Manufacture of basic metals"}
+  "25": {section: "C", label: "Manufacture of fabricated metal products"}
+  "26": {section: "C", label: "Manufacture of computer, electronic and optical products"}
+  "27": {section: "C", label: "Manufacture of electrical equipment"}
+  "28": {section: "C", label: "Manufacture of machinery and equipment n.e.c."}
+  "29": {section: "C", label: "Manufacture of motor vehicles, trailers and semi-trailers"}
+  "30": {section: "C", label: "Manufacture of other transport equipment"}
+  "31": {section: "C", label: "Manufacture of furniture"}
+  "32": {section: "C", label: "Other manufacturing"}
+  "33": {section: "C", label: "Repair and installation of machinery and equipment"}
+  "35": {section: "D", label: "Electricity, gas, steam and air conditioning supply"}
+  "36": {section: "E", label: "Water collection, treatment and supply"}
+  "37": {section: "E", label: "Sewerage"}
+  "38": {section: "E", label: "Waste collection, treatment and disposal; materials recovery"}
+  "39": {section: "E", label: "Remediation activities and other waste management services"}
+  "41": {section: "F", label: "Construction of buildings"}
+  "42": {section: "F", label: "Civil engineering"}
+  "43": {section: "F", label: "Specialised construction activities"}
+  "45": {section: "G", label: "Wholesale / retail trade and repair of motor vehicles and motorcycles"}
+  "46": {section: "G", label: "Wholesale trade, except of motor vehicles and motorcycles"}
+  "47": {section: "G", label: "Retail trade, except of motor vehicles and motorcycles"}
+  "49": {section: "H", label: "Land transport and transport via pipelines"}
+  "50": {section: "H", label: "Water transport"}
+  "51": {section: "H", label: "Air transport"}
+  "52": {section: "H", label: "Warehousing and support activities for transportation"}
+  "53": {section: "H", label: "Postal and courier activities"}
+  "55": {section: "I", label: "Accommodation"}
+  "56": {section: "I", label: "Food and beverage service activities"}
+  "58": {section: "J", label: "Publishing activities"}
+  "59": {section: "J", label: "Motion picture, video and TV programme production"}
+  "60": {section: "J", label: "Programming and broadcasting activities"}
+  "61": {section: "J", label: "Telecommunications"}
+  "62": {section: "J", label: "Computer programming, consultancy and related activities"}
+  "63": {section: "J", label: "Information service activities"}
+  "64": {section: "K", label: "Financial service activities, except insurance and pension funding"}
+  "65": {section: "K", label: "Insurance, reinsurance and pension funding"}
+  "66": {section: "K", label: "Activities auxiliary to financial services and insurance"}
+  "68": {section: "L", label: "Real estate activities"}
+  "69": {section: "M", label: "Legal and accounting activities"}
+  "70": {section: "M", label: "Activities of head offices; management consultancy"}
+  "71": {section: "M", label: "Architectural and engineering activities; technical testing"}
+  "72": {section: "M", label: "Scientific research and development"}
+  "73": {section: "M", label: "Advertising and market research"}
+  "74": {section: "M", label: "Other professional, scientific and technical activities"}
+  "75": {section: "M", label: "Veterinary activities"}
+  "77": {section: "N", label: "Rental and leasing activities"}
+  "78": {section: "N", label: "Employment activities"}
+  "79": {section: "N", label: "Travel agency, tour operator reservation service"}
+  "80": {section: "N", label: "Security and investigation activities"}
+  "81": {section: "N", label: "Services to buildings and landscape activities"}
+  "82": {section: "N", label: "Office administrative, office support and other business support"}
+  "84": {section: "O", label: "Public administration and defence; compulsory social security"}
+  "85": {section: "P", label: "Education"}
+  "86": {section: "Q", label: "Human health activities"}
+  "87": {section: "Q", label: "Residential care activities"}
+  "88": {section: "Q", label: "Social work activities without accommodation"}
+  "90": {section: "R", label: "Creative, arts and entertainment activities"}
+  "91": {section: "R", label: "Libraries, archives, museums and other cultural activities"}
+  "92": {section: "R", label: "Gambling and betting activities"}
+  "93": {section: "R", label: "Sports activities and amusement and recreation activities"}
+  "94": {section: "S", label: "Activities of membership organisations"}
+  "95": {section: "S", label: "Repair of computers and personal and household goods"}
+  "96": {section: "S", label: "Other personal service activities"}
+  "97": {section: "T", label: "Activities of households as employers of domestic personnel"}
+  "98": {section: "T", label: "Undifferentiated goods- and services-producing activities"}
+  "99": {section: "U", label: "Activities of extraterritorial organisations and bodies"}
+
+# ---------------------------------------------------------------------------
+# 4-digit classes - NACE Rev.2 classes align 1:1 with ISIC Rev.4 at this
+# depth for the priority sectors. Labels are occasionally rephrased to
+# EU conventions. ef_default values are EU27-specific averages.
+# ---------------------------------------------------------------------------
+classes:
+  # B - Mining
+  "0510": {division: "05", label: "Mining of hard coal", ef_default: 0.70}
+  "0520": {division: "05", label: "Mining of lignite", ef_default: 0.95}
+  "0610": {division: "06", label: "Extraction of crude petroleum", ef_default: 0.60}
+  "0620": {division: "06", label: "Extraction of natural gas", ef_default: 0.40}
+  "0710": {division: "07", label: "Mining of iron ores", ef_default: 0.50}
+  "0721": {division: "07", label: "Mining of uranium and thorium ores", ef_default: 0.38}
+  "0729": {division: "07", label: "Mining of other non-ferrous metal ores", ef_default: 0.45}
+  "0811": {division: "08", label: "Quarrying of ornamental and building stone, limestone, gypsum, chalk", ef_default: 0.28}
+  "0812": {division: "08", label: "Operation of gravel and sand pits; mining of clays and kaolin", ef_default: 0.26}
+  "0891": {division: "08", label: "Mining of chemical and fertiliser minerals", ef_default: 0.33}
+  "0892": {division: "08", label: "Extraction of peat", ef_default: 0.50}
+  "0893": {division: "08", label: "Extraction of salt", ef_default: 0.22}
+  "0899": {division: "08", label: "Other mining and quarrying n.e.c.", ef_default: 0.28}
+  "0910": {division: "09", label: "Support activities for petroleum and natural gas extraction", ef_default: 0.26}
+  "0990": {division: "09", label: "Support activities for other mining and quarrying", ef_default: 0.20}
+
+  # C - Manufacturing (selected, EU-representative intensities)
+  "1011": {division: "10", label: "Processing and preserving of meat", ef_default: 0.44}
+  "1012": {division: "10", label: "Processing and preserving of poultry meat", ef_default: 0.40}
+  "1013": {division: "10", label: "Production of meat and poultry meat products", ef_default: 0.38}
+  "1020": {division: "10", label: "Processing and preserving of fish, crustaceans and molluscs", ef_default: 0.36}
+  "1031": {division: "10", label: "Processing and preserving of potatoes", ef_default: 0.30}
+  "1032": {division: "10", label: "Manufacture of fruit and vegetable juice", ef_default: 0.28}
+  "1039": {division: "10", label: "Other processing and preserving of fruit and vegetables", ef_default: 0.30}
+  "1041": {division: "10", label: "Manufacture of oils and fats", ef_default: 0.36}
+  "1042": {division: "10", label: "Manufacture of margarine and similar edible fats", ef_default: 0.32}
+  "1051": {division: "10", label: "Operation of dairies and cheese making", ef_default: 0.52}
+  "1052": {division: "10", label: "Manufacture of ice cream", ef_default: 0.48}
+  "1061": {division: "10", label: "Manufacture of grain mill products", ef_default: 0.28}
+  "1062": {division: "10", label: "Manufacture of starches and starch products", ef_default: 0.34}
+  "1071": {division: "10", label: "Manufacture of bread; manufacture of fresh pastry goods", ef_default: 0.26}
+  "1072": {division: "10", label: "Manufacture of rusks and biscuits; preserved pastry", ef_default: 0.25}
+  "1073": {division: "10", label: "Manufacture of macaroni, noodles, couscous", ef_default: 0.24}
+  "1081": {division: "10", label: "Manufacture of sugar", ef_default: 0.40}
+  "1082": {division: "10", label: "Manufacture of cocoa, chocolate and sugar confectionery", ef_default: 0.28}
+  "1083": {division: "10", label: "Processing of tea and coffee", ef_default: 0.30}
+  "1084": {division: "10", label: "Manufacture of condiments and seasonings", ef_default: 0.26}
+  "1085": {division: "10", label: "Manufacture of prepared meals and dishes", ef_default: 0.32}
+  "1086": {division: "10", label: "Manufacture of homogenised food preparations and dietetic food", ef_default: 0.30}
+  "1089": {division: "10", label: "Other food products n.e.c.", ef_default: 0.28}
+  "1091": {division: "10", label: "Manufacture of prepared feeds for farm animals", ef_default: 0.42}
+  "1092": {division: "10", label: "Manufacture of prepared pet foods", ef_default: 0.38}
+  "1101": {division: "11", label: "Distilling, rectifying and blending of spirits", ef_default: 0.36}
+  "1102": {division: "11", label: "Manufacture of wine from grape", ef_default: 0.34}
+  "1103": {division: "11", label: "Manufacture of cider and other fruit wines", ef_default: 0.32}
+  "1104": {division: "11", label: "Manufacture of other non-distilled fermented beverages", ef_default: 0.30}
+  "1105": {division: "11", label: "Manufacture of beer", ef_default: 0.38}
+  "1106": {division: "11", label: "Manufacture of malt", ef_default: 0.36}
+  "1107": {division: "11", label: "Manufacture of soft drinks; production of mineral waters", ef_default: 0.28}
+  "1200": {division: "12", label: "Manufacture of tobacco products", ef_default: 0.22}
+  "1310": {division: "13", label: "Preparation and spinning of textile fibres", ef_default: 0.48}
+  "1320": {division: "13", label: "Weaving of textiles", ef_default: 0.44}
+  "1330": {division: "13", label: "Finishing of textiles", ef_default: 0.58}
+  "1391": {division: "13", label: "Manufacture of knitted and crocheted fabrics", ef_default: 0.42}
+  "1392": {division: "13", label: "Manufacture of made-up textile articles, except apparel", ef_default: 0.38}
+  "1393": {division: "13", label: "Manufacture of carpets and rugs", ef_default: 0.52}
+  "1394": {division: "13", label: "Manufacture of cordage, rope, twine and netting", ef_default: 0.34}
+  "1395": {division: "13", label: "Manufacture of non-wovens and articles from non-wovens", ef_default: 0.40}
+  "1396": {division: "13", label: "Manufacture of other technical and industrial textiles", ef_default: 0.44}
+  "1399": {division: "13", label: "Manufacture of other textiles n.e.c.", ef_default: 0.40}
+  "1411": {division: "14", label: "Manufacture of leather clothes", ef_default: 0.52}
+  "1412": {division: "14", label: "Manufacture of workwear", ef_default: 0.34}
+  "1413": {division: "14", label: "Manufacture of other outerwear", ef_default: 0.32}
+  "1414": {division: "14", label: "Manufacture of underwear", ef_default: 0.30}
+  "1419": {division: "14", label: "Manufacture of other wearing apparel and accessories", ef_default: 0.32}
+  "1420": {division: "14", label: "Manufacture of articles of fur", ef_default: 0.56}
+  "1431": {division: "14", label: "Manufacture of knitted and crocheted hosiery", ef_default: 0.32}
+  "1439": {division: "14", label: "Manufacture of other knitted and crocheted apparel", ef_default: 0.32}
+  "1511": {division: "15", label: "Tanning and dressing of leather; fur", ef_default: 0.70}
+  "1512": {division: "15", label: "Manufacture of luggage, handbags and the like, saddlery, harness", ef_default: 0.36}
+  "1520": {division: "15", label: "Manufacture of footwear", ef_default: 0.36}
+  "1610": {division: "16", label: "Sawmilling and planing of wood", ef_default: 0.26}
+  "1621": {division: "16", label: "Manufacture of veneer sheets and wood-based panels", ef_default: 0.30}
+  "1622": {division: "16", label: "Manufacture of assembled parquet floors", ef_default: 0.24}
+  "1623": {division: "16", label: "Manufacture of other builders' carpentry and joinery", ef_default: 0.24}
+  "1624": {division: "16", label: "Manufacture of wooden containers", ef_default: 0.22}
+  "1629": {division: "16", label: "Manufacture of other products of wood; cork, straw", ef_default: 0.26}
+  "1711": {division: "17", label: "Manufacture of pulp", ef_default: 0.55}
+  "1712": {division: "17", label: "Manufacture of paper and paperboard", ef_default: 0.50}
+  "1721": {division: "17", label: "Manufacture of corrugated paper and paperboard", ef_default: 0.38}
+  "1722": {division: "17", label: "Manufacture of household and sanitary goods of paper", ef_default: 0.34}
+  "1723": {division: "17", label: "Manufacture of paper stationery", ef_default: 0.30}
+  "1724": {division: "17", label: "Manufacture of wallpaper", ef_default: 0.32}
+  "1729": {division: "17", label: "Manufacture of other articles of paper and paperboard", ef_default: 0.32}
+  "1811": {division: "18", label: "Printing of newspapers", ef_default: 0.30}
+  "1812": {division: "18", label: "Other printing", ef_default: 0.26}
+  "1813": {division: "18", label: "Pre-press and pre-media services", ef_default: 0.18}
+  "1814": {division: "18", label: "Binding and related services", ef_default: 0.20}
+  "1820": {division: "18", label: "Reproduction of recorded media", ef_default: 0.16}
+  "1910": {division: "19", label: "Manufacture of coke oven products", ef_default: 1.10}
+  "1920": {division: "19", label: "Manufacture of refined petroleum products", ef_default: 0.72}
+  "2011": {division: "20", label: "Manufacture of industrial gases", ef_default: 0.95}
+  "2012": {division: "20", label: "Manufacture of dyes and pigments", ef_default: 0.70}
+  "2013": {division: "20", label: "Manufacture of other inorganic basic chemicals", ef_default: 0.90}
+  "2014": {division: "20", label: "Manufacture of other organic basic chemicals", ef_default: 0.85}
+  "2015": {division: "20", label: "Manufacture of fertilisers and nitrogen compounds", ef_default: 1.55}
+  "2016": {division: "20", label: "Manufacture of plastics in primary forms", ef_default: 0.80}
+  "2017": {division: "20", label: "Manufacture of synthetic rubber in primary forms", ef_default: 0.75}
+  "2020": {division: "20", label: "Manufacture of pesticides and other agrochemical products", ef_default: 0.68}
+  "2030": {division: "20", label: "Manufacture of paints, varnishes and similar coatings", ef_default: 0.50}
+  "2041": {division: "20", label: "Manufacture of soap and detergents, cleaning preparations", ef_default: 0.42}
+  "2042": {division: "20", label: "Manufacture of perfumes and toilet preparations", ef_default: 0.30}
+  "2051": {division: "20", label: "Manufacture of explosives", ef_default: 0.55}
+  "2052": {division: "20", label: "Manufacture of glues", ef_default: 0.44}
+  "2053": {division: "20", label: "Manufacture of essential oils", ef_default: 0.28}
+  "2059": {division: "20", label: "Manufacture of other chemical products n.e.c.", ef_default: 0.55}
+  "2060": {division: "20", label: "Manufacture of man-made fibres", ef_default: 0.75}
+  "2110": {division: "21", label: "Manufacture of basic pharmaceutical products", ef_default: 0.38}
+  "2120": {division: "21", label: "Manufacture of pharmaceutical preparations", ef_default: 0.30}
+  "2211": {division: "22", label: "Manufacture of rubber tyres and tubes; retreading", ef_default: 0.60}
+  "2219": {division: "22", label: "Manufacture of other rubber products", ef_default: 0.52}
+  "2221": {division: "22", label: "Manufacture of plastic plates, sheets, tubes and profiles", ef_default: 0.48}
+  "2222": {division: "22", label: "Manufacture of plastic packing goods", ef_default: 0.46}
+  "2223": {division: "22", label: "Manufacture of builders' ware of plastic", ef_default: 0.44}
+  "2229": {division: "22", label: "Manufacture of other plastic products", ef_default: 0.48}
+  "2311": {division: "23", label: "Manufacture of flat glass", ef_default: 0.75}
+  "2312": {division: "23", label: "Shaping and processing of flat glass", ef_default: 0.55}
+  "2313": {division: "23", label: "Manufacture of hollow glass", ef_default: 0.68}
+  "2314": {division: "23", label: "Manufacture of glass fibres", ef_default: 0.78}
+  "2319": {division: "23", label: "Manufacture and processing of other glass", ef_default: 0.60}
+  "2320": {division: "23", label: "Manufacture of refractory products", ef_default: 0.85}
+  "2331": {division: "23", label: "Manufacture of ceramic tiles and flags", ef_default: 0.78}
+  "2332": {division: "23", label: "Manufacture of bricks, tiles and construction products, in baked clay", ef_default: 0.82}
+  "2341": {division: "23", label: "Manufacture of ceramic household and ornamental articles", ef_default: 0.60}
+  "2342": {division: "23", label: "Manufacture of ceramic sanitary fixtures", ef_default: 0.70}
+  "2343": {division: "23", label: "Manufacture of ceramic insulators and insulating fittings", ef_default: 0.62}
+  "2344": {division: "23", label: "Manufacture of other technical ceramic products", ef_default: 0.68}
+  "2349": {division: "23", label: "Manufacture of other ceramic products", ef_default: 0.60}
+  "2351": {division: "23", label: "Manufacture of cement", ef_default: 2.30}
+  "2352": {division: "23", label: "Manufacture of lime and plaster", ef_default: 1.85}
+  "2361": {division: "23", label: "Manufacture of concrete products for construction", ef_default: 0.72}
+  "2362": {division: "23", label: "Manufacture of plaster products for construction", ef_default: 0.58}
+  "2363": {division: "23", label: "Manufacture of ready-mixed concrete", ef_default: 0.80}
+  "2364": {division: "23", label: "Manufacture of mortars", ef_default: 0.65}
+  "2365": {division: "23", label: "Manufacture of fibre cement", ef_default: 0.70}
+  "2369": {division: "23", label: "Manufacture of other articles of concrete, plaster and cement", ef_default: 0.65}
+  "2370": {division: "23", label: "Cutting, shaping and finishing of stone", ef_default: 0.28}
+  "2391": {division: "23", label: "Production of abrasive products", ef_default: 0.52}
+  "2399": {division: "23", label: "Manufacture of other non-metallic mineral products n.e.c.", ef_default: 0.45}
+  "2410": {division: "24", label: "Manufacture of basic iron and steel and of ferro-alloys", ef_default: 1.80}
+  "2420": {division: "24", label: "Manufacture of tubes, pipes, hollow profiles of steel", ef_default: 1.45}
+  "2431": {division: "24", label: "Cold drawing of bars", ef_default: 1.10}
+  "2432": {division: "24", label: "Cold rolling of narrow strip", ef_default: 1.05}
+  "2433": {division: "24", label: "Cold forming or folding", ef_default: 0.95}
+  "2434": {division: "24", label: "Cold drawing of wire", ef_default: 0.90}
+  "2441": {division: "24", label: "Precious metals production", ef_default: 1.10}
+  "2442": {division: "24", label: "Aluminium production", ef_default: 2.10}
+  "2443": {division: "24", label: "Lead, zinc and tin production", ef_default: 1.40}
+  "2444": {division: "24", label: "Copper production", ef_default: 1.35}
+  "2445": {division: "24", label: "Other non-ferrous metal production", ef_default: 1.55}
+  "2446": {division: "24", label: "Processing of nuclear fuel", ef_default: 0.60}
+  "2451": {division: "24", label: "Casting of iron", ef_default: 1.15}
+  "2452": {division: "24", label: "Casting of steel", ef_default: 1.20}
+  "2453": {division: "24", label: "Casting of light metals", ef_default: 1.00}
+  "2454": {division: "24", label: "Casting of other non-ferrous metals", ef_default: 1.05}
+
+  # D - Electricity, gas, steam (35)
+  "3511": {division: "35", label: "Production of electricity", ef_default: 0.75}
+  "3512": {division: "35", label: "Transmission of electricity", ef_default: 0.10}
+  "3513": {division: "35", label: "Distribution of electricity", ef_default: 0.12}
+  "3514": {division: "35", label: "Trade of electricity", ef_default: 0.08}
+  "3521": {division: "35", label: "Manufacture of gas", ef_default: 0.50}
+  "3522": {division: "35", label: "Distribution of gaseous fuels through mains", ef_default: 0.45}
+  "3523": {division: "35", label: "Trade of gas through mains", ef_default: 0.35}
+  "3530": {division: "35", label: "Steam and air conditioning supply", ef_default: 0.55}
+
+  # H - Transportation and storage (49-53)
+  "4910": {division: "49", label: "Passenger rail transport, interurban", ef_default: 0.13}
+  "4920": {division: "49", label: "Freight rail transport", ef_default: 0.16}
+  "4931": {division: "49", label: "Urban and suburban passenger land transport", ef_default: 0.20}
+  "4932": {division: "49", label: "Taxi operation", ef_default: 0.28}
+  "4939": {division: "49", label: "Other passenger land transport n.e.c.", ef_default: 0.24}
+  "4941": {division: "49", label: "Freight transport by road", ef_default: 0.42}
+  "4942": {division: "49", label: "Removal services", ef_default: 0.38}
+  "4950": {division: "49", label: "Transport via pipeline", ef_default: 0.11}
+  "5010": {division: "50", label: "Sea and coastal passenger water transport", ef_default: 0.26}
+  "5020": {division: "50", label: "Sea and coastal freight water transport", ef_default: 0.20}
+  "5030": {division: "50", label: "Inland passenger water transport", ef_default: 0.22}
+  "5040": {division: "50", label: "Inland freight water transport", ef_default: 0.18}
+  "5110": {division: "51", label: "Passenger air transport", ef_default: 0.70}
+  "5121": {division: "51", label: "Freight air transport", ef_default: 0.85}
+  "5122": {division: "51", label: "Space transport", ef_default: 1.20}
+  "5210": {division: "52", label: "Warehousing and storage", ef_default: 0.18}
+  "5221": {division: "52", label: "Service activities incidental to land transportation", ef_default: 0.16}
+  "5222": {division: "52", label: "Service activities incidental to water transportation", ef_default: 0.16}
+  "5223": {division: "52", label: "Service activities incidental to air transportation", ef_default: 0.18}
+  "5224": {division: "52", label: "Cargo handling", ef_default: 0.20}
+  "5229": {division: "52", label: "Other transportation support activities", ef_default: 0.18}
+  "5310": {division: "53", label: "Postal activities under universal service obligation", ef_default: 0.13}
+  "5320": {division: "53", label: "Other postal and courier activities", ef_default: 0.20}
+
+  # K - Financial and insurance activities (64-66)
+  "6411": {division: "64", label: "Central banking", ef_default: 0.04}
+  "6419": {division: "64", label: "Other monetary intermediation", ef_default: 0.05}
+  "6420": {division: "64", label: "Activities of holding companies", ef_default: 0.04}
+  "6430": {division: "64", label: "Trusts, funds and similar financial entities", ef_default: 0.04}
+  "6491": {division: "64", label: "Financial leasing", ef_default: 0.05}
+  "6492": {division: "64", label: "Other credit granting", ef_default: 0.05}
+  "6499": {division: "64", label: "Other financial service activities n.e.c.", ef_default: 0.05}
+  "6511": {division: "65", label: "Life insurance", ef_default: 0.04}
+  "6512": {division: "65", label: "Non-life insurance", ef_default: 0.05}
+  "6520": {division: "65", label: "Reinsurance", ef_default: 0.04}
+  "6530": {division: "65", label: "Pension funding", ef_default: 0.03}
+  "6611": {division: "66", label: "Administration of financial markets", ef_default: 0.04}
+  "6612": {division: "66", label: "Security and commodity contracts brokerage", ef_default: 0.04}
+  "6619": {division: "66", label: "Other activities auxiliary to financial services", ef_default: 0.05}
+  "6621": {division: "66", label: "Risk and damage evaluation", ef_default: 0.05}
+  "6622": {division: "66", label: "Activities of insurance agents and brokers", ef_default: 0.05}
+  "6629": {division: "66", label: "Other activities auxiliary to insurance and pension funding", ef_default: 0.05}
+  "6630": {division: "66", label: "Fund management activities", ef_default: 0.04}

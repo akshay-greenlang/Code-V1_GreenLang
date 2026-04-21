@@ -1,0 +1,71 @@
+# ---------------------------------------------------------------------------
+# Green-e Energy Residual Mix — United States (GAP-10 Wave 2)
+# ---------------------------------------------------------------------------
+# Reference test fixture only.  These values are illustrative, drawn from
+# ranges published in Green-e's 2024 annual report covering calendar-year
+# 2023 data.  DO NOT USE THESE FOR COMPLIANCE REPORTING.  Production
+# pipelines should pull live figures from Green-e's licensed connector.
+#
+# Source: Green-e / Center for Resource Solutions
+# URL: https://www.green-e.org/residual-mix
+# License: Attribution required; no commercial redistribution without licence.
+# ---------------------------------------------------------------------------
+metadata:
+  source: green_e_residual_mix
+  version: Green-e-2024-v1
+  calendar_year: 2023
+  published_on: 2024-07-15
+  example_data: true
+  notes: "Fixture for unit tests. Values are representative, not authoritative."
+
+# 5 US NERC regions (illustrative).  CO2/CH4/N2O in lb/MWh — parser
+# converts to kg/kWh.
+rows:
+  - country: US
+    region: NPCC
+    subregion: NEWE
+    calendar_year: 2023
+    co2_lb_mwh: 521.0
+    ch4_lb_mwh: 0.041
+    n2o_lb_mwh: 0.006
+
+  - country: US
+    region: RFC
+    subregion: RFCW
+    calendar_year: 2023
+    co2_lb_mwh: 1105.0
+    ch4_lb_mwh: 0.091
+    n2o_lb_mwh: 0.016
+
+  - country: US
+    region: SERC
+    subregion: SRTV
+    calendar_year: 2023
+    co2_lb_mwh: 980.5
+    ch4_lb_mwh: 0.072
+    n2o_lb_mwh: 0.011
+
+  - country: US
+    region: WECC
+    subregion: CAMX
+    calendar_year: 2023
+    co2_lb_mwh: 410.2
+    ch4_lb_mwh: 0.028
+    n2o_lb_mwh: 0.004
+
+  - country: US
+    region: ERCOT
+    subregion: ERCT
+    calendar_year: 2023
+    co2_lb_mwh: 835.1
+    ch4_lb_mwh: 0.053
+    n2o_lb_mwh: 0.009
+
+  # Canadian province example (Ontario)
+  - country: CA
+    region: ON
+    subregion: ON-GRID
+    calendar_year: 2023
+    co2_lb_mwh: 55.0
+    ch4_lb_mwh: 0.003
+    n2o_lb_mwh: 0.0005

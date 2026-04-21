@@ -1,0 +1,411 @@
+# ---------------------------------------------------------------------------
+# NAICS 2022 - North American Industry Classification System
+# ---------------------------------------------------------------------------
+# U.S. Census Bureau / Statistics Canada / INEGI Mexico, NAICS 2022 revision.
+#
+# Structure: Sector (2 digits) > Subsector (3) > Industry Group (4) >
+#            NAICS Industry (5) > National Industry (6).
+#
+# This file covers:
+#   - All 20 Sectors (2-digit)
+#   - All Subsectors (3-digit)
+#   - 6-digit National Industries for priority sectors: 211-238 mining and
+#     construction, 311-339 manufacturing, 221 utilities, 481-493 transport,
+#     521-525 finance and insurance
+#
+# Sector-level default emission factors (ef_default) are drawn from USEEIO
+# v2.0 (US Environmental Protection Agency, 2022 IO tables).
+#
+# Sources:
+#   - U.S. Census Bureau (https://www.census.gov/naics/)
+#   - USEEIO v2.0 (EPA)
+# License: Public domain.
+# ---------------------------------------------------------------------------
+metadata:
+  system: "naics"
+  revision: "2022"
+  year_published: 2022
+  source: "US Census Bureau"
+  license: "Public domain"
+  ef_source: "USEEIO v2.0 (2020 USD)"
+  ef_units: "kgCO2e per USD (2020)"
+
+sectors:
+  "11": "Agriculture, Forestry, Fishing and Hunting"
+  "21": "Mining, Quarrying, and Oil and Gas Extraction"
+  "22": "Utilities"
+  "23": "Construction"
+  "31": "Manufacturing (food, textile, apparel, leather)"
+  "32": "Manufacturing (wood, paper, chemicals, plastics, minerals)"
+  "33": "Manufacturing (metals, machinery, electronics, transport eq.)"
+  "42": "Wholesale Trade"
+  "44": "Retail Trade (I)"
+  "45": "Retail Trade (II)"
+  "48": "Transportation (I)"
+  "49": "Transportation and Warehousing (II)"
+  "51": "Information"
+  "52": "Finance and Insurance"
+  "53": "Real Estate and Rental and Leasing"
+  "54": "Professional, Scientific, and Technical Services"
+  "55": "Management of Companies and Enterprises"
+  "56": "Administrative, Support, Waste Management, Remediation"
+  "61": "Educational Services"
+  "62": "Health Care and Social Assistance"
+  "71": "Arts, Entertainment, and Recreation"
+  "72": "Accommodation and Food Services"
+  "81": "Other Services (except Public Administration)"
+  "92": "Public Administration"
+
+subsectors:
+  "111": "Crop Production"
+  "112": "Animal Production and Aquaculture"
+  "113": "Forestry and Logging"
+  "114": "Fishing, Hunting and Trapping"
+  "115": "Support Activities for Agriculture and Forestry"
+  "211": "Oil and Gas Extraction"
+  "212": "Mining (except Oil and Gas)"
+  "213": "Support Activities for Mining"
+  "221": "Utilities"
+  "236": "Construction of Buildings"
+  "237": "Heavy and Civil Engineering Construction"
+  "238": "Specialty Trade Contractors"
+  "311": "Food Manufacturing"
+  "312": "Beverage and Tobacco Product Manufacturing"
+  "313": "Textile Mills"
+  "314": "Textile Product Mills"
+  "315": "Apparel Manufacturing"
+  "316": "Leather and Allied Product Manufacturing"
+  "321": "Wood Product Manufacturing"
+  "322": "Paper Manufacturing"
+  "323": "Printing and Related Support Activities"
+  "324": "Petroleum and Coal Products Manufacturing"
+  "325": "Chemical Manufacturing"
+  "326": "Plastics and Rubber Products Manufacturing"
+  "327": "Nonmetallic Mineral Product Manufacturing"
+  "331": "Primary Metal Manufacturing"
+  "332": "Fabricated Metal Product Manufacturing"
+  "333": "Machinery Manufacturing"
+  "334": "Computer and Electronic Product Manufacturing"
+  "335": "Electrical Equipment, Appliance Manufacturing"
+  "336": "Transportation Equipment Manufacturing"
+  "337": "Furniture and Related Product Manufacturing"
+  "339": "Miscellaneous Manufacturing"
+  "423": "Merchant Wholesalers, Durable Goods"
+  "424": "Merchant Wholesalers, Nondurable Goods"
+  "425": "Wholesale Trade Agents and Brokers"
+  "441": "Motor Vehicle and Parts Dealers"
+  "445": "Food and Beverage Retailers"
+  "449": "Furniture, Home Furnishings, Electronics, Appliance Retailers"
+  "455": "General Merchandise Retailers"
+  "456": "Health and Personal Care Retailers"
+  "457": "Gasoline Stations and Fuel Dealers"
+  "458": "Clothing and Clothing Accessories Retailers"
+  "481": "Air Transportation"
+  "482": "Rail Transportation"
+  "483": "Water Transportation"
+  "484": "Truck Transportation"
+  "485": "Transit and Ground Passenger Transportation"
+  "486": "Pipeline Transportation"
+  "487": "Scenic and Sightseeing Transportation"
+  "488": "Support Activities for Transportation"
+  "491": "Postal Service"
+  "492": "Couriers and Messengers"
+  "493": "Warehousing and Storage"
+  "517": "Telecommunications"
+  "518": "Computing Infrastructure Providers, Data Processing, Web Hosting"
+  "519": "Web Search Portals, Libraries, Archives"
+  "521": "Monetary Authorities-Central Bank"
+  "522": "Credit Intermediation and Related Activities"
+  "523": "Securities, Commodity Contracts, and Other Financial Investments"
+  "524": "Insurance Carriers and Related Activities"
+  "525": "Funds, Trusts, and Other Financial Vehicles"
+  "531": "Real Estate"
+  "532": "Rental and Leasing Services"
+  "533": "Lessors of Nonfinancial Intangible Assets"
+  "541": "Professional, Scientific, and Technical Services"
+  "551": "Management of Companies and Enterprises"
+  "561": "Administrative and Support Services"
+  "562": "Waste Management and Remediation Services"
+  "611": "Educational Services"
+  "621": "Ambulatory Health Care Services"
+  "622": "Hospitals"
+  "623": "Nursing and Residential Care Facilities"
+  "624": "Social Assistance"
+  "711": "Performing Arts, Spectator Sports, and Related"
+  "712": "Museums, Historical Sites, and Similar"
+  "713": "Amusement, Gambling, and Recreation Industries"
+  "721": "Accommodation"
+  "722": "Food Services and Drinking Places"
+  "811": "Repair and Maintenance"
+  "812": "Personal and Laundry Services"
+  "813": "Religious, Grantmaking, Civic, Professional, Similar Organizations"
+  "814": "Private Households"
+  "921": "Executive, Legislative, and Other General Government Support"
+  "922": "Justice, Public Order, and Safety Activities"
+  "923": "Administration of Human Resource Programs"
+  "924": "Administration of Environmental Quality Programs"
+  "925": "Administration of Housing Programs, Urban Planning"
+  "926": "Administration of Economic Programs"
+  "927": "Space Research and Technology"
+  "928": "National Security and International Affairs"
+
+classes:
+  # 21 - Mining
+  "211120": {subsector: "211", label: "Crude Petroleum Extraction", ef_default: 0.68}
+  "211130": {subsector: "211", label: "Natural Gas Extraction", ef_default: 0.42}
+  "212114": {subsector: "212", label: "Surface Coal Mining", ef_default: 0.90}
+  "212115": {subsector: "212", label: "Underground Coal Mining", ef_default: 0.75}
+  "212210": {subsector: "212", label: "Iron Ore Mining", ef_default: 0.55}
+  "212220": {subsector: "212", label: "Gold Ore and Silver Ore Mining", ef_default: 0.55}
+  "212230": {subsector: "212", label: "Copper, Nickel, Lead and Zinc Mining", ef_default: 0.65}
+  "212290": {subsector: "212", label: "Other Metal Ore Mining", ef_default: 0.50}
+  "212311": {subsector: "212", label: "Dimension Stone Mining and Quarrying", ef_default: 0.30}
+  "212312": {subsector: "212", label: "Crushed and Broken Limestone Mining and Quarrying", ef_default: 0.32}
+  "212313": {subsector: "212", label: "Crushed and Broken Granite Mining and Quarrying", ef_default: 0.28}
+  "212319": {subsector: "212", label: "Other Crushed and Broken Stone Mining", ef_default: 0.30}
+  "212321": {subsector: "212", label: "Construction Sand and Gravel Mining", ef_default: 0.26}
+  "212322": {subsector: "212", label: "Industrial Sand Mining", ef_default: 0.30}
+  "212323": {subsector: "212", label: "Kaolin, Clay, and Ceramic and Refractory Minerals Mining", ef_default: 0.30}
+  "212390": {subsector: "212", label: "Other Nonmetallic Mineral Mining and Quarrying", ef_default: 0.32}
+  "213111": {subsector: "213", label: "Drilling Oil and Gas Wells", ef_default: 0.32}
+  "213112": {subsector: "213", label: "Support Activities for Oil and Gas Operations", ef_default: 0.28}
+  "213113": {subsector: "213", label: "Support Activities for Coal Mining", ef_default: 0.24}
+  "213114": {subsector: "213", label: "Support Activities for Metal Mining", ef_default: 0.22}
+  "213115": {subsector: "213", label: "Support Activities for Nonmetallic Minerals", ef_default: 0.20}
+
+  # 22 - Utilities
+  "221111": {subsector: "221", label: "Hydroelectric Power Generation", ef_default: 0.03}
+  "221112": {subsector: "221", label: "Fossil Fuel Electric Power Generation", ef_default: 1.05}
+  "221113": {subsector: "221", label: "Nuclear Electric Power Generation", ef_default: 0.10}
+  "221114": {subsector: "221", label: "Solar Electric Power Generation", ef_default: 0.06}
+  "221115": {subsector: "221", label: "Wind Electric Power Generation", ef_default: 0.02}
+  "221116": {subsector: "221", label: "Geothermal Electric Power Generation", ef_default: 0.04}
+  "221117": {subsector: "221", label: "Biomass Electric Power Generation", ef_default: 0.15}
+  "221118": {subsector: "221", label: "Other Electric Power Generation", ef_default: 0.40}
+  "221121": {subsector: "221", label: "Electric Bulk Power Transmission and Control", ef_default: 0.12}
+  "221122": {subsector: "221", label: "Electric Power Distribution", ef_default: 0.15}
+  "221210": {subsector: "221", label: "Natural Gas Distribution", ef_default: 0.48}
+  "221310": {subsector: "221", label: "Water Supply and Irrigation Systems", ef_default: 0.22}
+  "221320": {subsector: "221", label: "Sewage Treatment Facilities", ef_default: 0.28}
+  "221330": {subsector: "221", label: "Steam and Air-Conditioning Supply", ef_default: 0.60}
+
+  # 23 - Construction
+  "236115": {subsector: "236", label: "New Single-Family Housing Construction", ef_default: 0.30}
+  "236116": {subsector: "236", label: "New Multifamily Housing Construction", ef_default: 0.32}
+  "236117": {subsector: "236", label: "New Housing For-Sale Builders", ef_default: 0.30}
+  "236118": {subsector: "236", label: "Residential Remodelers", ef_default: 0.28}
+  "236210": {subsector: "236", label: "Industrial Building Construction", ef_default: 0.38}
+  "236220": {subsector: "236", label: "Commercial and Institutional Building Construction", ef_default: 0.36}
+  "237110": {subsector: "237", label: "Water and Sewer Line Construction", ef_default: 0.42}
+  "237120": {subsector: "237", label: "Oil and Gas Pipeline Construction", ef_default: 0.48}
+  "237130": {subsector: "237", label: "Power and Communication Line Construction", ef_default: 0.40}
+  "237210": {subsector: "237", label: "Land Subdivision", ef_default: 0.20}
+  "237310": {subsector: "237", label: "Highway, Street, and Bridge Construction", ef_default: 0.50}
+  "237990": {subsector: "237", label: "Other Heavy and Civil Engineering Construction", ef_default: 0.45}
+  "238110": {subsector: "238", label: "Poured Concrete Foundation and Structure Contractors", ef_default: 0.42}
+  "238120": {subsector: "238", label: "Structural Steel and Precast Concrete Contractors", ef_default: 0.48}
+  "238130": {subsector: "238", label: "Framing Contractors", ef_default: 0.28}
+  "238140": {subsector: "238", label: "Masonry Contractors", ef_default: 0.38}
+  "238150": {subsector: "238", label: "Glass and Glazing Contractors", ef_default: 0.32}
+  "238160": {subsector: "238", label: "Roofing Contractors", ef_default: 0.34}
+  "238170": {subsector: "238", label: "Siding Contractors", ef_default: 0.28}
+  "238190": {subsector: "238", label: "Other Foundation, Structure, and Building Exterior", ef_default: 0.32}
+  "238210": {subsector: "238", label: "Electrical Contractors", ef_default: 0.26}
+  "238220": {subsector: "238", label: "Plumbing, Heating, and Air-Conditioning Contractors", ef_default: 0.30}
+  "238290": {subsector: "238", label: "Other Building Equipment Contractors", ef_default: 0.28}
+
+  # 31-33 - Manufacturing (priority 6-digit industries)
+  "311111": {subsector: "311", label: "Dog and Cat Food Manufacturing", ef_default: 0.40}
+  "311211": {subsector: "311", label: "Flour Milling", ef_default: 0.28}
+  "311221": {subsector: "311", label: "Wet Corn Milling and Starch Manufacturing", ef_default: 0.38}
+  "311313": {subsector: "311", label: "Beet Sugar Manufacturing", ef_default: 0.42}
+  "311340": {subsector: "311", label: "Nonchocolate Confectionery Manufacturing", ef_default: 0.28}
+  "311351": {subsector: "311", label: "Chocolate and Confectionery Manufacturing from Cacao Beans", ef_default: 0.32}
+  "311411": {subsector: "311", label: "Frozen Fruit, Juice, and Vegetable Manufacturing", ef_default: 0.30}
+  "311421": {subsector: "311", label: "Fruit and Vegetable Canning", ef_default: 0.32}
+  "311511": {subsector: "311", label: "Fluid Milk Manufacturing", ef_default: 0.55}
+  "311611": {subsector: "311", label: "Animal (except Poultry) Slaughtering", ef_default: 0.48}
+  "311615": {subsector: "311", label: "Poultry Processing", ef_default: 0.42}
+  "311811": {subsector: "311", label: "Retail Bakeries", ef_default: 0.26}
+  "311821": {subsector: "311", label: "Cookie and Cracker Manufacturing", ef_default: 0.30}
+  "311911": {subsector: "311", label: "Roasted Nuts and Peanut Butter Manufacturing", ef_default: 0.32}
+  "311941": {subsector: "311", label: "Mayonnaise, Dressing, and Other Prepared Sauce Manufacturing", ef_default: 0.30}
+  "312111": {subsector: "312", label: "Soft Drink Manufacturing", ef_default: 0.28}
+  "312112": {subsector: "312", label: "Bottled Water Manufacturing", ef_default: 0.26}
+  "312120": {subsector: "312", label: "Breweries", ef_default: 0.36}
+  "312130": {subsector: "312", label: "Wineries", ef_default: 0.34}
+  "312140": {subsector: "312", label: "Distilleries", ef_default: 0.40}
+  "312230": {subsector: "312", label: "Tobacco Manufacturing", ef_default: 0.22}
+  "313110": {subsector: "313", label: "Fiber, Yarn, and Thread Mills", ef_default: 0.46}
+  "313210": {subsector: "313", label: "Broadwoven Fabric Mills", ef_default: 0.44}
+  "313220": {subsector: "313", label: "Narrow Fabric Mills and Schiffli Machine Embroidery", ef_default: 0.38}
+  "313230": {subsector: "313", label: "Nonwoven Fabric Mills", ef_default: 0.40}
+  "313240": {subsector: "313", label: "Knit Fabric Mills", ef_default: 0.42}
+  "313310": {subsector: "313", label: "Textile and Fabric Finishing Mills", ef_default: 0.56}
+  "315110": {subsector: "315", label: "Hosiery and Sock Mills", ef_default: 0.32}
+  "315120": {subsector: "315", label: "Other Apparel Knitting Mills", ef_default: 0.32}
+  "315210": {subsector: "315", label: "Cut and Sew Apparel Contractors", ef_default: 0.30}
+  "315250": {subsector: "315", label: "Cut and Sew Apparel Manufacturing (except Contractors)", ef_default: 0.34}
+  "321113": {subsector: "321", label: "Sawmills", ef_default: 0.26}
+  "321219": {subsector: "321", label: "Reconstituted Wood Product Manufacturing", ef_default: 0.32}
+  "322110": {subsector: "322", label: "Pulp Mills", ef_default: 0.58}
+  "322121": {subsector: "322", label: "Paper (except Newsprint) Mills", ef_default: 0.50}
+  "322122": {subsector: "322", label: "Newsprint Mills", ef_default: 0.48}
+  "322130": {subsector: "322", label: "Paperboard Mills", ef_default: 0.52}
+  "322211": {subsector: "322", label: "Corrugated and Solid Fiber Box Manufacturing", ef_default: 0.40}
+  "324110": {subsector: "324", label: "Petroleum Refineries", ef_default: 0.78}
+  "324121": {subsector: "324", label: "Asphalt Paving Mixture and Block Manufacturing", ef_default: 0.55}
+  "324199": {subsector: "324", label: "All Other Petroleum and Coal Products Manufacturing", ef_default: 0.72}
+  "325110": {subsector: "325", label: "Petrochemical Manufacturing", ef_default: 0.95}
+  "325120": {subsector: "325", label: "Industrial Gas Manufacturing", ef_default: 0.90}
+  "325180": {subsector: "325", label: "Other Basic Inorganic Chemical Manufacturing", ef_default: 0.85}
+  "325193": {subsector: "325", label: "Ethyl Alcohol Manufacturing", ef_default: 0.82}
+  "325199": {subsector: "325", label: "All Other Basic Organic Chemical Manufacturing", ef_default: 0.80}
+  "325211": {subsector: "325", label: "Plastics Material and Resin Manufacturing", ef_default: 0.78}
+  "325220": {subsector: "325", label: "Artificial and Synthetic Fibers and Filaments Manufacturing", ef_default: 0.72}
+  "325311": {subsector: "325", label: "Nitrogenous Fertilizer Manufacturing", ef_default: 1.55}
+  "325312": {subsector: "325", label: "Phosphatic Fertilizer Manufacturing", ef_default: 1.10}
+  "325320": {subsector: "325", label: "Pesticide and Other Agricultural Chemical Manufacturing", ef_default: 0.65}
+  "325411": {subsector: "325", label: "Medicinal and Botanical Manufacturing", ef_default: 0.40}
+  "325412": {subsector: "325", label: "Pharmaceutical Preparation Manufacturing", ef_default: 0.32}
+  "325510": {subsector: "325", label: "Paint and Coating Manufacturing", ef_default: 0.50}
+  "325611": {subsector: "325", label: "Soap and Other Detergent Manufacturing", ef_default: 0.42}
+  "326111": {subsector: "326", label: "Plastics Bag and Pouch Manufacturing", ef_default: 0.50}
+  "326199": {subsector: "326", label: "All Other Plastics Product Manufacturing", ef_default: 0.48}
+  "326211": {subsector: "326", label: "Tire Manufacturing (except Retreading)", ef_default: 0.62}
+  "327120": {subsector: "327", label: "Clay Building Material and Refractories Manufacturing", ef_default: 0.82}
+  "327211": {subsector: "327", label: "Flat Glass Manufacturing", ef_default: 0.76}
+  "327213": {subsector: "327", label: "Glass Container Manufacturing", ef_default: 0.70}
+  "327215": {subsector: "327", label: "Glass Product Manufacturing Made of Purchased Glass", ef_default: 0.58}
+  "327310": {subsector: "327", label: "Cement Manufacturing", ef_default: 2.35}
+  "327320": {subsector: "327", label: "Ready-Mix Concrete Manufacturing", ef_default: 0.80}
+  "327331": {subsector: "327", label: "Concrete Block and Brick Manufacturing", ef_default: 0.72}
+  "327390": {subsector: "327", label: "Other Concrete Product Manufacturing", ef_default: 0.72}
+  "327410": {subsector: "327", label: "Lime Manufacturing", ef_default: 1.80}
+  "327420": {subsector: "327", label: "Gypsum Product Manufacturing", ef_default: 0.58}
+  "327993": {subsector: "327", label: "Mineral Wool Manufacturing", ef_default: 0.78}
+  "331110": {subsector: "331", label: "Iron and Steel Mills and Ferroalloy Manufacturing", ef_default: 1.85}
+  "331210": {subsector: "331", label: "Iron and Steel Pipe and Tube Manufacturing", ef_default: 1.50}
+  "331221": {subsector: "331", label: "Rolled Steel Shape Manufacturing", ef_default: 1.40}
+  "331222": {subsector: "331", label: "Steel Wire Drawing", ef_default: 1.20}
+  "331313": {subsector: "331", label: "Alumina and Aluminum Production and Processing", ef_default: 2.20}
+  "331314": {subsector: "331", label: "Secondary Smelting of Aluminum", ef_default: 0.55}
+  "331410": {subsector: "331", label: "Nonferrous Metal (except Aluminum) Smelting and Refining", ef_default: 1.55}
+  "331420": {subsector: "331", label: "Copper Rolling, Drawing, Extruding, and Alloying", ef_default: 1.35}
+  "331492": {subsector: "331", label: "Secondary Smelting, Refining, and Alloying of Nonferrous Metal", ef_default: 0.80}
+  "331511": {subsector: "331", label: "Iron Foundries", ef_default: 1.20}
+  "331513": {subsector: "331", label: "Steel Foundries (except Investment)", ef_default: 1.25}
+  "332111": {subsector: "332", label: "Iron and Steel Forging", ef_default: 1.00}
+  "332112": {subsector: "332", label: "Nonferrous Forging", ef_default: 0.95}
+  "332119": {subsector: "332", label: "Metal Crown, Closure, and Other Metal Stamping", ef_default: 0.70}
+  "332313": {subsector: "332", label: "Plate Work Manufacturing", ef_default: 0.70}
+  "332322": {subsector: "332", label: "Sheet Metal Work Manufacturing", ef_default: 0.62}
+  "332420": {subsector: "332", label: "Metal Tank (Heavy Gauge) Manufacturing", ef_default: 0.68}
+  "332510": {subsector: "332", label: "Hardware Manufacturing", ef_default: 0.52}
+  "332710": {subsector: "332", label: "Machine Shops", ef_default: 0.42}
+  "332812": {subsector: "332", label: "Metal Coating, Engraving, and Allied Services", ef_default: 0.55}
+  "332911": {subsector: "332", label: "Industrial Valve Manufacturing", ef_default: 0.45}
+  "333111": {subsector: "333", label: "Farm Machinery and Equipment Manufacturing", ef_default: 0.38}
+  "333120": {subsector: "333", label: "Construction Machinery Manufacturing", ef_default: 0.42}
+  "333414": {subsector: "333", label: "Heating Equipment (except Warm Air Furnaces) Manufacturing", ef_default: 0.38}
+  "333415": {subsector: "333", label: "Air-Conditioning, Refrigeration, and Warm Air Heating Equipment", ef_default: 0.36}
+  "333511": {subsector: "333", label: "Industrial Mold Manufacturing", ef_default: 0.38}
+  "333611": {subsector: "333", label: "Turbine and Turbine Generator Set Units Manufacturing", ef_default: 0.44}
+  "333618": {subsector: "333", label: "Other Engine Equipment Manufacturing", ef_default: 0.42}
+  "334111": {subsector: "334", label: "Electronic Computer Manufacturing", ef_default: 0.40}
+  "334112": {subsector: "334", label: "Computer Storage Device Manufacturing", ef_default: 0.42}
+  "334118": {subsector: "334", label: "Computer Terminal and Other Computer Peripheral Equipment", ef_default: 0.40}
+  "334210": {subsector: "334", label: "Telephone Apparatus Manufacturing", ef_default: 0.38}
+  "334220": {subsector: "334", label: "Radio and Television Broadcasting and Wireless Communications", ef_default: 0.36}
+  "334290": {subsector: "334", label: "Other Communications Equipment Manufacturing", ef_default: 0.36}
+  "334310": {subsector: "334", label: "Audio and Video Equipment Manufacturing", ef_default: 0.34}
+  "334413": {subsector: "334", label: "Semiconductor and Related Device Manufacturing", ef_default: 0.50}
+  "334414": {subsector: "334", label: "Electronic Capacitor Manufacturing", ef_default: 0.40}
+  "334416": {subsector: "334", label: "Electronic Coil, Transformer, and Other Inductor Manufacturing", ef_default: 0.42}
+  "334419": {subsector: "334", label: "Other Electronic Component Manufacturing", ef_default: 0.42}
+  "334510": {subsector: "334", label: "Electromedical and Electrotherapeutic Apparatus Manufacturing", ef_default: 0.34}
+  "335110": {subsector: "335", label: "Electric Lamp Bulb and Part Manufacturing", ef_default: 0.36}
+  "335210": {subsector: "335", label: "Small Electrical Appliance Manufacturing", ef_default: 0.36}
+  "335222": {subsector: "335", label: "Household Refrigerator and Home Freezer Manufacturing", ef_default: 0.40}
+  "335311": {subsector: "335", label: "Power, Distribution, and Specialty Transformer Manufacturing", ef_default: 0.50}
+  "335312": {subsector: "335", label: "Motor and Generator Manufacturing", ef_default: 0.48}
+  "335910": {subsector: "335", label: "Battery Manufacturing", ef_default: 0.78}
+  "335921": {subsector: "335", label: "Fiber Optic Cable Manufacturing", ef_default: 0.35}
+  "335929": {subsector: "335", label: "Other Communication and Energy Wire Manufacturing", ef_default: 0.40}
+  "336111": {subsector: "336", label: "Automobile Manufacturing", ef_default: 0.54}
+  "336112": {subsector: "336", label: "Light Truck and Utility Vehicle Manufacturing", ef_default: 0.54}
+  "336120": {subsector: "336", label: "Heavy Duty Truck Manufacturing", ef_default: 0.56}
+  "336211": {subsector: "336", label: "Motor Vehicle Body Manufacturing", ef_default: 0.50}
+  "336212": {subsector: "336", label: "Truck Trailer Manufacturing", ef_default: 0.48}
+  "336310": {subsector: "336", label: "Motor Vehicle Gasoline Engine and Engine Parts Manufacturing", ef_default: 0.48}
+  "336320": {subsector: "336", label: "Motor Vehicle Electrical and Electronic Equipment", ef_default: 0.44}
+  "336350": {subsector: "336", label: "Motor Vehicle Transmission and Power Train Parts Manufacturing", ef_default: 0.50}
+  "336411": {subsector: "336", label: "Aircraft Manufacturing", ef_default: 0.62}
+  "336412": {subsector: "336", label: "Aircraft Engine and Engine Parts Manufacturing", ef_default: 0.58}
+  "336510": {subsector: "336", label: "Railroad Rolling Stock Manufacturing", ef_default: 0.55}
+  "336611": {subsector: "336", label: "Ship Building and Repairing", ef_default: 0.52}
+  "336612": {subsector: "336", label: "Boat Building", ef_default: 0.42}
+
+  # 48-49 - Transportation and Warehousing
+  "481111": {subsector: "481", label: "Scheduled Passenger Air Transportation", ef_default: 0.75}
+  "481112": {subsector: "481", label: "Scheduled Freight Air Transportation", ef_default: 0.92}
+  "481211": {subsector: "481", label: "Nonscheduled Chartered Passenger Air Transportation", ef_default: 0.80}
+  "482111": {subsector: "482", label: "Line-Haul Railroads", ef_default: 0.18}
+  "482112": {subsector: "482", label: "Short Line Railroads", ef_default: 0.20}
+  "483111": {subsector: "483", label: "Deep Sea Freight Transportation", ef_default: 0.22}
+  "483112": {subsector: "483", label: "Deep Sea Passenger Transportation", ef_default: 0.28}
+  "483113": {subsector: "483", label: "Coastal and Great Lakes Freight Transportation", ef_default: 0.24}
+  "483114": {subsector: "483", label: "Coastal and Great Lakes Passenger Transportation", ef_default: 0.30}
+  "484110": {subsector: "484", label: "General Freight Trucking, Local", ef_default: 0.48}
+  "484121": {subsector: "484", label: "General Freight Trucking, Long-Distance, Truckload", ef_default: 0.42}
+  "484122": {subsector: "484", label: "General Freight Trucking, Long-Distance, Less Than Truckload", ef_default: 0.45}
+  "484210": {subsector: "484", label: "Used Household and Office Goods Moving", ef_default: 0.40}
+  "484220": {subsector: "484", label: "Specialized Freight (except Used Goods) Trucking, Local", ef_default: 0.45}
+  "484230": {subsector: "484", label: "Specialized Freight (except Used Goods) Trucking, Long-Distance", ef_default: 0.42}
+  "485111": {subsector: "485", label: "Mixed Mode Transit Systems", ef_default: 0.22}
+  "485112": {subsector: "485", label: "Commuter Rail Systems", ef_default: 0.18}
+  "485113": {subsector: "485", label: "Bus and Other Motor Vehicle Transit Systems", ef_default: 0.26}
+  "485310": {subsector: "485", label: "Taxi and Ridesharing Services", ef_default: 0.32}
+  "485410": {subsector: "485", label: "School and Employee Bus Transportation", ef_default: 0.28}
+  "486110": {subsector: "486", label: "Pipeline Transportation of Crude Oil", ef_default: 0.12}
+  "486210": {subsector: "486", label: "Pipeline Transportation of Natural Gas", ef_default: 0.10}
+  "488111": {subsector: "488", label: "Air Traffic Control", ef_default: 0.14}
+  "488119": {subsector: "488", label: "Other Airport Operations", ef_default: 0.20}
+  "488210": {subsector: "488", label: "Support Activities for Rail Transportation", ef_default: 0.18}
+  "488310": {subsector: "488", label: "Port and Harbor Operations", ef_default: 0.22}
+  "488320": {subsector: "488", label: "Marine Cargo Handling", ef_default: 0.22}
+  "488410": {subsector: "488", label: "Motor Vehicle Towing", ef_default: 0.30}
+  "488510": {subsector: "488", label: "Freight Transportation Arrangement", ef_default: 0.16}
+  "491110": {subsector: "491", label: "Postal Service", ef_default: 0.15}
+  "492110": {subsector: "492", label: "Couriers and Express Delivery Services", ef_default: 0.24}
+  "492210": {subsector: "492", label: "Local Messengers and Local Delivery", ef_default: 0.20}
+  "493110": {subsector: "493", label: "General Warehousing and Storage", ef_default: 0.20}
+  "493120": {subsector: "493", label: "Refrigerated Warehousing and Storage", ef_default: 0.32}
+  "493130": {subsector: "493", label: "Farm Product Warehousing and Storage", ef_default: 0.18}
+  "493190": {subsector: "493", label: "Other Warehousing and Storage", ef_default: 0.20}
+
+  # 52 - Finance and Insurance
+  "521110": {subsector: "521", label: "Monetary Authorities-Central Bank", ef_default: 0.04}
+  "522110": {subsector: "522", label: "Commercial Banking", ef_default: 0.05}
+  "522120": {subsector: "522", label: "Savings Institutions", ef_default: 0.05}
+  "522130": {subsector: "522", label: "Credit Unions", ef_default: 0.05}
+  "522210": {subsector: "522", label: "Credit Card Issuing", ef_default: 0.05}
+  "522220": {subsector: "522", label: "Sales Financing", ef_default: 0.05}
+  "522291": {subsector: "522", label: "Consumer Lending", ef_default: 0.06}
+  "522292": {subsector: "522", label: "Real Estate Credit", ef_default: 0.05}
+  "523110": {subsector: "523", label: "Investment Banking and Securities Intermediation", ef_default: 0.04}
+  "523150": {subsector: "523", label: "Investment Banking and Securities Dealing", ef_default: 0.04}
+  "523160": {subsector: "523", label: "Commodity Contracts Intermediation", ef_default: 0.05}
+  "523210": {subsector: "523", label: "Securities and Commodity Exchanges", ef_default: 0.04}
+  "523910": {subsector: "523", label: "Miscellaneous Intermediation", ef_default: 0.05}
+  "524113": {subsector: "524", label: "Direct Life Insurance Carriers", ef_default: 0.04}
+  "524114": {subsector: "524", label: "Direct Health and Medical Insurance Carriers", ef_default: 0.06}
+  "524126": {subsector: "524", label: "Direct Property and Casualty Insurance Carriers", ef_default: 0.06}
+  "524127": {subsector: "524", label: "Direct Title Insurance Carriers", ef_default: 0.04}
+  "524130": {subsector: "524", label: "Reinsurance Carriers", ef_default: 0.04}
+  "524210": {subsector: "524", label: "Insurance Agencies and Brokerages", ef_default: 0.05}
+  "525110": {subsector: "525", label: "Pension Funds", ef_default: 0.04}
+  "525120": {subsector: "525", label: "Health and Welfare Funds", ef_default: 0.05}
+  "525190": {subsector: "525", label: "Other Insurance Funds", ef_default: 0.05}
+  "525910": {subsector: "525", label: "Open-End Investment Funds", ef_default: 0.04}
+  "525920": {subsector: "525", label: "Trusts, Estates, and Agency Accounts", ef_default: 0.04}

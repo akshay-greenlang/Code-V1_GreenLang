@@ -1,0 +1,283 @@
+# -*- coding: utf-8 -*-
+# -----------------------------------------------------------------------------
+# GHG Protocol Land Sector & Removals (LSR) configuration
+# Source: GHG Protocol Land Sector and Removals Guidance (2024).
+# -----------------------------------------------------------------------------
+
+pack_set: ghg_lsr
+pack_version: "1.0.0"
+source_standard:
+  name: "GHG Protocol Land Sector and Removals Guidance"
+  edition: "Draft Public Comment Version"
+  published: "2024-09"
+  url: "https://ghgprotocol.org/land-sector-and-removals-guidance"
+
+gwp_basis: IPCC_AR6_100
+reporting_labels:
+  - GHG_Protocol_LSR
+  - IPCC_2006_GL
+  - IPCC_2019_Refinement
+
+# -----------------------------------------------------------------------------
+# Permanence class thresholds
+# -----------------------------------------------------------------------------
+permanence_classes:
+  short:
+    threshold_years_lower: 0
+    threshold_years_upper: 10
+    description: "Short-term storage (<10 years); high reversal risk."
+    default_buffer_pool_pct: 0.35
+  medium:
+    threshold_years_lower: 10
+    threshold_years_upper: 100
+    description: "Medium-term storage (10-100 years); moderate reversal risk."
+    default_buffer_pool_pct: 0.20
+  long:
+    threshold_years_lower: 100
+    threshold_years_upper: null
+    description: "Long-term durable storage (>100 years); low reversal risk."
+    default_buffer_pool_pct: 0.10
+
+# -----------------------------------------------------------------------------
+# Reversal-risk multiplier applied on top of permanence default buffer pool
+# -----------------------------------------------------------------------------
+reversal_risk_multiplier:
+  low: 1.0
+  medium: 1.5
+  high: 2.0
+
+# -----------------------------------------------------------------------------
+# Fallback / selection hierarchy
+# -----------------------------------------------------------------------------
+selection_hierarchy:
+  - rank: 1
+    label: project_specific
+    description: "Project-site measured data (soil cores, LiDAR biomass)."
+  - rank: 2
+    label: regional_tier2
+    description: "IPCC Tier 2 country / regional emission factor."
+  - rank: 3
+    label: tier1_default
+    description: "IPCC Tier 1 default factor (2006 GL + 2019 Refinement)."
+  - rank: 4
+    label: global_default
+    description: "Global average proxy - last resort."
+
+# -----------------------------------------------------------------------------
+# Variant packs
+# -----------------------------------------------------------------------------
+variants:
+
+  - variant_name: lsr_land_use_emissions
+    display_name: "Land-Use Emissions"
+    is_active_removal: false
+    permanence_class: long
+    reversal_risk: low
+    biogenic_treatment: sequestration_tracked
+    iluc_included: true
+    soc_tracked: true
+    direct_land_use_included: true
+    allowed_scopes: ["1", "3"]
+    description: >-
+      Deforestation-driven CO2, peatland drainage oxidation, and land-use
+      conversion emissions. Scope 1 for owned/controlled land; Scope 3 Cat 1
+      for supply-chain land footprint.
+
+  - variant_name: lsr_land_management
+    display_name: "Land Management"
+    is_active_removal: false
+    permanence_class: medium
+    reversal_risk: medium
+    biogenic_treatment: sequestration_tracked
+    iluc_included: false
+    soc_tracked: true
+    direct_land_use_included: true
+    allowed_scopes: ["1", "3"]
+    description: >-
+      Cropland management, grassland management, wetland management, and
+      forest-management practices (fertiliser, tillage, cover crops,
+      silvicultural regimes).
+
+  - variant_name: lsr_removals
+    display_name: "Active Removals"
+    is_active_removal: true
+    permanence_class: medium
+    reversal_risk: medium
+    biogenic_treatment: sequestration_tracked
+    iluc_included: true
+    soc_tracked: true
+    direct_land_use_included: true
+    allowed_scopes: ["1", "3"]
+    description: >-
+      Net-new carbon removed from the atmosphere. Requires third-party MRV
+      per VCS / Gold Standard / Puro.earth / Isometric / Climeworks-verified.
+
+  - variant_name: lsr_storage
+    display_name: "Carbon Storage"
+    is_active_removal: false
+    permanence_class: long
+    reversal_risk: low
+    biogenic_treatment: storage_tracked
+    iluc_included: false
+    soc_tracked: false
+    direct_land_use_included: false
+    allowed_scopes: ["1", "3"]
+    description: >-
+      Durable storage of previously removed carbon (geological injection,
+      long-lived wood products, mineralised carbon in concrete).
+
+# -----------------------------------------------------------------------------
+# Approved removal types + MRV standard mapping
+# -----------------------------------------------------------------------------
+removal_types:
+
+  # --- Nature-based ---
+  - removal_type: afforestation
+    category: nature_based
+    default_permanence: medium
+    default_reversal_risk: medium
+    mrv_tier: tier2_regional
+    verification_standards: [verra_vcs, gold_standard, icvcm_ccp_approved, car, acr]
+    reporting_frequency: annual
+
+  - removal_type: reforestation
+    category: nature_based
+    default_permanence: medium
+    default_reversal_risk: medium
+    mrv_tier: tier2_regional
+    verification_standards: [verra_vcs, gold_standard, icvcm_ccp_approved, car, acr]
+    reporting_frequency: annual
+
+  - removal_type: forest_management
+    category: nature_based
+    default_permanence: medium
+    default_reversal_risk: medium
+    mrv_tier: tier2_regional
+    verification_standards: [verra_vcs, car, acr]
+    reporting_frequency: annual
+
+  - removal_type: peatland_rewetting
+    category: nature_based
+    default_permanence: long
+    default_reversal_risk: medium
+    mrv_tier: tier2_regional
+    verification_standards: [verra_vcs, gold_standard]
+    reporting_frequency: annual
+
+  - removal_type: soil_carbon_sequestration
+    category: nature_based
+    default_permanence: medium
+    default_reversal_risk: high
+    mrv_tier: project_specific
+    verification_standards: [verra_vcs, gold_standard, car]
+    reporting_frequency: annual
+
+  - removal_type: blue_carbon_mangrove
+    category: nature_based
+    default_permanence: long
+    default_reversal_risk: medium
+    mrv_tier: project_specific
+    verification_standards: [verra_vcs, gold_standard]
+    reporting_frequency: annual
+
+  - removal_type: blue_carbon_seagrass
+    category: nature_based
+    default_permanence: medium
+    default_reversal_risk: medium
+    mrv_tier: project_specific
+    verification_standards: [verra_vcs, gold_standard]
+    reporting_frequency: biennial
+
+  - removal_type: blue_carbon_saltmarsh
+    category: nature_based
+    default_permanence: medium
+    default_reversal_risk: medium
+    mrv_tier: project_specific
+    verification_standards: [verra_vcs, gold_standard]
+    reporting_frequency: annual
+
+  # --- Technology-based / hybrid ---
+  - removal_type: biochar
+    category: hybrid
+    default_permanence: long
+    default_reversal_risk: low
+    mrv_tier: project_specific
+    verification_standards: [puro_earth, verra_vcs, icvcm_ccp_approved]
+    reporting_frequency: annual
+
+  - removal_type: beccs
+    category: technology_based
+    default_permanence: long
+    default_reversal_risk: low
+    mrv_tier: project_specific
+    verification_standards: [puro_earth, isometric, verra_vcs]
+    reporting_frequency: annual
+
+  - removal_type: daccs
+    category: technology_based
+    default_permanence: long
+    default_reversal_risk: low
+    mrv_tier: project_specific
+    verification_standards: [puro_earth, isometric, climeworks_verified, icvcm_ccp_approved]
+    reporting_frequency: annual
+
+  - removal_type: enhanced_rock_weathering
+    category: technology_based
+    default_permanence: long
+    default_reversal_risk: low
+    mrv_tier: project_specific
+    verification_standards: [puro_earth, isometric]
+    reporting_frequency: annual
+
+  - removal_type: mineral_carbonation
+    category: technology_based
+    default_permanence: long
+    default_reversal_risk: low
+    mrv_tier: project_specific
+    verification_standards: [puro_earth, isometric, verra_vcs]
+    reporting_frequency: annual
+
+  - removal_type: ocean_alkalinity_enhancement
+    category: technology_based
+    default_permanence: long
+    default_reversal_risk: medium
+    mrv_tier: project_specific
+    verification_standards: [puro_earth, isometric]
+    reporting_frequency: annual
+
+# -----------------------------------------------------------------------------
+# Verification standards reference
+# -----------------------------------------------------------------------------
+verification_standards_reference:
+  verra_vcs:
+    full_name: "Verra Verified Carbon Standard"
+    version: "v4.4"
+    url: "https://verra.org/programs/verified-carbon-standard"
+  gold_standard:
+    full_name: "Gold Standard for the Global Goals"
+    version: "v1.2"
+    url: "https://www.goldstandard.org"
+  puro_earth:
+    full_name: "Puro.earth Supplier General Rules"
+    version: "v2.0"
+    url: "https://puro.earth"
+  isometric:
+    full_name: "Isometric Standard"
+    version: "v1"
+    url: "https://registry.isometric.com"
+  climeworks_verified:
+    full_name: "Climeworks Verified Removal (DACCS)"
+    version: "2024"
+    url: "https://climeworks.com"
+  american_carbon_registry:
+    full_name: "American Carbon Registry"
+    version: "v7"
+    url: "https://americancarbonregistry.org"
+  climate_action_reserve:
+    full_name: "Climate Action Reserve"
+    version: "v3"
+    url: "https://www.climateactionreserve.org"
+  icvcm_ccp_approved:
+    full_name: "ICVCM Core Carbon Principles"
+    version: "2023"
+    url: "https://icvcm.org/core-carbon-principles"

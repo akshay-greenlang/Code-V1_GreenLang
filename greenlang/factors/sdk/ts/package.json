@@ -1,19 +1,36 @@
 {
-  "name": "@greenlang/factors-sdk",
-  "version": "1.1.0",
-  "description": "GreenLang Factors API TypeScript SDK - Emission factor catalog client",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "module": "dist/index.mjs",
+  "name": "@greenlang/factors",
+  "version": "1.0.0",
+  "description": "GreenLang Factors API TypeScript SDK — typed client for the emission-factor catalog (search, resolve, editions, audit bundles, webhooks).",
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
+  "types": "dist/esm/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/esm/index.d.ts",
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js"
+    },
+    "./package.json": "./package.json"
+  },
   "files": [
     "dist",
+    "src",
     "README.md"
   ],
+  "bin": {
+    "glfactors": "dist/cjs/cli.js"
+  },
   "scripts": {
-    "build": "tsc",
-    "typecheck": "tsc --noEmit",
-    "clean": "rm -rf dist",
-    "prepublishOnly": "npm run build"
+    "build": "npm run build:esm && npm run build:cjs",
+    "build:esm": "tsc -p tsconfig.esm.json",
+    "build:cjs": "tsc -p tsconfig.cjs.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "jest --config jest.config.js",
+    "test:watch": "jest --watch",
+    "lint": "eslint \"src/**/*.ts\" \"tests/**/*.ts\"",
+    "clean": "rimraf dist",
+    "prepublishOnly": "npm run clean && npm run build"
   },
   "keywords": [
     "greenlang",
@@ -22,7 +39,9 @@
     "carbon",
     "sustainability",
     "climate",
-    "api-client"
+    "api-client",
+    "sdk",
+    "esg"
   ],
   "author": "GreenLang",
   "license": "MIT",
@@ -33,7 +52,21 @@
   "engines": {
     "node": ">=18.0.0"
   },
+  "dependencies": {},
+  "peerDependencies": {
+    "undici": ">=5"
+  },
+  "peerDependenciesMeta": {
+    "undici": {
+      "optional": true
+    }
+  },
   "devDependencies": {
+    "@types/jest": "^29.5.12",
+    "@types/node": "^20.11.0",
+    "jest": "^29.7.0",
+    "rimraf": "^5.0.5",
+    "ts-jest": "^29.1.2",
     "typescript": "^5.4.0"
   }
 }

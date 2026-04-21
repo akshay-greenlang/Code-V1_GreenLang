@@ -1,0 +1,267 @@
+# -*- coding: utf-8 -*-
+# -----------------------------------------------------------------------------
+# PCAF (Partnership for Carbon Accounting Financials) configuration
+# Source: PCAF Global GHG Accounting and Reporting Standard Part A:
+#         Financed Emissions (2nd Edition, December 2022).
+# -----------------------------------------------------------------------------
+
+pack_set: pcaf
+pack_version: "1.0.0"
+source_standard:
+  name: "PCAF Global GHG Accounting and Reporting Standard Part A: Financed Emissions"
+  edition: "Second Edition"
+  published: "2022-12"
+  url: "https://carbonaccountingfinancials.com/standard"
+
+gwp_basis: IPCC_AR6_100
+reporting_labels:
+  - PCAF
+  - PCAF_Part_A_v2.0
+  - GHG_Protocol_Scope3_Cat15
+  - IFRS_S2
+
+# -----------------------------------------------------------------------------
+# Data Quality Score rubric (PCAF Tables 5.3 / 5.5 / 5.8 / 5.11 / 5.14 / 5.17)
+# -----------------------------------------------------------------------------
+dqs_rubric:
+  1:
+    label: "Verified emissions"
+    description: "Audited or externally verified counterparty Scope 1+2(+3) emissions."
+    requires_uncertainty_band: false
+  2:
+    label: "Unverified reported"
+    description: "Counterparty-reported Scope 1+2(+3) emissions, not third-party verified."
+    requires_uncertainty_band: false
+  3:
+    label: "Physical-activity proxy"
+    description: "Sector emission factor applied to physical activity data (MWh, m2, km driven)."
+    requires_uncertainty_band: false
+  4:
+    label: "Economic-activity proxy"
+    description: "Sector emission factor applied to economic activity data (revenue, asset value)."
+    requires_uncertainty_band: true
+  5:
+    label: "Asset-class default"
+    description: "Asset-class-average proxy. Lowest-quality tier."
+    requires_uncertainty_band: true
+
+# -----------------------------------------------------------------------------
+# Attribution hierarchy (applies to every asset class)
+# -----------------------------------------------------------------------------
+proxy_hierarchy:
+  - rank: 1
+    label: customer_specific
+    description: "Counterparty-verified emissions data."
+  - rank: 2
+    label: supplier_specific
+    description: "Supplier-reported data in the counterparty's value chain."
+  - rank: 3
+    label: sector_regional
+    description: "Sector average for the counterparty's country or region."
+  - rank: 4
+    label: sector_global
+    description: "Global sector average (GICS / NACE / NAICS)."
+  - rank: 5
+    label: asset_class_default
+    description: "PCAF asset-class default (country or global)."
+
+# -----------------------------------------------------------------------------
+# Scope 3 sector trigger list — sectors where PCAF requires Scope 3
+# disclosure as part of the financed-emissions calculation.
+# -----------------------------------------------------------------------------
+scope3_required_sectors:
+  - oil_and_gas
+  - coal_mining
+  - power_generation
+  - steel
+  - cement
+  - aluminum
+  - chemicals
+  - aviation
+  - shipping
+  - road_transportation
+  - automobile_manufacturing
+  - commercial_construction
+  - residential_construction
+  - agriculture
+  - paper_and_forest_products
+  - mining_and_metals
+
+# -----------------------------------------------------------------------------
+# Asset classes (7 packs)
+# -----------------------------------------------------------------------------
+asset_classes:
+
+  - variant_name: pcaf_listed_equity
+    asset_class_id: 1
+    asset_class_label: "Listed Equity"
+    chapter: "5.1"
+    attribution_method: evic
+    attribution_formula: "outstanding_amount / EVIC"
+    intensity_modes:
+      - absolute_tco2e
+      - tco2e_per_eur_million
+    scopes_required: ["1", "2"]
+    scope3_required_for_sectors: true
+    uncertainty_band_required_dqs: 4
+    notes: >-
+      EVIC = Enterprise Value Including Cash (market cap + preferred equity
+      + total debt + minority interest, excluding cash-and-equivalents).
+
+  - variant_name: pcaf_corporate_bonds
+    asset_class_id: 2
+    asset_class_label: "Corporate Bonds"
+    chapter: "5.1"
+    attribution_method: evic
+    attribution_formula: "bond_outstanding_amount / EVIC"
+    intensity_modes:
+      - absolute_tco2e
+      - tco2e_per_eur_million
+    scopes_required: ["1", "2"]
+    scope3_required_for_sectors: true
+    uncertainty_band_required_dqs: 4
+    notes: >-
+      Same EVIC denominator as listed equity; separate pack for
+      fixed-income disclosure tagging.
+
+  - variant_name: pcaf_business_loans
+    asset_class_id: 3
+    asset_class_label: "Business Loans & Unlisted Equity"
+    chapter: "5.2"
+    attribution_method: outstanding_amount_plus_equity
+    attribution_formula: |
+      outstanding_amount / (total_equity + total_debt); fallback to
+      outstanding_amount / annual_revenue when EVIC / equity unavailable.
+    intensity_modes:
+      - absolute_tco2e
+      - tco2e_per_eur_million
+    scopes_required: ["1", "2"]
+    scope3_required_for_sectors: true
+    uncertainty_band_required_dqs: 4
+    notes: >-
+      Revenue-based proxy raises DQS to 4 or 5 per PCAF 5.2.3.
+
+  - variant_name: pcaf_project_finance
+    asset_class_id: 4
+    asset_class_label: "Project Finance"
+    chapter: "5.3"
+    attribution_method: committed_capital
+    attribution_formula: "outstanding_amount / total_committed_capital"
+    intensity_modes:
+      - absolute_tco2e
+      - tco2e_per_mwh
+    scopes_required: ["1", "2", "3"]
+    scope3_required_for_sectors: true
+    uncertainty_band_required_dqs: 4
+    notes: >-
+      Attribution on committed-capital basis; the full project lifecycle
+      emissions are in scope (Scope 1+2+3 of the project itself).
+
+  - variant_name: pcaf_commercial_real_estate
+    asset_class_id: 5
+    asset_class_label: "Commercial Real Estate"
+    chapter: "5.4"
+    attribution_method: property_value_at_origination
+    attribution_formula: |
+      emissions = floor_area_m2 * energy_intensity_kwh_per_m2 *
+      grid_factor_kgco2e_per_kwh * (outstanding / property_value_at_origination)
+    intensity_modes:
+      - absolute_tco2e
+      - tco2e_per_m2
+      - tco2e_per_mwh
+    scopes_required: ["1", "2"]
+    scope3_required_for_sectors: false
+    uncertainty_band_required_dqs: 4
+
+  - variant_name: pcaf_mortgages
+    asset_class_id: 6
+    asset_class_label: "Mortgages"
+    chapter: "5.5"
+    attribution_method: property_value_at_origination
+    attribution_formula: |
+      emissions = floor_area_m2 * energy_intensity_kwh_per_m2 *
+      grid_factor_kgco2e_per_kwh * (outstanding_mortgage /
+      property_value_at_origination)
+    intensity_modes:
+      - absolute_tco2e
+      - tco2e_per_m2
+    scopes_required: ["1", "2"]
+    scope3_required_for_sectors: false
+    uncertainty_band_required_dqs: 4
+    notes: >-
+      On-site fossil heating (Scope 1) + purchased electricity (Scope 2)
+      for the dwelling.
+
+  - variant_name: pcaf_motor_vehicle_loans
+    asset_class_id: 7
+    asset_class_label: "Motor Vehicle Loans"
+    chapter: "5.6"
+    attribution_method: vehicle_value_at_origination
+    attribution_formula: |
+      emissions = km_driven_per_year * fuel_economy_unit_per_km *
+      emission_factor_kgco2e_per_unit *
+      (outstanding_loan / vehicle_value_at_origination)
+    intensity_modes:
+      - absolute_tco2e
+      - tco2e_per_km_driven
+    scopes_required: ["1", "2", "3"]
+    scope3_required_for_sectors: false
+    uncertainty_band_required_dqs: 4
+    notes: >-
+      Tank-to-wheel minimum; well-to-wheel preferred when fuel-chain data
+      available.
+
+# -----------------------------------------------------------------------------
+# Sector crosswalk — NACE Rev. 2 + NAICS 2022 to PCAF sector groupings
+# Only a representative subset is encoded here; the full crosswalk is
+# maintained in the connector layer.
+# -----------------------------------------------------------------------------
+sector_crosswalk:
+  - pcaf_sector: oil_and_gas
+    nace_rev2: ["06.10", "06.20", "09.10", "19.20"]
+    naics_2022: ["211120", "211130", "213111", "213112", "324110"]
+  - pcaf_sector: coal_mining
+    nace_rev2: ["05.10", "05.20"]
+    naics_2022: ["212114", "212115"]
+  - pcaf_sector: power_generation
+    nace_rev2: ["35.11", "35.12", "35.13"]
+    naics_2022: ["221111", "221112", "221113", "221114", "221115", "221116", "221117", "221118"]
+  - pcaf_sector: steel
+    nace_rev2: ["24.10", "24.20", "24.30"]
+    naics_2022: ["331110", "331221"]
+  - pcaf_sector: cement
+    nace_rev2: ["23.51"]
+    naics_2022: ["327310"]
+  - pcaf_sector: aluminum
+    nace_rev2: ["24.42"]
+    naics_2022: ["331313", "331314"]
+  - pcaf_sector: chemicals
+    nace_rev2: ["20.11", "20.13", "20.14", "20.15", "20.16"]
+    naics_2022: ["325110", "325120", "325180", "325193", "325199", "325211", "325311"]
+  - pcaf_sector: aviation
+    nace_rev2: ["51.10", "51.21"]
+    naics_2022: ["481111", "481112", "481211", "481212"]
+  - pcaf_sector: shipping
+    nace_rev2: ["50.10", "50.20", "50.40"]
+    naics_2022: ["483111", "483113", "483211", "483212"]
+  - pcaf_sector: road_transportation
+    nace_rev2: ["49.31", "49.32", "49.39", "49.41"]
+    naics_2022: ["484110", "484121", "484122", "484220", "484230"]
+  - pcaf_sector: automobile_manufacturing
+    nace_rev2: ["29.10"]
+    naics_2022: ["336111", "336112", "336211"]
+  - pcaf_sector: commercial_construction
+    nace_rev2: ["41.20", "42.11", "42.22"]
+    naics_2022: ["236210", "236220"]
+  - pcaf_sector: residential_construction
+    nace_rev2: ["41.10"]
+    naics_2022: ["236115", "236116", "236117", "236118"]
+  - pcaf_sector: agriculture
+    nace_rev2: ["01.11", "01.12", "01.13", "01.41", "01.42"]
+    naics_2022: ["111110", "111120", "111130", "111140", "111150", "111160", "112111", "112120"]
+  - pcaf_sector: paper_and_forest_products
+    nace_rev2: ["02.10", "02.20", "17.11", "17.12"]
+    naics_2022: ["113110", "322110", "322121", "322122", "322130"]
+  - pcaf_sector: mining_and_metals
+    nace_rev2: ["07.10", "07.29", "08.91", "08.99"]
+    naics_2022: ["212210", "212220", "212230", "212290", "212321", "212322"]

@@ -18,6 +18,31 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional, Sequence
 
+# Import consensus + SLA pieces lazily at module scope so the existing state
+# machine keeps running even if callers only want the original behaviour.
+from greenlang.factors.quality.consensus import (  # noqa: F401 (re-exported)
+    ConsensusConfig,
+    ConsensusResult,
+    ConsensusStatus,
+    DissentCaptureRequiredError,
+    InsufficientConsensusError,
+    ReviewerVote,
+    VoteDecision,
+    evaluate_consensus,
+    load_votes as _load_votes,
+    record_vote as _record_vote,
+    tier_based_requirements,
+)
+from greenlang.factors.quality.sla import (  # noqa: F401 (re-exported)
+    SLAExpiredError,
+    SLAStage,
+    SLATimer,
+    SLATimerStatus,
+    complete_timer as _complete_sla_timer,
+    get_timer_for_factor as _get_sla_timer,
+    start_sla_timer as _start_sla_timer,
+)
+
 logger = logging.getLogger(__name__)
 
 
@@ -296,6 +321,217 @@ def save_review_to_sqlite(
             (review.review_id, review.edition_id, fid, review.status.value,
              json.dumps(payload, sort_keys=True, default=str)),
         )
+
+
+# ---------------------------------------------------------------------------
+# Workflow lifecycle integration (GAP-14 + GAP-15)
+# ---------------------------------------------------------------------------
+
+
+class WorkflowState(str, Enum):
+    """High-level factor lifecycle state used by consensus + SLA layers."""
+
+    DRAFT = "draft"
+    UNDER_REVIEW = "under_review"
+    APPROVED = "approved"
+    PUBLISHED = "published"
+    DEPRECATED = "deprecated"
+    REJECTED = "rejected"
+
+
+# Stage that the OUTGOING state owns (used to complete a timer when leaving).
+_STATE_STAGE_MAP: Dict[WorkflowState, SLAStage] = {
+    WorkflowState.DRAFT: SLAStage.INITIAL_REVIEW,
+    WorkflowState.UNDER_REVIEW: SLAStage.DETAILED_REVIEW,
+    WorkflowState.APPROVED: SLAStage.FINAL_APPROVAL,
+    WorkflowState.PUBLISHED: SLAStage.DEPRECATION_NOTICE,
+}
+
+
+# Stage the INCOMING state should start a timer for.
+_STATE_NEW_TIMER: Dict[WorkflowState, Optional[SLAStage]] = {
+    WorkflowState.DRAFT: None,
+    WorkflowState.UNDER_REVIEW: SLAStage.DETAILED_REVIEW,
+    WorkflowState.APPROVED: SLAStage.FINAL_APPROVAL,
+    WorkflowState.PUBLISHED: SLAStage.DEPRECATION_NOTICE,
+    WorkflowState.DEPRECATED: None,
+    WorkflowState.REJECTED: None,
+}
+
+
+_ALLOWED_TRANSITIONS: Dict[WorkflowState, set] = {
+    WorkflowState.DRAFT: {WorkflowState.UNDER_REVIEW, WorkflowState.REJECTED},
+    WorkflowState.UNDER_REVIEW: {
+        WorkflowState.APPROVED,
+        WorkflowState.DRAFT,  # needs_revision
+        WorkflowState.REJECTED,
+    },
+    WorkflowState.APPROVED: {
+        WorkflowState.PUBLISHED,
+        WorkflowState.REJECTED,
+    },
+    WorkflowState.PUBLISHED: {WorkflowState.DEPRECATED},
+    WorkflowState.DEPRECATED: set(),
+    WorkflowState.REJECTED: set(),
+}
+
+
+def _coerce_state(value: Any) -> WorkflowState:
+    if isinstance(value, WorkflowState):
+        return value
+    return WorkflowState(str(value).lower())
+
+
+@dataclass
+class TransitionOutcome:
+    """Result of a workflow transition request."""
+
+    factor_id: str
+    from_state: WorkflowState
+    to_state: WorkflowState
+    allowed: bool
+    consensus: Optional[ConsensusResult]
+    completed_timer: Optional[SLATimer]
+    new_timer: Optional[SLATimer]
+    reason: str = ""
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "factor_id": self.factor_id,
+            "from_state": self.from_state.value,
+            "to_state": self.to_state.value,
+            "allowed": self.allowed,
+            "consensus": self.consensus.to_dict() if self.consensus else None,
+            "completed_timer": (
+                self.completed_timer.to_dict() if self.completed_timer else None
+            ),
+            "new_timer": self.new_timer.to_dict() if self.new_timer else None,
+            "reason": self.reason,
+        }
+
+
+def advance_workflow_state(
+    conn: sqlite3.Connection,
+    factor_id: str,
+    from_state: Any,
+    to_state: Any,
+    *,
+    tier: str,
+    factor_type: str = "",
+    config: Optional[ConsensusConfig] = None,
+    factor_author: Optional[str] = None,
+    now: Optional[datetime] = None,
+    require_consensus: bool = True,
+) -> TransitionOutcome:
+    """Advance a factor through its lifecycle with consensus + SLA checks.
+
+    This function extends (does not replace) the existing
+    :func:`submit_decision` machinery -- callers can still use the old API
+    for the per-review checklist flow while letting this helper govern the
+    factor-level state transitions consumed by the API routes.
+
+    Args:
+        conn: SQLite connection that backs both consensus and SLA tables.
+        factor_id: Factor being moved.
+        from_state / to_state: Lifecycle states.
+        tier: Tenant tier (``community`` / ``pro`` / ``enterprise`` /
+            ``enterprise_cbam``).
+        factor_type: Optional factor type used to pick regulatory policy.
+        config: Explicit consensus config (overrides ``tier_based_requirements``).
+        factor_author: Used to reject self-approval.
+        now: Override for deterministic tests.
+        require_consensus: If False, skip consensus evaluation (used for
+            deprecation/rejection flows).
+
+    Raises:
+        InsufficientConsensusError: If consensus is required and not met.
+        SLAExpiredError: If the outgoing stage's timer has auto-rejected.
+        ValueError: For illegal state transitions.
+    """
+    src = _coerce_state(from_state)
+    dst = _coerce_state(to_state)
+    now = now or datetime.now(timezone.utc)
+
+    if dst not in _ALLOWED_TRANSITIONS.get(src, set()):
+        raise ValueError(
+            "Illegal state transition %s -> %s for factor %s"
+            % (src.value, dst.value, factor_id)
+        )
+
+    # 1. SLA gate on outgoing stage.
+    outgoing_stage = _STATE_STAGE_MAP.get(src)
+    completed_timer: Optional[SLATimer] = None
+    if outgoing_stage is not None:
+        existing = _get_sla_timer(conn, factor_id, outgoing_stage)
+        if existing is not None and existing.status == SLATimerStatus.EXPIRED:
+            raise SLAExpiredError(factor_id, outgoing_stage.value, existing.deadline)
+
+    # 2. Consensus gate (only on positive transitions).
+    consensus_result: Optional[ConsensusResult] = None
+    advancing = dst in (
+        WorkflowState.UNDER_REVIEW,
+        WorkflowState.APPROVED,
+        WorkflowState.PUBLISHED,
+    )
+    if require_consensus and advancing:
+        cfg = config or tier_based_requirements(tier=tier, factor_type=factor_type)
+        votes = _load_votes(conn, factor_id)
+        consensus_result = evaluate_consensus(
+            factor_id, votes, cfg, factor_author=factor_author
+        )
+        if consensus_result.status != ConsensusStatus.APPROVED:
+            logger.info(
+                "Transition blocked for factor=%s (%s): consensus=%s reason=%s",
+                factor_id, dst.value, consensus_result.status.value,
+                consensus_result.reason,
+            )
+            raise InsufficientConsensusError(
+                factor_id,
+                "Consensus not met for %s -> %s: %s"
+                % (src.value, dst.value, consensus_result.reason),
+                met_requirements=consensus_result.met_requirements,
+                missing=[
+                    r.role
+                    for r in cfg.reviewer_requirements
+                    if consensus_result.met_requirements.get(r.role, 0)
+                    < r.min_count
+                ],
+            )
+
+    # 3. Complete outgoing timer.
+    if outgoing_stage is not None:
+        completed_timer = _complete_sla_timer(conn, factor_id, outgoing_stage, now=now)
+
+    # 4. Start timer for incoming stage (if any).
+    new_stage = _STATE_NEW_TIMER.get(dst)
+    new_timer: Optional[SLATimer] = None
+    if new_stage is not None:
+        new_timer = _start_sla_timer(conn, factor_id, new_stage, tier, now=now)
+
+    logger.info(
+        "Transition factor=%s %s -> %s completed_timer=%s new_timer=%s",
+        factor_id, src.value, dst.value,
+        completed_timer.timer_id if completed_timer else None,
+        new_timer.timer_id if new_timer else None,
+    )
+    return TransitionOutcome(
+        factor_id=factor_id,
+        from_state=src,
+        to_state=dst,
+        allowed=True,
+        consensus=consensus_result,
+        completed_timer=completed_timer,
+        new_timer=new_timer,
+        reason="ok",
+    )
+
+
+def submit_vote(
+    conn: sqlite3.Connection,
+    vote: ReviewerVote,
+) -> None:
+    """Persist a reviewer's vote via the consensus engine."""
+    _record_vote(conn, vote)
 
 
 def load_reviews_from_sqlite(

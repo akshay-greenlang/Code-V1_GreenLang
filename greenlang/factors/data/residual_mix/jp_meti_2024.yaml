@@ -1,0 +1,62 @@
+# ---------------------------------------------------------------------------
+# Japan METI Residual Mix — FY 2022 (GAP-10 Wave 2)
+# ---------------------------------------------------------------------------
+# Reference test fixture only.  METI publishes Basic (基礎排出係数) and
+# Adjusted (調整後排出係数) factors per utility; the residual mix is
+# derived here by netting non-fossil certificate surrenders (J-Credit,
+# Green Value Certificate, Non-Fossil Value Trading System).
+#
+# Source: Japan METI & MOEJ — Electric Utility Emission Factors
+# URL: https://ghg-santeikohyo.env.go.jp/calc
+# Licence: Public — attribution required (Japan Government Open Data)
+# ---------------------------------------------------------------------------
+metadata:
+  source: japan_meti_electric_emission_factors
+  version: METI-FY2022-residual-v1
+  fiscal_year: "2022"
+  published_on: 2024-01-15
+  example_data: true
+  notes: "Fixture for unit tests. Derived residual mix; not official."
+
+rows:
+  - utility_area: Hokkaido
+    fiscal_year: "2022"
+    basic_factor_kg_co2_per_kwh: 0.521
+    adjusted_factor_kg_co2_per_kwh: 0.504
+    non_fossil_certificate_share: 0.08
+
+  - utility_area: Tohoku
+    fiscal_year: "2022"
+    basic_factor_kg_co2_per_kwh: 0.490
+    adjusted_factor_kg_co2_per_kwh: 0.472
+    non_fossil_certificate_share: 0.12
+
+  - utility_area: Tokyo
+    fiscal_year: "2022"
+    basic_factor_kg_co2_per_kwh: 0.452
+    adjusted_factor_kg_co2_per_kwh: 0.441
+    non_fossil_certificate_share: 0.18
+
+  - utility_area: Chubu
+    fiscal_year: "2022"
+    basic_factor_kg_co2_per_kwh: 0.425
+    adjusted_factor_kg_co2_per_kwh: 0.413
+    non_fossil_certificate_share: 0.15
+
+  - utility_area: Kansai
+    fiscal_year: "2022"
+    basic_factor_kg_co2_per_kwh: 0.355
+    adjusted_factor_kg_co2_per_kwh: 0.348
+    non_fossil_certificate_share: 0.22
+
+  - utility_area: Kyushu
+    fiscal_year: "2022"
+    basic_factor_kg_co2_per_kwh: 0.348
+    adjusted_factor_kg_co2_per_kwh: 0.339
+    non_fossil_certificate_share: 0.20
+
+  - utility_area: Okinawa
+    fiscal_year: "2022"
+    basic_factor_kg_co2_per_kwh: 0.742
+    adjusted_factor_kg_co2_per_kwh: 0.720
+    non_fossil_certificate_share: 0.04

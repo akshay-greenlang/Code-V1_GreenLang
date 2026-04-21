@@ -25,6 +25,36 @@ from greenlang.factors.watch.doc_diff import (
 from greenlang.factors.watch.scheduler import run_watch, watch_summary, WatchResult
 from greenlang.factors.watch.release_orchestrator import prepare_release, publish_release, ReleaseReport
 from greenlang.factors.watch.change_detector import detect_source_change, ChangeReport, ChangedFactor
+from greenlang.factors.watch.regulatory_events import (
+    RegulatoryChangeEvent,
+    RegulatoryEventKind,
+    RegulatoryEventStore,
+    build_artifact_change_event,
+    build_factor_event,
+    build_source_unavailable_event,
+)
+from greenlang.factors.watch.pipeline import (
+    PipelineCycleResult,
+    PipelineSourceResult,
+    run_regulatory_watch_cycle,
+)
+from greenlang.factors.watch.rollback_cli import (
+    RollbackCandidate,
+    RollbackPreview,
+    RollbackReceipt,
+    execute_rollback_with_receipt,
+    list_rollback_candidates,
+    preview_rollback,
+)
+from greenlang.factors.watch.cross_edition_changelog import (
+    CrossEditionChangelog,
+    CrossEditionSection,
+    FactorHistory,
+    FactorHistoryPoint,
+    build_cross_edition_changelog,
+    collect_release_notes,
+    summarize_factor_history,
+)
 
 __all__ = [
     # source_watch (U1)
@@ -60,4 +90,30 @@ __all__ = [
     "detect_source_change",
     "ChangeReport",
     "ChangedFactor",
+    # regulatory_events (F052)
+    "RegulatoryChangeEvent",
+    "RegulatoryEventKind",
+    "RegulatoryEventStore",
+    "build_artifact_change_event",
+    "build_factor_event",
+    "build_source_unavailable_event",
+    # pipeline (F054 — integration glue)
+    "PipelineCycleResult",
+    "PipelineSourceResult",
+    "run_regulatory_watch_cycle",
+    # rollback_cli
+    "RollbackCandidate",
+    "RollbackPreview",
+    "RollbackReceipt",
+    "list_rollback_candidates",
+    "preview_rollback",
+    "execute_rollback_with_receipt",
+    # cross_edition_changelog
+    "CrossEditionChangelog",
+    "CrossEditionSection",
+    "FactorHistory",
+    "FactorHistoryPoint",
+    "build_cross_edition_changelog",
+    "collect_release_notes",
+    "summarize_factor_history",
 ]

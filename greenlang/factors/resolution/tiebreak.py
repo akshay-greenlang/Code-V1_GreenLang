@@ -16,6 +16,7 @@ class TieBreakReasons:
 
     geography_distance: int = 0       # 0 = exact match, up to 10 = GLOBAL fallback
     time_distance: int = 0            # 0 = current vintage, 10 = very stale
+    time_granularity_penalty: int = 0 # 0 = matches requested granularity, 10 = coarser than requested
     technology_match: int = 0
     unit_compatibility: int = 0
     methodology_compatibility: int = 0
@@ -30,6 +31,7 @@ class TieBreakReasons:
         return (
             self.geography_distance
             + self.time_distance
+            + self.time_granularity_penalty
             + self.technology_match
             + self.unit_compatibility
             + self.methodology_compatibility
@@ -116,6 +118,40 @@ def score_verification(record: Any) -> int:
     return mapping.get(status, 5)
 
 
+_GRANULARITY_ORDER = {
+    "hourly": 0,
+    "daily": 1,
+    "seasonal": 1,
+    "monthly": 2,
+    "quarterly": 3,
+    "annual": 4,
+    "multi_year": 5,
+}
+
+
+def score_time_granularity(
+    record_granularity: Optional[str],
+    requested_granularity: Optional[str],
+) -> int:
+    """Penalty when the record's time granularity is coarser than requested.
+
+    Zero when the record is at least as fine-grained as requested; rises
+    linearly as the record becomes coarser.  Unknown record granularity
+    is treated as "annual".
+    """
+    if not requested_granularity:
+        return 0
+    req = requested_granularity.lower()
+    rec = (record_granularity or "annual").lower()
+    req_rank = _GRANULARITY_ORDER.get(req, 4)
+    rec_rank = _GRANULARITY_ORDER.get(rec, 4)
+    # Record finer than requested — that's fine, no penalty.
+    if rec_rank <= req_rank:
+        return 0
+    # Coarser — each step adds 2 points, capped at 10.
+    return min(10, (rec_rank - req_rank) * 2)
+
+
 def score_license(redistribution_class: Optional[str]) -> int:
     if not redistribution_class:
         return 2
@@ -134,12 +170,16 @@ def build_tiebreak(
     *,
     request_geo: Optional[str],
     request_date: date,
+    request_granularity: Optional[str] = None,
 ) -> TieBreakReasons:
     tb = TieBreakReasons()
     tb.geography_distance = score_geography(
         getattr(record, "geography", None), request_geo
     )
     tb.time_distance = score_time(getattr(record, "valid_to", None), request_date)
+    tb.time_granularity_penalty = score_time_granularity(
+        getattr(record, "time_granularity", None), request_granularity
+    )
     tb.source_authority_rank = score_source_authority(
         getattr(record, "source_id", None)
     )
@@ -162,6 +202,7 @@ __all__ = [
     "build_tiebreak",
     "score_geography",
     "score_time",
+    "score_time_granularity",
     "score_source_authority",
     "score_verification",
     "score_license",

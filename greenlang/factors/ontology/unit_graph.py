@@ -35,9 +35,11 @@ from typing import Callable, Dict, List, Optional, Tuple
 class Edge:
     source_unit: str
     target_unit: str
-    factor: float                            # how to multiply value going source → target
+    factor: float                            # how to multiply value going source -> target
     requires_material: bool = False          # e.g. density
     requires_heating_value: bool = False
+    requires_moisture: bool = False          # wet-biomass correction
+    requires_oxidation: bool = False         # combustion completeness
     note: str = ""
 
 
@@ -89,40 +91,82 @@ class UnitGraph:
         material: Optional[str] = None,
         heating_value_mj_per_kg: Optional[float] = None,
         density_kg_per_l: Optional[float] = None,
+        moisture_fraction: Optional[float] = None,
+        oxidation_factor: Optional[float] = None,
+        latent_heat_water_mj_per_kg: float = 2.45,
     ) -> float:
         """Convert ``value`` from one unit to another via the graph.
 
-        Passes ``material``, ``heating_value_mj_per_kg``, and
-        ``density_kg_per_l`` when edges need them.
+        Args:
+            value: Numeric quantity to convert.
+            from_unit, to_unit: Unit codes.
+            material: Material code (enables material-linked edges).
+            heating_value_mj_per_kg: LHV/HHV for mass<->energy edges.
+            density_kg_per_l: Density for mass<->volume edges.
+            moisture_fraction: Wet-biomass moisture fraction (0..1). If
+                set, applies the as-received correction
+                ``LHV_ar = LHV_dry * (1-M) - L*M`` to the heating value.
+            oxidation_factor: Combustion completeness (0..1). If set,
+                multiplies the effective heating value to reflect
+                incomplete oxidation.
+            latent_heat_water_mj_per_kg: Latent heat of vaporisation
+                (default 2.45 MJ/kg).
         """
         path = self.shortest_path(from_unit=from_unit, to_unit=to_unit)
         if path is None:
             raise UnitConversionError(
-                "no conversion path from %r → %r" % (from_unit, to_unit)
+                "no conversion path from %r -> %r" % (from_unit, to_unit)
             )
         current = value
         for edge in path:
-            if edge.requires_material and material is None:
+            if edge.requires_material and material is None and density_kg_per_l is None:
                 raise UnitConversionError(
-                    "edge %s → %s requires material context" % (edge.source_unit, edge.target_unit)
+                    "edge %s -> %s requires material context" % (edge.source_unit, edge.target_unit)
                 )
             if edge.requires_heating_value and heating_value_mj_per_kg is None:
                 raise UnitConversionError(
-                    "edge %s → %s requires heating_value_mj_per_kg"
+                    "edge %s -> %s requires heating_value_mj_per_kg"
                     % (edge.source_unit, edge.target_unit)
                 )
             factor = edge.factor
             # Material-dependent edges: multiply by the appropriate property.
             if edge.requires_heating_value:
-                # mass → energy: kg × MJ/kg = MJ
-                factor = heating_value_mj_per_kg * edge.factor
-            elif edge.requires_material and density_kg_per_l is not None:
-                # mass ↔ volume edge
+                hv = float(heating_value_mj_per_kg)
+                if moisture_fraction is not None:
+                    if not 0.0 <= moisture_fraction < 1.0:
+                        raise UnitConversionError(
+                            "moisture_fraction must be in [0,1), got %r"
+                            % moisture_fraction
+                        )
+                    hv = max(
+                        hv * (1.0 - moisture_fraction)
+                        - latent_heat_water_mj_per_kg * moisture_fraction,
+                        0.0,
+                    )
+                if oxidation_factor is not None:
+                    if not 0.0 <= oxidation_factor <= 1.0:
+                        raise UnitConversionError(
+                            "oxidation_factor must be in [0,1], got %r"
+                            % oxidation_factor
+                        )
+                    hv = hv * oxidation_factor
+                # mass -> energy: kg x MJ/kg = MJ; energy -> mass uses reciprocal
                 if edge.source_unit.lower() in {"kg", "g", "t"}:
-                    # going mass → volume: divide by density
+                    factor = hv * edge.factor
+                else:
+                    # energy -> mass: divide by HV
+                    if hv == 0:
+                        raise UnitConversionError(
+                            "effective heating value is zero; cannot invert"
+                        )
+                    factor = edge.factor / hv
+            elif edge.requires_material and density_kg_per_l is not None:
+                # mass <-> volume edge
+                if edge.source_unit.lower() in {"kg", "g", "t"}:
+                    # going mass -> volume: divide by density
                     factor = (1.0 / density_kg_per_l) * edge.factor
                 else:
-                    # going volume → mass: multiply by density
+                    # going volume -> mass: multiply by density
                     factor = density_kg_per_l * edge.factor
             current = current * factor
         return current

@@ -817,4 +817,1192 @@ async def get_factor_diff(
     return diff_factor_between_editions(svc.repo, factor_id, left_edition, right_edition)
 
 
+# ==================== GAP-2: Explain endpoints (Pro+ tier) ====================
+#
+# These routes expose the full 7-step resolution cascade + alternates so
+# consultants and auditors can justify *why* a given factor was chosen
+# over its peers.  Every response includes:
+#
+#   * chosen_factor + source/version/vintage
+#   * fallback_rank (1..7) + step_label + why_chosen
+#   * alternates_considered (top-N, configurable, max 20)
+#   * quality_score + uncertainty_band
+#   * gas_breakdown (CO2, CH4, N2O, HFCs, PFCs, SF6, NF3, biogenic_CO2
+#     kept as *separate* components — CTO non-negotiable, never rolled up)
+#   * co2e_basis (which GWP set was applied)
+#   * assumptions (list of text assumption strings)
+#   * deprecation_status + deprecation_replacement
+#
+# Every response carries ``X-GreenLang-Edition`` and
+# ``X-GreenLang-Method-Profile`` headers so downstream caches + audit
+# logs can pin on both dimensions.
+#
+# Tier gate: Pro / Consulting / Enterprise / Internal.  Community tier
+# receives HTTP 403.
+
+
+def _require_pro_tier(current_user: dict) -> str:
+    """Enforce Pro+ tier on explain routes.
+
+    Returns the resolved tier string, or raises HTTP 403 for community.
+    """
+    from greenlang.factors.tier_enforcement import Tier
+
+    tier = _resolve_tier(current_user)
+    allowed = {
+        Tier.PRO.value,
+        Tier.CONSULTING.value,
+        Tier.ENTERPRISE.value,
+        Tier.INTERNAL.value,
+    }
+    if tier not in allowed:
+        raise HTTPException(
+            status_code=403,
+            detail=(
+                "Factor explain endpoints require Pro, Consulting, "
+                "Enterprise, or Internal tier."
+            ),
+        )
+    return tier
+
+
+def _set_explain_headers(
+    response: Response,
+    *,
+    edition_id: str,
+    method_profile: str,
+) -> None:
+    """Apply the GreenLang explain headers required by the CTO spec."""
+    response.headers["X-GreenLang-Edition"] = edition_id
+    response.headers["X-GreenLang-Method-Profile"] = method_profile
+    # Keep the legacy X-Factors-Edition header for backward compatibility
+    # with the rest of the factors routes.
+    response.headers["X-Factors-Edition"] = edition_id
+
+
+@router.get(
+    "/{factor_id}/explain",
+    summary="Explain a factor (full resolution payload)",
+    description=(
+        "Return the complete ``ResolvedFactor`` payload for a specific "
+        "factor_id, showing why this factor would win for a default "
+        "activity context.\n\n"
+        "Required tier: **Pro, Consulting, Enterprise, or Internal**.\n\n"
+        "Response includes the chosen factor, alternates considered, "
+        "tie-break reasons, quality score, uncertainty band, gas "
+        "breakdown (CO2/CH4/N2O/HFCs/PFCs/SF6/NF3/biogenic_CO2 kept "
+        "separate per CTO non-negotiable), assumptions, deprecation "
+        "status, and fallback_rank (which of the 7 cascade steps "
+        "produced the winner).\n\n"
+        "Example:\n\n"
+        "```bash\n"
+        "curl -H 'Authorization: Bearer $TOKEN' \\\n"
+        "     https://api.greenlang.io/api/v1/factors/EF:US:diesel:2024:v1/explain"
+        "?method_profile=corporate_scope1&limit=5\n"
+        "```"
+    ),
+    responses={
+        200: {"description": "Resolved factor explain payload"},
+        304: {"description": "Not modified (ETag match)"},
+        403: {"model": ErrorResponse, "description": "Tier insufficient"},
+        404: {"model": ErrorResponse, "description": "Factor not found"},
+    },
+)
+async def explain_factor(
+    request: Request,
+    response: Response,
+    factor_id: str,
+    edition: Optional[str] = Query(None, description="Pin to specific edition"),
+    method_profile: Optional[str] = Query(
+        None,
+        description=(
+            "Override the default method profile.  Defaults to the factor's "
+            "own ``method_profile`` or one derived from its scope."
+        ),
+    ),
+    limit: Optional[int] = Query(
+        None,
+        ge=1,
+        le=20,
+        description="Number of alternates to return (default 5, max 20).",
+    ),
+    current_user: dict = Depends(get_current_user),
+    svc=Depends(get_factor_service),
+) -> Dict[str, Any]:
+    """Return the full ``ResolvedFactor`` payload for a specific factor_id."""
+    apply_rate_limit(request, response, current_user)
+    _require_pro_tier(current_user)
+
+    from greenlang.factors.api_endpoints import (
+        build_factor_explain,
+        cache_control_for_explain,
+        check_etag_match,
+        clamp_alternates_limit,
+        compute_explain_etag,
+    )
+
+    try:
+        edition_id = _resolve_edition(svc, request, edition)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+    from greenlang.factors.resolution.engine import ResolutionError
+
+    try:
+        payload = build_factor_explain(
+            svc.repo,
+            edition_id,
+            factor_id,
+            method_profile=method_profile,
+            alternates_limit=clamp_alternates_limit(limit),
+        )
+    except ResolutionError as exc:
+        raise HTTPException(
+            status_code=422,
+            detail=(
+                f"Factor {factor_id!r} cannot be resolved under method "
+                f"profile {method_profile!r}: {exc}"
+            ),
+        )
+    if payload is None:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Factor {factor_id!r} not found in edition {edition_id}",
+        )
+
+    # ETag support.
+    etag = compute_explain_etag(payload, edition_id)
+    if_none_match = request.headers.get("If-None-Match")
+    if check_etag_match(if_none_match, etag):
+        return Response(status_code=304)
+
+    profile = payload.get("method_profile") or "corporate_scope1"
+    _set_explain_headers(response, edition_id=edition_id, method_profile=profile)
+    response.headers["ETag"] = etag
+    response.headers["Cache-Control"] = cache_control_for_explain()
+
+    return payload
+
+
+@router.post(
+    "/resolve-explain",
+    summary="Resolve + explain from a full ResolutionRequest",
+    description=(
+        "Body: ``ResolutionRequest`` (activity, method_profile, "
+        "jurisdiction, reporting_date, supplier_id, facility_id, "
+        "utility_or_grid_region, preferred_sources, extras, …).\n\n"
+        "Required tier: **Pro, Consulting, Enterprise, or Internal**.\n\n"
+        "Returns the full ``ResolvedFactor`` payload with the chosen "
+        "factor, up to 20 alternates (configurable via ``?limit=N``), "
+        "tie-break reasons, quality & uncertainty, gas breakdown, "
+        "assumptions, deprecation status, and the fallback_rank of the "
+        "winning cascade step.\n\n"
+        "Example body:\n\n"
+        "```json\n"
+        "{\n"
+        "  \"activity\": \"diesel combustion stationary\",\n"
+        "  \"method_profile\": \"corporate_scope1\",\n"
+        "  \"jurisdiction\": \"US\",\n"
+        "  \"reporting_date\": \"2026-06-01\"\n"
+        "}\n"
+        "```"
+    ),
+    responses={
+        200: {"description": "Full resolution + explain payload"},
+        400: {"model": ErrorResponse, "description": "Invalid request body"},
+        403: {"model": ErrorResponse, "description": "Tier insufficient"},
+        422: {"model": ErrorResponse, "description": "No factor could be resolved"},
+    },
+)
+async def resolve_explain(
+    request: Request,
+    response: Response,
+    body: Dict[str, Any],
+    edition: Optional[str] = Query(None, description="Pin to specific edition"),
+    limit: Optional[int] = Query(
+        None,
+        ge=1,
+        le=20,
+        description="Number of alternates to return (default 5, max 20).",
+    ),
+    include_preview: bool = Query(
+        False, description="Include preview-status factors."
+    ),
+    include_connector: bool = Query(
+        False, description="Include connector-only factors (Enterprise only)."
+    ),
+    current_user: dict = Depends(get_current_user),
+    svc=Depends(get_factor_service),
+) -> Dict[str, Any]:
+    """Run the 7-step cascade on a user-supplied ResolutionRequest."""
+    apply_rate_limit(request, response, current_user)
+    _require_pro_tier(current_user)
+
+    from greenlang.factors.api_endpoints import (
+        build_resolution_explain,
+        cache_control_for_explain,
+        clamp_alternates_limit,
+        compute_explain_etag,
+    )
+    from greenlang.factors.resolution.engine import ResolutionError
+
+    try:
+        edition_id = _resolve_edition(svc, request, edition)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+    vis = _get_visibility(current_user, include_preview, include_connector)
+
+    try:
+        payload = build_resolution_explain(
+            svc.repo,
+            edition_id,
+            body,
+            alternates_limit=clamp_alternates_limit(limit),
+            include_preview=vis.include_preview,
+            include_connector=vis.include_connector,
+        )
+    except ResolutionError as exc:
+        raise HTTPException(status_code=422, detail=f"Resolution failed: {exc}")
+    except Exception as exc:
+        # Pydantic ValidationError + any other request-shape error.
+        raise HTTPException(
+            status_code=400, detail=f"Invalid ResolutionRequest: {exc}"
+        )
+
+    profile = payload.get("method_profile") or body.get(
+        "method_profile", "corporate_scope1"
+    )
+    etag = compute_explain_etag(payload, edition_id)
+    _set_explain_headers(response, edition_id=edition_id, method_profile=profile)
+    response.headers["ETag"] = etag
+    response.headers["Cache-Control"] = cache_control_for_explain()
+
+    return payload
+
+
+@router.get(
+    "/{factor_id}/alternates",
+    summary="List alternative factors for the same activity",
+    description=(
+        "Return the top-N alternate factors the resolution engine would "
+        "also consider for the activity represented by ``factor_id``. "
+        "Useful for consultants doing methodology justification or "
+        "sensitivity analysis.\n\n"
+        "Required tier: **Pro, Consulting, Enterprise, or Internal**.\n\n"
+        "Example:\n\n"
+        "```bash\n"
+        "curl -H 'Authorization: Bearer $TOKEN' \\\n"
+        "     https://api.greenlang.io/api/v1/factors/"
+        "EF:US:diesel:2024:v1/alternates?limit=10\n"
+        "```"
+    ),
+    responses={
+        200: {"description": "List of alternate factor candidates"},
+        304: {"description": "Not modified (ETag match)"},
+        403: {"model": ErrorResponse, "description": "Tier insufficient"},
+        404: {"model": ErrorResponse, "description": "Factor not found"},
+    },
+)
+async def factor_alternates(
+    request: Request,
+    response: Response,
+    factor_id: str,
+    edition: Optional[str] = Query(None, description="Pin to specific edition"),
+    method_profile: Optional[str] = Query(
+        None,
+        description="Override the default method profile for ranking.",
+    ),
+    limit: Optional[int] = Query(
+        None,
+        ge=1,
+        le=20,
+        description="Number of alternates to return (default 5, max 20).",
+    ),
+    include_preview: bool = Query(False),
+    include_connector: bool = Query(False),
+    current_user: dict = Depends(get_current_user),
+    svc=Depends(get_factor_service),
+) -> Dict[str, Any]:
+    """Return alternative factors that could resolve for the same activity."""
+    apply_rate_limit(request, response, current_user)
+    _require_pro_tier(current_user)
+
+    from greenlang.factors.api_endpoints import (
+        build_factor_alternates,
+        cache_control_for_explain,
+        check_etag_match,
+        clamp_alternates_limit,
+        compute_explain_etag,
+    )
+
+    try:
+        edition_id = _resolve_edition(svc, request, edition)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+    vis = _get_visibility(current_user, include_preview, include_connector)
+
+    payload = build_factor_alternates(
+        svc.repo,
+        edition_id,
+        factor_id,
+        method_profile=method_profile,
+        alternates_limit=clamp_alternates_limit(limit),
+        include_preview=vis.include_preview,
+        include_connector=vis.include_connector,
+    )
+    if payload is None:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Factor {factor_id!r} not found in edition {edition_id}",
+        )
+
+    etag = compute_explain_etag(payload, edition_id)
+    if_none_match = request.headers.get("If-None-Match")
+    if check_etag_match(if_none_match, etag):
+        return Response(status_code=304)
+
+    profile = payload.get("method_profile") or "corporate_scope1"
+    _set_explain_headers(response, edition_id=edition_id, method_profile=profile)
+    response.headers["ETag"] = etag
+    response.headers["Cache-Control"] = cache_control_for_explain()
+
+    return payload
+
+
+# ==================== GAP-5: Rollback endpoints (Enterprise+) ====================
+#
+# The rollback flow is a two-signature change-control gate on top of the
+# append-only factor version chain.  All four endpoints share the same
+# tier + auth pattern established for the explain endpoints.
+
+
+def _require_enterprise_tier(current_user: dict) -> str:
+    """Enforce Enterprise+ tier for the rollback plan/execute endpoints."""
+    from greenlang.factors.tier_enforcement import Tier
+
+    tier = _resolve_tier(current_user)
+    allowed = {Tier.ENTERPRISE.value, Tier.INTERNAL.value}
+    if tier not in allowed:
+        raise HTTPException(
+            status_code=403,
+            detail=(
+                "Factor rollback plan/execute endpoints require Enterprise "
+                "or Internal tier."
+            ),
+        )
+    return tier
+
+
+def _get_rollback_service():
+    """Return the process-wide ``RollbackService`` instance.
+
+    Lazily constructed from env-configured SQLite paths so route
+    imports stay lightweight.  Production wiring (Postgres-backed store
+    + real cascade lookup) replaces this via
+    ``greenlang.factors.quality.rollback_wiring.get_rollback_service``
+    once that module lands.
+    """
+    import os
+
+    from greenlang.factors.quality.impact_simulator import ImpactSimulator
+    from greenlang.factors.quality.rollback import (
+        RollbackService,
+        RollbackStore,
+    )
+    from greenlang.factors.quality.versioning import FactorVersionChain
+
+    chain_path = os.environ.get(
+        "GL_FACTORS_VERSION_CHAIN_PATH", "var/factors/version_chain.sqlite"
+    )
+    store_path = os.environ.get(
+        "GL_FACTORS_ROLLBACK_STORE_PATH", "var/factors/rollback.sqlite"
+    )
+    chain = FactorVersionChain(chain_path)
+    store = RollbackStore(store_path)
+    # Impact simulator gets empty collections by default — the real ledger
+    # wiring injects them via greenlang.factors.quality.rollback_wiring.
+    simulator = ImpactSimulator(ledger_entries=[], evidence_records=[])
+    return RollbackService(
+        version_chain=chain,
+        impact_simulator=simulator,
+        store=store,
+    )
+
+
+@router.post(
+    "/{factor_id}/rollback/plan",
+    summary="Plan a factor rollback (impact preview)",
+    description=(
+        "Build a rollback plan against an existing factor version, "
+        "including a full impact preview (affected tenants, computations, "
+        "evidence bundles).  Required tier: **Enterprise** or **Internal**.\n\n"
+        "The plan is persisted in PLANNED state; execution requires the "
+        "two-signature approval gate (methodology_lead + compliance_lead) "
+        "via POST /rollback/execute."
+    ),
+    responses={
+        200: {"description": "RollbackPlan with impact preview"},
+        400: {"model": ErrorResponse, "description": "Invalid request"},
+        403: {"model": ErrorResponse, "description": "Tier insufficient"},
+        404: {"model": ErrorResponse, "description": "Factor not found"},
+    },
+)
+async def plan_factor_rollback(
+    request: Request,
+    response: Response,
+    factor_id: str,
+    body: Dict[str, Any],
+    current_user: dict = Depends(get_current_user),
+    svc=Depends(get_factor_service),
+) -> Dict[str, Any]:
+    """Plan a rollback; returns the impact preview."""
+    apply_rate_limit(request, response, current_user)
+    _require_enterprise_tier(current_user)
+
+    from greenlang.factors.quality.rollback import RollbackError
+
+    to_version = body.get("to_version")
+    reason = body.get("reason")
+    if not to_version or not reason:
+        raise HTTPException(
+            status_code=400,
+            detail="Request body must include 'to_version' and 'reason'.",
+        )
+
+    service = _get_rollback_service()
+    created_by = (
+        current_user.get("user_id") if current_user else None
+    ) or "anonymous"
+    try:
+        plan = service.plan_rollback(
+            factor_id=factor_id,
+            to_version=str(to_version),
+            reason=str(reason),
+            created_by=str(created_by),
+            value_map=body.get("value_map"),
+        )
+    except RollbackError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+    return plan.to_dict()
+
+
+@router.post(
+    "/{factor_id}/rollback/execute",
+    summary="Execute an approved factor rollback",
+    description=(
+        "Execute a previously-approved rollback.  Requires the "
+        "two-signature approval gate (methodology_lead + compliance_lead). "
+        "Returns 403 when fewer than two distinct signers have signed.  "
+        "Required tier: **Enterprise** or **Internal**.\n\n"
+        "Request body::\n\n"
+        "    {\n"
+        "      \"rollback_id\": \"...\",\n"
+        "      \"approver_id\": \"user@company\",\n"
+        "      \"approver_role\": \"methodology_lead\" | \"compliance_lead\",\n"
+        "      \"approval_signature\": \"<sig>\"\n"
+        "    }"
+    ),
+    responses={
+        200: {"description": "RollbackRecord after execution"},
+        400: {"model": ErrorResponse, "description": "Invalid request"},
+        403: {"model": ErrorResponse, "description": "Missing approvals / tier"},
+        404: {"model": ErrorResponse, "description": "Rollback not found"},
+        409: {"model": ErrorResponse, "description": "Invalid state transition"},
+    },
+)
+async def execute_factor_rollback(
+    request: Request,
+    response: Response,
+    factor_id: str,
+    body: Dict[str, Any],
+    current_user: dict = Depends(get_current_user),
+    svc=Depends(get_factor_service),
+) -> Dict[str, Any]:
+    """Add a signature (and execute once both signatures are present)."""
+    apply_rate_limit(request, response, current_user)
+    _require_enterprise_tier(current_user)
+
+    from greenlang.factors.quality.rollback import (
+        REQUIRED_APPROVAL_ROLES,
+        RollbackApprovalError,
+        RollbackError,
+        RollbackNotFoundError,
+        RollbackStateError,
+        RollbackStatus,
+    )
+
+    rollback_id = body.get("rollback_id")
+    approver_id = body.get("approver_id") or (
+        current_user.get("user_id") if current_user else None
+    )
+    approver_role = body.get("approver_role")
+    approval_signature = body.get("approval_signature")
+    if not all([rollback_id, approver_id, approver_role, approval_signature]):
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "Request must include rollback_id, approver_id, approver_role "
+                "and approval_signature."
+            ),
+        )
+
+    service = _get_rollback_service()
+
+    # Factor_id in path must match the persisted record.
+    existing = service.get_rollback(str(rollback_id))
+    if existing is None:
+        raise HTTPException(
+            status_code=404, detail=f"Rollback {rollback_id!r} not found"
+        )
+    if existing.factor_id != factor_id:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                f"Rollback {rollback_id!r} belongs to factor "
+                f"{existing.factor_id!r}, not {factor_id!r}."
+            ),
+        )
+
+    try:
+        record = service.approve_rollback(
+            rollback_id=str(rollback_id),
+            approver_id=str(approver_id),
+            approver_role=str(approver_role),
+            signature=str(approval_signature),
+        )
+    except RollbackApprovalError as exc:
+        raise HTTPException(status_code=403, detail=str(exc))
+    except RollbackStateError as exc:
+        raise HTTPException(status_code=409, detail=str(exc))
+    except RollbackNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc))
+
+    # If we now have enough signatures, execute the rollback.
+    if (
+        record.status == RollbackStatus.APPROVED
+        and len(record.approvals) >= len(REQUIRED_APPROVAL_ROLES)
+    ):
+        try:
+            record = service.execute_rollback(rollback_id=str(rollback_id))
+        except RollbackStateError as exc:
+            raise HTTPException(status_code=409, detail=str(exc))
+        except RollbackError as exc:
+            raise HTTPException(status_code=500, detail=str(exc))
+    else:
+        # Only one signature so far — return 202-like success payload with
+        # a status=approved_pending signal for the client.
+        pass
+
+    return record.to_dict()
+
+
+@router.get(
+    "/{factor_id}/rollback/history",
+    summary="List rollback records for a factor",
+    description=(
+        "Return the chronological list of rollback records for "
+        "``factor_id`` (newest first).  Required tier: **Pro**+."
+    ),
+    responses={
+        200: {"description": "Rollback history"},
+        403: {"model": ErrorResponse, "description": "Tier insufficient"},
+    },
+)
+async def factor_rollback_history(
+    request: Request,
+    response: Response,
+    factor_id: str,
+    current_user: dict = Depends(get_current_user),
+    svc=Depends(get_factor_service),
+) -> Dict[str, Any]:
+    """List rollback records for a factor."""
+    apply_rate_limit(request, response, current_user)
+    _require_pro_tier(current_user)
+
+    service = _get_rollback_service()
+    records = service.list_for_factor(factor_id)
+    return {
+        "factor_id": factor_id,
+        "count": len(records),
+        "rollbacks": [r.to_dict() for r in records],
+    }
+
+
+@router.get(
+    "/rollback/{rollback_id}",
+    summary="Get a single rollback record",
+    description="Fetch one rollback record by ID.  Required tier: **Pro**+.",
+    responses={
+        200: {"description": "Rollback record"},
+        403: {"model": ErrorResponse, "description": "Tier insufficient"},
+        404: {"model": ErrorResponse, "description": "Rollback not found"},
+    },
+)
+async def get_rollback_record(
+    request: Request,
+    response: Response,
+    rollback_id: str,
+    current_user: dict = Depends(get_current_user),
+    svc=Depends(get_factor_service),
+) -> Dict[str, Any]:
+    """Fetch a rollback record by ID."""
+    apply_rate_limit(request, response, current_user)
+    _require_pro_tier(current_user)
+
+    service = _get_rollback_service()
+    record = service.get_rollback(rollback_id)
+    if record is None:
+        raise HTTPException(
+            status_code=404, detail=f"Rollback {rollback_id!r} not found"
+        )
+    return record.to_dict()
+
+
+# ==================== GAP-6: Impact Simulation endpoints ====================
+
+
+def _require_consulting_tier(current_user: dict) -> str:
+    """Enforce Consulting+ tier for impact simulation endpoints."""
+    from greenlang.factors.tier_enforcement import Tier
+
+    tier = _resolve_tier(current_user)
+    allowed = {
+        Tier.CONSULTING.value,
+        Tier.ENTERPRISE.value,
+        Tier.INTERNAL.value,
+    }
+    if tier not in allowed:
+        raise HTTPException(
+            status_code=403,
+            detail=(
+                "Impact simulation endpoints require Consulting, Enterprise, "
+                "or Internal tier."
+            ),
+        )
+    return tier
+
+
+def _require_enterprise_tier_impact(current_user: dict) -> str:
+    """Enforce Enterprise+ tier on the batch impact endpoint."""
+    return _require_enterprise_tier(current_user)
+
+
+def _load_impact_ledger() -> List[Dict[str, Any]]:
+    """Best-effort load of the climate ledger for impact simulation.
+
+    Uses ``GL_FACTORS_LEDGER_SQLITE`` when set; falls back to an empty
+    list so the endpoint still responds (listing_only mode).
+    """
+    import os
+
+    from greenlang.factors.quality.impact_simulator import (
+        load_ledger_entries_from_sqlite,
+    )
+
+    path = os.environ.get("GL_FACTORS_LEDGER_SQLITE")
+    if not path:
+        return []
+    try:
+        return load_ledger_entries_from_sqlite(path)
+    except Exception as exc:  # noqa: BLE001 - best-effort
+        logger.warning("Impact simulator: ledger load failed: %s", exc)
+        return []
+
+
+@router.post(
+    "/impact-simulation",
+    summary="Simulate the impact of a factor change",
+    description=(
+        "Preview every computation and tenant affected by a hypothetical "
+        "factor change.  Supports three modes:\n\n"
+        "1. ``hypothetical_value: {co2e_total: 1.23}`` — explicit new value\n"
+        "2. ``hypothetical_value: \"deprecation\"`` — flag every consumer\n"
+        "3. ``hypothetical_value: null`` — listing only (no numeric delta)\n\n"
+        "Required tier: **Consulting**+."
+    ),
+    responses={
+        200: {"description": "ImpactReport with affected computations + deltas"},
+        400: {"model": ErrorResponse, "description": "Invalid request"},
+        403: {"model": ErrorResponse, "description": "Tier insufficient"},
+    },
+)
+async def impact_simulation(
+    request: Request,
+    response: Response,
+    body: Dict[str, Any],
+    edition: Optional[str] = Query(None, description="Pin to specific edition"),
+    current_user: dict = Depends(get_current_user),
+    svc=Depends(get_factor_service),
+) -> Dict[str, Any]:
+    """Run an impact simulation for a single hypothetical factor change."""
+    apply_rate_limit(request, response, current_user)
+    _require_consulting_tier(current_user)
+
+    from greenlang.factors.api_endpoints import (
+        build_impact_simulation,
+        cache_control_for_impact,
+    )
+
+    factor_id = body.get("factor_id")
+    if not factor_id:
+        raise HTTPException(
+            status_code=400, detail="factor_id is required"
+        )
+
+    try:
+        edition_id = _resolve_edition(svc, request, edition)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+    tenant_scope = body.get("tenant_scope")
+    payload = build_impact_simulation(
+        svc.repo,
+        factor_id=str(factor_id),
+        hypothetical_value=body.get("hypothetical_value"),
+        tenant_scope=list(tenant_scope) if tenant_scope else None,
+        edition_id=edition_id,
+        ledger_entries=_load_impact_ledger(),
+    )
+    response.headers["Cache-Control"] = cache_control_for_impact()
+    response.headers["X-Factors-Edition"] = edition_id
+    return payload
+
+
+@router.post(
+    "/impact-simulation/batch",
+    summary="Simulate the impact of multiple factor changes at once",
+    description=(
+        "Accepts a list of factor-change items and returns a combined "
+        "report plus per-factor subreports.  Required tier: "
+        "**Enterprise**+."
+    ),
+    responses={
+        200: {"description": "Aggregated impact report"},
+        400: {"model": ErrorResponse, "description": "Invalid request"},
+        403: {"model": ErrorResponse, "description": "Tier insufficient"},
+    },
+)
+async def impact_simulation_batch(
+    request: Request,
+    response: Response,
+    body: Dict[str, Any],
+    edition: Optional[str] = Query(None, description="Pin to specific edition"),
+    current_user: dict = Depends(get_current_user),
+    svc=Depends(get_factor_service),
+) -> Dict[str, Any]:
+    """Run impact simulations for multiple factor changes simultaneously."""
+    apply_rate_limit(request, response, current_user)
+    _require_enterprise_tier_impact(current_user)
+
+    from greenlang.factors.api_endpoints import (
+        build_impact_simulation_batch,
+        cache_control_for_impact,
+    )
+
+    items = body.get("items") or []
+    if not isinstance(items, list) or not items:
+        raise HTTPException(
+            status_code=400,
+            detail="Request body must include a non-empty 'items' array.",
+        )
+    # Hard cap to avoid abuse even for Enterprise.
+    if len(items) > 100:
+        raise HTTPException(
+            status_code=400,
+            detail="Batch impact simulation is capped at 100 items per request.",
+        )
+
+    try:
+        edition_id = _resolve_edition(svc, request, edition)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+    payload = build_impact_simulation_batch(
+        svc.repo,
+        items=items,
+        edition_id=edition_id,
+        ledger_entries=_load_impact_ledger(),
+    )
+    response.headers["Cache-Control"] = cache_control_for_impact()
+    response.headers["X-Factors-Edition"] = edition_id
+    return payload
+
+
+@router.get(
+    "/{factor_id}/dependent-computations",
+    summary="List computations that depend on this factor",
+    description=(
+        "Return every computation in the climate ledger that consumed "
+        "``factor_id``.  Helper for the impact-simulation UI.  "
+        "Required tier: **Pro**+."
+    ),
+    responses={
+        200: {"description": "Dependent computations list"},
+        304: {"description": "Not modified (ETag match)"},
+        403: {"model": ErrorResponse, "description": "Tier insufficient"},
+    },
+)
+async def factor_dependent_computations(
+    request: Request,
+    response: Response,
+    factor_id: str,
+    tenant_scope: Optional[str] = Query(
+        None,
+        description="Comma-separated list of tenant IDs to restrict the scan.",
+    ),
+    current_user: dict = Depends(get_current_user),
+    svc=Depends(get_factor_service),
+) -> Dict[str, Any]:
+    """List computations that depend on a factor."""
+    apply_rate_limit(request, response, current_user)
+    _require_pro_tier(current_user)
+
+    from greenlang.factors.api_endpoints import (
+        cache_control_for_impact,
+        check_etag_match,
+        compute_impact_etag,
+        list_dependent_computations,
+    )
+
+    ts_list: Optional[List[str]] = None
+    if tenant_scope:
+        ts_list = [t.strip() for t in tenant_scope.split(",") if t.strip()]
+
+    ledger = _load_impact_ledger()
+    deps = list_dependent_computations(
+        factor_id=factor_id,
+        ledger_entries=ledger,
+        tenant_scope=ts_list,
+    )
+    payload = {
+        "factor_id": factor_id,
+        "tenant_scope": ts_list,
+        "count": len(deps),
+        "computations": deps,
+    }
+
+    etag = compute_impact_etag(payload)
+    if_none_match = request.headers.get("If-None-Match")
+    if check_etag_match(if_none_match, etag):
+        return Response(status_code=304)
+
+    response.headers["ETag"] = etag
+    response.headers["Cache-Control"] = cache_control_for_impact()
+    return payload
+
+
+# ==================== GAP-11: Batch Job endpoints (Pro+) ====================
+
+
+@router.post(
+    "/batch/submit",
+    summary="Submit a batch resolution job",
+    description=(
+        "Queue a batch resolution job and return a handle the caller "
+        "polls via GET /batch/{job_id}.  Rate limit per batch: "
+        "Pro=100, Consulting=1000, Enterprise=10000.  "
+        "Required tier: **Pro**+."
+    ),
+    responses={
+        202: {"description": "Batch job accepted"},
+        400: {"model": ErrorResponse, "description": "Invalid request"},
+        403: {"model": ErrorResponse, "description": "Tier insufficient"},
+        413: {"model": ErrorResponse, "description": "Batch exceeds tier cap"},
+    },
+    status_code=202,
+)
+async def submit_batch_job(
+    request: Request,
+    response: Response,
+    body: Dict[str, Any],
+    current_user: dict = Depends(get_current_user),
+    svc=Depends(get_factor_service),
+) -> Dict[str, Any]:
+    """Queue a batch resolution job."""
+    apply_rate_limit(request, response, current_user)
+    _require_pro_tier(current_user)
+
+    from greenlang.factors.batch_jobs import (
+        BatchJobError,
+        BatchJobLimitError,
+        BatchJobType,
+        get_default_queue,
+        submit_batch_resolution,
+    )
+
+    requests_payload = body.get("requests") or []
+    if not isinstance(requests_payload, list) or not requests_payload:
+        raise HTTPException(
+            status_code=400,
+            detail="Request body must include a non-empty 'requests' array.",
+        )
+    job_type = body.get("job_type", "resolve")
+    try:
+        job_type_enum = BatchJobType(job_type)
+    except ValueError:
+        raise HTTPException(
+            status_code=400, detail=f"Unknown job_type {job_type!r}"
+        )
+
+    tenant_id = (current_user or {}).get("tenant_id") or "default"
+    tier = _resolve_tier(current_user)
+    created_by = (current_user or {}).get("user_id") or "anonymous"
+
+    queue = get_default_queue()
+    try:
+        handle = submit_batch_resolution(
+            queue,
+            requests=list(requests_payload),
+            tenant_id=str(tenant_id),
+            tier=tier,
+            created_by=str(created_by),
+            job_type=job_type_enum,
+            webhook_url=body.get("webhook_url"),
+            webhook_secret_ref=body.get("webhook_secret_ref"),
+        )
+    except BatchJobLimitError as exc:
+        raise HTTPException(status_code=413, detail=str(exc))
+    except BatchJobError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+    return handle.to_dict()
+
+
+@router.get(
+    "/batch",
+    summary="List batch jobs for the current tenant",
+    description="List batch jobs submitted by the caller's tenant.  Required tier: **Pro**+.",
+    responses={
+        200: {"description": "Batch job list"},
+        403: {"model": ErrorResponse, "description": "Tier insufficient"},
+    },
+)
+async def list_batch_jobs(
+    request: Request,
+    response: Response,
+    status_filter: Optional[str] = Query(
+        None, alias="status", description="Filter by status"
+    ),
+    limit: int = Query(50, ge=1, le=500),
+    offset: int = Query(0, ge=0),
+    current_user: dict = Depends(get_current_user),
+    svc=Depends(get_factor_service),
+) -> Dict[str, Any]:
+    """List batch jobs for the caller's tenant."""
+    apply_rate_limit(request, response, current_user)
+    _require_pro_tier(current_user)
+
+    from greenlang.factors.batch_jobs import BatchJobStatus, get_default_queue
+
+    tenant_id = (current_user or {}).get("tenant_id") or "default"
+    queue = get_default_queue()
+
+    status_enum: Optional[BatchJobStatus] = None
+    if status_filter:
+        try:
+            status_enum = BatchJobStatus(status_filter)
+        except ValueError:
+            raise HTTPException(
+                status_code=400, detail=f"Unknown status {status_filter!r}"
+            )
+
+    jobs, total = queue.list_for_tenant(
+        str(tenant_id), status=status_enum, limit=limit, offset=offset
+    )
+    return {
+        "tenant_id": tenant_id,
+        "total": total,
+        "limit": limit,
+        "offset": offset,
+        "jobs": [j.to_dict() for j in jobs],
+    }
+
+
+@router.get(
+    "/batch/{job_id}",
+    summary="Get batch job status",
+    description="Return current status + progress for a batch job.  Required tier: **Pro**+.",
+    responses={
+        200: {"description": "Batch job status"},
+        403: {"model": ErrorResponse, "description": "Tier insufficient"},
+        404: {"model": ErrorResponse, "description": "Job not found"},
+    },
+)
+async def get_batch_job(
+    request: Request,
+    response: Response,
+    job_id: str,
+    current_user: dict = Depends(get_current_user),
+    svc=Depends(get_factor_service),
+) -> Dict[str, Any]:
+    """Return current status for a batch job."""
+    apply_rate_limit(request, response, current_user)
+    _require_pro_tier(current_user)
+
+    from greenlang.factors.batch_jobs import (
+        BatchJobNotFoundError,
+        get_batch_job_status,
+        get_default_queue,
+    )
+
+    queue = get_default_queue()
+    try:
+        job = get_batch_job_status(queue, job_id)
+    except BatchJobNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc))
+
+    # Tenant isolation — don't let tenant A peek at tenant B's jobs.
+    tenant_id = (current_user or {}).get("tenant_id") or "default"
+    if job.tenant_id != tenant_id and _resolve_tier(current_user) != "internal":
+        raise HTTPException(status_code=404, detail="Job not found")
+
+    return job.to_dict()
+
+
+@router.get(
+    "/batch/{job_id}/results",
+    summary="Download batch job results (paginated)",
+    description=(
+        "Stream batch job results with cursor-based pagination.  Required "
+        "tier: **Pro**+."
+    ),
+    responses={
+        200: {"description": "Batch job results page"},
+        403: {"model": ErrorResponse, "description": "Tier insufficient"},
+        404: {"model": ErrorResponse, "description": "Job not found"},
+    },
+)
+async def get_batch_job_results_endpoint(
+    request: Request,
+    response: Response,
+    job_id: str,
+    cursor: int = Query(0, ge=0),
+    limit: int = Query(1000, ge=1, le=10_000),
+    current_user: dict = Depends(get_current_user),
+    svc=Depends(get_factor_service),
+) -> Dict[str, Any]:
+    """Return a paginated results page for a batch job."""
+    apply_rate_limit(request, response, current_user)
+    _require_pro_tier(current_user)
+
+    from greenlang.factors.batch_jobs import (
+        BatchJobNotFoundError,
+        get_batch_job_results,
+        get_batch_job_status,
+        get_default_queue,
+    )
+
+    queue = get_default_queue()
+    try:
+        job = get_batch_job_status(queue, job_id)
+    except BatchJobNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc))
+
+    tenant_id = (current_user or {}).get("tenant_id") or "default"
+    if job.tenant_id != tenant_id and _resolve_tier(current_user) != "internal":
+        raise HTTPException(status_code=404, detail="Job not found")
+
+    return get_batch_job_results(queue, job_id, cursor=cursor, limit=limit)
+
+
+@router.post(
+    "/batch/{job_id}/cancel",
+    summary="Cancel a queued or running batch job",
+    description="Cancel a QUEUED or RUNNING job.  Required tier: **Pro**+.",
+    responses={
+        200: {"description": "Cancelled job record"},
+        403: {"model": ErrorResponse, "description": "Tier insufficient"},
+        404: {"model": ErrorResponse, "description": "Job not found"},
+        409: {"model": ErrorResponse, "description": "Job not cancellable"},
+    },
+)
+async def cancel_batch_job_endpoint(
+    request: Request,
+    response: Response,
+    job_id: str,
+    current_user: dict = Depends(get_current_user),
+    svc=Depends(get_factor_service),
+) -> Dict[str, Any]:
+    """Cancel a queued or running batch job."""
+    apply_rate_limit(request, response, current_user)
+    _require_pro_tier(current_user)
+
+    from greenlang.factors.batch_jobs import (
+        BatchJobNotFoundError,
+        BatchJobStateError,
+        cancel_batch_job,
+        get_batch_job_status,
+        get_default_queue,
+    )
+
+    queue = get_default_queue()
+    try:
+        job = get_batch_job_status(queue, job_id)
+    except BatchJobNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc))
+
+    tenant_id = (current_user or {}).get("tenant_id") or "default"
+    if job.tenant_id != tenant_id and _resolve_tier(current_user) != "internal":
+        raise HTTPException(status_code=404, detail="Job not found")
+
+    try:
+        job = cancel_batch_job(queue, job_id)
+    except BatchJobStateError as exc:
+        raise HTTPException(status_code=409, detail=str(exc))
+    return job.to_dict()
+
+
+@router.delete(
+    "/batch/{job_id}",
+    summary="Delete a completed batch job",
+    description=(
+        "Delete a COMPLETED / FAILED / CANCELLED batch job and its stored "
+        "results.  Required tier: **Pro**+."
+    ),
+    responses={
+        200: {"description": "Deletion confirmation"},
+        403: {"model": ErrorResponse, "description": "Tier insufficient"},
+        404: {"model": ErrorResponse, "description": "Job not found"},
+        409: {"model": ErrorResponse, "description": "Job still running"},
+    },
+)
+async def delete_batch_job_endpoint(
+    request: Request,
+    response: Response,
+    job_id: str,
+    current_user: dict = Depends(get_current_user),
+    svc=Depends(get_factor_service),
+) -> Dict[str, Any]:
+    """Delete a completed batch job."""
+    apply_rate_limit(request, response, current_user)
+    _require_pro_tier(current_user)
+
+    from greenlang.factors.batch_jobs import (
+        BatchJobNotFoundError,
+        BatchJobStateError,
+        delete_batch_job,
+        get_batch_job_status,
+        get_default_queue,
+    )
+
+    queue = get_default_queue()
+    try:
+        job = get_batch_job_status(queue, job_id)
+    except BatchJobNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc))
+
+    tenant_id = (current_user or {}).get("tenant_id") or "default"
+    if job.tenant_id != tenant_id and _resolve_tier(current_user) != "internal":
+        raise HTTPException(status_code=404, detail="Job not found")
+
+    try:
+        deleted = delete_batch_job(queue, job_id)
+    except BatchJobStateError as exc:
+        raise HTTPException(status_code=409, detail=str(exc))
+    return {"job_id": job_id, "deleted": bool(deleted)}
+
+
 __all__ = ["router"]

@@ -1,0 +1,199 @@
+# ---------------------------------------------------------------------------
+# Recycled-content embodied-carbon factors
+# ---------------------------------------------------------------------------
+# Each entry gives the ratio of secondary/recycled-route emissions to the
+# primary/virgin-route emissions for the same end-product. These ratios are
+# multiplicative modifiers applied on top of a primary embodied-carbon factor.
+#
+# Values are order-of-magnitude defaults drawn from published LCA averages:
+#   - WorldSteel LCA 2023 (EAF vs. BF-BOF)
+#   - Aluminium Stewardship Initiative / IAI Global Aluminium Cycle 2022
+#   - Ellen MacArthur Foundation "New Plastics Economy" 2017
+#   - Cement Sustainability Initiative / GCCA Getting the Numbers Right 2022
+#   - European Container Glass Federation (FEVE) 2022
+#   - Confederation of European Paper Industries (CEPI) 2023
+#
+# License: Aggregated public figures - redistribution permitted with attribution.
+# ---------------------------------------------------------------------------
+metadata:
+  version: "1.0"
+  last_updated: "2026-04-01"
+  source: "Aggregated WorldSteel / ASI / EMF / GCCA / FEVE / CEPI public data"
+  license: "Public / attribution"
+  units: "kgCO2e per kg of material"
+
+materials:
+  steel:
+    primary:
+      route: "bf_bof"
+      description: "Blast furnace / basic oxygen furnace primary steel"
+      emissions_kgco2e_per_kg: 2.30
+      source: "WorldSteel 2023 global avg"
+    secondary:
+      route: "eaf"
+      description: "Electric arc furnace recycled steel (scrap-based)"
+      emissions_kgco2e_per_kg: 0.55
+      source: "WorldSteel 2023 global avg"
+    reduction_ratio: 0.24
+
+  aluminium:
+    primary:
+      route: "hall_heroult"
+      description: "Primary aluminium via Hall-Heroult electrolysis"
+      emissions_kgco2e_per_kg: 16.50
+      source: "IAI 2022 global avg"
+    secondary:
+      route: "remelt"
+      description: "Secondary aluminium via scrap remelt"
+      emissions_kgco2e_per_kg: 0.60
+      source: "IAI 2022 global avg"
+    reduction_ratio: 0.036
+    subtypes:
+      cast_primary_kgco2e_per_kg: 15.90
+      cast_secondary_kgco2e_per_kg: 0.55
+      wrought_primary_kgco2e_per_kg: 17.10
+      wrought_secondary_kgco2e_per_kg: 0.65
+
+  plastic_pet:
+    primary:
+      route: "virgin_pet"
+      emissions_kgco2e_per_kg: 2.80
+    secondary:
+      route: "mechanical_recycled_pet"
+      emissions_kgco2e_per_kg: 1.00
+    chemical_recycled:
+      route: "chemical_recycled_pet"
+      emissions_kgco2e_per_kg: 1.40
+    reduction_ratio: 0.36
+
+  plastic_hdpe:
+    primary:
+      route: "virgin_hdpe"
+      emissions_kgco2e_per_kg: 1.95
+    secondary:
+      route: "mechanical_recycled_hdpe"
+      emissions_kgco2e_per_kg: 0.75
+    chemical_recycled:
+      route: "chemical_recycled_hdpe"
+      emissions_kgco2e_per_kg: 1.20
+    reduction_ratio: 0.38
+
+  plastic_ldpe:
+    primary:
+      route: "virgin_ldpe"
+      emissions_kgco2e_per_kg: 2.10
+    secondary:
+      route: "mechanical_recycled_ldpe"
+      emissions_kgco2e_per_kg: 0.80
+    reduction_ratio: 0.38
+
+  plastic_pp:
+    primary:
+      route: "virgin_pp"
+      emissions_kgco2e_per_kg: 2.00
+    secondary:
+      route: "mechanical_recycled_pp"
+      emissions_kgco2e_per_kg: 0.90
+    reduction_ratio: 0.45
+
+  plastic_ps:
+    primary:
+      route: "virgin_ps"
+      emissions_kgco2e_per_kg: 3.40
+    secondary:
+      route: "mechanical_recycled_ps"
+      emissions_kgco2e_per_kg: 1.10
+    reduction_ratio: 0.32
+
+  plastic_pvc:
+    primary:
+      route: "virgin_pvc"
+      emissions_kgco2e_per_kg: 2.50
+    secondary:
+      route: "mechanical_recycled_pvc"
+      emissions_kgco2e_per_kg: 1.10
+    reduction_ratio: 0.44
+
+  paper:
+    primary:
+      route: "virgin_kraft"
+      emissions_kgco2e_per_kg: 1.30
+    secondary:
+      route: "recycled_fibre"
+      emissions_kgco2e_per_kg: 0.70
+    reduction_ratio: 0.54
+
+  cardboard:
+    primary:
+      route: "virgin_kraft_corrugated"
+      emissions_kgco2e_per_kg: 0.90
+    secondary:
+      route: "recycled_corrugated"
+      emissions_kgco2e_per_kg: 0.55
+    reduction_ratio: 0.61
+
+  glass:
+    primary:
+      route: "virgin_soda_lime"
+      emissions_kgco2e_per_kg: 0.85
+    secondary:
+      route: "cullet_route"
+      emissions_kgco2e_per_kg: 0.55
+    reduction_ratio: 0.65
+
+  concrete:
+    primary:
+      route: "opc_cement_100"
+      emissions_kgco2e_per_kg: 0.11
+    secondary:
+      route: "scm_substituted"
+      description: "Concrete with 30% SCM (GGBS / fly ash)"
+      emissions_kgco2e_per_kg: 0.075
+    reduction_ratio: 0.68
+
+  cotton:
+    primary:
+      route: "virgin_cotton"
+      emissions_kgco2e_per_kg: 5.90
+    secondary:
+      route: "recycled_cotton"
+      emissions_kgco2e_per_kg: 1.50
+    reduction_ratio: 0.25
+
+  polyester:
+    primary:
+      route: "virgin_polyester"
+      emissions_kgco2e_per_kg: 3.80
+    secondary:
+      route: "recycled_polyester_rpet"
+      emissions_kgco2e_per_kg: 2.10
+    reduction_ratio: 0.55
+
+  battery_li_ion:
+    primary:
+      route: "virgin_cathode_nmc"
+      description: "Li-ion NMC battery, virgin cathode materials"
+      emissions_kgco2e_per_kg: 82.0
+    secondary:
+      route: "recycled_cathode"
+      description: "Hydrometallurgical recycling of Li-ion cathodes"
+      emissions_kgco2e_per_kg: 38.0
+    reduction_ratio: 0.46
+
+  rare_earth_neodymium:
+    primary:
+      route: "virgin_nd"
+      emissions_kgco2e_per_kg: 60.0
+    secondary:
+      route: "recycled_magnet_scrap"
+      emissions_kgco2e_per_kg: 12.0
+    reduction_ratio: 0.20
+
+  rare_earth_dysprosium:
+    primary:
+      route: "virgin_dy"
+      emissions_kgco2e_per_kg: 120.0
+    secondary:
+      route: "recycled_magnet_scrap"
+      emissions_kgco2e_per_kg: 30.0
+    reduction_ratio: 0.25

@@ -3,12 +3,29 @@
 from __future__ import annotations
 
 from datetime import date, datetime
+from enum import Enum
 from typing import Any, Dict, Optional
 
 from pydantic import Field, model_validator
 
 from greenlang.data.canonical_v2 import MethodProfile
 from greenlang.schemas.base import GreenLangBase
+
+
+class TimeGranularity(str, Enum):
+    """Sub-annual resolution granularity.
+
+    Hourly / daily / monthly / quarterly / seasonal electricity factors
+    come from different source feeds than annual averages; the engine
+    picks the correct feed by reading this field.
+    """
+
+    ANNUAL = "annual"
+    QUARTERLY = "quarterly"
+    MONTHLY = "monthly"
+    DAILY = "daily"
+    HOURLY = "hourly"
+    SEASONAL = "seasonal"
 
 
 class ResolutionRequest(GreenLangBase):
@@ -74,6 +91,38 @@ class ResolutionRequest(GreenLangBase):
         default=False,
         description="Allow preview-status factors when no certified match exists.",
     )
+    time_granularity: TimeGranularity = Field(
+        default=TimeGranularity.ANNUAL,
+        description=(
+            "Desired sub-annual time granularity.  Hourly/daily requests "
+            "tell the engine to prefer time-sliced source feeds "
+            "(e.g. hourly eGRID, AIB intra-day residual mix) over annual "
+            "averages.  Falls back to annual when no sliced feed is "
+            "available."
+        ),
+    )
+    reporting_hour: Optional[int] = Field(
+        default=None,
+        ge=0,
+        le=23,
+        description="Hour-of-day in UTC (0-23). Only used when time_granularity=HOURLY.",
+    )
+    reporting_month: Optional[int] = Field(
+        default=None,
+        ge=1,
+        le=12,
+        description="Month-of-year (1-12) for MONTHLY / SEASONAL granularity.",
+    )
+    target_unit: Optional[str] = Field(
+        default=None,
+        description=(
+            "If set, the resolution engine converts the chosen factor "
+            "into this unit before returning (e.g. caller asks for "
+            "kgCO2e/kWh but the factor is stored per MMBtu).  Conversion "
+            "uses the unit ontology graph; resolution fails loudly if "
+            "no path exists."
+        ),
+    )
     extras: Dict[str, Any] = Field(
         default_factory=dict,
         description="Free-form extra context (e.g. fuel_type, activity_unit hints).",
@@ -95,4 +144,4 @@ class ResolutionRequest(GreenLangBase):
         return self
 
 
-__all__ = ["ResolutionRequest"]
+__all__ = ["ResolutionRequest", "TimeGranularity"]

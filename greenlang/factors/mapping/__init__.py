@@ -41,18 +41,79 @@ from greenlang.factors.mapping.base import (
     MappingResult,
     normalize_text,
 )
+from greenlang.factors.mapping.biogenic_sources import (
+    BIOGENIC_TAXONOMY,
+    BiogenicCategory,
+    BiogenicSource,
+    CO2AccountingTreatment,
+    SustainabilityCertification,
+    list_biogenic_sources,
+    load_biogenic_sources,
+    map_biogenic_source,
+)
+from greenlang.factors.mapping.circular_economy import (
+    CIRCULAR_TAXONOMY,
+    CircularMaterialFlow,
+    CircularRoute,
+    MaterialLifecycle,
+    RecycledContent,
+    RecycledSource,
+    list_circular_materials,
+    load_recycled_content_factors,
+    map_circular_flow,
+)
 from greenlang.factors.mapping.classifications import (
+    TradeCodeSystem,
     cross_map_classification,
     map_classification,
+    map_trade_code,
+    parse_trade_code,
 )
 from greenlang.factors.mapping.electricity_market import (
     ElectricityMarketCategory,
     map_electricity_market,
 )
 from greenlang.factors.mapping.fuels import FUEL_TAXONOMY, map_fuel
+from greenlang.factors.mapping.industry_codes import (
+    CodeLevel,
+    IndustryCode,
+    IndustryCodeSystem,
+    children_of,
+    count_codes,
+    crosswalk_code,
+    get_sector_default_ef,
+    list_systems,
+    load_codes,
+    lookup_industry_code,
+    lookup_industry_label,
+    parent_of,
+)
+from greenlang.factors.mapping.land_use import (
+    DeforestationRiskTier,
+    LUCCommodity,
+    LUC_COMMODITY_TAXONOMY,
+    LandUseCategory,
+    PermanenceClass,
+    ProductionRegion,
+    eudr_is_in_scope,
+    get_risk_tier,
+    list_luc_commodities,
+    load_luc_commodity_data,
+    map_land_use,
+    map_luc_commodity,
+)
 from greenlang.factors.mapping.materials import (
     MATERIAL_TAXONOMY,
     map_material,
+)
+from greenlang.factors.mapping.regulatory_frameworks import (
+    BUILTIN_RULES as REGULATORY_FRAMEWORK_RULES,
+    FrameworkApplicability,
+    FrameworkIndex,
+    FrameworkScope,
+    RegulatoryFramework,
+    tag_factor,
+    tag_factor_batch,
 )
 from greenlang.factors.mapping.spend import map_spend
 from greenlang.factors.mapping.transport import (
@@ -88,6 +149,62 @@ __all__ = [
     # Classifications
     "map_classification",
     "cross_map_classification",
+    "TradeCodeSystem",
+    "map_trade_code",
+    "parse_trade_code",
+    # Industry codes (GAP-7)
+    "IndustryCode",
+    "IndustryCodeSystem",
+    "CodeLevel",
+    "lookup_industry_code",
+    "lookup_industry_label",
+    "crosswalk_code",
+    "children_of",
+    "parent_of",
+    "get_sector_default_ef",
+    "list_systems",
+    "count_codes",
+    "load_codes",
+    # Circular economy (GAP-7)
+    "CIRCULAR_TAXONOMY",
+    "CircularMaterialFlow",
+    "CircularRoute",
+    "MaterialLifecycle",
+    "RecycledContent",
+    "RecycledSource",
+    "map_circular_flow",
+    "list_circular_materials",
+    "load_recycled_content_factors",
+    # Land use (GAP-7)
+    "DeforestationRiskTier",
+    "LUCCommodity",
+    "LUC_COMMODITY_TAXONOMY",
+    "LandUseCategory",
+    "PermanenceClass",
+    "ProductionRegion",
+    "map_land_use",
+    "map_luc_commodity",
+    "eudr_is_in_scope",
+    "get_risk_tier",
+    "list_luc_commodities",
+    "load_luc_commodity_data",
+    # Biogenic sources (GAP-7)
+    "BIOGENIC_TAXONOMY",
+    "BiogenicCategory",
+    "BiogenicSource",
+    "CO2AccountingTreatment",
+    "SustainabilityCertification",
+    "map_biogenic_source",
+    "list_biogenic_sources",
+    "load_biogenic_sources",
     # Spend
     "map_spend",
+    # Regulatory framework tagger
+    "REGULATORY_FRAMEWORK_RULES",
+    "FrameworkApplicability",
+    "FrameworkIndex",
+    "FrameworkScope",
+    "RegulatoryFramework",
+    "tag_factor",
+    "tag_factor_batch",
 ]

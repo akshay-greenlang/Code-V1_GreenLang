@@ -1,0 +1,57 @@
+# ---------------------------------------------------------------------------
+# Australian NGA Residual Mix — FY 2023-24 (GAP-10 Wave 2)
+# ---------------------------------------------------------------------------
+# Reference test fixture only.  DCCEEW does NOT publish an official
+# residual mix; values here are derived by netting LGC-surrendered MWh
+# from the published NGA grid-average factors.
+#
+# Source: Australian Government — DCCEEW, NGA Factors (August 2024)
+# URL: https://www.dcceew.gov.au/climate-change/publications/national-greenhouse-accounts-factors
+# Licence: CC-BY-4.0 (attribution required, redistribution allowed)
+# ---------------------------------------------------------------------------
+metadata:
+  source: australia_nga_factors
+  version: NGA-2024-residual-v1
+  financial_year: "2023-24"
+  published_on: 2024-08-15
+  example_data: true
+  notes: "Fixture for unit tests. Derived residual mix; not official."
+
+rows:
+  - region: NSW
+    financial_year: "2023-24"
+    grid_avg_kg_co2e_per_kwh: 0.680
+    lgc_surrendered_share: 0.24
+    co2_share: 0.98
+    ch4_share: 0.015
+    n2o_share: 0.005
+
+  - region: QLD
+    financial_year: "2023-24"
+    grid_avg_kg_co2e_per_kwh: 0.720
+    lgc_surrendered_share: 0.22
+
+  - region: VIC
+    financial_year: "2023-24"
+    grid_avg_kg_co2e_per_kwh: 0.850
+    lgc_surrendered_share: 0.31
+
+  - region: SA
+    financial_year: "2023-24"
+    grid_avg_kg_co2e_per_kwh: 0.240
+    lgc_surrendered_share: 0.70
+
+  - region: TAS
+    financial_year: "2023-24"
+    grid_avg_kg_co2e_per_kwh: 0.150
+    lgc_surrendered_share: 0.95
+
+  - region: WA
+    financial_year: "2023-24"
+    grid_avg_kg_co2e_per_kwh: 0.520
+    lgc_surrendered_share: 0.18
+
+  - region: NT
+    financial_year: "2023-24"
+    grid_avg_kg_co2e_per_kwh: 0.610
+    lgc_surrendered_share: 0.05

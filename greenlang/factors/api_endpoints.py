@@ -524,3 +524,492 @@ def cache_control_for_list() -> str:
     shorter max-age (5 minutes) than individual factor lookups.
     """
     return "public, max-age=300"
+
+
+# ==================== GAP-2: Explain endpoint helpers ====================
+
+
+#: Maximum alternates per explain response (CTO cap).
+EXPLAIN_ALTERNATES_MAX: int = 20
+#: Default alternates per explain response (CTO default).
+EXPLAIN_ALTERNATES_DEFAULT: int = 5
+
+
+def clamp_alternates_limit(limit: Optional[int]) -> int:
+    """Clamp caller-supplied alternates limit into the allowed window.
+
+    Args:
+        limit: Caller-supplied `?limit=N`.  ``None`` falls back to the default.
+
+    Returns:
+        Integer in the range ``[1, EXPLAIN_ALTERNATES_MAX]``.
+    """
+    if limit is None:
+        return EXPLAIN_ALTERNATES_DEFAULT
+    try:
+        n = int(limit)
+    except (TypeError, ValueError):
+        return EXPLAIN_ALTERNATES_DEFAULT
+    if n < 1:
+        return 1
+    if n > EXPLAIN_ALTERNATES_MAX:
+        return EXPLAIN_ALTERNATES_MAX
+    return n
+
+
+def cache_control_for_explain() -> str:
+    """Return Cache-Control for /explain and /alternates endpoints.
+
+    The explain payload depends on the resolution cascade which in turn
+    depends on the factor catalog + the selected method profile.  Both
+    are stable per-edition, so we allow a 5-minute cache.
+    """
+    return "private, max-age=300"
+
+
+def default_method_profile_for_factor(factor: Any) -> str:
+    """Pick a sensible default ``method_profile`` for a GET /explain call.
+
+    Priority order:
+        1. ``factor.method_profile`` (v2 canonical field)
+        2. Derived from ``factor.scope`` (1→scope1, 2→scope2_location, 3→scope3)
+        3. Fallback: ``"corporate_scope1"``
+    """
+    mp = getattr(factor, "method_profile", None)
+    if mp:
+        return str(mp)
+
+    scope = getattr(factor, "scope", None)
+    scope_val = getattr(scope, "value", None) if scope is not None else None
+    if scope_val == "1":
+        return "corporate_scope1"
+    if scope_val == "2":
+        return "corporate_scope2_location_based"
+    if scope_val == "3":
+        return "corporate_scope3"
+    return "corporate_scope1"
+
+
+def _build_single_factor_engine(factor: Any):
+    """Wrap a single factor record as a fully-loaded ResolutionEngine.
+
+    The engine treats the factor as a step-5 ``country_or_sector_average``
+    candidate.  This is used by GET /explain when the caller does not
+    supply a full ``ResolutionRequest`` — we still want to show *why*
+    this factor would win in a default context.
+    """
+    from greenlang.factors.resolution.engine import ResolutionEngine
+
+    def _source(_req, label):
+        if label == "country_or_sector_average":
+            return [factor]
+        return []
+
+    return ResolutionEngine(candidate_source=_source)
+
+
+def _build_repo_engine(
+    repo: FactorCatalogRepository,
+    edition_id: str,
+    *,
+    include_preview: bool = False,
+    include_connector: bool = False,
+):
+    """Build a ResolutionEngine whose candidate_source is backed by the repo.
+
+    The candidate source serves records from the repo at each cascade step,
+    relying on the request context (supplier_id, facility_id, …) and the
+    engine's own tie-break logic to select winners.  For simplicity and
+    determinism we return the same filtered pool at every non-customer
+    step and let the method-pack selection rule filter further.
+    """
+    from greenlang.factors.resolution.engine import ResolutionEngine
+
+    def _source(req, label):
+        # The customer_override step is handled by tenant_overlay_reader,
+        # so we never serve records here for that label.
+        if label == "customer_override":
+            return []
+        try:
+            rows, _ = repo.list_factors(
+                edition_id,
+                geography=req.jurisdiction,
+                page=1,
+                limit=500,
+                include_preview=include_preview,
+                include_connector=include_connector,
+            )
+        except TypeError:
+            # Older repo signatures without kw-only filters.
+            rows, _ = repo.list_factors(edition_id, page=1, limit=500)
+        return list(rows)
+
+    return ResolutionEngine(candidate_source=_source)
+
+
+def build_factor_explain(
+    repo: FactorCatalogRepository,
+    edition_id: str,
+    factor_id: str,
+    *,
+    method_profile: Optional[str] = None,
+    alternates_limit: int = EXPLAIN_ALTERNATES_DEFAULT,
+    jurisdiction: Optional[str] = None,
+) -> Optional[Dict[str, Any]]:
+    """Build an explain payload for a specific ``factor_id``.
+
+    Returns ``None`` if the factor does not exist in the edition.  The
+    payload is the same shape as ``ResolvedFactor.model_dump()`` plus a
+    compact ``explain()`` view, so clients get both the structured object
+    and the human-oriented derivation block.
+    """
+    from greenlang.data.canonical_v2 import MethodProfile
+    from greenlang.factors.resolution.request import ResolutionRequest
+
+    factor = repo.get_factor(edition_id, factor_id)
+    if factor is None:
+        return None
+
+    profile = method_profile or default_method_profile_for_factor(factor)
+    try:
+        profile_enum = MethodProfile(profile)
+    except ValueError:
+        profile_enum = MethodProfile.CORPORATE_SCOPE1
+
+    engine = _build_single_factor_engine(factor)
+    req = ResolutionRequest(
+        activity=getattr(factor, "fuel_type", None) or factor_id,
+        method_profile=profile_enum,
+        jurisdiction=jurisdiction or getattr(factor, "geography", None),
+    )
+    resolved = engine.resolve(req)
+
+    # Clamp alternates server-side.
+    alts = list(resolved.alternates)[:clamp_alternates_limit(alternates_limit)]
+    payload = resolved.model_dump(mode="json")
+    payload["alternates"] = [a.model_dump(mode="json") for a in alts]
+    payload["explain"] = resolved.explain()
+    payload["explain"]["alternates"] = payload["alternates"]
+    return payload
+
+
+def build_resolution_explain(
+    repo: FactorCatalogRepository,
+    edition_id: str,
+    request_dict: Dict[str, Any],
+    *,
+    alternates_limit: int = EXPLAIN_ALTERNATES_DEFAULT,
+    include_preview: bool = False,
+    include_connector: bool = False,
+) -> Dict[str, Any]:
+    """Run the full 7-step cascade against a user-supplied ResolutionRequest.
+
+    The input dict is validated against :class:`ResolutionRequest` — on
+    validation failure, Pydantic will raise ``ValidationError`` which the
+    caller must translate into an HTTP 400.
+    """
+    from greenlang.factors.resolution.request import ResolutionRequest
+
+    req = ResolutionRequest(**request_dict)
+    engine = _build_repo_engine(
+        repo,
+        edition_id,
+        include_preview=include_preview,
+        include_connector=include_connector,
+    )
+    resolved = engine.resolve(req)
+
+    alts = list(resolved.alternates)[:clamp_alternates_limit(alternates_limit)]
+    payload = resolved.model_dump(mode="json")
+    payload["alternates"] = [a.model_dump(mode="json") for a in alts]
+    payload["explain"] = resolved.explain()
+    payload["explain"]["alternates"] = payload["alternates"]
+    payload["method_profile"] = req.method_profile.value
+    return payload
+
+
+def build_factor_alternates(
+    repo: FactorCatalogRepository,
+    edition_id: str,
+    factor_id: str,
+    *,
+    method_profile: Optional[str] = None,
+    alternates_limit: int = EXPLAIN_ALTERNATES_DEFAULT,
+    include_preview: bool = False,
+    include_connector: bool = False,
+) -> Optional[Dict[str, Any]]:
+    """List alternative factors that could resolve for the same activity.
+
+    Returns ``None`` if the anchor factor is not found.  The payload
+    contains the chosen factor's ``factor_id`` (for grounding) plus the
+    top-N alternates scored by the tie-break engine.
+    """
+    from greenlang.data.canonical_v2 import MethodProfile
+    from greenlang.factors.resolution.request import ResolutionRequest
+
+    anchor = repo.get_factor(edition_id, factor_id)
+    if anchor is None:
+        return None
+
+    profile = method_profile or default_method_profile_for_factor(anchor)
+    try:
+        profile_enum = MethodProfile(profile)
+    except ValueError:
+        profile_enum = MethodProfile.CORPORATE_SCOPE1
+
+    engine = _build_repo_engine(
+        repo,
+        edition_id,
+        include_preview=include_preview,
+        include_connector=include_connector,
+    )
+    req = ResolutionRequest(
+        activity=getattr(anchor, "fuel_type", None) or factor_id,
+        method_profile=profile_enum,
+        jurisdiction=getattr(anchor, "geography", None),
+    )
+    try:
+        resolved = engine.resolve(req)
+    except Exception:
+        # Cascade exhausted — return just the anchor as-is.
+        return {
+            "factor_id": factor_id,
+            "edition_id": edition_id,
+            "chosen_factor_id": factor_id,
+            "method_profile": profile_enum.value,
+            "alternates": [],
+        }
+
+    alts = list(resolved.alternates)[:clamp_alternates_limit(alternates_limit)]
+    return {
+        "factor_id": factor_id,
+        "edition_id": edition_id,
+        "chosen_factor_id": resolved.chosen_factor_id,
+        "method_profile": profile_enum.value,
+        "alternates": [a.model_dump(mode="json") for a in alts],
+    }
+
+
+def compute_explain_etag(payload: Dict[str, Any], edition_id: str) -> str:
+    """Compute a stable ETag for an explain payload.
+
+    The ETag covers the chosen factor id + version + method profile +
+    edition so cache invalidation happens on any of those axes.
+    """
+    chosen = payload.get("chosen_factor_id") or payload.get("factor_id") or ""
+    version = payload.get("factor_version") or payload.get("method_pack_version") or ""
+    profile = payload.get("method_profile") or ""
+    combined = f"{edition_id}|{chosen}|{version}|{profile}|{len(payload.get('alternates', []))}"
+    digest = hashlib.sha256(combined.encode("utf-8")).hexdigest()
+    return f'"{digest}"'
+
+
+# ==================== GAP-6: Impact Simulator REST adapters ====================
+
+
+def build_impact_simulation(
+    repo: FactorCatalogRepository,
+    *,
+    factor_id: str,
+    hypothetical_value: Any = None,
+    tenant_scope: Optional[List[str]] = None,
+    edition_id: Optional[str] = None,
+    ledger_entries: Optional[List[Dict[str, Any]]] = None,
+    evidence_records: Optional[List[Dict[str, Any]]] = None,
+) -> Dict[str, Any]:
+    """Run the impact simulator for a single factor change.
+
+    Wraps the existing :class:`ImpactSimulator` (which is NOT rewritten
+    here — we only adapt it for REST).
+
+    Args:
+        repo: The catalog repo (used to read the current numeric value
+            of the factor for delta calculation).
+        factor_id: The factor being changed.
+        hypothetical_value: One of:
+            * ``None`` -> no value delta, just list affected computations
+            * ``"deprecation"`` -> mark factor deprecated (value unchanged
+              but every consumer is flagged)
+            * a ``dict`` with ``{"co2e_total": float, ...}`` -> explicit
+              new value for delta calc
+            * a ``float`` -> shorthand for ``{"co2e_total": <float>}``
+        tenant_scope: Optional list of tenant IDs to restrict the scan.
+        edition_id: Edition to scope the factor lookup (for value delta).
+        ledger_entries: Pre-loaded ledger rows (tests / dev).
+        evidence_records: Pre-loaded evidence rows (tests / dev).
+
+    Returns:
+        The ``ImpactReport.to_dict()`` payload augmented with the REST
+        adapter's metadata (``simulation_mode``, ``tenant_scope``).
+    """
+    from greenlang.factors.quality.impact_simulator import ImpactSimulator
+
+    # Load ledger + evidence.  Production callers pass them in; dev/test
+    # runs accept empty lists (useful for sanity-checking the adapter).
+    ledger = list(ledger_entries or [])
+    evidence = list(evidence_records or [])
+
+    # Optionally filter ledger/evidence by tenant_scope before passing
+    # into the simulator.  This keeps the simulator itself ignorant of
+    # multi-tenancy concerns.
+    if tenant_scope:
+        allowed = set(tenant_scope)
+        ledger = [e for e in ledger if (e.get("tenant_id") in allowed)]
+        evidence = [r for r in evidence if (r.get("tenant_id") in allowed)]
+
+    simulator = ImpactSimulator(
+        ledger_entries=ledger,
+        evidence_records=evidence,
+    )
+
+    # Build the value_map.  We read the current value from the repo and
+    # compute the hypothetical new value based on ``hypothetical_value``.
+    value_map: Optional[Dict[str, Dict[str, float]]] = None
+    simulation_mode = "listing_only"
+    if hypothetical_value is not None and edition_id is not None:
+        current = repo.get_factor(edition_id, factor_id)
+        if current is not None:
+            try:
+                old_value = float(current.gwp_100yr.co2e_total)
+            except (AttributeError, TypeError, ValueError):
+                old_value = 0.0
+
+            if hypothetical_value == "deprecation":
+                simulation_mode = "deprecation"
+                value_map = {
+                    factor_id: {"old": old_value, "new": old_value}
+                }
+            elif isinstance(hypothetical_value, (int, float)):
+                simulation_mode = "value_override"
+                value_map = {
+                    factor_id: {
+                        "old": old_value,
+                        "new": float(hypothetical_value),
+                    }
+                }
+            elif isinstance(hypothetical_value, dict):
+                simulation_mode = "value_override"
+                new_val = hypothetical_value.get("co2e_total", old_value)
+                try:
+                    new_val_f = float(new_val)
+                except (TypeError, ValueError):
+                    new_val_f = old_value
+                value_map = {
+                    factor_id: {"old": old_value, "new": new_val_f}
+                }
+
+    report = simulator.simulate_replacement(
+        replaced_factor_ids=[factor_id],
+        value_map=value_map,
+    )
+    payload = report.to_dict()
+    payload["simulation_mode"] = simulation_mode
+    payload["tenant_scope"] = list(tenant_scope) if tenant_scope else None
+    payload["edition_id"] = edition_id
+    payload["factor_id"] = factor_id
+    logger.info(
+        "Impact simulation built: factor=%s mode=%s computations=%d tenants=%d",
+        factor_id, simulation_mode, len(report.computations), len(report.tenants),
+    )
+    return payload
+
+
+def build_impact_simulation_batch(
+    repo: FactorCatalogRepository,
+    *,
+    items: List[Dict[str, Any]],
+    edition_id: Optional[str] = None,
+    ledger_entries: Optional[List[Dict[str, Any]]] = None,
+    evidence_records: Optional[List[Dict[str, Any]]] = None,
+) -> Dict[str, Any]:
+    """Run :func:`build_impact_simulation` for a list of factor changes.
+
+    Each item is a dict with ``factor_id`` (required), ``hypothetical_value``
+    (optional), and ``tenant_scope`` (optional).  Returns a combined
+    report with per-factor subreports + aggregated totals.
+    """
+    reports = []
+    total_computations = 0
+    tenant_set: set = set()
+    for item in items:
+        fid = item.get("factor_id")
+        if not fid:
+            continue
+        sub = build_impact_simulation(
+            repo,
+            factor_id=fid,
+            hypothetical_value=item.get("hypothetical_value"),
+            tenant_scope=item.get("tenant_scope"),
+            edition_id=edition_id,
+            ledger_entries=ledger_entries,
+            evidence_records=evidence_records,
+        )
+        reports.append(sub)
+        total_computations += int(
+            sub.get("summary", {}).get("affected_computations", 0)
+        )
+        tenant_set.update(sub.get("tenants") or [])
+    return {
+        "edition_id": edition_id,
+        "item_count": len(reports),
+        "aggregated_summary": {
+            "affected_computations": total_computations,
+            "affected_tenants": len(tenant_set),
+        },
+        "reports": reports,
+    }
+
+
+def list_dependent_computations(
+    *,
+    factor_id: str,
+    ledger_entries: List[Dict[str, Any]],
+    tenant_scope: Optional[List[str]] = None,
+) -> List[Dict[str, Any]]:
+    """Return the list of ledger rows that consumed ``factor_id``.
+
+    Thin read helper used by the GET /dependent-computations endpoint.
+    Filters the ledger entries by factor_id in metadata and (optionally)
+    tenant.  Results are sorted newest-first for the UI.
+    """
+    allowed_tenants = set(tenant_scope) if tenant_scope else None
+    dependents: List[Dict[str, Any]] = []
+    for entry in ledger_entries:
+        meta = entry.get("metadata") or {}
+        entry_fid = meta.get("factor_id") or entry.get("factor_id")
+        if entry_fid != factor_id:
+            continue
+        tenant = entry.get("tenant_id") or meta.get("tenant_id")
+        if allowed_tenants is not None and tenant not in allowed_tenants:
+            continue
+        dependents.append(
+            {
+                "computation_id": str(
+                    entry.get("entity_id") or entry.get("id") or ""
+                ),
+                "computation_hash": str(
+                    entry.get("chain_hash") or entry.get("content_hash") or ""
+                ),
+                "tenant_id": tenant,
+                "factor_id": entry_fid,
+                "factor_version": meta.get("new_factor_version")
+                or meta.get("factor_version"),
+                "recorded_at": entry.get("recorded_at"),
+            }
+        )
+    dependents.sort(
+        key=lambda r: str(r.get("recorded_at") or ""),
+        reverse=True,
+    )
+    return dependents
+
+
+def compute_impact_etag(payload: Dict[str, Any]) -> str:
+    """ETag for impact-sim + dependent-computations responses."""
+    body = json.dumps(payload, sort_keys=True, default=str)
+    return f'"{hashlib.sha256(body.encode("utf-8")).hexdigest()}"'
+
+
+def cache_control_for_impact() -> str:
+    """Cache-Control for impact simulation responses (always private)."""
+    return "private, max-age=60"
