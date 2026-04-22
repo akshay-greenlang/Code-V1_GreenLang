@@ -453,6 +453,14 @@ class CoverageStats(GreenLangBase):
     boundaries: Dict[str, int]
     by_geography: Dict[str, int]
     by_fuel_type: Dict[str, int]
+    # Repo also emits `by_status` (certified/preview/connector_only breakdown
+    # keyed by status string) — surface it so the response model accepts
+    # what the repo produces.  Defaults to an empty dict for repos that
+    # don't yet emit the key.
+    by_status: Dict[str, int] = Field(default_factory=dict)
+    # Forward-compat: the Pg-backed repo sometimes emits a `by_source`
+    # aggregate.  Accept + pass through instead of 422-ing.
+    by_source: Dict[str, int] = Field(default_factory=dict)
 
 
 class CacheStats(GreenLangBase):

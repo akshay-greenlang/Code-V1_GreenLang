@@ -1,0 +1,2579 @@
+openapi: 3.1.0
+info:
+  title: GreenLang Factors Public API
+  version: 1.0.0
+  summary: Emission-factor catalog, resolution, explainability, bulk export, and webhooks.
+  description: |
+    Public REST contract for the GreenLang Factors platform.
+
+    Frozen surface consumed by:
+      - The Python SDK (`greenlang-sdk`)
+      - The TypeScript SDK (`@greenlang/factors`)
+      - The Kong API-Gateway route definitions
+      - The `docs.greenlang.io` reference site
+
+    **CTO non-negotiables enforced in this contract**
+      1. Every response carries `X-GreenLang-Edition` and a `signed_receipt`
+         (HMAC-SHA256 or Ed25519; see `Receipt`).
+      2. Fallback logic is never hidden — `/resolve` and `/explain` return
+         the full 7-step cascade trace including alternates.
+      3. Licensing classes never mix. If a caller's entitlement does not
+         cover the record's `redistribution_class`, the server returns
+         `451 Unavailable For Legal Reasons` with an upgrade pointer.
+      4. `method_profile` is required for every resolution — callers cannot
+         obtain a raw factor without first binding to a methodology.
+      5. `/resolve` always returns a full gas breakdown (CO2/CH4/N2O/HFC/PFC/
+         SF6/NF3/biogenic) plus the `gwp_basis` used — never only `co2e`.
+
+    **Seven-step resolution cascade**
+      1. `customer_override` (tenant overlay)
+      2. `supplier_specific`
+      3. `facility_specific`
+      4. `utility_or_grid_subregion`
+      5. `country_or_sector_average`
+      6. `method_pack_default`
+      7. `global_default`
+  contact:
+    name: GreenLang Platform Team
+    email: platform@greenlang.io
+    url: https://docs.greenlang.io
+  license:
+    name: GreenLang API Terms (Commercial)
+    url: https://greenlang.io/legal/api-terms
+  termsOfService: https://greenlang.io/legal/tos
+  x-api-id: gl-factors-v1
+  x-audience: external-public
+
+servers:
+  - url: https://api.greenlang.io
+    description: Production
+  - url: https://api.staging.greenlang.io
+    description: Staging
+  - url: http://localhost:8000
+    description: Local dev
+
+tags:
+  - name: Resolution
+    description: Seven-step cascade for picking the correct factor.
+  - name: Explainability
+    description: First-class derivation / alternate / diff endpoints.
+  - name: Search
+    description: Query the catalog.
+  - name: Editions
+    description: Immutable catalog snapshots.
+  - name: Sources
+    description: Upstream publisher catalog.
+  - name: Method Packs
+    description: Methodology profiles + selection rules.
+  - name: Audit
+    description: Audit bundles for regulatory verification.
+  - name: Bulk
+    description: Streaming bulk export.
+  - name: Entitlements
+    description: Caller tier + license-class entitlements.
+  - name: Webhooks
+    description: Subscribe to factor-change events.
+  - name: System
+    description: Health, readiness, metrics.
+
+security:
+  - bearerAuth: []
+  - apiKeyAuth: []
+
+paths:
+
+  # ==================== RESOLUTION ====================
+
+  /v1/factors/resolve-explain:
+    get:
+      tags: [Resolution]
+      operationId: resolveFactorsGet
+      summary: Resolve a factor (query-param form)
+      description: |
+        Run the seven-step resolution cascade from query parameters.
+        Use this form for simple integrations (spreadsheets, quick curl probes).
+
+        Callers must supply **either** `activity_text` **or**
+        (`factor_family` + `activity_code`). `method_profile`, `quantity`,
+        and `unit` are always required (non-negotiable #4: no factor
+        without methodology binding).
+      parameters:
+        - { $ref: '#/components/parameters/EditionHeaderIn' }
+        - { $ref: '#/components/parameters/RequestId' }
+        - name: activity_text
+          in: query
+          description: Free-text activity description, mutually exclusive with `factor_family`+`activity_code`.
+          required: false
+          schema: { type: string, example: "diesel combustion stationary" }
+        - name: factor_family
+          in: query
+          required: false
+          schema: { $ref: '#/components/schemas/FactorFamily' }
+        - name: activity_code
+          in: query
+          required: false
+          description: Qualified classification code (NAICS, CN, ISIC, EEIO, etc.).
+          schema: { type: string, example: "NAICS:221112" }
+        - name: quantity
+          in: query
+          required: true
+          schema: { type: number, format: double, example: 1000.0 }
+        - name: unit
+          in: query
+          required: true
+          schema: { type: string, example: "gallons" }
+        - name: method_profile
+          in: query
+          required: true
+          schema: { $ref: '#/components/schemas/MethodProfile' }
+        - name: jurisdiction
+          in: query
+          description: ISO-3166 country or sub-national code. `US-CA`, `EU`, `IN`.
+          schema: { type: string, example: "US-CA" }
+        - name: valid_at
+          in: query
+          description: Reporting-period end date (ISO-8601). Defaults to today.
+          schema: { type: string, format: date, example: "2025-12-31" }
+        - name: supplier_id
+          in: query
+          schema: { type: string }
+        - name: facility_id
+          in: query
+          schema: { type: string }
+        - name: utility_or_grid_region
+          in: query
+          description: Utility tariff id or grid sub-region (e.g., `eGRID-SERC`).
+          schema: { type: string }
+        - name: time_granularity
+          in: query
+          schema: { $ref: '#/components/schemas/TimeGranularity' }
+        - name: target_unit
+          in: query
+          description: Desired denominator; the engine converts via the unit ontology.
+          schema: { type: string }
+        - name: edition
+          in: query
+          description: Pin a specific catalog edition (fallback order is header, then query, then default).
+          schema: { type: string, example: "builtin-v1.0.0" }
+        - name: include_preview
+          in: query
+          schema: { type: boolean, default: false }
+      responses:
+        '200':
+          description: Resolved factor with alternates and signed receipt.
+          headers:
+            X-GreenLang-Edition:      { $ref: '#/components/headers/EditionHeader' }
+            X-Request-Id:             { $ref: '#/components/headers/RequestIdHeader' }
+            X-RateLimit-Limit:        { $ref: '#/components/headers/RateLimitLimit' }
+            X-RateLimit-Remaining:    { $ref: '#/components/headers/RateLimitRemaining' }
+            X-RateLimit-Reset:        { $ref: '#/components/headers/RateLimitReset' }
+            ETag:                     { $ref: '#/components/headers/ETagHeader' }
+            Cache-Control:            { $ref: '#/components/headers/CacheControlHeader' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ResolvedFactorResponse' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '402': { $ref: '#/components/responses/PaymentRequired' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '410': { $ref: '#/components/responses/Gone' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+        '451': { $ref: '#/components/responses/LegalBlocked' }
+        '500': { $ref: '#/components/responses/ServerError' }
+        '502': { $ref: '#/components/responses/BadGateway' }
+        '503': { $ref: '#/components/responses/ServiceUnavailable' }
+
+    post:
+      tags: [Resolution]
+      operationId: resolveFactorsPost
+      summary: Resolve a factor (body form)
+      description: |
+        Rich resolution form. Use when the caller has tenant-overlay
+        hints, multi-gas requests, classification bundles, or an
+        `extras` payload that does not fit in query params.
+      parameters:
+        - { $ref: '#/components/parameters/EditionHeaderIn' }
+        - { $ref: '#/components/parameters/RequestId' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ResolutionRequest' }
+      responses:
+        '200':
+          description: Resolved factor with alternates and signed receipt.
+          headers:
+            X-GreenLang-Edition:   { $ref: '#/components/headers/EditionHeader' }
+            X-Request-Id:          { $ref: '#/components/headers/RequestIdHeader' }
+            ETag:                  { $ref: '#/components/headers/ETagHeader' }
+            Cache-Control:         { $ref: '#/components/headers/CacheControlHeader' }
+            X-RateLimit-Limit:     { $ref: '#/components/headers/RateLimitLimit' }
+            X-RateLimit-Remaining: { $ref: '#/components/headers/RateLimitRemaining' }
+            X-RateLimit-Reset:     { $ref: '#/components/headers/RateLimitReset' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ResolvedFactorResponse' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '402': { $ref: '#/components/responses/PaymentRequired' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '410': { $ref: '#/components/responses/Gone' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+        '451': { $ref: '#/components/responses/LegalBlocked' }
+        '500': { $ref: '#/components/responses/ServerError' }
+
+  # ==================== SEARCH ====================
+
+  /v1/factors/search:
+    post:
+      tags: [Search]
+      operationId: searchFactors
+      summary: Search v2 with sort + offset-based pagination
+      description: |
+        Enhanced catalog search (F035). Applies post-filtering, caller-selected
+        sort, and offset-based pagination. Always scoped to a single edition.
+      parameters:
+        - { $ref: '#/components/parameters/EditionHeaderIn' }
+        - { $ref: '#/components/parameters/RequestId' }
+        - { $ref: '#/components/parameters/IfNoneMatch' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SearchV2Request' }
+      responses:
+        '200':
+          description: Paginated, sorted search result.
+          headers:
+            X-GreenLang-Edition: { $ref: '#/components/headers/EditionHeader' }
+            X-Request-Id:        { $ref: '#/components/headers/RequestIdHeader' }
+            ETag:                { $ref: '#/components/headers/ETagHeader' }
+            Cache-Control:       { $ref: '#/components/headers/CacheControlHeader' }
+            X-RateLimit-Limit:     { $ref: '#/components/headers/RateLimitLimit' }
+            X-RateLimit-Remaining: { $ref: '#/components/headers/RateLimitRemaining' }
+            X-RateLimit-Reset:     { $ref: '#/components/headers/RateLimitReset' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SearchV2Response' }
+        '304': { description: Not modified (ETag matched `If-None-Match`). }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '402': { $ref: '#/components/responses/PaymentRequired' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+        '451': { $ref: '#/components/responses/LegalBlocked' }
+        '500': { $ref: '#/components/responses/ServerError' }
+
+  # ==================== FACTOR FETCH / EXPLAIN / DIFF ====================
+
+  /v1/factors/{factor_id}:
+    get:
+      tags: [Search]
+      operationId: getFactor
+      summary: Fetch a single factor record
+      description: |
+        Return the full canonical `Factor` record for a given id in the
+        active (or pinned) edition. Respects caller entitlement — returns
+        `451` if the factor's `redistribution_class` exceeds the caller's
+        license tier.
+      parameters:
+        - { $ref: '#/components/parameters/FactorIdPath' }
+        - { $ref: '#/components/parameters/EditionHeaderIn' }
+        - { $ref: '#/components/parameters/RequestId' }
+        - { $ref: '#/components/parameters/IfNoneMatch' }
+      responses:
+        '200':
+          description: Factor record.
+          headers:
+            X-GreenLang-Edition: { $ref: '#/components/headers/EditionHeader' }
+            X-Request-Id:        { $ref: '#/components/headers/RequestIdHeader' }
+            ETag:                { $ref: '#/components/headers/ETagHeader' }
+            Cache-Control:       { $ref: '#/components/headers/CacheControlHeader' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/FactorEnvelope' }
+        '304': { description: Not modified. }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '410': { $ref: '#/components/responses/Gone' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+        '451': { $ref: '#/components/responses/LegalBlocked' }
+        '500': { $ref: '#/components/responses/ServerError' }
+
+  /v1/factors/{factor_id}/explain:
+    get:
+      tags: [Explainability]
+      operationId: explainFactor
+      summary: Resolution derivation + alternates + tiebreak reasons
+      description: |
+        First-class explainability primitive (non-negotiable #3).
+
+        Returns:
+          * the chosen factor (with `factor_version` + `source_version`)
+          * every alternate considered (clamped to at most
+            `EXPLAIN_ALTERNATES_MAX = 20`; default 5)
+          * which of the 7 cascade steps picked the winner (`fallback_rank`
+            + `step_label`)
+          * tiebreak reasons (geo-proximity, vintage, quality, source
+            preference, granularity match)
+          * unit-conversion trace, when applicable
+          * deprecation status
+      parameters:
+        - { $ref: '#/components/parameters/FactorIdPath' }
+        - { $ref: '#/components/parameters/EditionHeaderIn' }
+        - { $ref: '#/components/parameters/RequestId' }
+        - name: method_profile
+          in: query
+          required: false
+          description: Override the method profile; defaults to the factor's own.
+          schema: { $ref: '#/components/schemas/MethodProfile' }
+        - name: jurisdiction
+          in: query
+          schema: { type: string }
+        - name: limit
+          in: query
+          description: Alternates to return; server clamps to `[1, 20]`.
+          schema: { type: integer, minimum: 1, maximum: 20, default: 5 }
+        - name: include_preview
+          in: query
+          schema: { type: boolean, default: false }
+      responses:
+        '200':
+          description: Resolution explain payload.
+          headers:
+            X-GreenLang-Edition: { $ref: '#/components/headers/EditionHeader' }
+            X-Request-Id:        { $ref: '#/components/headers/RequestIdHeader' }
+            ETag:                { $ref: '#/components/headers/ETagHeader' }
+            Cache-Control:       { $ref: '#/components/headers/CacheControlHeader' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ExplainResponse' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '410': { $ref: '#/components/responses/Gone' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+        '451': { $ref: '#/components/responses/LegalBlocked' }
+        '500': { $ref: '#/components/responses/ServerError' }
+
+  /v1/factors/{factor_id}/diff:
+    get:
+      tags: [Explainability]
+      operationId: diffFactor
+      summary: Field-by-field factor diff between two editions
+      description: |
+        Walk a factor's `to_dict()` representation in both editions and
+        return additions / removals / changes (F034). Status is one of:
+        `unchanged`, `changed`, `added`, `removed`, `not_found`.
+      parameters:
+        - { $ref: '#/components/parameters/FactorIdPath' }
+        - name: from_edition
+          in: query
+          required: true
+          schema: { type: string }
+        - name: to_edition
+          in: query
+          required: true
+          schema: { type: string }
+        - { $ref: '#/components/parameters/RequestId' }
+      responses:
+        '200':
+          description: Diff payload.
+          headers:
+            X-GreenLang-Edition: { $ref: '#/components/headers/EditionHeader' }
+            X-Request-Id:        { $ref: '#/components/headers/RequestIdHeader' }
+            ETag:                { $ref: '#/components/headers/ETagHeader' }
+            Cache-Control:       { $ref: '#/components/headers/CacheControlHeader' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DiffEnvelope' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+        '500': { $ref: '#/components/responses/ServerError' }
+
+  # ==================== BATCH RESOLVE ====================
+
+  /v1/factors/batch:
+    post:
+      tags: [Resolution]
+      operationId: batchResolve
+      summary: Batch resolve factors (async job)
+      description: |
+        Submit an N-row batch for resolution. Returns a job handle;
+        clients poll or subscribe to the
+        `impact_simulation.complete` / `factor.updated` webhooks for
+        completion.
+
+        Per CTO spec, every batch row is resolved through the same
+        7-step cascade and returns the same `ResolvedFactor` shape; all
+        rows in a single response share a license class (non-negotiable
+        #4 — mixed-class batches are split server-side).
+      parameters:
+        - { $ref: '#/components/parameters/EditionHeaderIn' }
+        - { $ref: '#/components/parameters/RequestId' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/BatchResolveRequest' }
+      responses:
+        '202':
+          description: Batch accepted.
+          headers:
+            X-GreenLang-Edition: { $ref: '#/components/headers/EditionHeader' }
+            X-Request-Id:        { $ref: '#/components/headers/RequestIdHeader' }
+            Location:
+              description: URI to poll for batch status.
+              schema: { type: string, format: uri }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BatchResolveAccepted' }
+        '200':
+          description: Small-batch synchronous result (when `sync=true` and row count below server threshold).
+          headers:
+            X-GreenLang-Edition: { $ref: '#/components/headers/EditionHeader' }
+            X-Request-Id:        { $ref: '#/components/headers/RequestIdHeader' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BatchResolveResponse' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '402': { $ref: '#/components/responses/PaymentRequired' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '413': { $ref: '#/components/responses/PayloadTooLarge' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+        '500': { $ref: '#/components/responses/ServerError' }
+
+  # ==================== EDITIONS ====================
+
+  /v1/editions:
+    get:
+      tags: [Editions]
+      operationId: listEditions
+      summary: List all catalog editions
+      parameters:
+        - { $ref: '#/components/parameters/RequestId' }
+      responses:
+        '200':
+          description: Editions list.
+          headers:
+            X-GreenLang-Edition: { $ref: '#/components/headers/EditionHeader' }
+            X-Request-Id:        { $ref: '#/components/headers/RequestIdHeader' }
+            ETag:                { $ref: '#/components/headers/ETagHeader' }
+            Cache-Control:       { $ref: '#/components/headers/CacheControlHeader' }
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [editions, signed_receipt]
+                properties:
+                  editions:
+                    type: array
+                    items: { $ref: '#/components/schemas/Edition' }
+                  signed_receipt: { $ref: '#/components/schemas/Receipt' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '500': { $ref: '#/components/responses/ServerError' }
+
+  /v1/editions/current:
+    get:
+      tags: [Editions]
+      operationId: getCurrentEdition
+      summary: Return the server's default edition
+      parameters:
+        - { $ref: '#/components/parameters/RequestId' }
+      responses:
+        '200':
+          description: Current edition.
+          headers:
+            X-GreenLang-Edition: { $ref: '#/components/headers/EditionHeader' }
+            X-Request-Id:        { $ref: '#/components/headers/RequestIdHeader' }
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Edition'
+                  - type: object
+                    required: [signed_receipt]
+                    properties:
+                      signed_receipt: { $ref: '#/components/schemas/Receipt' }
+        '500': { $ref: '#/components/responses/ServerError' }
+
+  # ==================== SOURCES ====================
+
+  /v1/sources:
+    get:
+      tags: [Sources]
+      operationId: listSources
+      summary: List upstream sources
+      parameters:
+        - { $ref: '#/components/parameters/EditionHeaderIn' }
+        - { $ref: '#/components/parameters/RequestId' }
+        - name: type
+          in: query
+          schema: { $ref: '#/components/schemas/SourceType' }
+        - name: redistribution_class
+          in: query
+          schema: { $ref: '#/components/schemas/RedistributionClass' }
+      responses:
+        '200':
+          description: Source catalog.
+          headers:
+            X-GreenLang-Edition: { $ref: '#/components/headers/EditionHeader' }
+            X-Request-Id:        { $ref: '#/components/headers/RequestIdHeader' }
+            ETag:                { $ref: '#/components/headers/ETagHeader' }
+            Cache-Control:       { $ref: '#/components/headers/CacheControlHeader' }
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [sources, signed_receipt]
+                properties:
+                  sources:
+                    type: array
+                    items: { $ref: '#/components/schemas/Source' }
+                  signed_receipt: { $ref: '#/components/schemas/Receipt' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '500': { $ref: '#/components/responses/ServerError' }
+
+  /v1/sources/{source_id}:
+    get:
+      tags: [Sources]
+      operationId: getSource
+      summary: Fetch a single source record
+      parameters:
+        - name: source_id
+          in: path
+          required: true
+          schema: { type: string, example: "epa_hub" }
+        - { $ref: '#/components/parameters/EditionHeaderIn' }
+        - { $ref: '#/components/parameters/RequestId' }
+      responses:
+        '200':
+          description: Source record.
+          headers:
+            X-GreenLang-Edition: { $ref: '#/components/headers/EditionHeader' }
+            X-Request-Id:        { $ref: '#/components/headers/RequestIdHeader' }
+            ETag:                { $ref: '#/components/headers/ETagHeader' }
+            Cache-Control:       { $ref: '#/components/headers/CacheControlHeader' }
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Source'
+                  - type: object
+                    required: [signed_receipt]
+                    properties:
+                      signed_receipt: { $ref: '#/components/schemas/Receipt' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '500': { $ref: '#/components/responses/ServerError' }
+
+  # ==================== METHOD PACKS ====================
+
+  /v1/method-packs:
+    get:
+      tags: [Method Packs]
+      operationId: listMethodPacks
+      summary: List methodology profiles
+      parameters:
+        - { $ref: '#/components/parameters/RequestId' }
+      responses:
+        '200':
+          description: Method-pack list.
+          headers:
+            X-GreenLang-Edition: { $ref: '#/components/headers/EditionHeader' }
+            X-Request-Id:        { $ref: '#/components/headers/RequestIdHeader' }
+            ETag:                { $ref: '#/components/headers/ETagHeader' }
+            Cache-Control:       { $ref: '#/components/headers/CacheControlHeader' }
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [packs, signed_receipt]
+                properties:
+                  packs:
+                    type: array
+                    items: { $ref: '#/components/schemas/MethodPack' }
+                  signed_receipt: { $ref: '#/components/schemas/Receipt' }
+        '500': { $ref: '#/components/responses/ServerError' }
+
+  /v1/method-packs/{profile}:
+    get:
+      tags: [Method Packs]
+      operationId: getMethodPack
+      summary: Fetch a method pack (with selection rules)
+      parameters:
+        - name: profile
+          in: path
+          required: true
+          schema: { $ref: '#/components/schemas/MethodProfile' }
+        - { $ref: '#/components/parameters/RequestId' }
+      responses:
+        '200':
+          description: Method-pack detail with `selection_rule`, `boundary_rule`, and the 7-step `region_hierarchy`.
+          headers:
+            X-GreenLang-Edition: { $ref: '#/components/headers/EditionHeader' }
+            X-Request-Id:        { $ref: '#/components/headers/RequestIdHeader' }
+            ETag:                { $ref: '#/components/headers/ETagHeader' }
+            Cache-Control:       { $ref: '#/components/headers/CacheControlHeader' }
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/MethodPack'
+                  - type: object
+                    required: [signed_receipt]
+                    properties:
+                      signed_receipt: { $ref: '#/components/schemas/Receipt' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '500': { $ref: '#/components/responses/ServerError' }
+
+  # ==================== AUDIT BUNDLE ====================
+
+  /v1/audit-bundle:
+    post:
+      tags: [Audit]
+      operationId: buildAuditBundle
+      summary: Build a signed audit bundle for a factor + edition
+      description: |
+        Produce a third-party-verifiable audit bundle (F032). The
+        payload contains the normalised record, raw-artifact pointer,
+        parser log, QA errors, reviewer decision, SHA-256 verification
+        chain, and the full signed receipt.
+
+        Required tier: `enterprise` (enforced at `/audit-bundle`).
+      parameters:
+        - { $ref: '#/components/parameters/EditionHeaderIn' }
+        - { $ref: '#/components/parameters/RequestId' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AuditBundleRequest' }
+      responses:
+        '200':
+          description: Audit bundle.
+          headers:
+            X-GreenLang-Edition: { $ref: '#/components/headers/EditionHeader' }
+            X-Request-Id:        { $ref: '#/components/headers/RequestIdHeader' }
+            ETag:                { $ref: '#/components/headers/ETagHeader' }
+            Cache-Control:       { $ref: '#/components/headers/CacheControlHeader' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AuditBundle' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '402': { $ref: '#/components/responses/PaymentRequired' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+        '500': { $ref: '#/components/responses/ServerError' }
+
+  # ==================== BULK EXPORT ====================
+
+  /v1/bulk/export:
+    get:
+      tags: [Bulk]
+      operationId: bulkExport
+      summary: Streaming bulk export (JSON Lines)
+      description: |
+        Streaming export of factors for an edition (F033).
+
+        **License enforcement**: factors whose `redistribution_class`
+        the caller lacks entitlement to are silently omitted from the
+        stream; the response manifest declares the classes that were
+        filtered. `connector_only` factors require
+        `include_connector=true` and a matching entitlement.
+
+        Required tier: `pro`.
+      parameters:
+        - { $ref: '#/components/parameters/EditionHeaderIn' }
+        - { $ref: '#/components/parameters/RequestId' }
+        - name: status
+          in: query
+          schema: { $ref: '#/components/schemas/FactorStatus' }
+        - name: geography
+          in: query
+          schema: { type: string }
+        - name: fuel_type
+          in: query
+          schema: { type: string }
+        - name: scope
+          in: query
+          schema: { $ref: '#/components/schemas/Scope' }
+        - name: source_id
+          in: query
+          schema: { type: string }
+        - name: include_preview
+          in: query
+          schema: { type: boolean, default: false }
+        - name: include_connector
+          in: query
+          schema: { type: boolean, default: false }
+        - name: max_rows
+          in: query
+          description: "0 means unlimited (subject to server cap)."
+          schema: { type: integer, minimum: 0, default: 0 }
+      responses:
+        '200':
+          description: |
+            Newline-delimited JSON stream. The **first line** is the
+            export manifest; every subsequent line is a `Factor`.
+          headers:
+            X-GreenLang-Edition: { $ref: '#/components/headers/EditionHeader' }
+            X-Request-Id:        { $ref: '#/components/headers/RequestIdHeader' }
+            X-GL-Export-Manifest-Hash:
+              description: SHA-256 of the edition manifest the export was built from.
+              schema: { type: string }
+            Content-Disposition:
+              description: "`attachment; filename=...`"
+              schema: { type: string }
+          content:
+            application/x-ndjson:
+              schema: { $ref: '#/components/schemas/BulkExportStream' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '402': { $ref: '#/components/responses/PaymentRequired' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+        '451': { $ref: '#/components/responses/LegalBlocked' }
+        '500': { $ref: '#/components/responses/ServerError' }
+
+  # ==================== ENTITLEMENTS ====================
+
+  /v1/entitlements/me:
+    get:
+      tags: [Entitlements]
+      operationId: getMyEntitlements
+      summary: Caller's current entitlements
+      description: |
+        Return the tier + allowed redistribution classes + enabled
+        method-pack SKUs for the calling principal (JWT or API key).
+      parameters:
+        - { $ref: '#/components/parameters/RequestId' }
+      responses:
+        '200':
+          description: Entitlement envelope.
+          headers:
+            X-GreenLang-Edition: { $ref: '#/components/headers/EditionHeader' }
+            X-Request-Id:        { $ref: '#/components/headers/RequestIdHeader' }
+            Cache-Control: { schema: { type: string, example: "private, max-age=60" } }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/EntitlementEnvelope' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '500': { $ref: '#/components/responses/ServerError' }
+
+  # ==================== WEBHOOKS ====================
+
+  /v1/webhooks/subscribe:
+    post:
+      tags: [Webhooks]
+      operationId: subscribeWebhook
+      summary: Subscribe to factor-change events
+      description: |
+        Register an HTTPS endpoint to receive events. Supported event
+        types: `factor.deprecated`, `factor.updated`, `factor.added`,
+        `factor.removed`, `license.changed`, `methodology.changed`,
+        `source.artifact_changed`, `source.unavailable`,
+        `source.breaking_change`, `edition.published`,
+        `impact_simulation.complete`.
+
+        Every delivery carries an HMAC-SHA256 signature via the
+        `X-GL-Signature: sha256=<hex>` header, signed with the returned
+        `secret`. `http://localhost` is permitted for local dev only;
+        all other schemes must be `https://`.
+      parameters:
+        - { $ref: '#/components/parameters/RequestId' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/WebhookSubscriptionRequest' }
+      responses:
+        '201':
+          description: Subscription created.
+          headers:
+            X-GreenLang-Edition: { $ref: '#/components/headers/EditionHeader' }
+            X-Request-Id:        { $ref: '#/components/headers/RequestIdHeader' }
+            Location: { schema: { type: string, format: uri } }
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/WebhookSubscription'
+                  - type: object
+                    required: [signed_receipt]
+                    properties:
+                      signed_receipt: { $ref: '#/components/schemas/Receipt' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '402': { $ref: '#/components/responses/PaymentRequired' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+        '500': { $ref: '#/components/responses/ServerError' }
+
+  /v1/webhooks/{subscription_id}:
+    delete:
+      tags: [Webhooks]
+      operationId: deleteWebhook
+      summary: Deactivate a webhook subscription
+      parameters:
+        - name: subscription_id
+          in: path
+          required: true
+          schema: { type: string, pattern: '^whs_[A-Za-z0-9_-]+$' }
+        - { $ref: '#/components/parameters/RequestId' }
+      responses:
+        '204': { description: Subscription deactivated. }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '500': { $ref: '#/components/responses/ServerError' }
+
+  # ==================== SYSTEM ====================
+
+  /v1/health:
+    get:
+      tags: [System]
+      operationId: liveness
+      summary: Liveness probe
+      security: []
+      responses:
+        '200':
+          description: Process is alive.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/HealthStatus' }
+        '503': { $ref: '#/components/responses/ServiceUnavailable' }
+
+  /v1/ready:
+    get:
+      tags: [System]
+      operationId: readiness
+      summary: Readiness probe
+      description: |
+        Verifies the catalog repository + edition manifest are loaded
+        and the signing key is available. Returns `503` with a reason
+        if any dependency is degraded.
+      security: []
+      responses:
+        '200':
+          description: Ready to serve traffic.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ReadinessStatus' }
+        '503': { $ref: '#/components/responses/ServiceUnavailable' }
+
+  /v1/metrics:
+    get:
+      tags: [System]
+      operationId: prometheusMetrics
+      summary: Prometheus scrape endpoint (gated)
+      description: |
+        Returns Prometheus-format metrics. Restricted to internal tier;
+        external callers get `403`. Kong gateway must whitelist the
+        metrics scraper's mTLS client cert.
+      responses:
+        '200':
+          description: Prometheus text-format exposition.
+          content:
+            text/plain:
+              schema: { type: string }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+# ============================================================
+# Components
+# ============================================================
+components:
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        JWT access token. Claims read by the server: `sub` (user_id),
+        `tenant_id`, `tier` (`community` | `pro` | `enterprise` |
+        `internal`), `roles`, `permissions`, `email`.
+    apiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: |
+        API key for OEM / developer-tier integrations. Keys are
+        tier-bound; the server projects them to the same user shape as
+        JWT callers.
+
+  parameters:
+
+    EditionHeaderIn:
+      name: X-GreenLang-Edition
+      in: header
+      description: |
+        Pin the catalog edition for this request. Resolution order is
+        **header > `?edition=` query > server default**. Unknown edition
+        ids yield `409 Conflict`.
+      required: false
+      schema: { type: string, example: "builtin-v1.0.0" }
+
+    RequestId:
+      name: X-Request-Id
+      in: header
+      description: |
+        Optional client-supplied request id (propagated to logs + trace
+        spans). The server echoes it on every response; if missing, the
+        server generates one.
+      required: false
+      schema: { type: string, format: uuid }
+
+    IfNoneMatch:
+      name: If-None-Match
+      in: header
+      description: Conditional GET — returns `304` if the current `ETag` matches.
+      required: false
+      schema: { type: string }
+
+    FactorIdPath:
+      name: factor_id
+      in: path
+      required: true
+      description: "Canonical factor id, e.g. `EF:US:diesel:2024:v1`."
+      schema:
+        type: string
+        pattern: '^EF:[A-Za-z0-9_\-:]+$'
+
+  headers:
+
+    EditionHeader:
+      description: |
+        The edition that served this response. Always present (CTO
+        non-negotiable #1). Value is an opaque edition id — clients must
+        not parse semantics out of it.
+      required: true
+      schema: { type: string }
+
+    RequestIdHeader:
+      description: Echoed (or generated) request id for correlation.
+      required: true
+      schema: { type: string }
+
+    RateLimitLimit:
+      description: Requests allowed in the current window.
+      schema: { type: integer, minimum: 0 }
+
+    RateLimitRemaining:
+      description: Requests left in the current window.
+      schema: { type: integer, minimum: 0 }
+
+    RateLimitReset:
+      description: Epoch-seconds when the window resets.
+      schema: { type: integer, minimum: 0 }
+
+    ETagHeader:
+      description: Strong ETag derived from record `content_hash` (single) or `sha256(content_hashes)` (list).
+      schema: { type: string, example: '"a1b2c3..."' }
+
+    CacheControlHeader:
+      description: |
+        Per-resource caching policy. Certified individual factors:
+        `public, max-age=3600`. Preview: `public, max-age=600`.
+        Connector-only: `private, max-age=600`. Deprecated: `no-cache`.
+        Aggregate list/search: `public, max-age=300`. Explain:
+        `private, max-age=300`.
+      schema: { type: string }
+
+  # ============================================================
+  # Enumerations (shared)
+  # ============================================================
+  schemas:
+
+    # -------- enums --------
+
+    FactorFamily:
+      type: string
+      enum:
+        - emissions
+        - energy_conversion
+        - carbon_content
+        - oxidation
+        - heating_value
+        - density
+        - refrigerant_gwp
+        - grid_intensity
+        - residual_mix
+        - transport_lane
+        - material_embodied
+        - waste_treatment
+        - land_use_removals
+        - finance_proxy
+        - classification_mapping
+
+    FormulaType:
+      type: string
+      enum:
+        - direct_factor
+        - combustion
+        - lca
+        - spend_proxy
+        - transport_chain
+        - residual_mix
+        - carbon_budget
+        - custom
+
+    SourceType:
+      type: string
+      enum:
+        - government
+        - standard_setter
+        - industry_body
+        - licensed_commercial
+        - customer_provided
+        - academic
+
+    RedistributionClass:
+      type: string
+      enum:
+        - open
+        - restricted
+        - licensed
+        - customer_private
+        - oem_redistributable
+
+    VerificationStatus:
+      type: string
+      enum:
+        - unverified
+        - internal_review
+        - external_verified
+        - regulator_approved
+
+    PrimaryDataFlag:
+      type: string
+      enum: [primary, primary_modeled, secondary, proxy]
+
+    UncertaintyDistribution:
+      type: string
+      enum: [unknown, normal, log_normal, triangular, uniform, beta_pert]
+
+    ElectricityBasis:
+      type: string
+      enum: [location_based, market_based, supplier_specific, residual_mix]
+
+    MethodProfile:
+      type: string
+      enum:
+        - corporate_scope1
+        - corporate_scope2_location_based
+        - corporate_scope2_market_based
+        - corporate_scope3
+        - product_carbon
+        - freight_iso_14083
+        - land_removals
+        - finance_proxy
+        - eu_cbam
+        - eu_dpp
+
+    TimeGranularity:
+      type: string
+      enum: [annual, quarterly, monthly, daily, hourly, seasonal]
+      default: annual
+
+    Scope:
+      type: string
+      enum: ["1", "2", "3"]
+
+    Boundary:
+      type: string
+      enum: [combustion, WTT, WTW, cradle_to_gate, cradle_to_grave]
+
+    GeographyLevel:
+      type: string
+      enum: [global, continent, country, state, grid_zone, city, facility]
+
+    GWPSet:
+      type: string
+      enum:
+        - IPCC_AR6_100
+        - IPCC_AR6_20
+        - IPCC_AR5_100
+        - IPCC_AR5_20
+        - IPCC_AR4_100
+        - IPCC_SAR_100
+
+    FactorStatus:
+      type: string
+      enum: [certified, preview, connector_only, deprecated]
+
+    HeatingValueBasis:
+      type: string
+      enum: [HHV, LHV]
+
+    Tier:
+      type: string
+      enum: [community, pro, enterprise, internal]
+
+    # -------- sub-objects --------
+
+    Jurisdiction:
+      type: object
+      additionalProperties: false
+      description: Structured jurisdiction replacing the flat `geography` string.
+      properties:
+        country:
+          type: string
+          description: ISO 3166-1 alpha-2.
+          example: "US"
+        region:
+          type: string
+          description: Sub-national code.
+          example: "US-CA"
+        grid_region:
+          type: string
+          description: Grid sub-region.
+          example: "eGRID-SERC"
+
+    ActivitySchema:
+      type: object
+      additionalProperties: false
+      required: [category]
+      properties:
+        category:
+          type: string
+          example: "purchased_electricity"
+        sub_category:
+          type: string
+          example: "grid_average"
+        classification_codes:
+          type: array
+          description: "Qualified codes, e.g. `NAICS:221112`, `CN:7208`, `ISIC:D351`."
+          items: { type: string }
+
+    FactorParameters:
+      type: object
+      additionalProperties: false
+      properties:
+        scope_applicability:
+          type: array
+          items: { $ref: '#/components/schemas/Scope' }
+        electricity_basis:
+          $ref: '#/components/schemas/ElectricityBasis'
+        residual_mix_applicable: { type: boolean }
+        supplier_specific: { type: boolean }
+        transmission_loss_included: { type: boolean }
+        biogenic_share:
+          type: number
+          format: double
+          minimum: 0.0
+          maximum: 1.0
+        uncertainty_low: { type: number, format: double }
+        uncertainty_high: { type: number, format: double }
+
+    Verification:
+      type: object
+      additionalProperties: false
+      properties:
+        status: { $ref: '#/components/schemas/VerificationStatus' }
+        verified_by: { type: string, nullable: true }
+        verified_at: { type: string, format: date-time, nullable: true }
+        verification_reference: { type: string, nullable: true }
+
+    Explainability:
+      type: object
+      additionalProperties: false
+      properties:
+        assumptions:
+          type: array
+          items: { type: string }
+        fallback_rank:
+          type: integer
+          minimum: 1
+          maximum: 7
+          description: "1 = customer override, 7 = global default."
+        rationale: { type: string, nullable: true }
+
+    DataQualityScore:
+      type: object
+      additionalProperties: false
+      required: [temporal, geographical, technological, representativeness, methodological, overall_score, rating]
+      description: GHG Protocol 5-dimension DQS plus composite 0-100 FQS.
+      properties:
+        temporal:            { type: integer, minimum: 1, maximum: 5 }
+        geographical:        { type: integer, minimum: 1, maximum: 5 }
+        technological:       { type: integer, minimum: 1, maximum: 5 }
+        representativeness:  { type: integer, minimum: 1, maximum: 5 }
+        methodological:      { type: integer, minimum: 1, maximum: 5 }
+        overall_score:
+          type: number
+          format: double
+          description: "Weighted 1-5 composite; also re-scaled to the 0-100 composite FQS in `composite_fqs`."
+          minimum: 1.0
+          maximum: 5.0
+        composite_fqs:
+          type: number
+          format: double
+          minimum: 0
+          maximum: 100
+          description: 0-100 composite Factor Quality Score.
+        rating:
+          type: string
+          enum: [excellent, high_quality, good, moderate, low]
+        weights:
+          type: object
+          additionalProperties: { type: number, format: double }
+
+    LicenseInfo:
+      type: object
+      additionalProperties: false
+      required: [license, redistribution_allowed, commercial_use_allowed, attribution_required]
+      properties:
+        license:                  { type: string, example: "CC-BY-4.0" }
+        redistribution_allowed:   { type: boolean }
+        commercial_use_allowed:   { type: boolean }
+        attribution_required:     { type: boolean }
+        license_url:              { type: string, format: uri, nullable: true }
+        license_text:             { type: string, nullable: true }
+        redistribution_class:     { $ref: '#/components/schemas/RedistributionClass' }
+        customer_entitlement_required:
+          type: boolean
+          description: True when caller must have a matching entitlement SKU.
+
+    SourceProvenance:
+      type: object
+      additionalProperties: false
+      required: [source_org, source_publication, source_year, methodology, citation]
+      properties:
+        source_org:                { type: string, example: "EPA" }
+        source_publication:        { type: string }
+        source_year:               { type: integer }
+        methodology:
+          type: string
+          enum:
+            - IPCC_Tier_1
+            - IPCC_Tier_2
+            - IPCC_Tier_3
+            - direct_measurement
+            - lifecycle_assessment
+            - hybrid
+            - spend_based
+        source_url:                { type: string, format: uri, nullable: true }
+        source_doi:                { type: string, nullable: true }
+        methodology_description:   { type: string, nullable: true }
+        version:                   { type: string, example: "v1" }
+        supersedes:                { type: string, nullable: true }
+        citation:                  { type: string }
+
+    GHGVectors:
+      type: object
+      additionalProperties: false
+      description: Per-gas emission vectors in kg per denominator unit.
+      required: [CO2, CH4, N2O]
+      properties:
+        CO2:           { type: number, format: double }
+        CH4:           { type: number, format: double }
+        N2O:           { type: number, format: double }
+        HFCs:          { type: number, format: double, nullable: true }
+        PFCs:          { type: number, format: double, nullable: true }
+        SF6:           { type: number, format: double, nullable: true }
+        NF3:           { type: number, format: double, nullable: true }
+        biogenic_CO2:  { type: number, format: double, nullable: true }
+
+    GWPValues:
+      type: object
+      additionalProperties: false
+      required: [gwp_set, CH4_gwp, N2O_gwp, co2e_total]
+      properties:
+        gwp_set:     { $ref: '#/components/schemas/GWPSet' }
+        CH4_gwp:     { type: number, format: double }
+        N2O_gwp:     { type: number, format: double }
+        HFCs_gwp:    { type: number, format: double, nullable: true }
+        PFCs_gwp:    { type: number, format: double, nullable: true }
+        SF6_gwp:     { type: number, format: double, nullable: true }
+        NF3_gwp:     { type: number, format: double, nullable: true }
+        co2e_total:  { type: number, format: double }
+
+    Numerator:
+      type: object
+      description: |
+        Emission numerator (kg). Mirrors `gas_breakdown` on the
+        resolution side but with explicit unit metadata.
+      required: [co2e, unit, gwp_basis]
+      additionalProperties: false
+      properties:
+        co2:          { type: number, format: double }
+        ch4:          { type: number, format: double }
+        n2o:          { type: number, format: double }
+        hfcs:         { type: number, format: double, nullable: true }
+        pfcs:         { type: number, format: double, nullable: true }
+        sf6:          { type: number, format: double, nullable: true }
+        nf3:          { type: number, format: double, nullable: true }
+        biogenic_co2: { type: number, format: double, nullable: true }
+        co2e:         { type: number, format: double }
+        unit:         { type: string, example: "kg", default: "kg" }
+        gwp_basis:    { $ref: '#/components/schemas/GWPSet' }
+
+    Denominator:
+      type: object
+      required: [value, unit]
+      additionalProperties: false
+      properties:
+        value: { type: number, format: double, example: 1.0 }
+        unit:  { type: string, example: "gallons" }
+
+    Lineage:
+      type: object
+      additionalProperties: false
+      description: Provenance chain + pointer to raw artefact.
+      properties:
+        raw_record_id:    { type: string, nullable: true }
+        raw_payload_hash: { type: string, nullable: true }
+        raw_format:       { type: string, nullable: true, example: "csv" }
+        storage_uri:      { type: string, format: uri, nullable: true }
+        change_log:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            properties:
+              changed_at:              { type: string, format: date-time }
+              changed_by:              { type: string }
+              change_reason:           { type: string }
+              field_changes:
+                type: array
+                items: { type: string }
+              previous_factor_version: { type: string, nullable: true }
+
+    # -------- core Factor --------
+
+    Factor:
+      type: object
+      additionalProperties: false
+      description: |
+        Canonical emission-factor record (CTO v2 schema).
+
+        Serialised form of `EmissionFactorRecord.to_dict()`. `content_hash`
+        is reported on the `FactorEnvelope` but not baked into this
+        schema so the hash is deterministic under re-serialisation.
+      required:
+        - factor_id
+        - fuel_type
+        - unit
+        - geography
+        - geography_level
+        - vectors
+        - gwp_100yr
+        - scope
+        - boundary
+        - provenance
+        - valid_from
+        - uncertainty_95ci
+        - dqs
+        - license_info
+        - factor_status
+      properties:
+        # identity
+        factor_id:       { type: string, example: "EF:US:diesel:2024:v1" }
+        factor_family:   { $ref: '#/components/schemas/FactorFamily' }
+        factor_name:     { type: string, nullable: true }
+        method_profile:  { $ref: '#/components/schemas/MethodProfile' }
+        source_id:       { type: string, nullable: true }
+        source_release:  { type: string, nullable: true }
+        source_record_id: { type: string, nullable: true }
+        release_version: { type: string, nullable: true }
+        factor_version:  { type: string, nullable: true, example: "1.0.0" }
+        # geography
+        geography:       { type: string, example: "US" }
+        geography_level: { $ref: '#/components/schemas/GeographyLevel' }
+        region_hint:     { type: string, nullable: true }
+        jurisdiction:    { $ref: '#/components/schemas/Jurisdiction' }
+        # formula / activity
+        formula_type:    { $ref: '#/components/schemas/FormulaType' }
+        activity_schema: { $ref: '#/components/schemas/ActivitySchema' }
+        fuel_type:       { type: string, example: "diesel" }
+        unit:            { type: string, example: "gallons" }
+        # numeric
+        vectors:         { $ref: '#/components/schemas/GHGVectors' }
+        gwp_100yr:       { $ref: '#/components/schemas/GWPValues' }
+        gwp_20yr:
+          oneOf:
+            - $ref: '#/components/schemas/GWPValues'
+            - type: "null"
+        numerator:       { $ref: '#/components/schemas/Numerator' }
+        denominator:     { $ref: '#/components/schemas/Denominator' }
+        gwp_set:         { $ref: '#/components/schemas/GWPSet' }
+        parameters:      { $ref: '#/components/schemas/FactorParameters' }
+        # scope
+        scope:           { $ref: '#/components/schemas/Scope' }
+        boundary:        { $ref: '#/components/schemas/Boundary' }
+        # provenance
+        provenance:      { $ref: '#/components/schemas/SourceProvenance' }
+        # validity
+        valid_from:      { type: string, format: date }
+        valid_to:
+          oneOf:
+            - { type: string, format: date }
+            - type: "null"
+        # quality
+        uncertainty_95ci:         { type: number, format: double }
+        uncertainty_distribution: { $ref: '#/components/schemas/UncertaintyDistribution' }
+        dqs:                      { $ref: '#/components/schemas/DataQualityScore' }
+        quality:
+          allOf:
+            - $ref: '#/components/schemas/DataQualityScore'
+          description: Alias of `dqs` for CTO-canonical naming.
+        verification:             { $ref: '#/components/schemas/Verification' }
+        primary_data_flag:        { $ref: '#/components/schemas/PrimaryDataFlag' }
+        # licensing
+        license_info:         { $ref: '#/components/schemas/LicenseInfo' }
+        license_class:        { type: string, nullable: true, deprecated: true, description: "Legacy alias of `redistribution_class`." }
+        redistribution_class: { $ref: '#/components/schemas/RedistributionClass' }
+        licensing:
+          type: object
+          description: CTO-spec licensing envelope.
+          additionalProperties: false
+          properties:
+            redistribution_class:            { $ref: '#/components/schemas/RedistributionClass' }
+            customer_entitlement_required:   { type: boolean }
+        # explainability + lineage
+        explainability: { $ref: '#/components/schemas/Explainability' }
+        lineage:        { $ref: '#/components/schemas/Lineage' }
+        raw_record_ref:
+          type: object
+          nullable: true
+          additionalProperties: false
+          properties:
+            raw_record_id:    { type: string }
+            raw_payload_hash: { type: string }
+            raw_format:       { type: string }
+            storage_uri:      { type: string, format: uri, nullable: true }
+        change_log:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            properties:
+              changed_at:              { type: string, format: date-time }
+              changed_by:              { type: string }
+              change_reason:           { type: string }
+              field_changes:
+                type: array
+                items: { type: string }
+              previous_factor_version: { type: string, nullable: true }
+        # technical
+        heating_value_basis:  { $ref: '#/components/schemas/HeatingValueBasis' }
+        reference_temperature_c: { type: number, format: double, nullable: true }
+        pressure_bar:            { type: number, format: double, nullable: true }
+        moisture_content_pct:    { type: number, format: double, nullable: true }
+        ash_content_pct:         { type: number, format: double, nullable: true }
+        biogenic_flag:           { type: boolean }
+        # compliance
+        compliance_frameworks:
+          type: array
+          items: { type: string }
+          example: [GHG_Protocol, IPCC_2006]
+        # governance
+        factor_status:            { $ref: '#/components/schemas/FactorStatus' }
+        replacement_factor_id:    { type: string, nullable: true }
+        validation_flags:
+          type: object
+          additionalProperties: true
+        activity_tags:
+          type: array
+          items: { type: string }
+        sector_tags:
+          type: array
+          items: { type: string }
+        tags:
+          type: array
+          items: { type: string }
+        next_review_date: { type: string, format: date, nullable: true }
+        # audit
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+        created_by: { type: string, example: "greenlang_system" }
+        notes:      { type: string, nullable: true }
+
+    FactorSummary:
+      type: object
+      description: Compact row returned by search v2 and bulk export headers.
+      additionalProperties: false
+      required: [factor_id, fuel_type, geography, scope, co2e_per_unit, unit]
+      properties:
+        factor_id:     { type: string }
+        fuel_type:     { type: string }
+        geography:     { type: string }
+        scope:         { $ref: '#/components/schemas/Scope' }
+        boundary:      { $ref: '#/components/schemas/Boundary' }
+        co2e_per_unit: { type: number, format: double }
+        unit:          { type: string }
+        source:        { type: string, nullable: true }
+        source_year:   { type: integer, nullable: true }
+        source_id:     { type: string, nullable: true }
+        dqs_score:     { type: number, format: double, nullable: true }
+        factor_status: { $ref: '#/components/schemas/FactorStatus' }
+        content_hash:  { type: string, nullable: true }
+
+    FactorEnvelope:
+      type: object
+      additionalProperties: false
+      required: [factor, edition_id, content_hash, signed_receipt]
+      description: Envelope around a canonical `Factor` carrying transport metadata.
+      properties:
+        factor:         { $ref: '#/components/schemas/Factor' }
+        edition_id:     { type: string }
+        content_hash:   { type: string, description: SHA-256 of normalised record. }
+        signed_receipt: { $ref: '#/components/schemas/Receipt' }
+
+    # -------- Resolution --------
+
+    ResolutionRequest:
+      type: object
+      additionalProperties: false
+      required: [method_profile]
+      description: |
+        POST body for `/v1/factors/resolve-explain`. `method_profile` is
+        required (non-negotiable #6).
+
+        Provide **either** `activity` (free-text / canonical id) **or**
+        the `factor_family` + `activity_code` pair.
+      properties:
+        activity:
+          type: string
+          description: Free-text activity description or canonical `activity_id`.
+          example: "diesel combustion stationary"
+        factor_family: { $ref: '#/components/schemas/FactorFamily' }
+        activity_code:
+          type: string
+          example: "NAICS:221112"
+        activity_id:
+          type: string
+          description: Customer-stable id used for tenant-overlay lookup.
+        method_profile: { $ref: '#/components/schemas/MethodProfile' }
+        jurisdiction:
+          type: string
+          description: ISO country/region code.
+          example: "US-CA"
+        tenant_id: { type: string, nullable: true }
+        supplier_id: { type: string, nullable: true }
+        facility_id: { type: string, nullable: true }
+        utility_or_grid_region: { type: string, nullable: true }
+        reporting_date: { type: string, format: date, nullable: true }
+        time_granularity:
+          $ref: '#/components/schemas/TimeGranularity'
+        reporting_hour:
+          type: integer
+          minimum: 0
+          maximum: 23
+          nullable: true
+        reporting_month:
+          type: integer
+          minimum: 1
+          maximum: 12
+          nullable: true
+        target_unit: { type: string, nullable: true }
+        preferred_sources:
+          type: array
+          items: { type: string }
+        include_preview: { type: boolean, default: false }
+        quantity: { type: number, format: double, example: 1000.0 }
+        unit: { type: string, example: "gallons" }
+        edition: { type: string, nullable: true }
+        tenant_overlay_hints:
+          type: object
+          description: Free-form hints consumed by the tenant-overlay reader.
+          additionalProperties: true
+        multi_gas_request:
+          type: boolean
+          description: Force full per-gas breakdown even when the backing factor only stores CO2e.
+        extras:
+          type: object
+          additionalProperties: true
+
+    GasBreakdown:
+      type: object
+      additionalProperties: false
+      required: [co2e_total_kg, gwp_basis]
+      properties:
+        co2_kg:          { type: number, format: double }
+        ch4_kg:          { type: number, format: double }
+        n2o_kg:          { type: number, format: double }
+        hfcs_kg:         { type: number, format: double }
+        pfcs_kg:         { type: number, format: double }
+        sf6_kg:          { type: number, format: double }
+        nf3_kg:          { type: number, format: double }
+        biogenic_co2_kg: { type: number, format: double }
+        co2e_total_kg:   { type: number, format: double }
+        gwp_basis:       { type: string, example: "IPCC_AR6_100" }
+
+    UncertaintyBand:
+      type: object
+      additionalProperties: false
+      properties:
+        distribution:    { $ref: '#/components/schemas/UncertaintyDistribution' }
+        ci_95_percent:   { type: number, format: double, nullable: true }
+        low:             { type: number, format: double, nullable: true }
+        high:            { type: number, format: double, nullable: true }
+        note:            { type: string, nullable: true }
+
+    AlternateCandidate:
+      type: object
+      additionalProperties: false
+      required: [factor_id, tie_break_score, why_not_chosen]
+      properties:
+        factor_id:             { type: string }
+        tie_break_score:
+          type: number
+          format: double
+          description: Lower is better.
+        why_not_chosen:        { type: string }
+        source_id:             { type: string, nullable: true }
+        vintage:               { type: integer, nullable: true }
+        redistribution_class:  { $ref: '#/components/schemas/RedistributionClass' }
+
+    ResolvedFactor:
+      type: object
+      additionalProperties: false
+      required:
+        - chosen_factor_id
+        - method_profile
+        - fallback_rank
+        - step_label
+        - why_chosen
+        - gas_breakdown
+        - resolved_at
+        - engine_version
+      description: |
+        Full return value of `ResolutionEngine.resolve`. Every field is
+        mandatory — the engine never hides fallback logic (CTO
+        non-negotiable #3) and always returns gas breakdown + gwp_basis
+        used (non-negotiable #5 / #3 in this contract).
+      properties:
+        chosen_factor_id:          { type: string }
+        chosen_factor_name:        { type: string, nullable: true }
+        source_id:                 { type: string, nullable: true }
+        source_version:            { type: string, nullable: true }
+        factor_version:            { type: string, nullable: true }
+        vintage:                   { type: integer, nullable: true }
+        method_profile:            { $ref: '#/components/schemas/MethodProfile' }
+        formula_type:              { $ref: '#/components/schemas/FormulaType' }
+        redistribution_class:      { $ref: '#/components/schemas/RedistributionClass' }
+        fallback_rank:
+          type: integer
+          minimum: 1
+          maximum: 7
+        step_label:
+          type: string
+          enum:
+            - customer_override
+            - supplier_specific
+            - facility_specific
+            - utility_or_grid_subregion
+            - country_or_sector_average
+            - method_pack_default
+            - global_default
+        why_chosen: { type: string }
+        alternates:
+          type: array
+          items: { $ref: '#/components/schemas/AlternateCandidate' }
+        assumptions:
+          type: array
+          items: { type: string }
+        deprecation_status:      { type: string, nullable: true }
+        deprecation_replacement: { type: string, nullable: true }
+        quality_score: { type: number, format: double, nullable: true, minimum: 0, maximum: 100 }
+        uncertainty:  { $ref: '#/components/schemas/UncertaintyBand' }
+        verification_status: { $ref: '#/components/schemas/VerificationStatus' }
+        gas_breakdown: { $ref: '#/components/schemas/GasBreakdown' }
+        factor_unit_denominator: { type: string, nullable: true }
+        primary_data_flag: { $ref: '#/components/schemas/PrimaryDataFlag' }
+        # unit conversion
+        target_unit:                { type: string, nullable: true }
+        converted_co2e_per_unit:    { type: number, format: double, nullable: true }
+        unit_conversion_factor:     { type: number, format: double, nullable: true }
+        unit_conversion_path:
+          type: array
+          items: { type: string }
+        unit_conversion_note:       { type: string, nullable: true }
+        # tracing
+        resolved_at:         { type: string, format: date-time }
+        method_pack_version: { type: string, nullable: true }
+        engine_version:      { type: string, example: "resolution-1.0.0" }
+
+    ResolvedFactorResponse:
+      type: object
+      additionalProperties: false
+      required: [resolved, edition_id, signed_receipt]
+      properties:
+        resolved:         { $ref: '#/components/schemas/ResolvedFactor' }
+        edition_id:       { type: string }
+        edition_source:
+          type: string
+          enum: [header, query, default, rollback_override]
+        signed_receipt:   { $ref: '#/components/schemas/Receipt' }
+
+    # -------- Explain --------
+
+    ExplainChosen:
+      type: object
+      additionalProperties: false
+      required: [factor_id, method_profile]
+      properties:
+        factor_id:            { type: string }
+        factor_name:          { type: string, nullable: true }
+        source:               { type: string, nullable: true }
+        source_version:       { type: string, nullable: true }
+        factor_version:       { type: string, nullable: true }
+        vintage:              { type: integer, nullable: true }
+        method_profile:       { $ref: '#/components/schemas/MethodProfile' }
+        redistribution_class: { $ref: '#/components/schemas/RedistributionClass' }
+
+    ExplainDerivation:
+      type: object
+      additionalProperties: false
+      required: [fallback_rank, step_label, why_chosen]
+      properties:
+        fallback_rank: { type: integer, minimum: 1, maximum: 7 }
+        step_label:    { type: string }
+        why_chosen:    { type: string }
+        assumptions:
+          type: array
+          items: { type: string }
+        deprecation_status: { type: string, nullable: true }
+        deprecation_replacement: { type: string, nullable: true }
+        tiebreak_reasons:
+          type: array
+          description: Per-factor tiebreak trace (geo-proximity, vintage, DQS, source preference, granularity match).
+          items:
+            type: object
+            additionalProperties: false
+            properties:
+              axis:   { type: string }
+              score:  { type: number, format: double }
+              reason: { type: string }
+
+    ExplainUnitConversion:
+      type: object
+      additionalProperties: false
+      nullable: true
+      properties:
+        target_unit:              { type: string }
+        factor:                   { type: number, format: double, nullable: true }
+        converted_co2e_per_unit:  { type: number, format: double, nullable: true }
+        path:
+          type: array
+          items: { type: string }
+        note: { type: string, nullable: true }
+
+    ExplainMeta:
+      type: object
+      additionalProperties: false
+      properties:
+        resolved_at:         { type: string, format: date-time }
+        method_pack_version: { type: string, nullable: true }
+        engine_version:      { type: string }
+
+    ExplainPayload:
+      type: object
+      additionalProperties: false
+      required: [chosen, derivation, quality, uncertainty, emissions, meta]
+      properties:
+        chosen:          { $ref: '#/components/schemas/ExplainChosen' }
+        derivation:      { $ref: '#/components/schemas/ExplainDerivation' }
+        quality:
+          type: object
+          additionalProperties: false
+          properties:
+            score:                 { type: number, format: double, nullable: true, minimum: 0, maximum: 100 }
+            verification_status:   { $ref: '#/components/schemas/VerificationStatus' }
+            primary_data_flag:     { $ref: '#/components/schemas/PrimaryDataFlag' }
+        uncertainty:     { $ref: '#/components/schemas/UncertaintyBand' }
+        emissions:       { $ref: '#/components/schemas/GasBreakdown' }
+        unit_conversion: { $ref: '#/components/schemas/ExplainUnitConversion' }
+        alternates:
+          type: array
+          items: { $ref: '#/components/schemas/AlternateCandidate' }
+        meta:            { $ref: '#/components/schemas/ExplainMeta' }
+
+    ExplainResponse:
+      type: object
+      additionalProperties: false
+      description: |
+        Combines the full `ResolvedFactor` shape with the compact
+        `explain` payload. Mirrors what
+        `build_factor_explain` returns server-side.
+      required: [chosen_factor_id, method_profile, explain, alternates, signed_receipt, edition_id]
+      properties:
+        chosen_factor_id:          { type: string }
+        method_profile:            { $ref: '#/components/schemas/MethodProfile' }
+        fallback_rank:             { type: integer, minimum: 1, maximum: 7 }
+        step_label:                { type: string }
+        gas_breakdown:             { $ref: '#/components/schemas/GasBreakdown' }
+        uncertainty:               { $ref: '#/components/schemas/UncertaintyBand' }
+        alternates:
+          type: array
+          items: { $ref: '#/components/schemas/AlternateCandidate' }
+        explain:                   { $ref: '#/components/schemas/ExplainPayload' }
+        edition_id:                { type: string }
+        signed_receipt:            { $ref: '#/components/schemas/Receipt' }
+
+    # -------- Search --------
+
+    SearchV2Request:
+      type: object
+      additionalProperties: false
+      required: [query]
+      properties:
+        query: { type: string, example: "electricity grid US-CA" }
+        geography: { type: string, nullable: true }
+        fuel_type: { type: string, nullable: true }
+        scope: { $ref: '#/components/schemas/Scope' }
+        source_id: { type: string, nullable: true }
+        factor_status: { $ref: '#/components/schemas/FactorStatus' }
+        license_class: { $ref: '#/components/schemas/RedistributionClass' }
+        dqs_min:
+          type: number
+          format: double
+          minimum: 1.0
+          maximum: 5.0
+        valid_on_date: { type: string, format: date, nullable: true }
+        sector_tags:
+          type: array
+          items: { type: string }
+        activity_tags:
+          type: array
+          items: { type: string }
+        sort_by:
+          type: string
+          enum: [relevance, dqs_score, co2e_total, source_year, factor_id]
+          default: relevance
+        sort_order:
+          type: string
+          enum: [asc, desc]
+          default: desc
+        offset: { type: integer, minimum: 0, default: 0 }
+        limit:  { type: integer, minimum: 1, maximum: 500, default: 20 }
+        include_preview:   { type: boolean, default: false }
+        include_connector: { type: boolean, default: false }
+
+    SearchV2Response:
+      type: object
+      additionalProperties: false
+      required: [factors, total_count, offset, limit, query, sort_by, sort_order, edition_id, signed_receipt]
+      properties:
+        factors:
+          type: array
+          items: { $ref: '#/components/schemas/FactorSummary' }
+        total_count: { type: integer, minimum: 0 }
+        offset:      { type: integer, minimum: 0 }
+        limit:       { type: integer, minimum: 1 }
+        query:       { type: string }
+        sort_by:
+          type: string
+          enum: [relevance, dqs_score, co2e_total, source_year, factor_id]
+        sort_order:
+          type: string
+          enum: [asc, desc]
+        edition_id:   { type: string }
+        signed_receipt: { $ref: '#/components/schemas/Receipt' }
+
+    # -------- Diff --------
+
+    DiffChange:
+      type: object
+      additionalProperties: false
+      required: [field, type]
+      properties:
+        field:     { type: string }
+        type:
+          type: string
+          enum: [added, removed, changed]
+        old_value: {}
+        new_value: {}
+
+    Diff:
+      type: object
+      additionalProperties: false
+      required: [factor_id, left_edition, right_edition, status, left_exists, right_exists, changes]
+      properties:
+        factor_id:      { type: string }
+        left_edition:   { type: string }
+        right_edition:  { type: string }
+        status:
+          type: string
+          enum: [unchanged, changed, added, removed, not_found]
+        left_exists:    { type: boolean }
+        right_exists:   { type: boolean }
+        left_content_hash:  { type: string, nullable: true }
+        right_content_hash: { type: string, nullable: true }
+        changes:
+          type: array
+          items: { $ref: '#/components/schemas/DiffChange' }
+
+    DiffEnvelope:
+      type: object
+      additionalProperties: false
+      required: [diff, signed_receipt]
+      properties:
+        diff:            { $ref: '#/components/schemas/Diff' }
+        signed_receipt:  { $ref: '#/components/schemas/Receipt' }
+
+    # -------- Batch --------
+
+    BatchResolveItem:
+      type: object
+      additionalProperties: false
+      required: [row_id, request]
+      properties:
+        row_id:  { type: string, description: "Caller-supplied row identifier for correlating results." }
+        request: { $ref: '#/components/schemas/ResolutionRequest' }
+
+    BatchResolveRequest:
+      type: object
+      additionalProperties: false
+      required: [items]
+      properties:
+        items:
+          type: array
+          minItems: 1
+          maxItems: 10000
+          items: { $ref: '#/components/schemas/BatchResolveItem' }
+        sync:
+          type: boolean
+          description: When true and `items` is small, the server may respond synchronously with `BatchResolveResponse`.
+          default: false
+        callback_url:
+          type: string
+          format: uri
+          nullable: true
+          description: Optional HTTPS endpoint the server will POST to on completion.
+
+    BatchResolveAccepted:
+      type: object
+      additionalProperties: false
+      required: [job_id, status, submitted_at, item_count, signed_receipt]
+      properties:
+        job_id:        { type: string, example: "batch_AbC123" }
+        status:
+          type: string
+          enum: [pending, running, complete, failed, partial]
+        submitted_at:  { type: string, format: date-time }
+        item_count:    { type: integer, minimum: 1 }
+        poll_url:      { type: string, format: uri }
+        signed_receipt: { $ref: '#/components/schemas/Receipt' }
+
+    BatchResolveResult:
+      type: object
+      additionalProperties: false
+      required: [row_id, status]
+      properties:
+        row_id: { type: string }
+        status:
+          type: string
+          enum: [ok, error]
+        resolved: { $ref: '#/components/schemas/ResolvedFactor' }
+        error:    { $ref: '#/components/schemas/Error' }
+
+    BatchResolveResponse:
+      type: object
+      additionalProperties: false
+      required: [job_id, status, results, signed_receipt, edition_id]
+      properties:
+        job_id:     { type: string }
+        status:
+          type: string
+          enum: [complete, partial, failed]
+        results:
+          type: array
+          items: { $ref: '#/components/schemas/BatchResolveResult' }
+        edition_id:     { type: string }
+        signed_receipt: { $ref: '#/components/schemas/Receipt' }
+
+    # -------- Editions + Sources + Packs --------
+
+    Edition:
+      type: object
+      additionalProperties: false
+      required: [edition_id, label, published_at]
+      properties:
+        edition_id:         { type: string, example: "builtin-v1.0.0" }
+        label:              { type: string, example: "GreenLang built-in v2 factors" }
+        published_at:       { type: string, format: date-time }
+        manifest_fingerprint: { type: string }
+        parent_edition_id:  { type: string, nullable: true }
+        is_default:         { type: boolean }
+        factor_count:       { type: integer, minimum: 0 }
+        signed_manifest_receipt: { $ref: '#/components/schemas/Receipt' }
+
+    Source:
+      type: object
+      additionalProperties: false
+      required: [source_id, source_org, source_type]
+      properties:
+        source_id:           { type: string, example: "epa_hub" }
+        source_org:          { type: string, example: "U.S. Environmental Protection Agency" }
+        source_type:         { $ref: '#/components/schemas/SourceType' }
+        homepage_url:        { type: string, format: uri, nullable: true }
+        license:             { type: string, nullable: true }
+        license_url:         { type: string, format: uri, nullable: true }
+        redistribution_class: { $ref: '#/components/schemas/RedistributionClass' }
+        latest_release:      { type: string, nullable: true }
+        jurisdictions:
+          type: array
+          items: { type: string }
+        factor_count:        { type: integer, minimum: 0 }
+        last_synced_at:      { type: string, format: date-time, nullable: true }
+
+    SelectionRule:
+      type: object
+      additionalProperties: false
+      required: [allowed_families, allowed_formula_types, allowed_statuses]
+      properties:
+        allowed_families:
+          type: array
+          items: { $ref: '#/components/schemas/FactorFamily' }
+        allowed_formula_types:
+          type: array
+          items: { $ref: '#/components/schemas/FormulaType' }
+        allowed_statuses:
+          type: array
+          items: { $ref: '#/components/schemas/FactorStatus' }
+        require_verification: { type: boolean, default: false }
+        require_primary_data: { type: boolean, default: false }
+
+    BoundaryRule:
+      type: object
+      additionalProperties: false
+      properties:
+        allowed_scopes:
+          type: array
+          items: { $ref: '#/components/schemas/Scope' }
+        allowed_boundaries:
+          type: array
+          items: { $ref: '#/components/schemas/Boundary' }
+        biogenic_treatment:
+          type: string
+          enum: [excluded, reported_separately, net_zero_assumed, included]
+        market_instruments:
+          type: string
+          enum: [not_applicable, allowed, require_certificate, prohibited]
+        include_transmission_losses: { type: boolean, nullable: true }
+
+    FallbackStep:
+      type: object
+      additionalProperties: false
+      required: [rank, label]
+      properties:
+        rank:        { type: integer, minimum: 1, maximum: 7 }
+        label:       { type: string }
+        description: { type: string }
+
+    MethodPack:
+      type: object
+      additionalProperties: false
+      required: [profile, name, selection_rule, boundary_rule, region_hierarchy, gwp_basis, pack_version]
+      properties:
+        profile:         { $ref: '#/components/schemas/MethodProfile' }
+        name:            { type: string }
+        description:     { type: string }
+        selection_rule:  { $ref: '#/components/schemas/SelectionRule' }
+        boundary_rule:   { $ref: '#/components/schemas/BoundaryRule' }
+        gwp_basis:       { type: string, example: "IPCC_AR6_100" }
+        region_hierarchy:
+          type: array
+          minItems: 7
+          maxItems: 7
+          items: { $ref: '#/components/schemas/FallbackStep' }
+        deprecation:
+          type: object
+          additionalProperties: false
+          properties:
+            max_age_days:      { type: integer, minimum: 1 }
+            grace_period_days: { type: integer, minimum: 0 }
+        reporting_labels:
+          type: array
+          items: { type: string }
+          example: [GHG_Protocol, IFRS_S2]
+        audit_text_template: { type: string }
+        electricity_basis:   { $ref: '#/components/schemas/ElectricityBasis' }
+        pack_version: { type: string, example: "1.0.0" }
+        tags:
+          type: array
+          items: { type: string }
+
+    # -------- Audit bundle --------
+
+    AuditBundleRequest:
+      type: object
+      additionalProperties: false
+      required: [factor_id]
+      properties:
+        factor_id:            { type: string }
+        edition_id:           { type: string, nullable: true, description: Defaults to header / current. }
+        raw_artifact_uri:     { type: string, format: uri, nullable: true }
+        parser_log:           { type: string, nullable: true }
+        qa_errors:
+          type: array
+          items: { type: string }
+        reviewer_decision:    { type: string, nullable: true, enum: [approved, rejected, escalated, pending, null] }
+
+    AuditBundle:
+      type: object
+      additionalProperties: false
+      required:
+        - factor_id
+        - edition_id
+        - content_hash
+        - payload_sha256
+        - normalized_record
+        - provenance
+        - license_info
+        - quality
+        - verification_chain
+        - signed_receipt
+      properties:
+        factor_id:         { type: string }
+        edition_id:        { type: string }
+        content_hash:      { type: string }
+        payload_sha256:    { type: string }
+        normalized_record: { $ref: '#/components/schemas/Factor' }
+        provenance:
+          type: object
+          additionalProperties: false
+          required: [source_org, source_publication, source_year, methodology]
+          properties:
+            source_org:        { type: string }
+            source_publication: { type: string }
+            source_year:       { type: integer }
+            methodology:       { type: string }
+            version:           { type: string }
+            citation:          { type: string }
+            source_url:        { type: string, format: uri, nullable: true }
+        license_info:
+          type: object
+          additionalProperties: false
+          properties:
+            license:                { type: string }
+            redistribution_allowed: { type: boolean }
+            commercial_use_allowed: { type: boolean }
+            attribution_required:   { type: boolean }
+        quality:
+          type: object
+          additionalProperties: false
+          properties:
+            dqs_overall:      { type: number, format: double }
+            dqs_rating:       { type: string }
+            uncertainty_95ci: { type: number, format: double }
+        raw_artifact_uri:  { type: string, format: uri, nullable: true }
+        parser_log:        { type: string, nullable: true }
+        qa_errors:
+          type: array
+          items: { type: string }
+        reviewer_decision: { type: string, nullable: true }
+        verification_chain:
+          type: object
+          additionalProperties: false
+          required: [algorithm, content_hash, payload_sha256]
+          properties:
+            algorithm:      { type: string, example: "SHA-256" }
+            content_hash:   { type: string }
+            payload_sha256: { type: string }
+        signed_receipt: { $ref: '#/components/schemas/Receipt' }
+
+    # -------- Bulk export --------
+
+    BulkExportManifest:
+      type: object
+      additionalProperties: false
+      required: [edition_id, manifest_hash, exported_rows, format]
+      properties:
+        edition_id:    { type: string }
+        manifest_hash: { type: string }
+        exported_rows: { type: integer, minimum: 0 }
+        format:
+          type: string
+          enum: [json_lines]
+        redistribution_classes_filtered:
+          type: array
+          items: { $ref: '#/components/schemas/RedistributionClass' }
+        generated_at:  { type: string, format: date-time }
+        signed_receipt: { $ref: '#/components/schemas/Receipt' }
+
+    BulkExportStream:
+      description: |
+        Newline-delimited JSON. The first object is `BulkExportManifest`;
+        every subsequent object is a `Factor`.
+      oneOf:
+        - $ref: '#/components/schemas/BulkExportManifest'
+        - $ref: '#/components/schemas/Factor'
+
+    # -------- Entitlements --------
+
+    Entitlement:
+      type: object
+      additionalProperties: false
+      required: [tier, allowed_redistribution_classes, allowed_method_profiles]
+      properties:
+        tier: { $ref: '#/components/schemas/Tier' }
+        allowed_redistribution_classes:
+          type: array
+          items: { $ref: '#/components/schemas/RedistributionClass' }
+        allowed_method_profiles:
+          type: array
+          items: { $ref: '#/components/schemas/MethodProfile' }
+        allowed_endpoints:
+          type: array
+          items: { type: string }
+        source_skus:
+          type: array
+          description: Source-pack SKUs the caller has purchased.
+          items: { type: string }
+        rate_limit_per_minute: { type: integer, minimum: 0 }
+        upgrade_url: { type: string, format: uri, nullable: true }
+        expires_at:  { type: string, format: date-time, nullable: true }
+
+    EntitlementEnvelope:
+      type: object
+      additionalProperties: false
+      required: [principal, entitlement, signed_receipt]
+      properties:
+        principal:
+          type: object
+          additionalProperties: false
+          required: [user_id, tier]
+          properties:
+            user_id:     { type: string }
+            email:       { type: string, format: email, nullable: true }
+            tenant_id:   { type: string, nullable: true }
+            tier:        { $ref: '#/components/schemas/Tier' }
+            roles:
+              type: array
+              items: { type: string }
+            permissions:
+              type: array
+              items: { type: string }
+            auth_method:
+              type: string
+              enum: [jwt, api_key]
+            api_key_id:  { type: string, nullable: true }
+        entitlement:    { $ref: '#/components/schemas/Entitlement' }
+        signed_receipt: { $ref: '#/components/schemas/Receipt' }
+
+    # -------- Webhooks --------
+
+    WebhookEventType:
+      type: string
+      enum:
+        - factor.deprecated
+        - factor.updated
+        - factor.added
+        - factor.removed
+        - license.changed
+        - methodology.changed
+        - source.artifact_changed
+        - source.unavailable
+        - source.breaking_change
+        - edition.published
+        - impact_simulation.complete
+
+    WebhookSubscriptionRequest:
+      type: object
+      additionalProperties: false
+      required: [target_url, event_types]
+      properties:
+        target_url:
+          type: string
+          format: uri
+          description: HTTPS endpoint (or `http://localhost` for local dev).
+          example: "https://hooks.example.com/greenlang"
+        event_types:
+          type: array
+          minItems: 1
+          items: { $ref: '#/components/schemas/WebhookEventType' }
+        secret:
+          type: string
+          description: Optional caller-supplied HMAC shared secret. If omitted, the server generates one.
+          minLength: 16
+        description: { type: string, nullable: true }
+
+    WebhookSubscription:
+      type: object
+      additionalProperties: false
+      required: [subscription_id, tenant_id, target_url, secret, event_types, active, created_at]
+      properties:
+        subscription_id: { type: string, pattern: '^whs_[A-Za-z0-9_-]+$' }
+        tenant_id:       { type: string }
+        target_url:      { type: string, format: uri }
+        secret:
+          type: string
+          description: |
+            HMAC shared secret. **Returned only at creation time**; the
+            server never echoes secrets on subsequent GETs.
+        event_types:
+          type: array
+          items: { $ref: '#/components/schemas/WebhookEventType' }
+        active:     { type: boolean }
+        created_at: { type: string, format: date-time }
+
+    WebhookDeliveryReceipt:
+      type: object
+      additionalProperties: false
+      description: Shape of a single delivery attempt (attached to webhook body logs).
+      required: [subscription_id, event_type, status, attempts, signature, started_at, finished_at]
+      properties:
+        subscription_id:  { type: string }
+        event_type:       { $ref: '#/components/schemas/WebhookEventType' }
+        status:
+          type: string
+          enum: [ok, failed]
+        attempts:         { type: integer, minimum: 1 }
+        last_http_status: { type: integer, nullable: true }
+        last_error:       { type: string, nullable: true }
+        signature:        { type: string, description: "hex HMAC-SHA256 of body." }
+        started_at:       { type: string, format: date-time }
+        finished_at:      { type: string, format: date-time }
+
+    # -------- Receipt + System --------
+
+    Receipt:
+      type: object
+      additionalProperties: false
+      required: [signature, algorithm, signed_at, key_id, payload_hash]
+      description: |
+        Signed receipt attached to every response (CTO non-negotiable #1).
+        Customers verify with the shared secret (`sha256-hmac`) or
+        GreenLang's published Ed25519 public key.
+      properties:
+        signature:
+          type: string
+          description: Base64-encoded signature over `payload_hash`.
+        algorithm:
+          type: string
+          enum: [sha256-hmac, ed25519]
+        signed_at:
+          type: string
+          format: date-time
+        key_id:
+          type: string
+          example: "gl-factors-v1"
+        payload_hash:
+          type: string
+          description: Hex SHA-256 of the canonical (sort-keyed JSON) response body excluding this receipt.
+
+    HealthStatus:
+      type: object
+      additionalProperties: false
+      required: [status, timestamp, version]
+      properties:
+        status:
+          type: string
+          enum: [healthy, degraded, unhealthy]
+        timestamp: { type: string, format: date-time }
+        version:   { type: string, example: "1.0.0" }
+
+    ReadinessStatus:
+      type: object
+      additionalProperties: false
+      required: [status, checks]
+      properties:
+        status:
+          type: string
+          enum: [ready, not_ready]
+        checks:
+          type: object
+          additionalProperties:
+            type: object
+            additionalProperties: false
+            required: [ok]
+            properties:
+              ok:     { type: boolean }
+              detail: { type: string, nullable: true }
+
+    # -------- Errors --------
+
+    Error:
+      type: object
+      additionalProperties: false
+      required: [error, message]
+      description: Problem detail envelope used for every non-2xx response.
+      properties:
+        error:
+          type: string
+          description: Machine-readable error code.
+          enum:
+            - validation_error
+            - unauthorized
+            - payment_required
+            - forbidden
+            - not_found
+            - conflict
+            - gone
+            - unprocessable
+            - rate_limited
+            - legal_blocked
+            - internal_error
+            - upstream_error
+            - service_unavailable
+        message:   { type: string }
+        status:    { type: integer }
+        details:
+          type: object
+          additionalProperties: true
+        request_id: { type: string, nullable: true }
+        upgrade_url:
+          type: string
+          format: uri
+          nullable: true
+          description: |
+            Populated on `402 payment_required` and `451 legal_blocked`
+            responses so clients can deep-link users to an upgrade flow.
+        retry_after_seconds:
+          type: integer
+          nullable: true
+          description: Populated on `429 rate_limited` and `503 service_unavailable`.
+        signed_receipt: { $ref: '#/components/schemas/Receipt' }
+
+  # ============================================================
+  # Reusable error responses
+  # ============================================================
+  responses:
+
+    BadRequest:
+      description: Malformed request (missing required field, invalid shape).
+      headers:
+        X-Request-Id: { $ref: '#/components/headers/RequestIdHeader' }
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+
+    Unauthorized:
+      description: Missing or invalid credentials.
+      headers:
+        WWW-Authenticate:
+          schema: { type: string, example: 'Bearer realm="greenlang"' }
+        X-Request-Id: { $ref: '#/components/headers/RequestIdHeader' }
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+
+    PaymentRequired:
+      description: Caller's tier does not cover this endpoint or entitlement.
+      headers:
+        X-Request-Id: { $ref: '#/components/headers/RequestIdHeader' }
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+
+    Forbidden:
+      description: Authenticated but not authorized for this resource.
+      headers:
+        X-Request-Id: { $ref: '#/components/headers/RequestIdHeader' }
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+
+    NotFound:
+      description: Resource not found in this edition.
+      headers:
+        X-Request-Id: { $ref: '#/components/headers/RequestIdHeader' }
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+
+    Conflict:
+      description: |
+        Edition mismatch — the `X-GreenLang-Edition` header / `?edition=`
+        query points to an unknown or incompatible edition.
+      headers:
+        X-Request-Id: { $ref: '#/components/headers/RequestIdHeader' }
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+
+    Gone:
+      description: Factor exists but has been deprecated; consider `replacement_factor_id`.
+      headers:
+        X-Request-Id: { $ref: '#/components/headers/RequestIdHeader' }
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+
+    Unprocessable:
+      description: Semantic validation failed (unit mismatch, method conflict, etc.).
+      headers:
+        X-Request-Id: { $ref: '#/components/headers/RequestIdHeader' }
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+
+    RateLimited:
+      description: Too many requests for the caller's tier.
+      headers:
+        Retry-After:
+          description: Seconds until the client may retry.
+          schema: { type: integer }
+        X-RateLimit-Limit:     { $ref: '#/components/headers/RateLimitLimit' }
+        X-RateLimit-Remaining: { $ref: '#/components/headers/RateLimitRemaining' }
+        X-RateLimit-Reset:     { $ref: '#/components/headers/RateLimitReset' }
+        X-Request-Id:          { $ref: '#/components/headers/RequestIdHeader' }
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+
+    LegalBlocked:
+      description: |
+        `451 Unavailable For Legal Reasons`. The requested factor's
+        `redistribution_class` exceeds the caller's entitlement (CTO
+        non-negotiable #4). Response body includes an `upgrade_url`
+        pointer.
+      headers:
+        X-Request-Id: { $ref: '#/components/headers/RequestIdHeader' }
+        Link:
+          description: "`rel=\"upgrade\"` pointer to the purchase flow."
+          schema: { type: string }
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+
+    PayloadTooLarge:
+      description: Request body exceeds the tier's max size.
+      headers:
+        X-Request-Id: { $ref: '#/components/headers/RequestIdHeader' }
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+
+    ServerError:
+      description: Internal server error.
+      headers:
+        X-Request-Id: { $ref: '#/components/headers/RequestIdHeader' }
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+
+    BadGateway:
+      description: Upstream source unreachable.
+      headers:
+        X-Request-Id: { $ref: '#/components/headers/RequestIdHeader' }
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+
+    ServiceUnavailable:
+      description: Dependency is degraded or the service is in maintenance.
+      headers:
+        Retry-After:
+          schema: { type: integer }
+        X-Request-Id: { $ref: '#/components/headers/RequestIdHeader' }
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }

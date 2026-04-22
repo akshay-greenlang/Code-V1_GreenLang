@@ -105,6 +105,49 @@ class RateLimitError(FactorsAPIError):
         self.retry_after = retry_after
 
 
+class EditionMismatchError(FactorsAPIError):
+    """Client pinned edition X, server returned a different edition Y.
+
+    Raised by :class:`FactorsClient` (and :class:`AsyncFactorsClient`)
+    when a response carries an ``X-GreenLang-Edition`` /
+    ``X-Factors-Edition`` header whose value disagrees with the pin set
+    via :meth:`FactorsClient.pin_edition` or the ``client.edition(...)``
+    context manager.
+
+    We deliberately do NOT silently accept the drifted edition: the whole
+    point of pinning is reproducibility, so a mismatch is a hard fail.
+    The ``pinned_edition`` and ``returned_edition`` attributes let the
+    caller decide whether to retry, fall through to the default edition,
+    or surface the error to the user.
+    """
+
+    def __init__(
+        self,
+        message: str,
+        *,
+        pinned_edition: Optional[str] = None,
+        returned_edition: Optional[str] = None,
+        status_code: Optional[int] = None,
+        response_body: Optional[Any] = None,
+        request_id: Optional[str] = None,
+        context: Optional[Dict[str, Any]] = None,
+    ) -> None:
+        ctx: Dict[str, Any] = dict(context or {})
+        if pinned_edition is not None:
+            ctx["pinned_edition"] = pinned_edition
+        if returned_edition is not None:
+            ctx["returned_edition"] = returned_edition
+        super().__init__(
+            message,
+            status_code=status_code,
+            response_body=response_body,
+            request_id=request_id,
+            context=ctx,
+        )
+        self.pinned_edition = pinned_edition
+        self.returned_edition = returned_edition
+
+
 def error_from_response(
     *,
     status_code: int,
@@ -205,5 +248,6 @@ __all__ = [
     "FactorNotFoundError",
     "ValidationError",
     "RateLimitError",
+    "EditionMismatchError",
     "error_from_response",
 ]

@@ -1,0 +1,40 @@
+---
+# Prometheus Operator ServiceMonitor (OBS-001). Scrapes the /metrics
+# port 9090 on every factors-api pod. Labels are aligned with OBS-002
+# Grafana dashboards and OBS-005 SLO dashboards.
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: factors-api
+  namespace: greenlang-factors
+  labels:
+    app.kubernetes.io/name: factors-api
+    release: prometheus-operator    # Matches Prometheus Operator's release label
+    greenlang.io/dashboard-set: factors
+spec:
+  namespaceSelector:
+    matchNames:
+      - greenlang-factors
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: factors-api
+      app.kubernetes.io/component: metrics
+  endpoints:
+    - port: metrics
+      path: /api/v1/metrics
+      interval: 30s
+      scrapeTimeout: 10s
+      honorLabels: true
+      relabelings:
+        - sourceLabels: [__meta_kubernetes_pod_name]
+          targetLabel: pod
+        - sourceLabels: [__meta_kubernetes_namespace]
+          targetLabel: namespace
+        - targetLabel: service
+          replacement: factors-api
+      metricRelabelings:
+        # Drop high-cardinality per-factor_id counters that we already
+        # aggregate at ingest time.
+        - sourceLabels: [__name__]
+          regex: "factors_lookup_per_factor_total"
+          action: drop

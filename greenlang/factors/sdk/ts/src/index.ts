@@ -24,7 +24,12 @@
 export const SDK_VERSION = '1.0.0';
 
 // Client
-export { FactorsClient } from './client';
+export {
+  FactorsClient,
+  GREENLANG_CA_FINGERPRINT_SHA256,
+  PINNED_HOST_SUFFIXES,
+  computeSubresourceIntegrity,
+} from './client';
 export type { FactorsClientOptions, SearchV2Options } from './client';
 
 // Models
@@ -54,6 +59,8 @@ export { isTerminalBatchStatus } from './models';
 // Errors
 export {
   AuthError,
+  CertificatePinError,
+  EditionMismatchError,
   FactorNotFoundError,
   FactorsAPIError,
   LicenseError,

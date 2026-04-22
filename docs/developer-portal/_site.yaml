@@ -1,0 +1,171 @@
+# GreenLang Factors Developer Portal - sitemap & nav metadata
+# Compatible with Docusaurus (sidebars.js loader), MkDocs (nav key),
+# and Nextra (_meta.ts loader). Each site generator can transform
+# this file into its own config format.
+
+site:
+  id: greenlang-factors-dev-portal
+  title: GreenLang Factors Developer Portal
+  tagline: Emission factors with signed receipts, edition pinning, and a 7-step resolution cascade.
+  base_url: /docs/developer-portal
+  openapi_spec: /docs/api/factors-v1.yaml
+  api_base_url: https://api.greenlang.io
+  api_prefix: /api/v1
+  search:
+    enabled: true
+    index_paths:
+      - quickstart
+      - concepts
+      - api-reference
+      - cookbook
+      - migration
+
+nav:
+  - label: Home
+    path: README.md
+    order: 0
+
+  - label: Quickstart
+    order: 10
+    children:
+      - label: 5-minute quickstart
+        path: quickstart/5-minute-quickstart.md
+        order: 1
+      - label: Python SDK
+        path: quickstart/python-sdk.md
+        order: 2
+      - label: TypeScript SDK
+        path: quickstart/typescript-sdk.md
+        order: 3
+      - label: cURL recipes
+        path: quickstart/curl-recipes.md
+        order: 4
+
+  - label: Concepts
+    order: 20
+    children:
+      - label: Resolution cascade
+        path: concepts/resolution-cascade.md
+        order: 1
+      - label: Method packs
+        path: concepts/method-packs.md
+        order: 2
+      - label: Version pinning
+        path: concepts/version-pinning.md
+        order: 3
+      - label: Licensing classes
+        path: concepts/licensing-classes.md
+        order: 4
+      - label: Quality scores
+        path: concepts/quality-scores.md
+        order: 5
+      - label: Signed receipts
+        path: concepts/signed-receipts.md
+        order: 6
+      - label: Gas breakdown vs CO2e
+        path: concepts/gas-breakdown-vs-co2e.md
+        order: 7
+
+  - label: API Reference
+    order: 30
+    children:
+      - label: Overview
+        path: api-reference/README.md
+        order: 1
+      - label: Authentication
+        path: api-reference/authentication.md
+        order: 2
+      - label: Rate limits
+        path: api-reference/rate-limits.md
+        order: 3
+      - label: Errors
+        path: api-reference/errors.md
+        order: 4
+      - label: Webhooks
+        path: api-reference/webhooks.md
+        order: 5
+
+  - label: Cookbook
+    order: 40
+    children:
+      - label: CBAM resolver (steel from India)
+        path: cookbook/cbam-resolver.md
+        order: 1
+      - label: Scope 2 location vs market
+        path: cookbook/scope-2-location-vs-market.md
+        order: 2
+      - label: Freight WTW vs TTW
+        path: cookbook/freight-wtw-vs-ttw.md
+        order: 3
+      - label: Refrigerant GWP selection
+        path: cookbook/refrigerant-gwp-selection.md
+        order: 4
+      - label: Product carbon / PACT export
+        path: cookbook/product-carbon-pact-export.md
+        order: 5
+      - label: Financed emissions (PCAF)
+        path: cookbook/financed-emissions-pcaf.md
+        order: 6
+
+  - label: Migration
+    order: 50
+    children:
+      - label: Changelog
+        path: migration/CHANGELOG.md
+        order: 1
+      - label: From Climatiq
+        path: migration/from-climatiq.md
+        order: 2
+      - label: From ecoinvent
+        path: migration/from-ecoinvent.md
+        order: 3
+
+# Cross-links used by the site build to surface "see also" blocks.
+cross_links:
+  quickstart/5-minute-quickstart.md:
+    - concepts/signed-receipts.md
+    - concepts/resolution-cascade.md
+    - api-reference/authentication.md
+  concepts/resolution-cascade.md:
+    - concepts/method-packs.md
+    - concepts/version-pinning.md
+  concepts/version-pinning.md:
+    - concepts/signed-receipts.md
+    - migration/CHANGELOG.md
+  concepts/licensing-classes.md:
+    - api-reference/errors.md
+    - migration/from-ecoinvent.md
+  concepts/quality-scores.md:
+    - concepts/method-packs.md
+  concepts/signed-receipts.md:
+    - api-reference/webhooks.md
+    - concepts/version-pinning.md
+  cookbook/cbam-resolver.md:
+    - concepts/method-packs.md
+    - concepts/licensing-classes.md
+  cookbook/scope-2-location-vs-market.md:
+    - concepts/method-packs.md
+  cookbook/freight-wtw-vs-ttw.md:
+    - concepts/method-packs.md
+  cookbook/refrigerant-gwp-selection.md:
+    - concepts/gas-breakdown-vs-co2e.md
+  cookbook/product-carbon-pact-export.md:
+    - concepts/method-packs.md
+  cookbook/financed-emissions-pcaf.md:
+    - concepts/method-packs.md
+
+# Canonical header names the portal documents.
+canonical_headers:
+  edition_pin_request: X-Factors-Edition
+  edition_pin_response_primary: X-GreenLang-Edition
+  edition_pin_response_legacy: X-Factors-Edition
+  method_profile_response: X-GreenLang-Method-Profile
+  receipt_signature: X-GreenLang-Receipt-Signature
+  receipt_algorithm: X-GreenLang-Receipt-Algorithm
+  receipt_key_id: X-GreenLang-Receipt-Key-Id
+  receipt_signed_at: X-GreenLang-Receipt-Signed-At
+  receipt_payload_hash: X-GreenLang-Receipt-Hash
+  rate_limit: X-RateLimit-Limit
+  rate_remaining: X-RateLimit-Remaining
+  rate_reset: X-RateLimit-Reset
+  retry_after: Retry-After

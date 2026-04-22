@@ -1,0 +1,317 @@
+---
+# =============================================================================
+# Factors background workers
+# =============================================================================
+# Four Deployment objects, one per WORKER_MODE, all reusing the same image
+# (target=worker in Dockerfile.factors-service). Each runs 1 replica: the
+# shell-form CMD in the worker stage dispatches on $WORKER_MODE.
+#
+# Modes covered (daily watch stays as a CronJob — see factors-watch-cronjob.yaml):
+#   ingest  - source parser batch execution
+#   embed   - MiniLM/MPNet embedding generation
+#   dedupe  - cross-source dedup job
+#
+# Long-running "watch" is kept as the CronJob at
+# deployment/k8s/factors-watch-cronjob.yaml to avoid drift.
+# =============================================================================
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: factors-worker-ingest
+  namespace: greenlang-factors
+  labels:
+    app.kubernetes.io/name: factors-worker
+    app.kubernetes.io/component: worker
+    greenlang.io/worker-mode: ingest
+spec:
+  replicas: 1
+  revisionHistoryLimit: 5
+  strategy:
+    type: Recreate           # Serial worker, no overlapping pods
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: factors-worker
+      greenlang.io/worker-mode: ingest
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: factors-worker
+        app.kubernetes.io/component: worker
+        greenlang.io/worker-mode: ingest
+    spec:
+      serviceAccountName: factors-api
+      terminationGracePeriodSeconds: 60
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: worker
+          image: ghcr.io/greenlang/factors-api:staging
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: WORKER_MODE
+              value: "ingest"
+          envFrom:
+            - configMapRef:
+                name: factors-worker-env
+            - secretRef:
+                name: factors-api-secrets
+          resources:
+            requests:
+              cpu: "300m"
+              memory: "512Mi"
+            limits:
+              cpu: "1500m"
+              memory: "2Gi"
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 10001
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+            - name: cache
+              mountPath: /var/cache/greenlang
+      volumes:
+        - name: tmp
+          emptyDir:
+            medium: Memory
+            sizeLimit: 128Mi
+        - name: cache
+          emptyDir:
+            sizeLimit: 2Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: factors-worker-embed
+  namespace: greenlang-factors
+  labels:
+    app.kubernetes.io/name: factors-worker
+    app.kubernetes.io/component: worker
+    greenlang.io/worker-mode: embed
+spec:
+  replicas: 1
+  revisionHistoryLimit: 5
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: factors-worker
+      greenlang.io/worker-mode: embed
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: factors-worker
+        app.kubernetes.io/component: worker
+        greenlang.io/worker-mode: embed
+    spec:
+      serviceAccountName: factors-api
+      terminationGracePeriodSeconds: 60
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: worker
+          image: ghcr.io/greenlang/factors-api:staging
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: WORKER_MODE
+              value: "embed"
+          envFrom:
+            - configMapRef:
+                name: factors-worker-env
+            - secretRef:
+                name: factors-api-secrets
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "1Gi"
+            limits:
+              cpu: "2000m"
+              memory: "4Gi"
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 10001
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+            - name: cache
+              mountPath: /var/cache/greenlang
+      volumes:
+        - name: tmp
+          emptyDir:
+            medium: Memory
+            sizeLimit: 128Mi
+        - name: cache
+          emptyDir:
+            sizeLimit: 4Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: factors-worker-dedupe
+  namespace: greenlang-factors
+  labels:
+    app.kubernetes.io/name: factors-worker
+    app.kubernetes.io/component: worker
+    greenlang.io/worker-mode: dedupe
+spec:
+  replicas: 1
+  revisionHistoryLimit: 5
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: factors-worker
+      greenlang.io/worker-mode: dedupe
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: factors-worker
+        app.kubernetes.io/component: worker
+        greenlang.io/worker-mode: dedupe
+    spec:
+      serviceAccountName: factors-api
+      terminationGracePeriodSeconds: 60
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: worker
+          image: ghcr.io/greenlang/factors-api:staging
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: WORKER_MODE
+              value: "dedupe"
+          envFrom:
+            - configMapRef:
+                name: factors-worker-env
+            - secretRef:
+                name: factors-api-secrets
+          resources:
+            requests:
+              cpu: "300m"
+              memory: "512Mi"
+            limits:
+              cpu: "1500m"
+              memory: "2Gi"
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 10001
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+            - name: cache
+              mountPath: /var/cache/greenlang
+      volumes:
+        - name: tmp
+          emptyDir:
+            medium: Memory
+            sizeLimit: 128Mi
+        - name: cache
+          emptyDir:
+            sizeLimit: 2Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: factors-worker-watch
+  namespace: greenlang-factors
+  labels:
+    app.kubernetes.io/name: factors-worker
+    app.kubernetes.io/component: worker
+    greenlang.io/worker-mode: watch
+  annotations:
+    # Long-running watch streamer. The daily batch watch runs as a CronJob
+    # (deployment/k8s/factors-watch-cronjob.yaml); this Deployment keeps a
+    # single watcher hot for near-real-time source notifications.
+    greenlang.io/cronjob-sibling: factors-watch-daily
+spec:
+  replicas: 1
+  revisionHistoryLimit: 5
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: factors-worker
+      greenlang.io/worker-mode: watch
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: factors-worker
+        app.kubernetes.io/component: worker
+        greenlang.io/worker-mode: watch
+    spec:
+      serviceAccountName: factors-api
+      terminationGracePeriodSeconds: 60
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: worker
+          image: ghcr.io/greenlang/factors-api:staging
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: WORKER_MODE
+              value: "watch"
+          envFrom:
+            - configMapRef:
+                name: factors-worker-env
+            - secretRef:
+                name: factors-api-secrets
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "256Mi"
+            limits:
+              cpu: "1000m"
+              memory: "1Gi"
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 10001
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+            - name: cache
+              mountPath: /var/cache/greenlang
+      volumes:
+        - name: tmp
+          emptyDir:
+            medium: Memory
+            sizeLimit: 128Mi
+        - name: cache
+          emptyDir:
+            sizeLimit: 1Gi

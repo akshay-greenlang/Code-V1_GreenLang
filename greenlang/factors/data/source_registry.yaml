@@ -233,3 +233,403 @@ sources:
       url: null
     approval_required_for_certified: true
     legal_signoff_artifact: null
+
+  # =========================================================================
+  # v1 Certified edition new rows (added 2026-04-22 per
+  # docs/editions/v1-certified-cutlist.md §13)
+  # =========================================================================
+  # Slice 1 — Electricity (blocking: ELECTRICITY_RESIDUAL_MIX_EU uses this id)
+  - source_id: aib_residual_mix_eu
+    display_name: AIB European Residual Mix
+    authority: Association of Issuing Bodies
+    publisher: Association of Issuing Bodies (AIB)
+    jurisdiction: [EU, EEA]
+    connector_only: false
+    license_class: eu_publication
+    redistribution_class: open
+    redistribution_allowed: true
+    attribution_required: true
+    verification_status: external_verified
+    citation_text: "European Residual Mixes, Association of Issuing Bodies (annual)."
+    publication_frequency: annual
+    cadence: annual
+    watch:
+      mechanism: http_head
+      url: "https://www.aib-net.org/facts/european-residual-mix"
+    approval_required_for_certified: true
+    legal_notes: "Attribution required per AIB Terms of Use; public PDF redistribution allowed with citation."
+    legal_signoff_artifact: null
+
+  # Slice 1 — Electricity (India)
+  - source_id: india_cea_co2_baseline
+    display_name: India CEA CO2 Baseline Database
+    authority: Central Electricity Authority, Government of India
+    publisher: Central Electricity Authority
+    jurisdiction: [IN]
+    connector_only: false
+    license_class: public_in_government
+    redistribution_class: open
+    redistribution_allowed: true
+    attribution_required: true
+    verification_status: regulator_approved
+    citation_text: "CO2 Baseline Database for the Indian Power Sector, Central Electricity Authority (Government of India), latest edition."
+    publication_frequency: annual
+    cadence: annual
+    watch:
+      mechanism: http_head
+      url: "https://cea.nic.in/cdm-co2-baseline-database/"
+    approval_required_for_certified: true
+    legal_signoff_artifact: null
+
+  # Slice 2 — Combustion (IPCC defaults)
+  - source_id: ipcc_2006_nggi
+    display_name: IPCC 2006 Guidelines + 2019 Refinement (National GHG Inventories)
+    authority: IPCC Task Force on National GHG Inventories
+    publisher: Intergovernmental Panel on Climate Change
+    jurisdiction: [GLOBAL]
+    connector_only: false
+    license_class: public_international
+    redistribution_class: open
+    redistribution_allowed: true
+    attribution_required: true
+    verification_status: external_verified
+    citation_text: "IPCC 2006 Guidelines for National GHG Inventories and the 2019 Refinement."
+    publication_frequency: ad_hoc
+    cadence: ad_hoc
+    watch:
+      mechanism: html_diff
+      url: "https://www.ipcc-nggip.iges.or.jp/public/2006gl/"
+    approval_required_for_certified: true
+    legal_notes: "IPCC guidelines are public international publications; factual default values carry no copyright restriction."
+    legal_signoff_artifact: null
+
+  # Slice 3 — Freight (GLEC / ISO 14083)
+  - source_id: glec_framework
+    display_name: GLEC Framework v3.0 (ISO 14083-aligned)
+    authority: Smart Freight Centre
+    publisher: Smart Freight Centre
+    jurisdiction: [GLOBAL]
+    connector_only: false
+    license_class: smart_freight_terms
+    redistribution_class: restricted
+    redistribution_allowed: false
+    attribution_required: true
+    verification_status: external_verified
+    citation_text: "GLEC Framework for Logistics Emissions Accounting and Reporting, Smart Freight Centre, v3.0 (2023)."
+    publication_frequency: triennial
+    cadence: on_release
+    watch:
+      mechanism: http_head
+      url: "https://www.smartfreightcentre.org/en/our-programs/global-logistics-emissions-council/"
+    approval_required_for_certified: true
+    legal_notes: "Redistribution requires Smart Freight Buyer Group membership attribution; values allowed via API only for non-members."
+    legal_signoff_artifact: null
+
+  # Slice 4 — Materials / CBAM (EPDs)
+  - source_id: ec3_buildings_epd
+    display_name: Building Transparency EC3 EPD library
+    authority: Building Transparency
+    publisher: Building Transparency (non-profit)
+    jurisdiction: [GLOBAL]
+    connector_only: true
+    license_class: commercial_connector
+    redistribution_class: restricted
+    redistribution_allowed: false
+    attribution_required: true
+    verification_status: external_verified
+    citation_text: "Embodied Carbon in Construction Calculator (EC3), Building Transparency."
+    publication_frequency: continuous
+    cadence: continuous
+    watch:
+      mechanism: api
+      url: "https://buildingtransparency.org/api"
+    approval_required_for_certified: true
+    legal_notes: "EC3 API access is permissioned; customers must hold their own EC3 token or consume via GreenLang Premium Construction/EPD pack."
+    legal_signoff_artifact: null
+
+  # Slice 5 — Land / Removals (IPCC AFOLU)
+  - source_id: ipcc_2006_afolu_v2019
+    display_name: IPCC 2006 Guidelines Vol 4 — AFOLU (2019 Refinement)
+    authority: IPCC Task Force on National GHG Inventories
+    publisher: Intergovernmental Panel on Climate Change
+    jurisdiction: [GLOBAL]
+    connector_only: false
+    license_class: public_international
+    redistribution_class: open
+    redistribution_allowed: true
+    attribution_required: true
+    verification_status: external_verified
+    citation_text: "IPCC 2006 Guidelines Volume 4 — Agriculture, Forestry and Other Land Use (AFOLU), 2019 Refinement."
+    publication_frequency: ad_hoc
+    cadence: ad_hoc
+    watch:
+      mechanism: html_diff
+      url: "https://www.ipcc-nggip.iges.or.jp/public/2019rf/vol4.html"
+    approval_required_for_certified: true
+    legal_signoff_artifact: null
+
+  # Slice 6 — Product Carbon (PACT Pathfinder framework)
+  - source_id: pact_pathfinder
+    display_name: WBCSD PACT Pathfinder Framework v3
+    authority: WBCSD Partnership for Carbon Transparency
+    publisher: World Business Council for Sustainable Development
+    jurisdiction: [GLOBAL]
+    connector_only: false
+    license_class: wri_wbcsd_terms
+    redistribution_class: restricted
+    redistribution_allowed: false
+    attribution_required: true
+    verification_status: external_verified
+    citation_text: "WBCSD, Pathfinder Framework: Guidance for the Accounting and Exchange of Product Life Cycle Emissions, v3.0."
+    publication_frequency: biennial
+    cadence: on_release
+    watch:
+      mechanism: http_head
+      url: "https://www.carbon-transparency.com/"
+    approval_required_for_certified: true
+    legal_notes: "Framework is public; Pathfinder data objects exchanged between customers require PACT network membership per §6 of the framework."
+    legal_signoff_artifact: null
+
+  # Slice 6 — Product Carbon (EU JRC EF 3.1 secondary datasets for PEF)
+  - source_id: ef_3_1_secondary
+    display_name: EU JRC Environmental Footprint 3.1 Secondary Datasets
+    authority: European Commission Joint Research Centre
+    publisher: European Commission Joint Research Centre (JRC)
+    jurisdiction: [EU]
+    connector_only: false
+    license_class: eu_publication
+    redistribution_class: open
+    redistribution_allowed: true
+    attribution_required: true
+    verification_status: external_verified
+    citation_text: "European Commission JRC, Environmental Footprint (EF) 3.1 reference package."
+    publication_frequency: ad_hoc
+    cadence: on_release
+    watch:
+      mechanism: http_head
+      url: "https://eplca.jrc.ec.europa.eu/LCDN/developerEF.xhtml"
+    approval_required_for_certified: true
+    legal_signoff_artifact: null
+
+  # Slice 7 — Finance Proxy (PCAF Global Standard v2)
+  - source_id: pcaf_global_std_v2
+    display_name: PCAF Global GHG Accounting & Reporting Standard v2 (Parts A + B)
+    authority: Partnership for Carbon Accounting Financials
+    publisher: PCAF (Platform Carbon Accounting Financials)
+    jurisdiction: [GLOBAL]
+    connector_only: false
+    license_class: pcaf_attribution
+    redistribution_class: restricted
+    redistribution_allowed: false
+    attribution_required: true
+    verification_status: external_verified
+    citation_text: "PCAF, The Global GHG Accounting and Reporting Standard for the Financial Industry, Part A (v2.0) & Part B."
+    publication_frequency: biennial
+    cadence: on_release
+    watch:
+      mechanism: http_head
+      url: "https://carbonaccountingfinancials.com/standard"
+    approval_required_for_certified: true
+    legal_notes: "Methodology text is public; derived proxy factors redistributable via GreenLang Premium Finance pack only."
+    legal_signoff_artifact: null
+
+  # Slice 7 — Finance Proxy (US EPA SUSEEIO input-output)
+  - source_id: us_epa_suseeio
+    display_name: US EPA SUSEEIO v2
+    authority: US EPA National Risk Management Research Laboratory
+    publisher: US Environmental Protection Agency
+    jurisdiction: [US]
+    connector_only: false
+    license_class: public_us_government
+    redistribution_class: open
+    redistribution_allowed: true
+    attribution_required: true
+    verification_status: regulator_approved
+    citation_text: "US EPA, Supply Chain GHG Emission Factors for US Industries and Commodities (SUSEEIO), v2."
+    publication_frequency: ad_hoc
+    cadence: ad_hoc
+    watch:
+      mechanism: http_head
+      url: "https://catalog.data.gov/dataset/supply-chain-greenhouse-gas-emission-factors"
+    approval_required_for_certified: true
+    legal_signoff_artifact: null
+
+  # Slice 7 — Finance Proxy (EXIOBASE EEIO)
+  - source_id: exiobase_v3
+    display_name: EXIOBASE v3 multi-regional environmentally extended IO
+    authority: EXIOBASE Consortium (TU Wien / NTNU / UTwente)
+    publisher: EXIOBASE Consortium
+    jurisdiction: [GLOBAL]
+    connector_only: true
+    license_class: academic_research
+    redistribution_class: restricted
+    redistribution_allowed: false
+    attribution_required: true
+    verification_status: external_verified
+    citation_text: "EXIOBASE v3, EXIOBASE Consortium (2024)."
+    publication_frequency: annual
+    cadence: annual
+    watch:
+      mechanism: manual
+      url: "https://www.exiobase.eu/"
+    approval_required_for_certified: true
+    legal_notes: "Research access is free; commercial redistribution requires EXIOBASE Consortium license."
+    legal_signoff_artifact: null
+
+  # Slice 7 — Finance Proxy (CEDA / UT Austin — commercial EEIO)
+  - source_id: ceda_pbe
+    display_name: Profundo CEDA / PBE (Comprehensive Environmental Data Archive)
+    authority: Profundo Research BV
+    publisher: Profundo Research BV
+    jurisdiction: [GLOBAL]
+    connector_only: true
+    license_class: commercial_connector
+    redistribution_class: licensed
+    redistribution_allowed: false
+    attribution_required: true
+    verification_status: external_verified
+    citation_text: "CEDA environmentally extended IO database, Profundo Research BV."
+    publication_frequency: annual
+    cadence: annual
+    watch:
+      mechanism: manual
+      url: "https://www.profundo.nl/"
+    approval_required_for_certified: true
+    legal_notes: "Customer must present own CEDA license or subscribe to GreenLang Premium Finance pack (OEM redistribution rights negotiated)."
+    legal_signoff_artifact: null
+
+  # =========================================================================
+  # Regulatory-gap closure (2026-04-22) — FACTORS-V1-REGULATORY-COVERAGE §4
+  # =========================================================================
+
+  # India CCTS sector-baseline benchmarks (gap-closure #10)
+  - source_id: india_ccts_baselines
+    display_name: India Carbon Credit Trading Scheme (CCTS) sectoral baselines
+    authority: Bureau of Energy Efficiency (BEE) under MoEFCC
+    publisher: Bureau of Energy Efficiency, Government of India
+    jurisdiction: [IN]
+    connector_only: false
+    license_class: public_in_government
+    redistribution_class: open
+    redistribution_allowed: true
+    attribution_required: true
+    verification_status: regulator_approved
+    citation_text: "Carbon Credit Trading Scheme baseline emission intensities, Bureau of Energy Efficiency, Ministry of Environment, Forest and Climate Change (MoEFCC), Government of India, notified under G.S.R. 443(E) dated 28 June 2023 and subsequent BEE sector notifications."
+    publication_frequency: triennial
+    cadence: annual
+    watch:
+      mechanism: http_head
+      url: "https://beeindia.gov.in/en/programmes/carbon-credit-trading-scheme"
+    approval_required_for_certified: true
+    legal_notes: "Government of India notifications are public documents with attribution required; sectoral baselines revised triennially per BEE."
+    legal_signoff_artifact: null
+
+  # Canada CER provincial residual mix (gap-closure #1)
+  - source_id: cer_canada_residual
+    display_name: Canada Energy Regulator — Provincial Electricity Residual Mix
+    authority: Canada Energy Regulator (CER)
+    publisher: Canada Energy Regulator
+    jurisdiction: [CA]
+    connector_only: false
+    license_class: open
+    redistribution_class: open
+    redistribution_allowed: true
+    attribution_required: true
+    verification_status: regulator_approved
+    citation_text: "Provincial Electricity Intensity Factors, Canada Energy Regulator; with residual-mix adjustment per ECCC National Inventory Report surrendered-instrument accounting."
+    publication_frequency: annual
+    cadence: annual
+    watch:
+      mechanism: http_head
+      url: "https://www.cer-rec.gc.ca/en/data-analysis/energy-commodities/electricity/"
+    approval_required_for_certified: true
+    legal_notes: "Open Government Licence - Canada 2.0 (OGL-CA-2.0); attribution required."
+    legal_signoff_artifact: null
+
+  # UK BEIS / DESNZ national residual mix (gap-closure #1)
+  - source_id: beis_uk_residual
+    display_name: UK DESNZ (formerly BEIS) national electricity residual mix
+    authority: UK Department for Energy Security and Net Zero
+    publisher: UK Department for Energy Security and Net Zero (DESNZ)
+    jurisdiction: [UK, GB]
+    connector_only: false
+    license_class: uk_open_government
+    redistribution_class: open
+    redistribution_allowed: true
+    attribution_required: true
+    verification_status: regulator_approved
+    citation_text: "UK national residual-mix factor, UK Department for Energy Security and Net Zero (DESNZ); derived from the UK GHG conversion factors + Ofgem REGO surrender data."
+    publication_frequency: annual
+    cadence: annual
+    watch:
+      mechanism: http_head
+      url: "https://www.gov.uk/government/collections/government-conversion-factors-for-company-reporting-of-greenhouse-gas-emissions"
+    approval_required_for_certified: true
+    legal_notes: "UK Open Government Licence v3.0; attribution required."
+    legal_signoff_artifact: null
+
+  # Australia NGER state-level residual (gap-closure #1)
+  - source_id: nger_au_state_residual
+    display_name: Australian NGER state-level residual mix (DCCEEW)
+    authority: Australian Clean Energy Regulator / DCCEEW
+    publisher: Department of Climate Change, Energy, the Environment and Water
+    jurisdiction: [AU]
+    connector_only: false
+    license_class: open
+    redistribution_class: open
+    redistribution_allowed: true
+    attribution_required: true
+    verification_status: regulator_approved
+    citation_text: "NGER (National Greenhouse and Energy Reporting) state-level residual emission factors, Australian Clean Energy Regulator and DCCEEW, derived from NGA factors with Large-scale Generation Certificate (LGC) surrender netting."
+    publication_frequency: annual
+    cadence: annual
+    watch:
+      mechanism: http_head
+      url: "https://www.cleanenergyregulator.gov.au/NGER"
+    approval_required_for_certified: true
+    legal_notes: "Australian Government Creative Commons Attribution 4.0 licence."
+    legal_signoff_artifact: null
+
+  # Korea KEMCO residual (gap-closure #1)
+  - source_id: kemco_korea_residual
+    display_name: Korea KEMCO electricity residual mix
+    authority: Korea Energy Management Corporation (KEMCO)
+    publisher: Korea Energy Agency / Ministry of Environment (Republic of Korea)
+    jurisdiction: [KR]
+    connector_only: false
+    license_class: open
+    redistribution_class: open
+    redistribution_allowed: true
+    attribution_required: true
+    verification_status: regulator_approved
+    citation_text: "Republic of Korea national electricity residual mix factor, Korea Energy Management Corporation (KEMCO) / Korea Energy Agency; derived from the Greenhouse Gas Inventory and Research Center (GIR) national inventory with KEC (Korea Energy Certificate) surrender netting."
+    publication_frequency: annual
+    cadence: annual
+    watch:
+      mechanism: http_head
+      url: "https://www.gir.go.kr/eng/"
+    approval_required_for_certified: true
+    legal_notes: "Republic of Korea public information - Act on Disclosure of Information by Public Agencies; attribution required."
+    legal_signoff_artifact: null
+
+  # Singapore EMA residual (gap-closure #1)
+  - source_id: ema_singapore_residual
+    display_name: Singapore EMA Grid Emission Factor
+    authority: Singapore Energy Market Authority (EMA)
+    publisher: Singapore Energy Market Authority
+    jurisdiction: [SG]
+    connector_only: false
+    license_class: open
+    redistribution_class: open
+    redistribution_allowed: true
+    attribution_required: true
+    verification_status: regulator_approved
+    citation_text: "Grid Emission Factor, Singapore Energy Market Authority (EMA); published alongside the Singapore Energy Statistics (SES) annual report with REC surrender netting for residual-mix derivation."
+    publication_frequency: annual
+    cadence: annual
+    watch:
+      mechanism: http_head
+      url: "https://www.ema.gov.sg/singapore-energy-statistics"
+    approval_required_for_certified: true
+    legal_notes: "Singapore Open Data Licence v1.0; attribution required."
+    legal_signoff_artifact: null

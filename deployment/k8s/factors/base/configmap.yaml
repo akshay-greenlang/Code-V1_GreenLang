@@ -1,0 +1,55 @@
+---
+# Non-secret environment configuration for factors-api and factors-worker.
+# Secrets (JWT, signing keys, DB DSN, Redis URL, OpenAI / Anthropic / Stripe)
+# come from ExternalSecret -> Vault. See externalsecrets.yaml.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: factors-api-env
+  namespace: greenlang-factors
+data:
+  # Runtime
+  GL_ENV: "production"
+  GL_LOG_LEVEL: "INFO"
+  GL_LOG_FORMAT: "json"
+  ENVIRONMENT: "production"
+  APP_NAME: "factors-api"
+  APP_PORT: "8080"
+  METRICS_PORT: "9090"
+  WORKERS: "4"
+
+  # Factors-specific defaults (overlays can override)
+  GL_FACTORS_TIER: "community"
+  GL_FACTORS_DEFAULT_EDITION: "latest"
+
+  # OpenTelemetry (OBS-003)
+  OTEL_SERVICE_NAME: "factors-api"
+  OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector.observability.svc.cluster.local:4317"
+  OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
+  OTEL_RESOURCE_ATTRIBUTES: "service.name=factors-api,service.namespace=greenlang,deployment.environment=production"
+  OTEL_TRACES_SAMPLER: "parentbased_traceidratio"
+  OTEL_TRACES_SAMPLER_ARG: "0.1"
+
+  # Prometheus exporter (OBS-001)
+  PROMETHEUS_MULTIPROC_DIR: "/tmp/prom-metrics"
+
+  # Loki log agent (INFRA-009) picks up stdout via Promtail DaemonSet
+
+  # Stripe webhook tolerance (seconds)
+  STRIPE_WEBHOOK_TOLERANCE: "300"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: factors-worker-env
+  namespace: greenlang-factors
+data:
+  GL_ENV: "production"
+  GL_LOG_LEVEL: "INFO"
+  GL_LOG_FORMAT: "json"
+  APP_NAME: "factors-worker"
+  WORKERS: "2"
+  GL_FACTORS_WATCH_SCHEDULE_SOURCE: "k8s-deployment"
+  OTEL_SERVICE_NAME: "factors-worker"
+  OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector.observability.svc.cluster.local:4317"
+  OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"

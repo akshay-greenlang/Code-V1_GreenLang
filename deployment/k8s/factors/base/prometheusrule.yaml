@@ -1,0 +1,141 @@
+---
+# OBS-004 alerting rules for factors-api. Wired to PagerDuty (critical)
+# and Slack #factors-alerts (warning) through AlertManager routes keyed
+# on labels below.
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: factors-api
+  namespace: greenlang-factors
+  labels:
+    release: prometheus-operator
+    greenlang.io/service: factors
+spec:
+  groups:
+    - name: factors-api.slo
+      interval: 30s
+      rules:
+        # SLO: p95 latency <= 500ms (OBS-005)
+        - alert: FactorsAPIHighLatencyP95
+          expr: |
+            histogram_quantile(
+              0.95,
+              sum by (le) (
+                rate(http_request_duration_seconds_bucket{service="factors-api"}[5m])
+              )
+            ) > 0.5
+          for: 5m
+          labels:
+            severity: warning
+            service: factors-api
+            slo: latency-p95
+            pagerduty_service: greenlang-factors
+          annotations:
+            summary: "factors-api p95 latency > 500ms"
+            description: "p95 HTTP latency is {{ $value | humanizeDuration }} over the last 5m. Investigate pod CPU, DB latency, and embedding-model external calls."
+            runbook_url: "https://github.com/greenlang/greenlang/blob/main/docs/deployment/FACTORS-API-DEPLOY.md#incident-p95-high"
+
+        # SLO: 5xx error rate <= 1% (OBS-005)
+        - alert: FactorsAPIHighErrorRate
+          expr: |
+            (
+              sum(rate(http_requests_total{service="factors-api",status=~"5.."}[5m]))
+              /
+              sum(rate(http_requests_total{service="factors-api"}[5m]))
+            ) > 0.01
+          for: 5m
+          labels:
+            severity: critical
+            service: factors-api
+            slo: availability
+            pagerduty_service: greenlang-factors
+          annotations:
+            summary: "factors-api 5xx rate > 1%"
+            description: "Observed 5xx rate is {{ $value | humanizePercentage }} over the last 5m. Check pod logs, recent deploy, and DB connectivity."
+            runbook_url: "https://github.com/greenlang/greenlang/blob/main/docs/deployment/FACTORS-API-DEPLOY.md#incident-5xx-high"
+
+    - name: factors-api.signing
+      interval: 30s
+      rules:
+        # Signed-receipt middleware failure: any failure is a critical bug
+        - alert: FactorsSigningFailures
+          expr: |
+            sum(rate(factors_signing_failures_total[5m])) > 0
+          for: 5m
+          labels:
+            severity: critical
+            service: factors-api
+            subsystem: signing
+            pagerduty_service: greenlang-factors
+          annotations:
+            summary: "factors-api signed-receipt failures detected"
+            description: "{{ $value | humanize }} signing failures/sec over the last 5m. Signed receipts protect the audit trail — halt deploys until resolved."
+            runbook_url: "https://github.com/greenlang/greenlang/blob/main/docs/deployment/FACTORS-API-DEPLOY.md#incident-signing-broken"
+
+        # Source-license violation detected in provenance checks
+        - alert: FactorsSourceLicenseViolation
+          expr: |
+            sum(increase(factors_license_violation_total[15m])) > 0
+          for: 1m
+          labels:
+            severity: critical
+            service: factors-api
+            subsystem: licensing
+            pagerduty_service: greenlang-factors
+          annotations:
+            summary: "factors-api source-license violation detected"
+            description: "A redistribution check failed. Freeze any active publishing job and page the legal on-call."
+            runbook_url: "https://github.com/greenlang/greenlang/blob/main/docs/deployment/FACTORS-API-DEPLOY.md#incident-license-violation"
+
+    - name: factors-api.availability
+      interval: 30s
+      rules:
+        # Replica count drops below PDB minAvailable
+        - alert: FactorsAPIReplicasBelowPDB
+          expr: |
+            kube_deployment_status_replicas_available{
+              namespace="greenlang-factors",
+              deployment="factors-api"
+            } < 2
+          for: 1m
+          labels:
+            severity: critical
+            service: factors-api
+            pagerduty_service: greenlang-factors
+          annotations:
+            summary: "factors-api has fewer than 2 healthy replicas"
+            description: "Available replicas = {{ $value }}. PDB minAvailable is 2 — a rolling update or node drain will block. Investigate pod crashes or cluster capacity."
+            runbook_url: "https://github.com/greenlang/greenlang/blob/main/docs/deployment/FACTORS-API-DEPLOY.md#incident-replicas-low"
+
+        # Pod crash-looping
+        - alert: FactorsAPICrashLooping
+          expr: |
+            rate(kube_pod_container_status_restarts_total{
+              namespace="greenlang-factors",
+              pod=~"factors-api-.*"
+            }[15m]) * 60 * 15 > 3
+          for: 5m
+          labels:
+            severity: warning
+            service: factors-api
+          annotations:
+            summary: "factors-api pod crash-looping"
+            description: "Pod {{ $labels.pod }} restarted more than 3 times in 15m."
+
+    - name: factors-api.tenancy
+      interval: 60s
+      rules:
+        # Tenant leak: a request carried a tier/edition header that doesn't match the JWT claim
+        - alert: FactorsTenantLeakSuspected
+          expr: |
+            sum(increase(factors_tenant_mismatch_total[10m])) > 0
+          for: 1m
+          labels:
+            severity: critical
+            service: factors-api
+            subsystem: tenancy
+            pagerduty_service: greenlang-factors
+          annotations:
+            summary: "factors-api tenant mismatch detected"
+            description: "A request was observed where the X-GreenLang-Tier header disagrees with the JWT claim. Possible credential replay or middleware bug. Page the security on-call."
+            runbook_url: "https://github.com/greenlang/greenlang/blob/main/docs/deployment/FACTORS-API-DEPLOY.md#incident-tenant-leak"

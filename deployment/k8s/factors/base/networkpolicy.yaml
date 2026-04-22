@@ -1,0 +1,149 @@
+---
+# Default-deny + explicit allow lists, one policy per direction.
+# Egress allowlist is driven by the outbound hostnames used in main.py:
+#   - Postgres (INFRA-002 RDS)                        - kube-system DNS -> RDS CIDR
+#   - Redis (INFRA-003 ElastiCache)                   - same
+#   - api.openai.com                                  - embeddings matcher
+#   - api.anthropic.com                               - LLM rerank
+#   - api.stripe.com                                  - billing/webhooks
+#   - Vault (internal DNS)                            - secret refresh
+#   - OTel collector + Prometheus + Loki (in-cluster) - observability
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: factors-api-default-deny
+  namespace: greenlang-factors
+spec:
+  podSelector: {}
+  policyTypes: [Ingress, Egress]
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: factors-api-ingress
+  namespace: greenlang-factors
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: factors-api
+      app.kubernetes.io/component: api
+  policyTypes: [Ingress]
+  ingress:
+    # Kong gateway (INFRA-006)
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kong
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: api-gateway
+      ports:
+        - protocol: TCP
+          port: 8080
+    # Prometheus ServiceMonitor scrape (OBS-001) on metrics port only
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: observability
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: prometheus
+      ports:
+        - protocol: TCP
+          port: 9090
+    # Intra-namespace (worker -> api heartbeat is currently none; reserved)
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/part-of: greenlang
+      ports:
+        - protocol: TCP
+          port: 8080
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: factors-api-egress
+  namespace: greenlang-factors
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/part-of: greenlang
+  policyTypes: [Egress]
+  egress:
+    # DNS resolution
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+    # Postgres (RDS) and Redis (ElastiCache) via VPC CIDR
+    - to:
+        - ipBlock:
+            cidr: 10.0.0.0/16
+      ports:
+        - protocol: TCP
+          port: 5432
+        - protocol: TCP
+          port: 6379
+    # Vault (SEC-006) in-cluster
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: security
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: vault
+      ports:
+        - protocol: TCP
+          port: 8200
+    # Observability sinks (OBS-001 Prometheus pushgateway, OBS-003 OTel, Loki)
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: observability
+      ports:
+        - protocol: TCP
+          port: 4317     # OTLP gRPC
+        - protocol: TCP
+          port: 4318     # OTLP HTTP
+        - protocol: TCP
+          port: 3100     # Loki
+        - protocol: TCP
+          port: 9091     # Prometheus pushgateway
+    # External APIs over HTTPS only (OpenAI, Anthropic, Stripe).
+    # Egress to IPs is handled by the cluster's egress proxy (INFRA-006)
+    # which enforces the FQDN allowlist below via SNI. This rule pins
+    # the L4 port.
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: egress-proxy
+      ports:
+        - protocol: TCP
+          port: 443
+---
+# FQDN allowlist consumed by the egress proxy (INFRA-006 Kong egress).
+# Kept here so ownership is clear. Format: config for the cluster-wide
+# egress policy controller (e.g., Cilium DNS policy). If the cluster does
+# not run a DNS-aware policy controller, the egress-proxy namespace
+# enforces the list via its own config.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: factors-egress-fqdn-allowlist
+  namespace: greenlang-factors
+data:
+  allowed_fqdns: |
+    api.openai.com
+    api.anthropic.com
+    api.stripe.com
+    vault.security.svc.cluster.local

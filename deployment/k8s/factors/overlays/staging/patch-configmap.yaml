@@ -1,0 +1,14 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: factors-api-env
+  namespace: greenlang-factors
+data:
+  GL_ENV: "staging"
+  ENVIRONMENT: "staging"
+  GL_LOG_LEVEL: "DEBUG"
+  WORKERS: "2"
+  GL_FACTORS_TIER: "pro"        # Permissive default for staging callers
+  OTEL_RESOURCE_ATTRIBUTES: "service.name=factors-api,service.namespace=greenlang,deployment.environment=staging"
+  OTEL_TRACES_SAMPLER_ARG: "1.0" # 100% sampling in staging for debugging

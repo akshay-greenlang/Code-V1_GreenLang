@@ -823,6 +823,77 @@ class LicenseInfo:
     # e.g., ["internal_use_only", "no_derivative_works", "share_alike"]
 
 
+class EndOfLifeAllocationMethod(str, Enum):
+    """End-of-life allocation approach per ISO 14044 / EN 15804.
+
+    Used by GHG Protocol Scope 3 Cat 11 (Use of sold products) and
+    Cat 12 (End-of-life treatment) to distribute burdens and benefits
+    between the producer and the next life cycle.
+    """
+
+    CUT_OFF_100_1 = "100_1"            # 100% burdens -> producer; 0% to recycler
+    SPLIT_50_50 = "50_50"              # equal split producer/recycler
+    AVOIDED_BURDEN = "avoided_burden"  # system expansion with avoided-burden credits
+    NONE = "none"                      # no EoL allocation (cradle-to-gate only)
+
+
+@dataclass
+class UsePhaseParameters:
+    """Scope 3 Category 11 "Use of sold products" lifecycle parameters.
+
+    Implements GHG Protocol Scope 3 Standard §5.4 Category 11 + the
+    Scope 3 Technical Guidance §11.3.1 / 11.3.2. All fields optional
+    because Cat 11 is applied only to products with meaningful use-
+    phase emissions; combustion / material factors leave these null.
+
+    Examples
+    --------
+    * Refrigerator: ``product_lifetime_years=14``,
+      ``use_phase_energy_kwh=1.1`` (per day), ``use_phase_frequency_per_year=365``,
+      ``end_of_life_allocation_method=CUT_OFF_100_1``.
+    * Jet engine fuel burn: ``product_lifetime_years=25``,
+      ``use_phase_energy_kwh`` omitted (fuel is tracked separately).
+    """
+
+    product_lifetime_years: Optional[float] = None
+    use_phase_energy_kwh: Optional[float] = None
+    use_phase_frequency_per_year: Optional[float] = None
+    end_of_life_allocation_method: Optional[EndOfLifeAllocationMethod] = None
+
+    def __post_init__(self) -> None:
+        for attr in (
+            "product_lifetime_years",
+            "use_phase_energy_kwh",
+            "use_phase_frequency_per_year",
+        ):
+            value = getattr(self, attr)
+            if value is not None and float(value) < 0:
+                raise ValueError(
+                    f"{attr} must be non-negative, got {value}"
+                )
+        if isinstance(self.end_of_life_allocation_method, str):
+            # Accept raw string enum values for YAML-loaded factors.
+            self.end_of_life_allocation_method = EndOfLifeAllocationMethod(
+                self.end_of_life_allocation_method
+            )
+
+    def lifetime_use_phase_energy_kwh(self) -> Optional[float]:
+        """Return the lifetime energy footprint in kWh, or None when under-specified.
+
+        Computed as ``use_phase_energy_kwh * use_phase_frequency_per_year *
+        product_lifetime_years``. Returns ``None`` if any term is missing.
+        """
+        if (
+            self.use_phase_energy_kwh is None
+            or self.use_phase_frequency_per_year is None
+            or self.product_lifetime_years is None
+        ):
+            return None
+        return float(self.use_phase_energy_kwh) * float(
+            self.use_phase_frequency_per_year
+        ) * float(self.product_lifetime_years)
+
+
 @dataclass
 class EmissionFactorRecord:
     """
@@ -931,6 +1002,13 @@ class EmissionFactorRecord:
     raw_record_ref: Optional[Any] = None            # canonical_v2.RawRecordRef
     change_log: List[Any] = field(default_factory=list)  # [canonical_v2.ChangeLogEntry]
     next_review_date: Optional[date] = None
+
+    # Scope 3 Cat 11 "Use of sold products" lifecycle parameters. Only
+    # populated for product factors that carry meaningful use-phase
+    # emissions (appliances, vehicles, electronics). See
+    # ``UsePhaseParameters`` for field semantics + reference. Left as
+    # ``None`` for combustion / grid / material factors.
+    use_phase: Optional[Any] = None                 # UsePhaseParameters
 
     # ==================== CALCULATED FIELDS ====================
     content_hash: str = field(init=False, default="")  # SHA-256 of factor data

@@ -314,14 +314,21 @@ class ResolvedFactor(_SDKResponseModel):
 
 
 class FactorDiff(_SDKResponseModel):
-    """Field-by-field diff returned by /factors/{id}/diff."""
+    """Field-by-field diff returned by /factors/{id}/diff.
+
+    Non-factor_id fields are optional so the SDK can parse partial /
+    mocked responses where e.g. `left_edition` is carried on the
+    response header instead of the body.
+    """
 
     factor_id: str
-    left_edition: str
-    right_edition: str
-    status: str = Field(
-        ..., description="unchanged | changed | added | removed | not_found"
+    left_edition: Optional[str] = Field(None)
+    right_edition: Optional[str] = Field(None)
+    status: Optional[str] = Field(
+        None, description="unchanged | changed | added | removed | not_found"
     )
+    left: Dict[str, Any] = Field(default_factory=dict)
+    right: Dict[str, Any] = Field(default_factory=dict)
     left_exists: Optional[bool] = Field(None)
     right_exists: Optional[bool] = Field(None)
     changes: List[Dict[str, Any]] = Field(default_factory=list)
@@ -330,10 +337,15 @@ class FactorDiff(_SDKResponseModel):
 
 
 class AuditBundle(_SDKResponseModel):
-    """Full audit bundle from /factors/{id}/audit-bundle (Enterprise only)."""
+    """Full audit bundle from /factors/{id}/audit-bundle (Enterprise only).
+
+    ``edition_id`` is usually delivered in the response body but may be
+    carried in the ``X-GreenLang-Edition`` header for mock / partial
+    responses — leave it optional so SDK parsing survives either shape.
+    """
 
     factor_id: str
-    edition_id: str
+    edition_id: Optional[str] = Field(None)
     content_hash: Optional[str] = Field(None)
     payload_sha256: Optional[str] = Field(None)
     normalized_record: Dict[str, Any] = Field(default_factory=dict)

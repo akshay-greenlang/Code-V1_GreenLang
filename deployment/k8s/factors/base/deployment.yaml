@@ -1,0 +1,165 @@
+---
+# =============================================================================
+# Factors API — FastAPI deployment
+# =============================================================================
+# IMPORTANT: The Dockerfile's production CMD currently points at
+# `greenlang.factors.api:app` which does NOT exist. The correct module is
+# `greenlang.integration.api.main:app`. Until the Dockerfile is patched,
+# this deployment OVERRIDES the CMD via `command:` so the pod starts
+# against the real app. When the Dockerfile is fixed, the `command:`
+# block below can be deleted.
+# =============================================================================
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: factors-api
+  namespace: greenlang-factors
+  labels:
+    app.kubernetes.io/name: factors-api
+    app.kubernetes.io/component: api
+spec:
+  replicas: 3
+  revisionHistoryLimit: 10
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: factors-api
+      app.kubernetes.io/component: api
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: factors-api
+        app.kubernetes.io/component: api
+      annotations:
+        prometheus.io/scrape: "false"   # ServiceMonitor scrapes instead
+        # Force pod restart when secrets rotate
+        reloader.stakater.com/auto: "true"
+    spec:
+      serviceAccountName: factors-api
+      terminationGracePeriodSeconds: 30
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: factors-api
+              app.kubernetes.io/component: api
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                topologyKey: kubernetes.io/hostname
+                labelSelector:
+                  matchLabels:
+                    app.kubernetes.io/name: factors-api
+                    app.kubernetes.io/component: api
+      containers:
+        - name: factors-api
+          image: ghcr.io/greenlang/factors-api:staging
+          imagePullPolicy: IfNotPresent
+          # ── TEMPORARY OVERRIDE (see file header) ──
+          command: ["/usr/bin/tini", "--"]
+          args:
+            - uvicorn
+            - greenlang.integration.api.main:app
+            - --host=0.0.0.0
+            - --port=8080
+            - --workers=4
+            - --access-log
+            - --proxy-headers
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+            - name: metrics
+              containerPort: 9090
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: factors-api-env
+            - secretRef:
+                name: factors-api-secrets
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "1Gi"
+              ephemeral-storage: "512Mi"
+            limits:
+              cpu: "2000m"
+              memory: "4Gi"
+              ephemeral-storage: "2Gi"
+          readinessProbe:
+            httpGet:
+              path: /api/v1/health
+              port: http
+              scheme: HTTP
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+            successThreshold: 1
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /api/v1/health
+              port: http
+              scheme: HTTP
+            initialDelaySeconds: 30
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 3
+          startupProbe:
+            httpGet:
+              path: /api/v1/health
+              port: http
+              scheme: HTTP
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 24   # 2 minutes cold-start budget
+          lifecycle:
+            preStop:
+              exec:
+                # SIGTERM reaches uvicorn via tini; sleep gives the Service
+                # endpoints controller time to drop this pod before the
+                # worker process starts refusing new connections.
+                command: ["/bin/sh", "-c", "sleep 10"]
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 10001
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+            - name: cache
+              mountPath: /var/cache/greenlang
+            - name: prom-metrics
+              mountPath: /tmp/prom-metrics
+      volumes:
+        - name: tmp
+          emptyDir:
+            medium: Memory
+            sizeLimit: 128Mi
+        - name: cache
+          emptyDir:
+            sizeLimit: 1Gi
+        - name: prom-metrics
+          emptyDir:
+            medium: Memory
+            sizeLimit: 64Mi

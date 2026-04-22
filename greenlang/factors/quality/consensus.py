@@ -341,8 +341,21 @@ def _role_weight(
     return weights
 
 
-def _dissent_captured(votes: Sequence[ReviewerVote]) -> bool:
-    """True if every REJECT/ABSTAIN vote has non-empty dissent notes."""
+def _dissent_captured(
+    votes: Sequence[ReviewerVote],
+    *,
+    required: bool = True,
+) -> bool:
+    """True if every REJECT/ABSTAIN vote has non-empty dissent notes.
+
+    When ``required`` is False (config.dissent_capture_required=False),
+    we treat dissent-capture as vacuously satisfied — there is no
+    obligation to capture dissent, so the flag cannot fail.  This matches
+    the contract expected by ``evaluate_consensus`` callers where a
+    config explicitly opts out of dissent capture.
+    """
+    if not required:
+        return True
     for vote in votes:
         if vote.decision in (VoteDecision.REJECT, VoteDecision.ABSTAIN):
             if not (vote.dissent_notes or "").strip():
@@ -392,7 +405,9 @@ def evaluate_consensus(
     rejections = [v for v in valid_votes if v.decision == VoteDecision.REJECT]
     met = _role_counts(approvals)
 
-    dissent_ok = _dissent_captured(valid_votes)
+    dissent_ok = _dissent_captured(
+        valid_votes, required=config.dissent_capture_required
+    )
 
     # A single rejection short-circuits UNANIMOUS and triggers REJECTED.
     if rejections:

@@ -23,6 +23,15 @@ from greenlang.factors.security.audit import (
     check_cors_config,
     check_auth_config,
 )
+from greenlang.factors.security.tenant_vault_transit import (
+    TenantKeyAccessError,
+    TenantVaultTransit,
+    TenantVaultTransitError,
+    TransitAuditEntry,
+    VaultUnavailableInProductionError,
+    default_transit,
+    reset_default_transit,
+)
 
 __all__ = [
     "sanitize_search_query",
@@ -37,4 +46,11 @@ __all__ = [
     "check_headers",
     "check_cors_config",
     "check_auth_config",
+    "TenantVaultTransit",
+    "TenantVaultTransitError",
+    "TenantKeyAccessError",
+    "VaultUnavailableInProductionError",
+    "TransitAuditEntry",
+    "default_transit",
+    "reset_default_transit",
 ]

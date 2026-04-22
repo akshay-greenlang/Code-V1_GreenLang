@@ -53,7 +53,7 @@ PRODUCT_CARBON = MethodPack(
         "Factor: {factor_id}. Boundary: {boundary}. Allocation: "
         "{allocation_method}. Recycled content: {recycled_content_pct}%."
     ),
-    pack_version="0.5.0",
+    pack_version="1.0.0",
     tags=("product", "licensed"),     # Product Carbon Pack is a premium SKU
 )
 

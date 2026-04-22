@@ -52,7 +52,18 @@ CORPORATE_SCOPE1 = MethodPack(
     gwp_basis="IPCC_AR6_100",
     region_hierarchy=DEFAULT_FALLBACK,
     deprecation=_DEPRECATION,
-    reporting_labels=("GHG_Protocol", "IFRS_S2", "ISO_14064"),
+    reporting_labels=(
+        "GHG_Protocol",
+        "IFRS_S2",
+        "ISO_14064",
+        "CSRD_E1",       # EU CSRD ESRS E1 Climate
+        "CA_SB253",      # California Climate Corporate Data Accountability Act
+        "UK_SECR",       # UK Streamlined Energy & Carbon Reporting
+        "India_BRSR",    # India Business Responsibility & Sustainability Report
+        "TCFD",          # legacy TCFD disclosures (still referenced by many)
+        "SBTi",          # Science Based Targets initiative
+        "CDP",           # CDP climate questionnaire
+    ),
     audit_text_template=(
         "Scope 1 direct emissions computed per GHG Protocol Corporate Standard. "
         "Factor: {factor_id} (source: {source_org}, vintage: {source_year}). "
@@ -85,7 +96,17 @@ CORPORATE_SCOPE2_LOCATION = MethodPack(
     gwp_basis="IPCC_AR6_100",
     region_hierarchy=DEFAULT_FALLBACK,
     deprecation=_DEPRECATION,
-    reporting_labels=("GHG_Protocol_Scope2", "IFRS_S2"),
+    reporting_labels=(
+        "GHG_Protocol_Scope2",
+        "IFRS_S2",
+        "CSRD_E1",
+        "CA_SB253",
+        "UK_SECR",
+        "India_BRSR",
+        "TCFD",
+        "SBTi",
+        "CDP",
+    ),
     audit_text_template=(
         "Scope 2 location-based emissions per GHG Protocol Scope 2 Guidance. "
         "Grid factor: {factor_id} ({geography}, {source_year}). RECs / GOs / "
@@ -122,7 +143,18 @@ CORPORATE_SCOPE2_MARKET = MethodPack(
     gwp_basis="IPCC_AR6_100",
     region_hierarchy=DEFAULT_FALLBACK,
     deprecation=_DEPRECATION,
-    reporting_labels=("GHG_Protocol_Scope2", "IFRS_S2", "RE100"),
+    reporting_labels=(
+        "GHG_Protocol_Scope2",
+        "IFRS_S2",
+        "RE100",
+        "CSRD_E1",
+        "CA_SB253",
+        "UK_SECR",
+        "India_BRSR",
+        "TCFD",
+        "SBTi",
+        "CDP",
+    ),
     audit_text_template=(
         "Scope 2 market-based emissions per GHG Protocol. Supplier contract: "
         "{supplier}; certificate: {certificate}. When no contract applies, "
@@ -139,16 +171,22 @@ CORPORATE_SCOPE3 = MethodPack(
     description=(
         "Value-chain emissions across 15 categories. Spend-based, average-"
         "data, supplier-specific, and hybrid methods allowed. Biogenic carbon "
-        "reported separately."
+        "reported separately. Category 11 'Use of sold products' draws on the "
+        "per-record :class:`UsePhaseParameters` block (product_lifetime_years, "
+        "use_phase_energy_kwh, use_phase_frequency_per_year, "
+        "end_of_life_allocation_method) per GHG Protocol Scope 3 Technical "
+        "Guidance §11.3."
     ),
     selection_rule=SelectionRule(
         allowed_families=(
             FactorFamily.EMISSIONS,
-            FactorFamily.MATERIAL_EMBODIED,
+            FactorFamily.MATERIAL_EMBODIED,          # Cat 1, Cat 2, Cat 11 use-phase
             FactorFamily.TRANSPORT_LANE,
             FactorFamily.WASTE_TREATMENT,
             FactorFamily.FINANCE_PROXY,
             FactorFamily.ENERGY_CONVERSION,
+            FactorFamily.GRID_INTENSITY,             # Cat 11 use-phase electricity draw
+            FactorFamily.LAND_USE_REMOVALS,          # Cat 1 upstream land-use emissions
         ),
         allowed_formula_types=(
             FormulaType.DIRECT_FACTOR,
@@ -167,13 +205,28 @@ CORPORATE_SCOPE3 = MethodPack(
     gwp_basis="IPCC_AR6_100",
     region_hierarchy=DEFAULT_FALLBACK,
     deprecation=_DEPRECATION,
-    reporting_labels=("GHG_Protocol_Scope3", "IFRS_S2"),
+    reporting_labels=(
+        "GHG_Protocol_Scope3",
+        "IFRS_S2",
+        "CSRD_E1",
+        "CA_SB253",       # SB253 requires Scope 3 starting 2027
+        "India_BRSR",     # BRSR Principle 6 climate touches Scope 3
+        "SBTi_FLAG",      # SBTi Forest/Land/Agriculture — Cat 1 upstream
+        "CDP",
+        "PCAF",           # for Cat 15 financed emissions
+    ),
+    # The audit template renders a Cat 11-specific block when the
+    # caller supplies ``cat11_use_phase`` truthy.  Resolution engine
+    # populates the Cat 11 slot from ``record.use_phase`` whenever
+    # ``scope3_category == "11"`` so the explainability carries the
+    # product-lifetime + use-phase math back to the auditor.
     audit_text_template=(
         "Scope 3 Cat {scope3_category} per GHG Protocol Scope 3 Standard. "
         "Method: {calculation_method}. Factor: {factor_id}. Data quality: "
-        "{dqs_score}/100."
+        "{dqs_score}/100. "
+        "{cat11_use_phase_block}"
     ),
-    pack_version="1.0.0",
+    pack_version="1.1.0",
     tags=("open_core",),
 )
 
@@ -188,9 +241,39 @@ for _pack in (
     register_pack(_pack)
 
 
+def render_cat11_use_phase_block(use_phase: object) -> str:
+    """Render the Cat 11 use-phase sub-block for the Scope 3 audit template.
+
+    Accepts a :class:`~greenlang.data.emission_factor_record.UsePhaseParameters`
+    instance (or any object exposing the four product-lifetime attributes)
+    and returns a human-readable string ready for substitution into
+    ``CORPORATE_SCOPE3.audit_text_template`` via the ``cat11_use_phase_block``
+    placeholder. Returns an empty string when ``use_phase`` is ``None`` so
+    the template collapses cleanly for non-Cat-11 categories.
+    """
+    if use_phase is None:
+        return ""
+    lifetime = getattr(use_phase, "product_lifetime_years", None)
+    energy = getattr(use_phase, "use_phase_energy_kwh", None)
+    freq = getattr(use_phase, "use_phase_frequency_per_year", None)
+    eol = getattr(use_phase, "end_of_life_allocation_method", None)
+    parts = ["Cat 11 use-phase (GHG Protocol Scope 3 TG §11.3):"]
+    if lifetime is not None:
+        parts.append(f"lifetime={lifetime} yr")
+    if energy is not None:
+        parts.append(f"per-use={energy} kWh")
+    if freq is not None:
+        parts.append(f"freq={freq}/yr")
+    if eol is not None:
+        eol_value = getattr(eol, "value", eol)
+        parts.append(f"EoL={eol_value}")
+    return "; ".join(parts) + "."
+
+
 __all__ = [
     "CORPORATE_SCOPE1",
     "CORPORATE_SCOPE2_LOCATION",
     "CORPORATE_SCOPE2_MARKET",
     "CORPORATE_SCOPE3",
+    "render_cat11_use_phase_block",
 ]

@@ -1,0 +1,857 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.greenlang.io/factors/factor_record_v1.schema.json",
+  "title": "GreenLang Factor Record v1.0",
+  "description": "Canonical frozen schema for a single GreenLang emission / parameter factor record. This schema is the authoritative contract between the Factor Catalog, the Resolution Engine, Method Packs, and all downstream compliance outputs. Any persisted factor row (raw or normalized) must validate against this schema. Version 1.0 frozen 2026-04-22.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "factor_id",
+    "factor_family",
+    "factor_name",
+    "method_profile",
+    "source_id",
+    "source_version",
+    "factor_version",
+    "status",
+    "jurisdiction",
+    "valid_from",
+    "valid_to",
+    "activity_schema",
+    "numerator",
+    "denominator",
+    "gwp_set",
+    "formula_type",
+    "parameters",
+    "quality",
+    "lineage",
+    "licensing",
+    "explainability"
+  ],
+  "properties": {
+    "factor_id": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 256,
+      "pattern": "^EF:[A-Za-z0-9_.:-]+$",
+      "description": "Globally unique factor identifier. MUST begin with 'EF:' and be stable across all versions of the same factor (use factor_version to disambiguate revisions). Example: 'EF:US:grid:eGRID-SERC:2024:v1'."
+    },
+    "factor_family": {
+      "type": "string",
+      "enum": [
+        "combustion",
+        "electricity",
+        "transport",
+        "materials_products",
+        "refrigerants",
+        "land_removals",
+        "finance_proxies",
+        "waste",
+        "energy_conversion",
+        "carbon_content",
+        "oxidation",
+        "heating_value",
+        "density",
+        "residual_mix",
+        "classification_mapping"
+      ],
+      "description": "Discriminator that selects the allowed 'parameters' sub-schema."
+    },
+    "factor_name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512,
+      "description": "Human-readable display name (localized en-US by default)."
+    },
+    "method_profile": {
+      "type": "string",
+      "enum": [
+        "corporate_scope1",
+        "corporate_scope2_location_based",
+        "corporate_scope2_market_based",
+        "corporate_scope3",
+        "product_carbon",
+        "product_iso14067",
+        "product_pact",
+        "freight_iso14083_glec_wtw",
+        "freight_iso14083_glec_ttw",
+        "land_removals_ghgp_lsr",
+        "finance_proxies_pcaf",
+        "eu_cbam",
+        "eu_dpp_battery",
+        "eu_dpp_textile"
+      ],
+      "description": "The methodology profile this factor is valid under. Non-negotiable #6: policy workflows must resolve through a method_profile."
+    },
+    "source_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "description": "Identifier of the upstream source dataset (e.g., 'EPA_eGRID', 'DEFRA_GHG_CF', 'IEA_EF'). When redistribution_class == 'customer_private', MUST be a tenant_id."
+    },
+    "source_version": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "description": "Version / release tag of the upstream source (e.g., '2024.1', 'v9.0'). Pinning the source version is required for reproducibility (non-negotiable #5)."
+    },
+    "factor_version": {
+      "type": "string",
+      "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$",
+      "description": "Semantic version of this factor row (MAJOR.MINOR.PATCH). Any change to numerator/denominator/parameters/quality MUST bump factor_version (non-negotiable #2)."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["draft", "under_review", "active", "deprecated", "retired"],
+      "description": "Lifecycle state. Only 'active' records are served to production resolution calls without explicit opt-in."
+    },
+    "jurisdiction": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["country"],
+      "properties": {
+        "country": {
+          "type": "string",
+          "pattern": "^[A-Z]{2}$",
+          "description": "ISO 3166-1 alpha-2 country code (e.g., 'US', 'IN', 'DE'). Use 'XX' for global / unspecified."
+        },
+        "region": {
+          "type": ["string", "null"],
+          "maxLength": 64,
+          "description": "Sub-national region code (ISO 3166-2 format, e.g., 'US-CA')."
+        },
+        "grid_region": {
+          "type": ["string", "null"],
+          "maxLength": 64,
+          "description": "Electricity grid sub-region (e.g., 'eGRID-SERC', 'NERC-WECC', 'ENTSOE-DE-LU')."
+        }
+      }
+    },
+    "valid_from": {
+      "type": "string",
+      "format": "date",
+      "description": "First calendar date the factor is valid for (ISO 8601 YYYY-MM-DD)."
+    },
+    "valid_to": {
+      "type": "string",
+      "format": "date",
+      "description": "Last calendar date the factor is valid for (ISO 8601 YYYY-MM-DD). MUST be strictly greater than valid_from. Use '9999-12-31' for open-ended."
+    },
+    "activity_schema": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["category"],
+      "properties": {
+        "category": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "description": "Top-level activity category (e.g., 'purchased_electricity', 'road_freight', 'stationary_combustion')."
+        },
+        "sub_category": {
+          "type": ["string", "null"],
+          "maxLength": 128,
+          "description": "Refinement of category (e.g., 'grid_average', 'residual_mix', 'HGV_rigid_17t')."
+        },
+        "classification_codes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9_-]*:[A-Za-z0-9._-]+$",
+            "description": "Qualified classification code: SCHEME:CODE (e.g., 'NAICS:221112', 'CN:7208', 'ISIC:D351', 'CPC:171')."
+          },
+          "uniqueItems": true,
+          "default": []
+        }
+      }
+    },
+    "numerator": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["unit"],
+      "properties": {
+        "co2": {
+          "type": ["number", "null"],
+          "minimum": 0,
+          "description": "Mass of CO2 emitted per denominator unit (kg CO2)."
+        },
+        "ch4": {
+          "type": ["number", "null"],
+          "minimum": 0,
+          "description": "Mass of CH4 emitted per denominator unit (kg CH4)."
+        },
+        "n2o": {
+          "type": ["number", "null"],
+          "minimum": 0,
+          "description": "Mass of N2O emitted per denominator unit (kg N2O)."
+        },
+        "co2e": {
+          "type": ["number", "null"],
+          "minimum": 0,
+          "description": "Total CO2-equivalent per denominator unit (kg CO2e). If populated, MUST equal co2*1 + ch4*GWP(ch4) + n2o*GWP(n2o) + f_gas terms within 0.1% tolerance (non-negotiable #1)."
+        },
+        "f_gases": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "number",
+            "minimum": 0
+          },
+          "description": "Optional F-gas contributions keyed by gas code (e.g., 'HFC-134a', 'SF6', 'NF3'). Values in kg gas per denominator unit."
+        },
+        "unit": {
+          "type": "string",
+          "enum": ["kg", "g", "t", "lb"],
+          "default": "kg",
+          "description": "Mass unit of the numerator gas quantities."
+        }
+      }
+    },
+    "denominator": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["value", "unit"],
+      "properties": {
+        "value": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Denominator magnitude (almost always 1.0 for per-unit factors)."
+        },
+        "unit": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 32,
+          "description": "Activity unit (e.g., 'kWh', 'MJ', 'L', 'gal', 'kg', 't', 't-km', 'v-km', 'TEU-km', 'USD', 'EUR')."
+        }
+      }
+    },
+    "gwp_set": {
+      "type": "string",
+      "enum": [
+        "IPCC_AR4_100",
+        "IPCC_AR5_100",
+        "IPCC_AR5_20",
+        "IPCC_AR6_100",
+        "IPCC_AR6_20",
+        "Kyoto_SAR_100"
+      ],
+      "description": "Reference GWP set used to compute numerator.co2e (if present). AR6_100 is the default for new records."
+    },
+    "formula_type": {
+      "type": "string",
+      "enum": [
+        "direct_factor",
+        "combustion",
+        "lca",
+        "spend_proxy",
+        "transport_chain",
+        "residual_mix",
+        "carbon_budget",
+        "custom"
+      ],
+      "description": "How the factor is applied to activity data."
+    },
+    "parameters": {
+      "type": "object",
+      "description": "Family-specific parameter payload. See oneOf discriminated union below for allowed keys per factor_family.",
+      "properties": {
+        "scope_applicability": {
+          "type": "array",
+          "items": { "type": "string", "enum": ["scope_1", "scope_2", "scope_3", "scope_4"] },
+          "uniqueItems": true,
+          "default": []
+        },
+        "uncertainty_low": {
+          "type": ["number", "null"],
+          "description": "Lower 95% CI bound as fractional deviation (e.g., 0.05 = -5%)."
+        },
+        "uncertainty_high": {
+          "type": ["number", "null"],
+          "description": "Upper 95% CI bound as fractional deviation (e.g., 0.05 = +5%)."
+        }
+      }
+    },
+    "quality": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "temporal_score",
+        "geographic_score",
+        "technology_score",
+        "verification_score",
+        "completeness_score",
+        "composite_fqs"
+      ],
+      "properties": {
+        "temporal_score": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5,
+          "description": "Temporal representativeness (1=poor, 5=excellent). Weight: 0.25."
+        },
+        "geographic_score": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5,
+          "description": "Geographic representativeness (1=poor, 5=excellent). Weight: 0.25."
+        },
+        "technology_score": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5,
+          "description": "Technology representativeness (1=poor, 5=excellent). Weight: 0.20."
+        },
+        "verification_score": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5,
+          "description": "Third-party verification strength (1=unverified, 5=regulator-approved). Weight: 0.15."
+        },
+        "completeness_score": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5,
+          "description": "Data completeness / boundary coverage (1=partial, 5=complete). Weight: 0.15."
+        },
+        "composite_fqs": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Composite Factor Quality Score on 0-100 scale. FQS = 20 * (0.25*temporal + 0.25*geographic + 0.20*technology + 0.15*verification + 0.15*completeness). MUST match the weighted average within +/-0.5."
+        }
+      }
+    },
+    "lineage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ingested_at", "ingested_by"],
+      "properties": {
+        "ingested_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "RFC 3339 timestamp of first ingest."
+        },
+        "ingested_by": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "description": "Agent or user who ingested the record. For customer_private records, MUST be a tenant_id in the format 'tenant:<uuid>'."
+        },
+        "approved_by": {
+          "type": ["string", "null"],
+          "maxLength": 256,
+          "description": "Reviewer who certified the record. Required before status transitions to 'active'."
+        },
+        "approved_at": {
+          "type": ["string", "null"],
+          "format": "date-time",
+          "description": "Timestamp of certification."
+        },
+        "change_reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048,
+          "description": "Free-text reason for the most recent change (non-negotiable #2). Required on every write."
+        },
+        "previous_factor_version": {
+          "type": ["string", "null"],
+          "description": "factor_version superseded by this row (semver)."
+        },
+        "raw_record_ref": {
+          "type": ["object", "null"],
+          "additionalProperties": false,
+          "properties": {
+            "raw_record_id": { "type": "string" },
+            "raw_payload_hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+            "raw_format": { "type": "string", "enum": ["csv", "xml", "json", "pdf_ocr", "yaml", "xlsx", "api"] },
+            "storage_uri": { "type": ["string", "null"], "format": "uri" }
+          },
+          "required": ["raw_record_id", "raw_payload_hash", "raw_format"]
+        }
+      }
+    },
+    "licensing": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["redistribution_class", "customer_entitlement_required"],
+      "properties": {
+        "redistribution_class": {
+          "type": "string",
+          "enum": ["open", "restricted", "licensed", "customer_private"],
+          "description": "open = free redistributable; restricted = API-only, no bulk export; licensed = licensed premium, OEM-resellable; customer_private = tenant-scoped, never cross-tenant (non-negotiable #4)."
+        },
+        "customer_entitlement_required": {
+          "type": "boolean",
+          "description": "If true, caller must hold an explicit entitlement token for this factor's source_id."
+        },
+        "license_name": {
+          "type": ["string", "null"],
+          "maxLength": 128,
+          "description": "SPDX-style identifier where applicable (e.g., 'CC-BY-4.0', 'CC0-1.0', 'OGL-UK-3.0', 'proprietary')."
+        },
+        "license_url": {
+          "type": ["string", "null"],
+          "format": "uri"
+        },
+        "attribution_required": {
+          "type": "boolean",
+          "default": false
+        },
+        "restrictions": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": []
+        }
+      }
+    },
+    "explainability": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["assumptions", "fallback_rank"],
+      "properties": {
+        "assumptions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1024
+          },
+          "description": "Ordered list of short, human-readable assumption strings that MUST be surfaced in the /explain endpoint (non-negotiable #3).",
+          "default": []
+        },
+        "fallback_rank": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 7,
+          "description": "Position of this factor in the MethodPack fallback hierarchy. 1 = customer override / primary data, 7 = global default."
+        },
+        "rationale": {
+          "type": ["string", "null"],
+          "maxLength": 2048,
+          "description": "Short natural-language summary of why this factor was chosen / how it was derived."
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "$comment": "INVARIANT valid_from < valid_to (non-negotiable, enforced as a formatted date comparison at write time)."
+    }
+  ],
+  "oneOf": [
+    {
+      "title": "combustion parameters",
+      "properties": {
+        "factor_family": { "const": "combustion" },
+        "parameters": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["fuel_code"],
+          "properties": {
+            "scope_applicability": { "$ref": "#/properties/parameters/properties/scope_applicability" },
+            "uncertainty_low": { "$ref": "#/properties/parameters/properties/uncertainty_low" },
+            "uncertainty_high": { "$ref": "#/properties/parameters/properties/uncertainty_high" },
+            "fuel_code": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "description": "Canonical fuel identifier (e.g., 'diesel', 'natural_gas', 'anthracite', 'biodiesel_b100')."
+            },
+            "LHV": {
+              "type": ["number", "null"],
+              "minimum": 0,
+              "description": "Lower heating value (MJ per denominator unit)."
+            },
+            "HHV": {
+              "type": ["number", "null"],
+              "minimum": 0,
+              "description": "Higher heating value (MJ per denominator unit). HHV MUST be >= LHV when both present."
+            },
+            "density": {
+              "type": ["number", "null"],
+              "exclusiveMinimum": 0,
+              "description": "Fuel density (kg/L for liquids, kg/m3 for gases) at reference conditions."
+            },
+            "oxidation_factor": {
+              "type": ["number", "null"],
+              "minimum": 0,
+              "maximum": 1,
+              "description": "Fraction of carbon oxidized to CO2 (IPCC 2006). Default 1.0 for liquid/gas, ~0.98 for coal."
+            },
+            "fossil_carbon_share": {
+              "type": ["number", "null"],
+              "minimum": 0,
+              "maximum": 1,
+              "description": "Fraction of carbon in the fuel that is fossil (0 for pure biofuel, 1 for fossil)."
+            },
+            "biogenic_carbon_share": {
+              "type": ["number", "null"],
+              "minimum": 0,
+              "maximum": 1,
+              "description": "Fraction of carbon that is biogenic. MUST satisfy fossil + biogenic <= 1.0."
+            },
+            "sulfur_share": {
+              "type": ["number", "null"],
+              "minimum": 0,
+              "maximum": 1,
+              "description": "Mass fraction of sulfur (kg S / kg fuel). Used for SOx co-reporting."
+            },
+            "moisture_share": {
+              "type": ["number", "null"],
+              "minimum": 0,
+              "maximum": 1,
+              "description": "Mass fraction of moisture (kg H2O / kg fuel as-received)."
+            },
+            "ash_share": {
+              "type": ["number", "null"],
+              "minimum": 0,
+              "maximum": 1,
+              "description": "Mass fraction of ash (kg ash / kg fuel as-received)."
+            }
+          }
+        }
+      }
+    },
+    {
+      "title": "electricity parameters",
+      "properties": {
+        "factor_family": { "const": "electricity" },
+        "parameters": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["electricity_basis"],
+          "properties": {
+            "scope_applicability": { "$ref": "#/properties/parameters/properties/scope_applicability" },
+            "uncertainty_low": { "$ref": "#/properties/parameters/properties/uncertainty_low" },
+            "uncertainty_high": { "$ref": "#/properties/parameters/properties/uncertainty_high" },
+            "electricity_basis": {
+              "type": "string",
+              "enum": ["location", "market", "supplier", "residual"],
+              "description": "GHG Protocol Scope 2 basis for this factor."
+            },
+            "supplier_specific": {
+              "type": "boolean",
+              "default": false,
+              "description": "True when this factor represents a specific supplier contract (e.g., green tariff)."
+            },
+            "residual_mix_applicable": {
+              "type": "boolean",
+              "default": false,
+              "description": "True when this factor is the residual mix (contractual instruments removed)."
+            },
+            "certificate_handling": {
+              "type": ["string", "null"],
+              "enum": ["GO", "REC", "I-REC", null],
+              "description": "Contractual instrument type reflected in this factor (null for pure location-based)."
+            },
+            "td_loss_included": {
+              "type": "boolean",
+              "default": false,
+              "description": "True when transmission & distribution losses are already baked in."
+            },
+            "subregion_code": {
+              "type": ["string", "null"],
+              "maxLength": 64,
+              "description": "Grid sub-region code (e.g., 'eGRID-SERC', 'NERC-WECC')."
+            }
+          }
+        }
+      }
+    },
+    {
+      "title": "transport parameters",
+      "properties": {
+        "factor_family": { "const": "transport" },
+        "parameters": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["mode"],
+          "properties": {
+            "scope_applicability": { "$ref": "#/properties/parameters/properties/scope_applicability" },
+            "uncertainty_low": { "$ref": "#/properties/parameters/properties/uncertainty_low" },
+            "uncertainty_high": { "$ref": "#/properties/parameters/properties/uncertainty_high" },
+            "mode": {
+              "type": "string",
+              "enum": ["road", "rail", "sea", "air", "inland_waterway"]
+            },
+            "vehicle_class": {
+              "type": ["string", "null"],
+              "maxLength": 128,
+              "description": "Vehicle class per GLEC (e.g., 'HGV_rigid_17t', 'container_vessel_14000TEU', 'B777F')."
+            },
+            "payload_basis": {
+              "type": "string",
+              "enum": ["t-km", "v-km", "TEU-km", "pax-km"],
+              "description": "Activity basis."
+            },
+            "distance_basis": {
+              "type": "string",
+              "enum": ["great_circle", "route", "route_with_empty"]
+            },
+            "empty_running_assumption": {
+              "type": ["number", "null"],
+              "minimum": 0,
+              "maximum": 1,
+              "description": "Fraction of distance run empty."
+            },
+            "utilization_rate": {
+              "type": ["number", "null"],
+              "minimum": 0,
+              "maximum": 1,
+              "description": "Load factor (0-1)."
+            },
+            "refrigerated": {
+              "type": "boolean",
+              "default": false
+            },
+            "energy_basis": {
+              "type": "string",
+              "enum": ["WTW", "TTW", "TTT", "WTT"],
+              "description": "WTW = well-to-wheel, TTW = tank-to-wheel, TTT = tank-to-tank (operational), WTT = well-to-tank."
+            }
+          }
+        }
+      }
+    },
+    {
+      "title": "materials_products parameters",
+      "properties": {
+        "factor_family": { "const": "materials_products" },
+        "parameters": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["boundary", "allocation_method"],
+          "properties": {
+            "scope_applicability": { "$ref": "#/properties/parameters/properties/scope_applicability" },
+            "uncertainty_low": { "$ref": "#/properties/parameters/properties/uncertainty_low" },
+            "uncertainty_high": { "$ref": "#/properties/parameters/properties/uncertainty_high" },
+            "boundary": {
+              "type": "string",
+              "enum": ["cradle_to_gate", "gate_to_gate", "cradle_to_grave"]
+            },
+            "allocation_method": {
+              "type": "string",
+              "enum": ["mass", "economic", "system_expansion"]
+            },
+            "recycled_content_assumption": {
+              "type": ["number", "null"],
+              "minimum": 0,
+              "maximum": 1,
+              "description": "Assumed recycled content fraction."
+            },
+            "supplier_primary_data_share": {
+              "type": ["number", "null"],
+              "minimum": 0,
+              "maximum": 1,
+              "description": "Share of inputs backed by primary supplier data (PACT-aligned)."
+            },
+            "pcr_reference": {
+              "type": ["string", "null"],
+              "maxLength": 256,
+              "description": "Product Category Rule reference (e.g., 'EN 15804:2012+A2:2019')."
+            },
+            "epd_reference": {
+              "type": ["string", "null"],
+              "maxLength": 256,
+              "description": "EPD identifier if this factor derives from an EPD."
+            },
+            "pact_compatible": {
+              "type": "boolean",
+              "default": false
+            },
+            "product_lifetime_years": {
+              "type": ["number", "null"],
+              "minimum": 0,
+              "description": "Product useful-life assumption in years (GHG Protocol Scope 3 Cat 11 §11.3.1). Drives the lifetime-multiplier of per-use emissions for 'Use of sold products'. Example: 10.0 for a typical refrigerator."
+            },
+            "use_phase_energy_kwh": {
+              "type": ["number", "null"],
+              "minimum": 0,
+              "description": "Energy consumption per use cycle in kWh for Cat 11 'direct use-phase emissions' per GHG Protocol Scope 3 Technical Guidance §11.3.2. Multiplied by use_phase_frequency_per_year * product_lifetime_years * grid_factor to yield lifetime use-phase emissions."
+            },
+            "use_phase_frequency_per_year": {
+              "type": ["number", "null"],
+              "minimum": 0,
+              "description": "Number of use cycles per year assumed for Cat 11. Example: 350 for daily laundry, 2190 for 6-times-daily kettle use."
+            },
+            "end_of_life_allocation_method": {
+              "type": ["string", "null"],
+              "enum": ["100_1", "50_50", "avoided_burden", "none", null],
+              "description": "End-of-life allocation approach per ISO 14044 / EN 15804 for Cat 11 and Cat 12. '100_1' = burdens and benefits assigned 100% to the producer (cut-off), '50_50' = split between producer and recycler, 'avoided_burden' = system expansion with credits, 'none' = cradle-to-gate only (no EoL allocation)."
+            }
+          }
+        }
+      }
+    },
+    {
+      "title": "refrigerants parameters",
+      "properties": {
+        "factor_family": { "const": "refrigerants" },
+        "parameters": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["gas_code", "leakage_basis"],
+          "properties": {
+            "scope_applicability": { "$ref": "#/properties/parameters/properties/scope_applicability" },
+            "uncertainty_low": { "$ref": "#/properties/parameters/properties/uncertainty_low" },
+            "uncertainty_high": { "$ref": "#/properties/parameters/properties/uncertainty_high" },
+            "gas_code": {
+              "type": "string",
+              "maxLength": 64,
+              "description": "Refrigerant gas code (e.g., 'R-134a', 'R-410A', 'HFC-32', 'CO2', 'NH3')."
+            },
+            "leakage_basis": {
+              "type": "string",
+              "enum": ["annual", "charge", "disposal"]
+            },
+            "recharge_assumption": {
+              "type": ["number", "null"],
+              "minimum": 0,
+              "maximum": 1,
+              "description": "Annual recharge rate as fraction of full charge."
+            },
+            "recovery_destruction_treatment": {
+              "type": ["string", "null"],
+              "enum": ["none", "partial_recovery", "full_recovery", "destroyed", null]
+            },
+            "gwp_set_mapping": {
+              "type": ["string", "null"],
+              "enum": ["IPCC_AR4_100", "IPCC_AR5_100", "IPCC_AR5_20", "IPCC_AR6_100", "IPCC_AR6_20", "Kyoto_SAR_100", null]
+            }
+          }
+        }
+      }
+    },
+    {
+      "title": "land_removals parameters",
+      "properties": {
+        "factor_family": { "const": "land_removals" },
+        "parameters": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["land_use_category", "sequestration_basis"],
+          "properties": {
+            "scope_applicability": { "$ref": "#/properties/parameters/properties/scope_applicability" },
+            "uncertainty_low": { "$ref": "#/properties/parameters/properties/uncertainty_low" },
+            "uncertainty_high": { "$ref": "#/properties/parameters/properties/uncertainty_high" },
+            "land_use_category": {
+              "type": "string",
+              "maxLength": 128,
+              "description": "IPCC land-use category (e.g., 'forest_land', 'cropland', 'grassland', 'wetlands', 'settlements', 'other_land')."
+            },
+            "sequestration_basis": {
+              "type": "string",
+              "enum": ["stock_change", "flux", "gain_loss", "tier1_default", "tier3_model"]
+            },
+            "permanence_class": {
+              "type": ["string", "null"],
+              "enum": ["short_term", "medium_term", "long_term", "permanent", null]
+            },
+            "reversal_risk_flag": {
+              "type": "boolean",
+              "default": false
+            },
+            "biogenic_accounting_treatment": {
+              "type": ["string", "null"],
+              "enum": ["zero_rated", "separate_reporting", "included_in_co2e", null]
+            }
+          }
+        }
+      }
+    },
+    {
+      "title": "finance_proxies parameters",
+      "properties": {
+        "factor_family": { "const": "finance_proxies" },
+        "parameters": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["asset_class", "intensity_basis"],
+          "properties": {
+            "scope_applicability": { "$ref": "#/properties/parameters/properties/scope_applicability" },
+            "uncertainty_low": { "$ref": "#/properties/parameters/properties/uncertainty_low" },
+            "uncertainty_high": { "$ref": "#/properties/parameters/properties/uncertainty_high" },
+            "asset_class": {
+              "type": "string",
+              "maxLength": 128,
+              "description": "PCAF asset class (e.g., 'listed_equity_and_corporate_bonds', 'business_loans_and_unlisted_equity', 'project_finance', 'commercial_real_estate', 'mortgages', 'motor_vehicle_loans', 'sovereign_debt')."
+            },
+            "sector_code": {
+              "type": ["string", "null"],
+              "maxLength": 64,
+              "description": "Sector code (typically NAICS or ISIC)."
+            },
+            "intensity_basis": {
+              "type": "string",
+              "enum": ["revenue", "asset", "ebitda", "employee"]
+            },
+            "geography": {
+              "type": ["string", "null"],
+              "maxLength": 64
+            },
+            "proxy_confidence_class": {
+              "type": ["string", "null"],
+              "enum": ["score_1", "score_2", "score_3", "score_4", "score_5", null],
+              "description": "PCAF data quality score 1 (best) through 5 (worst)."
+            }
+          }
+        }
+      }
+    },
+    {
+      "title": "waste parameters",
+      "properties": {
+        "factor_family": { "const": "waste" },
+        "parameters": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["treatment_route"],
+          "properties": {
+            "scope_applicability": { "$ref": "#/properties/parameters/properties/scope_applicability" },
+            "uncertainty_low": { "$ref": "#/properties/parameters/properties/uncertainty_low" },
+            "uncertainty_high": { "$ref": "#/properties/parameters/properties/uncertainty_high" },
+            "treatment_route": {
+              "type": "string",
+              "enum": ["landfill", "incineration", "compost", "recycle", "anaerobic_digestion"]
+            },
+            "methane_recovery_factor": {
+              "type": ["number", "null"],
+              "minimum": 0,
+              "maximum": 1,
+              "description": "Fraction of landfill CH4 captured / flared."
+            },
+            "net_calorific_value": {
+              "type": ["number", "null"],
+              "minimum": 0,
+              "description": "MJ/kg for incineration-route factors."
+            }
+          }
+        }
+      }
+    },
+    {
+      "title": "generic (non-category-specific) parameters",
+      "properties": {
+        "factor_family": {
+          "enum": [
+            "energy_conversion",
+            "carbon_content",
+            "oxidation",
+            "heating_value",
+            "density",
+            "residual_mix",
+            "classification_mapping"
+          ]
+        },
+        "parameters": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "scope_applicability": { "$ref": "#/properties/parameters/properties/scope_applicability" },
+            "uncertainty_low": { "$ref": "#/properties/parameters/properties/uncertainty_low" },
+            "uncertainty_high": { "$ref": "#/properties/parameters/properties/uncertainty_high" }
+          }
+        }
+      }
+    }
+  ]
+}

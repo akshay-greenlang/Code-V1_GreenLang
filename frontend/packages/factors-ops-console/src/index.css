@@ -1,0 +1,52 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: light dark;
+  }
+
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased font-sans;
+  }
+
+  .dark {
+    background-color: hsl(222.2 84% 4.9%);
+    color: hsl(210 40% 98%);
+  }
+}
+
+@layer components {
+  .role-admin {
+    @apply text-role-admin;
+  }
+  .role-methodology {
+    @apply text-role-methodology;
+  }
+  .role-reviewer {
+    @apply text-role-reviewer;
+  }
+  .role-viewer {
+    @apply text-role-viewer;
+  }
+
+  .status-certified {
+    @apply bg-factor-certified-50 text-factor-certified-700 border-factor-certified-500;
+  }
+  .status-preview {
+    @apply bg-factor-preview-50 text-factor-preview-700 border-factor-preview-500;
+  }
+  .status-connector-only {
+    @apply bg-factor-connector-50 text-factor-connector-700 border-factor-connector-500;
+  }
+  .status-deprecated {
+    @apply bg-factor-deprecated-50 text-factor-deprecated-700 border-factor-deprecated-500;
+  }
+}

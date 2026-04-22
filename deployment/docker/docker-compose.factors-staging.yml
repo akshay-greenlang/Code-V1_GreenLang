@@ -1,0 +1,156 @@
+# =============================================================================
+# GreenLang Factors API — local staging stack
+# =============================================================================
+# One-command full-stack for developers testing the Factors API locally.
+# Brings up: Factors API + watch worker + PostgreSQL (with pgvector) +
+# Redis + Prometheus + Grafana.  Simulates the prod topology closely
+# enough that the signed-receipts, rate-limit, and pgvector paths all
+# exercise real code.
+#
+# Quickstart:
+#   docker compose -f deployment/docker/docker-compose.factors-staging.yml up
+#   # API on http://localhost:8080
+#   # Grafana on http://localhost:3001 (admin/admin)
+#   # Prometheus on http://localhost:9091
+#
+# Teardown:
+#   docker compose -f deployment/docker/docker-compose.factors-staging.yml down -v
+#
+# Env:
+#   Create `.env.factors-staging` next to this file with overrides for
+#   OPENAI_API_KEY, ANTHROPIC_API_KEY, STRIPE_API_KEY if you want to
+#   exercise matching / LLM rerank / billing.  Without them the API
+#   runs in offline mode (matching falls back to deterministic-only).
+# =============================================================================
+version: "3.9"
+
+x-common-env: &common-env
+  GL_ENV: staging
+  GL_LOG_LEVEL: INFO
+  GL_LOG_FORMAT: json
+  GL_JWT_SECRET: "${GL_JWT_SECRET:-change-me-staging-only-never-use-in-prod-32-chars-min}"
+  GL_FACTORS_SIGNING_SECRET: "${GL_FACTORS_SIGNING_SECRET:-hmac-dev-secret-rotate-in-vault-for-prod}"
+  GL_FACTORS_TIER: "${GL_FACTORS_TIER:-pro}"
+  DATABASE_URL: "postgresql+psycopg://factors:factors@postgres:5432/factors"
+  REDIS_URL: "redis://redis:6379/0"
+  OPENAI_API_KEY: "${OPENAI_API_KEY:-}"
+  ANTHROPIC_API_KEY: "${ANTHROPIC_API_KEY:-}"
+  STRIPE_API_KEY: "${STRIPE_API_KEY:-}"
+  STRIPE_WEBHOOK_SECRET: "${STRIPE_WEBHOOK_SECRET:-}"
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: gl-factors-postgres
+    environment:
+      POSTGRES_USER: factors
+      POSTGRES_PASSWORD: factors
+      POSTGRES_DB: factors
+    ports:
+      - "5433:5432"
+    volumes:
+      - factors-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U factors -d factors"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  redis:
+    image: redis:7-alpine
+    container_name: gl-factors-redis
+    ports:
+      - "6380:6379"
+    command: ["redis-server", "--appendonly", "yes"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  factors-api:
+    build:
+      context: ../..
+      dockerfile: deployment/docker/Dockerfile.factors-service
+      target: production
+      args:
+        GL_VERSION: staging
+    image: greenlang/factors-service:staging
+    container_name: gl-factors-api
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      <<: *common-env
+      APP_PORT: "8080"
+      METRICS_PORT: "9090"
+      WORKERS: "2"
+    ports:
+      - "8080:8080"
+      - "9090:9090"
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:8080/api/v1/health"]
+      interval: 10s
+      timeout: 5s
+      start_period: 30s
+      retries: 5
+    restart: unless-stopped
+
+  factors-watch:
+    image: greenlang/factors-service:staging
+    container_name: gl-factors-watch
+    build:
+      context: ../..
+      dockerfile: deployment/docker/Dockerfile.factors-service
+      target: worker
+      args:
+        GL_VERSION: staging
+    depends_on:
+      postgres:
+        condition: service_healthy
+      factors-api:
+        condition: service_healthy
+    environment:
+      <<: *common-env
+      WORKER_MODE: watch
+      WATCH_DB: /var/lib/greenlang/watch.db
+    volumes:
+      - factors-watch-db:/var/lib/greenlang
+    restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus:v2.52.0
+    container_name: gl-factors-prometheus
+    ports:
+      - "9091:9090"
+    volumes:
+      - ./observability/prometheus.staging.yml:/etc/prometheus/prometheus.yml:ro
+      - factors-prom:/prometheus
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.retention.time=7d
+    depends_on:
+      - factors-api
+
+  grafana:
+    image: grafana/grafana:10.4.2
+    container_name: gl-factors-grafana
+    ports:
+      - "3001:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - factors-grafana:/var/lib/grafana
+      - ./observability/grafana-datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml:ro
+    depends_on:
+      - prometheus
+
+volumes:
+  factors-pgdata:
+  factors-watch-db:
+  factors-prom:
+  factors-grafana:

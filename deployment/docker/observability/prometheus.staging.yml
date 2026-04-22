@@ -1,0 +1,24 @@
+# Prometheus staging scrape config for the Factors API.
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: factors-staging
+    service: factors-api
+
+scrape_configs:
+  - job_name: factors-api
+    metrics_path: /api/v1/metrics
+    static_configs:
+      - targets:
+          - factors-api:9090
+        labels:
+          component: api
+
+  - job_name: factors-worker
+    metrics_path: /metrics
+    static_configs:
+      - targets:
+          - factors-watch:9090
+        labels:
+          component: watch

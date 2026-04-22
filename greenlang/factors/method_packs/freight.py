@@ -54,7 +54,7 @@ FREIGHT_ISO_14083 = MethodPack(
         "Transport chain per ISO 14083. Leg: {leg_id} ({mode}, {distance_km} km, "
         "payload {payload_t} t). Factor: {factor_id}. WTW basis."
     ),
-    pack_version="0.3.0",
+    pack_version="1.0.0",
     tags=("freight", "licensed"),    # Freight Pack is a premium SKU
 )
 

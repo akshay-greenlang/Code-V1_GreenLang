@@ -10,7 +10,9 @@
     "GL-CSRD-APP/CSRD-Reporting-Platform/frontend",
     "GL-EUDR-APP/EUDR-Deforestation-Platform/frontend",
     "GL-SB253-APP/SB253-Climate-Disclosure/frontend",
-    "GL-Taxonomy-APP/EU-Taxonomy-Alignment/frontend"
+    "GL-Taxonomy-APP/EU-Taxonomy-Alignment/frontend",
+    "frontend/packages/factors-explorer",
+    "frontend/packages/factors-ops-console"
   ],
   "scripts": {
     "build": "turbo run build",

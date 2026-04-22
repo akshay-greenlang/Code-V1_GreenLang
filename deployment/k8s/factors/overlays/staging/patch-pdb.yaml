@@ -1,0 +1,10 @@
+---
+# Staging runs with 1 replica, so minAvailable=2 would block every drain.
+# Relax to 0; node drains are allowed to take the single pod down briefly.
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: factors-api
+  namespace: greenlang-factors
+spec:
+  minAvailable: 0

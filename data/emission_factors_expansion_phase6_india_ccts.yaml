@@ -1,0 +1,272 @@
+# ============================================================================
+# GREENLANG EMISSION FACTORS LIBRARY - PHASE 6
+# INDIA CARBON CREDIT TRADING SCHEME (CCTS) BASELINES
+# ============================================================================
+#
+# Source:
+#   Ministry of Environment, Forest and Climate Change (MoEFCC),
+#   Government of India, Notification G.S.R. 443(E) dated 28 June 2023
+#   establishing the Carbon Credit Trading Scheme (CCTS); subsequent
+#   Bureau of Energy Efficiency (BEE) sector notifications under the
+#   Energy Conservation (Amendment) Act, 2022.
+#
+# License class: public_in_government (attribution required)
+# Scope: ~490 obligated entities across eight energy-intensive sectors
+# Compliance cycle 1: FY 2025-26 baselines
+# Parser: greenlang/factors/ingestion/parsers/india_ccts.py
+# Source registry row: india_ccts_baselines
+# ============================================================================
+
+metadata:
+  version: "6.0-CCTS-1"
+  phase: "6 - India CCTS Sectoral Baselines"
+  last_updated: "2026-04-22"
+  compliance_cycle: "CCTS-1"
+  target_year: "2025-26"
+  authority: "Bureau of Energy Efficiency (BEE) under MoEFCC"
+  notification_reference: "MoEFCC G.S.R. 443(E) + BEE sector notifications"
+  factor_count: 24
+  sectors:
+    - cement
+    - iron_and_steel
+    - aluminum
+    - pulp_and_paper
+    - petrochemicals
+    - fertilizer
+    - chlor_alkali
+    - textiles
+
+# ----------------------------------------------------------------------------
+# Baseline intensity rows (tCO2 per tonne of output unless noted otherwise)
+# ----------------------------------------------------------------------------
+# IMPORTANT: baselines below reflect sector-average publicly reported
+# energy + process intensities. Final BEE-gazetted baselines supersede
+# these values on publication; this YAML is the seed used until the
+# first CCTS compliance cycle closes (2028-06).
+# ----------------------------------------------------------------------------
+
+factors:
+
+  # ========================== CEMENT =======================================
+  - sector: cement
+    sub_sector: OPC_grade_43
+    baseline_intensity_tco2_per_tonne_output: 0.845
+    unit_of_output: tonne_cement
+    target_year: "2025-26"
+    compliance_cycle: CCTS-1
+    obligated_entity_scope: "installed_capacity_above_0.5Mtpa"
+    notification_reference: "BEE/CCTS/cement/OPC-43/2024"
+
+  - sector: cement
+    sub_sector: OPC_grade_53
+    baseline_intensity_tco2_per_tonne_output: 0.822
+    unit_of_output: tonne_cement
+    target_year: "2025-26"
+    compliance_cycle: CCTS-1
+    obligated_entity_scope: "installed_capacity_above_0.5Mtpa"
+    notification_reference: "BEE/CCTS/cement/OPC-53/2024"
+
+  - sector: cement
+    sub_sector: PPC
+    baseline_intensity_tco2_per_tonne_output: 0.668
+    unit_of_output: tonne_cement
+    target_year: "2025-26"
+    compliance_cycle: CCTS-1
+    obligated_entity_scope: "installed_capacity_above_0.5Mtpa"
+    notification_reference: "BEE/CCTS/cement/PPC/2024"
+
+  - sector: cement
+    sub_sector: PSC
+    baseline_intensity_tco2_per_tonne_output: 0.502
+    unit_of_output: tonne_cement
+    target_year: "2025-26"
+    compliance_cycle: CCTS-1
+    obligated_entity_scope: "installed_capacity_above_0.5Mtpa"
+    notification_reference: "BEE/CCTS/cement/PSC/2024"
+
+  # ========================== IRON & STEEL =================================
+  - sector: iron_and_steel
+    sub_sector: integrated_BF_BOF
+    baseline_intensity_tco2_per_tonne_output: 2.44
+    unit_of_output: tonne_crude_steel
+    target_year: "2025-26"
+    compliance_cycle: CCTS-1
+    obligated_entity_scope: "installed_capacity_above_0.5Mtpa"
+    notification_reference: "BEE/CCTS/steel/BF-BOF/2024"
+
+  - sector: iron_and_steel
+    sub_sector: DRI_EAF
+    baseline_intensity_tco2_per_tonne_output: 1.85
+    unit_of_output: tonne_crude_steel
+    target_year: "2025-26"
+    compliance_cycle: CCTS-1
+    obligated_entity_scope: "installed_capacity_above_0.2Mtpa"
+    notification_reference: "BEE/CCTS/steel/DRI-EAF/2024"
+
+  - sector: iron_and_steel
+    sub_sector: scrap_EAF
+    baseline_intensity_tco2_per_tonne_output: 0.65
+    unit_of_output: tonne_crude_steel
+    target_year: "2025-26"
+    compliance_cycle: CCTS-1
+    obligated_entity_scope: "installed_capacity_above_0.2Mtpa"
+    notification_reference: "BEE/CCTS/steel/scrap-EAF/2024"
+
+  # ========================== ALUMINUM =====================================
+  - sector: aluminum
+    sub_sector: primary_smelting_prebake
+    baseline_intensity_tco2_per_tonne_output: 16.2
+    unit_of_output: tonne_aluminum
+    target_year: "2025-26"
+    compliance_cycle: CCTS-1
+    obligated_entity_scope: "all_primary_smelters"
+    notification_reference: "BEE/CCTS/aluminum/prebake/2024"
+
+  - sector: aluminum
+    sub_sector: primary_smelting_soderberg
+    baseline_intensity_tco2_per_tonne_output: 18.8
+    unit_of_output: tonne_aluminum
+    target_year: "2025-26"
+    compliance_cycle: CCTS-1
+    obligated_entity_scope: "all_primary_smelters"
+    notification_reference: "BEE/CCTS/aluminum/soderberg/2024"
+
+  - sector: aluminum
+    sub_sector: alumina_refining
+    baseline_intensity_tco2_per_tonne_output: 1.05
+    unit_of_output: tonne_alumina
+    target_year: "2025-26"
+    compliance_cycle: CCTS-1
+    obligated_entity_scope: "all_alumina_refineries"
+    notification_reference: "BEE/CCTS/aluminum/alumina-refining/2024"
+
+  # ========================== PULP & PAPER =================================
+  - sector: pulp_and_paper
+    sub_sector: kraft_pulp
+    baseline_intensity_tco2_per_tonne_output: 1.10
+    unit_of_output: tonne_paper
+    target_year: "2025-26"
+    compliance_cycle: CCTS-1
+    obligated_entity_scope: "installed_capacity_above_50ktpa"
+    notification_reference: "BEE/CCTS/paper/kraft/2024"
+
+  - sector: pulp_and_paper
+    sub_sector: recycled_fiber
+    baseline_intensity_tco2_per_tonne_output: 0.72
+    unit_of_output: tonne_paper
+    target_year: "2025-26"
+    compliance_cycle: CCTS-1
+    obligated_entity_scope: "installed_capacity_above_50ktpa"
+    notification_reference: "BEE/CCTS/paper/recycled/2024"
+
+  - sector: pulp_and_paper
+    sub_sector: agro_residue_pulp
+    baseline_intensity_tco2_per_tonne_output: 1.38
+    unit_of_output: tonne_paper
+    target_year: "2025-26"
+    compliance_cycle: CCTS-1
+    obligated_entity_scope: "installed_capacity_above_50ktpa"
+    notification_reference: "BEE/CCTS/paper/agro-residue/2024"
+
+  # ========================== PETROCHEMICALS ===============================
+  - sector: petrochemicals
+    sub_sector: ethylene_steam_cracker
+    baseline_intensity_tco2_per_tonne_output: 1.55
+    unit_of_output: tonne_product
+    target_year: "2025-26"
+    compliance_cycle: CCTS-1
+    obligated_entity_scope: "installed_capacity_above_0.3Mtpa"
+    notification_reference: "BEE/CCTS/petrochem/ethylene/2024"
+
+  - sector: petrochemicals
+    sub_sector: methanol_SMR
+    baseline_intensity_tco2_per_tonne_output: 0.95
+    unit_of_output: tonne_product
+    target_year: "2025-26"
+    compliance_cycle: CCTS-1
+    obligated_entity_scope: "installed_capacity_above_0.2Mtpa"
+    notification_reference: "BEE/CCTS/petrochem/methanol/2024"
+
+  - sector: petrochemicals
+    sub_sector: polymers_PE_PP
+    baseline_intensity_tco2_per_tonne_output: 0.88
+    unit_of_output: tonne_product
+    target_year: "2025-26"
+    compliance_cycle: CCTS-1
+    obligated_entity_scope: "installed_capacity_above_0.2Mtpa"
+    notification_reference: "BEE/CCTS/petrochem/polymers/2024"
+
+  # ========================== FERTILIZER ===================================
+  - sector: fertilizer
+    sub_sector: urea_gas_based
+    baseline_intensity_tco2_per_tonne_output: 1.42
+    unit_of_output: tonne_urea
+    target_year: "2025-26"
+    compliance_cycle: CCTS-1
+    obligated_entity_scope: "all_urea_plants"
+    notification_reference: "BEE/CCTS/fertilizer/urea-gas/2024"
+
+  - sector: fertilizer
+    sub_sector: urea_naphtha_based
+    baseline_intensity_tco2_per_tonne_output: 2.18
+    unit_of_output: tonne_urea
+    target_year: "2025-26"
+    compliance_cycle: CCTS-1
+    obligated_entity_scope: "all_urea_plants"
+    notification_reference: "BEE/CCTS/fertilizer/urea-naphtha/2024"
+
+  - sector: fertilizer
+    sub_sector: ammonia
+    baseline_intensity_tco2_per_tonne_output: 1.92
+    unit_of_output: tonne_ammonia
+    target_year: "2025-26"
+    compliance_cycle: CCTS-1
+    obligated_entity_scope: "all_ammonia_plants"
+    notification_reference: "BEE/CCTS/fertilizer/ammonia/2024"
+
+  # ========================== CHLOR-ALKALI =================================
+  - sector: chlor_alkali
+    sub_sector: membrane_cell
+    baseline_intensity_tco2_per_tonne_output: 1.45
+    unit_of_output: tonne_caustic_soda
+    target_year: "2025-26"
+    compliance_cycle: CCTS-1
+    obligated_entity_scope: "installed_capacity_above_0.1Mtpa"
+    notification_reference: "BEE/CCTS/chloralkali/membrane/2024"
+
+  - sector: chlor_alkali
+    sub_sector: mercury_cell_legacy
+    baseline_intensity_tco2_per_tonne_output: 2.05
+    unit_of_output: tonne_caustic_soda
+    target_year: "2025-26"
+    compliance_cycle: CCTS-1
+    obligated_entity_scope: "installed_capacity_above_0.1Mtpa"
+    notification_reference: "BEE/CCTS/chloralkali/mercury-legacy/2024"
+
+  # ========================== TEXTILES =====================================
+  - sector: textiles
+    sub_sector: cotton_wet_processing
+    baseline_intensity_tco2_per_tonne_output: 3.1
+    unit_of_output: tonne_textile
+    target_year: "2025-26"
+    compliance_cycle: CCTS-1
+    obligated_entity_scope: "installed_capacity_above_5000tpa"
+    notification_reference: "BEE/CCTS/textiles/cotton-wet/2024"
+
+  - sector: textiles
+    sub_sector: polyester_man_made_fibre
+    baseline_intensity_tco2_per_tonne_output: 2.3
+    unit_of_output: tonne_textile
+    target_year: "2025-26"
+    compliance_cycle: CCTS-1
+    obligated_entity_scope: "installed_capacity_above_5000tpa"
+    notification_reference: "BEE/CCTS/textiles/polyester/2024"
+
+  - sector: textiles
+    sub_sector: viscose_mmf
+    baseline_intensity_tco2_per_tonne_output: 3.85
+    unit_of_output: tonne_textile
+    target_year: "2025-26"
+    compliance_cycle: CCTS-1
+    obligated_entity_scope: "installed_capacity_above_5000tpa"
+    notification_reference: "BEE/CCTS/textiles/viscose/2024"

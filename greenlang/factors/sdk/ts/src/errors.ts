@@ -117,6 +117,78 @@ export class ValidationError extends FactorsAPIError {
   }
 }
 
+/**
+ * Client pinned edition X, server returned edition Y.
+ *
+ * Raised by `FactorsClient` when a response carries an
+ * `X-GreenLang-Edition` / `X-Factors-Edition` header whose value
+ * disagrees with the pin set via `client.pinEdition(...)` or the
+ * `client.edition(...)` context-style helper.
+ *
+ * We deliberately do NOT silently accept the drift: the whole point of
+ * pinning is reproducibility, so a mismatch is a hard fail.
+ */
+export class EditionMismatchError extends FactorsAPIError {
+  public readonly pinnedEdition?: string;
+  public readonly returnedEdition?: string;
+
+  constructor(
+    message: string,
+    opts: FactorsAPIErrorOptions & {
+      pinnedEdition?: string;
+      returnedEdition?: string;
+    } = {},
+  ) {
+    super(message, {
+      ...opts,
+      remediation:
+        opts.remediation ??
+        'The server delivered a different catalog edition than you pinned. Refresh the pin, or remove it if you want to ride the default edition.',
+    });
+    this.name = 'EditionMismatchError';
+    this.pinnedEdition = opts.pinnedEdition;
+    this.returnedEdition = opts.returnedEdition;
+    if (opts.pinnedEdition !== undefined) {
+      this.context.pinned_edition = opts.pinnedEdition;
+    }
+    if (opts.returnedEdition !== undefined) {
+      this.context.returned_edition = opts.returnedEdition;
+    }
+    Object.setPrototypeOf(this, EditionMismatchError.prototype);
+  }
+}
+
+/** TLS peer certificate did not match the pinned SHA-256 fingerprint. */
+export class CertificatePinError extends FactorsAPIError {
+  public readonly expectedFingerprint?: string;
+  public readonly presentedFingerprint?: string;
+
+  constructor(
+    message: string,
+    opts: FactorsAPIErrorOptions & {
+      expectedFingerprint?: string;
+      presentedFingerprint?: string;
+    } = {},
+  ) {
+    super(message, {
+      ...opts,
+      remediation:
+        opts.remediation ??
+        'The TLS peer did not present a cert matching the bundled GreenLang pin. Check for MITM, rotate your SDK if the pin is stale, or disable pinning for an air-gapped / proxy environment.',
+    });
+    this.name = 'CertificatePinError';
+    this.expectedFingerprint = opts.expectedFingerprint;
+    this.presentedFingerprint = opts.presentedFingerprint;
+    if (opts.expectedFingerprint !== undefined) {
+      this.context.expected_fingerprint = opts.expectedFingerprint;
+    }
+    if (opts.presentedFingerprint !== undefined) {
+      this.context.presented_fingerprint = opts.presentedFingerprint;
+    }
+    Object.setPrototypeOf(this, CertificatePinError.prototype);
+  }
+}
+
 /** 429 — caller exceeded the tier rate limit. */
 export class RateLimitError extends FactorsAPIError {
   public readonly retryAfter?: number;

@@ -27,7 +27,40 @@ security = HTTPBearer()
 
 # Database configuration - configurable via environment variables
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///./greenlang.db")
-JWT_SECRET = os.getenv("JWT_SECRET", "")
+
+
+# One-shot deprecation warning flag so we don't spam logs.
+_jwt_legacy_warned = False
+
+
+def get_jwt_secret() -> str:
+    """
+    Read the JWT signing secret, honouring both env var names.
+
+    Precedence: ``GL_JWT_SECRET`` (canonical, used by factors) wins over
+    the legacy ``JWT_SECRET``.  If only the legacy name is set, emit a
+    one-time deprecation warning so callers have a migration window.
+    Removal target: v1.1.0 per ADR-2026-04-22-jwt-secret-unification.
+
+    Returns empty string when neither var is set — downstream validation
+    (see :func:`_validate_jwt_secret`) decides whether that is fatal.
+    """
+    global _jwt_legacy_warned
+    canonical = os.getenv("GL_JWT_SECRET", "")
+    legacy = os.getenv("JWT_SECRET", "")
+    if canonical:
+        return canonical
+    if legacy and not _jwt_legacy_warned:
+        logger.warning(
+            "JWT_SECRET is deprecated; migrate to GL_JWT_SECRET. "
+            "Legacy name will be removed in v1.1.0. "
+            "See docs/adr/2026-04-22-jwt-secret-unification.md."
+        )
+        _jwt_legacy_warned = True
+    return legacy
+
+
+JWT_SECRET = get_jwt_secret()
 JWT_ALGORITHM = "HS256"
 JWT_EXPIRATION_HOURS = 24
 

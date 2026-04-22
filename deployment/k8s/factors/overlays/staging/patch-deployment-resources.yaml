@@ -1,0 +1,27 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: factors-api
+  namespace: greenlang-factors
+spec:
+  template:
+    spec:
+      containers:
+        - name: factors-api
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
+            limits:
+              cpu: "1000m"
+              memory: "2Gi"
+          # Staging overrides the worker count to match reduced CPU.
+          args:
+            - uvicorn
+            - greenlang.integration.api.main:app
+            - --host=0.0.0.0
+            - --port=8080
+            - --workers=2
+            - --access-log
+            - --proxy-headers

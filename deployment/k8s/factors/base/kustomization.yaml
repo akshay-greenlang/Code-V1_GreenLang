@@ -1,0 +1,47 @@
+---
+# =============================================================================
+# GreenLang Factors API - Kustomize Base
+# =============================================================================
+# Base manifests shared by all overlays (staging / prod).
+# Overlays patch replicas, resources, domain names, and tier enforcement.
+#
+# Render:
+#   kubectl kustomize deployment/k8s/factors/base
+#
+# Apply (staging):
+#   kubectl apply -k deployment/k8s/factors/overlays/staging
+# =============================================================================
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: greenlang-factors
+
+commonLabels:
+  app.kubernetes.io/name: factors-api
+  app.kubernetes.io/part-of: greenlang
+  app.kubernetes.io/managed-by: kustomize
+  greenlang.io/service: factors
+
+commonAnnotations:
+  greenlang.io/owner: factors-team
+  greenlang.io/runbook: https://github.com/greenlang/greenlang/blob/main/docs/deployment/FACTORS-API-DEPLOY.md
+
+resources:
+  - namespace.yaml
+  - serviceaccount.yaml
+  - configmap.yaml
+  - externalsecrets.yaml
+  - deployment.yaml
+  - deployment-worker.yaml
+  - service.yaml
+  - hpa.yaml
+  - pdb.yaml
+  - networkpolicy.yaml
+  - servicemonitor.yaml
+  - ingressroute.yaml
+  - prometheusrule.yaml
+
+images:
+  - name: ghcr.io/greenlang/factors-api
+    newTag: staging

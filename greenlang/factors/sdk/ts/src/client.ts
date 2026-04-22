@@ -11,7 +11,11 @@ import {
   AuthProvider,
   JWTAuth,
 } from './auth';
-import { FactorsAPIError } from './errors';
+import {
+  CertificatePinError,
+  EditionMismatchError,
+  FactorsAPIError,
+} from './errors';
 import {
   AuditBundle,
   BatchJobHandle,
@@ -38,6 +42,171 @@ import {
   Transport,
   TransportResponse,
 } from './transport';
+
+// ---------------------------------------------------------------------------
+// Certificate pinning (Node) — fingerprint of the bundled GreenLang CA.
+// ---------------------------------------------------------------------------
+
+/**
+ * SHA-256 fingerprint of the bundled GreenLang CA, in colon-separated
+ * uppercase hex (the format Node's `tls.checkServerIdentity` emits).
+ *
+ * The real fingerprint is substituted at package build time. The value
+ * below is a fixture so the SDK can be imported in dev / test without
+ * the build pipeline having run. Customers auditing the pin should read
+ * it from `client.getPinFingerprint()`.
+ */
+export const GREENLANG_CA_FINGERPRINT_SHA256 =
+  'PLACEHOLDER_SHA256_FINGERPRINT_INJECTED_AT_BUILD_TIME_DO_NOT_TRUST_IN_PRODUCTION';
+
+/** Hostnames matched for automatic pin enforcement (suffix match). */
+export const PINNED_HOST_SUFFIXES: readonly string[] = ['greenlang.io'];
+
+function normalizeFingerprint(fp: string): string {
+  return (fp || '').replace(/:/g, '').toLowerCase().trim();
+}
+
+function hostMatchesPin(host: string): boolean {
+  const h = (host || '').toLowerCase().replace(/^\.+|\.+$/g, '');
+  return PINNED_HOST_SUFFIXES.some((suffix) => {
+    const s = suffix.toLowerCase().replace(/^\.+|\.+$/g, '');
+    return h === s || h.endsWith('.' + s);
+  });
+}
+
+/**
+ * Subresource Integrity (SRI) helper for docs / static asset hosting.
+ *
+ * Browser TLS validation (backed by the OS trust store) already defends
+ * fetches to `*.greenlang.io` from MITM — you do NOT need an app-layer
+ * pin inside a browser. For static assets pulled from a CDN, however,
+ * customers often want a byte-for-byte integrity check; this helper
+ * produces the `<script integrity="...">` attribute value for a given
+ * payload.
+ *
+ * Node-only (uses the Web Crypto `subtle` API which is also available
+ * in modern browsers).
+ */
+export async function computeSubresourceIntegrity(
+  payload: string | Uint8Array,
+  algorithm: 'sha256' | 'sha384' | 'sha512' = 'sha384',
+): Promise<string> {
+  const subtle = (globalThis as unknown as { crypto?: { subtle?: SubtleCrypto } })
+    .crypto?.subtle;
+  if (!subtle) {
+    throw new Error(
+      'Web Crypto subtle API unavailable — computeSubresourceIntegrity ' +
+        'requires Node 18+ or a browser.',
+    );
+  }
+  const bytes =
+    typeof payload === 'string' ? new TextEncoder().encode(payload) : payload;
+  const algoMap: Record<string, string> = {
+    sha256: 'SHA-256',
+    sha384: 'SHA-384',
+    sha512: 'SHA-512',
+  };
+  const digest = await subtle.digest(algoMap[algorithm], bytes);
+  // btoa is available in both modern Node and browsers.
+  const b64 =
+    typeof btoa === 'function'
+      ? btoa(String.fromCharCode(...new Uint8Array(digest)))
+      : Buffer.from(new Uint8Array(digest)).toString('base64');
+  return `${algorithm}-${b64}`;
+}
+
+/** Lazy build of a Node https.Agent that enforces the pin. */
+function buildPinnedHttpsAgent(
+  expectedFingerprint: string,
+): unknown | undefined {
+  // The SDK does not want a hard dependency on Node internals — we only
+  // try to wire a pinned agent when running under Node with `https`.
+  let https: unknown;
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires, global-require
+    https = require('https');
+  } catch {
+    return undefined;
+  }
+  const Agent = (https as { Agent?: new (opts: unknown) => unknown }).Agent;
+  if (!Agent) return undefined;
+
+  const expected = normalizeFingerprint(expectedFingerprint);
+
+  // `checkServerIdentity` receives the leaf cert's fingerprint256 and
+  // the full chain via `issuerCertificate`. We walk the chain and
+  // accept if ANY presented cert matches the pin.
+  const checkServerIdentity = (
+    _host: string,
+    cert: { fingerprint256?: string; issuerCertificate?: unknown },
+  ): Error | undefined => {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires, global-require
+    const tls = require('tls') as {
+      checkServerIdentity: (
+        h: string,
+        c: { fingerprint256?: string; issuerCertificate?: unknown },
+      ) => Error | undefined;
+    };
+    // Delegate hostname check to Node's default implementation.
+    const hostnameErr = tls.checkServerIdentity(_host, cert);
+    if (hostnameErr) return hostnameErr;
+    let walker: { fingerprint256?: string; issuerCertificate?: unknown } | undefined =
+      cert;
+    const seen = new Set<unknown>();
+    while (walker && !seen.has(walker)) {
+      seen.add(walker);
+      const fp = normalizeFingerprint(walker.fingerprint256 ?? '');
+      if (fp && fp === expected) return undefined;
+      walker = walker.issuerCertificate as
+        | { fingerprint256?: string; issuerCertificate?: unknown }
+        | undefined;
+    }
+    return new CertificatePinError(
+      'GreenLang certificate pin mismatch: no cert in the presented chain matched the bundled SHA-256 pin.',
+      {
+        expectedFingerprint: expected,
+        presentedFingerprint: normalizeFingerprint(cert.fingerprint256 ?? ''),
+      },
+    );
+  };
+
+  return new (Agent as new (opts: unknown) => unknown)({
+    keepAlive: true,
+    checkServerIdentity,
+  });
+}
+
+/**
+ * Build a FetchLike that injects a Node https.Agent. Falls back to the
+ * global fetch unmodified on browsers / platforms where `require` is
+ * unavailable.
+ */
+function wrapFetchWithAgent(agent: unknown): FetchLike | undefined {
+  const g = globalThis as unknown as { fetch?: unknown };
+  if (typeof g.fetch !== 'function') return undefined;
+  const baseFetch = g.fetch.bind(globalThis) as (
+    input: string,
+    init?: Record<string, unknown>,
+  ) => Promise<unknown>;
+  return async (input, init) => {
+    // Node's fetch respects `dispatcher` (undici) or `agent` (legacy
+    // adapters). We pass both so downstream adapters pick whichever
+    // they support. Neither causes errors on browser fetch.
+    const mergedInit: Record<string, unknown> = {
+      ...(init ?? {}),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      agent: (agent as any),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      dispatcher: (agent as any),
+    };
+    const r = await baseFetch(input as string, mergedInit);
+    // The returned object is the native fetch Response; cast through
+    // `unknown` to satisfy our FetchResponseLike contract (the
+    // transport uses only `status`, `statusText`, `ok`, `headers`,
+    // `text`, `url`, all of which are native).
+    return r as unknown as import('./transport').FetchResponseLike;
+  };
+}
 
 // ---------------------------------------------------------------------------
 // Client options
@@ -76,6 +245,30 @@ export interface FactorsClientOptions {
   fetchImpl?: FetchLike;
   /** Deterministic sleep for tests. */
   sleep?: (ms: number) => Promise<void>;
+  /**
+   * Enable TLS certificate pinning for `*.greenlang.io` hosts (default: true).
+   *
+   * In Node, a pinned `https.Agent` is attached that validates any cert
+   * in the presented chain matches the bundled GreenLang CA SHA-256
+   * fingerprint. In browsers, TLS validation is handled by the user
+   * agent — this flag has no effect there (use
+   * `computeSubresourceIntegrity()` for static-asset integrity).
+   *
+   * Disable for air-gapped / corporate-proxy environments that terminate
+   * TLS at an intermediate device.
+   */
+  verifyGreenlangCert?: boolean;
+  /**
+   * Pinned edition sent as `X-GreenLang-Edition` on every request AND
+   * validated against the response header. Prefer `client.pinEdition()`
+   * or `client.edition()` for scoped use.
+   */
+  pinnedEdition?: string;
+  /**
+   * Override the pin fingerprint. Exposed for tests; in production the
+   * bundled `GREENLANG_CA_FINGERPRINT_SHA256` is used.
+   */
+  expectedCertFingerprint?: string;
 }
 
 function resolveAuth(opts: FactorsClientOptions): AuthProvider | undefined {
@@ -134,15 +327,54 @@ export class FactorsClient {
 
   private readonly apiPrefix: string;
   private readonly transport: Transport;
+  private readonly pinnedEdition_?: string;
+  private readonly verifyGreenlangCert_: boolean;
+  private readonly expectedCertFingerprint_: string;
+  private readonly cloneOpts: FactorsClientOptions;
 
   constructor(options: FactorsClientOptions) {
     this.apiPrefix = (options.apiPrefix ?? FactorsClient.DEFAULT_API_PREFIX)
       .replace(/\/+$/, '');
     this.defaultMethodProfile = options.methodProfile;
+    this.pinnedEdition_ = options.pinnedEdition;
+    this.verifyGreenlangCert_ = options.verifyGreenlangCert ?? true;
+    this.expectedCertFingerprint_ =
+      options.expectedCertFingerprint ?? GREENLANG_CA_FINGERPRINT_SHA256;
+    this.cloneOpts = { ...options };
 
     const timeoutMs =
       options.timeoutMs ??
       (options.timeout !== undefined ? options.timeout * 1000 : DEFAULT_TIMEOUT_MS);
+
+    // Merge the edition pin into the per-request header bag so every
+    // route picks it up via the transport's `extraHeaders`.
+    const extraHeaders: Record<string, string> = {
+      ...(options.extraHeaders ?? {}),
+    };
+    if (this.pinnedEdition_ && !('X-GreenLang-Edition' in extraHeaders)) {
+      extraHeaders['X-GreenLang-Edition'] = this.pinnedEdition_;
+    }
+
+    // In Node, attach a pinned https.Agent via a wrapped fetch if the
+    // caller enabled pinning and targeted a known GreenLang host AND
+    // did not supply their own fetchImpl.
+    let fetchImpl: FetchLike | undefined = options.fetchImpl;
+    if (fetchImpl === undefined && this.verifyGreenlangCert_) {
+      try {
+        const host = new URL(options.baseUrl).hostname;
+        if (hostMatchesPin(host)) {
+          const agent = buildPinnedHttpsAgent(this.expectedCertFingerprint_);
+          if (agent !== undefined) {
+            fetchImpl = wrapFetchWithAgent(agent);
+          }
+        }
+      } catch {
+        // URL parse failure or require('https') failure: fall through
+        // without pinning. Clients running in the browser land here
+        // because `require` is unavailable, which is exactly what we
+        // want: browser TLS is handled by the user agent.
+      }
+    }
 
     this.transport = new Transport({
       baseUrl: options.baseUrl,
@@ -152,10 +384,79 @@ export class FactorsClient {
       userAgent: options.userAgent ?? DEFAULT_USER_AGENT,
       defaultEdition: options.defaultEdition ?? options.edition,
       cache: options.cache,
-      extraHeaders: options.extraHeaders,
-      fetchImpl: options.fetchImpl,
+      extraHeaders,
+      fetchImpl,
       sleep: options.sleep,
     });
+  }
+
+  /**
+   * SHA-256 fingerprint of the bundled GreenLang CA pin. Exposed for
+   * customer audits — record this in your onboarding checklist to
+   * detect unexpected SDK rotations.
+   */
+  getPinFingerprint(): string {
+    return normalizeFingerprint(this.expectedCertFingerprint_);
+  }
+
+  /** Currently pinned edition, if any. */
+  get pinnedEdition(): string | undefined {
+    return this.pinnedEdition_;
+  }
+
+  /**
+   * Return a NEW client with the edition pin set.
+   *
+   * The new client shares auth + cache state but sends
+   * `X-GreenLang-Edition: {editionId}` on every request and validates
+   * the response header on the way back.
+   */
+  pinEdition(editionId: string): FactorsClient {
+    if (!editionId || typeof editionId !== 'string') {
+      throw new Error('pinEdition() requires a non-empty string editionId');
+    }
+    return new FactorsClient({
+      ...this.cloneOpts,
+      pinnedEdition: editionId,
+    });
+  }
+
+  /**
+   * Run `fn` with a freshly-pinned client. The parent client's pin is
+   * unaffected. Mirrors Python's `with client.edition(...)` context manager.
+   */
+  async edition<T>(
+    editionId: string,
+    fn: (scoped: FactorsClient) => Promise<T>,
+  ): Promise<T> {
+    const scoped = this.pinEdition(editionId);
+    try {
+      return await fn(scoped);
+    } finally {
+      scoped.close();
+    }
+  }
+
+  /** Enforce the edition pin against a response. No-op if no pin. */
+  private assertEditionPin(
+    resp: TransportResponse<unknown>,
+    path: string,
+  ): void {
+    if (!this.pinnedEdition_) return;
+    const returned = resp.edition;
+    if (!returned) return;
+    if (returned !== this.pinnedEdition_) {
+      throw new EditionMismatchError(
+        `Server returned edition ${JSON.stringify(returned)} but client is pinned to ${JSON.stringify(
+          this.pinnedEdition_,
+        )} (path=${path}).`,
+        {
+          pinnedEdition: this.pinnedEdition_,
+          returnedEdition: returned,
+          context: { path, request_id: resp.requestId },
+        },
+      );
+    }
   }
 
   get cache(): ETagCache {
@@ -173,27 +474,33 @@ export class FactorsClient {
     return this.apiPrefix + s;
   }
 
-  private get<T = unknown>(
+  private async get<T = unknown>(
     suffix: string,
     params?: Record<string, unknown> | null,
     useCache = true,
   ): Promise<TransportResponse<T>> {
-    return this.transport.request<T>('GET', this.path(suffix), {
+    const fullPath = this.path(suffix);
+    const resp = await this.transport.request<T>('GET', fullPath, {
       params: params ?? undefined,
       useCache,
     });
+    this.assertEditionPin(resp, fullPath);
+    return resp;
   }
 
-  private post<T = unknown>(
+  private async post<T = unknown>(
     suffix: string,
     jsonBody?: unknown,
     params?: Record<string, unknown> | null,
   ): Promise<TransportResponse<T>> {
-    return this.transport.request<T>('POST', this.path(suffix), {
+    const fullPath = this.path(suffix);
+    const resp = await this.transport.request<T>('POST', fullPath, {
       jsonBody,
       params: params ?? undefined,
       useCache: false,
     });
+    this.assertEditionPin(resp, fullPath);
+    return resp;
   }
 
   // =====================================================================

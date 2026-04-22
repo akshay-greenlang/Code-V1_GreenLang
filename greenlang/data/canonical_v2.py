@@ -152,6 +152,8 @@ class MethodProfile(str, Enum):
     FINANCE_PROXY = "finance_proxy"            # PCAF
     EU_CBAM = "eu_cbam"
     EU_DPP = "eu_dpp"
+    EU_DPP_BATTERY = "eu_dpp_battery"          # EU Battery Regulation 2023/1542
+    INDIA_CCTS = "india_ccts"                  # India Carbon Credit Trading Scheme
 
 
 # ---------------------------------------------------------------------------

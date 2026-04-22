@@ -1,0 +1,66 @@
+---
+# Staging overlay:
+#   - 1 API replica (cost-sensitive)
+#   - staging.greenlang.io host
+#   - tier=pro permissive (Kong consumer groups pre-populated with pro limits)
+#   - Vault path secret/factors/staging/*
+#   - IRSA role: greenlang-factors-staging
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: greenlang-factors
+
+resources:
+  - ../../base
+
+namePrefix: ""
+nameSuffix: ""
+
+commonLabels:
+  greenlang.io/stage: staging
+
+images:
+  - name: ghcr.io/greenlang/factors-api
+    newTag: staging
+
+replicas:
+  - name: factors-api
+    count: 1
+  - name: factors-worker-ingest
+    count: 1
+  - name: factors-worker-embed
+    count: 1
+  - name: factors-worker-dedupe
+    count: 0          # Skip dedupe in staging by default
+  - name: factors-worker-watch
+    count: 0          # Daily CronJob is enough for staging
+
+patches:
+  - path: patch-configmap.yaml
+    target:
+      kind: ConfigMap
+      name: factors-api-env
+  - path: patch-deployment-resources.yaml
+    target:
+      kind: Deployment
+      name: factors-api
+  - path: patch-hpa.yaml
+    target:
+      kind: HorizontalPodAutoscaler
+      name: factors-api
+  - path: patch-pdb.yaml
+    target:
+      kind: PodDisruptionBudget
+      name: factors-api
+  - path: patch-ingress.yaml
+    target:
+      kind: Ingress
+      name: factors-api
+  - path: patch-serviceaccount.yaml
+    target:
+      kind: ServiceAccount
+      name: factors-api
+  - path: patch-externalsecret.yaml
+    target:
+      kind: ExternalSecret
+      name: factors-api-secrets

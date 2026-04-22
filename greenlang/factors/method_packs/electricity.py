@@ -296,6 +296,263 @@ ELECTRICITY_RESIDUAL_MIX_JP = MethodPack(
 )
 
 
+# ---------------------------------------------------------------------------
+# Regulatory-gap closure (2026-04-22) — §4 item #1, five new markets
+# ---------------------------------------------------------------------------
+# The §4 §10.1 gap is that residual mix was only covered for EU/US/CA/AU/JP.
+# The five variants below extend coverage to Canada (provincial CER),
+# UK national (DESNZ), Australia state-level (NGER), Korea (KEMCO),
+# Singapore (EMA). Each pack enforces a jurisdiction filter via the
+# SelectionRule custom_filter so a caller asking for Singapore residual
+# mix cannot accidentally receive a factor from a different source.
+
+
+def _jurisdiction_filter(
+    *, source_id: str, required_country: str
+) -> callable:
+    """Build a custom_filter that accepts only factors with the target
+    ``source_id`` AND ``geography`` matching the country code.
+
+    Using a module-level helper keeps the closure explicit so the
+    filter is picklable (avoids lambda closure-capture surprises).
+    """
+    required_country = required_country.upper()
+
+    def _filter(rec) -> bool:
+        rec_source = getattr(rec, "source_id", None)
+        rec_geo = str(getattr(rec, "geography", "") or "").upper()
+        return rec_source == source_id and rec_geo == required_country
+
+    _filter.__name__ = f"filter_{source_id}_{required_country}"
+    return _filter
+
+
+ELECTRICITY_RESIDUAL_MIX_CA = MethodPack(
+    profile=MethodProfile.CORPORATE_SCOPE2_MARKET,
+    name="Electricity — Residual Mix (Canada, CER provincial)",
+    description=(
+        "Provincial residual mix for Canada derived from Canada Energy "
+        "Regulator (CER) provincial electricity intensity factors with "
+        "ECCC National Inventory Report surrender-adjusted accounting. "
+        "Covers all 10 provinces + 3 territories. Used for Scope 2 "
+        "market-based accounting when no REC / I-REC / PPA applies."
+    ),
+    selection_rule=SelectionRule(
+        allowed_families=(FactorFamily.RESIDUAL_MIX,),
+        allowed_formula_types=(FormulaType.RESIDUAL_MIX,),
+        allowed_statuses=("certified", "preview"),
+        custom_filter=_jurisdiction_filter(
+            source_id="cer_canada_residual", required_country="CA"
+        ),
+    ),
+    boundary_rule=BoundaryRule(
+        allowed_scopes=("2",),
+        allowed_boundaries=("combustion",),
+        biogenic_treatment=BiogenicTreatment.REPORTED_SEPARATELY,
+        market_instruments=MarketInstrumentTreatment.ALLOWED,
+        include_transmission_losses=False,
+    ),
+    gwp_basis="IPCC_AR6_100",
+    region_hierarchy=RESIDUAL_MIX_FALLBACK,
+    deprecation=_DEPRECATION,
+    reporting_labels=(
+        "GHG_Protocol_Scope2_MarketBased",
+        "CDP",
+        "IFRS_S2",
+        "CSA_CSDS",              # Canada Sustainability Disclosure Standards
+    ),
+    audit_text_template=(
+        "Canada residual mix ({geography}/{grid_region}) — CER provincial "
+        "intensity {source_year}. Applied under GHG Protocol Scope 2 "
+        "market-based when no contractual instrument exists."
+    ),
+    pack_version="1.0.0",
+    electricity_basis=ElectricityBasis.RESIDUAL_MIX,
+    tags=("electricity", "residual_mix", "ca", "cer"),
+)
+
+
+ELECTRICITY_RESIDUAL_MIX_UK_NATIONAL = MethodPack(
+    profile=MethodProfile.CORPORATE_SCOPE2_MARKET,
+    name="Electricity — Residual Mix (UK national, DESNZ/BEIS)",
+    description=(
+        "UK national residual mix factor derived from the DESNZ "
+        "(formerly BEIS) GHG conversion factors with Ofgem Renewable "
+        "Energy Guarantees of Origin (REGO) surrender netting. Single "
+        "national factor covering England, Scotland, Wales, Northern "
+        "Ireland under UK SECR / TPT reporting."
+    ),
+    selection_rule=SelectionRule(
+        allowed_families=(FactorFamily.RESIDUAL_MIX,),
+        allowed_formula_types=(FormulaType.RESIDUAL_MIX,),
+        allowed_statuses=("certified", "preview"),
+        custom_filter=_jurisdiction_filter(
+            source_id="beis_uk_residual", required_country="UK"
+        ),
+    ),
+    boundary_rule=BoundaryRule(
+        allowed_scopes=("2",),
+        allowed_boundaries=("combustion",),
+        biogenic_treatment=BiogenicTreatment.REPORTED_SEPARATELY,
+        market_instruments=MarketInstrumentTreatment.ALLOWED,
+        include_transmission_losses=False,
+    ),
+    gwp_basis="IPCC_AR6_100",
+    region_hierarchy=RESIDUAL_MIX_FALLBACK,
+    deprecation=_DEPRECATION,
+    reporting_labels=(
+        "GHG_Protocol_Scope2_MarketBased",
+        "UK_SECR",
+        "UK_TPT",
+        "CSRD_E1",
+        "IFRS_S2",
+    ),
+    audit_text_template=(
+        "UK national residual mix — DESNZ {source_year} with REGO "
+        "surrender netting. Use for Scope 2 market-based when no "
+        "contractual instrument (GO, REGO, PPA) applies."
+    ),
+    pack_version="1.0.0",
+    electricity_basis=ElectricityBasis.RESIDUAL_MIX,
+    tags=("electricity", "residual_mix", "uk", "desnz", "rego"),
+)
+
+
+ELECTRICITY_RESIDUAL_MIX_AU_STATE = MethodPack(
+    profile=MethodProfile.CORPORATE_SCOPE2_MARKET,
+    name="Electricity — Residual Mix (Australia state-level, NGER)",
+    description=(
+        "Australia state-level residual mix derived from the NGER "
+        "(National Greenhouse and Energy Reporting) state-level grid "
+        "factors with Large-scale Generation Certificate (LGC) surrender "
+        "netting. Covers all 8 states + territories (NSW, VIC, QLD, SA, "
+        "WA, TAS, NT, ACT). Finer-grained than the existing Australian "
+        "national pack; activated when the caller supplies state "
+        "resolution."
+    ),
+    selection_rule=SelectionRule(
+        allowed_families=(FactorFamily.RESIDUAL_MIX,),
+        allowed_formula_types=(FormulaType.RESIDUAL_MIX,),
+        allowed_statuses=("certified", "preview"),
+        custom_filter=_jurisdiction_filter(
+            source_id="nger_au_state_residual", required_country="AU"
+        ),
+    ),
+    boundary_rule=BoundaryRule(
+        allowed_scopes=("2",),
+        allowed_boundaries=("combustion",),
+        biogenic_treatment=BiogenicTreatment.REPORTED_SEPARATELY,
+        market_instruments=MarketInstrumentTreatment.ALLOWED,
+        include_transmission_losses=False,
+    ),
+    gwp_basis="IPCC_AR6_100",
+    region_hierarchy=RESIDUAL_MIX_FALLBACK,
+    deprecation=_DEPRECATION,
+    reporting_labels=(
+        "GHG_Protocol_Scope2_MarketBased",
+        "NGER",
+        "Climate_Active",
+        "IFRS_S2",
+        "ASRS",                   # Australian Sustainability Reporting Standards
+    ),
+    audit_text_template=(
+        "Australia state residual mix ({geography}/{grid_region}) — "
+        "NGER FY{source_year} with LGC netting."
+    ),
+    pack_version="1.0.0",
+    electricity_basis=ElectricityBasis.RESIDUAL_MIX,
+    tags=("electricity", "residual_mix", "au", "nger", "state_level"),
+)
+
+
+ELECTRICITY_RESIDUAL_MIX_KR = MethodPack(
+    profile=MethodProfile.CORPORATE_SCOPE2_MARKET,
+    name="Electricity — Residual Mix (Korea, KEMCO)",
+    description=(
+        "Republic of Korea national electricity residual mix derived "
+        "from the Korea Energy Management Corporation (KEMCO) / Korea "
+        "Energy Agency factors with KEC (Korea Energy Certificate) "
+        "surrender netting. Published alongside the Greenhouse Gas "
+        "Inventory and Research Center (GIR) national inventory."
+    ),
+    selection_rule=SelectionRule(
+        allowed_families=(FactorFamily.RESIDUAL_MIX,),
+        allowed_formula_types=(FormulaType.RESIDUAL_MIX,),
+        allowed_statuses=("certified", "preview"),
+        custom_filter=_jurisdiction_filter(
+            source_id="kemco_korea_residual", required_country="KR"
+        ),
+    ),
+    boundary_rule=BoundaryRule(
+        allowed_scopes=("2",),
+        allowed_boundaries=("combustion",),
+        biogenic_treatment=BiogenicTreatment.REPORTED_SEPARATELY,
+        market_instruments=MarketInstrumentTreatment.ALLOWED,
+        include_transmission_losses=False,
+    ),
+    gwp_basis="IPCC_AR6_100",
+    region_hierarchy=RESIDUAL_MIX_FALLBACK,
+    deprecation=_DEPRECATION,
+    reporting_labels=(
+        "GHG_Protocol_Scope2_MarketBased",
+        "Korea_KSSB",             # Korea Sustainability Standards Board
+        "IFRS_S2",
+        "CDP",
+    ),
+    audit_text_template=(
+        "Korea national residual mix — KEMCO {source_year} with KEC "
+        "surrender netting."
+    ),
+    pack_version="1.0.0",
+    electricity_basis=ElectricityBasis.RESIDUAL_MIX,
+    tags=("electricity", "residual_mix", "kr", "kemco", "kec"),
+)
+
+
+ELECTRICITY_RESIDUAL_MIX_SG = MethodPack(
+    profile=MethodProfile.CORPORATE_SCOPE2_MARKET,
+    name="Electricity — Residual Mix (Singapore, EMA)",
+    description=(
+        "Singapore national electricity residual mix derived from the "
+        "Energy Market Authority (EMA) Grid Emission Factor with REC "
+        "(Renewable Energy Certificate) surrender netting. Singapore has "
+        "a single-zone grid so only a national factor applies. Used for "
+        "SGX Rule 711A mandatory Scope 2 disclosures from 2028."
+    ),
+    selection_rule=SelectionRule(
+        allowed_families=(FactorFamily.RESIDUAL_MIX,),
+        allowed_formula_types=(FormulaType.RESIDUAL_MIX,),
+        allowed_statuses=("certified", "preview"),
+        custom_filter=_jurisdiction_filter(
+            source_id="ema_singapore_residual", required_country="SG"
+        ),
+    ),
+    boundary_rule=BoundaryRule(
+        allowed_scopes=("2",),
+        allowed_boundaries=("combustion",),
+        biogenic_treatment=BiogenicTreatment.REPORTED_SEPARATELY,
+        market_instruments=MarketInstrumentTreatment.ALLOWED,
+        include_transmission_losses=False,
+    ),
+    gwp_basis="IPCC_AR6_100",
+    region_hierarchy=RESIDUAL_MIX_FALLBACK,
+    deprecation=_DEPRECATION,
+    reporting_labels=(
+        "GHG_Protocol_Scope2_MarketBased",
+        "SGX_711A",               # Singapore Exchange Rule 711A
+        "IFRS_S2",
+        "CDP",
+    ),
+    audit_text_template=(
+        "Singapore national residual mix — EMA {source_year} with REC "
+        "surrender netting. Single-zone grid: {geography}."
+    ),
+    pack_version="1.0.0",
+    electricity_basis=ElectricityBasis.RESIDUAL_MIX,
+    tags=("electricity", "residual_mix", "sg", "ema"),
+)
+
+
 #: All residual-mix packs keyed by ISO-2 country code for routing.
 RESIDUAL_MIX_PACKS_BY_COUNTRY: dict = {}
 
@@ -304,7 +561,9 @@ def _register_residual_mix_packs() -> None:
     """Build the country -> residual-mix pack routing map.
 
     EU/EEA countries all route to the AIB variant; US/CA, AU, JP each
-    route to their dedicated pack.
+    route to their dedicated pack.  The five 2026-Q2 additions (Canada
+    provincial, UK national, AU state-level, Korea, Singapore) override
+    the legacy routing where more specific data is available.
     """
     global RESIDUAL_MIX_PACKS_BY_COUNTRY
     eu_countries = (
@@ -314,9 +573,17 @@ def _register_residual_mix_packs() -> None:
     )
     mapping = {c: ELECTRICITY_RESIDUAL_MIX_EU for c in eu_countries}
     mapping["US"] = ELECTRICITY_RESIDUAL_MIX_US
-    mapping["CA"] = ELECTRICITY_RESIDUAL_MIX_US
+    # Canada: CER provincial is more authoritative than the Green-e
+    # backfill in the legacy pack — override the routing.
+    mapping["CA"] = ELECTRICITY_RESIDUAL_MIX_CA
+    # Australia national legacy pack retained for callers that only
+    # request country-level resolution; state-level pack is opt-in.
     mapping["AU"] = ELECTRICITY_RESIDUAL_MIX_AU
     mapping["JP"] = ELECTRICITY_RESIDUAL_MIX_JP
+    mapping["UK"] = ELECTRICITY_RESIDUAL_MIX_UK_NATIONAL
+    mapping["GB"] = ELECTRICITY_RESIDUAL_MIX_UK_NATIONAL
+    mapping["KR"] = ELECTRICITY_RESIDUAL_MIX_KR
+    mapping["SG"] = ELECTRICITY_RESIDUAL_MIX_SG
     RESIDUAL_MIX_PACKS_BY_COUNTRY = mapping
 
 
@@ -336,6 +603,10 @@ def get_residual_mix_pack(country: str):
         True
         >>> get_residual_mix_pack("JP") is ELECTRICITY_RESIDUAL_MIX_JP
         True
+        >>> get_residual_mix_pack("UK") is ELECTRICITY_RESIDUAL_MIX_UK_NATIONAL
+        True
+        >>> get_residual_mix_pack("SG") is ELECTRICITY_RESIDUAL_MIX_SG
+        True
     """
     if not country:
         return ELECTRICITY_RESIDUAL_MIX_EU
@@ -351,6 +622,11 @@ __all__ = [
     "ELECTRICITY_RESIDUAL_MIX_US",
     "ELECTRICITY_RESIDUAL_MIX_AU",
     "ELECTRICITY_RESIDUAL_MIX_JP",
+    "ELECTRICITY_RESIDUAL_MIX_CA",
+    "ELECTRICITY_RESIDUAL_MIX_UK_NATIONAL",
+    "ELECTRICITY_RESIDUAL_MIX_AU_STATE",
+    "ELECTRICITY_RESIDUAL_MIX_KR",
+    "ELECTRICITY_RESIDUAL_MIX_SG",
     "RESIDUAL_MIX_FALLBACK",
     "RESIDUAL_MIX_PACKS_BY_COUNTRY",
     "get_residual_mix_pack",

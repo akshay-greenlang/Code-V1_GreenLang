@@ -1,0 +1,15 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: factors-api-env
+  namespace: greenlang-factors
+data:
+  GL_ENV: "production"
+  ENVIRONMENT: "production"
+  GL_LOG_LEVEL: "INFO"
+  WORKERS: "4"
+  # Strict tier enforcement: community is default, upgrades come from JWT claim.
+  GL_FACTORS_TIER: "community"
+  OTEL_RESOURCE_ATTRIBUTES: "service.name=factors-api,service.namespace=greenlang,deployment.environment=production"
+  OTEL_TRACES_SAMPLER_ARG: "0.1"

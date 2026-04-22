@@ -1,0 +1,74 @@
+{
+  "chosen_factor_id": "DEFRA-NG-GB-2024-001",
+  "chosen_factor_name": "Natural gas combustion, UK, corporate scope 1",
+  "source_id": "defra-2024",
+  "source_version": "1.2",
+  "factor_version": "1.0",
+  "vintage": 2024,
+  "method_profile": "corporate_scope1",
+  "formula_type": "combustion",
+  "redistribution_class": "open_cc",
+
+  "fallback_rank": 5,
+  "step_label": "country_or_sector_average",
+  "why_chosen": "DEFRA 2024 natural_gas GB matched jurisdiction and method_profile=corporate_scope1; preferred over IEA_GLOBAL_2023 by tie-break rank.",
+  "alternates": [
+    {
+      "factor_id": "IEA-GLOBAL-NG-2023-001",
+      "tie_break_score": 2.1,
+      "why_not_chosen": "global, not GB-specific",
+      "source_id": "iea-2023",
+      "vintage": 2023,
+      "redistribution_class": "commercial"
+    },
+    {
+      "factor_id": "ECOINVENT-NG-GB-3.10",
+      "tie_break_score": 3.0,
+      "why_not_chosen": "attributional not operational",
+      "source_id": "ecoinvent-3.10",
+      "vintage": 2023,
+      "redistribution_class": "commercial"
+    }
+  ],
+  "assumptions": [
+    "HHV basis",
+    "Standard operating conditions (15°C, 1013 hPa)"
+  ],
+  "deprecation_status": "active",
+  "deprecation_replacement": null,
+
+  "quality_score": 92,
+  "uncertainty": {
+    "distribution": "normal",
+    "ci_95_percent": 0.015,
+    "low": 1.9991,
+    "high": 2.0601,
+    "note": "DEFRA reports ±1.5% 95% CI"
+  },
+  "verification_status": "third_party_verified",
+
+  "gas_breakdown": {
+    "co2_kg": 1.9876,
+    "ch4_kg": 0.0082,
+    "n2o_kg": 0.0033,
+    "hfcs_kg": 0,
+    "pfcs_kg": 0,
+    "sf6_kg": 0,
+    "nf3_kg": 0,
+    "biogenic_co2_kg": 0,
+    "co2e_total_kg": 2.0296,
+    "gwp_basis": "IPCC_AR6_100"
+  },
+  "factor_unit_denominator": "m3",
+  "primary_data_flag": "secondary",
+
+  "target_unit": null,
+  "converted_co2e_per_unit": null,
+  "unit_conversion_factor": null,
+  "unit_conversion_path": [],
+  "unit_conversion_note": null,
+
+  "resolved_at": "2026-04-22T10:15:30.123456+00:00",
+  "method_pack_version": "v1.4.2",
+  "engine_version": "resolution-1.0.0"
+}

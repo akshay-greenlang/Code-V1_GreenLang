@@ -444,7 +444,9 @@
       "Bash(Select-Object -Last 3)",
       "Bash(claude:*)",
       "Read(//c/tmp/**)",
-      "Bash(rm -f /tmp/test_ledger.sqlite /tmp/test_ledger_export.json python -m greenlang.cli.main ledger record emission e-001 calculate abc123 --sqlite /tmp/test_ledger.sqlite --metadata '{\"framework\":\"CBAM\"}')"
+      "Bash(rm -f /tmp/test_ledger.sqlite /tmp/test_ledger_export.json python -m greenlang.cli.main ledger record emission e-001 calculate abc123 --sqlite /tmp/test_ledger.sqlite --metadata '{\"framework\":\"CBAM\"}')",
+      "Bash(sed -n '140,160p' tests/factors/sdk/test_edition_pinning.py)",
+      "Bash(sed -n '170,195p' tests/factors/sdk/test_edition_pinning.py)"
     ],
     "deny": [],
     "ask": []

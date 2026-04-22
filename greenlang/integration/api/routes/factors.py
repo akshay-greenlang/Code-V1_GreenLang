@@ -119,6 +119,16 @@ def _factor_to_summary(f) -> dict:
     }
 
 
+def _extract_gwp_set(f) -> str:
+    """Locate the GWP set enum either on the record or on gwp_100yr."""
+    gs = getattr(f, "gwp_set", None)
+    if gs is None:
+        gs = getattr(getattr(f, "gwp_100yr", None), "gwp_set", None)
+    if gs is None:
+        return ""
+    return gs.value if hasattr(gs, "value") else str(gs)
+
+
 def _factor_to_detailed(f) -> dict:
     """Convert EmissionFactorRecord to EmissionFactorResponse-compatible dict."""
     return {
@@ -129,13 +139,19 @@ def _factor_to_detailed(f) -> dict:
         "geography_level": getattr(f, "geography_level", "country") or "country",
         "scope": f.scope.value,
         "boundary": f.boundary.value,
-        "co2_per_unit": f.gwp_100yr.CO2,
-        "ch4_per_unit": f.gwp_100yr.CH4,
-        "n2o_per_unit": f.gwp_100yr.N2O,
+        # Per-gas emissions live on the GHGVectors (``vectors``) —
+        # ``gwp_100yr`` is the GWPValues multipliers object, not the
+        # per-unit emissions.  Fall back gracefully when a test fixture
+        # predates the schema split.
+        "co2_per_unit": float(getattr(f, "vectors", f.gwp_100yr).CO2),
+        "ch4_per_unit": float(getattr(f, "vectors", f.gwp_100yr).CH4),
+        "n2o_per_unit": float(getattr(f, "vectors", f.gwp_100yr).N2O),
         "co2e_per_unit": f.gwp_100yr.co2e_total,
-        "gwp_set": f.gwp_set.value if hasattr(f.gwp_set, "value") else str(f.gwp_set),
-        "ch4_gwp": getattr(f.gwp_100yr, "ch4_gwp", 28),
-        "n2o_gwp": getattr(f.gwp_100yr, "n2o_gwp", 273),
+        # gwp_set lives on the gwp_100yr container; callers may also
+        # supply it at the record level on older fixtures.
+        "gwp_set": _extract_gwp_set(f),
+        "ch4_gwp": getattr(f.gwp_100yr, "CH4_gwp", getattr(f.gwp_100yr, "ch4_gwp", 28)),
+        "n2o_gwp": getattr(f.gwp_100yr, "N2O_gwp", getattr(f.gwp_100yr, "n2o_gwp", 273)),
         "data_quality": {
             "temporal": f.dqs.temporal,
             "geographical": f.dqs.geographical,
@@ -1167,6 +1183,97 @@ async def factor_alternates(
     _set_explain_headers(response, edition_id=edition_id, method_profile=profile)
     response.headers["ETag"] = etag
     response.headers["Cache-Control"] = cache_control_for_explain()
+
+    return payload
+
+
+# ==================== Factor Quality Score (0-100) surface ====================
+
+
+@router.get(
+    "/{factor_id}/quality",
+    summary="Composite Factor Quality Score (FQS) on a 0-100 scale",
+    description=(
+        "Return the 5 component scores (temporal, geographical, "
+        "technological, representativeness, methodological) on both the "
+        "native DQS 1-5 scale and the CTO-spec 0-100 scale, plus a "
+        "weighted composite ``composite_fqs`` (0-100), a ``rating`` "
+        "label (excellent / good / fair / poor) and a "
+        "``promotion_eligibility`` label (certified / preview / "
+        "connector_only).\n\n"
+        "Public endpoint: no tier gate.  Exposes the same FQS the "
+        "release-signoff pipeline uses so external users can filter "
+        "and sort by quality consistently with the GreenLang release "
+        "gate."
+    ),
+    responses={
+        200: {"description": "Composite FQS payload"},
+        304: {"description": "Not modified (ETag match)"},
+        404: {"model": ErrorResponse, "description": "Factor not found"},
+    },
+)
+async def factor_quality(
+    request: Request,
+    response: Response,
+    factor_id: str,
+    edition: Optional[str] = Query(None, description="Pin to specific edition"),
+    current_user: dict = Depends(get_current_user),
+    svc=Depends(get_factor_service),
+) -> Dict[str, Any]:
+    """Return the composite FQS payload for a factor."""
+    apply_rate_limit(request, response, current_user)
+
+    from greenlang.factors.api_endpoints import (
+        cache_control_for_status,
+        check_etag_match,
+        compute_etag,
+    )
+    from greenlang.factors.quality.composite_fqs import compute_fqs
+
+    try:
+        edition_id = _resolve_edition(svc, request, edition)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+    factor = svc.repo.get_factor(edition_id, factor_id)
+    if not factor:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Factor {factor_id!r} not found in edition {edition_id}",
+        )
+
+    dqs = getattr(factor, "dqs", None)
+    if dqs is None:
+        raise HTTPException(
+            status_code=422,
+            detail=(
+                f"Factor {factor_id!r} has no DataQualityScore; "
+                "cannot compute FQS."
+            ),
+        )
+
+    fqs = compute_fqs(dqs)
+    payload: Dict[str, Any] = {
+        "factor_id": factor_id,
+        "edition_id": edition_id,
+        "dqs_overall_5": getattr(dqs, "overall_score", None),
+        "dqs_rating": getattr(
+            getattr(dqs, "rating", None), "value", None
+        ),
+        "fqs": fqs.to_dict(),
+    }
+
+    # ETag + cache: quality is stable per (factor, edition).
+    etag = compute_etag(factor)
+    if_none_match = request.headers.get("If-None-Match")
+    if check_etag_match(if_none_match, etag):
+        return Response(status_code=304)
+
+    factor_status = getattr(factor, "factor_status", "certified") or "certified"
+    response.headers["ETag"] = etag
+    response.headers["Cache-Control"] = cache_control_for_status(factor_status)
+    response.headers["X-GreenLang-Edition"] = edition_id
+    response.headers["X-Factors-Edition"] = edition_id
 
     return payload
 

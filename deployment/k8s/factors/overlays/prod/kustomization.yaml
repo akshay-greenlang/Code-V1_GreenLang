@@ -1,0 +1,60 @@
+---
+# Prod overlay:
+#   - 3..10 replicas (HPA)
+#   - factors.greenlang.io host
+#   - tier enforcement STRICT (community default; consumer groups gate everything else)
+#   - Vault path secret/factors/prod/*
+#   - IRSA role: greenlang-factors-prod
+#   - letsencrypt-prod issuer
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: greenlang-factors
+
+resources:
+  - ../../base
+
+commonLabels:
+  greenlang.io/stage: prod
+
+images:
+  - name: ghcr.io/greenlang/factors-api
+    newTag: prod
+
+replicas:
+  - name: factors-api
+    count: 3
+  - name: factors-worker-ingest
+    count: 1
+  - name: factors-worker-embed
+    count: 2
+  - name: factors-worker-dedupe
+    count: 1
+  - name: factors-worker-watch
+    count: 1
+
+patches:
+  - path: patch-configmap.yaml
+    target:
+      kind: ConfigMap
+      name: factors-api-env
+  - path: patch-deployment-resources.yaml
+    target:
+      kind: Deployment
+      name: factors-api
+  - path: patch-hpa.yaml
+    target:
+      kind: HorizontalPodAutoscaler
+      name: factors-api
+  - path: patch-ingress.yaml
+    target:
+      kind: Ingress
+      name: factors-api
+  - path: patch-serviceaccount.yaml
+    target:
+      kind: ServiceAccount
+      name: factors-api
+  - path: patch-externalsecret.yaml
+    target:
+      kind: ExternalSecret
+      name: factors-api-secrets

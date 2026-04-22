@@ -1,0 +1,12 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: greenlang-factors
+  labels:
+    app.kubernetes.io/name: factors-api
+    app.kubernetes.io/part-of: greenlang
+    # Istio / NetworkPolicy gates
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/warn: restricted

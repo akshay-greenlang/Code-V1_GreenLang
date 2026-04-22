@@ -1,0 +1,96 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://greenlang.io/schemas/gold_eval/activity_to_factor.schema.json",
+  "title": "GreenLang Factors — Gold-Label Evaluation Entry",
+  "description": "One activity-description -> ground-truth factor_id pair used by the Certified edition promotion gate. Each line of activity_to_factor.jsonl must validate against this schema.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "activity_text",
+    "method_profile",
+    "jurisdiction",
+    "expected_factor_id",
+    "acceptable_alternates",
+    "slice",
+    "difficulty",
+    "source_hint"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^gold-[0-9]{3,4}$",
+      "description": "Stable, zero-padded case identifier (e.g. 'gold-001')."
+    },
+    "activity_text": {
+      "type": "string",
+      "minLength": 8,
+      "maxLength": 400,
+      "description": "Real-world free-text description of the activity (as it would appear in a corporate GHG survey or invoice)."
+    },
+    "method_profile": {
+      "type": "string",
+      "enum": [
+        "corporate_scope1",
+        "corporate_scope2_location_based",
+        "corporate_scope2_market_based",
+        "corporate_scope3",
+        "product_carbon",
+        "freight_iso_14083",
+        "land_removals",
+        "finance_proxy",
+        "eu_cbam",
+        "eu_dpp"
+      ],
+      "description": "MethodProfile the cascade must bind to. Non-negotiable #6 - MUST be a registered profile."
+    },
+    "jurisdiction": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 8,
+      "description": "ISO 3166-1 alpha-2 country code or continent shorthand (US, EU, UK, IN, CN, JP, BR, ZA)."
+    },
+    "expected_factor_id": {
+      "type": "string",
+      "minLength": 3,
+      "description": "Canonical factor_id that resolution MUST return as the top-1 match. Cases whose id is not present in the local EmissionFactorDatabase are logged as skipped_missing_factor and excluded from pass/fail math (capped at 20% of the set)."
+    },
+    "acceptable_alternates": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 3
+      },
+      "uniqueItems": true,
+      "maxItems": 10,
+      "description": "Additional factor_ids that are semantically equivalent and would satisfy top-5 recall. MUST be grounded - never fabricate. Leave empty if the expected_factor_id is the only acceptable answer."
+    },
+    "slice": {
+      "type": "string",
+      "enum": [
+        "electricity",
+        "combustion",
+        "freight",
+        "material_cbam",
+        "land",
+        "product",
+        "finance"
+      ],
+      "description": "High-level domain slice. Per-slice accuracy is computed and enforced by the gate."
+    },
+    "difficulty": {
+      "type": "string",
+      "enum": ["easy", "medium", "hard"],
+      "description": "Authoring label. 'easy' = explicit fuel + unit + geography; 'medium' = one ambiguity; 'hard' = multi-signal disambiguation or adversarial wording."
+    },
+    "source_hint": {
+      "type": "string",
+      "minLength": 4,
+      "description": "Human-readable citation for the worked example (e.g. 'DEFRA 2024 table A1', 'EPA GHG Hub - Stationary Combustion', 'CBAM Annex IV default values')."
+    },
+    "notes": {
+      "type": "string",
+      "description": "Optional authoring note explaining the ground-truth choice or edge case."
+    }
+  }
+}

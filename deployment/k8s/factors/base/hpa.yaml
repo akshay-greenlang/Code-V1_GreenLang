@@ -1,0 +1,58 @@
+---
+# HPA scales factors-api 3 -> 10 replicas on CPU 70% and a custom
+# request-rate metric published by OBS-001 Prometheus (via the
+# prometheus-adapter). The custom metric is exposed per-pod as
+# `factors_request_rate` (5m average requests/sec).
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: factors-api
+  namespace: greenlang-factors
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: factors-api
+  minReplicas: 3
+  maxReplicas: 10
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 30
+      policies:
+        - type: Percent
+          value: 100
+          periodSeconds: 30
+        - type: Pods
+          value: 2
+          periodSeconds: 30
+      selectPolicy: Max
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Percent
+          value: 50
+          periodSeconds: 60
+      selectPolicy: Min
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+    - type: Pods
+      pods:
+        metric:
+          name: factors_request_rate
+          selector:
+            matchLabels:
+              service: factors-api
+        target:
+          type: AverageValue
+          averageValue: "50"   # 50 rps/pod before adding replicas

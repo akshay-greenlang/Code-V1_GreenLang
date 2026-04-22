@@ -1,0 +1,132 @@
+{
+  "edition_id": "2027.Q1-electricity",
+  "slice": "electricity",
+  "mode": "dry-run",
+  "pre_flight": {
+    "source_registry": {
+      "ok": true,
+      "detail": "27 registry entries; missing=none; issues=none",
+      "missing": [],
+      "issues": []
+    },
+    "method_packs": {
+      "ok": true,
+      "detail": "packs registered: {'corporate_scope2_location_based': '1.0.0', 'corporate_scope2_market_based': '1.0.0'}",
+      "missing": [],
+      "pack_versions": {
+        "corporate_scope2_location_based": "1.0.0",
+        "corporate_scope2_market_based": "1.0.0"
+      }
+    }
+  },
+  "manifest": {
+    "edition_id": "2027.Q1-electricity",
+    "status": "pending",
+    "slice": "electricity",
+    "sources": [
+      "egrid",
+      "aib_residual_mix_eu",
+      "india_cea_co2_baseline",
+      "desnz_ghg_conversion",
+      "green_e_residual_mix",
+      "australia_nga_factors",
+      "japan_meti_electric_emission_factors",
+      "greenlang_builtin"
+    ],
+    "method_profiles": [
+      "corporate_scope2_location_based",
+      "corporate_scope2_market_based"
+    ],
+    "changelog": [
+      "Edition 2027.Q1-electricity \u2014 Electricity Slice 1 (v1 Certified).",
+      "Promotes: eGRID, AIB EU residual mix, India CEA, DESNZ, Green-e residual, Australia NGA, Japan METI, GreenLang built-in.",
+      "Method profiles: corporate_scope2_location_based, corporate_scope2_market_based.",
+      "GWP basis: IPCC AR6 100yr.",
+      "Reporting labels added: CSRD_E1, CA_SB253, UK_SECR, India_BRSR."
+    ],
+    "policy_rule_refs": [
+      "method_packs/corporate.py::CORPORATE_SCOPE2_LOCATION",
+      "method_packs/corporate.py::CORPORATE_SCOPE2_MARKET",
+      "method_packs/electricity.py::ELECTRICITY_LOCATION",
+      "method_packs/electricity.py::ELECTRICITY_MARKET",
+      "method_packs/electricity.py::ELECTRICITY_RESIDUAL_MIX_EU"
+    ]
+  },
+  "signoff": {
+    "edition_id": "2027.Q1-electricity",
+    "items": [
+      {
+        "item_id": "S1",
+        "label": "QA gates pass for all factors",
+        "ok": true,
+        "detail": "200/200 factors passed Q1-Q6 gates",
+        "severity": "required"
+      },
+      {
+        "item_id": "S2",
+        "label": "No unresolved duplicate pairs",
+        "ok": true,
+        "detail": "No duplicates requiring review",
+        "severity": "required"
+      },
+      {
+        "item_id": "S3",
+        "label": "Cross-source consistency reviewed",
+        "ok": true,
+        "detail": "All cross-source checks passed",
+        "severity": "required"
+      },
+      {
+        "item_id": "S4",
+        "label": "Changelog reviewed and approved",
+        "ok": false,
+        "detail": "Changelog not reviewed or empty",
+        "severity": "required"
+      },
+      {
+        "item_id": "S5",
+        "label": "Methodology lead signed off",
+        "ok": false,
+        "detail": "Awaiting methodology lead approval",
+        "severity": "required"
+      },
+      {
+        "item_id": "S6",
+        "label": "Legal confirmed source licenses",
+        "ok": false,
+        "detail": "Awaiting legal confirmation",
+        "severity": "required"
+      },
+      {
+        "item_id": "S7",
+        "label": "Regression test passed",
+        "ok": true,
+        "detail": "Edition comparison shows expected changes",
+        "severity": "required"
+      },
+      {
+        "item_id": "S8",
+        "label": "Load test passed (p95 < 500ms)",
+        "ok": true,
+        "detail": "Load test p95 within threshold",
+        "severity": "required"
+      },
+      {
+        "item_id": "S9",
+        "label": "Gold eval precision >= 0.85",
+        "ok": true,
+        "detail": "Precision@1 = 1.000 (above threshold)",
+        "severity": "required"
+      }
+    ],
+    "total_items": 9,
+    "passed_items": 6,
+    "failed_items": 3,
+    "all_required_passed": false,
+    "approver": "",
+    "approved": false,
+    "approved_at": null,
+    "notes": ""
+  },
+  "approval_error": null
+}

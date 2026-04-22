@@ -1,0 +1,492 @@
+# =============================================================================
+# GreenLang Factors FY27 — Stripe product + price catalog
+# =============================================================================
+#
+# This file is the **declarative mirror** of
+# ``greenlang/factors/billing/skus.py``. Every product / price / meter entry
+# here maps 1:1 to a Python dataclass in that module. The provisioning
+# script (``scripts/factors_stripe_provision.py``) loads this YAML, creates
+# or updates the corresponding Stripe resources, and writes the resulting
+# IDs to ``stripe_catalog_lockfile.json`` for runtime lookup.
+#
+# Conventions
+# -----------
+#   * ``id`` fields are GreenLang-owned Stripe IDs; they follow
+#     ``prod_factors_<scope>`` and ``price_factors_<scope>_<cadence>``.
+#   * ``currency`` is USD everywhere in v1. Multi-currency lives behind
+#     a feature flag and is not provisioned here.
+#   * ``amount_usd`` is a string so Decimal round-trips are safe.
+#   * Meter amounts are unit prices (per API call / per row / per MB).
+#   * Annual prices are raw ACV floors; PRD sect. 7.2 defines the band.
+#
+# See also: docs/product/PRD-FY27-Factors.md sect. 7.
+# =============================================================================
+
+version: 1
+currency: usd
+
+# ---------------------------------------------------------------------------
+# Tier products — one product per subscription plan, with monthly + annual
+# recurring prices and per-meter overage prices.
+# ---------------------------------------------------------------------------
+tiers:
+
+  # ------------------------------ Community ------------------------------
+  - tier: community
+    product:
+      id: prod_factors_community
+      name: "GreenLang Factors — Community"
+      description: >
+        Free developer tier. 1,000 API calls/month, Certified factors only,
+        no premium packs, no audit bundle.
+      metadata:
+        tier: community
+        gl_product_family: factors
+    prices:
+      - id: price_factors_community_monthly
+        nickname: "Community monthly"
+        amount_usd: "0.00"
+        recurring:
+          interval: month
+          usage_type: licensed
+      - id: price_factors_community_annual
+        nickname: "Community annual"
+        amount_usd: "0.00"
+        recurring:
+          interval: year
+          usage_type: licensed
+    meters:
+      # Community hard-stops at its quota, so overage prices are zero.
+      - meter: api_calls
+        price_id: price_factors_meter_api_calls_community
+        included_per_month: 1000
+        overage_unit_price_usd: "0"
+        unit_label: "API call"
+      - meter: batch_rows
+        price_id: price_factors_meter_batch_rows_community
+        included_per_month: 1000
+        overage_unit_price_usd: "0"
+        unit_label: "row"
+
+  # -------------------------------- Pro ----------------------------------
+  - tier: pro
+    product:
+      id: prod_factors_pro
+      name: "GreenLang Factors — Developer Pro"
+      description: >
+        Self-serve usage-based plan. 100k API calls included, $0.002/call
+        over; Certified + Preview factors; private registry with 50 entries.
+      metadata:
+        tier: pro
+        gl_product_family: factors
+    prices:
+      - id: price_factors_pro_monthly
+        nickname: "Pro monthly"
+        amount_usd: "299.00"
+        recurring:
+          interval: month
+          usage_type: licensed
+      - id: price_factors_pro_annual
+        nickname: "Pro annual (17% discount)"
+        amount_usd: "2988.00"
+        recurring:
+          interval: year
+          usage_type: licensed
+    meters:
+      - meter: api_calls
+        price_id: price_factors_meter_api_calls_pro
+        included_per_month: 100000
+        overage_unit_price_usd: "0.002"
+        unit_label: "API call"
+      - meter: batch_rows
+        price_id: price_factors_meter_batch_rows_pro
+        included_per_month: 100000
+        overage_unit_price_usd: "0.0005"
+        unit_label: "row"
+      - meter: private_registry_mb
+        price_id: price_factors_meter_private_registry_mb_pro
+        included_per_month: 1024
+        overage_unit_price_usd: "0.10"
+        unit_label: "MB"
+
+  # ----------------------------- Consulting ------------------------------
+  - tier: consulting
+    product:
+      id: prod_factors_consulting
+      name: "GreenLang Factors — Consulting"
+      description: >
+        For ESG boutiques and Big-4 practices. Multi-tenant, audit bundles,
+        3 premium packs bundled (electricity + CBAM + freight). Annual MSA.
+      metadata:
+        tier: consulting
+        gl_product_family: factors
+    prices:
+      - id: price_factors_consulting_monthly
+        nickname: "Consulting monthly"
+        amount_usd: "1499.00"
+        recurring:
+          interval: month
+          usage_type: licensed
+      - id: price_factors_consulting_annual
+        nickname: "Consulting annual (ACV floor)"
+        amount_usd: "25000.00"
+        recurring:
+          interval: year
+          usage_type: licensed
+    meters:
+      - meter: api_calls
+        price_id: price_factors_meter_api_calls_consulting
+        included_per_month: 1000000
+        overage_unit_price_usd: "0.001"
+        unit_label: "API call"
+      - meter: batch_rows
+        price_id: price_factors_meter_batch_rows_consulting
+        included_per_month: 2000000
+        overage_unit_price_usd: "0.0003"
+        unit_label: "row"
+      - meter: private_registry_mb
+        price_id: price_factors_meter_private_registry_mb_consulting
+        included_per_month: 10240
+        overage_unit_price_usd: "0.08"
+        unit_label: "MB"
+      - meter: tenants
+        price_id: price_factors_meter_tenants_consulting
+        included_per_month: 25
+        overage_unit_price_usd: "50.00"
+        unit_label: "tenant"
+
+  # ------------------------------ Platform -------------------------------
+  - tier: platform
+    product:
+      id: prod_factors_platform
+      name: "GreenLang Factors — Platform"
+      description: >
+        White-label / OEM tier. 5M API calls included, OEM uplift,
+        3 bundled premium packs, 99.9% SLA, Ed25519 signed receipts.
+      metadata:
+        tier: platform
+        gl_product_family: factors
+    prices:
+      - id: price_factors_platform_monthly
+        nickname: "Platform monthly"
+        amount_usd: "4999.00"
+        recurring:
+          interval: month
+          usage_type: licensed
+      - id: price_factors_platform_annual
+        nickname: "Platform annual (OEM uplift)"
+        amount_usd: "50000.00"
+        recurring:
+          interval: year
+          usage_type: licensed
+    meters:
+      - meter: api_calls
+        price_id: price_factors_meter_api_calls_platform
+        included_per_month: 5000000
+        overage_unit_price_usd: "0.0005"
+        unit_label: "API call"
+      - meter: batch_rows
+        price_id: price_factors_meter_batch_rows_platform
+        included_per_month: 5000000
+        overage_unit_price_usd: "0.0002"
+        unit_label: "row"
+      - meter: private_registry_mb
+        price_id: price_factors_meter_private_registry_mb_platform
+        included_per_month: 51200
+        overage_unit_price_usd: "0.05"
+        unit_label: "MB"
+      - meter: tenants
+        price_id: price_factors_meter_tenants_platform
+        included_per_month: 100
+        overage_unit_price_usd: "35.00"
+        unit_label: "tenant"
+      - meter: oem_sites
+        price_id: price_factors_meter_oem_sites_platform
+        included_per_month: 3
+        overage_unit_price_usd: "500.00"
+        unit_label: "site"
+
+  # ----------------------------- Enterprise ------------------------------
+  - tier: enterprise
+    product:
+      id: prod_factors_enterprise
+      name: "GreenLang Factors — Enterprise"
+      description: >
+        Enterprise ACV from $75k/yr. All redistribution classes, all method
+        profiles, 99.95% SLA, customer-managed signing keys, unlimited
+        private registry, SSO/SCIM included.
+      metadata:
+        tier: enterprise
+        gl_product_family: factors
+    prices:
+      - id: price_factors_enterprise_monthly
+        nickname: "Enterprise monthly (ACV/12)"
+        amount_usd: "6250.00"
+        recurring:
+          interval: month
+          usage_type: licensed
+      - id: price_factors_enterprise_annual
+        nickname: "Enterprise annual (ACV floor)"
+        amount_usd: "75000.00"
+        recurring:
+          interval: year
+          usage_type: licensed
+    meters:
+      - meter: api_calls
+        price_id: price_factors_meter_api_calls_enterprise
+        included_per_month: 10000000
+        overage_unit_price_usd: "0.0002"
+        unit_label: "API call"
+      - meter: batch_rows
+        price_id: price_factors_meter_batch_rows_enterprise
+        included_per_month: 10000000
+        overage_unit_price_usd: "0.0001"
+        unit_label: "row"
+      - meter: private_registry_mb
+        price_id: price_factors_meter_private_registry_mb_enterprise
+        included_per_month: 1048576
+        overage_unit_price_usd: "0.02"
+        unit_label: "MB"
+      - meter: tenants
+        price_id: price_factors_meter_tenants_enterprise
+        included_per_month: 1000
+        overage_unit_price_usd: "25.00"
+        unit_label: "tenant"
+      - meter: oem_sites
+        price_id: price_factors_meter_oem_sites_enterprise
+        included_per_month: 0
+        # OEM is a negotiated $50k+ addon on Enterprise, not metered.
+        overage_unit_price_usd: "0"
+        unit_label: "site"
+
+# ---------------------------------------------------------------------------
+# Premium pack products — one product per add-on, with monthly + annual
+# prices. Pack prices are the Pro addon list price; Consulting inherits
+# the same standalone rate; Enterprise uses the annual ACV addon.
+# ---------------------------------------------------------------------------
+packs:
+
+  - pack: electricity_premium
+    product:
+      id: prod_factors_pack_electricity_premium
+      name: "Factors Pack — Electricity Premium"
+      description: >
+        High-fidelity grid emission factors (hourly residual mix, market-based
+        attribution, bundled Green-e + WREGIS registries).
+      metadata:
+        pack: electricity_premium
+        gl_product_family: factors
+    prices:
+      - id: price_factors_pack_electricity_premium_monthly
+        nickname: "Electricity Premium monthly addon"
+        amount_usd: "99.00"
+        recurring:
+          interval: month
+          usage_type: licensed
+      - id: price_factors_pack_electricity_premium_annual
+        nickname: "Electricity Premium Enterprise annual"
+        amount_usd: "12000.00"
+        recurring:
+          interval: year
+          usage_type: licensed
+
+  - pack: freight_premium
+    product:
+      id: prod_factors_pack_freight_premium
+      name: "Factors Pack — Freight Premium (ISO 14083)"
+      description: >
+        ISO 14083-compliant freight emission factors covering road, rail,
+        ocean, air, with intensity and mode-mix overlays.
+      metadata:
+        pack: freight_premium
+        gl_product_family: factors
+    prices:
+      - id: price_factors_pack_freight_premium_monthly
+        nickname: "Freight Premium monthly addon"
+        amount_usd: "199.00"
+        recurring:
+          interval: month
+          usage_type: licensed
+      - id: price_factors_pack_freight_premium_annual
+        nickname: "Freight Premium Enterprise annual"
+        amount_usd: "18000.00"
+        recurring:
+          interval: year
+          usage_type: licensed
+
+  - pack: product_carbon_premium
+    product:
+      id: prod_factors_pack_product_carbon_premium
+      name: "Factors Pack — Product Carbon / LCI Premium"
+      description: >
+        Product-level LCI resolution layer. Customer brings ecoinvent or
+        Sphera license; GreenLang provides mapping + method packs only.
+      metadata:
+        pack: product_carbon_premium
+        gl_product_family: factors
+        requires_license_chain: "true"
+    prices:
+      - id: price_factors_pack_product_carbon_premium_monthly
+        nickname: "Product Carbon Premium monthly addon"
+        amount_usd: "499.00"
+        recurring:
+          interval: month
+          usage_type: licensed
+      - id: price_factors_pack_product_carbon_premium_annual
+        nickname: "Product Carbon Premium Enterprise annual"
+        amount_usd: "40000.00"
+        recurring:
+          interval: year
+          usage_type: licensed
+
+  - pack: epd_premium
+    product:
+      id: prod_factors_pack_epd_premium
+      name: "Factors Pack — Construction EPD Premium"
+      description: >
+        Construction EPD library (concrete, steel, aluminum, insulation)
+        with PCR-verified attribution chains.
+      metadata:
+        pack: epd_premium
+        gl_product_family: factors
+    prices:
+      - id: price_factors_pack_epd_premium_monthly
+        nickname: "EPD Premium monthly addon"
+        amount_usd: "199.00"
+        recurring:
+          interval: month
+          usage_type: licensed
+      - id: price_factors_pack_epd_premium_annual
+        nickname: "EPD Premium Enterprise annual"
+        amount_usd: "18000.00"
+        recurring:
+          interval: year
+          usage_type: licensed
+
+  - pack: agrifood_premium
+    product:
+      id: prod_factors_pack_agrifood_premium
+      name: "Factors Pack — Agrifood Premium"
+      description: >
+        Crop / dairy / aquaculture LCI, land-management intensities,
+        farm-gate uncertainty distributions.
+      metadata:
+        pack: agrifood_premium
+        gl_product_family: factors
+    prices:
+      - id: price_factors_pack_agrifood_premium_monthly
+        nickname: "Agrifood Premium monthly addon"
+        amount_usd: "199.00"
+        recurring:
+          interval: month
+          usage_type: licensed
+      - id: price_factors_pack_agrifood_premium_annual
+        nickname: "Agrifood Premium Enterprise annual"
+        amount_usd: "24000.00"
+        recurring:
+          interval: year
+          usage_type: licensed
+
+  - pack: finance_premium
+    product:
+      id: prod_factors_pack_finance_premium
+      name: "Factors Pack — Finance Proxy Premium (PCAF)"
+      description: >
+        PCAF-aligned financed-emissions proxies across listed equity,
+        corporate bonds, business loans, project finance, mortgages.
+      metadata:
+        pack: finance_premium
+        gl_product_family: factors
+        requires_license_chain: "true"
+    prices:
+      - id: price_factors_pack_finance_premium_monthly
+        nickname: "Finance Premium monthly addon"
+        amount_usd: "299.00"
+        recurring:
+          interval: month
+          usage_type: licensed
+      - id: price_factors_pack_finance_premium_annual
+        nickname: "Finance Premium Enterprise annual"
+        amount_usd: "36000.00"
+        recurring:
+          interval: year
+          usage_type: licensed
+
+  - pack: cbam_premium
+    product:
+      id: prod_factors_pack_cbam_premium
+      name: "Factors Pack — CBAM / EU Policy Premium"
+      description: >
+        CBAM default values + verified actual embedded-emissions resolution
+        for EU carbon border adjustment filings.
+      metadata:
+        pack: cbam_premium
+        gl_product_family: factors
+    prices:
+      - id: price_factors_pack_cbam_premium_monthly
+        nickname: "CBAM Premium monthly addon"
+        amount_usd: "299.00"
+        recurring:
+          interval: month
+          usage_type: licensed
+      - id: price_factors_pack_cbam_premium_annual
+        nickname: "CBAM Premium Enterprise annual"
+        amount_usd: "36000.00"
+        recurring:
+          interval: year
+          usage_type: licensed
+
+  - pack: land_premium
+    product:
+      id: prod_factors_pack_land_premium
+      name: "Factors Pack — Land / Removals Premium"
+      description: >
+        Land-use change + nature-based removals factor library with
+        permanence + leakage adjustments.
+      metadata:
+        pack: land_premium
+        gl_product_family: factors
+    prices:
+      - id: price_factors_pack_land_premium_monthly
+        nickname: "Land Premium monthly addon"
+        amount_usd: "149.00"
+        recurring:
+          interval: month
+          usage_type: licensed
+      - id: price_factors_pack_land_premium_annual
+        nickname: "Land Premium Enterprise annual"
+        amount_usd: "18000.00"
+        recurring:
+          interval: year
+          usage_type: licensed
+
+# ---------------------------------------------------------------------------
+# Feature flags (Stripe "entitlements" — Product Features API). These
+# back-fill the Pricing Table UI in Stripe Checkout and the customer
+# portal, so a finance analyst can see at a glance what the tier unlocks.
+# ---------------------------------------------------------------------------
+feature_flags:
+  - id: feat_factors_preview
+    name: "Preview factors"
+    applies_to_tiers: [pro, consulting, platform, enterprise]
+  - id: feat_factors_connector_only
+    name: "Connector-only factors"
+    applies_to_tiers: [enterprise]
+  - id: feat_factors_audit_bundle
+    name: "Audit bundle export"
+    applies_to_tiers: [consulting, platform, enterprise]
+  - id: feat_factors_bulk_export
+    name: "Bulk export"
+    applies_to_tiers: [pro, consulting, platform, enterprise]
+  - id: feat_factors_private_registry
+    name: "Private registry / tenant overlay"
+    applies_to_tiers: [pro, consulting, platform, enterprise]
+  - id: feat_factors_oem_embed
+    name: "OEM white-label embed"
+    applies_to_tiers: [platform, enterprise]
+  - id: feat_factors_sso_scim
+    name: "SSO / SCIM"
+    applies_to_tiers: [enterprise]
+  - id: feat_factors_signed_ed25519
+    name: "Ed25519 signed receipts"
+    applies_to_tiers: [consulting, platform, enterprise]

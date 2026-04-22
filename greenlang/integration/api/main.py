@@ -146,6 +146,30 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 # Security
 security = HTTPBearer(auto_error=False)
 
+# ==================== FACTORS — SIGNED RECEIPTS MIDDLEWARE ====================
+# Install on the /api/v1/factors prefix so every successful response carries
+# a signed receipt + edition pin.  The auth/metering path in this file
+# already populates request.state.tier via get_current_user; the signing
+# middleware reads that for algorithm selection (HMAC for community/pro,
+# Ed25519 for consulting/platform/enterprise with graceful fallback).
+#
+# Must install AFTER the CORSMiddleware / TrustedHostMiddleware above so
+# the receipt covers the final response bytes the client will see.
+try:
+    from greenlang.factors.middleware.signed_receipts import (
+        install_signing_middleware,
+    )
+
+    install_signing_middleware(app, protected_prefix="/api/v1/factors")
+    logger.info("Signed-receipts middleware installed on /api/v1/factors")
+except Exception as _sign_exc:  # noqa: BLE001
+    # Never block app startup on the signing middleware — sign every
+    # response we can, but if the wiring itself fails for an unexpected
+    # reason (import error, etc.) log and continue.
+    logger.warning(
+        "Signed-receipts middleware NOT installed: %s", _sign_exc
+    )
+
 # ==================== GLOBAL STATE ====================
 
 # Emission factor database (initialized on startup)

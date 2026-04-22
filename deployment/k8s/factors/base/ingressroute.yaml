@@ -1,0 +1,126 @@
+---
+# Kong IngressRoute for factors-api. Host and plugin set are patched
+# per-overlay. Actual JWT secrets, API keys, and consumer-group limits
+# live in the declarative config at deployment/k8s/factors/kong/factors-api.yaml
+# which Kong ingests via the KongClusterPlugin + External Secrets wiring.
+apiVersion: configuration.konghq.com/v1beta1
+kind: IngressRoute
+metadata:
+  name: factors-api
+  namespace: greenlang-factors
+  labels:
+    app.kubernetes.io/name: factors-api
+  annotations:
+    kubernetes.io/ingress.class: kong
+    konghq.com/strip-path: "false"
+    konghq.com/protocols: "https"
+    konghq.com/https-redirect-status-code: "308"
+spec:
+  # These values are placeholders. Overlays (staging / prod) patch
+  # spec.rules[].host.
+  rules:
+    - host: factors.greenlang.io
+      paths:
+        - path: /api/v1/factors
+          pathType: Prefix
+          backend:
+            service:
+              name: factors-api
+              port: 8080
+        - path: /api/v1/health
+          pathType: Prefix
+          backend:
+            service:
+              name: factors-api
+              port: 8080
+        - path: /api/v1/editions
+          pathType: Prefix
+          backend:
+            service:
+              name: factors-api
+              port: 8080
+        - path: /api/v1/calculate
+          pathType: Prefix
+          backend:
+            service:
+              name: factors-api
+              port: 8080
+        - path: /api/v1/dashboards
+          pathType: Prefix
+          backend:
+            service:
+              name: factors-api
+              port: 8080
+        - path: /api/v1/marketplace
+          pathType: Prefix
+          backend:
+            service:
+              name: factors-api
+              port: 8080
+---
+# Fallback stock Ingress for clusters that do not yet have the Kong
+# IngressRoute CRD installed. Safe to keep — Kong prefers IngressRoute
+# when both are present.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: factors-api
+  namespace: greenlang-factors
+  annotations:
+    kubernetes.io/ingress.class: kong
+    konghq.com/protocols: "https"
+    konghq.com/https-redirect-status-code: "308"
+    konghq.com/strip-path: "false"
+    konghq.com/plugins: "factors-jwt,factors-key-auth,factors-rate-limit,factors-req-transform,factors-resp-headers,factors-correlation,factors-prometheus"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+spec:
+  tls:
+    - hosts:
+        - factors.greenlang.io
+      secretName: factors-api-tls
+  rules:
+    - host: factors.greenlang.io
+      http:
+        paths:
+          - path: /api/v1/factors
+            pathType: Prefix
+            backend:
+              service:
+                name: factors-api
+                port:
+                  number: 8080
+          - path: /api/v1/health
+            pathType: Prefix
+            backend:
+              service:
+                name: factors-api
+                port:
+                  number: 8080
+          - path: /api/v1/editions
+            pathType: Prefix
+            backend:
+              service:
+                name: factors-api
+                port:
+                  number: 8080
+          - path: /api/v1/calculate
+            pathType: Prefix
+            backend:
+              service:
+                name: factors-api
+                port:
+                  number: 8080
+          - path: /api/v1/dashboards
+            pathType: Prefix
+            backend:
+              service:
+                name: factors-api
+                port:
+                  number: 8080
+          - path: /api/v1/marketplace
+            pathType: Prefix
+            backend:
+              service:
+                name: factors-api
+                port:
+                  number: 8080

@@ -34,12 +34,18 @@ from .auth import APIKeyAuth, AuthProvider, HMACAuth, JWTAuth
 from .client import AsyncFactorsClient, FactorsClient
 from .errors import (
     AuthError,
+    EditionMismatchError,
     FactorNotFoundError,
     FactorsAPIError,
     LicenseError,
     RateLimitError,
     TierError,
     ValidationError,
+)
+from .client import (
+    CertificatePinError,
+    CertPinnedHTTPAdapter,
+    GREENLANG_CA_PEM,
 )
 from .webhooks import (
     WebhookVerificationError,
@@ -113,6 +119,11 @@ __all__ = [
     "LicenseError",
     "ValidationError",
     "AuthError",
+    "EditionMismatchError",
+    # Pinning
+    "CertificatePinError",
+    "CertPinnedHTTPAdapter",
+    "GREENLANG_CA_PEM",
     # Metadata
     "__version__",
 ]

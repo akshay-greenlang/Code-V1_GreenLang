@@ -1,0 +1,350 @@
+---
+# =============================================================================
+# Kong declarative config for factors-api
+# =============================================================================
+# This file is consumed by the Kong Ingress Controller (KIC) through
+# KongPlugin / KongConsumer / KongConsumerGroup CRDs. Secrets reference
+# ExternalSecrets rather than inline values.
+#
+# Apply:
+#   kubectl apply -n greenlang-factors -f deployment/k8s/factors/kong/factors-api.yaml
+#
+# Flow:
+#   request -> Kong (jwt + key-auth) -> consumer group mapping
+#           -> rate-limiting-advanced (per tier) -> request-transformer
+#           -> factors-api upstream (factors-api.greenlang-factors.svc)
+#           -> response-transformer (security headers) -> client
+# =============================================================================
+
+# ── JWT plugin ──────────────────────────────────────────────────────
+apiVersion: configuration.konghq.com/v1
+kind: KongPlugin
+metadata:
+  name: factors-jwt
+  namespace: greenlang-factors
+  labels:
+    app.kubernetes.io/name: factors-api
+plugin: jwt
+config:
+  key_claim_name: iss
+  claims_to_verify:
+    - exp
+  maximum_expiration: 86400
+  uri_param_names: []
+  cookie_names: []
+  header_names:
+    - Authorization
+  run_on_preflight: true
+
+---
+# ── Key-Auth plugin (X-API-Key for OEM callers) ─────────────────────
+apiVersion: configuration.konghq.com/v1
+kind: KongPlugin
+metadata:
+  name: factors-key-auth
+  namespace: greenlang-factors
+  labels:
+    app.kubernetes.io/name: factors-api
+plugin: key-auth
+config:
+  key_names:
+    - X-API-Key
+    - apikey
+  hide_credentials: true
+  run_on_preflight: true
+  key_in_header: true
+  key_in_query: false
+  key_in_body: false
+  anonymous: ""
+
+---
+# Require EITHER jwt or key-auth to succeed.
+apiVersion: configuration.konghq.com/v1
+kind: KongPlugin
+metadata:
+  name: factors-auth-or
+  namespace: greenlang-factors
+plugin: request-termination
+# request-termination wired only as a fallback handler for unauthenticated
+# requests; the `anonymous` consumer below carries no consumer-group, so
+# rate-limiting-advanced will apply a zero limit and 401 the request.
+config:
+  status_code: 401
+  message: "Unauthorized: provide a Bearer JWT or X-API-Key header."
+disabled: true   # Enabled only by the `anonymous` consumer as a last resort.
+
+---
+# ── Rate-limit plugin (sliding window, per-consumer-group) ──────────
+apiVersion: configuration.konghq.com/v1
+kind: KongPlugin
+metadata:
+  name: factors-rate-limit
+  namespace: greenlang-factors
+  labels:
+    app.kubernetes.io/name: factors-api
+plugin: rate-limiting-advanced
+config:
+  # Default rate. Consumer groups override via the `config.limit` array on
+  # a KongConsumerGroupPlugin below.
+  limit: [60]
+  window_size: [60]
+  sync_rate: 10
+  strategy: redis
+  namespace: factors-api
+  redis:
+    host: redis-master.redis.svc.cluster.local
+    port: 6379
+    timeout: 2000
+    database: 3
+    ssl: true
+    ssl_verify: true
+  identifier: consumer
+  hide_client_headers: false
+  retry_after_jitter_max: 5
+
+---
+# ── Request-transformer (propagate X-GreenLang-Edition / X-GreenLang-Tier) ──
+apiVersion: configuration.konghq.com/v1
+kind: KongPlugin
+metadata:
+  name: factors-req-transform
+  namespace: greenlang-factors
+  labels:
+    app.kubernetes.io/name: factors-api
+plugin: request-transformer
+config:
+  add:
+    headers:
+      - "X-GreenLang-Edition:$(headers.x-greenlang-edition)"
+      - "X-GreenLang-Tier:$(headers.x-greenlang-tier)"
+  rename:
+    headers:
+      - "X-Factors-Edition:X-GreenLang-Edition"
+  append:
+    headers:
+      - "X-Forwarded-Host:$(headers.host)"
+
+---
+# ── Correlation ID plugin ───────────────────────────────────────────
+apiVersion: configuration.konghq.com/v1
+kind: KongPlugin
+metadata:
+  name: factors-correlation
+  namespace: greenlang-factors
+  labels:
+    app.kubernetes.io/name: factors-api
+plugin: correlation-id
+config:
+  header_name: X-Request-Id
+  generator: uuid
+  echo_downstream: true
+
+---
+# ── Prometheus plugin (per-route metrics) ───────────────────────────
+apiVersion: configuration.konghq.com/v1
+kind: KongPlugin
+metadata:
+  name: factors-prometheus
+  namespace: greenlang-factors
+  labels:
+    app.kubernetes.io/name: factors-api
+plugin: prometheus
+config:
+  per_consumer: true
+  status_code_metrics: true
+  latency_metrics: true
+  bandwidth_metrics: true
+  upstream_health_metrics: true
+
+---
+# ── Response-transformer (security headers) ─────────────────────────
+apiVersion: configuration.konghq.com/v1
+kind: KongPlugin
+metadata:
+  name: factors-resp-headers
+  namespace: greenlang-factors
+  labels:
+    app.kubernetes.io/name: factors-api
+plugin: response-transformer
+config:
+  add:
+    headers:
+      - "Strict-Transport-Security:max-age=63072000; includeSubDomains"
+      - "X-Content-Type-Options:nosniff"
+      - "X-Frame-Options:DENY"
+      - "Referrer-Policy:no-referrer"
+      - "Permissions-Policy:geolocation=(), microphone=(), camera=()"
+      - "Cache-Control:no-store"
+  remove:
+    headers:
+      - "X-Powered-By"
+      - "Server"
+
+---
+# ── Consumer groups (tier gates) ────────────────────────────────────
+apiVersion: configuration.konghq.com/v1beta1
+kind: KongConsumerGroup
+metadata:
+  name: community
+  namespace: greenlang-factors
+---
+apiVersion: configuration.konghq.com/v1beta1
+kind: KongConsumerGroup
+metadata:
+  name: pro
+  namespace: greenlang-factors
+---
+apiVersion: configuration.konghq.com/v1beta1
+kind: KongConsumerGroup
+metadata:
+  name: consulting
+  namespace: greenlang-factors
+---
+apiVersion: configuration.konghq.com/v1beta1
+kind: KongConsumerGroup
+metadata:
+  name: platform
+  namespace: greenlang-factors
+---
+apiVersion: configuration.konghq.com/v1beta1
+kind: KongConsumerGroup
+metadata:
+  name: enterprise
+  namespace: greenlang-factors
+---
+apiVersion: configuration.konghq.com/v1beta1
+kind: KongConsumerGroup
+metadata:
+  name: internal
+  namespace: greenlang-factors
+
+---
+# ── Per-group rate limits ───────────────────────────────────────────
+apiVersion: configuration.konghq.com/v1
+kind: KongClusterPlugin
+metadata:
+  name: rate-limit-community
+  annotations:
+    kubernetes.io/ingress.class: kong
+plugin: rate-limiting-advanced
+consumerGroup: community
+config:
+  limit: [60]
+  window_size: [60]
+  sync_rate: 10
+  strategy: redis
+  namespace: factors-api-community
+  identifier: consumer
+---
+apiVersion: configuration.konghq.com/v1
+kind: KongClusterPlugin
+metadata:
+  name: rate-limit-pro
+  annotations:
+    kubernetes.io/ingress.class: kong
+plugin: rate-limiting-advanced
+consumerGroup: pro
+config:
+  limit: [600]
+  window_size: [60]
+  sync_rate: 10
+  strategy: redis
+  namespace: factors-api-pro
+  identifier: consumer
+---
+apiVersion: configuration.konghq.com/v1
+kind: KongClusterPlugin
+metadata:
+  name: rate-limit-consulting
+  annotations:
+    kubernetes.io/ingress.class: kong
+plugin: rate-limiting-advanced
+consumerGroup: consulting
+config:
+  limit: [1200]
+  window_size: [60]
+  sync_rate: 10
+  strategy: redis
+  namespace: factors-api-consulting
+  identifier: consumer
+---
+apiVersion: configuration.konghq.com/v1
+kind: KongClusterPlugin
+metadata:
+  name: rate-limit-platform
+  annotations:
+    kubernetes.io/ingress.class: kong
+plugin: rate-limiting-advanced
+consumerGroup: platform
+config:
+  limit: [3000]
+  window_size: [60]
+  sync_rate: 10
+  strategy: redis
+  namespace: factors-api-platform
+  identifier: consumer
+---
+apiVersion: configuration.konghq.com/v1
+kind: KongClusterPlugin
+metadata:
+  name: rate-limit-enterprise
+  annotations:
+    kubernetes.io/ingress.class: kong
+plugin: rate-limiting-advanced
+consumerGroup: enterprise
+config:
+  limit: [6000]
+  window_size: [60]
+  sync_rate: 10
+  strategy: redis
+  namespace: factors-api-enterprise
+  identifier: consumer
+---
+apiVersion: configuration.konghq.com/v1
+kind: KongClusterPlugin
+metadata:
+  name: rate-limit-internal
+  annotations:
+    kubernetes.io/ingress.class: kong
+plugin: rate-limiting-advanced
+consumerGroup: internal
+config:
+  limit: [60000]
+  window_size: [60]
+  sync_rate: 10
+  strategy: redis
+  namespace: factors-api-internal
+  identifier: consumer
+
+---
+# ── JWT secret CRD backed by External Secrets ────────────────────────
+# The KongCredential `jwt` secret is pulled from Vault via ExternalSecret
+# named `factors-kong-jwt` (created by SEC-006 pipeline). Kong reads it
+# from a Kubernetes Secret with the conventional label below.
+apiVersion: external-secrets.io/v1beta1
+kind: ExternalSecret
+metadata:
+  name: factors-kong-jwt
+  namespace: greenlang-factors
+spec:
+  refreshInterval: 10m
+  secretStoreRef:
+    name: vault-factors
+    kind: SecretStore
+  target:
+    name: factors-kong-jwt
+    creationPolicy: Owner
+    template:
+      type: Opaque
+      metadata:
+        labels:
+          konghq.com/credential: jwt
+      data:
+        algorithm: "HS256"
+        key: "greenlang-factors"
+        secret: "{{ .jwt_secret }}"
+  data:
+    - secretKey: jwt_secret
+      remoteRef:
+        key: factors/staging/jwt
+        property: secret
