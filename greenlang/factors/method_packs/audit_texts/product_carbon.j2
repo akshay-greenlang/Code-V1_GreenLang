@@ -1,0 +1,39 @@
+{# ---
+approved: false
+approved_by: null
+approved_at: null
+methodology_lead: null
+standard_citation: "ISO 14067:2018 (Greenhouse gases - Carbon footprint of products), sections 6.4.3 (functional unit) and 6.4.4 (allocation); GHG Protocol Product Life Cycle Accounting and Reporting Standard (WRI/WBCSD, 2011), Chapters 7 + 9; PACT Pathfinder Framework v2.0 (WBCSD, 2023)"
+--- #}
+Factor {{ factor.chosen_factor.name }} ({{ factor.chosen_factor.id }}) was
+selected under the Product Carbon method profile
+({{ factor.method_pack }}), aligned with ISO 14067:2018 sections 6.4.3
+and 6.4.4, the GHG Protocol Product Life Cycle Accounting and Reporting
+Standard (WRI/WBCSD, 2011) Chapters 7 + 9, and the Partnership for
+Carbon Transparency (PACT) Pathfinder Framework v2.0. Source:
+{{ factor.source.authority }} dataset version {{ factor.source.version }},
+vintage {{ factor.source.vintage }}. GWP basis: {{ factor.gwp_basis }}.
+Fallback tier: {{ factor.fallback_rank }} ({{ factor.step_label }}).
+
+Functional unit (ISO 14067 §6.4.3 — required): {{ factor.functional_unit }}.
+System boundary: {{ factor.system_boundary }} (one of cradle_to_gate,
+cradle_to_grave, gate_to_gate, cradle_to_cradle). Allocation method:
+{{ factor.allocation_method }} (GHG Product Standard Ch. 9). Recycled
+content assumption: {{ factor.recycled_content_assumption }}
+(0-1 inclusive). Supplier primary-data share:
+{{ factor.supplier_primary_data_share }} (0-1 inclusive).
+
+{% if factor.pcr_reference -%}Product Category Rules: {{ factor.pcr_reference }}.{%- endif %}
+{% if factor.epd_reference -%}EPD reference: {{ factor.epd_reference }}.{%- endif %}
+{% if factor.pact_compatible -%}PACT-Pathfinder-compatible data object; emitted on /v1/explain for downstream sharing per PACT §5.{%- endif %}
+
+Biogenic CO2 is {{ factor.biogenic_treatment }} per ISO 14067 §6.4.9.
+Scope 1 direct emissions and Scope 2 purchased electricity at the
+reporting entity are excluded from this product boundary (belong to
+the corporate inventory packs). Offsets NEVER appear inside the
+product footprint.
+
+{% if factor.fallback_trace -%}
+Fallback trace:
+{%- for step in factor.fallback_trace %} {{ step.rank }}->{{ step.label }}{% if not loop.last %};{% endif %}{% endfor %}.
+{%- endif %}

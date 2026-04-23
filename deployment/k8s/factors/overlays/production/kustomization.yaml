@@ -1,0 +1,56 @@
+---
+# =============================================================================
+# GreenLang Factors API - Production overlay (DEP11 blue/green foundation)
+# =============================================================================
+# Target cluster : greenlang-production (EKS us-east-1, multi-AZ)
+# Target namespace: factors-production   (fully isolated from factors-staging)
+# Public host     : factors.greenlang.com
+#
+# This overlay is READY-TO-APPLY but not applied automatically. SRE owns the
+# cut-over; production promotion follows `deployment/k8s/factors/blue_green/`.
+#
+# Isolation from staging:
+#   * distinct namespace          (factors-production)
+#   * distinct name prefix         (prod-*)
+#   * distinct Vault mount         (kv/factors/production/*)
+#   * distinct Postgres / Redis    (prod ExternalSecret DB_URL / REDIS_URL)
+#   * distinct signing key pair    (ed25519; never shared with staging)
+#   * distinct TLS chain           (letsencrypt-prod)
+#
+# Render (dry-run):
+#   kubectl kustomize deployment/k8s/factors/overlays/production
+#
+# Apply (SRE only, via blue/green controller):
+#   kubectl apply -k deployment/k8s/factors/overlays/production \
+#     --server-side --force-conflicts
+# =============================================================================
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+bases:
+  - ../../base
+
+namespace: factors-production
+
+namePrefix: prod-
+
+commonLabels:
+  env: production
+  app.kubernetes.io/instance: factors-production
+
+commonAnnotations:
+  greenlang.io/env: production
+  greenlang.io/vault-path: kv/factors/production
+
+resources:
+  - externalsecrets-production.yaml
+
+patches:
+  - path: configmap-patch.yaml
+  - path: hpa-patch.yaml
+  - path: ingressroute-patch.yaml
+  - path: prometheusrule-patch.yaml
+
+images:
+  - name: ghcr.io/greenlang/factors-api
+    newTag: v1.0-certified

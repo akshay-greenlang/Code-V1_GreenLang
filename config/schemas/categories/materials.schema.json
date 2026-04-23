@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.greenlang.io/factors/categories/materials.schema.json",
+  "title": "Factor Parameters — Materials & Products (v1.0)",
+  "description": "Parameter sub-schema applied when factor_record.factor_family == 'materials_products'. Aligned with ISO 14067:2018, EN 15804+A2, and WBCSD PACT Pathfinder v2.0. Frozen v1.0 — 2026-04-22.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["boundary", "allocation_method"],
+  "properties": {
+    "scope_applicability": {
+      "type": "array",
+      "items": { "type": "string", "enum": ["scope_1", "scope_2", "scope_3", "scope_4"] },
+      "uniqueItems": true,
+      "default": []
+    },
+    "uncertainty_low": { "type": ["number", "null"] },
+    "uncertainty_high": { "type": ["number", "null"] },
+    "boundary": {
+      "type": "string",
+      "enum": ["cradle_to_gate", "gate_to_gate", "cradle_to_grave"],
+      "description": "LCA system boundary. 'cradle_to_gate' = resource extraction to factory gate; 'gate_to_gate' = one life-cycle stage only; 'cradle_to_grave' = full life cycle including use + EoL."
+    },
+    "allocation_method": {
+      "type": "string",
+      "enum": ["mass", "economic", "system_expansion", "physical", "substitution"],
+      "description": "Co-product allocation approach per ISO 14044. 'mass' splits by output mass share; 'economic' by output revenue share; 'system_expansion' assigns credit for avoided production; 'physical' uses a non-mass physical relationship; 'substitution' replaces an avoided product."
+    },
+    "recycled_content_assumption": {
+      "type": ["number", "null"],
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Assumed recycled content share (0.0 = virgin, 1.0 = fully recycled). Required when the factor is labelled 'recycled_content'."
+    },
+    "supplier_primary_data_share": {
+      "type": ["number", "null"],
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Share of inputs backed by primary supplier-reported data (PACT Pathfinder attribute). 0.0 = fully secondary; 1.0 = fully primary."
+    },
+    "pcr_reference": {
+      "type": ["string", "null"],
+      "maxLength": 256,
+      "description": "Product Category Rule reference (e.g., 'EN 15804:2012+A2:2019', 'PCR 2019:14 v1.1')."
+    },
+    "epd_reference": {
+      "type": ["string", "null"],
+      "maxLength": 256,
+      "description": "EPD identifier when this factor derives from a specific Environmental Product Declaration."
+    },
+    "pact_compatible": {
+      "type": "boolean",
+      "default": false,
+      "description": "True when the factor satisfies PACT Pathfinder Framework v2.0 conformance rules (verification, primary data share, etc.)."
+    }
+  }
+}

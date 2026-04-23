@@ -1,0 +1,87 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.greenlang.io/factors/categories/combustion.schema.json",
+  "title": "Factor Parameters — Combustion (v1.0)",
+  "description": "Parameter sub-schema applied when factor_record.factor_family == 'combustion'. Standalone per-category schema suitable for independent validation of the `parameters` object. Frozen v1.0 — 2026-04-22.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["fuel_code"],
+  "properties": {
+    "scope_applicability": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["scope_1", "scope_2", "scope_3", "scope_4"]
+      },
+      "uniqueItems": true,
+      "default": [],
+      "description": "Which GHG Protocol scopes the factor is valid for."
+    },
+    "uncertainty_low": {
+      "type": ["number", "null"],
+      "description": "Lower 95% CI as signed fractional deviation (e.g., -0.05 = -5%)."
+    },
+    "uncertainty_high": {
+      "type": ["number", "null"],
+      "description": "Upper 95% CI as signed fractional deviation (e.g., 0.05 = +5%)."
+    },
+    "fuel_code": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[a-z0-9][a-z0-9_]*$",
+      "description": "Canonical snake_case fuel identifier (e.g., 'diesel', 'natural_gas', 'anthracite', 'biodiesel_b100', 'wood_pellets')."
+    },
+    "lhv_mj_per_unit": {
+      "type": ["number", "null"],
+      "minimum": 0,
+      "description": "Lower heating value (net) in MJ per denominator unit. Net heating value excludes latent heat of water vapour."
+    },
+    "hhv_mj_per_unit": {
+      "type": ["number", "null"],
+      "minimum": 0,
+      "description": "Higher heating value (gross) in MJ per denominator unit. INVARIANT: when both present, hhv_mj_per_unit >= lhv_mj_per_unit."
+    },
+    "density_kg_per_unit": {
+      "type": ["number", "null"],
+      "exclusiveMinimum": 0,
+      "description": "Fuel density in kg per denominator unit at reference conditions (typically 15 °C / 1 atm for liquids, 0 °C / 1 atm for gases). Required when the denominator is volumetric and the downstream method chain multiplies by mass."
+    },
+    "oxidation_factor": {
+      "type": ["number", "null"],
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Fraction of fuel carbon oxidised to CO2 per IPCC 2006 Vol 2. Default 1.00 for liquid/gaseous fuels; ~0.98 for coal; ~0.99 for biomass."
+    },
+    "fossil_carbon_share": {
+      "type": ["number", "null"],
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Fraction of total carbon content that is fossil (0.0 for pure biofuel, 1.0 for pure fossil, 0.80 for B20, etc.)."
+    },
+    "biogenic_carbon_share": {
+      "type": ["number", "null"],
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Fraction of total carbon that is biogenic. INVARIANT: fossil_carbon_share + biogenic_carbon_share <= 1.0 (the remainder being reserved for non-carbon matter or measurement slack)."
+    },
+    "moisture_share": {
+      "type": ["number", "null"],
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Mass fraction of moisture in the as-received fuel (kg H2O / kg fuel). Important for biomass and coal; raises LHV correction."
+    },
+    "sulfur_share": {
+      "type": ["number", "null"],
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Mass fraction of sulfur in the fuel (kg S / kg fuel). Drives SOx co-reporting but does not affect CO2e."
+    },
+    "ash_share": {
+      "type": ["number", "null"],
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Mass fraction of ash in the as-received fuel (kg ash / kg fuel). INVARIANT: moisture_share + ash_share + fossil_carbon_share + biogenic_carbon_share + sulfur_share <= 1.0 over the full fuel composition."
+    }
+  }
+}

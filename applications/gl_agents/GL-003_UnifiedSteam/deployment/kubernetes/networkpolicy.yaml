@@ -1,0 +1,300 @@
+# GL-003 UNIFIEDSTEAM - Network Policies
+# Steam System Optimization Agent
+#
+# Implements zero-trust network security by:
+# - Denying all traffic by default
+# - Explicitly allowing only required connections
+
+# ==============================================================================
+# Default deny all ingress and egress (namespace-wide)
+# ==============================================================================
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-all
+  namespace: greenlang-steam
+  labels:
+    app.kubernetes.io/name: unifiedsteam
+    app.kubernetes.io/component: network-policy
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+---
+# ==============================================================================
+# Allow DNS egress for all pods
+# ==============================================================================
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-dns-egress
+  namespace: greenlang-steam
+  labels:
+    app.kubernetes.io/name: unifiedsteam
+    app.kubernetes.io/component: network-policy
+spec:
+  podSelector: {}
+  policyTypes:
+    - Egress
+  egress:
+    # Allow DNS resolution
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+---
+# ==============================================================================
+# UnifiedSteam Ingress Policy
+# ==============================================================================
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: unifiedsteam-ingress
+  namespace: greenlang-steam
+  labels:
+    app.kubernetes.io/name: unifiedsteam
+    app.kubernetes.io/component: network-policy
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: unifiedsteam
+  policyTypes:
+    - Ingress
+  ingress:
+    # Allow traffic from Ingress Controller
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 8080
+        - protocol: TCP
+          port: 50051
+
+    # Allow traffic from Prometheus for metrics scraping
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: observability
+          podSelector:
+            matchLabels:
+              app: prometheus
+      ports:
+        - protocol: TCP
+          port: 9090
+
+    # Allow traffic from Istio sidecar (service mesh)
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              istio-injection: enabled
+      ports:
+        - protocol: TCP
+          port: 8080
+        - protocol: TCP
+          port: 50051
+        - protocol: TCP
+          port: 15090  # Istio metrics
+
+    # Allow internal namespace traffic (pod-to-pod)
+    - from:
+        - podSelector: {}
+      ports:
+        - protocol: TCP
+          port: 8080
+        - protocol: TCP
+          port: 50051
+        - protocol: TCP
+          port: 9090
+---
+# ==============================================================================
+# UnifiedSteam Egress Policy
+# ==============================================================================
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: unifiedsteam-egress
+  namespace: greenlang-steam
+  labels:
+    app.kubernetes.io/name: unifiedsteam
+    app.kubernetes.io/component: network-policy
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: unifiedsteam
+  policyTypes:
+    - Egress
+  egress:
+    # Allow egress to Kafka
+    - to:
+        - podSelector:
+            matchLabels:
+              app: kafka
+      ports:
+        - protocol: TCP
+          port: 9092
+        - protocol: TCP
+          port: 9093  # SASL
+
+    # Allow egress to Redis
+    - to:
+        - podSelector:
+            matchLabels:
+              app: redis
+      ports:
+        - protocol: TCP
+          port: 6379
+
+    # Allow egress to PostgreSQL
+    - to:
+        - podSelector:
+            matchLabels:
+              app: postgres
+      ports:
+        - protocol: TCP
+          port: 5432
+
+    # Allow egress to OPC-UA server (external)
+    - to:
+        - ipBlock:
+            cidr: 10.0.0.0/8  # Internal network for SCADA
+      ports:
+        - protocol: TCP
+          port: 4840  # OPC-UA default port
+
+    # Allow egress to OpenTelemetry Collector
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: observability
+          podSelector:
+            matchLabels:
+              app: otel-collector
+      ports:
+        - protocol: TCP
+          port: 4317  # OTLP gRPC
+        - protocol: TCP
+          port: 4318  # OTLP HTTP
+
+    # Allow egress to other GreenLang services
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              app.kubernetes.io/part-of: greenlang
+      ports:
+        - protocol: TCP
+          port: 80
+        - protocol: TCP
+          port: 8080
+        - protocol: TCP
+          port: 50051
+
+    # Allow egress to internal pods (same namespace)
+    - to:
+        - podSelector: {}
+      ports:
+        - protocol: TCP
+          port: 8080
+        - protocol: TCP
+          port: 50051
+---
+# ==============================================================================
+# Kafka Network Policy (allow UnifiedSteam access)
+# ==============================================================================
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: kafka-ingress
+  namespace: greenlang-steam
+  labels:
+    app.kubernetes.io/name: kafka
+    app.kubernetes.io/component: network-policy
+spec:
+  podSelector:
+    matchLabels:
+      app: kafka
+  policyTypes:
+    - Ingress
+  ingress:
+    # Allow from UnifiedSteam
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: unifiedsteam
+      ports:
+        - protocol: TCP
+          port: 9092
+        - protocol: TCP
+          port: 9093
+
+    # Allow Kafka internal replication
+    - from:
+        - podSelector:
+            matchLabels:
+              app: kafka
+      ports:
+        - protocol: TCP
+          port: 9092
+        - protocol: TCP
+          port: 9093
+---
+# ==============================================================================
+# Redis Network Policy
+# ==============================================================================
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: redis-ingress
+  namespace: greenlang-steam
+  labels:
+    app.kubernetes.io/name: redis
+    app.kubernetes.io/component: network-policy
+spec:
+  podSelector:
+    matchLabels:
+      app: redis
+  policyTypes:
+    - Ingress
+  ingress:
+    # Allow from UnifiedSteam
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: unifiedsteam
+      ports:
+        - protocol: TCP
+          port: 6379
+---
+# ==============================================================================
+# PostgreSQL Network Policy
+# ==============================================================================
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: postgres-ingress
+  namespace: greenlang-steam
+  labels:
+    app.kubernetes.io/name: postgres
+    app.kubernetes.io/component: network-policy
+spec:
+  podSelector:
+    matchLabels:
+      app: postgres
+  policyTypes:
+    - Ingress
+  ingress:
+    # Allow from UnifiedSteam
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: unifiedsteam
+      ports:
+        - protocol: TCP
+          port: 5432

@@ -1,0 +1,45 @@
+{# ---
+approved: false
+approved_by: null
+approved_at: null
+methodology_lead: null
+--- #}
+Factor {{ factor.chosen_factor.name }} ({{ factor.chosen_factor.id }}) was
+selected under the Electricity method profile ({{ factor.method_pack }}),
+aligned with the GHG Protocol Scope 2 Guidance (WRI/WBCSD, 2015) and ISO
+14064-1:2018 §6.5. The source is {{ factor.source.authority }} dataset
+version {{ factor.source.version }}, vintage {{ factor.source.vintage }}.
+Geography: {{ factor.geography }}{% if factor.grid_region %} / {{ factor.grid_region }}{% endif %}.
+GWP basis: {{ factor.gwp_basis }}.
+
+The resolver reached this factor at fallback tier {{ factor.fallback_rank }}
+of 7 ({{ factor.step_label }}). Functional unit is 1 kWh delivered to the
+customer meter (transmission & distribution losses
+{% if factor.include_transmission_losses %}included{% else %}excluded{% endif %}
+per Scope 2 Guidance §6.7).
+
+{% if factor.electricity_basis == "location_based" -%}
+Location-based method (Scope 2 Guidance §6.1): grid-average factor for
+the physical facility location. Market instruments (RECs, GOs, REGOs,
+LGCs, PPAs, J-Credits, KECs, EMA-RECs) are NOT applied. Suitable for
+dual-reporting Scope 2 alongside the market-based figure.
+{%- elif factor.electricity_basis == "market_based" -%}
+Market-based method (Scope 2 Guidance §6.2). Contractual instrument:
+{{ factor.instrument_type }}; supplier: {{ factor.supplier }};
+certificate: {{ factor.certificate }}
+(vintage {{ factor.certificate_vintage_months }} mo). Quality Criteria
+1-7 status: {{ factor.quality_criteria_passed }}. When no instrument
+applies the residual mix is used.
+{%- elif factor.electricity_basis == "residual_mix" -%}
+Residual mix — applied because no contractual instrument (PPA, GO, REC,
+REGO, LGC, J-Credit, KEC, EMA-REC) covered the kWh in question. Residual
+mix factor: {{ factor.residual_mix_factor_id }} from
+{{ factor.source.authority }}. Published on an annual cadence; the pack
+max-factor-age is enforced by the resolver so stale vintages downgrade
+to preview status automatically.
+{%- endif %}
+
+{% if factor.fallback_trace -%}
+Fallback trace:
+{%- for step in factor.fallback_trace %} {{ step.rank }}->{{ step.label }}{% if not loop.last %};{% endif %}{% endfor %}.
+{%- endif %}

@@ -1,0 +1,270 @@
+# =============================================================================
+# GL-003 UNIFIEDSTEAM - Pod Disruption Budget
+# Steam System Optimization Agent
+# =============================================================================
+# Pod Disruption Budgets ensure high availability during:
+# - Kubernetes cluster upgrades
+# - Node maintenance and draining
+# - Voluntary pod evictions
+# - Cluster autoscaler scale-down operations
+#
+# PDB prevents too many pods from being unavailable simultaneously
+# during planned disruptions.
+# =============================================================================
+
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: unifiedsteam-pdb
+  namespace: greenlang-steam
+  labels:
+    app.kubernetes.io/name: unifiedsteam
+    app.kubernetes.io/instance: unifiedsteam-production
+    app.kubernetes.io/component: pdb
+    app.kubernetes.io/part-of: greenlang
+    agent-id: gl-003
+  annotations:
+    description: "Pod Disruption Budget for GL-003 UNIFIEDSTEAM main deployment"
+    # Alert annotation for monitoring
+    alertmanager.io/notify: "true"
+spec:
+  # =============================================================================
+  # Minimum Availability Requirement
+  # =============================================================================
+  # Ensure at least 2 pods are always available during disruptions
+  # With 3 replicas, this means only 1 pod can be disrupted at a time
+  minAvailable: 2
+
+  # Alternative: Use maxUnavailable instead
+  # maxUnavailable: 1  # Maximum 1 pod can be unavailable
+  # maxUnavailable: 33%  # Maximum 33% of pods can be unavailable
+
+  # =============================================================================
+  # Pod Selector
+  # =============================================================================
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: unifiedsteam
+      app.kubernetes.io/instance: unifiedsteam-production
+
+  # =============================================================================
+  # Unhealthy Pod Eviction Policy (Kubernetes 1.27+)
+  # =============================================================================
+  # Controls how unhealthy pods are handled during disruptions
+  # Options:
+  # - IfHealthyBudget: Only evict unhealthy pods if healthy pods meet the budget
+  # - AlwaysAllow: Always allow eviction of unhealthy pods regardless of budget
+  unhealthyPodEvictionPolicy: IfHealthyBudget
+
+---
+# =============================================================================
+# PDB for API Server Pods
+# =============================================================================
+# If running API servers as a separate deployment, this ensures availability
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: unifiedsteam-api-pdb
+  namespace: greenlang-steam
+  labels:
+    app.kubernetes.io/name: unifiedsteam
+    app.kubernetes.io/component: pdb-api
+    agent-id: gl-003
+  annotations:
+    description: "Pod Disruption Budget for API server pods"
+spec:
+  # Maintain at least 2 API servers for high availability
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: unifiedsteam
+      app.kubernetes.io/component: api-server
+
+---
+# =============================================================================
+# PDB for gRPC Server Pods
+# =============================================================================
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: unifiedsteam-grpc-pdb
+  namespace: greenlang-steam
+  labels:
+    app.kubernetes.io/name: unifiedsteam
+    app.kubernetes.io/component: pdb-grpc
+    agent-id: gl-003
+  annotations:
+    description: "Pod Disruption Budget for gRPC server pods"
+spec:
+  # Maintain at least 1 gRPC server for streaming connections
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: unifiedsteam
+      app.kubernetes.io/component: grpc-server
+
+---
+# =============================================================================
+# PDB for Kafka Consumer Pods
+# =============================================================================
+# Critical for maintaining continuous message processing
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: unifiedsteam-kafka-consumer-pdb
+  namespace: greenlang-steam
+  labels:
+    app.kubernetes.io/name: unifiedsteam
+    app.kubernetes.io/component: pdb-kafka-consumer
+    agent-id: gl-003
+  annotations:
+    description: "Pod Disruption Budget for Kafka consumer pods"
+spec:
+  # Ensure at least 1 Kafka consumer is always available
+  # to prevent message processing interruptions
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: unifiedsteam
+      app.kubernetes.io/component: kafka-consumer
+
+---
+# =============================================================================
+# PDB for OPC-UA Connector Pods
+# =============================================================================
+# Critical for maintaining SCADA connectivity
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: unifiedsteam-opcua-connector-pdb
+  namespace: greenlang-steam
+  labels:
+    app.kubernetes.io/name: unifiedsteam
+    app.kubernetes.io/component: pdb-opcua
+    agent-id: gl-003
+  annotations:
+    description: "Pod Disruption Budget for OPC-UA connector pods"
+spec:
+  # OPC-UA connectors are critical for real-time industrial data
+  # Ensure at least 1 is always available
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: unifiedsteam
+      app.kubernetes.io/component: opcua-connector
+
+---
+# =============================================================================
+# PDB for Optimization Engine Pods
+# =============================================================================
+# Ensures optimization workloads remain available
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: unifiedsteam-optimization-pdb
+  namespace: greenlang-steam
+  labels:
+    app.kubernetes.io/name: unifiedsteam
+    app.kubernetes.io/component: pdb-optimization
+    agent-id: gl-003
+  annotations:
+    description: "Pod Disruption Budget for optimization engine pods"
+spec:
+  # Allow up to 50% unavailable for optimization workloads
+  # These are less time-critical than real-time data processing
+  maxUnavailable: "50%"
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: unifiedsteam
+      app.kubernetes.io/component: optimization-engine
+
+---
+# =============================================================================
+# PDB for Worker Pods (Background Tasks)
+# =============================================================================
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: unifiedsteam-worker-pdb
+  namespace: greenlang-steam
+  labels:
+    app.kubernetes.io/name: unifiedsteam
+    app.kubernetes.io/component: pdb-worker
+    agent-id: gl-003
+  annotations:
+    description: "Pod Disruption Budget for background worker pods"
+spec:
+  # Workers can tolerate some unavailability
+  # At least 1 must be available for task processing
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: unifiedsteam
+      app.kubernetes.io/component: worker
+
+---
+# =============================================================================
+# PDB for Metrics Exporter Pods
+# =============================================================================
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: unifiedsteam-metrics-pdb
+  namespace: greenlang-steam
+  labels:
+    app.kubernetes.io/name: unifiedsteam
+    app.kubernetes.io/component: pdb-metrics
+    agent-id: gl-003
+  annotations:
+    description: "Pod Disruption Budget for metrics exporter pods"
+spec:
+  # Metrics collection can tolerate brief gaps
+  # But should have at least 1 available for continuous monitoring
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: unifiedsteam
+      app.kubernetes.io/component: metrics-exporter
+
+---
+# =============================================================================
+# Namespace-Level PDB Configuration Notes
+# =============================================================================
+# When planning PDB strategy across the namespace:
+#
+# 1. Production Requirements:
+#    - Main API: minAvailable: 2 (or 66% for 3 replicas)
+#    - Kafka consumers: minAvailable: 1 (continuous processing)
+#    - OPC-UA connectors: minAvailable: 1 (real-time data)
+#
+# 2. Best Practices:
+#    - Use minAvailable for critical services
+#    - Use maxUnavailable for batch/background workloads
+#    - Consider using percentage-based values for scalability
+#    - Test PDBs with `kubectl drain` before production
+#
+# 3. Monitoring:
+#    - Monitor PDB status: kubectl get pdb -n greenlang-steam
+#    - Check for blocked evictions: kubectl describe pdb <name>
+#    - Alert when PDB violations occur
+#
+# 4. Common Issues:
+#    - If PDB prevents ALL evictions, check:
+#      * Not enough healthy pods
+#      * minAvailable too high relative to replicas
+#      * HPA scaled down below PDB minimum
+#
+# 5. Testing Commands:
+#    # Check PDB status
+#    kubectl get pdb -n greenlang-steam
+#
+#    # Detailed PDB info
+#    kubectl describe pdb unifiedsteam-pdb -n greenlang-steam
+#
+#    # Simulate drain (dry-run)
+#    kubectl drain <node> --dry-run=server
+#
+#    # Check eviction budget
+#    kubectl get pdb unifiedsteam-pdb -n greenlang-steam -o yaml
+# =============================================================================

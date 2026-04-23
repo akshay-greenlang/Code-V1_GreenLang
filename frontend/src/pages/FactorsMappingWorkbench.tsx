@@ -177,8 +177,18 @@ export function FactorsMappingWorkbench() {
                 color="primary"
                 onClick={() => void confirm()}
                 disabled={confirming}
+                data-testid="mapping-confirm-button"
+                aria-label="Approve mapping suggestion and feed active-learning queue"
               >
-                {confirming ? "Saving…" : "Confirm + Save Rule"}
+                {confirming ? "Saving…" : "Approve + Feed active-learning"}
+              </Button>
+              <Button
+                variant="outlined"
+                color="warning"
+                onClick={() => setResult(null)}
+                aria-label="Reject mapping suggestion"
+              >
+                Reject
               </Button>
             </Stack>
 

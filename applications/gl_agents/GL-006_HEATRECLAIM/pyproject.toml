@@ -1,0 +1,140 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gl-006-heatreclaim"
+version = "1.0.0"
+description = "GL-006 HEATRECLAIM - Heat Recovery Maximizer Agent"
+readme = "README.md"
+license = {text = "Proprietary"}
+authors = [
+    {name = "GreenLang Technologies", email = "engineering@greenlang.io"}
+]
+maintainers = [
+    {name = "GreenLang AI Team", email = "ai-agents@greenlang.io"}
+]
+keywords = [
+    "heat-recovery",
+    "pinch-analysis",
+    "heat-exchanger-network",
+    "process-integration",
+    "energy-efficiency",
+    "greenlang",
+    "ai-agent",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: Manufacturing",
+    "Intended Audience :: Science/Research",
+    "License :: Other/Proprietary License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Chemistry",
+    "Typing :: Typed",
+]
+requires-python = ">=3.10"
+dependencies = [
+    "pydantic>=2.0.0",
+    "numpy>=1.24.0",
+    "scipy>=1.10.0",
+    "fastapi>=0.100.0",
+    "uvicorn>=0.22.0",
+    "httpx>=0.24.0",
+    "pulp>=2.7.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.3.0",
+    "pytest-asyncio>=0.21.0",
+    "pytest-cov>=4.1.0",
+    "black>=23.0.0",
+    "ruff>=0.0.270",
+    "mypy>=1.3.0",
+]
+ml = [
+    "shap>=0.42.0",
+    "scikit-learn>=1.2.0",
+]
+graphql = [
+    "strawberry-graphql>=0.200.0",
+]
+streaming = [
+    "kafka-python>=2.0.0",
+    "aiokafka>=0.8.0",
+]
+all = [
+    "gl-006-heatreclaim[dev,ml,graphql,streaming]",
+]
+
+[project.urls]
+Homepage = "https://greenlang.io"
+Documentation = "https://docs.greenlang.io/agents/gl-006"
+Repository = "https://github.com/greenlang/gl-agents"
+Changelog = "https://github.com/greenlang/gl-agents/blob/main/GL-006_HEATRECLAIM/CHANGELOG.md"
+
+[project.scripts]
+gl-heatreclaim = "api.rest_api:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["core*", "calculators*", "optimization*", "explainability*", "api*"]
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = "-ra -q --strict-markers"
+testpaths = ["tests"]
+asyncio_mode = "auto"
+markers = [
+    "slow: marks tests as slow",
+    "integration: marks tests as integration tests",
+]
+
+[tool.black]
+line-length = 88
+target-version = ["py310", "py311", "py312"]
+include = '\.pyi?$'
+
+[tool.ruff]
+line-length = 88
+select = ["E", "F", "I", "N", "W", "UP", "B", "C4"]
+ignore = ["E501"]
+target-version = "py310"
+
+[tool.ruff.isort]
+known-first-party = ["core", "calculators", "optimization", "explainability", "api"]
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_ignores = true
+disallow_untyped_defs = true
+plugins = ["pydantic.mypy"]
+
+[[tool.mypy.overrides]]
+module = [
+    "pulp.*",
+    "shap.*",
+    "lime.*",
+    "strawberry.*",
+]
+ignore_missing_imports = true
+
+[tool.coverage.run]
+source = ["core", "calculators", "optimization", "explainability", "api"]
+branch = true
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise NotImplementedError",
+    "if TYPE_CHECKING:",
+    "if __name__ == .__main__.:",
+]

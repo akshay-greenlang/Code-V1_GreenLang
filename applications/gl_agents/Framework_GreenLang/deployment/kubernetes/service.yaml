@@ -1,0 +1,194 @@
+# GreenLang Agent Kubernetes Service Template
+# Template Version: 1.0.0
+# Customize: Replace ${VARIABLE} placeholders with actual values
+
+---
+# ClusterIP Service (Internal Access)
+apiVersion: v1
+kind: Service
+metadata:
+  name: ${AGENT_ID}
+  namespace: ${NAMESPACE}
+  labels:
+    app: ${AGENT_ID}
+    app.kubernetes.io/name: ${AGENT_ID}
+    app.kubernetes.io/component: api
+    app.kubernetes.io/part-of: greenlang
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9090"
+    prometheus.io/path: "/metrics"
+spec:
+  type: ClusterIP
+  selector:
+    app: ${AGENT_ID}
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8000
+      protocol: TCP
+    - name: metrics
+      port: 9090
+      targetPort: 9090
+      protocol: TCP
+  sessionAffinity: None
+
+---
+# Headless Service (for StatefulSets or direct pod access)
+apiVersion: v1
+kind: Service
+metadata:
+  name: ${AGENT_ID}-headless
+  namespace: ${NAMESPACE}
+  labels:
+    app: ${AGENT_ID}
+    app.kubernetes.io/name: ${AGENT_ID}
+    app.kubernetes.io/component: api
+spec:
+  type: ClusterIP
+  clusterIP: None
+  selector:
+    app: ${AGENT_ID}
+  ports:
+    - name: http
+      port: 8000
+      targetPort: 8000
+      protocol: TCP
+
+---
+# LoadBalancer Service (External Access - Use with caution)
+# Uncomment if direct LoadBalancer access is needed
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: ${AGENT_ID}-lb
+#   namespace: ${NAMESPACE}
+#   labels:
+#     app: ${AGENT_ID}
+#   annotations:
+#     # AWS NLB annotations
+#     service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+#     service.beta.kubernetes.io/aws-load-balancer-internal: "true"
+#     service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
+#     # GCP annotations
+#     # cloud.google.com/load-balancer-type: "Internal"
+# spec:
+#   type: LoadBalancer
+#   selector:
+#     app: ${AGENT_ID}
+#   ports:
+#     - name: http
+#       port: 80
+#       targetPort: 8000
+#       protocol: TCP
+#   externalTrafficPolicy: Local
+#   healthCheckNodePort: 30000
+
+---
+# Ingress (HTTP/HTTPS Access)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ${AGENT_ID}-ingress
+  namespace: ${NAMESPACE}
+  labels:
+    app: ${AGENT_ID}
+    app.kubernetes.io/name: ${AGENT_ID}
+  annotations:
+    # Ingress Controller
+    kubernetes.io/ingress.class: nginx
+
+    # TLS/SSL
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+
+    # Rate Limiting
+    nginx.ingress.kubernetes.io/limit-rps: "100"
+    nginx.ingress.kubernetes.io/limit-connections: "50"
+    nginx.ingress.kubernetes.io/limit-rpm: "1000"
+
+    # Timeouts
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "30"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
+
+    # Body Size
+    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+
+    # CORS (if needed)
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "https://*.greenlang.io"
+    nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, PUT, DELETE, OPTIONS"
+    nginx.ingress.kubernetes.io/cors-allow-headers: "DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization"
+
+    # Security Headers
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      add_header X-Frame-Options "SAMEORIGIN" always;
+      add_header X-Content-Type-Options "nosniff" always;
+      add_header X-XSS-Protection "1; mode=block" always;
+      add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+      add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';" always;
+
+    # Websocket Support (if needed)
+    nginx.ingress.kubernetes.io/proxy-http-version: "1.1"
+    nginx.ingress.kubernetes.io/upstream-hash-by: "$request_uri"
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - ${AGENT_ID}.greenlang.io
+        - api.${AGENT_ID}.greenlang.io
+      secretName: ${AGENT_ID}-tls
+  rules:
+    - host: ${AGENT_ID}.greenlang.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: ${AGENT_ID}
+                port:
+                  number: 80
+    - host: api.${AGENT_ID}.greenlang.io
+      http:
+        paths:
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: ${AGENT_ID}
+                port:
+                  number: 80
+
+---
+# Gateway API (Alternative to Ingress - for newer clusters)
+# Uncomment if using Gateway API
+# apiVersion: gateway.networking.k8s.io/v1
+# kind: HTTPRoute
+# metadata:
+#   name: ${AGENT_ID}-route
+#   namespace: ${NAMESPACE}
+#   labels:
+#     app: ${AGENT_ID}
+# spec:
+#   parentRefs:
+#     - name: greenlang-gateway
+#       namespace: gateway-system
+#   hostnames:
+#     - ${AGENT_ID}.greenlang.io
+#   rules:
+#     - matches:
+#         - path:
+#             type: PathPrefix
+#             value: /
+#       backendRefs:
+#         - name: ${AGENT_ID}
+#           port: 80
+#       filters:
+#         - type: RequestHeaderModifier
+#           requestHeaderModifier:
+#             add:
+#               - name: X-Forwarded-Host
+#                 value: ${AGENT_ID}.greenlang.io

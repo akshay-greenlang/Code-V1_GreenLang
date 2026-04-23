@@ -1,0 +1,236 @@
+# GL-005 CombustionControlAgent - ServiceMonitor
+# Enables Prometheus Operator to scrape metrics automatically
+# Critical for monitoring real-time control performance
+
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: gl-005-combustion-control
+  namespace: greenlang
+  labels:
+    app: gl-005-combustion-control
+    agent: "GL-005"
+    release: prometheus
+    prometheus: kube-prometheus
+spec:
+  # Select the service to monitor
+  selector:
+    matchLabels:
+      app: gl-005-combustion-control
+      service-type: metrics
+
+  # Namespace to discover services in
+  namespaceSelector:
+    matchNames:
+      - greenlang
+
+  # Endpoints to scrape
+  endpoints:
+    - port: metrics        # Must match service port name
+      path: /metrics
+      interval: 15s        # Scrape every 15 seconds (real-time)
+      scrapeTimeout: 10s   # Timeout after 10 seconds
+      scheme: http
+
+      # Relabeling configuration
+      relabelings:
+        # Add namespace label
+        - sourceLabels: [__meta_kubernetes_namespace]
+          targetLabel: namespace
+          action: replace
+
+        # Add pod name label
+        - sourceLabels: [__meta_kubernetes_pod_name]
+          targetLabel: pod
+          action: replace
+
+        # Add service name label
+        - sourceLabels: [__meta_kubernetes_service_name]
+          targetLabel: service
+          action: replace
+
+        # Add container name label
+        - sourceLabels: [__meta_kubernetes_pod_container_name]
+          targetLabel: container
+          action: replace
+
+        # Add node name label
+        - sourceLabels: [__meta_kubernetes_pod_node_name]
+          targetLabel: node
+          action: replace
+
+        # Add pod IP
+        - sourceLabels: [__meta_kubernetes_pod_ip]
+          targetLabel: pod_ip
+          action: replace
+
+        # Add agent label
+        - sourceLabels: [__meta_kubernetes_pod_label_agent]
+          targetLabel: agent
+          action: replace
+
+      # Metric relabeling (applied after scraping)
+      metricRelabelings:
+        # Drop high-cardinality Go runtime metrics
+        - sourceLabels: [__name__]
+          regex: 'go_.*'
+          action: drop
+
+        # Keep only GL-005 specific metrics
+        - sourceLabels: [__name__]
+          regex: 'gl_005_.*|http_.*|control_.*|combustion_.*'
+          action: keep
+
+        # Normalize metric names
+        - sourceLabels: [__name__]
+          targetLabel: __name__
+          regex: 'gl_005_(.*)'
+          replacement: 'gl_005_${1}'
+          action: replace
+
+---
+# PodMonitor for direct pod scraping (alternative to ServiceMonitor)
+# Useful for scraping pods directly without service
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: gl-005-combustion-control-pods
+  namespace: greenlang
+  labels:
+    app: gl-005-combustion-control
+    agent: "GL-005"
+    release: prometheus
+spec:
+  selector:
+    matchLabels:
+      app: gl-005-combustion-control
+      agent: "GL-005"
+
+  namespaceSelector:
+    matchNames:
+      - greenlang
+
+  podMetricsEndpoints:
+    - port: metrics
+      path: /metrics
+      interval: 15s
+      scrapeTimeout: 10s
+
+---
+# PrometheusRule for alerting
+# Defines alert rules based on metrics
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: gl-005-alerts
+  namespace: greenlang
+  labels:
+    app: gl-005-combustion-control
+    agent: "GL-005"
+    prometheus: kube-prometheus
+    role: alert-rules
+spec:
+  groups:
+    # Critical alerts (immediate action required)
+    - name: gl-005-critical
+      interval: 30s
+      rules:
+        - alert: GL005Down
+          expr: up{job="gl-005-combustion-control"} == 0
+          for: 1m
+          labels:
+            severity: critical
+            agent: GL-005
+          annotations:
+            summary: "GL-005 CombustionControlAgent is down"
+            description: "GL-005 pod {{ $labels.pod }} is down for more than 1 minute"
+
+        - alert: GL005HighLatency
+          expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{job="gl-005-combustion-control"}[5m])) > 0.1
+          for: 2m
+          labels:
+            severity: critical
+            agent: GL-005
+          annotations:
+            summary: "GL-005 control loop latency exceeds SLA"
+            description: "P95 latency is {{ $value }}s (threshold: 0.1s) on pod {{ $labels.pod }}"
+
+        - alert: GL005ControlLoopFailure
+          expr: rate(control_loop_failures_total{job="gl-005-combustion-control"}[5m]) > 0.1
+          for: 2m
+          labels:
+            severity: critical
+            agent: GL-005
+          annotations:
+            summary: "GL-005 control loop failures detected"
+            description: "Control loop failure rate is {{ $value }}/s on pod {{ $labels.pod }}"
+
+    # Warning alerts (attention needed)
+    - name: gl-005-warning
+      interval: 60s
+      rules:
+        - alert: GL005HighCPU
+          expr: rate(container_cpu_usage_seconds_total{pod=~"gl-005-combustion-control-.*"}[5m]) > 1.5
+          for: 5m
+          labels:
+            severity: warning
+            agent: GL-005
+          annotations:
+            summary: "GL-005 CPU usage is high"
+            description: "CPU usage is {{ $value }} cores on pod {{ $labels.pod }}"
+
+        - alert: GL005HighMemory
+          expr: container_memory_working_set_bytes{pod=~"gl-005-combustion-control-.*"} / container_spec_memory_limit_bytes{pod=~"gl-005-combustion-control-.*"} > 0.85
+          for: 5m
+          labels:
+            severity: warning
+            agent: GL-005
+          annotations:
+            summary: "GL-005 memory usage is high"
+            description: "Memory usage is {{ $value | humanizePercentage }} on pod {{ $labels.pod }}"
+
+        - alert: GL005PodRestarting
+          expr: rate(kube_pod_container_status_restarts_total{pod=~"gl-005-combustion-control-.*"}[15m]) > 0
+          for: 5m
+          labels:
+            severity: warning
+            agent: GL-005
+          annotations:
+            summary: "GL-005 pod is restarting frequently"
+            description: "Pod {{ $labels.pod }} has restarted {{ $value }} times in last 15 minutes"
+
+---
+# Notes on Prometheus monitoring for real-time control:
+#
+# 1. **Why 15s scrape interval?**
+#    - Real-time control requires fine-grained metrics
+#    - Balance between data granularity and storage costs
+#    - Allows detection of sub-minute anomalies
+#
+# 2. **Key metrics to monitor:**
+#    - control_loop_latency_seconds (P50, P95, P99)
+#    - control_loop_failures_total (rate)
+#    - combustion_efficiency_percent (current, avg)
+#    - sensor_read_errors_total (rate)
+#    - modbus_connection_status (gauge)
+#    - opcua_connection_status (gauge)
+#
+# 3. **Alert severity levels:**
+#    - Critical: Immediate action (page on-call)
+#    - Warning: Attention needed (Slack notification)
+#    - Info: FYI (logged, no notification)
+#
+# 4. **Verify ServiceMonitor:**
+#    kubectl get servicemonitor -n greenlang
+#    kubectl describe servicemonitor gl-005-combustion-control -n greenlang
+#
+# 5. **Check Prometheus targets:**
+#    # Port-forward to Prometheus
+#    kubectl port-forward -n monitoring svc/prometheus-kube-prometheus-prometheus 9090:9090
+#    # Visit http://localhost:9090/targets
+#    # Look for gl-005-combustion-control endpoint
+#
+# 6. **Test metrics endpoint:**
+#    kubectl port-forward -n greenlang svc/gl-005-metrics 8001:8001
+#    curl http://localhost:8001/metrics

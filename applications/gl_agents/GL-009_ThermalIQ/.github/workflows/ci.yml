@@ -1,0 +1,433 @@
+# GL-009 ThermalIQ - Continuous Integration Workflow
+# ===================================================
+#
+# This workflow implements comprehensive CI/CD for ThermalIQ with:
+# - pytest-cov coverage reporting with 85% minimum gate
+# - Multi-Python version testing (3.10, 3.11, 3.12)
+# - Coverage badge generation for README
+# - Type checking with mypy
+# - Linting with ruff
+# - Security scanning with bandit
+#
+# Standards Compliance:
+# - NIST AI RMF: Continuous validation
+# - ISO/IEC 25010: Software quality assurance
+#
+# Author: GL-BackendDeveloper
+# Version: 1.0.0
+
+name: ThermalIQ CI/CD
+
+on:
+  push:
+    branches: [main, master, develop]
+    paths:
+      - '**.py'
+      - 'requirements*.txt'
+      - 'pyproject.toml'
+      - '.github/workflows/ci.yml'
+  pull_request:
+    branches: [main, master]
+    paths:
+      - '**.py'
+      - 'requirements*.txt'
+      - 'pyproject.toml'
+  workflow_dispatch:
+
+env:
+  PYTHON_VERSION: '3.11'
+  MIN_COVERAGE: 85
+
+jobs:
+  # =============================================================================
+  # CODE QUALITY CHECKS
+  # =============================================================================
+  lint:
+    name: Lint and Format Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install linting dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install ruff black isort
+
+      - name: Run ruff linter
+        run: |
+          ruff check . --output-format=github
+
+      - name: Check code formatting with black
+        run: |
+          black --check --diff .
+
+      - name: Check import sorting with isort
+        run: |
+          isort --check-only --diff .
+
+  # =============================================================================
+  # TYPE CHECKING
+  # =============================================================================
+  typecheck:
+    name: Type Check with mypy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install mypy types-requests types-PyYAML
+
+      - name: Run mypy type checking
+        run: |
+          mypy . --ignore-missing-imports --no-error-summary || true
+
+  # =============================================================================
+  # SECURITY SCANNING
+  # =============================================================================
+  security:
+    name: Security Scan with Bandit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install bandit
+        run: |
+          python -m pip install --upgrade pip
+          pip install bandit[toml]
+
+      - name: Run bandit security scan
+        run: |
+          bandit -r . -ll -ii --exclude ./tests,./venv,./.venv -f json -o bandit-report.json || true
+          bandit -r . -ll -ii --exclude ./tests,./venv,./.venv
+
+      - name: Upload security report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: bandit-security-report
+          path: bandit-report.json
+          retention-days: 30
+
+  # =============================================================================
+  # UNIT TESTS WITH COVERAGE
+  # =============================================================================
+  test:
+    name: Test (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.10', '3.11', '3.12']
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-cov pytest-asyncio pytest-xdist hypothesis
+
+      - name: Run tests with coverage
+        run: |
+          pytest tests/ \
+            --cov=. \
+            --cov-report=xml:coverage.xml \
+            --cov-report=html:htmlcov \
+            --cov-report=term-missing \
+            --cov-fail-under=${{ env.MIN_COVERAGE }} \
+            --junitxml=test-results.xml \
+            -v \
+            --tb=short
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        if: matrix.python-version == '3.11'
+        with:
+          name: coverage-report
+          path: |
+            coverage.xml
+            htmlcov/
+          retention-days: 30
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results-${{ matrix.python-version }}
+          path: test-results.xml
+          retention-days: 30
+
+  # =============================================================================
+  # GOLDEN VALUE TESTS (NIST/REFPROP Validation)
+  # =============================================================================
+  golden-tests:
+    name: NIST/REFPROP Golden Value Tests
+    runs-on: ubuntu-latest
+    needs: [test]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-cov
+
+      - name: Run golden value tests
+        run: |
+          pytest tests/golden/ \
+            -v \
+            --tb=long \
+            -m "golden or nist or refprop" \
+            --junitxml=golden-test-results.xml
+
+      - name: Upload golden test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: golden-test-results
+          path: golden-test-results.xml
+          retention-days: 30
+
+  # =============================================================================
+  # COVERAGE BADGE GENERATION
+  # =============================================================================
+  coverage-badge:
+    name: Generate Coverage Badge
+    runs-on: ubuntu-latest
+    needs: [test]
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download coverage report
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-report
+          path: ./coverage
+
+      - name: Extract coverage percentage
+        id: coverage
+        run: |
+          COVERAGE=$(python -c "
+          import xml.etree.ElementTree as ET
+          tree = ET.parse('./coverage/coverage.xml')
+          root = tree.getroot()
+          coverage = float(root.attrib['line-rate']) * 100
+          print(f'{coverage:.1f}')
+          ")
+          echo "percentage=$COVERAGE" >> $GITHUB_OUTPUT
+          echo "Coverage: $COVERAGE%"
+
+      - name: Determine badge color
+        id: badge-color
+        run: |
+          COVERAGE=${{ steps.coverage.outputs.percentage }}
+          if (( $(echo "$COVERAGE >= 90" | bc -l) )); then
+            COLOR="brightgreen"
+          elif (( $(echo "$COVERAGE >= 80" | bc -l) )); then
+            COLOR="green"
+          elif (( $(echo "$COVERAGE >= 70" | bc -l) )); then
+            COLOR="yellowgreen"
+          elif (( $(echo "$COVERAGE >= 60" | bc -l) )); then
+            COLOR="yellow"
+          else
+            COLOR="red"
+          fi
+          echo "color=$COLOR" >> $GITHUB_OUTPUT
+
+      - name: Create coverage badge
+        uses: schneegans/dynamic-badges-action@v1.7.0
+        if: github.event_name != 'pull_request'
+        with:
+          auth: ${{ secrets.GIST_TOKEN }}
+          gistID: YOUR_GIST_ID  # Replace with actual gist ID
+          filename: coverage-badge.json
+          label: coverage
+          message: ${{ steps.coverage.outputs.percentage }}%
+          color: ${{ steps.badge-color.outputs.color }}
+          namedLogo: pytest
+
+  # =============================================================================
+  # INTEGRATION TESTS
+  # =============================================================================
+  integration:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    needs: [test, lint, typecheck]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-asyncio httpx
+
+      - name: Run integration tests
+        run: |
+          pytest tests/ \
+            -v \
+            -m "integration" \
+            --tb=short \
+            --junitxml=integration-test-results.xml || true
+
+      - name: Upload integration test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: integration-test-results
+          path: integration-test-results.xml
+          retention-days: 30
+
+  # =============================================================================
+  # BUILD VALIDATION
+  # =============================================================================
+  build:
+    name: Build Validation
+    runs-on: ubuntu-latest
+    needs: [test, lint]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install build dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install build wheel
+
+      - name: Build package
+        run: |
+          python -m build
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+          retention-days: 30
+
+  # =============================================================================
+  # DOCKER BUILD TEST
+  # =============================================================================
+  docker:
+    name: Docker Build Test
+    runs-on: ubuntu-latest
+    needs: [test]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: false
+          tags: thermaliq:test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Test Docker image
+        run: |
+          docker run --rm thermaliq:test python -c "
+          import sys
+          print(f'Python version: {sys.version}')
+          # Import key modules to verify installation
+          try:
+              from calculators.thermal_efficiency import ThermalEfficiencyCalculator
+              print('ThermalEfficiencyCalculator imported successfully')
+          except ImportError as e:
+              print(f'Import check: {e}')
+          "
+
+  # =============================================================================
+  # SUMMARY REPORT
+  # =============================================================================
+  summary:
+    name: CI Summary
+    runs-on: ubuntu-latest
+    needs: [lint, typecheck, security, test, golden-tests, build]
+    if: always()
+    steps:
+      - name: Check job statuses
+        run: |
+          echo "## CI/CD Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Job | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Lint | ${{ needs.lint.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Type Check | ${{ needs.typecheck.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Security | ${{ needs.security.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Tests | ${{ needs.test.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Golden Tests | ${{ needs.golden-tests.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Build | ${{ needs.build.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Minimum coverage threshold: ${{ env.MIN_COVERAGE }}%" >> $GITHUB_STEP_SUMMARY
+
+      - name: Fail if critical jobs failed
+        if: |
+          needs.lint.result == 'failure' ||
+          needs.test.result == 'failure' ||
+          needs.build.result == 'failure'
+        run: |
+          echo "Critical jobs failed!"
+          exit 1

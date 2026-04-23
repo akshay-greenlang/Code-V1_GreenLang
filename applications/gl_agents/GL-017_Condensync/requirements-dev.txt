@@ -1,0 +1,60 @@
+# =============================================================================
+# GL-017 CONDENSYNC - Development Dependencies
+# Install with: pip install -r requirements-dev.txt
+# =============================================================================
+
+# Include production dependencies
+-r requirements.txt
+
+# -----------------------------------------------------------------------------
+# Testing Framework
+# -----------------------------------------------------------------------------
+pytest==8.0.0                       # Test framework
+pytest-cov==4.1.0                   # Coverage reporting
+pytest-asyncio==0.23.4              # Async test support
+pytest-xdist==3.5.0                 # Parallel test execution
+pytest-timeout==2.2.0               # Test timeout handling
+pytest-benchmark==4.0.0             # Performance benchmarking
+hypothesis==6.98.0                  # Property-based testing
+faker==22.5.1                       # Fake data generation
+respx==0.20.2                       # HTTP mocking for httpx
+pytest-mock==3.12.0                 # Mocking utilities
+
+# -----------------------------------------------------------------------------
+# Code Quality
+# -----------------------------------------------------------------------------
+black==24.1.1                       # Code formatter
+ruff==0.2.0                         # Fast linter (replaces flake8, isort)
+mypy==1.8.0                         # Static type checker
+bandit==1.7.7                       # Security linter
+pre-commit==3.6.0                   # Git hooks framework
+
+# -----------------------------------------------------------------------------
+# Type Stubs
+# -----------------------------------------------------------------------------
+types-redis==4.6.0.20240106         # Redis type stubs
+types-PyYAML==6.0.12.12             # YAML type stubs
+pandas-stubs==2.1.4.231227          # Pandas type stubs
+
+# -----------------------------------------------------------------------------
+# Documentation
+# -----------------------------------------------------------------------------
+mkdocs==1.5.3                       # Documentation generator
+mkdocs-material==9.5.6              # Material theme
+mkdocstrings[python]==0.24.0        # API documentation
+
+# -----------------------------------------------------------------------------
+# Development Utilities
+# -----------------------------------------------------------------------------
+ipython==8.21.0                     # Enhanced interactive Python
+jupyter==1.0.0                      # Jupyter notebooks
+watchfiles==0.21.0                  # File watching for reload
+debugpy==1.8.0                      # Debugger for VS Code
+
+# -----------------------------------------------------------------------------
+# Profiling & Performance
+# -----------------------------------------------------------------------------
+py-spy==0.3.14                      # Sampling profiler
+memory-profiler==0.61.0             # Memory profiling
+line-profiler==4.1.2                # Line-by-line profiling
+scalene==1.5.31                     # CPU/GPU/memory profiler

@@ -1,0 +1,54 @@
+---
+# =============================================================================
+# ConfigMap patch — factors-api-env (production)
+# =============================================================================
+# Pin the Certified v1.0 edition, enforce strict signing + licensing guards,
+# drop OTel sampling to 10% for cost, and tighten rate-limit ceilings.
+#
+# Every key already defined in base is overridden here; keys only defined
+# here are added. NO secrets appear in this file.
+# =============================================================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: factors-api-env
+data:
+  # --- Environment ---------------------------------------------------------
+  GL_ENV: "production"
+  ENVIRONMENT: "production"
+  APP_ENV: "production"
+  GL_LOG_LEVEL: "INFO"
+
+  # --- Edition pin (FY27 Certified cut) -----------------------------------
+  EDITION: "v1.0-certified"
+  GL_FACTORS_DEFAULT_EDITION: "v1.0-certified"
+
+  # --- Rate-limit budgets (strict; production = real money) ----------------
+  TIER_COMMUNITY_RPS: "1"
+  TIER_PRO_RPS: "40"
+  TIER_PLATFORM_RPS: "300"
+  TIER_ENTERPRISE_RPS: "1000"
+  GL_FACTORS_TIER_COMMUNITY_RPS: "1"
+  GL_FACTORS_TIER_PRO_RPS: "40"
+  GL_FACTORS_TIER_PLATFORM_RPS: "300"
+  GL_FACTORS_TIER_ENTERPRISE_RPS: "1000"
+
+  # --- Signed receipts (non-negotiable) -----------------------------------
+  SIGNING_REQUIRED: "true"
+  GL_FACTORS_SIGNING_REQUIRED: "true"
+
+  # --- Licensing guard (strict: block any unlicensed response) -------------
+  LICENSING_GUARD_STRICT: "true"
+  GL_FACTORS_LICENSING_GUARD_STRICT: "true"
+
+  # --- OTel sampling (10% in prod to keep trace costs sane) ----------------
+  OTEL_TRACES_SAMPLER_ARG: "0.1"
+  OTEL_RESOURCE_ATTRIBUTES: "service.name=factors-api,service.namespace=greenlang,deployment.environment=production"
+
+  # --- Worker count (prod pods run 4 uvicorn workers) ---------------------
+  WORKERS: "4"
+
+  # --- Feature flags ------------------------------------------------------
+  GL_FACTORS_SSO_ENABLED: "true"
+  GL_FACTORS_SCIM_ENABLED: "true"
+  GL_FACTORS_RETENTION_CRON_ENABLED: "true"

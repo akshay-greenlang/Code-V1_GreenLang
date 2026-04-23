@@ -1,0 +1,334 @@
+# GreenLang Agent Kubernetes Deployment Template
+# Template Version: 1.0.0
+# Customize: Replace ${VARIABLE} placeholders with actual values
+# Required customizations: AGENT_ID, AGENT_NAME, IMAGE_REGISTRY, NAMESPACE
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ${AGENT_ID}
+  namespace: ${NAMESPACE}
+  labels:
+    app: ${AGENT_ID}
+    app.kubernetes.io/name: ${AGENT_ID}
+    app.kubernetes.io/instance: ${AGENT_ID}-production
+    app.kubernetes.io/version: "${VERSION}"
+    app.kubernetes.io/component: api
+    app.kubernetes.io/part-of: greenlang
+    app.kubernetes.io/managed-by: kubectl
+    team: greenlang
+    environment: ${ENVIRONMENT}
+  annotations:
+    deployment.kubernetes.io/revision: "1"
+    kubernetes.io/description: "${AGENT_NAME} - GreenLang Industrial AI Agent"
+spec:
+  replicas: 3
+  revisionHistoryLimit: 5
+  progressDeadlineSeconds: 600
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: ${AGENT_ID}
+      app.kubernetes.io/name: ${AGENT_ID}
+  template:
+    metadata:
+      labels:
+        app: ${AGENT_ID}
+        app.kubernetes.io/name: ${AGENT_ID}
+        app.kubernetes.io/instance: ${AGENT_ID}-production
+        app.kubernetes.io/version: "${VERSION}"
+        version: "${VERSION}"
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8000"
+        prometheus.io/path: "/metrics"
+        sidecar.istio.io/inject: "true"
+    spec:
+      # Service Account
+      serviceAccountName: ${AGENT_ID}-sa
+      automountServiceAccountToken: false
+
+      # Security Context (Pod Level)
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        fsGroupChangePolicy: "OnRootMismatch"
+        seccompProfile:
+          type: RuntimeDefault
+
+      # Scheduling
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app: ${AGENT_ID}
+                topologyKey: kubernetes.io/hostname
+            - weight: 50
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app: ${AGENT_ID}
+                topologyKey: topology.kubernetes.io/zone
+
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app: ${AGENT_ID}
+
+      # Tolerate specific taints if needed
+      tolerations:
+        - key: "dedicated"
+          operator: "Equal"
+          value: "greenlang"
+          effect: "NoSchedule"
+
+      # Node selection
+      nodeSelector:
+        kubernetes.io/os: linux
+
+      # Termination
+      terminationGracePeriodSeconds: 60
+
+      # Init Containers
+      initContainers:
+        - name: init-check-dependencies
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - |
+              echo "Checking dependencies..."
+              # Wait for database
+              until nc -z ${DATABASE_HOST} ${DATABASE_PORT}; do
+                echo "Waiting for database..."
+                sleep 2
+              done
+              # Wait for Redis
+              until nc -z ${REDIS_HOST} ${REDIS_PORT}; do
+                echo "Waiting for Redis..."
+                sleep 2
+              done
+              echo "All dependencies ready"
+          resources:
+            limits:
+              cpu: 100m
+              memory: 64Mi
+            requests:
+              cpu: 50m
+              memory: 32Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+
+      # Main Container
+      containers:
+        - name: ${AGENT_ID}
+          image: ${IMAGE_REGISTRY}/${AGENT_ID}:${VERSION}
+          imagePullPolicy: Always
+
+          # Ports
+          ports:
+            - name: http
+              containerPort: 8000
+              protocol: TCP
+            - name: metrics
+              containerPort: 9090
+              protocol: TCP
+
+          # Environment Variables
+          env:
+            # Application Configuration
+            - name: ENVIRONMENT
+              value: "${ENVIRONMENT}"
+            - name: APP_NAME
+              value: "${AGENT_NAME}"
+            - name: APP_VERSION
+              value: "${VERSION}"
+            - name: LOG_LEVEL
+              value: "INFO"
+            - name: LOG_FORMAT
+              value: "json"
+
+            # Pod Information
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+
+            # Secrets from Secret Manager
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: ${AGENT_ID}-secrets
+                  key: database-url
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: ${AGENT_ID}-secrets
+                  key: redis-url
+            - name: API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: ${AGENT_ID}-secrets
+                  key: api-key
+                  optional: true
+
+            # ConfigMap Values
+            - name: FEATURE_FLAGS
+              valueFrom:
+                configMapKeyRef:
+                  name: ${AGENT_ID}-config
+                  key: feature-flags
+                  optional: true
+
+          # Environment from ConfigMap
+          envFrom:
+            - configMapRef:
+                name: ${AGENT_ID}-config
+                optional: true
+
+          # Resource Limits
+          resources:
+            requests:
+              cpu: 250m
+              memory: 256Mi
+              ephemeral-storage: 100Mi
+            limits:
+              cpu: 1000m
+              memory: 1Gi
+              ephemeral-storage: 500Mi
+
+          # Security Context (Container Level)
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
+            capabilities:
+              drop:
+                - ALL
+
+          # Health Checks
+          startupProbe:
+            httpGet:
+              path: /api/v1/health
+              port: http
+              scheme: HTTP
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 5
+            failureThreshold: 30
+            successThreshold: 1
+
+          livenessProbe:
+            httpGet:
+              path: /api/v1/health
+              port: http
+              scheme: HTTP
+            initialDelaySeconds: 0
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 3
+            successThreshold: 1
+
+          readinessProbe:
+            httpGet:
+              path: /api/v1/ready
+              port: http
+              scheme: HTTP
+            initialDelaySeconds: 0
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+            successThreshold: 1
+
+          # Volume Mounts
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+            - name: cache
+              mountPath: /app/.cache
+            - name: config
+              mountPath: /app/config
+              readOnly: true
+
+          # Lifecycle Hooks
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                  - /bin/sh
+                  - -c
+                  - |
+                    echo "Graceful shutdown initiated"
+                    sleep 5
+                    # Signal application to drain connections
+                    kill -SIGTERM 1 || true
+                    sleep 10
+
+      # Volumes
+      volumes:
+        - name: tmp
+          emptyDir:
+            sizeLimit: 100Mi
+        - name: cache
+          emptyDir:
+            sizeLimit: 500Mi
+        - name: config
+          configMap:
+            name: ${AGENT_ID}-config
+            optional: true
+
+      # Image Pull Secrets
+      imagePullSecrets:
+        - name: registry-credentials
+
+      # DNS Configuration
+      dnsPolicy: ClusterFirst
+      dnsConfig:
+        options:
+          - name: ndots
+            value: "2"
+          - name: single-request-reopen
+
+---
+# Service Account
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: ${AGENT_ID}-sa
+  namespace: ${NAMESPACE}
+  labels:
+    app: ${AGENT_ID}
+  annotations:
+    # For AWS IAM Roles for Service Accounts (IRSA)
+    # eks.amazonaws.com/role-arn: arn:aws:iam::ACCOUNT_ID:role/${AGENT_ID}-role
+automountServiceAccountToken: false

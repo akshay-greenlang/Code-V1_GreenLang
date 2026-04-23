@@ -1,0 +1,318 @@
+# GL-004 BURNMASTER - Application Configuration
+# =============================================
+# Configuration template for industrial combustion monitoring
+
+# Application metadata
+app:
+  name: gl004-burnmaster
+  version: "1.0.0"
+  description: "Industrial Combustion Monitoring and Optimization Agent"
+  environment: ${GL_ENVIRONMENT:-development}
+
+# Server configuration
+server:
+  http:
+    host: ${GL_HTTP_HOST:-0.0.0.0}
+    port: ${GL_HTTP_PORT:-8080}
+    workers: ${GL_HTTP_WORKERS:-4}
+    timeout: ${GL_HTTP_TIMEOUT:-60}
+    keep_alive: ${GL_HTTP_KEEP_ALIVE:-75}
+    max_request_size: 52428800  # 50MB
+    cors:
+      enabled: true
+      allow_origins:
+        - "https://*.greenlang.io"
+        - "http://localhost:*"
+      allow_methods:
+        - GET
+        - POST
+        - PUT
+        - DELETE
+        - OPTIONS
+      allow_headers:
+        - Authorization
+        - Content-Type
+        - X-Request-ID
+      max_age: 600
+
+  grpc:
+    host: ${GL_GRPC_HOST:-0.0.0.0}
+    port: ${GL_GRPC_PORT:-50051}
+    max_workers: ${GL_GRPC_WORKERS:-10}
+    max_message_length: 104857600  # 100MB
+    keepalive_time: 7200
+    keepalive_timeout: 20
+    reflection_enabled: ${GL_GRPC_REFLECTION:-false}
+
+  metrics:
+    host: ${GL_METRICS_HOST:-0.0.0.0}
+    port: ${GL_METRICS_PORT:-9090}
+    path: /metrics
+
+# Database configuration
+database:
+  postgresql:
+    host: ${POSTGRES_HOST:-localhost}
+    port: ${POSTGRES_PORT:-5432}
+    database: ${POSTGRES_DB:-burnmaster}
+    user: ${POSTGRES_USER:-burnmaster}
+    password: ${POSTGRES_PASSWORD:-}
+    url: ${DATABASE_URL:-}
+    pool:
+      min_size: 5
+      max_size: ${POSTGRES_POOL_SIZE:-20}
+      max_overflow: ${POSTGRES_MAX_OVERFLOW:-10}
+      timeout: 30
+      recycle: 3600
+    ssl:
+      enabled: ${POSTGRES_SSL_ENABLED:-true}
+      mode: ${POSTGRES_SSL_MODE:-require}
+
+  influxdb:
+    url: ${INFLUXDB_URL:-http://localhost:8086}
+    token: ${INFLUXDB_TOKEN:-}
+    org: ${INFLUXDB_ORG:-greenlang}
+    bucket: ${INFLUXDB_BUCKET:-burnmaster}
+    timeout: 30000
+    batch_size: 5000
+    flush_interval: 1000
+    retry_interval: 5000
+    max_retries: 3
+    retention:
+      default: ${INFLUXDB_RETENTION:-30d}
+      raw_data: 7d
+      aggregated_1m: 30d
+      aggregated_1h: 365d
+
+# Cache configuration
+cache:
+  redis:
+    host: ${REDIS_HOST:-localhost}
+    port: ${REDIS_PORT:-6379}
+    db: ${REDIS_DB:-0}
+    password: ${REDIS_PASSWORD:-}
+    url: ${REDIS_URL:-}
+    max_connections: ${REDIS_MAX_CONNECTIONS:-100}
+    socket_timeout: ${REDIS_SOCKET_TIMEOUT:-5}
+    socket_connect_timeout: 5
+    retry_on_timeout: true
+    ssl:
+      enabled: ${REDIS_SSL_ENABLED:-false}
+    key_prefix: "gl004:"
+    default_ttl: 3600
+
+# Kafka configuration
+kafka:
+  bootstrap_servers: ${KAFKA_BOOTSTRAP_SERVERS:-localhost:9092}
+  security:
+    protocol: ${KAFKA_SECURITY_PROTOCOL:-PLAINTEXT}
+    sasl:
+      mechanism: ${KAFKA_SASL_MECHANISM:-PLAIN}
+      username: ${KAFKA_SASL_USERNAME:-}
+      password: ${KAFKA_SASL_PASSWORD:-}
+
+  consumer:
+    group_id: ${KAFKA_CONSUMER_GROUP:-gl004-burnmaster}
+    auto_offset_reset: ${KAFKA_AUTO_OFFSET_RESET:-earliest}
+    enable_auto_commit: ${KAFKA_ENABLE_AUTO_COMMIT:-false}
+    max_poll_records: 500
+    max_poll_interval_ms: 300000
+    session_timeout_ms: 45000
+    heartbeat_interval_ms: 15000
+
+  producer:
+    acks: all
+    retries: 3
+    retry_backoff_ms: 100
+    max_in_flight_requests: 5
+    compression_type: lz4
+    batch_size: 16384
+    linger_ms: 10
+
+  topics:
+    combustion_data: ${KAFKA_TOPICS_COMBUSTION_DATA:-combustion.sensor.data}
+    control_commands: ${KAFKA_TOPICS_CONTROL_COMMANDS:-combustion.control.commands}
+    alerts: ${KAFKA_TOPICS_ALERTS:-combustion.alerts}
+    metrics: ${KAFKA_TOPICS_METRICS:-combustion.metrics}
+    events: ${KAFKA_TOPICS_EVENTS:-combustion.events}
+
+# OPC-UA configuration
+opcua:
+  endpoints:
+    - name: primary
+      url: ${OPCUA_ENDPOINT:-opc.tcp://localhost:4840}
+      namespace: ${OPCUA_NAMESPACE:-ns=2;s=Combustion}
+      enabled: true
+      priority: 1
+
+  security:
+    mode: ${OPCUA_SECURITY_MODE:-SignAndEncrypt}
+    policy: ${OPCUA_SECURITY_POLICY:-Basic256Sha256}
+    certificate_path: ${OPCUA_CERT_PATH:-/app/certs/client.pem}
+    private_key_path: ${OPCUA_KEY_PATH:-/app/certs/client.key}
+    server_certificate_path: ${OPCUA_SERVER_CERT_PATH:-}
+
+  authentication:
+    type: ${OPCUA_AUTH_TYPE:-username}
+    username: ${OPCUA_USERNAME:-}
+    password: ${OPCUA_PASSWORD:-}
+
+  connection:
+    timeout: ${OPCUA_TIMEOUT:-30000}
+    secure_channel_lifetime: 3600000
+    session_timeout: 3600000
+    keep_alive_interval: 5000
+    reconnect_interval: 5000
+    max_reconnect_attempts: 10
+
+  subscription:
+    publishing_interval: ${OPCUA_SUBSCRIPTION_INTERVAL:-500}
+    lifetime_count: 10000
+    max_keep_alive_count: 3000
+    max_notifications_per_publish: 10000
+    priority: 10
+
+# ML Model configuration
+ml:
+  model_path: ${ML_MODEL_PATH:-/app/models}
+  inference_timeout: ${ML_INFERENCE_TIMEOUT:-5000}
+  batch_size: ${ML_BATCH_SIZE:-64}
+  device: ${ML_DEVICE:-cpu}
+  threads: ${ML_THREADS:-4}
+
+  models:
+    combustion_efficiency:
+      path: combustion_efficiency_v1.onnx
+      version: "1.0.0"
+      enabled: true
+    emission_prediction:
+      path: emission_prediction_v1.onnx
+      version: "1.0.0"
+      enabled: true
+    anomaly_detection:
+      path: anomaly_detection_v1.onnx
+      version: "1.0.0"
+      enabled: true
+    predictive_maintenance:
+      path: predictive_maintenance_v1.onnx
+      version: "1.0.0"
+      enabled: true
+
+  causal_inference:
+    enabled: ${FEATURE_CAUSAL_INFERENCE:-true}
+    graph_path: causal_graph_v1.json
+    confidence_threshold: 0.7
+    max_lag: 60
+
+# Logging configuration
+logging:
+  level: ${GL_LOG_LEVEL:-INFO}
+  format: ${GL_LOG_FORMAT:-json}
+  output:
+    console:
+      enabled: true
+      level: ${GL_LOG_LEVEL:-INFO}
+    file:
+      enabled: true
+      path: /app/logs/burnmaster.log
+      max_size: 104857600  # 100MB
+      backup_count: 10
+      level: DEBUG
+
+  loggers:
+    gl004_burnmaster: DEBUG
+    asyncua: WARNING
+    kafka: WARNING
+    influxdb_client: WARNING
+    sqlalchemy: WARNING
+
+# Observability configuration
+observability:
+  tracing:
+    enabled: true
+    exporter: otlp
+    endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT:-http://localhost:4317}
+    protocol: ${OTEL_EXPORTER_OTLP_PROTOCOL:-grpc}
+    sampler: ${OTEL_TRACES_SAMPLER:-parentbased_traceidratio}
+    sample_rate: ${OTEL_TRACES_SAMPLER_ARG:-0.1}
+    service_name: gl004-burnmaster
+
+  metrics:
+    enabled: true
+    export_interval: 30
+    histograms:
+      - name: request_duration
+        buckets: [0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10]
+      - name: inference_duration
+        buckets: [0.01, 0.05, 0.1, 0.25, 0.5, 1, 2, 5]
+
+  profiling:
+    enabled: ${GL_PROFILING_ENABLED:-false}
+    endpoint: ${GL_PROFILING_ENDPOINT:-}
+
+# Feature flags
+features:
+  causal_inference: ${FEATURE_CAUSAL_INFERENCE:-true}
+  predictive_maintenance: ${FEATURE_PREDICTIVE_MAINTENANCE:-true}
+  auto_optimization: ${FEATURE_AUTO_OPTIMIZATION:-false}
+  advanced_analytics: ${FEATURE_ADVANCED_ANALYTICS:-true}
+  real_time_alerts: ${FEATURE_REAL_TIME_ALERTS:-true}
+  data_export: ${FEATURE_DATA_EXPORT:-true}
+
+# Safety and limits
+safety:
+  combustion:
+    min_air_fuel_ratio: 10.0
+    max_air_fuel_ratio: 20.0
+    min_flame_temperature: 800
+    max_flame_temperature: 2000
+    max_co_ppm: 100
+    max_nox_ppm: 50
+    emergency_shutdown_threshold: 0.95
+
+  rate_limits:
+    api_requests_per_minute: 1000
+    websocket_messages_per_second: 100
+    kafka_publish_per_second: 10000
+
+# Alerting configuration
+alerting:
+  enabled: true
+  channels:
+    - type: slack
+      webhook_url: ${SLACK_WEBHOOK_URL:-}
+      channel: "#gl-alerts"
+      enabled: ${ALERTING_SLACK_ENABLED:-false}
+
+    - type: pagerduty
+      integration_key: ${PAGERDUTY_INTEGRATION_KEY:-}
+      enabled: ${ALERTING_PAGERDUTY_ENABLED:-false}
+
+    - type: email
+      smtp_host: ${SMTP_HOST:-}
+      smtp_port: ${SMTP_PORT:-587}
+      from_address: alerts@greenlang.io
+      to_addresses:
+        - ops@greenlang.io
+      enabled: ${ALERTING_EMAIL_ENABLED:-false}
+
+  rules:
+    - name: high_co_emission
+      condition: "co_ppm > 80"
+      severity: warning
+      message: "CO emissions exceeding 80 ppm"
+
+    - name: critical_co_emission
+      condition: "co_ppm > 100"
+      severity: critical
+      message: "Critical CO emissions - immediate attention required"
+
+    - name: low_efficiency
+      condition: "efficiency < 0.85"
+      severity: warning
+      message: "Combustion efficiency below 85%"
+
+    - name: equipment_failure_prediction
+      condition: "failure_probability > 0.7"
+      severity: warning
+      message: "High probability of equipment failure predicted"

@@ -1,0 +1,43 @@
+---
+# =============================================================================
+# HPA patch — factors-api (staging)
+# =============================================================================
+# Targets:
+#   min = 2   (survive a single-pod crash without cold-start 5xx)
+#   max = 6   (cap spend on staging; prod scales to 10)
+#   CPU target    = 60% (scale out before p95 regresses)
+#   Memory target = 70% (guard against unbounded cache growth)
+#
+# The base HPA also defines a custom `factors_request_rate` pods metric;
+# that is NOT patched here — staging inherits it as-is.
+# =============================================================================
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: factors-api
+spec:
+  minReplicas: 2
+  maxReplicas: 6
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 60
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Pods
+      pods:
+        metric:
+          name: factors_request_rate
+          selector:
+            matchLabels:
+              service: factors-api
+        target:
+          type: AverageValue
+          averageValue: "50"

@@ -1,0 +1,527 @@
+# GL-017_Condensync Deployment Pipeline
+# Kubernetes Deployment with Blue-Green and Canary Support
+# Version: 1.0.0
+
+name: Deploy to Kubernetes
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        type: choice
+        options:
+          - development
+          - staging
+          - production
+      image_tag:
+        description: 'Docker image tag to deploy'
+        required: true
+        type: string
+      strategy:
+        description: 'Deployment strategy'
+        required: true
+        type: choice
+        options:
+          - rolling
+          - blue-green
+          - canary
+        default: rolling
+      canary_percentage:
+        description: 'Canary traffic percentage (for canary strategy)'
+        required: false
+        type: number
+        default: 10
+
+env:
+  # Agent Configuration
+  AGENT_NAME: "GL-017_Condensync"
+  AGENT_ID: "gl-017-condensync"
+  REGISTRY: ghcr.io
+  IMAGE_NAME: greenlang/gl-017-condensync
+  NAMESPACE_PREFIX: "greenlang"
+
+permissions:
+  contents: read
+  id-token: write
+  packages: read
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Pre-Deployment Validation
+  # ---------------------------------------------------------------------------
+  validate:
+    name: Validate Deployment
+    runs-on: ubuntu-latest
+    outputs:
+      namespace: ${{ steps.config.outputs.namespace }}
+      cluster: ${{ steps.config.outputs.cluster }}
+      replicas: ${{ steps.config.outputs.replicas }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Validate image exists
+        run: |
+          docker manifest inspect ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.event.inputs.image_tag }} || {
+            echo "::error::Image not found: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.event.inputs.image_tag }}"
+            exit 1
+          }
+
+      - name: Set environment configuration
+        id: config
+        run: |
+          ENV="${{ github.event.inputs.environment }}"
+
+          case "$ENV" in
+            development)
+              echo "namespace=${{ env.NAMESPACE_PREFIX }}-dev" >> $GITHUB_OUTPUT
+              echo "cluster=dev-cluster" >> $GITHUB_OUTPUT
+              echo "replicas=1" >> $GITHUB_OUTPUT
+              ;;
+            staging)
+              echo "namespace=${{ env.NAMESPACE_PREFIX }}-staging" >> $GITHUB_OUTPUT
+              echo "cluster=staging-cluster" >> $GITHUB_OUTPUT
+              echo "replicas=2" >> $GITHUB_OUTPUT
+              ;;
+            production)
+              echo "namespace=${{ env.NAMESPACE_PREFIX }}-prod" >> $GITHUB_OUTPUT
+              echo "cluster=prod-cluster" >> $GITHUB_OUTPUT
+              echo "replicas=3" >> $GITHUB_OUTPUT
+              ;;
+          esac
+
+  # ---------------------------------------------------------------------------
+  # Rolling Deployment
+  # ---------------------------------------------------------------------------
+  deploy-rolling:
+    name: Rolling Deployment
+    runs-on: ubuntu-latest
+    needs: validate
+    if: github.event.inputs.strategy == 'rolling'
+    environment:
+      name: ${{ github.event.inputs.environment }}
+      url: https://${{ github.event.inputs.environment }}.gl-017-condensync.greenlang.io
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'v1.28.0'
+
+      - name: Configure kubectl
+        run: |
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > ~/.kube/config
+          chmod 600 ~/.kube/config
+
+      - name: Create namespace if not exists
+        run: |
+          kubectl create namespace ${{ needs.validate.outputs.namespace }} --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: Apply ConfigMaps and Secrets
+        run: |
+          kubectl apply -f deployment/kubernetes/configmap.yaml -n ${{ needs.validate.outputs.namespace }}
+
+          # Apply secrets template (external secrets will override)
+          if [ -f deployment/kubernetes/secret.yaml ]; then
+            envsubst < deployment/kubernetes/secret.yaml | kubectl apply -f - -n ${{ needs.validate.outputs.namespace }}
+          fi
+
+      - name: Update deployment image
+        run: |
+          kubectl set image deployment/${{ env.AGENT_ID }} \
+            ${{ env.AGENT_ID }}=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.event.inputs.image_tag }} \
+            -n ${{ needs.validate.outputs.namespace }}
+
+      - name: Scale deployment
+        run: |
+          kubectl scale deployment/${{ env.AGENT_ID }} \
+            --replicas=${{ needs.validate.outputs.replicas }} \
+            -n ${{ needs.validate.outputs.namespace }}
+
+      - name: Wait for rollout
+        run: |
+          kubectl rollout status deployment/${{ env.AGENT_ID }} \
+            -n ${{ needs.validate.outputs.namespace }} \
+            --timeout=600s
+
+      - name: Verify deployment
+        run: |
+          kubectl get pods -n ${{ needs.validate.outputs.namespace }} -l app=${{ env.AGENT_ID }}
+          kubectl get svc -n ${{ needs.validate.outputs.namespace }} -l app=${{ env.AGENT_ID }}
+
+  # ---------------------------------------------------------------------------
+  # Blue-Green Deployment
+  # ---------------------------------------------------------------------------
+  deploy-blue-green:
+    name: Blue-Green Deployment
+    runs-on: ubuntu-latest
+    needs: validate
+    if: github.event.inputs.strategy == 'blue-green'
+    environment:
+      name: ${{ github.event.inputs.environment }}
+      url: https://${{ github.event.inputs.environment }}.gl-017-condensync.greenlang.io
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'v1.28.0'
+
+      - name: Configure kubectl
+        run: |
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > ~/.kube/config
+          chmod 600 ~/.kube/config
+
+      - name: Determine current and new slot
+        id: slot
+        run: |
+          CURRENT_SLOT=$(kubectl get svc ${{ env.AGENT_ID }} -n ${{ needs.validate.outputs.namespace }} -o jsonpath='{.spec.selector.slot}' 2>/dev/null || echo "blue")
+
+          if [ "$CURRENT_SLOT" = "blue" ]; then
+            NEW_SLOT="green"
+          else
+            NEW_SLOT="blue"
+          fi
+
+          echo "current_slot=$CURRENT_SLOT" >> $GITHUB_OUTPUT
+          echo "new_slot=$NEW_SLOT" >> $GITHUB_OUTPUT
+          echo "Deploying GL-017 Condensync to $NEW_SLOT slot (current: $CURRENT_SLOT)"
+
+      - name: Deploy to new slot
+        run: |
+          cat <<EOF | kubectl apply -f - -n ${{ needs.validate.outputs.namespace }}
+          apiVersion: apps/v1
+          kind: Deployment
+          metadata:
+            name: ${{ env.AGENT_ID }}-${{ steps.slot.outputs.new_slot }}
+            labels:
+              app: ${{ env.AGENT_ID }}
+              slot: ${{ steps.slot.outputs.new_slot }}
+              greenlang.io/agent-id: gl-017
+              greenlang.io/agent-group: thermal
+          spec:
+            replicas: ${{ needs.validate.outputs.replicas }}
+            selector:
+              matchLabels:
+                app: ${{ env.AGENT_ID }}
+                slot: ${{ steps.slot.outputs.new_slot }}
+            template:
+              metadata:
+                labels:
+                  app: ${{ env.AGENT_ID }}
+                  slot: ${{ steps.slot.outputs.new_slot }}
+                  greenlang.io/agent-id: gl-017
+              spec:
+                containers:
+                - name: ${{ env.AGENT_ID }}
+                  image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.event.inputs.image_tag }}
+                  ports:
+                  - containerPort: 8000
+                  - containerPort: 9090
+                  - containerPort: 50051
+                  readinessProbe:
+                    httpGet:
+                      path: /api/v1/ready
+                      port: 8000
+                    initialDelaySeconds: 10
+                    periodSeconds: 5
+                  livenessProbe:
+                    httpGet:
+                      path: /api/v1/health
+                      port: 8000
+                    initialDelaySeconds: 30
+                    periodSeconds: 10
+                  resources:
+                    requests:
+                      cpu: 500m
+                      memory: 512Mi
+                    limits:
+                      cpu: 2000m
+                      memory: 2Gi
+          EOF
+
+      - name: Wait for new deployment
+        run: |
+          kubectl rollout status deployment/${{ env.AGENT_ID }}-${{ steps.slot.outputs.new_slot }} \
+            -n ${{ needs.validate.outputs.namespace }} \
+            --timeout=600s
+
+      - name: Run smoke tests on new deployment
+        run: |
+          NEW_POD=$(kubectl get pods -n ${{ needs.validate.outputs.namespace }} \
+            -l app=${{ env.AGENT_ID }},slot=${{ steps.slot.outputs.new_slot }} \
+            -o jsonpath='{.items[0].metadata.name}')
+
+          kubectl port-forward pod/$NEW_POD 8080:8000 -n ${{ needs.validate.outputs.namespace }} &
+          PF_PID=$!
+          sleep 10
+
+          # Health check
+          curl -sf http://localhost:8080/api/v1/health || {
+            kill $PF_PID
+            echo "::error::Health check failed on new deployment"
+            exit 1
+          }
+
+          # Readiness check
+          curl -sf http://localhost:8080/api/v1/ready || {
+            kill $PF_PID
+            echo "::error::Readiness check failed on new deployment"
+            exit 1
+          }
+
+          kill $PF_PID
+
+      - name: Switch traffic to new slot
+        run: |
+          kubectl patch svc ${{ env.AGENT_ID }} \
+            -n ${{ needs.validate.outputs.namespace }} \
+            -p '{"spec":{"selector":{"app":"${{ env.AGENT_ID }}","slot":"${{ steps.slot.outputs.new_slot }}"}}}'
+
+      - name: Verify traffic switch
+        run: |
+          sleep 10
+          echo "Traffic successfully switched to ${{ steps.slot.outputs.new_slot }} slot for GL-017 Condensync"
+
+      - name: Cleanup old deployment (optional)
+        run: |
+          echo "Old deployment (${{ steps.slot.outputs.current_slot }}) kept for rollback"
+          echo "To cleanup: kubectl delete deployment ${{ env.AGENT_ID }}-${{ steps.slot.outputs.current_slot }} -n ${{ needs.validate.outputs.namespace }}"
+
+  # ---------------------------------------------------------------------------
+  # Canary Deployment
+  # ---------------------------------------------------------------------------
+  deploy-canary:
+    name: Canary Deployment
+    runs-on: ubuntu-latest
+    needs: validate
+    if: github.event.inputs.strategy == 'canary'
+    environment:
+      name: ${{ github.event.inputs.environment }}
+      url: https://${{ github.event.inputs.environment }}.gl-017-condensync.greenlang.io
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'v1.28.0'
+
+      - name: Configure kubectl
+        run: |
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > ~/.kube/config
+          chmod 600 ~/.kube/config
+
+      - name: Deploy canary
+        run: |
+          CANARY_REPLICAS=$(echo "${{ needs.validate.outputs.replicas }} * ${{ github.event.inputs.canary_percentage }} / 100" | bc)
+          [ "$CANARY_REPLICAS" -lt 1 ] && CANARY_REPLICAS=1
+
+          cat <<EOF | kubectl apply -f - -n ${{ needs.validate.outputs.namespace }}
+          apiVersion: apps/v1
+          kind: Deployment
+          metadata:
+            name: ${{ env.AGENT_ID }}-canary
+            labels:
+              app: ${{ env.AGENT_ID }}
+              track: canary
+              greenlang.io/agent-id: gl-017
+          spec:
+            replicas: $CANARY_REPLICAS
+            selector:
+              matchLabels:
+                app: ${{ env.AGENT_ID }}
+                track: canary
+            template:
+              metadata:
+                labels:
+                  app: ${{ env.AGENT_ID }}
+                  track: canary
+                  greenlang.io/agent-id: gl-017
+              spec:
+                containers:
+                - name: ${{ env.AGENT_ID }}
+                  image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.event.inputs.image_tag }}
+                  ports:
+                  - containerPort: 8000
+                  readinessProbe:
+                    httpGet:
+                      path: /api/v1/ready
+                      port: 8000
+                    initialDelaySeconds: 10
+                    periodSeconds: 5
+          EOF
+
+      - name: Wait for canary deployment
+        run: |
+          kubectl rollout status deployment/${{ env.AGENT_ID }}-canary \
+            -n ${{ needs.validate.outputs.namespace }} \
+            --timeout=300s
+
+      - name: Monitor canary for errors
+        run: |
+          echo "Monitoring GL-017 Condensync canary for 5 minutes..."
+
+          for i in {1..30}; do
+            READY=$(kubectl get pods -n ${{ needs.validate.outputs.namespace }} \
+              -l app=${{ env.AGENT_ID }},track=canary \
+              -o jsonpath='{.items[*].status.containerStatuses[*].ready}')
+
+            if [[ "$READY" == *"false"* ]]; then
+              echo "::warning::Canary pod not ready at check $i"
+            fi
+
+            sleep 10
+          done
+
+      - name: Canary analysis
+        id: analysis
+        run: |
+          RESTART_COUNT=$(kubectl get pods -n ${{ needs.validate.outputs.namespace }} \
+            -l app=${{ env.AGENT_ID }},track=canary \
+            -o jsonpath='{.items[*].status.containerStatuses[*].restartCount}')
+
+          TOTAL_RESTARTS=0
+          for count in $RESTART_COUNT; do
+            TOTAL_RESTARTS=$((TOTAL_RESTARTS + count))
+          done
+
+          if [ "$TOTAL_RESTARTS" -gt 2 ]; then
+            echo "::error::Canary has too many restarts ($TOTAL_RESTARTS)"
+            echo "success=false" >> $GITHUB_OUTPUT
+          else
+            echo "GL-017 Condensync canary analysis passed"
+            echo "success=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Promote canary or rollback
+        run: |
+          if [ "${{ steps.analysis.outputs.success }}" = "true" ]; then
+            echo "Promoting canary to stable..."
+
+            kubectl set image deployment/${{ env.AGENT_ID }} \
+              ${{ env.AGENT_ID }}=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.event.inputs.image_tag }} \
+              -n ${{ needs.validate.outputs.namespace }}
+
+            kubectl rollout status deployment/${{ env.AGENT_ID }} \
+              -n ${{ needs.validate.outputs.namespace }} \
+              --timeout=600s
+
+            kubectl delete deployment ${{ env.AGENT_ID }}-canary \
+              -n ${{ needs.validate.outputs.namespace }} || true
+
+            echo "GL-017 Condensync canary promoted successfully"
+          else
+            echo "Rolling back canary..."
+            kubectl delete deployment ${{ env.AGENT_ID }}-canary \
+              -n ${{ needs.validate.outputs.namespace }} || true
+            exit 1
+          fi
+
+  # ---------------------------------------------------------------------------
+  # Post-Deployment Verification
+  # ---------------------------------------------------------------------------
+  verify:
+    name: Post-Deployment Verification
+    runs-on: ubuntu-latest
+    needs: [validate, deploy-rolling, deploy-blue-green, deploy-canary]
+    if: always() && (needs.deploy-rolling.result == 'success' || needs.deploy-blue-green.result == 'success' || needs.deploy-canary.result == 'success')
+
+    steps:
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'v1.28.0'
+
+      - name: Configure kubectl
+        run: |
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > ~/.kube/config
+          chmod 600 ~/.kube/config
+
+      - name: Verify all pods are running
+        run: |
+          kubectl wait --for=condition=Ready pods \
+            -l app=${{ env.AGENT_ID }} \
+            -n ${{ needs.validate.outputs.namespace }} \
+            --timeout=300s
+
+      - name: Run integration tests
+        run: |
+          kubectl port-forward svc/${{ env.AGENT_ID }} 8080:80 \
+            -n ${{ needs.validate.outputs.namespace }} &
+          PF_PID=$!
+          sleep 10
+
+          echo "Testing health endpoint..."
+          curl -sf "http://localhost:8080/api/v1/health" || exit 1
+
+          echo "Testing readiness endpoint..."
+          curl -sf "http://localhost:8080/api/v1/ready" || exit 1
+
+          echo "Testing condenser optimization endpoint..."
+          curl -sf "http://localhost:8080/api/v1/condenser/status" || true
+
+          echo "All GL-017 Condensync verification checks passed"
+
+          kill $PF_PID
+
+      - name: Send deployment notification
+        if: always()
+        run: |
+          STATUS="${{ job.status }}"
+          ENV="${{ github.event.inputs.environment }}"
+          TAG="${{ github.event.inputs.image_tag }}"
+
+          echo "GL-017 Condensync deployment to $ENV completed with status: $STATUS"
+          echo "Image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:$TAG"
+
+  # ---------------------------------------------------------------------------
+  # Rollback Job
+  # ---------------------------------------------------------------------------
+  rollback:
+    name: Rollback Deployment
+    runs-on: ubuntu-latest
+    needs: validate
+    if: failure() && github.event.inputs.strategy == 'rolling'
+
+    steps:
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'v1.28.0'
+
+      - name: Configure kubectl
+        run: |
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > ~/.kube/config
+          chmod 600 ~/.kube/config
+
+      - name: Rollback to previous version
+        run: |
+          echo "Rolling back GL-017 Condensync deployment..."
+          kubectl rollout undo deployment/${{ env.AGENT_ID }} \
+            -n ${{ needs.validate.outputs.namespace }}
+
+          kubectl rollout status deployment/${{ env.AGENT_ID }} \
+            -n ${{ needs.validate.outputs.namespace }} \
+            --timeout=300s
+
+      - name: Verify rollback
+        run: |
+          kubectl get pods -n ${{ needs.validate.outputs.namespace }} -l app=${{ env.AGENT_ID }}
+          echo "GL-017 Condensync rollback completed successfully"

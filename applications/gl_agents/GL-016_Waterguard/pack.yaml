@@ -1,0 +1,286 @@
+# GL-016 WATERGUARD Pack Specification
+# Boiler Water Treatment Optimization Agent
+# GreenLang Pack v1.0
+
+agent_id: GL-016
+codename: WATERGUARD
+version: 1.0.0
+capability: BoilerWaterTreatment
+
+metadata:
+  name: "Boiler Water Treatment Optimization Agent"
+  description: |
+    Supervisory control and optimization agent for boiler water treatment systems.
+    Optimizes Cycles of Concentration (CoC), blowdown control, and chemical dosing
+    while maintaining strict water chemistry limits for scale, corrosion, and
+    carryover prevention.
+  author: "GreenLang Process Heat Team"
+  created: "2024-12-27"
+  standards:
+    - "ASME Boiler and Pressure Vessel Code"
+    - "ABMA (American Boiler Manufacturers Association)"
+    - "IEC 62443 (Industrial Cybersecurity)"
+    - "IEC 61511 SIL-3 (Functional Safety)"
+    - "ISO 50001 (Energy Management)"
+    - "ISO 14001 (Environmental Management)"
+
+# Python dependencies
+dependencies:
+  python: ">=3.11"
+  packages:
+    # Core
+    - pydantic>=2.5.0
+    - numpy>=1.26.0
+    - scipy>=1.11.0
+    - pandas>=2.1.0
+
+    # Chemistry & Thermodynamics
+    - iapws>=1.5.0  # Steam/water properties
+    - pint>=0.23    # Unit handling
+
+    # API & Streaming
+    - fastapi>=0.109.0
+    - uvicorn>=0.27.0
+    - grpcio>=1.60.0
+    - aiokafka>=0.9.0
+
+    # OT Integration
+    - asyncua>=1.0.0  # OPC-UA async
+    - pymodbus>=3.5.0
+
+    # ML & Explainability
+    - shap>=0.44.0
+    - lime>=0.2.0
+
+    # Observability
+    - prometheus-client>=0.19.0
+    - opentelemetry-api>=1.22.0
+    - structlog>=24.1.0
+
+    # Database
+    - sqlalchemy>=2.0.0
+    - asyncpg>=0.29.0
+    - redis>=5.0.0
+
+# Entry points
+entry_points:
+  cli:
+    - gl-waterguard=greenlang.agents.gl016.cli:main
+  api:
+    - waterguard-api=greenlang.agents.gl016.api:create_app
+
+# Capabilities
+capabilities:
+  # Core Functions
+  cycles_of_concentration_optimization:
+    description: "Optimize CoC to balance water savings vs treatment costs"
+    inputs:
+      - makeup_conductivity
+      - blowdown_conductivity
+      - steam_demand
+      - makeup_water_cost
+      - treatment_chemical_costs
+    outputs:
+      - optimal_coc
+      - blowdown_rate
+      - makeup_rate
+      - cost_savings
+    constraints:
+      coc_range: [3.0, 10.0]
+      max_tds: 3500  # ppm
+
+  blowdown_control:
+    description: "Continuous and intermittent blowdown control"
+    modes:
+      - continuous_modulating
+      - intermittent_timed
+      - hybrid
+    outputs:
+      - valve_position_percent
+      - blowdown_mass_flow
+      - blowdown_heat_loss
+
+  chemical_dosing:
+    description: "Optimize chemical injection rates"
+    chemicals:
+      - phosphate
+      - polymer
+      - oxygen_scavenger
+      - amine
+      - sulfite
+    control_modes:
+      - feedforward
+      - feedback
+      - ratio_control
+
+  water_chemistry_monitoring:
+    description: "Real-time chemistry monitoring and alarming"
+    parameters:
+      - ph
+      - conductivity
+      - dissolved_oxygen
+      - silica
+      - phosphate_residual
+      - alkalinity
+      - hardness
+      - iron
+      - copper
+
+# Operating Modes (per IEC 61511)
+operating_modes:
+  RECOMMEND_ONLY:
+    description: "Display recommendations, no control actions"
+    safety_level: "SIL-0"
+    automation_level: 0
+
+  SUPERVISED:
+    description: "Operator confirms each control action"
+    safety_level: "SIL-1"
+    automation_level: 1
+    requires_approval: true
+
+  AUTONOMOUS:
+    description: "Automatic control within safety gates"
+    safety_level: "SIL-3"
+    automation_level: 2
+    safety_gates:
+      - chemistry_limits_gate
+      - rate_of_change_gate
+      - equipment_protection_gate
+
+  FALLBACK:
+    description: "Conservative fixed schedule operation"
+    safety_level: "SIL-3"
+    automation_level: 0
+    trigger_conditions:
+      - sensor_failure
+      - communication_loss
+      - safety_gate_trip
+
+# Safety Configuration
+safety:
+  sil_level: 3
+  proof_test_interval_hours: 8760  # Annual
+
+  chemistry_limits:
+    ph:
+      min: 10.5
+      max: 11.5
+      alarm_low: 10.3
+      alarm_high: 11.7
+      trip_low: 10.0
+      trip_high: 12.0
+
+    conductivity_umho:
+      max: 5000
+      alarm_high: 4500
+      trip_high: 5500
+
+    silica_ppm:
+      max: 150
+      alarm_high: 120
+      trip_high: 180
+
+    phosphate_ppm:
+      min: 20
+      max: 60
+      alarm_low: 15
+      alarm_high: 70
+
+    dissolved_oxygen_ppb:
+      max: 7
+      alarm_high: 5
+      trip_high: 10
+
+  rate_limits:
+    blowdown_valve_rate: 10  # %/sec max
+    dosing_pump_rate: 5      # %/sec max
+    coc_change_rate: 0.5     # units/hour max
+
+# Streaming Configuration
+streaming:
+  kafka:
+    topics:
+      raw_telemetry: "boiler.gl016.raw"
+      cleaned_data: "boiler.gl016.cleaned"
+      features: "boiler.gl016.features"
+      chemistry_state: "boiler.gl016.chemistry_state"
+      recommendations: "boiler.gl016.recommendations"
+      commands: "boiler.gl016.commands"
+      alarms: "boiler.gl016.alarms"
+      audit: "boiler.gl016.audit"
+    consumer_group: "gl-016-waterguard"
+
+  opc_ua:
+    security_mode: "SignAndEncrypt"
+    security_policy: "Basic256Sha256"
+    application_uri: "urn:greenlang:gl-016:waterguard"
+    subscription_interval_ms: 1000
+
+# API Configuration
+api:
+  rest:
+    prefix: "/api/v1/waterguard"
+    docs_url: "/api/v1/waterguard/docs"
+
+  graphql:
+    endpoint: "/graphql/waterguard"
+
+  grpc:
+    port: 50016
+    reflection: true
+
+# Audit & Compliance
+audit:
+  retention_years: 7
+  hash_algorithm: "SHA-256"
+  events:
+    - setpoint_change
+    - mode_transition
+    - alarm_activation
+    - operator_override
+    - safety_gate_status
+
+# Monitoring
+monitoring:
+  metrics_prefix: "gl016_waterguard"
+  health_check_interval_s: 30
+
+  kpis:
+    - name: cycles_of_concentration
+      target: 6.0
+      min: 3.0
+      max: 10.0
+
+    - name: blowdown_efficiency
+      target: 0.95
+      unit: ratio
+
+    - name: chemical_cost_per_mlb_steam
+      target: 0.15
+      unit: USD/Mlb
+
+    - name: water_savings_percent
+      target: 25
+      baseline: "manual_operation"
+
+# Deployment
+deployment:
+  container:
+    image: "gcr.io/greenlang/gl-016-waterguard"
+    resources:
+      cpu: "500m"
+      memory: "512Mi"
+      limits:
+        cpu: "2000m"
+        memory: "2Gi"
+
+  kubernetes:
+    replicas: 3
+    namespace: "greenlang-ot"
+    service_account: "gl-016-waterguard"
+
+  high_availability:
+    enabled: true
+    min_replicas: 2
+    leader_election: true

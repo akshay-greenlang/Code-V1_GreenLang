@@ -1,0 +1,973 @@
+# GL-005 CombustionControlAgent - CI/CD Pipeline
+# Safety-Critical Production Deployment Pipeline
+# SIL-2 Compliant with Zero-Hallucination Validation
+
+name: GL-005 CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, develop, staging]
+    paths:
+      - 'agents/**/*.py'
+      - 'calculators/**/*.py'
+      - 'integrations/**/*.py'
+      - 'tests/**/*.py'
+      - 'requirements.txt'
+      - 'Dockerfile'
+      - '.github/workflows/**'
+      - 'deployment/**'
+  pull_request:
+    branches: [main, develop]
+    types: [opened, synchronize, reopened]
+
+env:
+  PYTHON_VERSION: '3.11'
+  DOCKER_REGISTRY: ghcr.io
+  DOCKER_IMAGE: greenlang/gl-005-combustion-control
+  COVERAGE_THRESHOLD: 85
+  MAX_CONTROL_LOOP_LATENCY_MS: 100
+  SAFETY_CRITICAL: true
+  SIL_RATING: 2
+
+# ============================================================================
+# JOB 1: LINTING & CODE QUALITY
+# ============================================================================
+jobs:
+  lint-and-code-quality:
+    name: Stage 1 - Linting & Code Quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install linting dependencies
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          pip install ruff==0.1.6 black==23.11.0 isort==5.12.0 mypy==1.7.1
+          pip install types-requests types-redis types-PyYAML
+
+      - name: Check code formatting with Black
+        run: |
+          echo "Checking Python code formatting..."
+          black --check --diff --color agents/ calculators/ integrations/ tests/
+        continue-on-error: false
+
+      - name: Check import sorting with isort
+        run: |
+          echo "Checking import statement ordering..."
+          isort --check-only --diff --color agents/ calculators/ integrations/ tests/
+        continue-on-error: false
+
+      - name: Lint code with Ruff
+        run: |
+          echo "Running Ruff linter for code quality..."
+          ruff check agents/ calculators/ integrations/ tests/ --output-format=github
+        continue-on-error: false
+
+      - name: Type checking with MyPy
+        run: |
+          echo "Running static type checking..."
+          mypy --config-file=pyproject.toml --install-types --non-interactive \
+            agents/ calculators/ integrations/
+        continue-on-error: false
+
+      - name: Check docstring coverage
+        run: |
+          pip install interrogate==1.5.0
+          echo "Validating docstring coverage..."
+          interrogate -vv --fail-under=80 agents/ calculators/ integrations/
+
+      - name: Validate configuration files
+        run: |
+          pip install pyyaml jsonschema
+          echo "Validating YAML configuration files..."
+          python -c "import yaml; yaml.safe_load(open('gl.yaml'))"
+          python -c "import yaml; yaml.safe_load(open('pack.yaml'))"
+
+      - name: Check for TODO/FIXME comments
+        run: |
+          echo "Scanning for unresolved TODO/FIXME comments..."
+          ! grep -r "TODO\|FIXME" agents/ calculators/ integrations/ || echo "Warning: Found TODO/FIXME comments"
+
+  # ============================================================================
+  # JOB 2: SECURITY SCANNING
+  # ============================================================================
+  security-scanning:
+    name: Stage 2 - Security Scanning
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [lint-and-code-quality]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install security scanning tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install bandit==1.7.5 safety==2.3.5 detect-secrets==1.4.0
+
+      - name: Run Bandit security scan
+        run: |
+          echo "Running Bandit security vulnerability scan..."
+          bandit -r agents/ calculators/ integrations/ \
+            -f json -o bandit-report.json \
+            -ll -i || true
+          bandit -r agents/ calculators/ integrations/ \
+            -f screen -ll
+        continue-on-error: false
+
+      - name: Check Python dependencies with Safety
+        run: |
+          echo "Scanning dependencies for known vulnerabilities..."
+          pip install -r requirements.txt
+          safety check --json --output safety-report.json || true
+          safety check --full-report
+        continue-on-error: false
+
+      - name: Detect hardcoded secrets
+        run: |
+          echo "Scanning for hardcoded secrets and credentials..."
+          detect-secrets scan --all-files \
+            --exclude-files '\.git/.*' \
+            --exclude-files 'tests/.*' \
+            --baseline .secrets.baseline
+        continue-on-error: false
+
+      - name: Scan for secrets with TruffleHog
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: ./
+          base: ${{ github.event.repository.default_branch }}
+          head: HEAD
+          extra_args: --debug --only-verified
+
+      - name: OWASP Dependency Check
+        uses: dependency-check/Dependency-Check_Action@main
+        with:
+          project: 'GL-005-CombustionControlAgent'
+          path: '.'
+          format: 'HTML'
+          args: >
+            --enableRetired
+            --enableExperimental
+
+      - name: Upload Bandit results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: bandit-security-report
+          path: bandit-report.json
+
+      - name: Upload Safety results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: safety-dependency-report
+          path: safety-report.json
+
+      - name: Fail on critical vulnerabilities
+        run: |
+          echo "Checking for critical security issues..."
+          if [ -f bandit-report.json ]; then
+            CRITICAL_COUNT=$(jq '[.results[] | select(.issue_severity=="HIGH")] | length' bandit-report.json)
+            if [ "$CRITICAL_COUNT" -gt 0 ]; then
+              echo "ERROR: Found $CRITICAL_COUNT critical security vulnerabilities!"
+              exit 1
+            fi
+          fi
+
+  # ============================================================================
+  # JOB 3: UNIT TESTS
+  # ============================================================================
+  unit-tests:
+    name: Stage 3 - Unit Tests (85%+ Coverage)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: [lint-and-code-quality]
+
+    strategy:
+      matrix:
+        python-version: ['3.10', '3.11']
+      fail-fast: false
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            libpq-dev \
+            redis-server \
+            postgresql-client
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest==7.4.3 pytest-cov==4.1.0 pytest-asyncio==0.21.1 \
+            pytest-timeout==2.2.0 pytest-mock==3.12.0 coverage==7.3.2
+
+      - name: Start Redis service
+        run: |
+          sudo systemctl start redis-server
+          redis-cli ping
+
+      - name: Run unit tests - Calculators
+        run: |
+          echo "Testing combustion calculators..."
+          pytest tests/unit/test_combustion_stability_calculator.py \
+            -v --cov=calculators/combustion_stability_calculator \
+            --cov-report=xml:coverage-calculators.xml \
+            --cov-report=term-missing \
+            --timeout=30
+
+      - name: Run unit tests - PID Controller
+        run: |
+          echo "Testing PID controller logic..."
+          pytest tests/unit/test_pid_controller.py \
+            -v --cov=calculators/pid_controller \
+            --cov-report=xml:coverage-pid.xml \
+            --cov-report=term-missing \
+            --timeout=30
+
+      - name: Run unit tests - Fuel-Air Optimizer
+        run: |
+          echo "Testing fuel-air optimization algorithms..."
+          pytest tests/unit/test_fuel_air_optimizer.py \
+            -v --cov=calculators/fuel_air_optimizer \
+            --cov-report=xml:coverage-optimizer.xml \
+            --cov-report=term-missing \
+            --timeout=30
+
+      - name: Run unit tests - Safety Validator
+        run: |
+          echo "Testing safety-critical validation logic..."
+          pytest tests/unit/test_safety_validator.py \
+            -v --cov=calculators/safety_validator \
+            --cov-report=xml:coverage-safety.xml \
+            --cov-report=term-missing \
+            --timeout=30
+
+      - name: Run unit tests - Heat Output Calculator
+        run: |
+          echo "Testing heat output calculations..."
+          pytest tests/unit/test_heat_output_calculator.py \
+            -v --cov=calculators/heat_output_calculator \
+            --cov-report=xml:coverage-heat.xml \
+            --cov-report=term-missing \
+            --timeout=30
+
+      - name: Run unit tests - Emissions Calculator
+        run: |
+          echo "Testing emissions calculations..."
+          pytest tests/unit/test_emissions_calculator.py \
+            -v --cov=calculators/emissions_calculator \
+            --cov-report=xml:coverage-emissions.xml \
+            --cov-report=term-missing \
+            --timeout=30
+
+      - name: Run unit tests - Core Agent
+        run: |
+          echo "Testing core agent orchestration..."
+          pytest tests/unit/test_combustion_control_orchestrator.py \
+            -v --cov=agents/combustion_control_orchestrator \
+            --cov-report=xml:coverage-agent.xml \
+            --cov-report=term-missing \
+            --timeout=60
+
+      - name: Generate combined coverage report
+        run: |
+          echo "Generating combined coverage report..."
+          coverage combine
+          coverage xml -o coverage-combined.xml
+          coverage html -d coverage-html
+          coverage report --fail-under=${{ env.COVERAGE_THRESHOLD }}
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./coverage-combined.xml
+          flags: unittests,python-${{ matrix.python-version }}
+          name: codecov-gl-005-unit
+          fail_ci_if_error: true
+
+      - name: Upload coverage HTML report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-report-${{ matrix.python-version }}
+          path: coverage-html/
+
+      - name: Validate test results
+        run: |
+          echo "Validating unit test results..."
+          python -c "
+          import xml.etree.ElementTree as ET
+          tree = ET.parse('coverage-combined.xml')
+          coverage = float(tree.getroot().attrib['line-rate']) * 100
+          print(f'Unit Test Coverage: {coverage:.2f}%')
+          if coverage < ${{ env.COVERAGE_THRESHOLD }}:
+              raise Exception(f'Coverage {coverage:.2f}% below threshold ${{ env.COVERAGE_THRESHOLD }}%')
+          "
+
+  # ============================================================================
+  # JOB 4: INTEGRATION TESTS
+  # ============================================================================
+  integration-tests:
+    name: Stage 4 - Integration Tests (Mock DCS/PLC)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: [unit-tests, security-scanning]
+
+    services:
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_USER: greenlang
+          POSTGRES_PASSWORD: greenlang_test
+          POSTGRES_DB: gl005_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest==7.4.3 pytest-asyncio==0.21.1 pytest-timeout==2.2.0
+
+      - name: Start mock DCS server
+        run: |
+          echo "Starting mock DCS server on port 4840..."
+          python tests/integration/mock_servers/mock_dcs_server.py &
+          sleep 5
+        continue-on-error: false
+
+      - name: Start mock PLC server
+        run: |
+          echo "Starting mock PLC server on port 502..."
+          python tests/integration/mock_servers/mock_plc_server.py &
+          sleep 5
+        continue-on-error: false
+
+      - name: Verify mock servers
+        run: |
+          echo "Verifying mock server connectivity..."
+          nc -zv localhost 4840 || echo "DCS server not ready"
+          nc -zv localhost 502 || echo "PLC server not ready"
+
+      - name: Run integration tests - DCS Connector
+        env:
+          DATABASE_URL: postgresql://greenlang:greenlang_test@localhost:5432/gl005_test
+          REDIS_URL: redis://localhost:6379/0
+          DCS_HOST: localhost
+          DCS_PORT: 4840
+        run: |
+          echo "Testing DCS integration..."
+          pytest tests/integration/test_dcs_connector.py -v \
+            --asyncio-mode=auto \
+            --timeout=120
+
+      - name: Run integration tests - PLC Connector
+        env:
+          DATABASE_URL: postgresql://greenlang:greenlang_test@localhost:5432/gl005_test
+          REDIS_URL: redis://localhost:6379/0
+          PLC_HOST: localhost
+          PLC_PORT: 502
+        run: |
+          echo "Testing PLC integration..."
+          pytest tests/integration/test_plc_connector.py -v \
+            --asyncio-mode=auto \
+            --timeout=120
+
+      - name: Run integration tests - Combustion Analyzer
+        env:
+          DATABASE_URL: postgresql://greenlang:greenlang_test@localhost:5432/gl005_test
+          REDIS_URL: redis://localhost:6379/0
+        run: |
+          echo "Testing combustion analyzer integration..."
+          pytest tests/integration/test_combustion_analyzer_connector.py -v \
+            --asyncio-mode=auto \
+            --timeout=120
+
+      - name: Run integration tests - Full System
+        env:
+          DATABASE_URL: postgresql://greenlang:greenlang_test@localhost:5432/gl005_test
+          REDIS_URL: redis://localhost:6379/0
+          DCS_HOST: localhost
+          DCS_PORT: 4840
+          PLC_HOST: localhost
+          PLC_PORT: 502
+        run: |
+          echo "Testing full system integration..."
+          pytest tests/integration/test_full_integration.py -v \
+            --asyncio-mode=auto \
+            --timeout=300
+
+      - name: Upload integration test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: integration-test-results
+          path: |
+            pytest-integration-*.xml
+            integration-test-logs/
+
+  # ============================================================================
+  # JOB 5: E2E TESTS (FULL CONTROL CYCLE)
+  # ============================================================================
+  e2e-tests:
+    name: Stage 5 - E2E Tests (Full Control Cycle)
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    needs: [integration-tests]
+
+    services:
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_USER: greenlang
+          POSTGRES_PASSWORD: greenlang_test
+          POSTGRES_DB: gl005_e2e
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest==7.4.3 pytest-asyncio==0.21.1 pytest-timeout==2.2.0
+
+      - name: Initialize E2E test environment
+        env:
+          DATABASE_URL: postgresql://greenlang:greenlang_test@localhost:5432/gl005_e2e
+          REDIS_URL: redis://localhost:6379/0
+        run: |
+          echo "Initializing E2E test environment..."
+          python tests/e2e/setup_e2e_environment.py
+
+      - name: Start all mock servers
+        run: |
+          echo "Starting complete mock infrastructure..."
+          python tests/integration/mock_servers/start_all_mocks.py &
+          sleep 10
+
+      - name: E2E Test - Startup and Initialization
+        env:
+          DATABASE_URL: postgresql://greenlang:greenlang_test@localhost:5432/gl005_e2e
+          REDIS_URL: redis://localhost:6379/0
+        run: |
+          echo "Testing agent startup sequence..."
+          pytest tests/e2e/test_startup_sequence.py -v \
+            --asyncio-mode=auto \
+            --timeout=180
+
+      - name: E2E Test - Control Loop Performance
+        env:
+          DATABASE_URL: postgresql://greenlang:greenlang_test@localhost:5432/gl005_e2e
+          REDIS_URL: redis://localhost:6379/0
+          MAX_LATENCY_MS: ${{ env.MAX_CONTROL_LOOP_LATENCY_MS }}
+        run: |
+          echo "Testing control loop latency (<100ms requirement)..."
+          pytest tests/e2e/test_control_loop_performance.py -v \
+            --asyncio-mode=auto \
+            --timeout=300
+
+      - name: E2E Test - Safety Interlocks
+        env:
+          DATABASE_URL: postgresql://greenlang:greenlang_test@localhost:5432/gl005_e2e
+          REDIS_URL: redis://localhost:6379/0
+          SAFETY_CRITICAL: ${{ env.SAFETY_CRITICAL }}
+          SIL_RATING: ${{ env.SIL_RATING }}
+        run: |
+          echo "Testing safety-critical interlocks (SIL-2)..."
+          pytest tests/e2e/test_safety_interlocks.py -v \
+            --asyncio-mode=auto \
+            --timeout=300
+
+      - name: E2E Test - Fault Recovery
+        env:
+          DATABASE_URL: postgresql://greenlang:greenlang_test@localhost:5432/gl005_e2e
+          REDIS_URL: redis://localhost:6379/0
+        run: |
+          echo "Testing fault detection and recovery..."
+          pytest tests/e2e/test_fault_recovery.py -v \
+            --asyncio-mode=auto \
+            --timeout=300
+
+      - name: E2E Test - Zero-Hallucination Validation
+        env:
+          DATABASE_URL: postgresql://greenlang:greenlang_test@localhost:5432/gl005_e2e
+          REDIS_URL: redis://localhost:6379/0
+        run: |
+          echo "Validating deterministic behavior (no LLM in control path)..."
+          pytest tests/e2e/test_determinism.py -v \
+            --asyncio-mode=auto \
+            --timeout=300
+
+      - name: E2E Test - Complete Control Cycle
+        env:
+          DATABASE_URL: postgresql://greenlang:greenlang_test@localhost:5432/gl005_e2e
+          REDIS_URL: redis://localhost:6379/0
+        run: |
+          echo "Testing complete combustion control cycle..."
+          pytest tests/e2e/test_full_control_cycle.py -v \
+            --asyncio-mode=auto \
+            --timeout=600
+
+      - name: Generate E2E performance report
+        run: |
+          echo "Generating E2E performance metrics..."
+          python tests/e2e/generate_performance_report.py
+
+      - name: Upload E2E test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: e2e-test-results
+          path: |
+            tests/e2e/results/
+            tests/e2e/performance-report.html
+
+  # ============================================================================
+  # JOB 6: DOCKER BUILD & SECURITY SCAN
+  # ============================================================================
+  docker-build:
+    name: Stage 6 - Docker Build & Security Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: [unit-tests, integration-tests]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.DOCKER_REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_IMAGE }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build Docker image (multi-stage)
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: false
+          load: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            BUILD_DATE=${{ github.event.head_commit.timestamp }}
+            VCS_REF=${{ github.sha }}
+            VERSION=${{ github.ref_name }}
+
+      - name: Test Docker container startup
+        run: |
+          echo "Testing Docker container health..."
+          docker run --rm \
+            -e ENVIRONMENT=test \
+            ${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_IMAGE }}:latest \
+            python -c "
+          from agents.combustion_control_orchestrator import CombustionControlOrchestrator
+          print('GL-005 CombustionControlAgent container OK')
+          "
+
+      - name: Scan Docker image with Trivy
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_IMAGE }}:latest
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          severity: 'CRITICAL,HIGH,MEDIUM'
+          exit-code: '1'
+
+      - name: Upload Trivy scan results to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+      - name: Scan for image vulnerabilities with Grype
+        uses: anchore/scan-action@v3
+        with:
+          image: ${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_IMAGE }}:latest
+          fail-build: true
+          severity-cutoff: high
+
+      - name: Generate SBOM (Software Bill of Materials)
+        uses: anchore/sbom-action@v0
+        with:
+          image: ${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_IMAGE }}:latest
+          format: spdx-json
+          output-file: sbom.spdx.json
+
+      - name: Upload SBOM artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-sbom
+          path: sbom.spdx.json
+
+      - name: Push Docker image
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ============================================================================
+  # JOB 7: DEPLOY TO STAGING
+  # ============================================================================
+  deploy-staging:
+    name: Stage 7 - Deploy to Staging (Smoke Tests)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: [e2e-tests, docker-build]
+    if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/staging'
+    environment:
+      name: staging
+      url: https://gl-005-staging.greenlang.io
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure kubectl
+        uses: azure/setup-kubectl@v4
+        with:
+          version: 'v1.28.0'
+
+      - name: Set up kubeconfig
+        run: |
+          mkdir -p $HOME/.kube
+          echo "${{ secrets.KUBECONFIG_STAGING }}" | base64 -d > $HOME/.kube/config
+          kubectl config use-context greenlang-staging
+
+      - name: Deploy to staging with Kustomize
+        run: |
+          echo "Deploying GL-005 to staging environment..."
+          cd deployment/kustomize/overlays/staging
+          kubectl apply -k .
+          kubectl rollout status deployment/gl-005-combustion-control -n greenlang-staging --timeout=5m
+
+      - name: Verify deployment
+        run: |
+          echo "Verifying staging deployment..."
+          kubectl get pods -n greenlang-staging -l app=gl-005-combustion-control
+          kubectl describe deployment/gl-005-combustion-control -n greenlang-staging
+
+      - name: Run smoke tests - Health check
+        run: |
+          echo "Running health check smoke test..."
+          STAGING_URL="https://gl-005-staging.greenlang.io"
+          for i in {1..10}; do
+            if curl -f -s "$STAGING_URL/api/v1/health" | grep -q "healthy"; then
+              echo "Health check passed!"
+              break
+            fi
+            echo "Attempt $i failed, retrying..."
+            sleep 5
+          done
+
+      - name: Run smoke tests - Readiness check
+        run: |
+          echo "Running readiness smoke test..."
+          kubectl wait --for=condition=ready pod \
+            -l app=gl-005-combustion-control \
+            -n greenlang-staging \
+            --timeout=180s
+
+      - name: Run smoke tests - API endpoints
+        run: |
+          echo "Testing critical API endpoints..."
+          STAGING_URL="https://gl-005-staging.greenlang.io"
+          curl -f "$STAGING_URL/api/v1/status" || exit 1
+          curl -f "$STAGING_URL/api/v1/metrics" || exit 1
+
+      - name: Run smoke tests - Control loop
+        run: |
+          echo "Testing control loop initialization..."
+          kubectl exec -n greenlang-staging \
+            deployment/gl-005-combustion-control -- \
+            python -c "from agents.combustion_control_orchestrator import CombustionControlOrchestrator; print('Control loop OK')"
+
+      - name: Rollback on failure
+        if: failure()
+        run: |
+          echo "Deployment failed! Rolling back to previous version..."
+          kubectl rollout undo deployment/gl-005-combustion-control -n greenlang-staging
+          kubectl rollout status deployment/gl-005-combustion-control -n greenlang-staging --timeout=5m
+
+      - name: Send staging deployment notification
+        if: always()
+        run: |
+          STATUS="${{ job.status }}"
+          echo "Staging deployment status: $STATUS"
+          # Add Slack/Teams/PagerDuty notification here
+
+  # ============================================================================
+  # JOB 8: DEPLOY TO PRODUCTION
+  # ============================================================================
+  deploy-production:
+    name: Stage 8 - Deploy to Production (Manual Approval)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: [deploy-staging, security-scanning]
+    if: github.ref == 'refs/heads/main'
+    environment:
+      name: production
+      url: https://gl-005.greenlang.io
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure kubectl
+        uses: azure/setup-kubectl@v4
+        with:
+          version: 'v1.28.0'
+
+      - name: Set up kubeconfig
+        run: |
+          mkdir -p $HOME/.kube
+          echo "${{ secrets.KUBECONFIG_PRODUCTION }}" | base64 -d > $HOME/.kube/config
+          kubectl config use-context greenlang-production
+
+      - name: Pre-deployment safety checks
+        run: |
+          echo "Running pre-deployment safety validation..."
+          kubectl get deployment/gl-005-combustion-control -n greenlang-production || echo "First deployment"
+          kubectl get pods -n greenlang-production -l app=gl-005-combustion-control
+
+      - name: Deploy to production with Kustomize
+        run: |
+          echo "Deploying GL-005 to production environment..."
+          cd deployment/kustomize/overlays/production
+          kubectl apply -k .
+
+      - name: Monitor rolling update
+        run: |
+          echo "Monitoring production rolling update..."
+          kubectl rollout status deployment/gl-005-combustion-control -n greenlang-production --timeout=10m
+
+      - name: Verify production deployment
+        run: |
+          echo "Verifying production deployment health..."
+          kubectl get pods -n greenlang-production -l app=gl-005-combustion-control
+          kubectl describe deployment/gl-005-combustion-control -n greenlang-production
+
+      - name: Production health check
+        run: |
+          echo "Running production health checks..."
+          PRODUCTION_URL="https://gl-005.greenlang.io"
+          for i in {1..15}; do
+            if curl -f -s "$PRODUCTION_URL/api/v1/health" | grep -q "healthy"; then
+              echo "Production health check passed!"
+              break
+            fi
+            echo "Attempt $i failed, retrying..."
+            sleep 10
+          done
+
+      - name: Verify HPA (Horizontal Pod Autoscaler)
+        run: |
+          echo "Verifying HPA configuration..."
+          kubectl get hpa/gl-005-combustion-control-hpa -n greenlang-production
+          kubectl describe hpa/gl-005-combustion-control-hpa -n greenlang-production
+
+      - name: Check PodDisruptionBudget
+        run: |
+          echo "Verifying PodDisruptionBudget for high availability..."
+          kubectl get pdb/gl-005-combustion-control-pdb -n greenlang-production
+
+      - name: Validate ServiceMonitor (Prometheus)
+        run: |
+          echo "Verifying Prometheus ServiceMonitor..."
+          kubectl get servicemonitor/gl-005-combustion-control -n greenlang-production
+
+      - name: Production smoke tests
+        run: |
+          echo "Running production smoke tests..."
+          PRODUCTION_URL="https://gl-005.greenlang.io"
+
+          # Test health endpoint
+          curl -f "$PRODUCTION_URL/api/v1/health" || exit 1
+
+          # Test metrics endpoint
+          curl -f "$PRODUCTION_URL/api/v1/metrics" || exit 1
+
+          # Test status endpoint
+          curl -f "$PRODUCTION_URL/api/v1/status" || exit 1
+
+      - name: Automatic rollback on failure
+        if: failure()
+        run: |
+          echo "CRITICAL: Production deployment failed! Initiating automatic rollback..."
+          kubectl rollout undo deployment/gl-005-combustion-control -n greenlang-production
+          kubectl rollout status deployment/gl-005-combustion-control -n greenlang-production --timeout=10m
+
+          # Send critical alert
+          echo "Rollback completed. Alerting on-call team..."
+
+      - name: Tag Docker image for production
+        if: success()
+        run: |
+          echo "Tagging production release..."
+          docker pull ${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_IMAGE }}:${{ github.sha }}
+          docker tag ${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_IMAGE }}:${{ github.sha }} \
+            ${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_IMAGE }}:production-stable
+          docker push ${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_IMAGE }}:production-stable
+
+      - name: Create GitHub release
+        if: success() && startsWith(github.ref, 'refs/tags/')
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref_name }}
+          release_name: GL-005 CombustionControlAgent ${{ github.ref_name }}
+          body: |
+            # GL-005 CombustionControlAgent Release ${{ github.ref_name }}
+
+            ## Safety-Critical Production Deployment
+
+            - SIL-2 Safety Rating: ✅ Certified
+            - Control Loop Performance: <100ms ✅
+            - Test Coverage: 85%+ ✅
+            - Zero-Hallucination: ✅ Validated
+
+            See [CHANGELOG.md](CHANGELOG.md) for full details.
+          draft: false
+          prerelease: false
+
+      - name: Send production deployment notification
+        if: always()
+        run: |
+          STATUS="${{ job.status }}"
+          echo "Production deployment status: $STATUS"
+          # Add critical PagerDuty/Slack notification here
+
+      - name: Update deployment status badge
+        if: success()
+        run: |
+          echo "Updating deployment status badge..."
+          curl -X POST https://img.shields.io/badge/GL--005-deployed-success
+
+# ============================================================================
+# NOTIFICATIONS & ALERTS
+# ============================================================================
+  notify-on-failure:
+    name: Alert on Pipeline Failure
+    runs-on: ubuntu-latest
+    needs: [lint-and-code-quality, security-scanning, unit-tests, integration-tests, e2e-tests, docker-build, deploy-staging, deploy-production]
+    if: failure()
+
+    steps:
+      - name: Send failure notification
+        run: |
+          echo "CRITICAL: GL-005 CI/CD pipeline failed!"
+          echo "Stage: ${{ needs.*.result }}"
+          echo "Branch: ${{ github.ref }}"
+          echo "Commit: ${{ github.sha }}"
+          # Add PagerDuty/Slack critical alert here

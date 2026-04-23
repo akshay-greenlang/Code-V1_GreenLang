@@ -1,0 +1,256 @@
+# =============================================================================
+# GreenLang Agent Dockerfile Template
+# Template Version: 1.0.0
+# =============================================================================
+#
+# Multi-stage build for optimized, secure container images
+#
+# Customization:
+#   Replace ${VARIABLE} placeholders with actual values or use build args
+#
+# Build Args:
+#   - VERSION: Application version
+#   - BUILD_DATE: Build timestamp
+#   - VCS_REF: Git commit SHA
+#   - PYTHON_VERSION: Python version (default: 3.11)
+#
+# Usage:
+#   docker build --build-arg VERSION=1.0.0 -t greenlang/agent:1.0.0 .
+#
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Stage 1: Base Image
+# -----------------------------------------------------------------------------
+ARG PYTHON_VERSION=3.11
+FROM python:${PYTHON_VERSION}-slim as base
+
+# Set Python environment variables
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PYTHONFAULTHANDLER=1 \
+    PYTHONHASHSEED=random \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    PIP_DEFAULT_TIMEOUT=100
+
+# Create app user
+RUN groupadd --gid 1000 greenlang && \
+    useradd --uid 1000 --gid greenlang --shell /bin/bash --create-home greenlang
+
+# -----------------------------------------------------------------------------
+# Stage 2: Builder
+# -----------------------------------------------------------------------------
+FROM base as builder
+
+# Install build dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    gcc \
+    g++ \
+    libpq-dev \
+    libffi-dev \
+    libssl-dev \
+    curl \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create virtual environment
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Upgrade pip and install wheel
+RUN pip install --upgrade pip setuptools wheel
+
+# Copy requirements files
+COPY requirements*.txt ./
+
+# Install Python dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+
+# If there's a requirements-dev.txt for testing (optional)
+# RUN pip install --no-cache-dir -r requirements-dev.txt
+
+# -----------------------------------------------------------------------------
+# Stage 3: Runtime
+# -----------------------------------------------------------------------------
+FROM base as runtime
+
+# Build arguments
+ARG VERSION=0.0.0
+ARG BUILD_DATE=""
+ARG VCS_REF=""
+ARG AGENT_ID="gl-xxx"
+ARG AGENT_NAME="AgentName"
+
+# Labels (OCI Image Spec)
+LABEL org.opencontainers.image.title="${AGENT_NAME}" \
+      org.opencontainers.image.description="GreenLang Industrial AI Agent" \
+      org.opencontainers.image.version="${VERSION}" \
+      org.opencontainers.image.created="${BUILD_DATE}" \
+      org.opencontainers.image.revision="${VCS_REF}" \
+      org.opencontainers.image.vendor="GreenLang" \
+      org.opencontainers.image.authors="devops@greenlang.io" \
+      org.opencontainers.image.url="https://greenlang.io" \
+      org.opencontainers.image.source="https://github.com/greenlang/agents" \
+      org.opencontainers.image.licenses="Apache-2.0" \
+      com.greenlang.agent.id="${AGENT_ID}" \
+      com.greenlang.agent.name="${AGENT_NAME}"
+
+# Install runtime dependencies only
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libpq5 \
+    curl \
+    dumb-init \
+    tini \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean \
+    && rm -rf /tmp/* /var/tmp/*
+
+# Copy virtual environment from builder
+COPY --from=builder /opt/venv /opt/venv
+
+# Set PATH to use virtual environment
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Application environment variables
+ENV APP_HOME=/app \
+    APP_USER=greenlang \
+    APP_VERSION=${VERSION} \
+    AGENT_ID=${AGENT_ID} \
+    AGENT_NAME=${AGENT_NAME} \
+    ENVIRONMENT=production \
+    LOG_LEVEL=INFO \
+    LOG_FORMAT=json \
+    SERVER_HOST=0.0.0.0 \
+    SERVER_PORT=8000 \
+    SERVER_WORKERS=4
+
+# Create application directory with proper permissions
+RUN mkdir -p ${APP_HOME} ${APP_HOME}/.cache ${APP_HOME}/logs && \
+    chown -R ${APP_USER}:${APP_USER} ${APP_HOME}
+
+# Set working directory
+WORKDIR ${APP_HOME}
+
+# Copy application code
+COPY --chown=${APP_USER}:${APP_USER} . ${APP_HOME}/
+
+# Switch to non-root user
+USER ${APP_USER}
+
+# Expose ports
+EXPOSE 8000 9090
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD curl -sf http://localhost:${SERVER_PORT}/api/v1/health || exit 1
+
+# Use tini as init process
+ENTRYPOINT ["/usr/bin/tini", "--"]
+
+# Start application with uvicorn
+CMD ["uvicorn", "main:app", \
+     "--host", "0.0.0.0", \
+     "--port", "8000", \
+     "--workers", "4", \
+     "--access-log", \
+     "--log-level", "info", \
+     "--proxy-headers", \
+     "--forwarded-allow-ips", "*"]
+
+# -----------------------------------------------------------------------------
+# Stage 4: Development (optional)
+# -----------------------------------------------------------------------------
+FROM runtime as development
+
+USER root
+
+# Install development dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    vim \
+    less \
+    htop \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install dev Python packages
+RUN pip install --no-cache-dir \
+    pytest \
+    pytest-cov \
+    pytest-asyncio \
+    httpx \
+    black \
+    flake8 \
+    mypy \
+    ipython
+
+USER ${APP_USER}
+
+# Override CMD for development (hot reload)
+CMD ["uvicorn", "main:app", \
+     "--host", "0.0.0.0", \
+     "--port", "8000", \
+     "--reload", \
+     "--log-level", "debug"]
+
+# -----------------------------------------------------------------------------
+# Stage 5: Testing (optional)
+# -----------------------------------------------------------------------------
+FROM builder as testing
+
+# Copy application code
+COPY . /app
+WORKDIR /app
+
+# Install test dependencies
+RUN pip install --no-cache-dir \
+    pytest \
+    pytest-cov \
+    pytest-asyncio \
+    pytest-xdist \
+    httpx \
+    coverage
+
+# Run tests
+CMD ["pytest", "tests/", "-v", "--cov=.", "--cov-report=term-missing"]
+
+# -----------------------------------------------------------------------------
+# Stage 6: Security Scan (optional)
+# -----------------------------------------------------------------------------
+FROM runtime as security-scan
+
+USER root
+
+# Install security scanning tools
+RUN pip install --no-cache-dir \
+    bandit \
+    safety \
+    pip-audit
+
+# Run security scans
+RUN bandit -r . -ll -ii -x tests/ || true && \
+    safety check || true && \
+    pip-audit || true
+
+USER ${APP_USER}
+
+# =============================================================================
+# Alternative: Distroless Runtime (Ultra-minimal)
+# =============================================================================
+# Uncomment for distroless deployment (no shell, minimal attack surface)
+#
+# FROM gcr.io/distroless/python3-debian12 as distroless
+#
+# COPY --from=builder /opt/venv /opt/venv
+# COPY --from=runtime /app /app
+#
+# ENV PATH="/opt/venv/bin:$PATH" \
+#     PYTHONDONTWRITEBYTECODE=1 \
+#     PYTHONUNBUFFERED=1
+#
+# WORKDIR /app
+# USER 1000
+# EXPOSE 8000
+#
+# CMD ["python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]

@@ -9,7 +9,10 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      "@greenlang/shell-ui": path.resolve(__dirname, "packages/shell-ui/src/index.ts")
+      "@greenlang/shell-ui": path.resolve(__dirname, "packages/shell-ui/src/index.ts"),
+      // Local path alias so the frontend consumes v1.2.0 SDK types from
+      // the monorepo source directly without waiting on an npm publish.
+      "@greenlang/factors-sdk": path.resolve(__dirname, "../greenlang/factors/sdk/ts/src/index.ts")
     }
   },
   build: {

@@ -14,6 +14,7 @@ from greenlang.data.canonical_v2 import (
 from greenlang.factors.method_packs.base import (
     BiogenicTreatment,
     BoundaryRule,
+    CannotResolveAction,
     DEFAULT_FALLBACK,
     DeprecationRule,
     MarketInstrumentTreatment,
@@ -21,6 +22,98 @@ from greenlang.factors.method_packs.base import (
     SelectionRule,
 )
 from greenlang.factors.method_packs.registry import register_pack
+
+
+# ---------------------------------------------------------------------------
+# CBAM CN-code allow-list — Annex I of Regulation (EU) 2023/956.
+#
+# The definitive-period CBAM covers six sectors, encoded below as CN-chapter /
+# heading prefixes (the resolver admits factors whose ``activity_category``
+# equals the sector slug OR whose ``cn_code`` starts with one of the prefixes).
+# The prefix set below is verbatim from Annex I of EU 2023/956:
+#
+# * Cement                 — CN 2507, 2515, 2516, 2517, 2521, 2522, 2523
+# * Iron & steel           — CN 7206-7229 (chapter 72) + CN 7301-7326
+# * Aluminium              — CN 7601-7616
+# * Fertilisers            — CN 2808, 2814, 2834, 2836, 3102, 3105 (nitrogen)
+# * Hydrogen               — CN 2804 10 (heading 2804.10)
+# * Electricity            — CN 2716
+# ---------------------------------------------------------------------------
+CBAM_CN_CODE_PREFIXES: frozenset = frozenset(
+    {
+        # Cement (Annex I section 1).
+        "2507", "2515", "2516", "2517", "2521", "2522", "2523",
+        # Iron & steel (Annex I section 2) — admit full chapter 72 plus
+        # the specific 7301-7326 downstream headings.
+        "72", "7301", "7302", "7303", "7304", "7305", "7306", "7307",
+        "7308", "7309", "7310", "7311", "7312", "7313", "7314", "7315",
+        "7316", "7317", "7318", "7319", "7320", "7321", "7322", "7323",
+        "7324", "7325", "7326",
+        # Aluminium (Annex I section 3).
+        "7601", "7602", "7603", "7604", "7605", "7606", "7607", "7608",
+        "7609", "7610", "7611", "7612", "7613", "7614", "7615", "7616",
+        # Fertilisers (Annex I section 4) — nitrogenous only.
+        "2808", "2814", "2834", "2836", "3102", "3105",
+        # Hydrogen (Annex I section 6) — CN 2804 10.
+        "280410",
+        # Electricity (Annex I section 5).
+        "2716",
+    }
+)
+
+#: CBAM activity-category slugs matching the sectors above. The resolver
+#: checks both the CN-code prefix set AND these slugs so callers can key
+#: by sector name without having to know the CN digits.
+CBAM_SECTOR_SLUGS: frozenset = frozenset(
+    {
+        "cement",
+        "iron_and_steel",
+        "steel",
+        "aluminium",
+        "aluminum",
+        "fertilisers",
+        "fertilizers",
+        "hydrogen",
+        "electricity",
+    }
+)
+
+#: Combined inclusion set fed into SelectionRule.included_activity_categories.
+CBAM_INCLUDED_CATEGORIES: frozenset = CBAM_CN_CODE_PREFIXES | CBAM_SECTOR_SLUGS
+
+#: Hard-deny list. CBAM Annex II exempts specified third countries; the slug
+#: is retained as a denylist entry so an accidental import of a non-CBAM
+#: electricity factor cannot slip through. CBAM does NOT cover biogenic
+#: emissions (Art. 7(2)) — encoded as excluded category as well.
+CBAM_EXCLUDED_CATEGORIES: frozenset = frozenset(
+    {
+        "electricity_imports_non_cbam",   # Annex II exempt countries
+        "biogenic_emissions",             # Art. 7(2): biogenic excluded
+        "carbon_offsets",                 # not permitted in CBAM declaration
+    }
+)
+
+
+#: EU Battery Regulation 2023/1542 Art. 7 — covered classes.
+EU_BATTERY_INCLUDED_CATEGORIES: frozenset = frozenset(
+    {
+        "lmt_battery",                    # Art. 3(11) 0.025-2 kWh
+        "industrial_stationary_battery",  # Art. 3(12) > 2 kWh
+        "ev_battery",                     # Art. 3(14) propulsion > 2 kWh
+    }
+)
+EU_BATTERY_EXCLUDED_CATEGORIES: frozenset = frozenset(
+    {
+        "portable_battery",               # Art. 3(9) — CFP not yet mandatory
+        "carbon_offsets",
+    }
+)
+
+#: EU DPP (ESPR) does not have a published allow-list (implementing acts
+#: land per-product). Keep empty = no restriction until the Commission
+#: publishes a delegated act.
+EU_DPP_INCLUDED_CATEGORIES: frozenset = frozenset()
+EU_DPP_EXCLUDED_CATEGORIES: frozenset = frozenset({"carbon_offsets"})
 
 
 EU_CBAM = MethodPack(
@@ -49,6 +142,8 @@ EU_CBAM = MethodPack(
         # blocked because CBAM declarations go to EU authorities.
         allowed_statuses=("certified",),
         require_verification=True,
+        included_activity_categories=CBAM_INCLUDED_CATEGORIES,
+        excluded_activity_categories=CBAM_EXCLUDED_CATEGORIES,
     ),
     boundary_rule=BoundaryRule(
         allowed_scopes=("1", "2"),
@@ -70,6 +165,13 @@ EU_CBAM = MethodPack(
     ),
     pack_version="1.0.0",
     tags=("eu_policy", "licensed"),  # CBAM pack may be a premium SKU
+    # CBAM Art. 4(2) MANDATES that every declaration either uses primary
+    # operator data or documented EU default values with surcharge. Silent
+    # fallback to a global default violates the regulation — keep strict.
+    cannot_resolve_action=CannotResolveAction.RAISE_NO_SAFE_MATCH,
+    global_default_tier_allowed=False,
+    replacement_pack_id=None,
+    deprecation_notice_days=180,
 )
 
 
@@ -89,6 +191,8 @@ EU_DPP = MethodPack(
         ),
         allowed_formula_types=(FormulaType.LCA, FormulaType.DIRECT_FACTOR),
         allowed_statuses=("certified",),
+        included_activity_categories=EU_DPP_INCLUDED_CATEGORIES,
+        excluded_activity_categories=EU_DPP_EXCLUDED_CATEGORIES,
     ),
     boundary_rule=BoundaryRule(
         allowed_scopes=("3",),
@@ -106,6 +210,10 @@ EU_DPP = MethodPack(
     ),
     pack_version="0.1.0",            # pre-regulation; bumps when implementing acts land
     tags=("eu_policy", "product",),
+    cannot_resolve_action=CannotResolveAction.RAISE_NO_SAFE_MATCH,
+    global_default_tier_allowed=False,
+    replacement_pack_id=None,
+    deprecation_notice_days=180,
 )
 
 
@@ -324,6 +432,8 @@ EU_BATTERY = MethodPack(
         # factors are prohibited.
         allowed_statuses=("certified",),
         require_verification=True,
+        included_activity_categories=EU_BATTERY_INCLUDED_CATEGORIES,
+        excluded_activity_categories=EU_BATTERY_EXCLUDED_CATEGORIES,
     ),
     boundary_rule=BoundaryRule(
         # Scope 1 + 2 direct facility emissions + Scope 3 cradle-to-gate
@@ -349,11 +459,145 @@ EU_BATTERY = MethodPack(
     pack_version="1.0.0",
     # DPP Battery pack is a licensed premium SKU (regulated disclosure).
     tags=("eu_policy", "licensed", "battery", "dpp"),
+    # EU 2023/1542 Art. 7 CFP declarations are regulated filings — a
+    # silent global-default would produce a non-compliant declaration.
+    cannot_resolve_action=CannotResolveAction.RAISE_NO_SAFE_MATCH,
+    global_default_tier_allowed=False,
+    replacement_pack_id=None,
+    deprecation_notice_days=180,
 )
 
 
 for _pack in (EU_CBAM, EU_DPP, EU_BATTERY):
     register_pack(_pack)
+
+
+# ---------------------------------------------------------------------------
+# MP5 scaffold — spec template additions (method_pack_template.md)
+# ---------------------------------------------------------------------------
+# TODO(MP5): methodology review required - do not certify.
+# Encodes the gaps flagged in docs/specs/method_pack_audit.md §4 without
+# changing any numeric behaviour or altering selection thresholds.
+
+from greenlang.factors.method_packs.base import FallbackStep as _FallbackStep
+
+
+#: CBAM-specific fallback hierarchy. The default 7-tier chain allows a
+#: global default (tier 7), which CBAM regulation forbids: declarants
+#: must either use primary operator data or fall back to the published
+#: EU default values (with surcharge implications). The chain below
+#: reflects Art. 4(2) of Regulation (EU) 2023/956.
+#:
+#: TODO(MP5): wire into EU_CBAM.region_hierarchy on the next pack rev
+#: (requires a new MethodPack instance since the dataclass is frozen).
+CBAM_FALLBACK_HIERARCHY: tuple = (
+    _FallbackStep(1, "customer_override", "Declarant-supplied factor overlay"),
+    _FallbackStep(2, "operator_primary", "Primary data from third-country installation operator (Art. 4(1))"),
+    _FallbackStep(3, "operator_secondary", "Secondary data from operator per default method (Annex IV)"),
+    _FallbackStep(4, "eu_default_value", "EU default values per Art. 4(2) - surcharge applies"),
+)
+
+#: GWP basis: locked to AR6 100. CBAM implementing regulation references
+#: AR6 directly, no override permitted without methodology review.
+EU_CBAM_GWP_ALLOWED_OVERRIDES: tuple = ()
+EU_CBAM_GWP_HORIZON_YEARS: int = 100
+EU_CBAM_GWP_METRIC: str = "GWP"
+
+#: CBAM CN-code allow-list per Annex I of Regulation (EU) 2023/956.
+#: Structured activity-category encoding - LABELS ONLY at this scaffold stage.
+#: TODO(MP5): populate with exact CN-8 codes; methodology review required.
+EU_CBAM_INCLUSION_ACTIVITIES: list = [
+    "cement",                 # Annex I section 1 - CN 2523
+    "iron_and_steel",         # Annex I section 2 - CN 72, 7301-7326
+    "aluminium",              # Annex I section 3 - CN 7601-7616
+    "fertilisers",            # Annex I section 4 - CN 2808, 2814, 2834, 3102, 3105
+    "electricity",            # Annex I section 5 - CN 2716
+    "hydrogen",               # Annex I section 6 - CN 2804 10 000
+    # TODO(MP5): add downstream extensions (organic chemicals, polymers)
+    # pending the 2026-2030 scope expansion.
+]
+EU_CBAM_EXCLUSION_ACTIVITIES: list = [
+    "electricity_imports_non_cbam",    # Annex II exempt third countries
+    # TODO(MP5): methodology review required - do not certify
+]
+
+#: EU DPP (ESPR) inclusion/exclusion - implementing acts not yet in force
+#: so lists are placeholder until product-specific DPP requirements land.
+EU_DPP_INCLUSION_ACTIVITIES: list = []   # TODO(MP5): per-product DPP requirements
+EU_DPP_EXCLUSION_ACTIVITIES: list = []   # TODO(MP5): methodology review required
+
+#: EU Battery Regulation 2023/1542 inclusion/exclusion.
+EU_BATTERY_INCLUSION_ACTIVITIES: list = [
+    "lmt_battery",                      # Art. 3(11) - 0.025-2 kWh
+    "industrial_stationary_battery",    # Art. 3(12) - >2 kWh
+    "ev_battery",                       # Art. 3(14) - propulsion >2 kWh
+    # TODO(MP5): add aviation battery once Commission implementing act lands
+]
+EU_BATTERY_EXCLUSION_ACTIVITIES: list = [
+    "portable_battery",                 # Art. 3(9) - CFP not yet mandatory
+    # TODO(MP5): methodology review required - do not certify
+]
+
+#: Allowed market instruments per pack id.
+EU_POLICY_ALLOWED_INSTRUMENTS: dict = {
+    "eu_cbam": ("operator_primary_data",),     # Art. 4(1) only
+    "eu_dpp": (),                              # not applicable
+    "eu_battery": ("rec", "i_rec", "go", "ppa_physical"),
+}
+
+#: Functional units (product-level packs only).
+EU_POLICY_FUNCTIONAL_UNITS: dict = {
+    "eu_cbam": "1 tonne of CN-coded CBAM good",
+    "eu_dpp": "1 physical product unit",
+    "eu_battery": "1 kWh delivered over service life",
+}
+
+#: Fallback defaults per pack.
+EU_POLICY_FALLBACK_DEFAULTS: dict = {
+    "eu_cbam": {
+        "cannot_resolve_action": "raise_no_safe_match",
+        "global_default_tier_allowed": False,
+        "stale_factor_cutoff_days": 730,
+    },
+    "eu_dpp": {
+        "cannot_resolve_action": "raise_no_safe_match",
+        "global_default_tier_allowed": False,
+        "stale_factor_cutoff_days": 1095,
+    },
+    "eu_battery": {
+        "cannot_resolve_action": "raise_no_safe_match",
+        "global_default_tier_allowed": False,
+        "stale_factor_cutoff_days": 1095,
+    },
+}
+
+#: Deprecation default — 180-day advance notice + replacement_pointer schema.
+#: TODO(MP5): methodology review required - do not certify.
+EU_POLICY_DEPRECATION_DEFAULTS: dict = {
+    "advance_notice_days": 180,
+    "replacement_pointer_schema": {
+        "eu_cbam": "eu_cbam_v2",           # TODO(MP5)
+        "eu_dpp": "eu_dpp_v2",             # TODO(MP5)
+        "eu_battery": "eu_battery_v2",     # TODO(MP5)
+    },
+    "webhook_fan_out": (
+        "factors.deprecations",
+        "factors.methodology",
+        "factors.eu_policy",
+    ),
+    "migration_notes": (
+        "EU regulation cadence is tight. Replace packs when implementing "
+        "acts / CBAM Annex III / Battery Delegated Regulation versions bump. "
+        "TODO(MP5): link to Methodology Review Board decision record."
+    ),
+}
+
+#: Audit-text template file names (Jinja).
+EU_POLICY_AUDIT_TEMPLATE_FILES: dict = {
+    "eu_cbam": "eu_policy.j2",
+    "eu_dpp": "eu_policy.j2",
+    "eu_battery": "eu_policy.j2",
+}
 
 
 __all__ = [
@@ -366,4 +610,20 @@ __all__ = [
     "classify_battery",
     "get_battery_threshold",
     "cfp_declaration_required",
+    # MP5 scaffold exports
+    "CBAM_FALLBACK_HIERARCHY",
+    "EU_CBAM_GWP_ALLOWED_OVERRIDES",
+    "EU_CBAM_GWP_HORIZON_YEARS",
+    "EU_CBAM_GWP_METRIC",
+    "EU_CBAM_INCLUSION_ACTIVITIES",
+    "EU_CBAM_EXCLUSION_ACTIVITIES",
+    "EU_DPP_INCLUSION_ACTIVITIES",
+    "EU_DPP_EXCLUSION_ACTIVITIES",
+    "EU_BATTERY_INCLUSION_ACTIVITIES",
+    "EU_BATTERY_EXCLUSION_ACTIVITIES",
+    "EU_POLICY_ALLOWED_INSTRUMENTS",
+    "EU_POLICY_FUNCTIONAL_UNITS",
+    "EU_POLICY_FALLBACK_DEFAULTS",
+    "EU_POLICY_DEPRECATION_DEFAULTS",
+    "EU_POLICY_AUDIT_TEMPLATE_FILES",
 ]

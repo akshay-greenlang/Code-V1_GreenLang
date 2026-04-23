@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.greenlang.io/factors/categories/finance_proxy.schema.json",
+  "title": "Factor Parameters — Finance Proxy (v1.0)",
+  "description": "Parameter sub-schema applied when factor_record.factor_family == 'finance_proxies'. Aligned with PCAF Global GHG Accounting and Reporting Standard (Parts A/B/C) for financed emissions. Frozen v1.0 — 2026-04-22.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["asset_class", "intensity_basis"],
+  "properties": {
+    "scope_applicability": {
+      "type": "array",
+      "items": { "type": "string", "enum": ["scope_1", "scope_2", "scope_3", "scope_4"] },
+      "uniqueItems": true,
+      "default": ["scope_3"]
+    },
+    "uncertainty_low": { "type": ["number", "null"] },
+    "uncertainty_high": { "type": ["number", "null"] },
+    "asset_class": {
+      "type": "string",
+      "enum": [
+        "listed_equity_and_corporate_bonds",
+        "business_loans_and_unlisted_equity",
+        "project_finance",
+        "commercial_real_estate",
+        "mortgages",
+        "motor_vehicle_loans",
+        "sovereign_debt",
+        "facilitated_emissions"
+      ],
+      "description": "PCAF asset class. Determines the attribution formula applied by the resolver."
+    },
+    "sector_code": {
+      "type": ["string", "null"],
+      "maxLength": 64,
+      "pattern": "^(NAICS|NACE|ISIC|GICS|SIC|CPC):[A-Za-z0-9._-]+$",
+      "description": "Qualified sector code per NACE / NAICS / ISIC / GICS / SIC / CPC scheme (e.g., 'NAICS:221112', 'ISIC:C241', 'NACE:C.24.1')."
+    },
+    "intensity_basis": {
+      "type": "string",
+      "enum": ["revenue", "ebitda", "asset_value", "employee_count", "floor_area", "production_output"],
+      "description": "Normalisation metric for the proxy intensity. 'revenue' (per USD/EUR turnover); 'ebitda' (per USD/EUR EBITDA); 'asset_value' (per USD/EUR assets); 'employee_count' (per FTE); 'floor_area' (per m²); 'production_output' (per unit output)."
+    },
+    "geography": {
+      "type": ["string", "null"],
+      "maxLength": 64,
+      "description": "Geographic scope of the proxy (country ISO-α2, region, or 'XX' for global). Duplicates factor_record.jurisdiction.country for in-parameters filtering."
+    },
+    "proxy_confidence_class": {
+      "type": "string",
+      "enum": ["A", "B", "C", "D", "E"],
+      "description": "GreenLang proxy confidence class mapped to PCAF Data Quality Score: A = score 1 (verified company emissions); B = score 2 (unverified company); C = score 3 (physical activity proxy); D = score 4 (economic activity proxy); E = score 5 (sector average). INVARIANT: A requires supplier_primary_data_share >= 0.95."
+    }
+  }
+}

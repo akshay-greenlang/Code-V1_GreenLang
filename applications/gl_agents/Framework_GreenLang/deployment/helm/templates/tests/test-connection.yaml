@@ -1,0 +1,38 @@
+{{/*
+GreenLang Agent Helm Chart - Connection Test
+*/}}
+{{- if .Values.tests.enabled }}
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "{{ include "greenlang-agent.fullname" . }}-test-connection"
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "greenlang-agent.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": test
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  containers:
+    - name: wget
+      image: "{{ .Values.tests.image.repository }}:{{ .Values.tests.image.tag }}"
+      command:
+        - /bin/sh
+        - -c
+        - |
+          echo "Testing health endpoint..."
+          curl -sf http://{{ include "greenlang-agent.fullname" . }}:{{ .Values.service.port }}/api/v1/health || exit 1
+
+          echo "Testing readiness endpoint..."
+          curl -sf http://{{ include "greenlang-agent.fullname" . }}:{{ .Values.service.port }}/api/v1/ready || exit 1
+
+          echo "All tests passed!"
+      resources:
+        limits:
+          cpu: 100m
+          memory: 64Mi
+        requests:
+          cpu: 50m
+          memory: 32Mi
+  restartPolicy: Never
+{{- end }}

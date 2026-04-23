@@ -1,0 +1,309 @@
+# GL-001 ThermalCommand - Pre-commit Configuration
+# Comprehensive code quality hooks
+# Version: 1.0.0
+#
+# Installation:
+#   pip install pre-commit
+#   pre-commit install
+#   pre-commit install --hook-type commit-msg
+#
+# Manual run:
+#   pre-commit run --all-files
+#
+# Update hooks:
+#   pre-commit autoupdate
+
+default_language_version:
+  python: python3.10
+
+default_stages: [pre-commit]
+
+# Fail fast - stop on first failing hook
+fail_fast: false
+
+repos:
+  # ==========================================================================
+  # General Hooks
+  # ==========================================================================
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      # File hygiene
+      - id: trailing-whitespace
+        args: [--markdown-linebreak-ext=md]
+      - id: end-of-file-fixer
+        exclude: '\.proto$'
+      - id: check-yaml
+        args: [--unsafe]
+      - id: check-json
+      - id: check-toml
+      - id: check-xml
+      - id: check-merge-conflict
+      - id: check-case-conflict
+      - id: check-symlinks
+      - id: destroyed-symlinks
+
+      # Python specific
+      - id: check-ast
+      - id: check-docstring-first
+      - id: debug-statements
+      - id: fix-byte-order-marker
+      - id: name-tests-test
+        args: [--pytest-test-first]
+        exclude: 'conftest\.py$'
+
+      # Security
+      - id: detect-private-key
+      - id: check-added-large-files
+        args: [--maxkb=1000]
+
+      # Misc
+      - id: mixed-line-ending
+        args: [--fix=lf]
+      - id: requirements-txt-fixer
+
+  # ==========================================================================
+  # Black - Code Formatting
+  # ==========================================================================
+  - repo: https://github.com/psf/black
+    rev: 24.3.0
+    hooks:
+      - id: black
+        name: black (format Python code)
+        language_version: python3.10
+        args:
+          - --config=pyproject.toml
+        types: [python]
+        exclude: |
+          (?x)^(
+            deployment/.*|
+            .*_pb2\.py|
+            .*_pb2_grpc\.py
+          )$
+
+  # ==========================================================================
+  # Ruff - Linting (Fast)
+  # ==========================================================================
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.3.4
+    hooks:
+      # Run the linter
+      - id: ruff
+        name: ruff (lint Python code)
+        args:
+          - --fix
+          - --exit-non-zero-on-fix
+          - --config=pyproject.toml
+        types: [python]
+        exclude: |
+          (?x)^(
+            deployment/.*|
+            .*_pb2\.py|
+            .*_pb2_grpc\.py
+          )$
+
+      # Run the formatter (as a check, Black is primary formatter)
+      - id: ruff-format
+        name: ruff-format (check formatting)
+        args:
+          - --check
+          - --config=pyproject.toml
+        types: [python]
+        exclude: |
+          (?x)^(
+            deployment/.*|
+            .*_pb2\.py|
+            .*_pb2_grpc\.py
+          )$
+
+  # ==========================================================================
+  # MyPy - Type Checking
+  # ==========================================================================
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.9.0
+    hooks:
+      - id: mypy
+        name: mypy (type check Python code)
+        args:
+          - --config-file=pyproject.toml
+          - --install-types
+          - --non-interactive
+        types: [python]
+        additional_dependencies:
+          - pydantic>=2.0.0
+          - types-python-dateutil>=2.8.0
+          - types-requests>=2.31.0
+        exclude: |
+          (?x)^(
+            tests/.*|
+            deployment/.*|
+            conftest\.py|
+            .*_pb2\.py|
+            .*_pb2_grpc\.py
+          )$
+        # Only run on staged files to keep it fast
+        pass_filenames: true
+
+  # ==========================================================================
+  # Pytest - Quick Smoke Tests
+  # ==========================================================================
+  - repo: local
+    hooks:
+      - id: pytest-quick
+        name: pytest (quick smoke tests)
+        entry: python -m pytest
+        args:
+          - tests/test_unit/
+          - -x
+          - --tb=short
+          - -q
+          - --no-header
+          - -m
+          - "not slow and not integration and not requires_hardware"
+          - --timeout=10
+        language: python
+        types: [python]
+        pass_filenames: false
+        stages: [pre-commit]
+        # Only run when Python files are changed
+        always_run: false
+        additional_dependencies:
+          - pytest>=7.4.0
+          - pytest-timeout>=2.2.0
+          - pytest-asyncio>=0.21.0
+          - pydantic>=2.0.0
+          - numpy>=1.24.0
+
+  # ==========================================================================
+  # Security Checks
+  # ==========================================================================
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.7.8
+    hooks:
+      - id: bandit
+        name: bandit (security check)
+        args:
+          - -c
+          - pyproject.toml
+          - --recursive
+          - --quiet
+        types: [python]
+        exclude: |
+          (?x)^(
+            tests/.*|
+            conftest\.py
+          )$
+
+  # ==========================================================================
+  # Docstring Checks
+  # ==========================================================================
+  - repo: https://github.com/econchick/interrogate
+    rev: 1.5.0
+    hooks:
+      - id: interrogate
+        name: interrogate (docstring coverage)
+        args:
+          - --config=pyproject.toml
+          - --quiet
+          - --fail-under=80
+        types: [python]
+        exclude: |
+          (?x)^(
+            tests/.*|
+            conftest\.py|
+            .*_pb2\.py
+          )$
+
+  # ==========================================================================
+  # YAML Linting
+  # ==========================================================================
+  - repo: https://github.com/adrienverge/yamllint
+    rev: v1.35.1
+    hooks:
+      - id: yamllint
+        name: yamllint (YAML linting)
+        args:
+          - --strict
+          - -d
+          - "{extends: default, rules: {line-length: {max: 120}, truthy: disable}}"
+        types: [yaml]
+        exclude: |
+          (?x)^(
+            deployment/.*\.yaml
+          )$
+
+  # ==========================================================================
+  # Markdown Linting
+  # ==========================================================================
+  - repo: https://github.com/igorshubovych/markdownlint-cli
+    rev: v0.39.0
+    hooks:
+      - id: markdownlint
+        name: markdownlint (Markdown linting)
+        args:
+          - --fix
+          - --disable
+          - MD013  # Line length
+          - MD033  # Inline HTML
+          - MD041  # First line heading
+          - --
+        types: [markdown]
+
+  # ==========================================================================
+  # Commit Message Validation
+  # ==========================================================================
+  - repo: https://github.com/commitizen-tools/commitizen
+    rev: v3.21.3
+    hooks:
+      - id: commitizen
+        name: commitizen (commit message format)
+        stages: [commit-msg]
+        additional_dependencies: []
+
+  # ==========================================================================
+  # Secret Detection
+  # ==========================================================================
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.4.0
+    hooks:
+      - id: detect-secrets
+        name: detect-secrets (secret detection)
+        args:
+          - --baseline
+          - .secrets.baseline
+        exclude: |
+          (?x)^(
+            \.secrets\.baseline|
+            tests/.*|
+            deployment/.*
+          )$
+
+  # ==========================================================================
+  # Spell Check
+  # ==========================================================================
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.2.6
+    hooks:
+      - id: codespell
+        name: codespell (spell check)
+        args:
+          - --skip=*.json,*.yaml,*.yml,*.proto,*_pb2.py,*.lock
+          - --ignore-words-list=crate,nd,ot,te,ue,ro,ba
+        types_or: [python, markdown, rst]
+
+# ==========================================================================
+# CI Integration Configuration
+# ==========================================================================
+ci:
+  autofix_prs: true
+  autofix_commit_msg: |
+    [pre-commit.ci] auto fixes from pre-commit hooks
+
+    For more information, see https://pre-commit.ci
+  autoupdate_branch: "main"
+  autoupdate_commit_msg: "[pre-commit.ci] pre-commit autoupdate"
+  autoupdate_schedule: monthly
+  skip:
+    - pytest-quick  # Skip pytest in CI (separate CI job)
+    - mypy          # Skip mypy in CI (separate CI job with full deps)
+  submodules: false

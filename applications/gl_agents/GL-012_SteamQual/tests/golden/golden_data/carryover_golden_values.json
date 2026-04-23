@@ -1,0 +1,149 @@
+{
+  "suite_id": "CARRYOVER-SUITE-001",
+  "description": "Golden values for carryover risk assessment calculations",
+  "version": "1.0.0",
+  "created_date": "2025-01-01",
+  "last_validated": "2025-01-01",
+  "reference": "ASME Guidelines and Plant-Specific Carryover Standards",
+  "thresholds": {
+    "tds_low_ppm": 20,
+    "tds_medium_ppm": 50,
+    "tds_high_ppm": 100,
+    "silica_low_ppb": 50,
+    "silica_medium_ppb": 100,
+    "silica_high_ppb": 200,
+    "conductivity_low_us_cm": 25,
+    "conductivity_medium_us_cm": 50,
+    "conductivity_high_us_cm": 100
+  },
+  "test_cases": [
+    {
+      "test_id": "CARRYOVER-001",
+      "description": "Low risk - excellent water quality",
+      "inputs": {
+        "tds_ppm": 10.0,
+        "silica_ppb": 30.0,
+        "conductivity_us_cm": 15.0,
+        "drum_level_percent": 50.0,
+        "steam_load_percent": 75.0
+      },
+      "expected_outputs": {
+        "risk_level": "LOW",
+        "probability_min": 0.0,
+        "probability_max": 0.25
+      }
+    },
+    {
+      "test_id": "CARRYOVER-002",
+      "description": "Low risk - normal operating conditions",
+      "inputs": {
+        "tds_ppm": 15.0,
+        "silica_ppb": 40.0,
+        "conductivity_us_cm": 20.0,
+        "drum_level_percent": 50.0,
+        "steam_load_percent": 80.0
+      },
+      "expected_outputs": {
+        "risk_level": "LOW",
+        "probability_min": 0.0,
+        "probability_max": 0.25
+      }
+    },
+    {
+      "test_id": "CARRYOVER-003",
+      "description": "Medium risk - elevated TDS",
+      "inputs": {
+        "tds_ppm": 45.0,
+        "silica_ppb": 80.0,
+        "conductivity_us_cm": 40.0,
+        "drum_level_percent": 55.0,
+        "steam_load_percent": 85.0
+      },
+      "expected_outputs": {
+        "risk_level": "MEDIUM",
+        "probability_min": 0.25,
+        "probability_max": 0.5
+      }
+    },
+    {
+      "test_id": "CARRYOVER-004",
+      "description": "High risk - high contamination",
+      "inputs": {
+        "tds_ppm": 80.0,
+        "silica_ppb": 160.0,
+        "conductivity_us_cm": 75.0,
+        "drum_level_percent": 65.0,
+        "steam_load_percent": 95.0
+      },
+      "expected_outputs": {
+        "risk_level": "HIGH",
+        "probability_min": 0.5,
+        "probability_max": 0.75
+      }
+    },
+    {
+      "test_id": "CARRYOVER-005",
+      "description": "Critical risk - severe contamination",
+      "inputs": {
+        "tds_ppm": 130.0,
+        "silica_ppb": 280.0,
+        "conductivity_us_cm": 110.0,
+        "drum_level_percent": 75.0,
+        "steam_load_percent": 100.0
+      },
+      "expected_outputs": {
+        "risk_level": "CRITICAL",
+        "probability_min": 0.75,
+        "probability_max": 1.0
+      }
+    },
+    {
+      "test_id": "CARRYOVER-006",
+      "description": "High drum level impact",
+      "inputs": {
+        "tds_ppm": 30.0,
+        "silica_ppb": 60.0,
+        "conductivity_us_cm": 30.0,
+        "drum_level_percent": 85.0,
+        "steam_load_percent": 80.0
+      },
+      "expected_outputs": {
+        "risk_level": "MEDIUM",
+        "probability_min": 0.25,
+        "probability_max": 0.55
+      }
+    },
+    {
+      "test_id": "CARRYOVER-007",
+      "description": "High load impact",
+      "inputs": {
+        "tds_ppm": 25.0,
+        "silica_ppb": 50.0,
+        "conductivity_us_cm": 25.0,
+        "drum_level_percent": 55.0,
+        "steam_load_percent": 100.0
+      },
+      "expected_outputs": {
+        "risk_level": "LOW",
+        "probability_min": 0.15,
+        "probability_max": 0.35
+      }
+    },
+    {
+      "test_id": "CARRYOVER-008",
+      "description": "Silica-dominated risk",
+      "inputs": {
+        "tds_ppm": 20.0,
+        "silica_ppb": 220.0,
+        "conductivity_us_cm": 25.0,
+        "drum_level_percent": 50.0,
+        "steam_load_percent": 80.0
+      },
+      "expected_outputs": {
+        "risk_level": "HIGH",
+        "probability_min": 0.45,
+        "probability_max": 0.70
+      }
+    }
+  ]
+}

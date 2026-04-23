@@ -1,0 +1,1653 @@
+{
+  "source_id": "india_cea_fy27",
+  "source_version": "20.0-fy27",
+  "ingested_at": "2026-04-23T18:26:53+00:00",
+  "license_class": "public_in_government",
+  "license_name": "India-Public-Information",
+  "redistribution_class": "open",
+  "attribution_text": "Source: Central Electricity Authority, Government of India. CO2 Baseline Database v20.",
+  "factor_status_default": "certified",
+  "factor_count": 19,
+  "factors": [
+    {
+      "factor_id": "EF:IN:all_india:2026-27:cea-v20.0",
+      "fuel_type": "electricity",
+      "unit": "kWh",
+      "geography": "IN",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 0.665,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "CEA (Central Electricity Authority, India)",
+        "source_publication": "CO2 Baseline Database for the Indian Power Sector",
+        "source_year": 2027,
+        "methodology": "direct_measurement",
+        "source_url": "https://cea.nic.in/cdm-co2-baseline-database/",
+        "version": "v20.0"
+      },
+      "valid_from": "2026-04-01",
+      "valid_to": "2027-03-31",
+      "uncertainty_95ci": 0.08,
+      "dqs": {
+        "temporal": 3,
+        "geographical": 5,
+        "technological": 4,
+        "representativeness": 3,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "India-Public-Information",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "region_hint": null,
+      "tags": [
+        "cea",
+        "india",
+        "grid",
+        "scope2_location_based",
+        "2026-27",
+        "illustrative"
+      ],
+      "notes": "CEA v20.0 vintage-extension for All-India composite grid, FY 2026-27; illustrative_value=true; TODO: replace with published CEA v20/v23 FY27 value once official release lands",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average",
+        "india"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "india_cea_fy27",
+      "source_release": "v20.0",
+      "release_version": "cea-v20.0",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol_Scope2_LocationBased",
+        "IFRS_S2"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_in_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "Source: Central Electricity Authority, Government of India. CO2 Baseline Database v20.",
+        "alternates_considered": [
+          "EF:IN:northern_grid:2026-27:cea-v20.0",
+          "EF:IN:western_grid:2026-27:cea-v20.0",
+          "EF:IN:southern_grid:2026-27:cea-v20.0",
+          "EF:IN:eastern_grid:2026-27:cea-v20.0",
+          "EF:IN:north_eastern_grid:2026-27:cea-v20.0"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:IN:northern_grid:2026-27:cea-v20.0",
+      "fuel_type": "electricity",
+      "unit": "kWh",
+      "geography": "IN",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.64,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "CEA (Central Electricity Authority, India)",
+        "source_publication": "CO2 Baseline Database for the Indian Power Sector",
+        "source_year": 2027,
+        "methodology": "direct_measurement",
+        "source_url": "https://cea.nic.in/cdm-co2-baseline-database/",
+        "version": "v20.0"
+      },
+      "valid_from": "2026-04-01",
+      "valid_to": "2027-03-31",
+      "uncertainty_95ci": 0.08,
+      "dqs": {
+        "temporal": 3,
+        "geographical": 5,
+        "technological": 4,
+        "representativeness": 3,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "India-Public-Information",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "region_hint": "Northern Grid",
+      "tags": [
+        "cea",
+        "india",
+        "grid",
+        "scope2_location_based",
+        "2026-27",
+        "illustrative"
+      ],
+      "notes": "CEA v20.0 vintage-extension for Northern regional grid, FY 2026-27; illustrative_value=true; TODO: replace with published CEA v20/v23 FY27 value once official release lands",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average",
+        "india"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "india_cea_fy27",
+      "source_release": "v20.0",
+      "release_version": "cea-v20.0",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol_Scope2_LocationBased",
+        "IFRS_S2"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_in_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "Source: Central Electricity Authority, Government of India. CO2 Baseline Database v20.",
+        "alternates_considered": [
+          "EF:IN:all_india:2026-27:cea-v20.0",
+          "EF:IN:western_grid:2026-27:cea-v20.0",
+          "EF:IN:southern_grid:2026-27:cea-v20.0",
+          "EF:IN:eastern_grid:2026-27:cea-v20.0",
+          "EF:IN:north_eastern_grid:2026-27:cea-v20.0"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:IN:western_grid:2026-27:cea-v20.0",
+      "fuel_type": "electricity",
+      "unit": "kWh",
+      "geography": "IN",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.8,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "CEA (Central Electricity Authority, India)",
+        "source_publication": "CO2 Baseline Database for the Indian Power Sector",
+        "source_year": 2027,
+        "methodology": "direct_measurement",
+        "source_url": "https://cea.nic.in/cdm-co2-baseline-database/",
+        "version": "v20.0"
+      },
+      "valid_from": "2026-04-01",
+      "valid_to": "2027-03-31",
+      "uncertainty_95ci": 0.08,
+      "dqs": {
+        "temporal": 3,
+        "geographical": 5,
+        "technological": 4,
+        "representativeness": 3,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "India-Public-Information",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "region_hint": "Western Grid",
+      "tags": [
+        "cea",
+        "india",
+        "grid",
+        "scope2_location_based",
+        "2026-27",
+        "illustrative"
+      ],
+      "notes": "CEA v20.0 vintage-extension for Western regional grid, FY 2026-27; illustrative_value=true; TODO: replace with published CEA v20/v23 FY27 value once official release lands",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average",
+        "india"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "india_cea_fy27",
+      "source_release": "v20.0",
+      "release_version": "cea-v20.0",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol_Scope2_LocationBased",
+        "IFRS_S2"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_in_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "Source: Central Electricity Authority, Government of India. CO2 Baseline Database v20.",
+        "alternates_considered": [
+          "EF:IN:all_india:2026-27:cea-v20.0",
+          "EF:IN:northern_grid:2026-27:cea-v20.0",
+          "EF:IN:southern_grid:2026-27:cea-v20.0",
+          "EF:IN:eastern_grid:2026-27:cea-v20.0",
+          "EF:IN:north_eastern_grid:2026-27:cea-v20.0"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:IN:southern_grid:2026-27:cea-v20.0",
+      "fuel_type": "electricity",
+      "unit": "kWh",
+      "geography": "IN",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.49,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "CEA (Central Electricity Authority, India)",
+        "source_publication": "CO2 Baseline Database for the Indian Power Sector",
+        "source_year": 2027,
+        "methodology": "direct_measurement",
+        "source_url": "https://cea.nic.in/cdm-co2-baseline-database/",
+        "version": "v20.0"
+      },
+      "valid_from": "2026-04-01",
+      "valid_to": "2027-03-31",
+      "uncertainty_95ci": 0.08,
+      "dqs": {
+        "temporal": 3,
+        "geographical": 5,
+        "technological": 4,
+        "representativeness": 3,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "India-Public-Information",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "region_hint": "Southern Grid",
+      "tags": [
+        "cea",
+        "india",
+        "grid",
+        "scope2_location_based",
+        "2026-27",
+        "illustrative"
+      ],
+      "notes": "CEA v20.0 vintage-extension for Southern regional grid, FY 2026-27; illustrative_value=true; TODO: replace with published CEA v20/v23 FY27 value once official release lands",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average",
+        "india"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "india_cea_fy27",
+      "source_release": "v20.0",
+      "release_version": "cea-v20.0",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol_Scope2_LocationBased",
+        "IFRS_S2"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_in_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "Source: Central Electricity Authority, Government of India. CO2 Baseline Database v20.",
+        "alternates_considered": [
+          "EF:IN:all_india:2026-27:cea-v20.0",
+          "EF:IN:northern_grid:2026-27:cea-v20.0",
+          "EF:IN:western_grid:2026-27:cea-v20.0",
+          "EF:IN:eastern_grid:2026-27:cea-v20.0",
+          "EF:IN:north_eastern_grid:2026-27:cea-v20.0"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:IN:eastern_grid:2026-27:cea-v20.0",
+      "fuel_type": "electricity",
+      "unit": "kWh",
+      "geography": "IN",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.92,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "CEA (Central Electricity Authority, India)",
+        "source_publication": "CO2 Baseline Database for the Indian Power Sector",
+        "source_year": 2027,
+        "methodology": "direct_measurement",
+        "source_url": "https://cea.nic.in/cdm-co2-baseline-database/",
+        "version": "v20.0"
+      },
+      "valid_from": "2026-04-01",
+      "valid_to": "2027-03-31",
+      "uncertainty_95ci": 0.08,
+      "dqs": {
+        "temporal": 3,
+        "geographical": 5,
+        "technological": 4,
+        "representativeness": 3,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "India-Public-Information",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "region_hint": "Eastern Grid",
+      "tags": [
+        "cea",
+        "india",
+        "grid",
+        "scope2_location_based",
+        "2026-27",
+        "illustrative"
+      ],
+      "notes": "CEA v20.0 vintage-extension for Eastern regional grid, FY 2026-27; illustrative_value=true; TODO: replace with published CEA v20/v23 FY27 value once official release lands",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average",
+        "india"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "india_cea_fy27",
+      "source_release": "v20.0",
+      "release_version": "cea-v20.0",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol_Scope2_LocationBased",
+        "IFRS_S2"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_in_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "Source: Central Electricity Authority, Government of India. CO2 Baseline Database v20.",
+        "alternates_considered": [
+          "EF:IN:all_india:2026-27:cea-v20.0",
+          "EF:IN:northern_grid:2026-27:cea-v20.0",
+          "EF:IN:western_grid:2026-27:cea-v20.0",
+          "EF:IN:southern_grid:2026-27:cea-v20.0",
+          "EF:IN:north_eastern_grid:2026-27:cea-v20.0"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:IN:north_eastern_grid:2026-27:cea-v20.0",
+      "fuel_type": "electricity",
+      "unit": "kWh",
+      "geography": "IN",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.16,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "CEA (Central Electricity Authority, India)",
+        "source_publication": "CO2 Baseline Database for the Indian Power Sector",
+        "source_year": 2027,
+        "methodology": "direct_measurement",
+        "source_url": "https://cea.nic.in/cdm-co2-baseline-database/",
+        "version": "v20.0"
+      },
+      "valid_from": "2026-04-01",
+      "valid_to": "2027-03-31",
+      "uncertainty_95ci": 0.08,
+      "dqs": {
+        "temporal": 3,
+        "geographical": 5,
+        "technological": 4,
+        "representativeness": 3,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "India-Public-Information",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "region_hint": "North Eastern Grid",
+      "tags": [
+        "cea",
+        "india",
+        "grid",
+        "scope2_location_based",
+        "2026-27",
+        "illustrative"
+      ],
+      "notes": "CEA v20.0 vintage-extension for North-Eastern regional grid, FY 2026-27; illustrative_value=true; TODO: replace with published CEA v20/v23 FY27 value once official release lands",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average",
+        "india"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "india_cea_fy27",
+      "source_release": "v20.0",
+      "release_version": "cea-v20.0",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol_Scope2_LocationBased",
+        "IFRS_S2"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_in_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "Source: Central Electricity Authority, Government of India. CO2 Baseline Database v20.",
+        "alternates_considered": [
+          "EF:IN:all_india:2026-27:cea-v20.0",
+          "EF:IN:northern_grid:2026-27:cea-v20.0",
+          "EF:IN:western_grid:2026-27:cea-v20.0",
+          "EF:IN:southern_grid:2026-27:cea-v20.0",
+          "EF:IN:eastern_grid:2026-27:cea-v20.0"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:IN:all_india:2025-26:cea-v20.0",
+      "fuel_type": "electricity",
+      "unit": "kWh",
+      "geography": "IN",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 0.68,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "CEA (Central Electricity Authority, India)",
+        "source_publication": "CO2 Baseline Database for the Indian Power Sector",
+        "source_year": 2026,
+        "methodology": "direct_measurement",
+        "source_url": "https://cea.nic.in/cdm-co2-baseline-database/",
+        "version": "v20.0"
+      },
+      "valid_from": "2025-04-01",
+      "valid_to": "2026-03-31",
+      "uncertainty_95ci": 0.08,
+      "dqs": {
+        "temporal": 3,
+        "geographical": 5,
+        "technological": 4,
+        "representativeness": 3,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "India-Public-Information",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "region_hint": null,
+      "tags": [
+        "cea",
+        "india",
+        "grid",
+        "scope2_location_based",
+        "2025-26",
+        "illustrative"
+      ],
+      "notes": "CEA v20.0 vintage-extension for All-India composite grid, FY 2025-26; illustrative_value=true; TODO: replace with published CEA v20/v23 FY27 value once official release lands",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average",
+        "india"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "india_cea_fy27",
+      "source_release": "v20.0",
+      "release_version": "cea-v20.0",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol_Scope2_LocationBased",
+        "IFRS_S2"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_in_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "Source: Central Electricity Authority, Government of India. CO2 Baseline Database v20.",
+        "alternates_considered": [
+          "EF:IN:northern_grid:2025-26:cea-v20.0",
+          "EF:IN:western_grid:2025-26:cea-v20.0",
+          "EF:IN:southern_grid:2025-26:cea-v20.0",
+          "EF:IN:eastern_grid:2025-26:cea-v20.0",
+          "EF:IN:north_eastern_grid:2025-26:cea-v20.0"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:IN:northern_grid:2025-26:cea-v20.0",
+      "fuel_type": "electricity",
+      "unit": "kWh",
+      "geography": "IN",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.655,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "CEA (Central Electricity Authority, India)",
+        "source_publication": "CO2 Baseline Database for the Indian Power Sector",
+        "source_year": 2026,
+        "methodology": "direct_measurement",
+        "source_url": "https://cea.nic.in/cdm-co2-baseline-database/",
+        "version": "v20.0"
+      },
+      "valid_from": "2025-04-01",
+      "valid_to": "2026-03-31",
+      "uncertainty_95ci": 0.08,
+      "dqs": {
+        "temporal": 3,
+        "geographical": 5,
+        "technological": 4,
+        "representativeness": 3,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "India-Public-Information",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "region_hint": "Northern Grid",
+      "tags": [
+        "cea",
+        "india",
+        "grid",
+        "scope2_location_based",
+        "2025-26",
+        "illustrative"
+      ],
+      "notes": "CEA v20.0 vintage-extension for Northern regional grid, FY 2025-26; illustrative_value=true; TODO: replace with published CEA v20/v23 FY27 value once official release lands",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average",
+        "india"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "india_cea_fy27",
+      "source_release": "v20.0",
+      "release_version": "cea-v20.0",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol_Scope2_LocationBased",
+        "IFRS_S2"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_in_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "Source: Central Electricity Authority, Government of India. CO2 Baseline Database v20.",
+        "alternates_considered": [
+          "EF:IN:all_india:2025-26:cea-v20.0",
+          "EF:IN:western_grid:2025-26:cea-v20.0",
+          "EF:IN:southern_grid:2025-26:cea-v20.0",
+          "EF:IN:eastern_grid:2025-26:cea-v20.0",
+          "EF:IN:north_eastern_grid:2025-26:cea-v20.0"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:IN:western_grid:2025-26:cea-v20.0",
+      "fuel_type": "electricity",
+      "unit": "kWh",
+      "geography": "IN",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.815,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "CEA (Central Electricity Authority, India)",
+        "source_publication": "CO2 Baseline Database for the Indian Power Sector",
+        "source_year": 2026,
+        "methodology": "direct_measurement",
+        "source_url": "https://cea.nic.in/cdm-co2-baseline-database/",
+        "version": "v20.0"
+      },
+      "valid_from": "2025-04-01",
+      "valid_to": "2026-03-31",
+      "uncertainty_95ci": 0.08,
+      "dqs": {
+        "temporal": 3,
+        "geographical": 5,
+        "technological": 4,
+        "representativeness": 3,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "India-Public-Information",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "region_hint": "Western Grid",
+      "tags": [
+        "cea",
+        "india",
+        "grid",
+        "scope2_location_based",
+        "2025-26",
+        "illustrative"
+      ],
+      "notes": "CEA v20.0 vintage-extension for Western regional grid, FY 2025-26; illustrative_value=true; TODO: replace with published CEA v20/v23 FY27 value once official release lands",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average",
+        "india"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "india_cea_fy27",
+      "source_release": "v20.0",
+      "release_version": "cea-v20.0",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol_Scope2_LocationBased",
+        "IFRS_S2"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_in_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "Source: Central Electricity Authority, Government of India. CO2 Baseline Database v20.",
+        "alternates_considered": [
+          "EF:IN:all_india:2025-26:cea-v20.0",
+          "EF:IN:northern_grid:2025-26:cea-v20.0",
+          "EF:IN:southern_grid:2025-26:cea-v20.0",
+          "EF:IN:eastern_grid:2025-26:cea-v20.0",
+          "EF:IN:north_eastern_grid:2025-26:cea-v20.0"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:IN:southern_grid:2025-26:cea-v20.0",
+      "fuel_type": "electricity",
+      "unit": "kWh",
+      "geography": "IN",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.505,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "CEA (Central Electricity Authority, India)",
+        "source_publication": "CO2 Baseline Database for the Indian Power Sector",
+        "source_year": 2026,
+        "methodology": "direct_measurement",
+        "source_url": "https://cea.nic.in/cdm-co2-baseline-database/",
+        "version": "v20.0"
+      },
+      "valid_from": "2025-04-01",
+      "valid_to": "2026-03-31",
+      "uncertainty_95ci": 0.08,
+      "dqs": {
+        "temporal": 3,
+        "geographical": 5,
+        "technological": 4,
+        "representativeness": 3,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "India-Public-Information",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "region_hint": "Southern Grid",
+      "tags": [
+        "cea",
+        "india",
+        "grid",
+        "scope2_location_based",
+        "2025-26",
+        "illustrative"
+      ],
+      "notes": "CEA v20.0 vintage-extension for Southern regional grid, FY 2025-26; illustrative_value=true; TODO: replace with published CEA v20/v23 FY27 value once official release lands",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average",
+        "india"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "india_cea_fy27",
+      "source_release": "v20.0",
+      "release_version": "cea-v20.0",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol_Scope2_LocationBased",
+        "IFRS_S2"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_in_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "Source: Central Electricity Authority, Government of India. CO2 Baseline Database v20.",
+        "alternates_considered": [
+          "EF:IN:all_india:2025-26:cea-v20.0",
+          "EF:IN:northern_grid:2025-26:cea-v20.0",
+          "EF:IN:western_grid:2025-26:cea-v20.0",
+          "EF:IN:eastern_grid:2025-26:cea-v20.0",
+          "EF:IN:north_eastern_grid:2025-26:cea-v20.0"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:IN:eastern_grid:2025-26:cea-v20.0",
+      "fuel_type": "electricity",
+      "unit": "kWh",
+      "geography": "IN",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.94,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "CEA (Central Electricity Authority, India)",
+        "source_publication": "CO2 Baseline Database for the Indian Power Sector",
+        "source_year": 2026,
+        "methodology": "direct_measurement",
+        "source_url": "https://cea.nic.in/cdm-co2-baseline-database/",
+        "version": "v20.0"
+      },
+      "valid_from": "2025-04-01",
+      "valid_to": "2026-03-31",
+      "uncertainty_95ci": 0.08,
+      "dqs": {
+        "temporal": 3,
+        "geographical": 5,
+        "technological": 4,
+        "representativeness": 3,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "India-Public-Information",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "region_hint": "Eastern Grid",
+      "tags": [
+        "cea",
+        "india",
+        "grid",
+        "scope2_location_based",
+        "2025-26",
+        "illustrative"
+      ],
+      "notes": "CEA v20.0 vintage-extension for Eastern regional grid, FY 2025-26; illustrative_value=true; TODO: replace with published CEA v20/v23 FY27 value once official release lands",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average",
+        "india"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "india_cea_fy27",
+      "source_release": "v20.0",
+      "release_version": "cea-v20.0",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol_Scope2_LocationBased",
+        "IFRS_S2"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_in_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "Source: Central Electricity Authority, Government of India. CO2 Baseline Database v20.",
+        "alternates_considered": [
+          "EF:IN:all_india:2025-26:cea-v20.0",
+          "EF:IN:northern_grid:2025-26:cea-v20.0",
+          "EF:IN:western_grid:2025-26:cea-v20.0",
+          "EF:IN:southern_grid:2025-26:cea-v20.0",
+          "EF:IN:north_eastern_grid:2025-26:cea-v20.0"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:IN:north_eastern_grid:2025-26:cea-v20.0",
+      "fuel_type": "electricity",
+      "unit": "kWh",
+      "geography": "IN",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.175,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "CEA (Central Electricity Authority, India)",
+        "source_publication": "CO2 Baseline Database for the Indian Power Sector",
+        "source_year": 2026,
+        "methodology": "direct_measurement",
+        "source_url": "https://cea.nic.in/cdm-co2-baseline-database/",
+        "version": "v20.0"
+      },
+      "valid_from": "2025-04-01",
+      "valid_to": "2026-03-31",
+      "uncertainty_95ci": 0.08,
+      "dqs": {
+        "temporal": 3,
+        "geographical": 5,
+        "technological": 4,
+        "representativeness": 3,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "India-Public-Information",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "region_hint": "North Eastern Grid",
+      "tags": [
+        "cea",
+        "india",
+        "grid",
+        "scope2_location_based",
+        "2025-26",
+        "illustrative"
+      ],
+      "notes": "CEA v20.0 vintage-extension for North-Eastern regional grid, FY 2025-26; illustrative_value=true; TODO: replace with published CEA v20/v23 FY27 value once official release lands",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average",
+        "india"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "india_cea_fy27",
+      "source_release": "v20.0",
+      "release_version": "cea-v20.0",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol_Scope2_LocationBased",
+        "IFRS_S2"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_in_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "Source: Central Electricity Authority, Government of India. CO2 Baseline Database v20.",
+        "alternates_considered": [
+          "EF:IN:all_india:2025-26:cea-v20.0",
+          "EF:IN:northern_grid:2025-26:cea-v20.0",
+          "EF:IN:western_grid:2025-26:cea-v20.0",
+          "EF:IN:southern_grid:2025-26:cea-v20.0",
+          "EF:IN:eastern_grid:2025-26:cea-v20.0"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:IN:all_india:2024-25:cea-v20.0",
+      "fuel_type": "electricity",
+      "unit": "kWh",
+      "geography": "IN",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 0.695,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "CEA (Central Electricity Authority, India)",
+        "source_publication": "CO2 Baseline Database for the Indian Power Sector",
+        "source_year": 2025,
+        "methodology": "direct_measurement",
+        "source_url": "https://cea.nic.in/cdm-co2-baseline-database/",
+        "version": "v20.0"
+      },
+      "valid_from": "2024-04-01",
+      "valid_to": "2025-03-31",
+      "uncertainty_95ci": 0.05,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 4,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "India-Public-Information",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "region_hint": null,
+      "tags": [
+        "cea",
+        "india",
+        "grid",
+        "scope2_location_based",
+        "2024-25"
+      ],
+      "notes": "CEA v20.0 vintage-extension for All-India composite grid, FY 2024-25",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average",
+        "india"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "india_cea_fy27",
+      "source_release": "v20.0",
+      "release_version": "cea-v20.0",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol_Scope2_LocationBased",
+        "IFRS_S2"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_in_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "Source: Central Electricity Authority, Government of India. CO2 Baseline Database v20.",
+        "alternates_considered": [
+          "EF:IN:northern_grid:2024-25:cea-v20.0",
+          "EF:IN:western_grid:2024-25:cea-v20.0",
+          "EF:IN:southern_grid:2024-25:cea-v20.0",
+          "EF:IN:eastern_grid:2024-25:cea-v20.0",
+          "EF:IN:north_eastern_grid:2024-25:cea-v20.0"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:IN:northern_grid:2024-25:cea-v20.0",
+      "fuel_type": "electricity",
+      "unit": "kWh",
+      "geography": "IN",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.67,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "CEA (Central Electricity Authority, India)",
+        "source_publication": "CO2 Baseline Database for the Indian Power Sector",
+        "source_year": 2025,
+        "methodology": "direct_measurement",
+        "source_url": "https://cea.nic.in/cdm-co2-baseline-database/",
+        "version": "v20.0"
+      },
+      "valid_from": "2024-04-01",
+      "valid_to": "2025-03-31",
+      "uncertainty_95ci": 0.05,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 4,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "India-Public-Information",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "region_hint": "Northern Grid",
+      "tags": [
+        "cea",
+        "india",
+        "grid",
+        "scope2_location_based",
+        "2024-25"
+      ],
+      "notes": "CEA v20.0 vintage-extension for Northern regional grid, FY 2024-25",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average",
+        "india"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "india_cea_fy27",
+      "source_release": "v20.0",
+      "release_version": "cea-v20.0",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol_Scope2_LocationBased",
+        "IFRS_S2"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_in_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "Source: Central Electricity Authority, Government of India. CO2 Baseline Database v20.",
+        "alternates_considered": [
+          "EF:IN:all_india:2024-25:cea-v20.0",
+          "EF:IN:western_grid:2024-25:cea-v20.0",
+          "EF:IN:southern_grid:2024-25:cea-v20.0",
+          "EF:IN:eastern_grid:2024-25:cea-v20.0",
+          "EF:IN:north_eastern_grid:2024-25:cea-v20.0"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:IN:western_grid:2024-25:cea-v20.0",
+      "fuel_type": "electricity",
+      "unit": "kWh",
+      "geography": "IN",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.83,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "CEA (Central Electricity Authority, India)",
+        "source_publication": "CO2 Baseline Database for the Indian Power Sector",
+        "source_year": 2025,
+        "methodology": "direct_measurement",
+        "source_url": "https://cea.nic.in/cdm-co2-baseline-database/",
+        "version": "v20.0"
+      },
+      "valid_from": "2024-04-01",
+      "valid_to": "2025-03-31",
+      "uncertainty_95ci": 0.05,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 4,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "India-Public-Information",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "region_hint": "Western Grid",
+      "tags": [
+        "cea",
+        "india",
+        "grid",
+        "scope2_location_based",
+        "2024-25"
+      ],
+      "notes": "CEA v20.0 vintage-extension for Western regional grid, FY 2024-25",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average",
+        "india"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "india_cea_fy27",
+      "source_release": "v20.0",
+      "release_version": "cea-v20.0",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol_Scope2_LocationBased",
+        "IFRS_S2"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_in_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "Source: Central Electricity Authority, Government of India. CO2 Baseline Database v20.",
+        "alternates_considered": [
+          "EF:IN:all_india:2024-25:cea-v20.0",
+          "EF:IN:northern_grid:2024-25:cea-v20.0",
+          "EF:IN:southern_grid:2024-25:cea-v20.0",
+          "EF:IN:eastern_grid:2024-25:cea-v20.0",
+          "EF:IN:north_eastern_grid:2024-25:cea-v20.0"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:IN:southern_grid:2024-25:cea-v20.0",
+      "fuel_type": "electricity",
+      "unit": "kWh",
+      "geography": "IN",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.52,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "CEA (Central Electricity Authority, India)",
+        "source_publication": "CO2 Baseline Database for the Indian Power Sector",
+        "source_year": 2025,
+        "methodology": "direct_measurement",
+        "source_url": "https://cea.nic.in/cdm-co2-baseline-database/",
+        "version": "v20.0"
+      },
+      "valid_from": "2024-04-01",
+      "valid_to": "2025-03-31",
+      "uncertainty_95ci": 0.05,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 4,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "India-Public-Information",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "region_hint": "Southern Grid",
+      "tags": [
+        "cea",
+        "india",
+        "grid",
+        "scope2_location_based",
+        "2024-25"
+      ],
+      "notes": "CEA v20.0 vintage-extension for Southern regional grid, FY 2024-25",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average",
+        "india"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "india_cea_fy27",
+      "source_release": "v20.0",
+      "release_version": "cea-v20.0",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol_Scope2_LocationBased",
+        "IFRS_S2"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_in_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "Source: Central Electricity Authority, Government of India. CO2 Baseline Database v20.",
+        "alternates_considered": [
+          "EF:IN:all_india:2024-25:cea-v20.0",
+          "EF:IN:northern_grid:2024-25:cea-v20.0",
+          "EF:IN:western_grid:2024-25:cea-v20.0",
+          "EF:IN:eastern_grid:2024-25:cea-v20.0",
+          "EF:IN:north_eastern_grid:2024-25:cea-v20.0"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:IN:eastern_grid:2024-25:cea-v20.0",
+      "fuel_type": "electricity",
+      "unit": "kWh",
+      "geography": "IN",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.955,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "CEA (Central Electricity Authority, India)",
+        "source_publication": "CO2 Baseline Database for the Indian Power Sector",
+        "source_year": 2025,
+        "methodology": "direct_measurement",
+        "source_url": "https://cea.nic.in/cdm-co2-baseline-database/",
+        "version": "v20.0"
+      },
+      "valid_from": "2024-04-01",
+      "valid_to": "2025-03-31",
+      "uncertainty_95ci": 0.05,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 4,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "India-Public-Information",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "region_hint": "Eastern Grid",
+      "tags": [
+        "cea",
+        "india",
+        "grid",
+        "scope2_location_based",
+        "2024-25"
+      ],
+      "notes": "CEA v20.0 vintage-extension for Eastern regional grid, FY 2024-25",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average",
+        "india"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "india_cea_fy27",
+      "source_release": "v20.0",
+      "release_version": "cea-v20.0",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol_Scope2_LocationBased",
+        "IFRS_S2"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_in_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "Source: Central Electricity Authority, Government of India. CO2 Baseline Database v20.",
+        "alternates_considered": [
+          "EF:IN:all_india:2024-25:cea-v20.0",
+          "EF:IN:northern_grid:2024-25:cea-v20.0",
+          "EF:IN:western_grid:2024-25:cea-v20.0",
+          "EF:IN:southern_grid:2024-25:cea-v20.0",
+          "EF:IN:north_eastern_grid:2024-25:cea-v20.0"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:IN:north_eastern_grid:2024-25:cea-v20.0",
+      "fuel_type": "electricity",
+      "unit": "kWh",
+      "geography": "IN",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.185,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "CEA (Central Electricity Authority, India)",
+        "source_publication": "CO2 Baseline Database for the Indian Power Sector",
+        "source_year": 2025,
+        "methodology": "direct_measurement",
+        "source_url": "https://cea.nic.in/cdm-co2-baseline-database/",
+        "version": "v20.0"
+      },
+      "valid_from": "2024-04-01",
+      "valid_to": "2025-03-31",
+      "uncertainty_95ci": 0.05,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 4,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "India-Public-Information",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "region_hint": "North Eastern Grid",
+      "tags": [
+        "cea",
+        "india",
+        "grid",
+        "scope2_location_based",
+        "2024-25"
+      ],
+      "notes": "CEA v20.0 vintage-extension for North-Eastern regional grid, FY 2024-25",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average",
+        "india"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "india_cea_fy27",
+      "source_release": "v20.0",
+      "release_version": "cea-v20.0",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol_Scope2_LocationBased",
+        "IFRS_S2"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_in_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "Source: Central Electricity Authority, Government of India. CO2 Baseline Database v20.",
+        "alternates_considered": [
+          "EF:IN:all_india:2024-25:cea-v20.0",
+          "EF:IN:northern_grid:2024-25:cea-v20.0",
+          "EF:IN:western_grid:2024-25:cea-v20.0",
+          "EF:IN:southern_grid:2024-25:cea-v20.0",
+          "EF:IN:eastern_grid:2024-25:cea-v20.0"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:IN:all_india:2027-28:cea-v20.0",
+      "fuel_type": "electricity",
+      "unit": "kWh",
+      "geography": "IN",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 0.65,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "CEA (Central Electricity Authority, India)",
+        "source_publication": "CO2 Baseline Database for the Indian Power Sector",
+        "source_year": 2028,
+        "methodology": "direct_measurement",
+        "source_url": "https://cea.nic.in/cdm-co2-baseline-database/",
+        "version": "v20.0"
+      },
+      "valid_from": "2027-04-01",
+      "valid_to": "2028-03-31",
+      "uncertainty_95ci": 0.08,
+      "dqs": {
+        "temporal": 3,
+        "geographical": 5,
+        "technological": 4,
+        "representativeness": 3,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "India-Public-Information",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "region_hint": null,
+      "tags": [
+        "cea",
+        "india",
+        "grid",
+        "scope2_location_based",
+        "2027-28",
+        "illustrative"
+      ],
+      "notes": "CEA v20.0 vintage-extension for All-India composite grid, FY 2027-28; illustrative_value=true; TODO: replace with published CEA v20/v23 FY27 value once official release lands",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average",
+        "india"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "india_cea_fy27",
+      "source_release": "v20.0",
+      "release_version": "cea-v20.0",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol_Scope2_LocationBased",
+        "IFRS_S2"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_in_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "Source: Central Electricity Authority, Government of India. CO2 Baseline Database v20."
+      }
+    }
+  ]
+}

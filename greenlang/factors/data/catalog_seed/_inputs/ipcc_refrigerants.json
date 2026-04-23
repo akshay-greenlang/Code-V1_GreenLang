@@ -1,0 +1,26 @@
+{
+  "metadata": {
+    "source": "IPCC",
+    "source_publication": "IPCC AR5 WGI Ch 8 + AR6 WGI Ch 7 — 100-year GWP values for halogenated gases",
+    "source_url": "https://www.ipcc.ch/"
+  },
+  "_seed_note": "IPCC 100-year GWPs for 12 common refrigerant gases + 4 high-GWP utility gases. Values sourced from the IPCC AR5 (2013) and AR6 (2021) Assessment Reports and widely republished in EPA, UNEP, and UK DESNZ guidance. Each gas emits TWO factor records (AR5 and AR6 basis) so reporters can choose the GWP assessment version that matches their corporate protocol. Blend refrigerants (R-410A, R-404A, etc.) use published blend GWPs as widely cited in ASHRAE / UNEP refrigerant reference tables.",
+  "gases": [
+    {"gas_id": "r_22",     "display_name": "R-22",     "formula": "HCFC-22 / CHClF2",        "gwp_ar5_100": 1760, "gwp_ar6_100": 1780, "kind": "hcfc"},
+    {"gas_id": "r_32",     "display_name": "R-32",     "formula": "HFC-32 / CH2F2",          "gwp_ar5_100": 677,  "gwp_ar6_100": 771,  "kind": "hfc"},
+    {"gas_id": "r_134a",   "display_name": "R-134a",   "formula": "HFC-134a / CH2FCF3",      "gwp_ar5_100": 1300, "gwp_ar6_100": 1530, "kind": "hfc"},
+    {"gas_id": "r_410a",   "display_name": "R-410A",   "formula": "Blend 50/50 HFC-32/125",  "gwp_ar5_100": 1924, "gwp_ar6_100": 2256, "kind": "hfc_blend"},
+    {"gas_id": "r_404a",   "display_name": "R-404A",   "formula": "Blend HFC-125/143a/134a", "gwp_ar5_100": 3922, "gwp_ar6_100": 4728, "kind": "hfc_blend"},
+    {"gas_id": "r_507",    "display_name": "R-507A",   "formula": "Blend HFC-125/143a",      "gwp_ar5_100": 3985, "gwp_ar6_100": 4758, "kind": "hfc_blend"},
+    {"gas_id": "r_1234yf", "display_name": "R-1234yf", "formula": "HFO-1234yf",              "gwp_ar5_100": 4,    "gwp_ar6_100": 0.501,"kind": "hfo"},
+    {"gas_id": "r_1234ze", "display_name": "R-1234ze", "formula": "HFO-1234ze(E)",           "gwp_ar5_100": 7,    "gwp_ar6_100": 1.37, "kind": "hfo"},
+    {"gas_id": "r_452a",   "display_name": "R-452A",   "formula": "Blend HFC/HFO",           "gwp_ar5_100": 2141, "gwp_ar6_100": 2292, "kind": "hfc_hfo_blend"},
+    {"gas_id": "r_513a",   "display_name": "R-513A",   "formula": "Blend HFO-1234yf/134a",   "gwp_ar5_100": 631,  "gwp_ar6_100": 742,  "kind": "hfc_hfo_blend"},
+    {"gas_id": "r_448a",   "display_name": "R-448A",   "formula": "Blend HFC/HFO",           "gwp_ar5_100": 1387, "gwp_ar6_100": 1526, "kind": "hfc_hfo_blend"},
+    {"gas_id": "r_407f",   "display_name": "R-407F",   "formula": "Blend HFC-32/125/134a",   "gwp_ar5_100": 1825, "gwp_ar6_100": 2088, "kind": "hfc_blend"},
+    {"gas_id": "r_23",     "display_name": "R-23",     "formula": "HFC-23 / CHF3",           "gwp_ar5_100": 12400,"gwp_ar6_100": 14600,"kind": "hfc"},
+    {"gas_id": "sf6",      "display_name": "SF6",      "formula": "Sulfur hexafluoride",     "gwp_ar5_100": 23500,"gwp_ar6_100": 24300,"kind": "sf6"},
+    {"gas_id": "nf3",      "display_name": "NF3",      "formula": "Nitrogen trifluoride",    "gwp_ar5_100": 16100,"gwp_ar6_100": 17400,"kind": "nf3"},
+    {"gas_id": "cf4",      "display_name": "CF4",      "formula": "PFC-14 / Tetrafluoromethane","gwp_ar5_100": 6630, "gwp_ar6_100": 7380, "kind": "pfc"}
+  ]
+}

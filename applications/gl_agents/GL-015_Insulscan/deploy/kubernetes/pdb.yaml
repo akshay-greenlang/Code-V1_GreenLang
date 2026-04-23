@@ -1,0 +1,266 @@
+# GL-015 INSULSCAN Pod Disruption Budget
+# Insulation Scanning & Thermal Assessment Agent
+# Ensures high availability during voluntary disruptions (upgrades, maintenance)
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: gl-015-insulscan-pdb
+  namespace: greenlang
+  labels:
+    app: gl-015-insulscan
+    app.kubernetes.io/name: gl-015-insulscan
+    app.kubernetes.io/instance: gl-015-insulscan-production
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/component: availability
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/managed-by: gitops
+    component: insulation-scanner
+    agent-id: GL-015
+    codename: INSULSCAN
+  annotations:
+    kubernetes.io/description: "Pod Disruption Budget for GL-015 INSULSCAN - ensures at least 1 pod is available during disruptions"
+spec:
+  # Minimum number of pods that must remain available during voluntary disruptions
+  # This ensures continuous service during node drains, upgrades, etc.
+  minAvailable: 1
+
+  # Alternative: Use maxUnavailable instead
+  # maxUnavailable: 1
+
+  # Selector to match pods covered by this PDB
+  selector:
+    matchLabels:
+      app: gl-015-insulscan
+
+  # Unhealthy pod eviction policy (Kubernetes 1.27+)
+  # Options:
+  # - IfHealthyBudget: Only evict unhealthy pods if the budget is healthy
+  # - AlwaysAllow: Always allow eviction of unhealthy pods
+  # unhealthyPodEvictionPolicy: IfHealthyBudget
+
+---
+# Priority Class for GL-015 INSULSCAN
+# Ensures critical thermal assessment workloads are prioritized
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: gl-015-insulscan-priority
+  labels:
+    app: gl-015-insulscan
+    app.kubernetes.io/name: gl-015-insulscan
+    app.kubernetes.io/component: scheduling
+    agent-id: GL-015
+    codename: INSULSCAN
+  annotations:
+    kubernetes.io/description: "Priority class for GL-015 INSULSCAN workloads"
+# Value between -2147483648 and 1000000000
+# Higher values mean higher priority
+# System-critical pods typically use values > 1000000000
+value: 100000
+globalDefault: false
+preemptionPolicy: PreemptLowerPriority
+description: "Priority class for GL-015 INSULSCAN Insulation Scanning Agent - ensures thermal assessment workloads are scheduled with high priority"
+
+---
+# Resource Quota for GL-015 INSULSCAN namespace resources
+# Limits the total resources that can be consumed
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: gl-015-insulscan-quota
+  namespace: greenlang
+  labels:
+    app: gl-015-insulscan
+    app.kubernetes.io/name: gl-015-insulscan
+    app.kubernetes.io/component: resource-management
+    agent-id: GL-015
+    codename: INSULSCAN
+  annotations:
+    kubernetes.io/description: "Resource quota for GL-015 INSULSCAN workloads"
+spec:
+  hard:
+    # Compute resources
+    requests.cpu: "10"
+    requests.memory: "20Gi"
+    limits.cpu: "20"
+    limits.memory: "40Gi"
+
+    # Storage resources
+    requests.storage: "100Gi"
+    persistentvolumeclaims: "10"
+
+    # Object counts
+    pods: "20"
+    services: "10"
+    secrets: "20"
+    configmaps: "20"
+
+    # Specific resource types
+    count/deployments.apps: "5"
+    count/replicasets.apps: "20"
+    count/services: "10"
+
+---
+# Limit Range for GL-015 INSULSCAN pods
+# Sets default and maximum resource limits for containers
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: gl-015-insulscan-limits
+  namespace: greenlang
+  labels:
+    app: gl-015-insulscan
+    app.kubernetes.io/name: gl-015-insulscan
+    app.kubernetes.io/component: resource-management
+    agent-id: GL-015
+    codename: INSULSCAN
+  annotations:
+    kubernetes.io/description: "Limit range for GL-015 INSULSCAN containers"
+spec:
+  limits:
+    # Container limits
+    - type: Container
+      default:
+        cpu: "1000m"
+        memory: "1Gi"
+      defaultRequest:
+        cpu: "250m"
+        memory: "256Mi"
+      max:
+        cpu: "4000m"
+        memory: "8Gi"
+      min:
+        cpu: "50m"
+        memory: "64Mi"
+
+    # Pod limits
+    - type: Pod
+      max:
+        cpu: "8000m"
+        memory: "16Gi"
+      min:
+        cpu: "100m"
+        memory: "128Mi"
+
+    # PVC limits
+    - type: PersistentVolumeClaim
+      max:
+        storage: "50Gi"
+      min:
+        storage: "1Gi"
+
+---
+# PrometheusRule for availability alerts
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: gl-015-insulscan-availability-alerts
+  namespace: greenlang
+  labels:
+    app: gl-015-insulscan
+    app.kubernetes.io/name: gl-015-insulscan
+    app.kubernetes.io/component: alerting
+    agent-id: GL-015
+    codename: INSULSCAN
+    prometheus: kube-prometheus
+    role: alert-rules
+spec:
+  groups:
+    - name: gl-015-insulscan-availability
+      interval: 30s
+      rules:
+        # Alert when available replicas are below minimum
+        - alert: GL015InsulscanLowAvailability
+          expr: |
+            kube_deployment_status_replicas_available{deployment="gl-015-insulscan", namespace="greenlang"} < 2
+          for: 5m
+          labels:
+            severity: warning
+            agent_id: GL-015
+            codename: INSULSCAN
+          annotations:
+            summary: "GL-015 INSULSCAN low availability"
+            description: "GL-015 INSULSCAN has only {{ $value }} available replicas, which is below the minimum of 2."
+
+        # Alert when no replicas are available
+        - alert: GL015InsulscanDown
+          expr: |
+            kube_deployment_status_replicas_available{deployment="gl-015-insulscan", namespace="greenlang"} == 0
+          for: 1m
+          labels:
+            severity: critical
+            agent_id: GL-015
+            codename: INSULSCAN
+            pagerduty: "true"
+          annotations:
+            summary: "GL-015 INSULSCAN is down"
+            description: "GL-015 INSULSCAN has no available replicas. Thermal scanning service is completely unavailable."
+
+        # Alert on pod restart loops
+        - alert: GL015InsulscanPodRestartLoop
+          expr: |
+            increase(kube_pod_container_status_restarts_total{namespace="greenlang", pod=~"gl-015-insulscan-.*"}[1h]) > 5
+          for: 5m
+          labels:
+            severity: warning
+            agent_id: GL-015
+            codename: INSULSCAN
+          annotations:
+            summary: "GL-015 INSULSCAN pod restart loop"
+            description: "GL-015 INSULSCAN pod {{ $labels.pod }} has restarted {{ $value }} times in the last hour."
+
+        # Alert on deployment rollout stuck
+        - alert: GL015InsulscanRolloutStuck
+          expr: |
+            kube_deployment_status_observed_generation{deployment="gl-015-insulscan", namespace="greenlang"}
+            !=
+            kube_deployment_metadata_generation{deployment="gl-015-insulscan", namespace="greenlang"}
+          for: 15m
+          labels:
+            severity: warning
+            agent_id: GL-015
+            codename: INSULSCAN
+          annotations:
+            summary: "GL-015 INSULSCAN rollout stuck"
+            description: "GL-015 INSULSCAN deployment rollout has been stuck for more than 15 minutes."
+
+        # Alert on PDB violation attempts
+        - alert: GL015InsulscanPDBViolation
+          expr: |
+            kube_poddisruptionbudget_status_pod_disruptions_allowed{poddisruptionbudget="gl-015-insulscan-pdb", namespace="greenlang"} == 0
+            and
+            kube_poddisruptionbudget_status_current_healthy{poddisruptionbudget="gl-015-insulscan-pdb", namespace="greenlang"} <= 1
+          for: 10m
+          labels:
+            severity: warning
+            agent_id: GL-015
+            codename: INSULSCAN
+          annotations:
+            summary: "GL-015 INSULSCAN PDB at minimum"
+            description: "GL-015 INSULSCAN PDB is at minimum healthy pods. Further disruptions are blocked."
+
+        # Alert on container OOMKilled
+        - alert: GL015InsulscanOOMKilled
+          expr: |
+            kube_pod_container_status_last_terminated_reason{namespace="greenlang", pod=~"gl-015-insulscan-.*", reason="OOMKilled"} == 1
+          for: 0m
+          labels:
+            severity: warning
+            agent_id: GL-015
+            codename: INSULSCAN
+          annotations:
+            summary: "GL-015 INSULSCAN container OOMKilled"
+            description: "GL-015 INSULSCAN container {{ $labels.container }} in pod {{ $labels.pod }} was OOMKilled. Consider increasing memory limits."
+
+        # Alert on image pull failures
+        - alert: GL015InsulscanImagePullFailure
+          expr: |
+            kube_pod_container_status_waiting_reason{namespace="greenlang", pod=~"gl-015-insulscan-.*", reason=~"ImagePullBackOff|ErrImagePull"} == 1
+          for: 5m
+          labels:
+            severity: critical
+            agent_id: GL-015
+            codename: INSULSCAN
+          annotations:
+            summary: "GL-015 INSULSCAN image pull failure"
+            description: "GL-015 INSULSCAN pod {{ $labels.pod }} is unable to pull container image."

@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.greenlang.io/factors/categories/land_removals.schema.json",
+  "title": "Factor Parameters — Land Use & Removals (v1.0)",
+  "description": "Parameter sub-schema applied when factor_record.factor_family == 'land_removals'. Aligned with GHG Protocol Land Sector and Removals Guidance (LSR, 2022) and IPCC 2006 / 2019 Refinement Volume 4. Frozen v1.0 — 2026-04-22.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["land_use_category", "sequestration_basis"],
+  "properties": {
+    "scope_applicability": {
+      "type": "array",
+      "items": { "type": "string", "enum": ["scope_1", "scope_2", "scope_3", "scope_4"] },
+      "uniqueItems": true,
+      "default": ["scope_1"]
+    },
+    "uncertainty_low": { "type": ["number", "null"] },
+    "uncertainty_high": { "type": ["number", "null"] },
+    "land_use_category": {
+      "type": "string",
+      "enum": [
+        "forest_land",
+        "cropland",
+        "grassland",
+        "wetlands",
+        "settlements",
+        "other_land"
+      ],
+      "description": "IPCC 2006 Volume 4 land-use category."
+    },
+    "sequestration_basis": {
+      "type": "string",
+      "enum": ["stock_change", "flux", "gain_loss", "tier1_default", "tier3_model"],
+      "description": "Estimation approach. 'stock_change' = ΔC stock method; 'flux' = direct flux measurement; 'gain_loss' = IPCC gain-loss method; 'tier1_default' = IPCC Tier 1 default EF; 'tier3_model' = country-specific model."
+    },
+    "removal_basis": {
+      "type": ["string", "null"],
+      "enum": [
+        "biomass_growth",
+        "soil_organic_carbon",
+        "harvested_wood_products",
+        "geological",
+        "ocean",
+        "engineered",
+        null
+      ],
+      "description": "Pool or mechanism providing the removal credit."
+    },
+    "permanence_class": {
+      "type": ["string", "null"],
+      "enum": ["short_term", "medium_term", "long_term", "permanent", null],
+      "description": "Expected durability of the storage. short_term = <20 yr; medium_term = 20–100 yr; long_term = 100–1000 yr; permanent = >1000 yr (e.g., mineralisation)."
+    },
+    "reversal_risk_flag": {
+      "type": "boolean",
+      "default": false,
+      "description": "True when the stored carbon is at material risk of release (fire, disease, land-use change). Drives the buffer-pool deduction in LSR."
+    },
+    "biogenic_accounting_treatment": {
+      "type": ["string", "null"],
+      "enum": ["zero_rated", "separate_reporting", "included_in_co2e", null],
+      "description": "How biogenic CO2 is handled. 'zero_rated' = GHG Protocol default (biogenic = 0); 'separate_reporting' = reported alongside but not in co2e total; 'included_in_co2e' = LSR Track 2 / ISO 14067 option."
+    }
+  }
+}

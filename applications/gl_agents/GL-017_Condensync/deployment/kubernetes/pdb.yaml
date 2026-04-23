@@ -1,0 +1,175 @@
+# GL-017_Condensync Pod Disruption Budget
+# Ensures high availability during voluntary disruptions
+# Version: 1.0.0
+
+---
+# Pod Disruption Budget - Availability Based
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: gl-017-condensync-pdb
+  namespace: greenlang
+  labels:
+    app: gl-017-condensync
+    app.kubernetes.io/name: gl-017-condensync
+    app.kubernetes.io/component: availability
+spec:
+  # Minimum pods that must be available (recommended for most cases)
+  minAvailable: 2
+
+  # Alternative: Maximum pods that can be unavailable
+  # maxUnavailable: 1
+
+  selector:
+    matchLabels:
+      app: gl-017-condensync
+
+  # Unhealthy Pod Eviction Policy (Kubernetes 1.27+)
+  # AlwaysAllow: Always allow eviction of unhealthy pods
+  # IfHealthyBudget: Only allow eviction of unhealthy pods if budget allows
+  unhealthyPodEvictionPolicy: IfHealthyBudget
+
+---
+# Pod Disruption Budget - Percentage Based (Alternative)
+# Use this for larger deployments where percentage is more meaningful
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: gl-017-condensync-pdb-percentage
+  namespace: greenlang
+  labels:
+    app: gl-017-condensync
+    app.kubernetes.io/name: gl-017-condensync
+spec:
+  # At least 66% of pods must be available
+  minAvailable: 66%
+
+  # Or: At most 33% of pods can be unavailable
+  # maxUnavailable: 33%
+
+  selector:
+    matchLabels:
+      app: gl-017-condensync
+
+---
+# Priority Class for GL-017 Condensync (High Priority)
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: gl-017-condensync-high-priority
+  labels:
+    app: gl-017-condensync
+    app.kubernetes.io/part-of: greenlang
+globalDefault: false
+value: 1000000
+preemptionPolicy: PreemptLowerPriority
+description: "High priority class for GL-017 Condensync production workloads"
+
+---
+# Priority Class for GL-017 Condensync (Standard)
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: gl-017-condensync-standard-priority
+  labels:
+    app: gl-017-condensync
+    app.kubernetes.io/part-of: greenlang
+globalDefault: false
+value: 500000
+preemptionPolicy: PreemptLowerPriority
+description: "Standard priority class for GL-017 Condensync staging/dev workloads"
+
+---
+# Priority Class for GL-017 Batch Jobs
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: gl-017-condensync-batch-priority
+  labels:
+    app: gl-017-condensync
+    app.kubernetes.io/part-of: greenlang
+globalDefault: false
+value: 100000
+preemptionPolicy: Never
+description: "Low priority class for GL-017 Condensync batch/background jobs"
+
+---
+# Resource Quota (Namespace Level for GL-017)
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: gl-017-condensync-quota
+  namespace: greenlang
+  labels:
+    app: gl-017-condensync
+    app.kubernetes.io/part-of: greenlang
+spec:
+  hard:
+    # Compute Resources
+    requests.cpu: "50"
+    requests.memory: 100Gi
+    limits.cpu: "100"
+    limits.memory: 200Gi
+
+    # Storage
+    requests.storage: 500Gi
+    persistentvolumeclaims: "20"
+    requests.ephemeral-storage: 100Gi
+
+    # Object Counts
+    pods: "100"
+    services: "20"
+    secrets: "50"
+    configmaps: "50"
+    replicationcontrollers: "10"
+    services.loadbalancers: "3"
+    services.nodeports: "5"
+
+    # High Priority Pods limit
+    count/pods.high-priority: "20"
+
+---
+# Limit Range (Default Limits for GL-017 containers)
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: gl-017-condensync-limits
+  namespace: greenlang
+  labels:
+    app: gl-017-condensync
+    app.kubernetes.io/part-of: greenlang
+spec:
+  limits:
+    # Container Defaults
+    - type: Container
+      default:
+        cpu: 1000m
+        memory: 1Gi
+      defaultRequest:
+        cpu: 250m
+        memory: 256Mi
+      min:
+        cpu: 100m
+        memory: 128Mi
+      max:
+        cpu: 4
+        memory: 8Gi
+      maxLimitRequestRatio:
+        cpu: 8
+        memory: 4
+
+    # Pod Defaults
+    - type: Pod
+      max:
+        cpu: 8
+        memory: 16Gi
+      min:
+        cpu: 100m
+        memory: 128Mi
+
+    # PVC Defaults
+    - type: PersistentVolumeClaim
+      min:
+        storage: 1Gi
+      max:
+        storage: 100Gi

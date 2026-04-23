@@ -17,11 +17,63 @@ from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 from greenlang.data.emission_factor_record import EmissionFactorRecord
 
+# CTO non-negotiable #6: when called from inside a policy workflow
+# (CBAM / CSRD / EUDR / India-CCTS) the raw factor lookup must carry
+# a ``method_profile``. The guard is a no-op for library / CLI / dev
+# SDK callers that haven't opted in via ``@policy_workflow``.
+from greenlang.factors.middleware.method_profile_guard import require_method_profile
+
 logger = logging.getLogger(__name__)
 
 
+def _is_v1_shape(payload: Dict[str, Any]) -> bool:
+    """Detect the v1 serialised shape (W4-A canonical record).
+
+    The v1 shape has structured ``numerator`` / ``denominator`` / ``quality`` /
+    ``lineage`` / ``licensing`` / ``jurisdiction`` sub-objects and no top-level
+    ``vectors`` / ``dqs`` / ``license_info``.  The legacy shape has the latter.
+    """
+    if not isinstance(payload, dict):
+        return False
+    has_numerator = isinstance(payload.get("numerator"), dict) and "unit" in (
+        payload.get("numerator") or {}
+    )
+    has_jurisdiction = isinstance(payload.get("jurisdiction"), dict) and "country" in (
+        payload.get("jurisdiction") or {}
+    )
+    has_quality = isinstance(payload.get("quality"), dict) and (
+        "composite_fqs" in (payload.get("quality") or {})
+        or "temporal_score" in (payload.get("quality") or {})
+    )
+    return has_numerator and has_jurisdiction and has_quality
+
+
+def _v1_to_legacy_dict(payload: Dict[str, Any]) -> Dict[str, Any]:
+    """Project a v1-shape payload back to legacy EmissionFactorRecord dict.
+
+    Kept here to avoid importing ``canonical_v1`` at module top (circular risk
+    during early app boot).
+    """
+    from greenlang.factors.data import canonical_v1
+
+    try:
+        record = canonical_v1.FactorRecordV1(**payload)
+    except Exception:  # last-ditch: re-run through from_legacy_dict
+        record = canonical_v1.from_legacy_dict(payload)
+    return canonical_v1.to_legacy_dict(record)
+
+
 def _record_from_stored_payload(payload: Dict[str, Any]) -> EmissionFactorRecord:
-    """Strip dataclass-only keys (e.g. GHGVectors class constants) from stored JSON."""
+    """Strip dataclass-only keys (e.g. GHGVectors class constants) from stored JSON.
+
+    Also handles the v1 canonical shape (W4-A): if the incoming payload uses
+    the v1 field layout (``numerator`` / ``denominator`` / ``jurisdiction`` /
+    ``quality`` / ``lineage`` / ``licensing``), it is first back-projected to
+    the legacy dataclass shape so the existing `EmissionFactorRecord.from_dict`
+    deserialisation continues to work without a downstream migration.
+    """
+    if _is_v1_shape(payload):
+        payload = _v1_to_legacy_dict(payload)
     data = dict(payload)
     vec = dict(data.get("vectors") or {})
     allowed = (
@@ -107,11 +159,19 @@ class FactorCatalogRepository(ABC):
         limit: int = 100,
         include_preview: bool = False,
         include_connector: bool = False,
+        *,
+        method_profile: Optional[Any] = None,
     ) -> Tuple[List[EmissionFactorRecord], int]:
         raise NotImplementedError
 
     @abstractmethod
-    def get_factor(self, edition_id: str, factor_id: str) -> Optional[EmissionFactorRecord]:
+    def get_factor(
+        self,
+        edition_id: str,
+        factor_id: str,
+        *,
+        method_profile: Optional[Any] = None,
+    ) -> Optional[EmissionFactorRecord]:
         raise NotImplementedError
 
     @abstractmethod
@@ -523,7 +583,16 @@ class SqliteFactorCatalogRepository(FactorCatalogRepository):
         limit: int = 100,
         include_preview: bool = False,
         include_connector: bool = False,
+        *,
+        method_profile: Optional[Any] = None,
     ) -> Tuple[List[EmissionFactorRecord], int]:
+        # N6 guard — a policy workflow (CBAM / CSRD / EUDR / India-CCTS)
+        # must never reach the raw catalog list without a method_profile.
+        # No-op for Explorer / developer SDK / CLI callers.
+        require_method_profile(
+            {"method_profile": method_profile},
+            caller="SqliteFactorCatalogRepository.list_factors",
+        )
         clauses = ["edition_id = ?"]
         params: List[Any] = [edition_id]
         clauses.append(_status_visibility_sql(include_preview, include_connector))
@@ -561,7 +630,18 @@ class SqliteFactorCatalogRepository(FactorCatalogRepository):
         finally:
             conn.close()
 
-    def get_factor(self, edition_id: str, factor_id: str) -> Optional[EmissionFactorRecord]:
+    def get_factor(
+        self,
+        edition_id: str,
+        factor_id: str,
+        *,
+        method_profile: Optional[Any] = None,
+    ) -> Optional[EmissionFactorRecord]:
+        # N6 guard — see ``list_factors`` above.
+        require_method_profile(
+            {"method_profile": method_profile},
+            caller="SqliteFactorCatalogRepository.get_factor",
+        )
         conn = self._conn()
         try:
             r = conn.execute(
@@ -830,7 +910,15 @@ class MemoryFactorCatalogRepository(FactorCatalogRepository):
         limit: int = 100,
         include_preview: bool = False,
         include_connector: bool = False,
+        *,
+        method_profile: Optional[Any] = None,
     ) -> Tuple[List[EmissionFactorRecord], int]:
+        # N6 guard — policy workflows must bind a method_profile before
+        # reaching the catalog. No-op outside ``@policy_workflow`` scope.
+        require_method_profile(
+            {"method_profile": method_profile},
+            caller="MemoryFactorCatalogRepository.list_factors",
+        )
         if edition_id != self.edition_id:
             return [], 0
         rows = self._db.list_factors(
@@ -850,7 +938,18 @@ class MemoryFactorCatalogRepository(FactorCatalogRepository):
         start = (page - 1) * limit
         return filtered[start : start + limit], total
 
-    def get_factor(self, edition_id: str, factor_id: str) -> Optional[EmissionFactorRecord]:
+    def get_factor(
+        self,
+        edition_id: str,
+        factor_id: str,
+        *,
+        method_profile: Optional[Any] = None,
+    ) -> Optional[EmissionFactorRecord]:
+        # N6 guard — see ``list_factors`` above.
+        require_method_profile(
+            {"method_profile": method_profile},
+            caller="MemoryFactorCatalogRepository.get_factor",
+        )
         if edition_id != self.edition_id:
             return None
         for f in self._factors:

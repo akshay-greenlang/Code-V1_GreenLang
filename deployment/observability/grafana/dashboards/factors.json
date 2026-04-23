@@ -1,0 +1,344 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "datasource",
+          "uid": "grafana"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "description": "GreenLang Factors API staging — resolve traffic, FQS quality, entitlement denials, signed-receipts, source-watch health, and cannot_resolve_safely methodology gaps.",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "uid": "greenlang-factors-staging",
+  "title": "GreenLang Factors — Staging",
+  "tags": ["factors", "greenlang"],
+  "schemaVersion": 38,
+  "style": "dark",
+  "timezone": "",
+  "refresh": "30s",
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {
+    "refresh_intervals": ["5s", "10s", "30s", "1m", "5m", "15m"]
+  },
+  "templating": {
+    "list": [
+      {
+        "name": "datasource",
+        "label": "Prometheus",
+        "type": "datasource",
+        "query": "prometheus",
+        "current": {},
+        "hide": 0,
+        "includeAll": false,
+        "multi": false,
+        "refresh": 1,
+        "skipUrlSync": false
+      },
+      {
+        "name": "family",
+        "label": "Factor family",
+        "type": "query",
+        "datasource": {"type": "prometheus", "uid": "${datasource}"},
+        "query": {
+          "qryType": 1,
+          "query": "label_values(factors_resolve_requests_total, family)",
+          "refId": "PrometheusVariableQueryEditor-VariableQuery"
+        },
+        "refresh": 2,
+        "includeAll": true,
+        "allValue": ".*",
+        "multi": true,
+        "current": {"selected": false, "text": "All", "value": "$__all"}
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "title": "Resolve requests/sec (by family)",
+      "type": "timeseries",
+      "datasource": {"type": "prometheus", "uid": "${datasource}"},
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "custom": {"drawStyle": "line", "lineWidth": 2, "fillOpacity": 10, "showPoints": "never"}
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {"displayMode": "table", "placement": "bottom", "calcs": ["mean", "max"]},
+        "tooltip": {"mode": "multi"}
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (family) (rate(factors_resolve_requests_total{family=~\"$family\"}[5m]))",
+          "legendFormat": "{{family}}"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Resolve latency p50 / p95 / p99",
+      "type": "timeseries",
+      "datasource": {"type": "prometheus", "uid": "${datasource}"},
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {"drawStyle": "line", "lineWidth": 2, "fillOpacity": 5, "showPoints": "never"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "orange", "value": 0.5},
+              {"color": "red", "value": 1.0}
+            ]
+          }
+        }
+      },
+      "options": {
+        "legend": {"displayMode": "list", "placement": "bottom"},
+        "tooltip": {"mode": "multi"}
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "histogram_quantile(0.50, sum by (le) (rate(factors_resolve_latency_seconds_bucket{family=~\"$family\"}[5m])))",
+          "legendFormat": "p50"
+        },
+        {
+          "refId": "B",
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(factors_resolve_latency_seconds_bucket{family=~\"$family\"}[5m])))",
+          "legendFormat": "p95"
+        },
+        {
+          "refId": "C",
+          "expr": "histogram_quantile(0.99, sum by (le) (rate(factors_resolve_latency_seconds_bucket{family=~\"$family\"}[5m])))",
+          "legendFormat": "p99"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Fallback rank distribution (tiers 1–7)",
+      "type": "bargauge",
+      "datasource": {"type": "prometheus", "uid": "${datasource}"},
+      "gridPos": {"h": 8, "w": 8, "x": 0, "y": 8},
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "orange", "value": 5},
+              {"color": "red", "value": 20}
+            ]
+          }
+        }
+      },
+      "options": {
+        "orientation": "horizontal",
+        "displayMode": "gradient",
+        "showUnfilled": true,
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (fallback_rank) (rate(factors_resolve_requests_total{family=~\"$family\"}[5m]))",
+          "legendFormat": "rank {{fallback_rank}}"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Composite FQS distribution (0–100)",
+      "type": "heatmap",
+      "datasource": {"type": "prometheus", "uid": "${datasource}"},
+      "gridPos": {"h": 8, "w": 8, "x": 8, "y": 8},
+      "fieldConfig": {
+        "defaults": {
+          "custom": {"hideFrom": {"legend": false, "tooltip": false, "viz": false}}
+        }
+      },
+      "options": {
+        "calculate": false,
+        "cellGap": 1,
+        "color": {"mode": "scheme", "scheme": "Turbo", "steps": 64},
+        "yAxis": {"unit": "short", "decimals": 0}
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (le) (rate(factors_composite_fqs_0_100_bucket[5m]))",
+          "format": "heatmap",
+          "legendFormat": "{{le}}"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Entitlement denials (by class)",
+      "type": "timeseries",
+      "datasource": {"type": "prometheus", "uid": "${datasource}"},
+      "gridPos": {"h": 8, "w": 8, "x": 16, "y": 8},
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "custom": {"drawStyle": "bars", "lineWidth": 1, "fillOpacity": 50}
+        }
+      },
+      "options": {
+        "legend": {"displayMode": "list", "placement": "bottom"},
+        "tooltip": {"mode": "multi"}
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (class) (rate(factors_entitlement_denials_total[5m]))",
+          "legendFormat": "{{class}}"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Signed-receipt failures (last 15m)",
+      "type": "stat",
+      "datasource": {"type": "prometheus", "uid": "${datasource}"},
+      "gridPos": {"h": 6, "w": 8, "x": 0, "y": 16},
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "red", "value": 1}
+            ]
+          },
+          "color": {"mode": "thresholds"}
+        }
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "textMode": "value_and_name"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(increase(factors_signed_receipt_failures_total[15m]))",
+          "legendFormat": "failures (15m)"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "title": "Source-watch health (last success age)",
+      "type": "table",
+      "datasource": {"type": "prometheus", "uid": "${datasource}"},
+      "gridPos": {"h": 8, "w": 8, "x": 8, "y": 16},
+      "fieldConfig": {
+        "defaults": {
+          "custom": {"align": "auto", "cellOptions": {"type": "auto"}, "displayMode": "auto"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "orange", "value": 3600},
+              {"color": "red", "value": 86400}
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {"id": "byName", "options": "Value"},
+            "properties": [
+              {"id": "unit", "value": "s"},
+              {"id": "custom.cellOptions", "value": {"type": "color-background", "mode": "gradient"}}
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "time() - max by (source_id) (factors_source_watch_last_success_timestamp)",
+          "instant": true,
+          "format": "table",
+          "legendFormat": "{{source_id}}"
+        },
+        {
+          "refId": "B",
+          "expr": "sum by (source_id) (increase(factors_source_watch_failures_total[1h]))",
+          "instant": true,
+          "format": "table",
+          "legendFormat": "{{source_id}}"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "title": "cannot_resolve_safely events (by pack)",
+      "type": "timeseries",
+      "datasource": {"type": "prometheus", "uid": "${datasource}"},
+      "gridPos": {"h": 8, "w": 8, "x": 16, "y": 16},
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "custom": {"drawStyle": "bars", "lineWidth": 1, "fillOpacity": 40, "stacking": {"mode": "normal"}},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "orange", "value": 0.05},
+              {"color": "red", "value": 0.5}
+            ]
+          }
+        }
+      },
+      "options": {
+        "legend": {"displayMode": "table", "placement": "bottom", "calcs": ["sum", "max"]},
+        "tooltip": {"mode": "multi"}
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (pack_id) (rate(factors_cannot_resolve_safely_total[5m]))",
+          "legendFormat": "{{pack_id}}"
+        },
+        {
+          "refId": "B",
+          "expr": "sum(rate(factors_cannot_resolve_safely_total[5m]))",
+          "legendFormat": "TOTAL"
+        }
+      ]
+    }
+  ],
+  "version": 1,
+  "weekStart": ""
+}

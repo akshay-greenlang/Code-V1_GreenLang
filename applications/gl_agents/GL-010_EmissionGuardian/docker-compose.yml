@@ -1,0 +1,274 @@
+# GL-010 EmissionsGuardian Docker Compose Configuration
+#
+# Production-grade multi-container deployment for emissions compliance monitoring.
+# Includes the main application, database, message broker, and monitoring stack.
+#
+# Standards Compliance:
+#   - EPA 40 CFR Part 75: Continuous Emissions Monitoring
+#   - SOC 2 Type II: Security controls and monitoring
+#
+# Usage:
+#   docker-compose up -d           # Start all services
+#   docker-compose up -d --scale emissionguardian=3  # Scale horizontally
+#   docker-compose logs -f         # View logs
+#   docker-compose down            # Stop all services
+#
+# Author: GreenLang GL-010 EmissionsGuardian
+
+version: "3.9"
+
+x-common-env: &common-env
+  GL_AGENT_ID: "GL-010"
+  GL_AGENT_NAME: "EmissionsGuardian"
+  GL_LOG_LEVEL: "${LOG_LEVEL:-INFO}"
+  GL_DETERMINISTIC_MODE: "true"
+  GL_FAIL_CLOSED: "true"
+  GL_ENFORCE_READ_ONLY: "true"
+  TZ: "UTC"
+
+x-healthcheck: &default-healthcheck
+  interval: 30s
+  timeout: 10s
+  retries: 3
+  start_period: 30s
+
+services:
+  # ==========================================================================
+  # Main Application - EmissionsGuardian Agent
+  # ==========================================================================
+  emissionguardian:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    image: gl-010-emissionguardian:${VERSION:-1.0.0}
+    container_name: emissionguardian
+    hostname: emissionguardian
+    restart: unless-stopped
+    ports:
+      - "${API_PORT:-8080}:8080"
+      - "${METRICS_PORT:-9090}:9090"
+    environment:
+      <<: *common-env
+      DATABASE_URL: "postgresql://${POSTGRES_USER:-gluser}:${POSTGRES_PASSWORD:-glpass}@postgres:5432/${POSTGRES_DB:-emissionguardian}"
+      REDIS_URL: "redis://redis:6379/0"
+      KAFKA_BROKERS: "kafka:9092"
+      GL_API_PORT: "8080"
+      GL_METRICS_PORT: "9090"
+    volumes:
+      - ./logs:/app/logs
+      - ./data:/app/data
+      - ./config:/app/config:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    healthcheck:
+      <<: *default-healthcheck
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+    networks:
+      - emissionguardian-net
+    labels:
+      - "com.greenlang.agent=GL-010"
+      - "com.greenlang.service=emissionguardian"
+      - "prometheus.scrape=true"
+      - "prometheus.port=9090"
+
+  # ==========================================================================
+  # PostgreSQL Database - Compliance Data Storage
+  # ==========================================================================
+  postgres:
+    image: postgres:15-alpine
+    container_name: emissionguardian-postgres
+    hostname: postgres
+    restart: unless-stopped
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    environment:
+      POSTGRES_USER: "${POSTGRES_USER:-gluser}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:-glpass}"
+      POSTGRES_DB: "${POSTGRES_DB:-emissionguardian}"
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./deploy/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      <<: *default-healthcheck
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-gluser} -d ${POSTGRES_DB:-emissionguardian}"]
+    networks:
+      - emissionguardian-net
+    labels:
+      - "com.greenlang.service=postgres"
+
+  # ==========================================================================
+  # Redis - Caching and Session Storage
+  # ==========================================================================
+  redis:
+    image: redis:7-alpine
+    container_name: emissionguardian-redis
+    hostname: redis
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    healthcheck:
+      <<: *default-healthcheck
+      test: ["CMD", "redis-cli", "ping"]
+    networks:
+      - emissionguardian-net
+    labels:
+      - "com.greenlang.service=redis"
+
+  # ==========================================================================
+  # Kafka - Event Streaming for CEMS Data
+  # ==========================================================================
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: emissionguardian-zookeeper
+    hostname: zookeeper
+    restart: unless-stopped
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    volumes:
+      - zookeeper-data:/var/lib/zookeeper/data
+      - zookeeper-logs:/var/lib/zookeeper/log
+    networks:
+      - emissionguardian-net
+    labels:
+      - "com.greenlang.service=zookeeper"
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: emissionguardian-kafka
+    hostname: kafka
+    restart: unless-stopped
+    ports:
+      - "${KAFKA_PORT:-9092}:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+    volumes:
+      - kafka-data:/var/lib/kafka/data
+    depends_on:
+      - zookeeper
+    healthcheck:
+      <<: *default-healthcheck
+      test: ["CMD-SHELL", "kafka-topics --bootstrap-server localhost:9092 --list"]
+    networks:
+      - emissionguardian-net
+    labels:
+      - "com.greenlang.service=kafka"
+
+  # ==========================================================================
+  # Prometheus - Metrics Collection
+  # ==========================================================================
+  prometheus:
+    image: prom/prometheus:v2.47.0
+    container_name: emissionguardian-prometheus
+    hostname: prometheus
+    restart: unless-stopped
+    ports:
+      - "${PROMETHEUS_PORT:-9091}:9090"
+    volumes:
+      - ./deploy/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./deploy/prometheus/rules:/etc/prometheus/rules:ro
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=30d'
+      - '--web.enable-lifecycle'
+    networks:
+      - emissionguardian-net
+    labels:
+      - "com.greenlang.service=prometheus"
+
+  # ==========================================================================
+  # Grafana - Monitoring Dashboards
+  # ==========================================================================
+  grafana:
+    image: grafana/grafana:10.1.0
+    container_name: emissionguardian-grafana
+    hostname: grafana
+    restart: unless-stopped
+    ports:
+      - "${GRAFANA_PORT:-3000}:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: "${GRAFANA_USER:-admin}"
+      GF_SECURITY_ADMIN_PASSWORD: "${GRAFANA_PASSWORD:-admin}"
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_INSTALL_PLUGINS: "grafana-piechart-panel,grafana-clock-panel"
+    volumes:
+      - ./deploy/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./deploy/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana-data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    networks:
+      - emissionguardian-net
+    labels:
+      - "com.greenlang.service=grafana"
+
+  # ==========================================================================
+  # Test Runner - CI/CD Testing
+  # ==========================================================================
+  test-runner:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: test
+    image: gl-010-emissionguardian:test
+    container_name: emissionguardian-test
+    environment:
+      <<: *common-env
+      GL_TEST_MODE: "true"
+      DATABASE_URL: "postgresql://${POSTGRES_USER:-gluser}:${POSTGRES_PASSWORD:-glpass}@postgres:5432/${POSTGRES_DB:-emissionguardian}_test"
+    volumes:
+      - ./tests:/app/tests:ro
+      - ./test-results:/app/test-results
+    depends_on:
+      postgres:
+        condition: service_healthy
+    profiles:
+      - test
+    networks:
+      - emissionguardian-net
+
+# =============================================================================
+# Networks
+# =============================================================================
+networks:
+  emissionguardian-net:
+    driver: bridge
+    name: emissionguardian-network
+
+# =============================================================================
+# Volumes
+# =============================================================================
+volumes:
+  postgres-data:
+    name: emissionguardian-postgres-data
+  redis-data:
+    name: emissionguardian-redis-data
+  kafka-data:
+    name: emissionguardian-kafka-data
+  zookeeper-data:
+    name: emissionguardian-zookeeper-data
+  zookeeper-logs:
+    name: emissionguardian-zookeeper-logs
+  prometheus-data:
+    name: emissionguardian-prometheus-data
+  grafana-data:
+    name: emissionguardian-grafana-data

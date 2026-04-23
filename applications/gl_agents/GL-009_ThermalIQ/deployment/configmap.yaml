@@ -1,0 +1,276 @@
+# GL-009 ThermalIQ - ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: thermaliq-fluid-library
+  namespace: greenlang-process-heat
+  labels:
+    app: thermaliq
+    agent-id: GL-009
+data:
+  fluids.yaml: |
+    # Thermal Fluid Library - 25+ Heat Transfer Fluids
+    # GL-009 ThermalIQ - Zero-Hallucination Deterministic Properties
+
+    version: "1.0.0"
+    reference_environment:
+      T0_K: 298.15
+      P0_kPa: 101.325
+
+    fluids:
+      # ============================================
+      # WATER/STEAM (IAPWS-IF97)
+      # ============================================
+      water:
+        name: "Water"
+        category: "aqueous"
+        source: "IAPWS-IF97"
+        T_min_C: 0
+        T_max_C: 374
+        P_max_MPa: 100
+        library: "iapws"
+
+      steam:
+        name: "Steam"
+        category: "aqueous"
+        source: "IAPWS-IF97"
+        T_min_C: 100
+        T_max_C: 800
+        P_max_MPa: 100
+        library: "iapws"
+
+      # ============================================
+      # THERMINOL HEAT TRANSFER FLUIDS (Eastman)
+      # ============================================
+      therminol_55:
+        name: "Therminol 55"
+        category: "synthetic_hydrocarbon"
+        manufacturer: "Eastman"
+        T_min_C: -28
+        T_max_C: 315
+        max_film_temp_C: 343
+        flash_point_C: 177
+        fire_point_C: 196
+
+      therminol_59:
+        name: "Therminol 59"
+        category: "synthetic_hydrocarbon"
+        manufacturer: "Eastman"
+        T_min_C: -45
+        T_max_C: 315
+        max_film_temp_C: 340
+        flash_point_C: 160
+        fire_point_C: 177
+
+      therminol_62:
+        name: "Therminol 62"
+        category: "synthetic_hydrocarbon"
+        manufacturer: "Eastman"
+        T_min_C: -38
+        T_max_C: 325
+        max_film_temp_C: 350
+        flash_point_C: 171
+        fire_point_C: 191
+
+      therminol_66:
+        name: "Therminol 66"
+        category: "modified_terphenyl"
+        manufacturer: "Eastman"
+        T_min_C: 0
+        T_max_C: 345
+        max_film_temp_C: 375
+        flash_point_C: 170
+        fire_point_C: 193
+
+      therminol_vp1:
+        name: "Therminol VP-1"
+        category: "biphenyl_diphenyl_oxide"
+        manufacturer: "Eastman"
+        T_min_C: 12
+        T_max_C: 400
+        max_film_temp_C: 430
+        flash_point_C: 124
+        fire_point_C: 127
+
+      # ============================================
+      # DOWTHERM HEAT TRANSFER FLUIDS (Dow)
+      # ============================================
+      dowtherm_a:
+        name: "Dowtherm A"
+        category: "biphenyl_diphenyl_oxide"
+        manufacturer: "Dow"
+        T_min_C: 15
+        T_max_C: 400
+        max_film_temp_C: 427
+        flash_point_C: 113
+        fire_point_C: 118
+
+      dowtherm_g:
+        name: "Dowtherm G"
+        category: "di_tri_aryl_compound"
+        manufacturer: "Dow"
+        T_min_C: -6
+        T_max_C: 360
+        max_film_temp_C: 380
+        flash_point_C: 138
+        fire_point_C: 143
+
+      dowtherm_j:
+        name: "Dowtherm J"
+        category: "alkylated_aromatic"
+        manufacturer: "Dow"
+        T_min_C: -73
+        T_max_C: 315
+        max_film_temp_C: 330
+        flash_point_C: 57
+        fire_point_C: 68
+
+      dowtherm_mx:
+        name: "Dowtherm MX"
+        category: "alkylated_aromatic"
+        manufacturer: "Dow"
+        T_min_C: -25
+        T_max_C: 330
+        max_film_temp_C: 355
+        flash_point_C: 125
+        fire_point_C: 137
+
+      dowtherm_q:
+        name: "Dowtherm Q"
+        category: "diphenylethane_alkylated_aromatic"
+        manufacturer: "Dow"
+        T_min_C: -35
+        T_max_C: 330
+        max_film_temp_C: 355
+        flash_point_C: 120
+        fire_point_C: 137
+
+      dowtherm_rp:
+        name: "Dowtherm RP"
+        category: "diaryl_alkyl"
+        manufacturer: "Dow"
+        T_min_C: -20
+        T_max_C: 350
+        max_film_temp_C: 370
+        flash_point_C: 165
+        fire_point_C: 180
+
+      # ============================================
+      # SYLTHERM SILICONE FLUIDS (Dow)
+      # ============================================
+      syltherm_800:
+        name: "Syltherm 800"
+        category: "silicone"
+        manufacturer: "Dow"
+        T_min_C: -40
+        T_max_C: 400
+        max_film_temp_C: 430
+        flash_point_C: 160
+        fire_point_C: 180
+
+      syltherm_xlt:
+        name: "Syltherm XLT"
+        category: "silicone"
+        manufacturer: "Dow"
+        T_min_C: -100
+        T_max_C: 260
+        max_film_temp_C: 288
+        flash_point_C: 54
+        fire_point_C: 60
+
+      # ============================================
+      # GLYCOL-BASED FLUIDS
+      # ============================================
+      ethylene_glycol_30:
+        name: "Ethylene Glycol 30%"
+        category: "glycol"
+        concentration_percent: 30
+        T_min_C: -15
+        T_max_C: 170
+        library: "CoolProp"
+
+      ethylene_glycol_50:
+        name: "Ethylene Glycol 50%"
+        category: "glycol"
+        concentration_percent: 50
+        T_min_C: -35
+        T_max_C: 170
+        library: "CoolProp"
+
+      propylene_glycol_30:
+        name: "Propylene Glycol 30%"
+        category: "glycol"
+        concentration_percent: 30
+        T_min_C: -12
+        T_max_C: 170
+        library: "CoolProp"
+
+      propylene_glycol_50:
+        name: "Propylene Glycol 50%"
+        category: "glycol"
+        concentration_percent: 50
+        T_min_C: -30
+        T_max_C: 170
+        library: "CoolProp"
+
+      # ============================================
+      # MOLTEN SALTS (Concentrated Solar Power)
+      # ============================================
+      solar_salt:
+        name: "Solar Salt (60% NaNO3 / 40% KNO3)"
+        category: "molten_salt"
+        composition:
+          NaNO3: 60
+          KNO3: 40
+        T_min_C: 220
+        T_max_C: 600
+        melting_point_C: 220
+
+      hitec:
+        name: "Hitec (53% KNO3 / 40% NaNO2 / 7% NaNO3)"
+        category: "molten_salt"
+        composition:
+          KNO3: 53
+          NaNO2: 40
+          NaNO3: 7
+        T_min_C: 142
+        T_max_C: 535
+        melting_point_C: 142
+
+      hitec_xl:
+        name: "Hitec XL (45% KNO3 / 7% NaNO3 / 48% Ca(NO3)2)"
+        category: "molten_salt"
+        composition:
+          KNO3: 45
+          NaNO3: 7
+          Ca_NO3_2: 48
+        T_min_C: 120
+        T_max_C: 500
+        melting_point_C: 120
+
+      # ============================================
+      # SPECIALTY FLUIDS
+      # ============================================
+      co2_supercritical:
+        name: "Supercritical CO2"
+        category: "supercritical"
+        critical_temp_C: 31.0
+        critical_pressure_MPa: 7.38
+        T_min_C: 35
+        T_max_C: 700
+        library: "CoolProp"
+
+      mineral_oil:
+        name: "Mineral Oil (Generic)"
+        category: "mineral_oil"
+        T_min_C: -10
+        T_max_C: 300
+        max_film_temp_C: 320
+        flash_point_C: 210
+
+      air:
+        name: "Air"
+        category: "gas"
+        T_min_C: -50
+        T_max_C: 1000
+        library: "CoolProp"

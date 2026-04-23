@@ -1,0 +1,592 @@
+// GL-001 ThermalCommand gRPC Protocol Buffer Definitions
+//
+// Protocol definitions for low-latency RPC calls in district heating optimization.
+// Supports real-time dispatch operations, demand updates, and forecast retrieval.
+
+syntax = "proto3";
+
+package thermalcommand.v1;
+
+option go_package = "github.com/greenlang/thermalcommand/api/v1;thermalcommandv1";
+option java_package = "io.greenlang.thermalcommand.v1";
+option java_multiple_files = true;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/duration.proto";
+import "google/protobuf/empty.proto";
+
+// =============================================================================
+// ThermalCommand Service Definition
+// =============================================================================
+
+// ThermalCommandService provides low-latency RPC calls for district heating optimization.
+service ThermalCommandService {
+    // Request heat allocation optimization
+    rpc RequestAllocation(AllocationRequest) returns (AllocationResponse);
+
+    // Submit demand forecast update
+    rpc SubmitDemandUpdate(DemandUpdateRequest) returns (DemandUpdateResponse);
+
+    // Get latest forecast by type
+    rpc GetLatestForecast(ForecastRequest) returns (ForecastResponse);
+
+    // Get current dispatch plan
+    rpc GetCurrentPlan(google.protobuf.Empty) returns (DispatchPlanResponse);
+
+    // Get asset states
+    rpc GetAssetStates(AssetStatesRequest) returns (AssetStatesResponse);
+
+    // Get active constraints
+    rpc GetConstraints(ConstraintsRequest) returns (ConstraintsResponse);
+
+    // Get KPI metrics
+    rpc GetKPIs(KPIRequest) returns (KPIResponse);
+
+    // Acknowledge alarm
+    rpc AcknowledgeAlarm(AlarmAcknowledgementRequest) returns (AlarmAcknowledgementResponse);
+
+    // Stream plan updates (server streaming)
+    rpc StreamPlanUpdates(StreamPlanRequest) returns (stream DispatchPlanResponse);
+
+    // Stream action recommendations (server streaming)
+    rpc StreamActionRecommendations(StreamRecommendationsRequest) returns (stream SetpointRecommendations);
+
+    // Stream alarm events (server streaming)
+    rpc StreamAlarmEvents(StreamAlarmsRequest) returns (stream AlarmEvent);
+
+    // Bidirectional streaming for real-time control
+    rpc ControlStream(stream ControlCommand) returns (stream ControlResponse);
+}
+
+// =============================================================================
+// Enumerations
+// =============================================================================
+
+enum AssetType {
+    ASSET_TYPE_UNSPECIFIED = 0;
+    ASSET_TYPE_CHP = 1;
+    ASSET_TYPE_BOILER = 2;
+    ASSET_TYPE_HEAT_PUMP = 3;
+    ASSET_TYPE_HEAT_STORAGE = 4;
+    ASSET_TYPE_SOLAR_THERMAL = 5;
+    ASSET_TYPE_WASTE_HEAT = 6;
+    ASSET_TYPE_ELECTRIC_HEATER = 7;
+}
+
+enum AssetStatus {
+    ASSET_STATUS_UNSPECIFIED = 0;
+    ASSET_STATUS_ONLINE = 1;
+    ASSET_STATUS_OFFLINE = 2;
+    ASSET_STATUS_STANDBY = 3;
+    ASSET_STATUS_MAINTENANCE = 4;
+    ASSET_STATUS_FAULT = 5;
+    ASSET_STATUS_RAMPING_UP = 6;
+    ASSET_STATUS_RAMPING_DOWN = 7;
+}
+
+enum ConstraintType {
+    CONSTRAINT_TYPE_UNSPECIFIED = 0;
+    CONSTRAINT_TYPE_CAPACITY_MIN = 1;
+    CONSTRAINT_TYPE_CAPACITY_MAX = 2;
+    CONSTRAINT_TYPE_RAMP_RATE = 3;
+    CONSTRAINT_TYPE_TEMPERATURE_MIN = 4;
+    CONSTRAINT_TYPE_TEMPERATURE_MAX = 5;
+    CONSTRAINT_TYPE_PRESSURE_MIN = 6;
+    CONSTRAINT_TYPE_PRESSURE_MAX = 7;
+    CONSTRAINT_TYPE_EMISSIONS_LIMIT = 8;
+    CONSTRAINT_TYPE_MUST_RUN = 9;
+    CONSTRAINT_TYPE_MUST_OFF = 10;
+    CONSTRAINT_TYPE_ENERGY_BALANCE = 11;
+    CONSTRAINT_TYPE_STORAGE_LEVEL = 12;
+}
+
+enum ConstraintPriority {
+    CONSTRAINT_PRIORITY_UNSPECIFIED = 0;
+    CONSTRAINT_PRIORITY_CRITICAL = 1;
+    CONSTRAINT_PRIORITY_HIGH = 2;
+    CONSTRAINT_PRIORITY_MEDIUM = 3;
+    CONSTRAINT_PRIORITY_LOW = 4;
+}
+
+enum OptimizationObjective {
+    OPTIMIZATION_OBJECTIVE_UNSPECIFIED = 0;
+    OPTIMIZATION_OBJECTIVE_MINIMIZE_COST = 1;
+    OPTIMIZATION_OBJECTIVE_MINIMIZE_EMISSIONS = 2;
+    OPTIMIZATION_OBJECTIVE_MAXIMIZE_EFFICIENCY = 3;
+    OPTIMIZATION_OBJECTIVE_BALANCE_COST_EMISSIONS = 4;
+}
+
+enum ForecastType {
+    FORECAST_TYPE_UNSPECIFIED = 0;
+    FORECAST_TYPE_DEMAND = 1;
+    FORECAST_TYPE_TEMPERATURE = 2;
+    FORECAST_TYPE_ELECTRICITY_PRICE = 3;
+    FORECAST_TYPE_GAS_PRICE = 4;
+    FORECAST_TYPE_SOLAR_IRRADIANCE = 5;
+}
+
+enum AlarmSeverity {
+    ALARM_SEVERITY_UNSPECIFIED = 0;
+    ALARM_SEVERITY_CRITICAL = 1;
+    ALARM_SEVERITY_HIGH = 2;
+    ALARM_SEVERITY_MEDIUM = 3;
+    ALARM_SEVERITY_LOW = 4;
+    ALARM_SEVERITY_INFO = 5;
+}
+
+enum AlarmStatus {
+    ALARM_STATUS_UNSPECIFIED = 0;
+    ALARM_STATUS_ACTIVE = 1;
+    ALARM_STATUS_ACKNOWLEDGED = 2;
+    ALARM_STATUS_RESOLVED = 3;
+    ALARM_STATUS_SUPPRESSED = 4;
+}
+
+enum ControlCommandType {
+    CONTROL_COMMAND_TYPE_UNSPECIFIED = 0;
+    CONTROL_COMMAND_TYPE_SET_SETPOINT = 1;
+    CONTROL_COMMAND_TYPE_START_ASSET = 2;
+    CONTROL_COMMAND_TYPE_STOP_ASSET = 3;
+    CONTROL_COMMAND_TYPE_EMERGENCY_STOP = 4;
+    CONTROL_COMMAND_TYPE_ACKNOWLEDGE_ALARM = 5;
+}
+
+// =============================================================================
+// Core Data Types
+// =============================================================================
+
+message GeoLocation {
+    double latitude = 1;
+    double longitude = 2;
+    optional double altitude_m = 3;
+    optional string address = 4;
+}
+
+message AssetCapacity {
+    double thermal_capacity_mw = 1;
+    double min_output_mw = 2;
+    double max_output_mw = 3;
+    double ramp_up_rate_mw_min = 4;
+    double ramp_down_rate_mw_min = 5;
+    double min_uptime_hours = 6;
+    double min_downtime_hours = 7;
+    double startup_time_minutes = 8;
+}
+
+message AssetEfficiency {
+    double thermal_efficiency = 1;
+    optional double electrical_efficiency = 2;
+}
+
+message AssetEmissions {
+    double co2_kg_per_mwh = 1;
+    double nox_kg_per_mwh = 2;
+    double so2_kg_per_mwh = 3;
+    double particulate_kg_per_mwh = 4;
+}
+
+message AssetCost {
+    double fuel_cost_per_mwh = 1;
+    double variable_om_per_mwh = 2;
+    double fixed_om_per_day = 3;
+    double startup_cost = 4;
+    double shutdown_cost = 5;
+}
+
+message AssetHealth {
+    double health_score = 1;
+    optional double remaining_useful_life_hours = 2;
+    optional google.protobuf.Timestamp last_maintenance_date = 3;
+    optional google.protobuf.Timestamp next_scheduled_maintenance = 4;
+    double operating_hours_since_maintenance = 5;
+    repeated string fault_indicators = 6;
+}
+
+message AssetState {
+    string asset_id = 1;
+    string asset_name = 2;
+    AssetType asset_type = 3;
+    AssetStatus status = 4;
+    optional GeoLocation location = 5;
+
+    // Current operating state
+    double current_output_mw = 6;
+    double current_setpoint_mw = 7;
+    double supply_temperature_c = 8;
+    double return_temperature_c = 9;
+    double flow_rate_m3h = 10;
+
+    // Specifications
+    AssetCapacity capacity = 11;
+    AssetEfficiency efficiency = 12;
+    AssetEmissions emissions = 13;
+    AssetCost cost = 14;
+    AssetHealth health = 15;
+
+    // Storage-specific
+    optional double storage_level_mwh = 16;
+    optional double storage_capacity_mwh = 17;
+
+    // Timestamps
+    google.protobuf.Timestamp created_at = 18;
+    optional google.protobuf.Timestamp updated_at = 19;
+}
+
+message Constraint {
+    string constraint_id = 1;
+    string name = 2;
+    optional string description = 3;
+    ConstraintType constraint_type = 4;
+    ConstraintPriority priority = 5;
+
+    // Constraint parameters
+    optional string asset_id = 6;
+    optional double min_value = 7;
+    optional double max_value = 8;
+    optional double target_value = 9;
+    double tolerance = 10;
+
+    // Temporal scope
+    google.protobuf.Timestamp effective_from = 11;
+    optional google.protobuf.Timestamp effective_until = 12;
+
+    // Status
+    bool is_active = 13;
+    bool is_violated = 14;
+    int32 violation_count = 15;
+    optional google.protobuf.Timestamp last_violation_at = 16;
+}
+
+message KPI {
+    string kpi_id = 1;
+    string name = 2;
+    optional string description = 3;
+    string category = 4;
+
+    // Values
+    double current_value = 5;
+    optional double target_value = 6;
+    string unit = 7;
+
+    // Time context
+    google.protobuf.Timestamp measurement_timestamp = 8;
+    string aggregation_period = 9;
+
+    // Trend analysis
+    optional double previous_value = 10;
+    optional string trend_direction = 11;
+    optional double percent_change = 12;
+
+    // Performance
+    optional double target_achievement_percent = 13;
+    optional bool is_on_target = 14;
+}
+
+message SetpointRecommendation {
+    string asset_id = 1;
+    string asset_name = 2;
+    double current_setpoint_mw = 3;
+    double recommended_setpoint_mw = 4;
+    double confidence = 5;
+    string reason = 6;
+    optional double expected_cost_impact = 7;
+    optional double expected_emissions_impact_kg = 8;
+}
+
+message ScheduleEntry {
+    google.protobuf.Timestamp timestamp = 1;
+    string asset_id = 2;
+    string asset_name = 3;
+    double setpoint_mw = 4;
+    AssetStatus status = 5;
+    double cost_per_mwh = 6;
+    double emissions_kg_per_mwh = 7;
+}
+
+message DispatchPlan {
+    string plan_id = 1;
+    int32 plan_version = 2;
+    string plan_name = 3;
+    optional string description = 4;
+
+    // Optimization context
+    OptimizationObjective objective = 5;
+    int32 planning_horizon_hours = 6;
+    int32 resolution_minutes = 7;
+
+    // Plan validity
+    google.protobuf.Timestamp effective_from = 8;
+    google.protobuf.Timestamp effective_until = 9;
+    bool is_active = 10;
+
+    // Optimization results
+    repeated ScheduleEntry schedule = 11;
+    repeated SetpointRecommendation setpoint_recommendations = 12;
+
+    // Metrics
+    double total_thermal_output_mwh = 13;
+    double total_cost = 14;
+    double total_emissions_kg = 15;
+    double average_efficiency = 16;
+
+    // Constraint status
+    int32 constraints_satisfied = 17;
+    int32 constraints_violated = 18;
+    repeated string violated_constraint_ids = 19;
+
+    // Model confidence
+    double optimization_score = 20;
+    string solver_status = 21;
+    double computation_time_seconds = 22;
+
+    google.protobuf.Timestamp created_at = 23;
+}
+
+message AlarmEvent {
+    string alarm_id = 1;
+    string alarm_code = 2;
+    string name = 3;
+    string description = 4;
+
+    AlarmSeverity severity = 5;
+    AlarmStatus status = 6;
+
+    optional string asset_id = 7;
+    optional string asset_name = 8;
+    string subsystem = 9;
+
+    google.protobuf.Timestamp triggered_at = 10;
+    optional google.protobuf.Timestamp acknowledged_at = 11;
+    optional string acknowledged_by = 12;
+    optional google.protobuf.Timestamp resolved_at = 13;
+    optional string resolved_by = 14;
+
+    optional double measured_value = 15;
+    optional double threshold_value = 16;
+    optional string unit = 17;
+
+    repeated string recommended_actions = 18;
+    bool auto_response_triggered = 19;
+    optional string auto_response_description = 20;
+}
+
+message ForecastData {
+    string forecast_id = 1;
+    ForecastType forecast_type = 2;
+
+    int32 forecast_horizon_hours = 3;
+    int32 resolution_minutes = 4;
+    google.protobuf.Timestamp generated_at = 5;
+    google.protobuf.Timestamp valid_from = 6;
+    google.protobuf.Timestamp valid_until = 7;
+
+    repeated double values = 8;
+    repeated google.protobuf.Timestamp timestamps = 9;
+    string unit = 10;
+
+    double confidence_level = 11;
+    repeated double lower_bounds = 12;
+    repeated double upper_bounds = 13;
+
+    string model_name = 14;
+    string model_version = 15;
+}
+
+// =============================================================================
+// Request/Response Messages
+// =============================================================================
+
+message AllocationRequest {
+    string request_id = 1;
+    double target_output_mw = 2;
+    int32 time_window_minutes = 3;
+    OptimizationObjective objective = 4;
+    double cost_weight = 5;
+    double emissions_weight = 6;
+    repeated string excluded_assets = 7;
+    repeated string must_run_assets = 8;
+    bool is_emergency = 9;
+    int32 response_timeout_seconds = 10;
+}
+
+message AllocationResponse {
+    string request_id = 1;
+    string response_id = 2;
+    bool success = 3;
+    string status_message = 4;
+    double allocated_output_mw = 5;
+    double allocation_gap_mw = 6;
+    repeated SetpointRecommendation asset_allocations = 7;
+    double estimated_cost = 8;
+    double estimated_emissions_kg = 9;
+    double optimization_time_ms = 10;
+    int32 solver_iterations = 11;
+}
+
+message DemandUpdateRequest {
+    string request_id = 1;
+    ForecastType forecast_type = 2;
+    int32 forecast_horizon_hours = 3;
+    int32 resolution_minutes = 4;
+    repeated double demand_mw = 5;
+    repeated google.protobuf.Timestamp demand_timestamps = 6;
+    string source_system = 7;
+    optional string model_version = 8;
+}
+
+message DemandUpdateResponse {
+    string request_id = 1;
+    bool success = 2;
+    string message = 3;
+    int32 records_received = 4;
+    int32 records_validated = 5;
+    double data_quality_score = 6;
+}
+
+message ForecastRequest {
+    ForecastType forecast_type = 1;
+    optional int32 horizon_hours = 2;
+}
+
+message ForecastResponse {
+    bool success = 1;
+    optional string error_message = 2;
+    optional ForecastData forecast = 3;
+}
+
+message DispatchPlanResponse {
+    bool success = 1;
+    optional string error_message = 2;
+    optional DispatchPlan plan = 3;
+}
+
+message AssetStatesRequest {
+    repeated string asset_ids = 1;
+    repeated AssetType asset_types = 2;
+    repeated AssetStatus statuses = 3;
+    int32 page = 4;
+    int32 page_size = 5;
+}
+
+message AssetStatesResponse {
+    bool success = 1;
+    repeated AssetState assets = 2;
+    int32 total_count = 3;
+    int32 page = 4;
+    int32 page_size = 5;
+    int32 total_pages = 6;
+}
+
+message ConstraintsRequest {
+    optional bool is_active = 1;
+    repeated ConstraintType constraint_types = 2;
+    repeated ConstraintPriority priorities = 3;
+}
+
+message ConstraintsResponse {
+    bool success = 1;
+    repeated Constraint constraints = 2;
+}
+
+message KPIRequest {
+    optional string category = 1;
+    optional google.protobuf.Timestamp start_time = 2;
+    optional google.protobuf.Timestamp end_time = 3;
+}
+
+message KPIResponse {
+    bool success = 1;
+    repeated KPI kpis = 2;
+}
+
+message AlarmAcknowledgementRequest {
+    string alarm_id = 1;
+    string acknowledged_by = 2;
+    optional string acknowledgement_note = 3;
+}
+
+message AlarmAcknowledgementResponse {
+    string alarm_id = 1;
+    bool success = 2;
+    string message = 3;
+    google.protobuf.Timestamp acknowledged_at = 4;
+    string acknowledged_by = 5;
+}
+
+// =============================================================================
+// Streaming Messages
+// =============================================================================
+
+message StreamPlanRequest {
+    // Optional: only stream plans for specific assets
+    repeated string asset_ids = 1;
+}
+
+message StreamRecommendationsRequest {
+    // Optional: filter by asset
+    repeated string asset_ids = 1;
+    // Minimum confidence threshold
+    optional double min_confidence = 2;
+}
+
+message SetpointRecommendations {
+    repeated SetpointRecommendation recommendations = 1;
+    google.protobuf.Timestamp timestamp = 2;
+}
+
+message StreamAlarmsRequest {
+    // Filter by severity
+    repeated AlarmSeverity severity_filter = 1;
+    // Filter by asset
+    repeated string asset_ids = 2;
+}
+
+// =============================================================================
+// Bidirectional Control Messages
+// =============================================================================
+
+message ControlCommand {
+    string command_id = 1;
+    ControlCommandType command_type = 2;
+    string asset_id = 3;
+
+    // Setpoint command
+    optional double setpoint_mw = 4;
+
+    // Alarm acknowledgement
+    optional string alarm_id = 5;
+    optional string acknowledged_by = 6;
+
+    // Metadata
+    google.protobuf.Timestamp timestamp = 7;
+    string operator_id = 8;
+}
+
+message ControlResponse {
+    string command_id = 1;
+    bool success = 2;
+    string message = 3;
+    google.protobuf.Timestamp execution_timestamp = 4;
+
+    // Updated state after command
+    optional AssetState updated_asset_state = 5;
+    optional AlarmEvent updated_alarm = 6;
+}
+
+// =============================================================================
+// Health Check Messages
+// =============================================================================
+
+message HealthCheckRequest {
+    string service = 1;
+}
+
+message HealthCheckResponse {
+    enum ServingStatus {
+        UNKNOWN = 0;
+        SERVING = 1;
+        NOT_SERVING = 2;
+        SERVICE_UNKNOWN = 3;
+    }
+    ServingStatus status = 1;
+}

@@ -66,9 +66,11 @@ Non-negotiables enforced
 """
 from __future__ import annotations
 
+import hashlib
 import json
 import logging
 import os
+import uuid
 from typing import Any, Awaitable, Callable, Dict, Mapping, Optional
 
 from greenlang.factors.signing import (
@@ -80,6 +82,84 @@ from greenlang.factors.signing import (
 
 
 logger = logging.getLogger(__name__)
+
+
+# --------------------------------------------------------------------------- #
+# CTO-canonical receipt field names (Wave 2 resolver-contract fix).
+#
+# The top-level response key is ``signed_receipt`` (was ``_signed_receipt``).
+# Every receipt dict carries four required keys:
+#
+#     * ``receipt_id``           — per-response UUIDv4 for audit lookup.
+#     * ``signature``            — base64 signature bytes.
+#     * ``verification_key_hint``— 16-hex-char fingerprint (SHA-256 of the
+#                                   algorithm/key identifier) a client uses
+#                                   to select the verification key.
+#     * ``alg``                  — renamed from ``algorithm``.
+#
+# For backwards compatibility during one release, legacy keys
+# (``algorithm``, ``key_id``, ``signed_over``) remain PARSED if present but
+# are no longer emitted.
+# --------------------------------------------------------------------------- #
+
+
+def _mint_receipt_id() -> str:
+    """Generate a fresh UUIDv4 receipt identifier."""
+    return str(uuid.uuid4())
+
+
+def _verification_key_hint(*, key_id: str, algorithm: str) -> str:
+    """Return a 16-hex-char fingerprint for the verification key.
+
+    Derived as the first 16 hex chars of SHA-256(``"<algorithm>:<key_id>"``).
+    Stable across restarts as long as ``key_id`` / ``algorithm`` are stable,
+    so clients can cache the hint → public-key mapping.
+    """
+    digest = hashlib.sha256(f"{algorithm}:{key_id}".encode("utf-8")).hexdigest()
+    return digest[:16]
+
+
+def _canonical_receipt_payload(
+    receipt: Receipt,
+    *,
+    body_hash: str,
+    edition_id: Optional[str],
+    path: str,
+    method: str,
+    status_code: int,
+) -> Dict[str, Any]:
+    """Build the CTO-canonical receipt dict for injection.
+
+    Emits the four required keys (``receipt_id``, ``signature``,
+    ``verification_key_hint``, ``alg``), the ``payload_hash`` (hex SHA-256 of
+    the client-visible body), ``signed_at``, ``key_id`` (legacy alias), and
+    a deprecated ``signed_over`` block describing the envelope metadata
+    covered by the signature.
+    """
+    return {
+        "receipt_id": _mint_receipt_id(),
+        "signature": receipt.signature,
+        "verification_key_hint": _verification_key_hint(
+            key_id=receipt.key_id, algorithm=receipt.algorithm
+        ),
+        "alg": receipt.algorithm,
+        "signed_at": receipt.signed_at,
+        # CTO canonical name: payload_hash is the hash the signature covers
+        # (SHA-256 of the canonical signed_over JSON).  The body-only hex
+        # hash is exposed inside ``signed_over.body_hash`` for clients that
+        # want to verify the raw response bytes independently.
+        "payload_hash": receipt.payload_hash,
+        # Legacy (deprecated) fields — kept readable for one release so older
+        # SDK clients do not break.  New writers: do not depend on them.
+        "key_id": receipt.key_id,
+        "signed_over": {
+            "body_hash": body_hash,
+            "edition_id": edition_id,
+            "path": path,
+            "method": method.upper(),
+            "status_code": int(status_code),
+        },
+    }
 
 
 # --------------------------------------------------------------------------- #
@@ -211,24 +291,27 @@ def _inject_receipt_into_json(
     status_code: int,
 ) -> Any:
     """
-    Return ``body_json`` with a top-level ``_signed_receipt`` attached.
+    Return ``body_json`` with a top-level ``signed_receipt`` attached.
 
     We only inject on dict top-levels.  Lists and scalars get the
     header-only treatment; we won't wrap them in a container because
     that would break SDK deserialization contracts.
+
+    The injected envelope uses the CTO-canonical field names:
+    ``receipt_id``, ``signature``, ``verification_key_hint``, ``alg``,
+    ``signed_at``, ``payload_hash``.  ``_signed_receipt`` is no longer
+    written; its parse-side compatibility lives in the SDK layer.
     """
     if isinstance(body_json, dict):
         signed = dict(body_json)
-        signed["_signed_receipt"] = {
-            **receipt.to_dict(),
-            "signed_over": _build_signed_payload(
-                body_hash=body_hash,
-                edition_id=edition_id,
-                path=path,
-                method=method,
-                status_code=status_code,
-            ),
-        }
+        signed["signed_receipt"] = _canonical_receipt_payload(
+            receipt,
+            body_hash=body_hash,
+            edition_id=edition_id,
+            path=path,
+            method=method,
+            status_code=status_code,
+        )
         return signed
     return body_json
 

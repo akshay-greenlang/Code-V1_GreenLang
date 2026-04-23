@@ -1,0 +1,247 @@
+# GL-002 FLAMEGUARD - GreenLang Pack Configuration
+# Boiler Efficiency Optimization Agent
+
+name: gl-002-flameguard
+version: 1.0.0
+description: |
+  Boiler Efficiency Optimization Agent for real-time combustion optimization,
+  efficiency calculations, and emissions monitoring per ASME PTC 4.1, NFPA 85,
+  and IEC 61511 standards.
+
+metadata:
+  agent_id: GL-002
+  agent_name: FLAMEGUARD
+  full_name: Boiler Efficiency Optimizer
+  category: process_heat
+  tier: 1
+  status: production
+
+  # Regulatory standards
+  standards:
+    - ASME PTC 4.1  # Fired Steam Generators
+    - NFPA 85       # Boiler and Combustion Systems Hazards
+    - IEC 61511     # Functional Safety - SIS
+    - EPA 40 CFR 60 # Emissions Standards
+
+  # GreenLang compliance
+  greenlang:
+    zero_hallucination: true
+    provenance_tracking: true
+    deterministic_calculations: true
+    audit_logging: true
+
+# Runtime configuration
+runtime:
+  language: python
+  python_version: ">=3.10"
+  entrypoint: boiler_efficiency_orchestrator:FlameGuardOrchestrator
+
+  # Resource requirements
+  resources:
+    cpu_min: "500m"
+    cpu_max: "2000m"
+    memory_min: "512Mi"
+    memory_max: "2Gi"
+
+# Dependencies
+dependencies:
+  python:
+    - pydantic>=2.0.0
+    - fastapi>=0.100.0
+    - uvicorn>=0.22.0
+    - aiohttp>=3.8.0
+    - numpy>=1.24.0
+    - scipy>=1.10.0
+
+    # Optional ML dependencies
+    - scikit-learn>=1.2.0
+    - pandas>=2.0.0
+
+    # Kafka streaming
+    - aiokafka>=0.8.0
+
+    # Metrics
+    - prometheus-client>=0.17.0
+
+# Inputs (Policy Inputs)
+inputs:
+  process_data:
+    type: object
+    description: Real-time boiler process data
+    properties:
+      drum_pressure_psig:
+        type: number
+        range: [0, 300]
+      drum_level_inches:
+        type: number
+        range: [-12, 12]
+      steam_flow_klb_hr:
+        type: number
+        range: [0, 1000]
+      o2_percent:
+        type: number
+        range: [0, 21]
+      co_ppm:
+        type: number
+        range: [0, 2000]
+      flue_gas_temp_f:
+        type: number
+        range: [0, 1000]
+      fuel_flow_scfh:
+        type: number
+        range: [0, 100000]
+
+  optimization_request:
+    type: object
+    description: Optimization mode and constraints
+    properties:
+      mode:
+        type: string
+        enum: [efficiency, emissions, cost, balanced]
+      target_load_percent:
+        type: number
+        range: [0, 100]
+
+# Outputs
+outputs:
+  efficiency_result:
+    type: object
+    description: ASME PTC 4.1 efficiency calculation
+    properties:
+      gross_efficiency_percent:
+        type: number
+      net_efficiency_percent:
+        type: number
+      calculation_hash:
+        type: string
+
+  optimization_result:
+    type: object
+    description: Combustion optimization recommendations
+    properties:
+      recommended_o2_setpoint:
+        type: number
+      recommended_excess_air:
+        type: number
+      efficiency_improvement:
+        type: number
+      confidence:
+        type: number
+
+  emissions_result:
+    type: object
+    description: EPA emission calculations
+    properties:
+      nox_lb_hr:
+        type: number
+      co_lb_hr:
+        type: number
+      co2_ton_hr:
+        type: number
+      ghg_mtco2e_hr:
+        type: number
+
+# Connectors
+connectors:
+  scada:
+    type: modbus_tcp
+    description: SCADA/DCS integration
+    protocols:
+      - modbus_tcp
+      - opc_ua
+      - dnp3
+
+  kafka:
+    type: kafka
+    description: Event streaming
+    topics:
+      - flameguard.process-data
+      - flameguard.optimization
+      - flameguard.safety
+      - flameguard.efficiency
+      - flameguard.emissions
+
+  api:
+    type: rest
+    description: REST API
+    endpoints:
+      - /health
+      - /boilers/{boiler_id}
+      - /optimize
+      - /efficiency
+      - /emissions
+      - /safety
+
+# Safety configuration
+safety:
+  sil_level: 2
+  fail_safe: true
+
+  interlocks:
+    - tag: STEAM_PRESSURE
+      trip_high: 150.0
+      trip_low: null
+      sil_level: 2
+
+    - tag: DRUM_LEVEL
+      trip_high: 8.0
+      trip_low: -4.0
+      sil_level: 3
+
+    - tag: FUEL_PRESSURE
+      trip_high: 25.0
+      trip_low: 2.0
+      sil_level: 2
+
+  flame_detection:
+    voting_logic: "2oo3"
+    failure_time_s: 4.0
+    min_signal_percent: 10.0
+
+# Monitoring
+monitoring:
+  metrics:
+    enabled: true
+    port: 9090
+    path: /metrics
+
+  health:
+    enabled: true
+    port: 8080
+    path: /health
+
+  alerting:
+    enabled: true
+    channels:
+      - type: log
+      - type: webhook
+        url: "${ALERT_WEBHOOK_URL}"
+
+# Audit configuration
+audit:
+  enabled: true
+  retention_days: 365
+  tamper_detection: true
+
+  events:
+    - setpoint_change
+    - safety_trip
+    - bypass_set
+    - optimization_applied
+    - calculation_completed
+
+# Deployment
+deployment:
+  replicas: 2
+
+  environment:
+    FLAMEGUARD_LOG_LEVEL: INFO
+    FLAMEGUARD_SCADA_HOST: "${SCADA_HOST}"
+    FLAMEGUARD_KAFKA_BROKERS: "${KAFKA_BROKERS}"
+
+  health_check:
+    http_get:
+      path: /health
+      port: 8080
+    initial_delay_seconds: 30
+    period_seconds: 10

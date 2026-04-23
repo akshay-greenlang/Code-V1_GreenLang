@@ -1,0 +1,104 @@
+# GL-014 Exchangerpro Pod Disruption Budget
+# Heat Exchanger Performance Optimization Agent
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: gl-014-exchangerpro-pdb
+  namespace: greenlang
+  labels:
+    app: gl-014-exchangerpro
+    component: thermal-optimizer
+    agent-id: GL-014
+    codename: EXCHANGERPRO
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: gl-014-exchangerpro
+---
+# Network Policy for GL-014 Exchangerpro
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: gl-014-exchangerpro-network-policy
+  namespace: greenlang
+  labels:
+    app: gl-014-exchangerpro
+    component: thermal-optimizer
+spec:
+  podSelector:
+    matchLabels:
+      app: gl-014-exchangerpro
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # Allow traffic from within greenlang namespace
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: greenlang
+      ports:
+        - protocol: TCP
+          port: 8000
+        - protocol: TCP
+          port: 9090
+    # Allow traffic from monitoring namespace (Prometheus)
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+      ports:
+        - protocol: TCP
+          port: 9090
+    # Allow traffic from ingress controller
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 8000
+  egress:
+    # Allow database connections
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: greenlang
+      ports:
+        - protocol: TCP
+          port: 5432  # PostgreSQL
+        - protocol: TCP
+          port: 6379  # Redis
+    # Allow Kafka connections
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: kafka
+      ports:
+        - protocol: TCP
+          port: 9092
+    # Allow ML service connections
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: greenlang
+      ports:
+        - protocol: TCP
+          port: 8080
+    # Allow DNS resolution
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+    # Allow HTTPS for external API calls (OPC-UA, CMMS)
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: TCP
+          port: 443
+        - protocol: TCP
+          port: 4840  # OPC-UA default port

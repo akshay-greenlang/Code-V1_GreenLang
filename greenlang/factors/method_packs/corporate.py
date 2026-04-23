@@ -11,6 +11,7 @@ from greenlang.data.canonical_v2 import (
 from greenlang.factors.method_packs.base import (
     BiogenicTreatment,
     BoundaryRule,
+    CannotResolveAction,
     DEFAULT_FALLBACK,
     DeprecationRule,
     MarketInstrumentTreatment,
@@ -22,6 +23,42 @@ from greenlang.factors.method_packs.registry import register_pack
 # Shared deprecation policy for corporate reporting packs — 4-year window
 # captures the typical audit cycle + restatement horizon.
 _DEPRECATION = DeprecationRule(max_age_days=365 * 4, grace_period_days=365)
+
+# ---------------------------------------------------------------------------
+# Structured activity-category allow / deny lists (SelectionRule additions).
+#
+# GHG Protocol Corporate Standard does not publish a regulation-grade
+# allow-list the way CBAM does; the treatment is positive (Scope 1 = all
+# direct fossil emissions). We therefore ship EMPTY inclusion sets which
+# the SelectionRule interprets as "no restriction" while still reserving
+# the field so CI / methodology review can populate it later. For Scope 3
+# we encode the canonical 15 category tags so a caller looking for an
+# out-of-scope category fails fast.  Every entry cites the underlying
+# standard paragraph per docs/specs/method_pack_template.md §4.
+# ---------------------------------------------------------------------------
+_CORPORATE_SCOPE3_CATEGORIES: frozenset = frozenset(
+    {
+        # GHG Protocol Corporate Value Chain (Scope 3) Standard, Chapter 5.
+        "3.1", "3.2", "3.3", "3.4", "3.5", "3.6", "3.7", "3.8",
+        "3.9", "3.10", "3.11", "3.12", "3.13", "3.14", "3.15",
+        # Free-text equivalents commonly seen on Excel imports.
+        "purchased_goods_and_services",
+        "capital_goods",
+        "fuel_and_energy_related_activities",
+        "upstream_transportation_and_distribution",
+        "waste_generated_in_operations",
+        "business_travel",
+        "employee_commuting",
+        "upstream_leased_assets",
+        "downstream_transportation_and_distribution",
+        "processing_of_sold_products",
+        "use_of_sold_products",
+        "end_of_life_treatment_of_sold_products",
+        "downstream_leased_assets",
+        "franchises",
+        "investments",
+    }
+)
 
 
 CORPORATE_SCOPE1 = MethodPack(
@@ -42,6 +79,11 @@ CORPORATE_SCOPE1 = MethodPack(
         ),
         allowed_formula_types=(FormulaType.DIRECT_FACTOR, FormulaType.COMBUSTION),
         allowed_statuses=("certified",),
+        # No positive allow-list under GHG Protocol Corporate (all direct
+        # fossil sources are admissible). Kept explicit so readers see the
+        # §4 contract is wired, just unbounded.
+        included_activity_categories=frozenset(),
+        excluded_activity_categories=frozenset(),
     ),
     boundary_rule=BoundaryRule(
         allowed_scopes=("1",),
@@ -71,6 +113,10 @@ CORPORATE_SCOPE1 = MethodPack(
     ),
     pack_version="1.0.0",
     tags=("open_core",),
+    cannot_resolve_action=CannotResolveAction.RAISE_NO_SAFE_MATCH,
+    global_default_tier_allowed=False,
+    replacement_pack_id=None,
+    deprecation_notice_days=365,
 )
 
 CORPORATE_SCOPE2_LOCATION = MethodPack(
@@ -85,6 +131,10 @@ CORPORATE_SCOPE2_LOCATION = MethodPack(
         allowed_families=(FactorFamily.GRID_INTENSITY, FactorFamily.ENERGY_CONVERSION),
         allowed_formula_types=(FormulaType.DIRECT_FACTOR,),
         allowed_statuses=("certified",),
+        included_activity_categories=frozenset(),
+        # GHG Protocol Scope 2 Guidance §5 excludes offsets from gross
+        # inventories; we record it for auditor discoverability.
+        excluded_activity_categories=frozenset({"carbon_offsets"}),
     ),
     boundary_rule=BoundaryRule(
         allowed_scopes=("2",),
@@ -115,6 +165,10 @@ CORPORATE_SCOPE2_LOCATION = MethodPack(
     pack_version="1.0.0",
     electricity_basis=ElectricityBasis.LOCATION_BASED,
     tags=("open_core",),
+    cannot_resolve_action=CannotResolveAction.RAISE_NO_SAFE_MATCH,
+    global_default_tier_allowed=False,
+    replacement_pack_id=None,
+    deprecation_notice_days=365,
 )
 
 CORPORATE_SCOPE2_MARKET = MethodPack(
@@ -133,6 +187,12 @@ CORPORATE_SCOPE2_MARKET = MethodPack(
         ),
         allowed_formula_types=(FormulaType.DIRECT_FACTOR, FormulaType.RESIDUAL_MIX),
         allowed_statuses=("certified", "preview"),
+        included_activity_categories=frozenset(),
+        # GHG Protocol Scope 2 Guidance §7 — carbon offsets MUST NOT
+        # appear inside the market-based inventory line (they go to a
+        # separate "net" block). Encoded here so an offset record leaking
+        # in via a tenant overlay is rejected.
+        excluded_activity_categories=frozenset({"carbon_offsets"}),
     ),
     boundary_rule=BoundaryRule(
         allowed_scopes=("2",),
@@ -163,6 +223,10 @@ CORPORATE_SCOPE2_MARKET = MethodPack(
     pack_version="1.0.0",
     electricity_basis=ElectricityBasis.MARKET_BASED,
     tags=("open_core",),
+    cannot_resolve_action=CannotResolveAction.RAISE_NO_SAFE_MATCH,
+    global_default_tier_allowed=False,
+    replacement_pack_id=None,
+    deprecation_notice_days=365,
 )
 
 CORPORATE_SCOPE3 = MethodPack(
@@ -195,6 +259,12 @@ CORPORATE_SCOPE3 = MethodPack(
             FormulaType.TRANSPORT_CHAIN,
         ),
         allowed_statuses=("certified", "preview"),
+        # GHG Protocol Scope 3 Standard Chapter 5 enumerates 15 canonical
+        # categories. We admit any of them (plus the canonical string
+        # slugs used by the Excel templates) and rely on downstream
+        # boundary / formula-type filters to reject cross-scope leakage.
+        included_activity_categories=_CORPORATE_SCOPE3_CATEGORIES,
+        excluded_activity_categories=frozenset({"carbon_offsets"}),
     ),
     boundary_rule=BoundaryRule(
         allowed_scopes=("3",),
@@ -228,6 +298,10 @@ CORPORATE_SCOPE3 = MethodPack(
     ),
     pack_version="1.1.0",
     tags=("open_core",),
+    cannot_resolve_action=CannotResolveAction.RAISE_NO_SAFE_MATCH,
+    global_default_tier_allowed=False,
+    replacement_pack_id=None,
+    deprecation_notice_days=365,
 )
 
 
@@ -270,10 +344,124 @@ def render_cat11_use_phase_block(use_phase: object) -> str:
     return "; ".join(parts) + "."
 
 
+# ---------------------------------------------------------------------------
+# MP3 scaffold — spec template additions (method_pack_template.md)
+# ---------------------------------------------------------------------------
+# The following block encodes the missing/partial template sections flagged
+# in docs/specs/method_pack_audit.md for Corporate. Values live alongside the
+# frozen MethodPack instances above so they can be consumed by the resolver
+# and /explain without mutating the immutable base class.
+#
+# TODO(MP3): methodology review required - do not certify.
+
+#: Default GWP override set allowed for Corporate packs without a methodology
+#: review. AR5 retained because many legacy datasets + SBTi + CDP still
+#: accept AR5 100-year values.
+CORPORATE_GWP_ALLOWED_OVERRIDES: tuple = ("IPCC_AR5_100",)
+CORPORATE_GWP_HORIZON_YEARS: int = 100
+CORPORATE_GWP_METRIC: str = "GWP"
+
+#: Activity-category allow/deny lists per pack id.
+#: TODO(MP3): populate before certification. Empty list = no restriction.
+CORPORATE_INCLUSION_ACTIVITIES: dict = {
+    "corporate_scope1": [],  # TODO(MP3): methodology review required - do not certify
+    "corporate_scope2_location": [],  # TODO(MP3): methodology review required - do not certify
+    "corporate_scope2_market": [],  # TODO(MP3): methodology review required - do not certify
+    "corporate_scope3": [],  # TODO(MP3): methodology review required - do not certify
+}
+CORPORATE_EXCLUSION_ACTIVITIES: dict = {
+    "corporate_scope1": [],  # TODO(MP3): methodology review required - do not certify
+    "corporate_scope2_location": [],  # TODO(MP3): methodology review required - do not certify
+    "corporate_scope2_market": [],  # TODO(MP3): methodology review required - do not certify
+    "corporate_scope3": [],  # TODO(MP3): methodology review required - do not certify
+}
+CORPORATE_EXCLUSION_GASES: dict = {
+    # biogenic CO2 is reported separately, not excluded from the inventory;
+    # kept empty by design. TODO(MP3): confirm with methodology lead.
+    "corporate_scope1": [],
+    "corporate_scope2_location": [],
+    "corporate_scope2_market": [],
+    "corporate_scope3": [],
+}
+
+#: Deprecation default — 180-day advance notice + replacement_pointer schema.
+#: TODO(MP3): methodology review required - do not certify (replacement packs
+#: are placeholders until v2 packs are authored).
+CORPORATE_DEPRECATION_DEFAULTS: dict = {
+    "advance_notice_days": 180,
+    "replacement_pointer_schema": {
+        "corporate_scope1": "corporate_scope1_v2",          # TODO(MP3)
+        "corporate_scope2_location": "corporate_scope2_location_v2",  # TODO(MP3)
+        "corporate_scope2_market": "corporate_scope2_market_v2",      # TODO(MP3)
+        "corporate_scope3": "corporate_scope3_v2",          # TODO(MP3)
+    },
+    "webhook_fan_out": ("factors.deprecations", "factors.methodology"),
+    "migration_notes": (
+        "TODO(MP3): link to Methodology Review Board decision record."
+    ),
+}
+
+#: Audit-text template file names (Jinja) under
+#: ``greenlang/factors/method_packs/audit_texts/``. The resolver will render
+#: these in /explain payloads as the MP3 scaffold graduates to v1.
+CORPORATE_AUDIT_TEMPLATE_FILES: dict = {
+    "corporate_scope1": "corporate.j2",
+    "corporate_scope2_location": "corporate.j2",
+    "corporate_scope2_market": "corporate.j2",
+    "corporate_scope3": "corporate.j2",
+}
+
+#: Scaffolded BoundaryRule metadata that supplements the frozen BoundaryRule
+#: on each pack. The frozen BoundaryRule does NOT carry system_boundary,
+#: lca_mode, or functional_unit fields (base.py line 92-101), so we expose
+#: them as a sidecar map keyed by pack id.
+#:
+#: TODO(MP3): methodology review required - do not certify. Sidecar is a
+#: shim until base.BoundaryRule is extended in a later PR.
+CORPORATE_BOUNDARY_METADATA: dict = {
+    "corporate_scope1": {
+        "system_boundary": "gate_to_gate",
+        "lca_mode": "attributional",
+        "functional_unit": None,      # not applicable for inventory packs
+        "scope3_categories": (),
+    },
+    "corporate_scope2_location": {
+        "system_boundary": "gate_to_gate",
+        "lca_mode": "attributional",
+        "functional_unit": "1 kWh delivered",
+        "scope3_categories": (),
+    },
+    "corporate_scope2_market": {
+        "system_boundary": "gate_to_gate",
+        "lca_mode": "attributional",
+        "functional_unit": "1 kWh delivered",
+        "scope3_categories": (),
+    },
+    "corporate_scope3": {
+        "system_boundary": "cradle_to_gate",
+        "lca_mode": "attributional",
+        "functional_unit": None,
+        # Scope 3 Cat 1..15 (empty tuple = all 15 allowed).
+        # TODO(MP3): confirm exclusion of Cat 15 if PCAF pack used instead.
+        "scope3_categories": (),
+    },
+}
+
+
 __all__ = [
     "CORPORATE_SCOPE1",
     "CORPORATE_SCOPE2_LOCATION",
     "CORPORATE_SCOPE2_MARKET",
     "CORPORATE_SCOPE3",
     "render_cat11_use_phase_block",
+    # MP3 scaffold exports
+    "CORPORATE_GWP_ALLOWED_OVERRIDES",
+    "CORPORATE_GWP_HORIZON_YEARS",
+    "CORPORATE_GWP_METRIC",
+    "CORPORATE_INCLUSION_ACTIVITIES",
+    "CORPORATE_EXCLUSION_ACTIVITIES",
+    "CORPORATE_EXCLUSION_GASES",
+    "CORPORATE_DEPRECATION_DEFAULTS",
+    "CORPORATE_AUDIT_TEMPLATE_FILES",
+    "CORPORATE_BOUNDARY_METADATA",
 ]

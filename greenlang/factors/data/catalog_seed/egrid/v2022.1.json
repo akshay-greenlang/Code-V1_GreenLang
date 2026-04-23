@@ -1,0 +1,5226 @@
+{
+  "source_id": "egrid",
+  "source_version": "2022.1",
+  "ingested_at": "2026-04-23T18:26:52+00:00",
+  "license_class": "public_us_government",
+  "license_name": "US-Public-Domain",
+  "redistribution_class": "open",
+  "attribution_text": "U.S. EPA eGRID2022 subregion emission rates.",
+  "factor_status_default": "certified",
+  "factor_count": 79,
+  "factors": [
+    {
+      "factor_id": "EF:eGRID:sub_AKGD:AKGD:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "AKGD",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.504847896,
+        "CH4": 4.5359200000000004e-05,
+        "N2O": 4.53592e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "akgd"
+      ],
+      "notes": "eGRID subregion AKGD (ASCC Alaska Grid); coal=12%, gas=41%",
+      "created_at": "2026-04-23T18:26:52+00:00",
+      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "source_id": "egrid",
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:sub_AKMS:AKMS:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "AKMS",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.22906396,
+        "CH4": 1.814368e-05,
+        "N2O": 2.26796e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "akms"
+      ],
+      "notes": "eGRID subregion AKMS (ASCC Miscellaneous)",
+      "created_at": "2026-04-23T18:26:52+00:00",
+      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "source_id": "egrid",
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:sub_AZNM:AZNM:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "AZNM",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.38101728,
+        "CH4": 3.1751440000000005e-05,
+        "N2O": 4.53592e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "aznm"
+      ],
+      "notes": "eGRID subregion AZNM (WECC Southwest)",
+      "created_at": "2026-04-23T18:26:52+00:00",
+      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "source_id": "egrid",
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:sub_CAMX:CAMX:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "CAMX",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.215002608,
+        "CH4": 1.814368e-05,
+        "N2O": 2.26796e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "camx"
+      ],
+      "notes": "eGRID subregion CAMX (WECC California)",
+      "created_at": "2026-04-23T18:26:52+00:00",
+      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "source_id": "egrid",
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:sub_ERCT:ERCT:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "ERCT",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.394171448,
+        "CH4": 3.1751440000000005e-05,
+        "N2O": 4.082328e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "erct"
+      ],
+      "notes": "eGRID subregion ERCT (ERCOT All)",
+      "created_at": "2026-04-23T18:26:52+00:00",
+      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "source_id": "egrid",
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:sub_FRCC:FRCC:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "FRCC",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.377842136,
+        "CH4": 2.721552e-05,
+        "N2O": 3.6287360000000002e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "frcc"
+      ],
+      "notes": "eGRID subregion FRCC (FRCC All)",
+      "created_at": "2026-04-23T18:26:52+00:00",
+      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "source_id": "egrid",
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:sub_HIMS:HIMS:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "HIMS",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.55338224,
+        "CH4": 4.989512e-05,
+        "N2O": 4.989512e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "hims"
+      ],
+      "notes": "eGRID subregion HIMS (HICC Miscellaneous)",
+      "created_at": "2026-04-23T18:26:52+00:00",
+      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "source_id": "egrid",
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:sub_HIOA:HIOA:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "HIOA",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.7293759360000001,
+        "CH4": 6.350288000000001e-05,
+        "N2O": 6.3502880000000005e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "hioa"
+      ],
+      "notes": "eGRID subregion HIOA (HICC Oahu)",
+      "created_at": "2026-04-23T18:26:52+00:00",
+      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "source_id": "egrid",
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:sub_MROE:MROE:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "MROE",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.6010094,
+        "CH4": 4.5359200000000004e-05,
+        "N2O": 6.80388e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "mroe"
+      ],
+      "notes": "eGRID subregion MROE (MRO East)",
+      "created_at": "2026-04-23T18:26:52+00:00",
+      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "source_id": "egrid",
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:sub_MROW:MROW:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "MROW",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.409139984,
+        "CH4": 3.628736e-05,
+        "N2O": 5.896696e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "mrow"
+      ],
+      "notes": "eGRID subregion MROW (MRO West)",
+      "created_at": "2026-04-23T18:26:52+00:00",
+      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "source_id": "egrid",
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:sub_NEWE:NEWE:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "NEWE",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.24040376,
+        "CH4": 2.2679600000000002e-05,
+        "N2O": 2.7215520000000003e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "newe"
+      ],
+      "notes": "eGRID subregion NEWE (NPCC New England)",
+      "created_at": "2026-04-23T18:26:52+00:00",
+      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "source_id": "egrid",
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:sub_NWPP:NWPP:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "NWPP",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.29029888,
+        "CH4": 2.721552e-05,
+        "N2O": 4.989512e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "nwpp"
+      ],
+      "notes": "eGRID subregion NWPP (WECC Northwest)",
+      "created_at": "2026-04-23T18:26:52+00:00",
+      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "source_id": "egrid",
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:sub_NYCW:NYCW:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "NYCW",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.24040376,
+        "CH4": 1.814368e-05,
+        "N2O": 1.8143680000000001e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "nycw"
+      ],
+      "notes": "eGRID subregion NYCW (NPCC NYC/Westchester)",
+      "created_at": "2026-04-23T18:26:52+00:00",
+      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "source_id": "egrid",
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:sub_NYLI:NYLI:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "NYLI",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.55111428,
+        "CH4": 4.5359200000000004e-05,
+        "N2O": 6.3502880000000005e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "nyli"
+      ],
+      "notes": "eGRID subregion NYLI (NPCC Long Island)",
+      "created_at": "2026-04-23T18:26:52+00:00",
+      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "source_id": "egrid",
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:sub_NYUP:NYUP:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "NYUP",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.117026736,
+        "CH4": 9.07184e-06,
+        "N2O": 9.071840000000001e-07
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "nyup"
+      ],
+      "notes": "eGRID subregion NYUP (NPCC Upstate NY)",
+      "created_at": "2026-04-23T18:26:52+00:00",
+      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "source_id": "egrid",
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:sub_PRMS:PRMS:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "PRMS",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.72801516,
+        "CH4": 6.80388e-05,
+        "N2O": 6.3502880000000005e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "prms"
+      ],
+      "notes": "eGRID subregion PRMS (Puerto Rico)",
+      "created_at": "2026-04-23T18:26:52+00:00",
+      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "source_id": "egrid",
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:sub_RFCE:RFCE:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "RFCE",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.268072872,
+        "CH4": 2.2679600000000002e-05,
+        "N2O": 3.1751440000000003e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "rfce"
+      ],
+      "notes": "eGRID subregion RFCE (RFC East)",
+      "created_at": "2026-04-23T18:26:52+00:00",
+      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "source_id": "egrid",
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:sub_RFCM:RFCM:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "RFCM",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.542496032,
+        "CH4": 4.989512e-05,
+        "N2O": 8.618248e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "rfcm"
+      ],
+      "notes": "eGRID subregion RFCM (RFC Michigan)",
+      "created_at": "2026-04-23T18:26:52+00:00",
+      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "source_id": "egrid",
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:sub_RFCW:RFCW:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "RFCW",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.48534344,
+        "CH4": 4.5359200000000004e-05,
+        "N2O": 6.80388e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "rfcw"
+      ],
+      "notes": "eGRID subregion RFCW (RFC West)",
+      "created_at": "2026-04-23T18:26:52+00:00",
+      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "source_id": "egrid",
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:sub_RMPA:RMPA:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "RMPA",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.537960112,
+        "CH4": 4.5359200000000004e-05,
+        "N2O": 8.164656e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "rmpa"
+      ],
+      "notes": "eGRID subregion RMPA (WECC Rockies)",
+      "created_at": "2026-04-23T18:26:52+00:00",
+      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "source_id": "egrid",
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:sub_SPNO:SPNO:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "SPNO",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.47173568,
+        "CH4": 4.082328e-05,
+        "N2O": 6.80388e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "spno"
+      ],
+      "notes": "eGRID subregion SPNO (SPP North)",
+      "created_at": "2026-04-23T18:26:52+00:00",
+      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "source_id": "egrid",
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:sub_SPSO:SPSO:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "SPSO",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.460849472,
+        "CH4": 3.628736e-05,
+        "N2O": 5.4431040000000006e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "spso"
+      ],
+      "notes": "eGRID subregion SPSO (SPP South)",
+      "created_at": "2026-04-23T18:26:52+00:00",
+      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "source_id": "egrid",
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:sub_SRMV:SRMV:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "SRMV",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.391903488,
+        "CH4": 3.1751440000000005e-05,
+        "N2O": 4.082328e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "srmv"
+      ],
+      "notes": "eGRID subregion SRMV (SERC Mississippi Valley)",
+      "created_at": "2026-04-23T18:26:52+00:00",
+      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "source_id": "egrid",
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:sub_SRMW:SRMW:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "SRMW",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.714860992,
+        "CH4": 6.80388e-05,
+        "N2O": 9.979024e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "srmw"
+      ],
+      "notes": "eGRID subregion SRMW (SERC Midwest)",
+      "created_at": "2026-04-23T18:26:52+00:00",
+      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "source_id": "egrid",
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:sub_SRSO:SRSO:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "SRSO",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.3855532,
+        "CH4": 3.1751440000000005e-05,
+        "N2O": 4.53592e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "srso"
+      ],
+      "notes": "eGRID subregion SRSO (SERC South)",
+      "created_at": "2026-04-23T18:26:52+00:00",
+      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "source_id": "egrid",
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:sub_SRTV:SRTV:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "SRTV",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.410954352,
+        "CH4": 3.628736e-05,
+        "N2O": 5.4431040000000006e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "srtv"
+      ],
+      "notes": "eGRID subregion SRTV (SERC Tennessee Valley)",
+      "created_at": "2026-04-23T18:26:52+00:00",
+      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "source_id": "egrid",
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:sub_SRVC:SRVC:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "SRVC",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.286216552,
+        "CH4": 2.2679600000000002e-05,
+        "N2O": 3.1751440000000003e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "srvc"
+      ],
+      "notes": "eGRID subregion SRVC (SERC Virginia/Carolinas)",
+      "created_at": "2026-04-23T18:26:52+00:00",
+      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "source_id": "egrid",
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:state_AL:US-AL:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-AL",
+      "geography_level": "state",
+      "vectors": {
+        "CO2": 0.313432072,
+        "CH4": 2.721552e-05,
+        "N2O": 3.6287360000000002e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 4,
+        "technological": 5,
+        "representativeness": 4,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "al"
+      ],
+      "notes": "eGRID state-level average for AL",
+      "created_at": "2026-04-23T18:26:52+00:00",
+      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "source_id": "egrid",
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:state_AK:US-AK:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-AK",
+      "geography_level": "state",
+      "vectors": {
+        "CO2": 0.405057656,
+        "CH4": 3.628736e-05,
+        "N2O": 3.6287360000000002e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 4,
+        "technological": 5,
+        "representativeness": 4,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "ak"
+      ],
+      "notes": "eGRID state-level average for AK",
+      "created_at": "2026-04-23T18:26:52+00:00",
+      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "source_id": "egrid",
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:state_AZ:US-AZ:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-AZ",
+      "geography_level": "state",
+      "vectors": {
+        "CO2": 0.334297304,
+        "CH4": 2.721552e-05,
+        "N2O": 4.082328e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 4,
+        "technological": 5,
+        "representativeness": 4,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "az"
+      ],
+      "notes": "eGRID state-level average for AZ",
+      "created_at": "2026-04-23T18:26:52+00:00",
+      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "source_id": "egrid",
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:state_AR:US-AR:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-AR",
+      "geography_level": "state",
+      "vectors": {
+        "CO2": 0.46946772,
+        "CH4": 3.628736e-05,
+        "N2O": 6.3502880000000005e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 4,
+        "technological": 5,
+        "representativeness": 4,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "ar"
+      ],
+      "notes": "eGRID state-level average for AR",
+      "created_at": "2026-04-23T18:26:52+00:00",
+      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "source_id": "egrid",
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:state_CA:US-CA:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-CA",
+      "geography_level": "state",
+      "vectors": {
+        "CO2": 0.211373872,
+        "CH4": 1.814368e-05,
+        "N2O": 2.26796e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 4,
+        "technological": 5,
+        "representativeness": 4,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "ca"
+      ],
+      "notes": "eGRID state-level average for CA",
+      "created_at": "2026-04-23T18:26:52+00:00",
+      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "source_id": "egrid",
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:state_CO:US-CO:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-CO",
+      "geography_level": "state",
+      "vectors": {
+        "CO2": 0.557464568,
+        "CH4": 4.5359200000000004e-05,
+        "N2O": 8.164656e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 4,
+        "technological": 5,
+        "representativeness": 4,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "co"
+      ],
+      "notes": "eGRID state-level average for CO",
+      "created_at": "2026-04-23T18:26:52+00:00",
+      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "source_id": "egrid",
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:state_CT:US-CT:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-CT",
+      "geography_level": "state",
+      "vectors": {
+        "CO2": 0.237228616,
+        "CH4": 2.2679600000000002e-05,
+        "N2O": 2.7215520000000003e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 4,
+        "technological": 5,
+        "representativeness": 4,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "ct"
+      ],
+      "notes": "eGRID state-level average for CT",
+      "created_at": "2026-04-23T18:26:52+00:00",
+      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "source_id": "egrid",
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:state_DE:US-DE:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-DE",
+      "geography_level": "state",
+      "vectors": {
+        "CO2": 0.389181936,
+        "CH4": 3.1751440000000005e-05,
+        "N2O": 4.53592e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 4,
+        "technological": 5,
+        "representativeness": 4,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "de"
+      ],
+      "notes": "eGRID state-level average for DE",
+      "created_at": "2026-04-23T18:26:52+00:00",
+      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "source_id": "egrid",
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:state_FL:US-FL:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-FL",
+      "geography_level": "state",
+      "vectors": {
+        "CO2": 0.381470872,
+        "CH4": 3.1751440000000005e-05,
+        "N2O": 3.6287360000000002e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 4,
+        "technological": 5,
+        "representativeness": 4,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "fl"
+      ],
+      "notes": "eGRID state-level average for FL",
+      "created_at": "2026-04-23T18:26:52+00:00",
+      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "source_id": "egrid",
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:state_GA:US-GA:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-GA",
+      "geography_level": "state",
+      "vectors": {
+        "CO2": 0.347905064,
+        "CH4": 2.721552e-05,
+        "N2O": 4.082328e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 4,
+        "technological": 5,
+        "representativeness": 4,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "ga"
+      ],
+      "notes": "eGRID state-level average for GA",
+      "created_at": "2026-04-23T18:26:52+00:00",
+      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "source_id": "egrid",
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:state_HI:US-HI:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-HI",
+      "geography_level": "state",
+      "vectors": {
+        "CO2": 0.688099064,
+        "CH4": 6.350288000000001e-05,
+        "N2O": 6.3502880000000005e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 4,
+        "technological": 5,
+        "representativeness": 4,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "hi"
+      ],
+      "notes": "eGRID state-level average for HI",
+      "created_at": "2026-04-23T18:26:52+00:00",
+      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "source_id": "egrid",
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:state_ID:US-ID:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-ID",
+      "geography_level": "state",
+      "vectors": {
+        "CO2": 0.093439952,
+        "CH4": 9.07184e-06,
+        "N2O": 1.3607760000000001e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 4,
+        "technological": 5,
+        "representativeness": 4,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "id"
+      ],
+      "notes": "eGRID state-level average for ID",
+      "created_at": "2026-04-23T18:26:52+00:00",
+      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "source_id": "egrid",
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:state_IL:US-IL:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-IL",
+      "geography_level": "state",
+      "vectors": {
+        "CO2": 0.309803336,
+        "CH4": 2.721552e-05,
+        "N2O": 4.082328e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 4,
+        "technological": 5,
+        "representativeness": 4,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "il"
+      ],
+      "notes": "eGRID state-level average for IL",
+      "created_at": "2026-04-23T18:26:52+00:00",
+      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "source_id": "egrid",
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:state_IN:US-IN:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-IN",
+      "geography_level": "state",
+      "vectors": {
+        "CO2": 0.757045048,
+        "CH4": 6.80388e-05,
+        "N2O": 1.0886208000000001e-05
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 4,
+        "technological": 5,
+        "representativeness": 4,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "in"
+      ],
+      "notes": "eGRID state-level average for IN",
+      "created_at": "2026-04-23T18:26:52+00:00",
+      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "source_id": "egrid",
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:state_IA:US-IA:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-IA",
+      "geography_level": "state",
+      "vectors": {
+        "CO2": 0.387367568,
+        "CH4": 3.1751440000000005e-05,
+        "N2O": 5.4431040000000006e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 4,
+        "technological": 5,
+        "representativeness": 4,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "ia"
+      ],
+      "notes": "eGRID state-level average for IA",
+      "created_at": "2026-04-23T18:26:52+00:00",
+      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "source_id": "egrid",
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:state_KS:US-KS:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-KS",
+      "geography_level": "state",
+      "vectors": {
+        "CO2": 0.41276872,
+        "CH4": 3.628736e-05,
+        "N2O": 5.896696e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 4,
+        "technological": 5,
+        "representativeness": 4,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "ks"
+      ],
+      "notes": "eGRID state-level average for KS",
+      "created_at": "2026-04-23T18:26:52+00:00",
+      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "source_id": "egrid",
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:state_KY:US-KY:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-KY",
+      "geography_level": "state",
+      "vectors": {
+        "CO2": 0.797868328,
+        "CH4": 7.257472e-05,
+        "N2O": 1.1339800000000001e-05
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 4,
+        "technological": 5,
+        "representativeness": 4,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "ky"
+      ],
+      "notes": "eGRID state-level average for KY",
+      "created_at": "2026-04-23T18:26:52+00:00",
+      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "source_id": "egrid",
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:state_LA:US-LA:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-LA",
+      "geography_level": "state",
+      "vectors": {
+        "CO2": 0.42410852,
+        "CH4": 3.628736e-05,
+        "N2O": 4.53592e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 4,
+        "technological": 5,
+        "representativeness": 4,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "la"
+      ],
+      "notes": "eGRID state-level average for LA",
+      "created_at": "2026-04-23T18:26:52+00:00",
+      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "source_id": "egrid",
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:state_ME:US-ME:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-ME",
+      "geography_level": "state",
+      "vectors": {
+        "CO2": 0.089811216,
+        "CH4": 9.07184e-06,
+        "N2O": 9.071840000000001e-07
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 4,
+        "technological": 5,
+        "representativeness": 4,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "me"
+      ],
+      "notes": "eGRID state-level average for ME",
+      "created_at": "2026-04-23T18:26:52+00:00",
+      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "source_id": "egrid",
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:state_MD:US-MD:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-MD",
+      "geography_level": "state",
+      "vectors": {
+        "CO2": 0.258093848,
+        "CH4": 2.2679600000000002e-05,
+        "N2O": 2.7215520000000003e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 4,
+        "technological": 5,
+        "representativeness": 4,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "md"
+      ],
+      "notes": "eGRID state-level average for MD",
+      "created_at": "2026-04-23T18:26:52+00:00",
+      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "source_id": "egrid",
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:state_MA:US-MA:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-MA",
+      "geography_level": "state",
+      "vectors": {
+        "CO2": 0.29029888,
+        "CH4": 2.2679600000000002e-05,
+        "N2O": 3.1751440000000003e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 4,
+        "technological": 5,
+        "representativeness": 4,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "ma"
+      ],
+      "notes": "eGRID state-level average for MA",
+      "created_at": "2026-04-23T18:26:52+00:00",
+      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "source_id": "egrid",
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:state_MI:US-MI:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-MI",
+      "geography_level": "state",
+      "vectors": {
+        "CO2": 0.518455656,
+        "CH4": 4.5359200000000004e-05,
+        "N2O": 8.164656e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 4,
+        "technological": 5,
+        "representativeness": 4,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "mi"
+      ],
+      "notes": "eGRID state-level average for MI",
+      "created_at": "2026-04-23T18:26:52+00:00",
+      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "source_id": "egrid",
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:state_MN:US-MN:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-MN",
+      "geography_level": "state",
+      "vectors": {
+        "CO2": 0.322957504,
+        "CH4": 2.721552e-05,
+        "N2O": 4.53592e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 4,
+        "technological": 5,
+        "representativeness": 4,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "mn"
+      ],
+      "notes": "eGRID state-level average for MN",
+      "created_at": "2026-04-23T18:26:52+00:00",
+      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "source_id": "egrid",
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:state_MS:US-MS:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-MS",
+      "geography_level": "state",
+      "vectors": {
+        "CO2": 0.354708944,
+        "CH4": 2.721552e-05,
+        "N2O": 3.6287360000000002e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 4,
+        "technological": 5,
+        "representativeness": 4,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "ms"
+      ],
+      "notes": "eGRID state-level average for MS",
+      "created_at": "2026-04-23T18:26:52+00:00",
+      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "source_id": "egrid",
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:state_MO:US-MO:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-MO",
+      "geography_level": "state",
+      "vectors": {
+        "CO2": 0.686738288,
+        "CH4": 6.350288000000001e-05,
+        "N2O": 9.979024e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 4,
+        "technological": 5,
+        "representativeness": 4,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "mo"
+      ],
+      "notes": "eGRID state-level average for MO",
+      "created_at": "2026-04-23T18:26:52+00:00",
+      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "source_id": "egrid",
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:state_MT:US-MT:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-MT",
+      "geography_level": "state",
+      "vectors": {
+        "CO2": 0.5329706,
+        "CH4": 4.989512e-05,
+        "N2O": 8.618248e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 4,
+        "technological": 5,
+        "representativeness": 4,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "mt"
+      ],
+      "notes": "eGRID state-level average for MT",
+      "created_at": "2026-04-23T18:26:52+00:00",
+      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "source_id": "egrid",
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:state_NE:US-NE:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-NE",
+      "geography_level": "state",
+      "vectors": {
+        "CO2": 0.531609824,
+        "CH4": 4.5359200000000004e-05,
+        "N2O": 7.711064000000001e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 4,
+        "technological": 5,
+        "representativeness": 4,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "ne"
+      ],
+      "notes": "eGRID state-level average for NE",
+      "created_at": "2026-04-23T18:26:52+00:00",
+      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "source_id": "egrid",
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:state_NV:US-NV:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-NV",
+      "geography_level": "state",
+      "vectors": {
+        "CO2": 0.3061746,
+        "CH4": 2.2679600000000002e-05,
+        "N2O": 3.6287360000000002e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 4,
+        "technological": 5,
+        "representativeness": 4,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "nv"
+      ],
+      "notes": "eGRID state-level average for NV",
+      "created_at": "2026-04-23T18:26:52+00:00",
+      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "source_id": "egrid",
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:state_NH:US-NH:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-NH",
+      "geography_level": "state",
+      "vectors": {
+        "CO2": 0.169189816,
+        "CH4": 1.360776e-05,
+        "N2O": 1.8143680000000001e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 4,
+        "technological": 5,
+        "representativeness": 4,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "nh"
+      ],
+      "notes": "eGRID state-level average for NH",
+      "created_at": "2026-04-23T18:26:52+00:00",
+      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "source_id": "egrid",
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:state_NJ:US-NJ:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-NJ",
+      "geography_level": "state",
+      "vectors": {
+        "CO2": 0.236775024,
+        "CH4": 1.814368e-05,
+        "N2O": 2.7215520000000003e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 4,
+        "technological": 5,
+        "representativeness": 4,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "nj"
+      ],
+      "notes": "eGRID state-level average for NJ",
+      "created_at": "2026-04-23T18:26:52+00:00",
+      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "source_id": "egrid",
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:state_NM:US-NM:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-NM",
+      "geography_level": "state",
+      "vectors": {
+        "CO2": 0.542496032,
+        "CH4": 4.5359200000000004e-05,
+        "N2O": 7.711064000000001e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 4,
+        "technological": 5,
+        "representativeness": 4,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "nm"
+      ],
+      "notes": "eGRID state-level average for NM",
+      "created_at": "2026-04-23T18:26:52+00:00",
+      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "source_id": "egrid",
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:state_NY:US-NY:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-NY",
+      "geography_level": "state",
+      "vectors": {
+        "CO2": 0.211373872,
+        "CH4": 1.814368e-05,
+        "N2O": 2.26796e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 4,
+        "technological": 5,
+        "representativeness": 4,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "ny"
+      ],
+      "notes": "eGRID state-level average for NY",
+      "created_at": "2026-04-23T18:26:52+00:00",
+      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "source_id": "egrid",
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:state_NC:US-NC:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-NC",
+      "geography_level": "state",
+      "vectors": {
+        "CO2": 0.275783936,
+        "CH4": 2.2679600000000002e-05,
+        "N2O": 3.1751440000000003e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 4,
+        "technological": 5,
+        "representativeness": 4,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "nc"
+      ],
+      "notes": "eGRID state-level average for NC",
+      "created_at": "2026-04-23T18:26:52+00:00",
+      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "source_id": "egrid",
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:state_ND:US-ND:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-ND",
+      "geography_level": "state",
+      "vectors": {
+        "CO2": 0.700346048,
+        "CH4": 6.350288000000001e-05,
+        "N2O": 1.0432616e-05
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 4,
+        "technological": 5,
+        "representativeness": 4,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "nd"
+      ],
+      "notes": "eGRID state-level average for ND",
+      "created_at": "2026-04-23T18:26:52+00:00",
+      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "source_id": "egrid",
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:state_OH:US-OH:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-OH",
+      "geography_level": "state",
+      "vectors": {
+        "CO2": 0.506208672,
+        "CH4": 4.5359200000000004e-05,
+        "N2O": 6.80388e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 4,
+        "technological": 5,
+        "representativeness": 4,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "oh"
+      ],
+      "notes": "eGRID state-level average for OH",
+      "created_at": "2026-04-23T18:26:52+00:00",
+      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "source_id": "egrid",
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:state_OK:US-OK:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-OK",
+      "geography_level": "state",
+      "vectors": {
+        "CO2": 0.369223888,
+        "CH4": 3.1751440000000005e-05,
+        "N2O": 4.082328e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 4,
+        "technological": 5,
+        "representativeness": 4,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "ok"
+      ],
+      "notes": "eGRID state-level average for OK",
+      "created_at": "2026-04-23T18:26:52+00:00",
+      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "source_id": "egrid",
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:state_OR:US-OR:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-OR",
+      "geography_level": "state",
+      "vectors": {
+        "CO2": 0.137891968,
+        "CH4": 1.360776e-05,
+        "N2O": 1.8143680000000001e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 4,
+        "technological": 5,
+        "representativeness": 4,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "or"
+      ],
+      "notes": "eGRID state-level average for OR",
+      "created_at": "2026-04-23T18:26:52+00:00",
+      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "source_id": "egrid",
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:state_PA:US-PA:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-PA",
+      "geography_level": "state",
+      "vectors": {
+        "CO2": 0.325679056,
+        "CH4": 2.721552e-05,
+        "N2O": 4.53592e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 4,
+        "technological": 5,
+        "representativeness": 4,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "pa"
+      ],
+      "notes": "eGRID state-level average for PA",
+      "created_at": "2026-04-23T18:26:52+00:00",
+      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "source_id": "egrid",
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:state_RI:US-RI:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-RI",
+      "geography_level": "state",
+      "vectors": {
+        "CO2": 0.399614552,
+        "CH4": 3.1751440000000005e-05,
+        "N2O": 4.53592e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 4,
+        "technological": 5,
+        "representativeness": 4,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "ri"
+      ],
+      "notes": "eGRID state-level average for RI",
+      "created_at": "2026-04-23T18:26:52+00:00",
+      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "source_id": "egrid",
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:state_SC:US-SC:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-SC",
+      "geography_level": "state",
+      "vectors": {
+        "CO2": 0.23450706400000002,
+        "CH4": 1.814368e-05,
+        "N2O": 2.7215520000000003e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 4,
+        "technological": 5,
+        "representativeness": 4,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "sc"
+      ],
+      "notes": "eGRID state-level average for SC",
+      "created_at": "2026-04-23T18:26:52+00:00",
+      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "source_id": "egrid",
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:state_SD:US-SD:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-SD",
+      "geography_level": "state",
+      "vectors": {
+        "CO2": 0.245846864,
+        "CH4": 2.2679600000000002e-05,
+        "N2O": 3.6287360000000002e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 4,
+        "technological": 5,
+        "representativeness": 4,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "sd"
+      ],
+      "notes": "eGRID state-level average for SD",
+      "created_at": "2026-04-23T18:26:52+00:00",
+      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "source_id": "egrid",
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:state_TN:US-TN:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-TN",
+      "geography_level": "state",
+      "vectors": {
+        "CO2": 0.302092272,
+        "CH4": 2.721552e-05,
+        "N2O": 3.6287360000000002e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 4,
+        "technological": 5,
+        "representativeness": 4,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "tn"
+      ],
+      "notes": "eGRID state-level average for TN",
+      "created_at": "2026-04-23T18:26:52+00:00",
+      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "source_id": "egrid",
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:state_TX:US-TX:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-TX",
+      "geography_level": "state",
+      "vectors": {
+        "CO2": 0.386460384,
+        "CH4": 3.1751440000000005e-05,
+        "N2O": 4.082328e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 4,
+        "technological": 5,
+        "representativeness": 4,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "tx"
+      ],
+      "notes": "eGRID state-level average for TX",
+      "created_at": "2026-04-23T18:26:52+00:00",
+      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "source_id": "egrid",
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:state_UT:US-UT:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-UT",
+      "geography_level": "state",
+      "vectors": {
+        "CO2": 0.640471904,
+        "CH4": 5.443104e-05,
+        "N2O": 9.07184e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 4,
+        "technological": 5,
+        "representativeness": 4,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "ut"
+      ],
+      "notes": "eGRID state-level average for UT",
+      "created_at": "2026-04-23T18:26:52+00:00",
+      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "source_id": "egrid",
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:state_VT:US-VT:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-VT",
+      "geography_level": "state",
+      "vectors": {
+        "CO2": 0.006350288,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 4,
+        "technological": 5,
+        "representativeness": 4,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "vt"
+      ],
+      "notes": "eGRID state-level average for VT",
+      "created_at": "2026-04-23T18:26:52+00:00",
+      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "source_id": "egrid",
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:state_VA:US-VA:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-VA",
+      "geography_level": "state",
+      "vectors": {
+        "CO2": 0.302999456,
+        "CH4": 2.2679600000000002e-05,
+        "N2O": 3.1751440000000003e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 4,
+        "technological": 5,
+        "representativeness": 4,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "va"
+      ],
+      "notes": "eGRID state-level average for VA",
+      "created_at": "2026-04-23T18:26:52+00:00",
+      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "source_id": "egrid",
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:state_WA:US-WA:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-WA",
+      "geography_level": "state",
+      "vectors": {
+        "CO2": 0.097975872,
+        "CH4": 9.07184e-06,
+        "N2O": 1.3607760000000001e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 4,
+        "technological": 5,
+        "representativeness": 4,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "wa"
+      ],
+      "notes": "eGRID state-level average for WA",
+      "created_at": "2026-04-23T18:26:52+00:00",
+      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "source_id": "egrid",
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:state_WV:US-WV:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-WV",
+      "geography_level": "state",
+      "vectors": {
+        "CO2": 0.884050808,
+        "CH4": 8.164656e-05,
+        "N2O": 1.3154168000000001e-05
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 4,
+        "technological": 5,
+        "representativeness": 4,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "wv"
+      ],
+      "notes": "eGRID state-level average for WV",
+      "created_at": "2026-04-23T18:26:52+00:00",
+      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "source_id": "egrid",
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:state_WI:US-WI:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-WI",
+      "geography_level": "state",
+      "vectors": {
+        "CO2": 0.49759042400000003,
+        "CH4": 4.5359200000000004e-05,
+        "N2O": 6.80388e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 4,
+        "technological": 5,
+        "representativeness": 4,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "wi"
+      ],
+      "notes": "eGRID state-level average for WI",
+      "created_at": "2026-04-23T18:26:52+00:00",
+      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "source_id": "egrid",
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:state_WY:US-WY:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-WY",
+      "geography_level": "state",
+      "vectors": {
+        "CO2": 0.892669056,
+        "CH4": 8.164656e-05,
+        "N2O": 1.360776e-05
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 4,
+        "technological": 5,
+        "representativeness": 4,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "wy"
+      ],
+      "notes": "eGRID state-level average for WY",
+      "created_at": "2026-04-23T18:26:52+00:00",
+      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "source_id": "egrid",
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:state_DC:US-DC:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-DC",
+      "geography_level": "state",
+      "vectors": {
+        "CO2": 0.264897728,
+        "CH4": 2.2679600000000002e-05,
+        "N2O": 2.7215520000000003e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 4,
+        "technological": 5,
+        "representativeness": 4,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "dc"
+      ],
+      "notes": "eGRID state-level average for DC",
+      "created_at": "2026-04-23T18:26:52+00:00",
+      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "source_id": "egrid",
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:national:US:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 0.380563688,
+        "CH4": 3.1751440000000005e-05,
+        "N2O": 4.53592e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.02,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 3,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "national"
+      ],
+      "notes": "eGRID US national average",
+      "created_at": "2026-04-23T18:26:52+00:00",
+      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "source_id": "egrid",
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
+      }
+    }
+  ]
+}

@@ -21,7 +21,9 @@ from greenlang.factors.resolution import (
     ResolutionRequest,
     ResolvedFactor,
 )
-from greenlang.factors.resolution.engine import ResolutionError
+from greenlang.factors.method_packs import get_pack
+from greenlang.factors.method_packs.exceptions import FactorCannotResolveSafelyError
+from greenlang.factors.resolution.engine import ResolutionError  # noqa: F401  (legacy, see notes)
 
 
 # --------------------------------------------------------------------------
@@ -183,14 +185,53 @@ class TestSevenStepCascade:
         assert resolved.fallback_rank == 6
 
     def test_step7_global_default(self):
+        """Tier-7 is an OPT-IN per Wave-2 cannot_resolve_safely contract.
+
+        Every shipped pack sets ``global_default_tier_allowed=False`` so a
+        regulated caller NEVER silently gets a global default. To verify
+        the engine's tier-7 mechanics still work we temporarily flip the
+        corporate pack's flag on this test only (MethodPack is a frozen
+        dataclass, so we use ``object.__setattr__`` + finally-restore).
+        The pack's own default (False) is covered by
+        ``test_step7_global_default_blocked_by_default``.
+        """
+        pack = get_pack(MethodProfile.CORPORATE_SCOPE1)
+        original = pack.global_default_tier_allowed
+        object.__setattr__(pack, "global_default_tier_allowed", True)
+        try:
+            engine = self._tier7_engine()
+            resolved = engine.resolve(self._base_request())
+            assert resolved.chosen_factor_id == "GLOBAL-1"
+            assert resolved.fallback_rank == 7
+        finally:
+            object.__setattr__(pack, "global_default_tier_allowed", original)
+
+    def _tier7_engine(self) -> ResolutionEngine:
+        return ResolutionEngine(
+            candidate_source=_source_returning(
+                {"global_default": [_mk_record(factor_id="GLOBAL-1", geography="GLOBAL")]}
+            )
+        )
+
+    def test_step7_global_default_blocked_by_default(self):
+        """Shipped packs MUST refuse the tier-7 silent fallback.
+
+        Wave-2 contract: when a regulated pack (CBAM, Corporate, PEF,
+        Battery, etc.) exhausts tiers 1-6 with no match AND has
+        ``global_default_tier_allowed=False``, the engine raises
+        :class:`FactorCannotResolveSafelyError` with
+        ``reason="global_default_blocked"`` so the caller learns the
+        exhaustion was due to policy, not missing data.
+        """
         engine = ResolutionEngine(
             candidate_source=_source_returning(
                 {"global_default": [_mk_record(factor_id="GLOBAL-1", geography="GLOBAL")]}
             )
         )
-        resolved = engine.resolve(self._base_request())
-        assert resolved.chosen_factor_id == "GLOBAL-1"
-        assert resolved.fallback_rank == 7
+        with pytest.raises(FactorCannotResolveSafelyError) as excinfo:
+            engine.resolve(self._base_request())
+        assert excinfo.value.reason == "global_default_blocked"
+        assert excinfo.value.pack_id == MethodProfile.CORPORATE_SCOPE1.value
 
     def test_higher_step_beats_lower_even_if_lower_is_better_quality(self):
         """A supplier-specific record wins over a better country-average one."""
@@ -282,10 +323,23 @@ class TestSelectionRuleIntegration:
             jurisdiction="EU",
             reporting_date="2026-06-01",
         )
-        # CBAM pack requires verification — unverified cannot satisfy any step,
-        # so resolution fails.
-        with pytest.raises(ResolutionError):
+        # CBAM pack requires verification — unverified cannot satisfy any
+        # step, so resolution fails. Wave-2 contract: since the CBAM pack
+        # has ``cannot_resolve_action = RAISE_NO_SAFE_MATCH`` (the default
+        # for every certified pack) the exhaustion-path exception is the
+        # structured :class:`FactorCannotResolveSafelyError`, NOT the
+        # legacy untyped :class:`ResolutionError`. Regulated callers
+        # (CBAM Art. 4(2), PEF, Battery CFP) depend on the structured
+        # payload to distinguish "no data" from "pack policy blocked a
+        # low-quality fallback".
+        with pytest.raises(FactorCannotResolveSafelyError) as excinfo:
             engine.resolve(req)
+        assert excinfo.value.pack_id == MethodProfile.EU_CBAM.value
+        assert excinfo.value.reason in (
+            "no_candidate",
+            "all_candidates_rejected",
+            "global_default_blocked",
+        )
 
 
 # --------------------------------------------------------------------------
@@ -338,14 +392,25 @@ class TestResolvedFactorPayload:
         assert payload["derivation"]["fallback_rank"] == 5
 
     def test_no_candidate_raises(self):
+        """Exhausting every cascade step with zero candidates MUST raise
+        the structured :class:`FactorCannotResolveSafelyError` on any pack
+        whose ``cannot_resolve_action`` is ``RAISE_NO_SAFE_MATCH`` — which
+        is every shipped certified pack. The reason key distinguishes
+        "global_default_blocked" (tier-7 was skipped by pack policy) from
+        "no_candidate" (no data at all on any tier).
+        """
         engine = ResolutionEngine(candidate_source=_source_returning({}))
-        with pytest.raises(ResolutionError):
+        with pytest.raises(FactorCannotResolveSafelyError) as excinfo:
             engine.resolve(
                 ResolutionRequest(
                     activity="diesel",
                     method_profile=MethodProfile.CORPORATE_SCOPE1,
                 )
             )
+        # Corporate pack blocks tier-7, so the exhaustion reason is the
+        # policy-block signal, not "no_candidate".
+        assert excinfo.value.reason == "global_default_blocked"
+        assert excinfo.value.evaluated_candidates_count == 0
 
 
 # --------------------------------------------------------------------------

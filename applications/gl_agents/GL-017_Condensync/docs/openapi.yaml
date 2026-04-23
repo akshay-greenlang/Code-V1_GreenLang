@@ -1,0 +1,1592 @@
+# =============================================================================
+# GL-017 CONDENSYNC - OpenAPI 3.0 Specification
+# =============================================================================
+# Complete REST API specification for condenser optimization and monitoring.
+#
+# Standards:
+# - OpenAPI Specification 3.0.3
+# - RFC 7807 Problem Details for errors
+# - Semantic Versioning 2.0.0
+#
+# Author: GL-TechWriter
+# Date: December 2025
+# Version: 1.0.0
+# =============================================================================
+
+openapi: 3.0.3
+
+info:
+  title: GL-017 CONDENSYNC API
+  description: |
+    Condenser Optimization and Monitoring Agent API.
+
+    GL-017 CONDENSYNC provides real-time monitoring, diagnostics, and
+    optimization for industrial steam surface condensers based on
+    Heat Exchange Institute (HEI) standards.
+
+    ## Key Features
+
+    - **Zero-Hallucination**: All calculations use deterministic HEI formulas
+    - **Performance Monitoring**: Cleanliness factor, TTD, DCA tracking
+    - **Economic Analysis**: Heat rate penalty and cost impact quantification
+    - **Optimization**: Cleaning schedule and CW flow optimization
+    - **Provenance Tracking**: SHA-256 hashes for complete audit trail
+
+    ## Standards Compliance
+
+    - HEI 3098: Standards for Steam Surface Condensers (11th Edition)
+    - ASME PTC 12.2: Steam Surface Condenser Performance Test Code
+    - IAPWS-IF97: Steam and Water Properties
+
+    ## Authentication
+
+    All endpoints require API key authentication via Bearer token:
+
+    ```
+    Authorization: Bearer <api_key>
+    ```
+
+  version: 1.0.0
+  contact:
+    name: GreenLang Support
+    url: https://greenlang.io/support
+    email: support@greenlang.io
+  license:
+    name: Proprietary
+    url: https://greenlang.io/license
+
+servers:
+  - url: http://localhost:8017/api/v1
+    description: Local development server
+  - url: https://staging.condensync.greenlang.io/api/v1
+    description: Staging environment
+  - url: https://condensync.greenlang.io/api/v1
+    description: Production environment
+
+tags:
+  - name: Health
+    description: Health and status endpoints
+  - name: Analysis
+    description: Condenser performance analysis endpoints
+  - name: Optimization
+    description: Optimization and recommendation endpoints
+  - name: Metrics
+    description: Observability and metrics endpoints
+  - name: Configuration
+    description: Configuration management endpoints
+
+paths:
+  # ===========================================================================
+  # HEALTH ENDPOINTS
+  # ===========================================================================
+
+  /health:
+    get:
+      operationId: healthCheck
+      summary: Health check
+      description: |
+        Liveness probe for Kubernetes.
+        Returns basic health status of the CONDENSYNC agent.
+      tags:
+        - Health
+      responses:
+        "200":
+          description: Agent is healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+              example:
+                status: healthy
+                timestamp: "2025-12-30T10:30:00Z"
+                agent_id: GL-017
+                version: "1.0.0"
+        "503":
+          description: Agent is unhealthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /health/ready:
+    get:
+      operationId: readinessCheck
+      summary: Readiness check
+      description: |
+        Readiness probe for Kubernetes.
+        Returns detailed status including component health.
+      tags:
+        - Health
+      responses:
+        "200":
+          description: Agent is ready
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReadinessResponse"
+              example:
+                status: healthy
+                timestamp: "2025-12-30T10:30:00Z"
+                uptime_seconds: 3600.5
+                version: "1.0.0"
+                components:
+                  - name: database
+                    status: healthy
+                    latency_ms: 2.5
+                  - name: hei_calculator
+                    status: healthy
+                  - name: opc_ua_connector
+                    status: healthy
+                    latency_ms: 15.2
+        "503":
+          description: Agent is not ready
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /status:
+    get:
+      operationId: getStatus
+      summary: Agent status and statistics
+      description: |
+        Returns detailed agent status including analysis counts,
+        component health, and operational statistics.
+      tags:
+        - Health
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Agent status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StatusResponse"
+              example:
+                agent_id: GL-017
+                agent_name: CONDENSYNC
+                version: "1.0.0"
+                mode: monitoring
+                status: active
+                uptime_seconds: 86400
+                statistics:
+                  total_analyses: 15230
+                  fouling_alerts: 142
+                  avg_cleanliness_factor: 81.5
+                  total_heat_rate_penalty_btu_kwh: 45.2
+                connections:
+                  opc_ua: connected
+                  historian: connected
+                  cmms: connected
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /metrics:
+    get:
+      operationId: getMetrics
+      summary: Prometheus metrics
+      description: |
+        Exposes Prometheus-compatible metrics for monitoring and alerting.
+
+        Key metrics include:
+        - `condensync_cleanliness_factor`: Cleanliness factor gauge
+        - `condensync_ttd_kelvin`: Terminal temperature difference gauge
+        - `condensync_dca_kelvin`: Drain cooler approach gauge
+        - `condensync_heat_rate_penalty_btu_kwh`: Heat rate penalty gauge
+        - `condensync_diagnoses_total`: Analysis counter
+        - `condensync_api_requests_total`: API request counter
+      tags:
+        - Metrics
+      responses:
+        "200":
+          description: Prometheus metrics in OpenMetrics format
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: |
+                # HELP condensync_cleanliness_factor Condenser cleanliness factor percentage
+                # TYPE condensync_cleanliness_factor gauge
+                condensync_cleanliness_factor{unit="Unit1",condenser="A"} 82.5
+                # HELP condensync_ttd_kelvin Terminal Temperature Difference in Kelvin
+                # TYPE condensync_ttd_kelvin gauge
+                condensync_ttd_kelvin{unit="Unit1",condenser="A"} 5.2
+                # HELP condensync_diagnoses_total Total analyses performed
+                # TYPE condensync_diagnoses_total counter
+                condensync_diagnoses_total{condition="light_fouling"} 1523
+
+  # ===========================================================================
+  # ANALYSIS ENDPOINTS
+  # ===========================================================================
+
+  /analyze:
+    post:
+      operationId: analyzeCondenser
+      summary: Analyze single condenser
+      description: |
+        Performs comprehensive performance analysis on a single condenser.
+
+        Uses HEI 3098 methodology to calculate:
+        - Overall heat transfer coefficient (U-value)
+        - Cleanliness factor
+        - Terminal temperature difference (TTD)
+        - Drain cooler approach (DCA)
+        - Fouling resistance
+
+        **Zero-Hallucination Guarantee**: All calculations use deterministic
+        formulas from HEI 3098 Standards (11th Edition).
+
+        The response includes:
+        - Performance metrics with confidence
+        - Condition classification
+        - Economic impact (heat rate penalty, cost)
+        - Optional optimization recommendations
+        - Provenance hash for audit trail
+      tags:
+        - Analysis
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AnalysisRequest"
+            examples:
+              fullAnalysis:
+                summary: Full analysis with optimization
+                value:
+                  condenser_id: COND-001
+                  unit_id: Unit1
+                  process_data:
+                    condenser_pressure_kpa: 5.0
+                    hotwell_temperature_c: 33.0
+                    steam_flow_kg_s: 250.0
+                    heat_duty_mw: 500.0
+                  cooling_water:
+                    inlet_temperature_c: 20.0
+                    outlet_temperature_c: 30.0
+                    flow_rate_m3_s: 12.0
+                    velocity_m_s: 2.1
+                  design_data:
+                    surface_area_m2: 25000
+                    tube_od_mm: 25.4
+                    tube_material: titanium
+                    tube_count: 18000
+                    design_u_w_m2k: 3200
+                  include_optimization: true
+                  include_explanation: true
+              minimalAnalysis:
+                summary: Minimal analysis
+                value:
+                  condenser_id: COND-002
+                  unit_id: Unit1
+                  process_data:
+                    condenser_pressure_kpa: 5.5
+                    heat_duty_mw: 450.0
+                  cooling_water:
+                    inlet_temperature_c: 22.0
+                    outlet_temperature_c: 32.0
+                    flow_rate_m3_s: 11.0
+                  design_data:
+                    surface_area_m2: 20000
+                    design_u_w_m2k: 3000
+      responses:
+        "200":
+          description: Analysis result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnalysisResponse"
+              example:
+                condenser_id: COND-001
+                unit_id: Unit1
+                analysis_id: a1b2c3d4-5678-90ab-cdef-1234567890ab
+                timestamp: "2025-12-30T10:30:00Z"
+                performance:
+                  cleanliness_factor_pct: 82.5
+                  actual_u_w_m2k: 2640
+                  design_u_w_m2k: 3200
+                  ttd_k: 5.2
+                  dca_k: 3.0
+                  lmtd_k: 8.5
+                  heat_duty_mw: 500.0
+                  fouling_resistance_m2k_w: 0.000065
+                condition:
+                  state: light_fouling
+                  severity: moderate
+                  confidence: 0.92
+                  trend: degrading
+                  days_to_threshold: 45
+                impact:
+                  backpressure_deviation_kpa: 0.5
+                  heat_rate_penalty_btu_kwh: 25.5
+                  heat_rate_penalty_pct: 0.28
+                  annual_fuel_cost_usd: 125000
+                  annual_co2_tonnes: 850
+                provenance:
+                  input_hash: "sha256:a1b2c3d4e5f6..."
+                  output_hash: "sha256:f6e5d4c3b2a1..."
+                  calculation_version: HEI_3098_v11
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "422":
+          $ref: "#/components/responses/BoundsViolation"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /analyze/batch:
+    post:
+      operationId: analyzeBatch
+      summary: Analyze multiple condensers
+      description: |
+        Performs batch analysis on multiple condensers.
+        Returns individual analyses plus fleet-level summary.
+      tags:
+        - Analysis
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BatchAnalysisRequest"
+            example:
+              analyses:
+                - condenser_id: COND-001
+                  unit_id: Unit1
+                  process_data:
+                    condenser_pressure_kpa: 5.0
+                    heat_duty_mw: 500.0
+                  cooling_water:
+                    inlet_temperature_c: 20.0
+                    outlet_temperature_c: 30.0
+                    flow_rate_m3_s: 12.0
+                  design_data:
+                    surface_area_m2: 25000
+                    design_u_w_m2k: 3200
+                - condenser_id: COND-002
+                  unit_id: Unit2
+                  process_data:
+                    condenser_pressure_kpa: 5.5
+                    heat_duty_mw: 450.0
+                  cooling_water:
+                    inlet_temperature_c: 22.0
+                    outlet_temperature_c: 32.0
+                    flow_rate_m3_s: 11.0
+                  design_data:
+                    surface_area_m2: 20000
+                    design_u_w_m2k: 3000
+              include_fleet_summary: true
+      responses:
+        "200":
+          description: Batch analysis result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BatchAnalysisResponse"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  # ===========================================================================
+  # OPTIMIZATION ENDPOINTS
+  # ===========================================================================
+
+  /optimize/cleaning:
+    post:
+      operationId: optimizeCleaning
+      summary: Optimize cleaning schedule
+      description: |
+        Calculates optimal condenser cleaning schedule based on:
+        - Current cleanliness factor
+        - Fouling rate trend
+        - Cleaning cost
+        - Heat rate penalty cost
+        - CO2 impact
+
+        Returns optimal cleaning date with economic justification.
+      tags:
+        - Optimization
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CleaningOptimizationRequest"
+            example:
+              condenser_id: COND-001
+              unit_id: Unit1
+              current_cf_pct: 82.5
+              fouling_rate_pct_day: 0.07
+              cleaning_cost_usd: 25000
+              cleaning_duration_hours: 48
+              fuel_cost_usd_mmbtu: 3.50
+              co2_price_usd_tonne: 50
+              heat_rate_design_btu_kwh: 9000
+              capacity_mw: 500
+              capacity_factor_pct: 85
+      responses:
+        "200":
+          description: Cleaning optimization result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CleaningOptimizationResponse"
+              example:
+                condenser_id: COND-001
+                optimal_cleaning_date: "2025-02-15"
+                days_until_optimal: 47
+                cf_at_optimal_date_pct: 79.2
+                economic_analysis:
+                  current_heat_rate_penalty_usd_yr: 125000
+                  penalty_at_cleaning_usd: 185000
+                  cleaning_cost_usd: 25000
+                  lost_generation_usd: 35000
+                  total_cleaning_cost_usd: 60000
+                  net_annual_benefit_usd: 310000
+                  simple_payback_months: 2.3
+                provenance_hash: "sha256:abc123..."
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /optimize/cooling-water:
+    post:
+      operationId: optimizeCoolingWater
+      summary: Optimize cooling water flow
+      description: |
+        Optimizes cooling water flow rate to balance:
+        - Heat transfer improvement (lower backpressure)
+        - Pump power consumption
+
+        Returns optimal flow rate with net benefit calculation.
+      tags:
+        - Optimization
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CWOptimizationRequest"
+            example:
+              condenser_id: COND-001
+              unit_id: Unit1
+              current_flow_m3_s: 12.0
+              pump_curve:
+                flow_m3_s: [8, 10, 12, 14, 16]
+                head_m: [45, 42, 38, 33, 27]
+                efficiency_pct: [75, 80, 82, 80, 75]
+              motor_efficiency_pct: 95
+              electricity_price_usd_mwh: 50
+              condenser_data:
+                heat_duty_mw: 500
+                cw_inlet_temp_c: 20
+                design_u_w_m2k: 3200
+                surface_area_m2: 25000
+      responses:
+        "200":
+          description: CW optimization result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CWOptimizationResponse"
+              example:
+                condenser_id: COND-001
+                current_state:
+                  flow_m3_s: 12.0
+                  pump_power_kw: 1850
+                  backpressure_kpa: 5.0
+                  ttd_k: 5.2
+                optimal_state:
+                  flow_m3_s: 13.5
+                  pump_power_kw: 2150
+                  backpressure_kpa: 4.7
+                  ttd_k: 4.5
+                impact:
+                  pump_power_increase_kw: 300
+                  backpressure_reduction_kpa: 0.3
+                  heat_rate_improvement_btu_kwh: 8.5
+                  generation_increase_kw: 425
+                  net_benefit_kw: 125
+                  annual_benefit_usd: 54750
+                recommendation: "Increase CW flow to 13.5 m3/s for net benefit of 125 kW"
+                provenance_hash: "sha256:def456..."
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  # ===========================================================================
+  # CONFIGURATION ENDPOINTS
+  # ===========================================================================
+
+  /config:
+    get:
+      operationId: getConfig
+      summary: Get current configuration
+      description: Returns current agent configuration settings.
+      tags:
+        - Configuration
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Current configuration
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConfigResponse"
+              example:
+                agent_id: GL-017
+                mode: monitoring
+                analysis_interval_seconds: 300
+                thresholds:
+                  cf_clean_pct: 85
+                  cf_light_fouling_pct: 75
+                  cf_moderate_fouling_pct: 60
+                  ttd_warning_k: 5
+                  ttd_critical_k: 10
+                hei_standard:
+                  version: HEI_3098_11th_Edition
+                  correction_factors_enabled: true
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+    put:
+      operationId: updateConfig
+      summary: Update configuration
+      description: |
+        Updates agent configuration settings.
+        Requires admin role.
+      tags:
+        - Configuration
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConfigUpdateRequest"
+            example:
+              mode: survey
+              thresholds:
+                cf_clean_pct: 90
+      responses:
+        "200":
+          description: Configuration updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConfigResponse"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+# =============================================================================
+# COMPONENTS
+# =============================================================================
+
+components:
+  # ===========================================================================
+  # SECURITY SCHEMES
+  # ===========================================================================
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: API key authentication
+
+  # ===========================================================================
+  # SCHEMAS
+  # ===========================================================================
+
+  schemas:
+    # -------------------------------------------------------------------------
+    # REQUEST SCHEMAS
+    # -------------------------------------------------------------------------
+
+    AnalysisRequest:
+      type: object
+      description: Request for single condenser analysis
+      required:
+        - condenser_id
+        - unit_id
+        - process_data
+        - cooling_water
+        - design_data
+      properties:
+        condenser_id:
+          type: string
+          description: Unique condenser identifier
+          example: COND-001
+        unit_id:
+          type: string
+          description: Power unit identifier
+          example: Unit1
+        timestamp:
+          type: string
+          format: date-time
+          description: Measurement timestamp (defaults to current)
+        process_data:
+          $ref: "#/components/schemas/ProcessData"
+        cooling_water:
+          $ref: "#/components/schemas/CoolingWaterData"
+        design_data:
+          $ref: "#/components/schemas/DesignData"
+        include_optimization:
+          type: boolean
+          description: Include optimization recommendations
+          default: false
+        include_explanation:
+          type: boolean
+          description: Include explainability data
+          default: true
+
+    ProcessData:
+      type: object
+      description: Process measurements
+      properties:
+        condenser_pressure_kpa:
+          type: number
+          format: float
+          description: Absolute condenser pressure in kPa
+          minimum: 0.5
+          maximum: 15
+          example: 5.0
+        hotwell_temperature_c:
+          type: number
+          format: float
+          description: Hotwell/condensate temperature in Celsius
+          minimum: 20
+          maximum: 60
+          example: 33.0
+        steam_flow_kg_s:
+          type: number
+          format: float
+          description: Exhaust steam flow rate in kg/s
+          minimum: 0
+          maximum: 1000
+          example: 250.0
+        heat_duty_mw:
+          type: number
+          format: float
+          description: Total heat rejection in MW
+          minimum: 0
+          maximum: 2000
+          example: 500.0
+
+    CoolingWaterData:
+      type: object
+      description: Cooling water measurements
+      required:
+        - inlet_temperature_c
+        - outlet_temperature_c
+        - flow_rate_m3_s
+      properties:
+        inlet_temperature_c:
+          type: number
+          format: float
+          description: CW inlet temperature in Celsius
+          minimum: 0
+          maximum: 45
+          example: 20.0
+        outlet_temperature_c:
+          type: number
+          format: float
+          description: CW outlet temperature in Celsius
+          minimum: 5
+          maximum: 55
+          example: 30.0
+        flow_rate_m3_s:
+          type: number
+          format: float
+          description: Volumetric flow rate in m3/s
+          minimum: 0
+          maximum: 100
+          example: 12.0
+        velocity_m_s:
+          type: number
+          format: float
+          description: Tube-side velocity in m/s
+          minimum: 0.3
+          maximum: 3.0
+          example: 2.1
+
+    DesignData:
+      type: object
+      description: Design specifications
+      required:
+        - surface_area_m2
+        - design_u_w_m2k
+      properties:
+        surface_area_m2:
+          type: number
+          format: float
+          description: Heat transfer surface area in m2
+          minimum: 100
+          maximum: 100000
+          example: 25000
+        tube_od_mm:
+          type: number
+          format: float
+          description: Tube outside diameter in mm
+          minimum: 15
+          maximum: 50
+          default: 25.4
+          example: 25.4
+        tube_material:
+          type: string
+          description: Tube material
+          enum:
+            - admiralty_brass
+            - arsenical_copper
+            - copper_nickel_90_10
+            - copper_nickel_70_30
+            - titanium
+            - stainless_steel_304
+            - stainless_steel_316
+          default: titanium
+          example: titanium
+        tube_count:
+          type: integer
+          description: Total number of tubes
+          minimum: 100
+          maximum: 100000
+          example: 18000
+        design_u_w_m2k:
+          type: number
+          format: float
+          description: Design overall heat transfer coefficient in W/(m2*K)
+          minimum: 1000
+          maximum: 5000
+          example: 3200
+        design_pressure_kpa:
+          type: number
+          format: float
+          description: Design condenser pressure in kPa
+          minimum: 0.5
+          maximum: 15
+          example: 4.5
+        design_ttd_k:
+          type: number
+          format: float
+          description: Design TTD in Kelvin
+          minimum: 0
+          maximum: 15
+          example: 3.0
+
+    BatchAnalysisRequest:
+      type: object
+      description: Request for batch condenser analysis
+      required:
+        - analyses
+      properties:
+        analyses:
+          type: array
+          description: List of condensers to analyze
+          minItems: 1
+          maxItems: 100
+          items:
+            $ref: "#/components/schemas/AnalysisRequest"
+        include_fleet_summary:
+          type: boolean
+          description: Include fleet-level summary
+          default: true
+
+    CleaningOptimizationRequest:
+      type: object
+      description: Request for cleaning schedule optimization
+      required:
+        - condenser_id
+        - current_cf_pct
+        - cleaning_cost_usd
+        - fuel_cost_usd_mmbtu
+      properties:
+        condenser_id:
+          type: string
+          example: COND-001
+        unit_id:
+          type: string
+          example: Unit1
+        current_cf_pct:
+          type: number
+          format: float
+          description: Current cleanliness factor percentage
+          minimum: 0
+          maximum: 100
+          example: 82.5
+        fouling_rate_pct_day:
+          type: number
+          format: float
+          description: Fouling rate in %CF per day
+          minimum: 0
+          maximum: 1
+          default: 0.05
+          example: 0.07
+        cleaning_cost_usd:
+          type: number
+          format: float
+          description: Cost to clean condenser in USD
+          minimum: 0
+          example: 25000
+        cleaning_duration_hours:
+          type: number
+          format: float
+          description: Cleaning outage duration in hours
+          minimum: 0
+          maximum: 168
+          default: 48
+          example: 48
+        fuel_cost_usd_mmbtu:
+          type: number
+          format: float
+          description: Fuel cost in $/MMBTU
+          minimum: 0
+          example: 3.50
+        co2_price_usd_tonne:
+          type: number
+          format: float
+          description: CO2 price in $/tonne
+          minimum: 0
+          default: 0
+          example: 50
+        heat_rate_design_btu_kwh:
+          type: number
+          format: float
+          description: Design heat rate in BTU/kWh
+          minimum: 5000
+          maximum: 15000
+          default: 9000
+          example: 9000
+        capacity_mw:
+          type: number
+          format: float
+          description: Unit capacity in MW
+          minimum: 0
+          example: 500
+        capacity_factor_pct:
+          type: number
+          format: float
+          description: Capacity factor percentage
+          minimum: 0
+          maximum: 100
+          default: 85
+          example: 85
+
+    CWOptimizationRequest:
+      type: object
+      description: Request for CW flow optimization
+      required:
+        - condenser_id
+        - current_flow_m3_s
+        - condenser_data
+      properties:
+        condenser_id:
+          type: string
+          example: COND-001
+        unit_id:
+          type: string
+          example: Unit1
+        current_flow_m3_s:
+          type: number
+          format: float
+          description: Current CW flow rate in m3/s
+          example: 12.0
+        pump_curve:
+          $ref: "#/components/schemas/PumpCurve"
+        motor_efficiency_pct:
+          type: number
+          format: float
+          description: Motor efficiency percentage
+          minimum: 80
+          maximum: 100
+          default: 95
+          example: 95
+        electricity_price_usd_mwh:
+          type: number
+          format: float
+          description: Electricity price in $/MWh
+          minimum: 0
+          default: 50
+          example: 50
+        condenser_data:
+          type: object
+          properties:
+            heat_duty_mw:
+              type: number
+              format: float
+              example: 500
+            cw_inlet_temp_c:
+              type: number
+              format: float
+              example: 20
+            design_u_w_m2k:
+              type: number
+              format: float
+              example: 3200
+            surface_area_m2:
+              type: number
+              format: float
+              example: 25000
+
+    PumpCurve:
+      type: object
+      description: Pump performance curve
+      properties:
+        flow_m3_s:
+          type: array
+          items:
+            type: number
+          example: [8, 10, 12, 14, 16]
+        head_m:
+          type: array
+          items:
+            type: number
+          example: [45, 42, 38, 33, 27]
+        efficiency_pct:
+          type: array
+          items:
+            type: number
+          example: [75, 80, 82, 80, 75]
+
+    ConfigUpdateRequest:
+      type: object
+      description: Configuration update request
+      properties:
+        mode:
+          type: string
+          enum: [monitoring, survey, batch]
+        thresholds:
+          type: object
+          properties:
+            cf_clean_pct:
+              type: number
+            cf_light_fouling_pct:
+              type: number
+            cf_moderate_fouling_pct:
+              type: number
+            ttd_warning_k:
+              type: number
+            ttd_critical_k:
+              type: number
+
+    # -------------------------------------------------------------------------
+    # RESPONSE SCHEMAS
+    # -------------------------------------------------------------------------
+
+    HealthResponse:
+      type: object
+      description: Health check response
+      properties:
+        status:
+          type: string
+          enum: [healthy, unhealthy]
+          example: healthy
+        timestamp:
+          type: string
+          format: date-time
+          example: "2025-12-30T10:30:00Z"
+        agent_id:
+          type: string
+          example: GL-017
+        version:
+          type: string
+          example: "1.0.0"
+
+    ReadinessResponse:
+      type: object
+      description: Readiness check response
+      properties:
+        status:
+          type: string
+          enum: [healthy, unhealthy]
+        timestamp:
+          type: string
+          format: date-time
+        uptime_seconds:
+          type: number
+          format: float
+        version:
+          type: string
+        components:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              status:
+                type: string
+                enum: [healthy, unhealthy]
+              latency_ms:
+                type: number
+                format: float
+
+    StatusResponse:
+      type: object
+      description: Agent status response
+      properties:
+        agent_id:
+          type: string
+        agent_name:
+          type: string
+        version:
+          type: string
+        mode:
+          type: string
+          enum: [monitoring, survey, batch]
+        status:
+          type: string
+          enum: [active, idle, error]
+        uptime_seconds:
+          type: number
+          format: float
+        statistics:
+          type: object
+          properties:
+            total_analyses:
+              type: integer
+            fouling_alerts:
+              type: integer
+            avg_cleanliness_factor:
+              type: number
+              format: float
+            total_heat_rate_penalty_btu_kwh:
+              type: number
+              format: float
+        connections:
+          type: object
+          additionalProperties:
+            type: string
+
+    AnalysisResponse:
+      type: object
+      description: Analysis result for single condenser
+      properties:
+        condenser_id:
+          type: string
+        unit_id:
+          type: string
+        analysis_id:
+          type: string
+          format: uuid
+        timestamp:
+          type: string
+          format: date-time
+        performance:
+          $ref: "#/components/schemas/PerformanceMetrics"
+        condition:
+          $ref: "#/components/schemas/Condition"
+        impact:
+          $ref: "#/components/schemas/Impact"
+        optimization:
+          $ref: "#/components/schemas/OptimizationRecommendation"
+        explainability:
+          $ref: "#/components/schemas/Explainability"
+        provenance:
+          $ref: "#/components/schemas/Provenance"
+
+    PerformanceMetrics:
+      type: object
+      description: Calculated performance metrics
+      properties:
+        cleanliness_factor_pct:
+          type: number
+          format: float
+          description: Cleanliness factor percentage
+        actual_u_w_m2k:
+          type: number
+          format: float
+          description: Actual U-value in W/(m2*K)
+        design_u_w_m2k:
+          type: number
+          format: float
+          description: Design U-value in W/(m2*K)
+        ttd_k:
+          type: number
+          format: float
+          description: Terminal temperature difference in Kelvin
+        dca_k:
+          type: number
+          format: float
+          description: Drain cooler approach in Kelvin
+        lmtd_k:
+          type: number
+          format: float
+          description: Log mean temperature difference in Kelvin
+        heat_duty_mw:
+          type: number
+          format: float
+          description: Heat duty in MW
+        fouling_resistance_m2k_w:
+          type: number
+          format: float
+          description: Fouling resistance in (m2*K)/W
+
+    Condition:
+      type: object
+      description: Condition classification
+      properties:
+        state:
+          type: string
+          enum:
+            - clean
+            - light_fouling
+            - moderate_fouling
+            - severe_fouling
+            - air_binding
+            - waterbox_fouling
+        severity:
+          type: string
+          enum: [none, low, moderate, high, critical]
+        confidence:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+        trend:
+          type: string
+          enum: [improving, stable, degrading]
+        days_to_threshold:
+          type: integer
+          description: Days until CF reaches next threshold
+
+    Impact:
+      type: object
+      description: Economic and environmental impact
+      properties:
+        backpressure_deviation_kpa:
+          type: number
+          format: float
+        heat_rate_penalty_btu_kwh:
+          type: number
+          format: float
+        heat_rate_penalty_pct:
+          type: number
+          format: float
+        annual_fuel_cost_usd:
+          type: number
+          format: float
+        annual_co2_tonnes:
+          type: number
+          format: float
+
+    OptimizationRecommendation:
+      type: object
+      description: Optimization recommendations
+      nullable: true
+      properties:
+        recommended_action:
+          type: string
+          enum: [none, monitor, schedule_cleaning, immediate_cleaning, investigate]
+        optimal_cleaning_date:
+          type: string
+          format: date
+        cleaning_roi_months:
+          type: number
+          format: float
+        cw_flow_recommendation:
+          type: object
+          properties:
+            current_m3_s:
+              type: number
+              format: float
+            optimal_m3_s:
+              type: number
+              format: float
+            pump_power_impact_kw:
+              type: number
+              format: float
+            net_benefit_kw:
+              type: number
+              format: float
+
+    Explainability:
+      type: object
+      description: Explainability data
+      nullable: true
+      properties:
+        top_factors:
+          type: array
+          items:
+            type: object
+            properties:
+              factor:
+                type: string
+              value:
+                type: number
+              contribution:
+                type: number
+              description:
+                type: string
+        evidence_chain:
+          type: array
+          items:
+            type: object
+            properties:
+              step:
+                type: integer
+              type:
+                type: string
+                enum: [observation, calculation, recommendation]
+              data:
+                type: string
+              inference:
+                type: string
+        counterfactual:
+          type: string
+
+    Provenance:
+      type: object
+      description: Audit trail with calculation hashes
+      properties:
+        input_hash:
+          type: string
+        output_hash:
+          type: string
+        calculation_version:
+          type: string
+        calculator_hashes:
+          type: object
+          additionalProperties:
+            type: string
+
+    BatchAnalysisResponse:
+      type: object
+      description: Batch analysis response
+      properties:
+        batch_id:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        analyses:
+          type: array
+          items:
+            $ref: "#/components/schemas/AnalysisResponse"
+        fleet_summary:
+          $ref: "#/components/schemas/FleetSummary"
+
+    FleetSummary:
+      type: object
+      description: Fleet-level summary
+      properties:
+        total_condensers:
+          type: integer
+        clean_count:
+          type: integer
+        light_fouling_count:
+          type: integer
+        moderate_fouling_count:
+          type: integer
+        severe_fouling_count:
+          type: integer
+        avg_cleanliness_factor_pct:
+          type: number
+          format: float
+        total_heat_rate_penalty_btu_kwh:
+          type: number
+          format: float
+        total_annual_cost_usd:
+          type: number
+          format: float
+        total_annual_co2_tonnes:
+          type: number
+          format: float
+
+    CleaningOptimizationResponse:
+      type: object
+      description: Cleaning optimization result
+      properties:
+        condenser_id:
+          type: string
+        optimal_cleaning_date:
+          type: string
+          format: date
+        days_until_optimal:
+          type: integer
+        cf_at_optimal_date_pct:
+          type: number
+          format: float
+        economic_analysis:
+          type: object
+          properties:
+            current_heat_rate_penalty_usd_yr:
+              type: number
+              format: float
+            penalty_at_cleaning_usd:
+              type: number
+              format: float
+            cleaning_cost_usd:
+              type: number
+              format: float
+            lost_generation_usd:
+              type: number
+              format: float
+            total_cleaning_cost_usd:
+              type: number
+              format: float
+            net_annual_benefit_usd:
+              type: number
+              format: float
+            simple_payback_months:
+              type: number
+              format: float
+        sensitivity:
+          type: object
+          additionalProperties:
+            type: object
+        provenance_hash:
+          type: string
+
+    CWOptimizationResponse:
+      type: object
+      description: CW optimization result
+      properties:
+        condenser_id:
+          type: string
+        current_state:
+          type: object
+          properties:
+            flow_m3_s:
+              type: number
+              format: float
+            pump_power_kw:
+              type: number
+              format: float
+            backpressure_kpa:
+              type: number
+              format: float
+            ttd_k:
+              type: number
+              format: float
+        optimal_state:
+          type: object
+          properties:
+            flow_m3_s:
+              type: number
+              format: float
+            pump_power_kw:
+              type: number
+              format: float
+            backpressure_kpa:
+              type: number
+              format: float
+            ttd_k:
+              type: number
+              format: float
+        impact:
+          type: object
+          properties:
+            pump_power_increase_kw:
+              type: number
+              format: float
+            backpressure_reduction_kpa:
+              type: number
+              format: float
+            heat_rate_improvement_btu_kwh:
+              type: number
+              format: float
+            generation_increase_kw:
+              type: number
+              format: float
+            net_benefit_kw:
+              type: number
+              format: float
+            annual_benefit_usd:
+              type: number
+              format: float
+        recommendation:
+          type: string
+        provenance_hash:
+          type: string
+
+    ConfigResponse:
+      type: object
+      description: Configuration response
+      properties:
+        agent_id:
+          type: string
+        mode:
+          type: string
+        analysis_interval_seconds:
+          type: integer
+        thresholds:
+          type: object
+          properties:
+            cf_clean_pct:
+              type: number
+            cf_light_fouling_pct:
+              type: number
+            cf_moderate_fouling_pct:
+              type: number
+            ttd_warning_k:
+              type: number
+            ttd_critical_k:
+              type: number
+        hei_standard:
+          type: object
+          properties:
+            version:
+              type: string
+            correction_factors_enabled:
+              type: boolean
+
+    # -------------------------------------------------------------------------
+    # ERROR SCHEMAS (RFC 7807)
+    # -------------------------------------------------------------------------
+
+    ErrorResponse:
+      type: object
+      description: RFC 7807 Problem Details
+      properties:
+        type:
+          type: string
+          format: uri
+          description: Error type URI
+          example: https://greenlang.io/errors/validation
+        title:
+          type: string
+          description: Short error title
+          example: Validation Error
+        status:
+          type: integer
+          description: HTTP status code
+          example: 400
+        detail:
+          type: string
+          description: Detailed error message
+          example: condenser_pressure_kpa=20.0 exceeds maximum 15.0 kPa
+        instance:
+          type: string
+          format: uri
+          description: Request URI
+          example: /api/v1/analyze
+        violations:
+          type: array
+          items:
+            $ref: "#/components/schemas/BoundsViolationDetail"
+
+    BoundsViolationDetail:
+      type: object
+      description: Physical bounds violation detail
+      properties:
+        parameter:
+          type: string
+          example: condenser_pressure_kpa
+        value:
+          type: number
+          example: 20.0
+        min_bound:
+          type: number
+          example: 0.5
+        max_bound:
+          type: number
+          example: 15.0
+        unit:
+          type: string
+          example: kPa
+        standard:
+          type: string
+          description: Standard reference
+          example: HEI 3098
+
+  # ===========================================================================
+  # RESPONSES
+  # ===========================================================================
+
+  responses:
+    ValidationError:
+      description: Input validation failed
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            type: https://greenlang.io/errors/validation
+            title: Validation Error
+            status: 400
+            detail: condenser_id is required
+            instance: /api/v1/analyze
+
+    BoundsViolation:
+      description: Physical bounds exceeded
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            type: https://greenlang.io/errors/bounds_violation
+            title: Bounds Violation
+            status: 422
+            detail: condenser_pressure_kpa=20.0 kPa exceeds maximum 15.0 kPa
+            instance: /api/v1/analyze
+            violations:
+              - parameter: condenser_pressure_kpa
+                value: 20.0
+                min_bound: 0.5
+                max_bound: 15.0
+                unit: kPa
+                standard: HEI 3098
+
+    Unauthorized:
+      description: Missing or invalid API key
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            type: https://greenlang.io/errors/unauthorized
+            title: Unauthorized
+            status: 401
+            detail: Missing or invalid API key
+            instance: /api/v1/analyze
+
+    Forbidden:
+      description: Insufficient permissions
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            type: https://greenlang.io/errors/forbidden
+            title: Forbidden
+            status: 403
+            detail: Admin role required for this operation
+            instance: /api/v1/config
+
+    InternalError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            type: https://greenlang.io/errors/internal
+            title: Internal Server Error
+            status: 500
+            detail: An unexpected error occurred
+            instance: /api/v1/analyze

@@ -1,0 +1,170 @@
+# GL-010 EmissionGuardian Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gl-010-emissionguardian
+  namespace: greenlang
+  labels:
+    app: gl-010-emissionguardian
+    agent-id: GL-010
+    codename: EMISSIONGUARDIAN
+    version: v1.0.0
+    tier: production
+    domain: emissions-monitoring
+  annotations:
+    kubernetes.io/description: "GL-010 EmissionGuardian - Emissions Monitoring Agent"
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9090"
+    prometheus.io/path: "/metrics"
+spec:
+  replicas: 2
+  revisionHistoryLimit: 10
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: gl-010-emissionguardian
+  template:
+    metadata:
+      labels:
+        app: gl-010-emissionguardian
+        agent-id: GL-010
+        codename: EMISSIONGUARDIAN
+        version: v1.0.0
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: gl-010-emissionguardian-sa
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app: gl-010-emissionguardian
+                topologyKey: kubernetes.io/hostname
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app: gl-010-emissionguardian
+      containers:
+        - name: gl-010-emissionguardian
+          image: gcr.io/greenlang/gl-010-emissionguardian:v1.0.0
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+            - name: metrics
+              containerPort: 9090
+              protocol: TCP
+          env:
+            - name: ENVIRONMENT
+              valueFrom:
+                configMapKeyRef:
+                  name: gl-010-emissionguardian-config
+                  key: ENVIRONMENT
+            - name: GL010_LOG_LEVEL
+              valueFrom:
+                configMapKeyRef:
+                  name: gl-010-emissionguardian-config
+                  key: LOG_LEVEL
+            - name: GL010_API_PORT
+              value: "8080"
+            - name: GL010_METRICS_PORT
+              value: "9090"
+            - name: GL010_DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: gl-010-emissionguardian-secrets
+                  key: database-url
+            - name: GL010_REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: gl-010-emissionguardian-secrets
+                  key: redis-url
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "4Gi"
+              cpu: "2000m"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+          startupProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            failureThreshold: 30
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1000
+            capabilities:
+              drop:
+                - ALL
+          volumeMounts:
+            - name: config-volume
+              mountPath: /app/config
+              readOnly: true
+            - name: tmp-volume
+              mountPath: /tmp
+            - name: logs-volume
+              mountPath: /var/log/greenlang
+            - name: emissions-data-volume
+              mountPath: /var/data/emissions_monitoring
+      volumes:
+        - name: config-volume
+          configMap:
+            name: gl-010-emissionguardian-config
+        - name: tmp-volume
+          emptyDir: {}
+        - name: logs-volume
+          emptyDir: {}
+        - name: emissions-data-volume
+          emptyDir: {}
+      terminationGracePeriodSeconds: 30
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always

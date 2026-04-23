@@ -18,11 +18,41 @@ from greenlang.data.canonical_v2 import (
 from greenlang.factors.method_packs.base import (
     BiogenicTreatment,
     BoundaryRule,
+    CannotResolveAction,
     DEFAULT_FALLBACK,
     DeprecationRule,
     MarketInstrumentTreatment,
     MethodPack,
     SelectionRule,
+)
+
+# ---------------------------------------------------------------------------
+# Structured activity-category allow-list for every electricity pack.
+# GHG Protocol Scope 2 Guidance §3 limits Scope 2 accounting to electricity,
+# steam, heating, cooling. We also admit the Excel-template slugs so a
+# caller's `activity="grid_electricity"` resolves through.
+# ---------------------------------------------------------------------------
+_ELECTRICITY_INCLUDED: frozenset = frozenset(
+    {
+        "electricity",
+        "grid_electricity",
+        "purchased_electricity",
+        "steam",
+        "heating",
+        "cooling",
+        "district_heat",
+        "district_cooling",
+    }
+)
+# Carbon offsets NEVER go into Scope 2 gross inventories (GHG Protocol
+# Scope 2 Guidance §7). Residual-mix packs must also reject self-generated
+# onsite factors because those belong to Scope 1 under the Operational
+# Control consolidation.
+_ELECTRICITY_EXCLUDED: frozenset = frozenset(
+    {
+        "carbon_offsets",
+        "onsite_selfgen",   # Scope 1, not Scope 2 (Guidance §3)
+    }
 )
 
 # Electricity packs are NOT standalone commercial offerings — they back
@@ -46,6 +76,8 @@ ELECTRICITY_LOCATION = MethodPack(
         allowed_families=(FactorFamily.GRID_INTENSITY,),
         allowed_formula_types=(FormulaType.DIRECT_FACTOR,),
         allowed_statuses=("certified",),
+        included_activity_categories=_ELECTRICITY_INCLUDED,
+        excluded_activity_categories=_ELECTRICITY_EXCLUDED,
     ),
     boundary_rule=BoundaryRule(
         allowed_scopes=("2",),
@@ -65,6 +97,10 @@ ELECTRICITY_LOCATION = MethodPack(
     pack_version="1.0.0",
     electricity_basis=ElectricityBasis.LOCATION_BASED,
     tags=("electricity", "open_core"),
+    cannot_resolve_action=CannotResolveAction.RAISE_NO_SAFE_MATCH,
+    global_default_tier_allowed=False,
+    replacement_pack_id=None,
+    deprecation_notice_days=180,
 )
 
 
@@ -80,6 +116,8 @@ ELECTRICITY_MARKET = MethodPack(
         allowed_families=(FactorFamily.GRID_INTENSITY, FactorFamily.RESIDUAL_MIX),
         allowed_formula_types=(FormulaType.DIRECT_FACTOR, FormulaType.RESIDUAL_MIX),
         allowed_statuses=("certified", "preview"),
+        included_activity_categories=_ELECTRICITY_INCLUDED,
+        excluded_activity_categories=_ELECTRICITY_EXCLUDED,
     ),
     boundary_rule=BoundaryRule(
         allowed_scopes=("2",),
@@ -98,6 +136,10 @@ ELECTRICITY_MARKET = MethodPack(
     pack_version="1.0.0",
     electricity_basis=ElectricityBasis.MARKET_BASED,
     tags=("electricity",),
+    cannot_resolve_action=CannotResolveAction.RAISE_NO_SAFE_MATCH,
+    global_default_tier_allowed=False,
+    replacement_pack_id=None,
+    deprecation_notice_days=180,
 )
 
 
@@ -149,6 +191,8 @@ ELECTRICITY_RESIDUAL_MIX_EU = MethodPack(
         allowed_statuses=("certified", "preview"),
         custom_filter=lambda rec: getattr(rec, "source_id", None)
         == "aib_residual_mix_eu",
+        included_activity_categories=_ELECTRICITY_INCLUDED,
+        excluded_activity_categories=_ELECTRICITY_EXCLUDED,
     ),
     boundary_rule=BoundaryRule(
         allowed_scopes=("2",),
@@ -168,6 +212,10 @@ ELECTRICITY_RESIDUAL_MIX_EU = MethodPack(
     pack_version="1.0.0",
     electricity_basis=ElectricityBasis.RESIDUAL_MIX,
     tags=("electricity", "residual_mix", "eu", "aib"),
+    cannot_resolve_action=CannotResolveAction.RAISE_NO_SAFE_MATCH,
+    global_default_tier_allowed=False,
+    replacement_pack_id=None,
+    deprecation_notice_days=180,
 )
 
 
@@ -185,6 +233,8 @@ ELECTRICITY_RESIDUAL_MIX_US = MethodPack(
         allowed_statuses=("certified", "preview"),
         custom_filter=lambda rec: getattr(rec, "source_id", None)
         == "green_e_residual_mix",
+        included_activity_categories=_ELECTRICITY_INCLUDED,
+        excluded_activity_categories=_ELECTRICITY_EXCLUDED,
     ),
     boundary_rule=BoundaryRule(
         allowed_scopes=("2",),
@@ -209,6 +259,10 @@ ELECTRICITY_RESIDUAL_MIX_US = MethodPack(
     pack_version="1.0.0",
     electricity_basis=ElectricityBasis.RESIDUAL_MIX,
     tags=("electricity", "residual_mix", "us", "ca", "green_e"),
+    cannot_resolve_action=CannotResolveAction.RAISE_NO_SAFE_MATCH,
+    global_default_tier_allowed=False,
+    replacement_pack_id=None,
+    deprecation_notice_days=180,
 )
 
 
@@ -226,6 +280,8 @@ ELECTRICITY_RESIDUAL_MIX_AU = MethodPack(
         allowed_statuses=("certified", "preview"),
         custom_filter=lambda rec: getattr(rec, "source_id", None)
         == "australia_nga_factors",
+        included_activity_categories=_ELECTRICITY_INCLUDED,
+        excluded_activity_categories=_ELECTRICITY_EXCLUDED,
     ),
     boundary_rule=BoundaryRule(
         allowed_scopes=("2",),
@@ -251,6 +307,10 @@ ELECTRICITY_RESIDUAL_MIX_AU = MethodPack(
     pack_version="1.0.0",
     electricity_basis=ElectricityBasis.RESIDUAL_MIX,
     tags=("electricity", "residual_mix", "au", "nga", "lgc"),
+    cannot_resolve_action=CannotResolveAction.RAISE_NO_SAFE_MATCH,
+    global_default_tier_allowed=False,
+    replacement_pack_id=None,
+    deprecation_notice_days=180,
 )
 
 
@@ -269,6 +329,8 @@ ELECTRICITY_RESIDUAL_MIX_JP = MethodPack(
         allowed_statuses=("certified", "preview"),
         custom_filter=lambda rec: getattr(rec, "source_id", None)
         == "japan_meti_electric_emission_factors",
+        included_activity_categories=_ELECTRICITY_INCLUDED,
+        excluded_activity_categories=_ELECTRICITY_EXCLUDED,
     ),
     boundary_rule=BoundaryRule(
         allowed_scopes=("2",),
@@ -293,6 +355,10 @@ ELECTRICITY_RESIDUAL_MIX_JP = MethodPack(
     pack_version="1.0.0",
     electricity_basis=ElectricityBasis.RESIDUAL_MIX,
     tags=("electricity", "residual_mix", "jp", "meti", "j_credit"),
+    cannot_resolve_action=CannotResolveAction.RAISE_NO_SAFE_MATCH,
+    global_default_tier_allowed=False,
+    replacement_pack_id=None,
+    deprecation_notice_days=180,
 )
 
 
@@ -344,6 +410,8 @@ ELECTRICITY_RESIDUAL_MIX_CA = MethodPack(
         custom_filter=_jurisdiction_filter(
             source_id="cer_canada_residual", required_country="CA"
         ),
+        included_activity_categories=_ELECTRICITY_INCLUDED,
+        excluded_activity_categories=_ELECTRICITY_EXCLUDED,
     ),
     boundary_rule=BoundaryRule(
         allowed_scopes=("2",),
@@ -369,6 +437,10 @@ ELECTRICITY_RESIDUAL_MIX_CA = MethodPack(
     pack_version="1.0.0",
     electricity_basis=ElectricityBasis.RESIDUAL_MIX,
     tags=("electricity", "residual_mix", "ca", "cer"),
+    cannot_resolve_action=CannotResolveAction.RAISE_NO_SAFE_MATCH,
+    global_default_tier_allowed=False,
+    replacement_pack_id=None,
+    deprecation_notice_days=180,
 )
 
 
@@ -389,6 +461,8 @@ ELECTRICITY_RESIDUAL_MIX_UK_NATIONAL = MethodPack(
         custom_filter=_jurisdiction_filter(
             source_id="beis_uk_residual", required_country="UK"
         ),
+        included_activity_categories=_ELECTRICITY_INCLUDED,
+        excluded_activity_categories=_ELECTRICITY_EXCLUDED,
     ),
     boundary_rule=BoundaryRule(
         allowed_scopes=("2",),
@@ -415,6 +489,10 @@ ELECTRICITY_RESIDUAL_MIX_UK_NATIONAL = MethodPack(
     pack_version="1.0.0",
     electricity_basis=ElectricityBasis.RESIDUAL_MIX,
     tags=("electricity", "residual_mix", "uk", "desnz", "rego"),
+    cannot_resolve_action=CannotResolveAction.RAISE_NO_SAFE_MATCH,
+    global_default_tier_allowed=False,
+    replacement_pack_id=None,
+    deprecation_notice_days=180,
 )
 
 
@@ -437,6 +515,8 @@ ELECTRICITY_RESIDUAL_MIX_AU_STATE = MethodPack(
         custom_filter=_jurisdiction_filter(
             source_id="nger_au_state_residual", required_country="AU"
         ),
+        included_activity_categories=_ELECTRICITY_INCLUDED,
+        excluded_activity_categories=_ELECTRICITY_EXCLUDED,
     ),
     boundary_rule=BoundaryRule(
         allowed_scopes=("2",),
@@ -462,6 +542,10 @@ ELECTRICITY_RESIDUAL_MIX_AU_STATE = MethodPack(
     pack_version="1.0.0",
     electricity_basis=ElectricityBasis.RESIDUAL_MIX,
     tags=("electricity", "residual_mix", "au", "nger", "state_level"),
+    cannot_resolve_action=CannotResolveAction.RAISE_NO_SAFE_MATCH,
+    global_default_tier_allowed=False,
+    replacement_pack_id=None,
+    deprecation_notice_days=180,
 )
 
 
@@ -482,6 +566,8 @@ ELECTRICITY_RESIDUAL_MIX_KR = MethodPack(
         custom_filter=_jurisdiction_filter(
             source_id="kemco_korea_residual", required_country="KR"
         ),
+        included_activity_categories=_ELECTRICITY_INCLUDED,
+        excluded_activity_categories=_ELECTRICITY_EXCLUDED,
     ),
     boundary_rule=BoundaryRule(
         allowed_scopes=("2",),
@@ -506,6 +592,10 @@ ELECTRICITY_RESIDUAL_MIX_KR = MethodPack(
     pack_version="1.0.0",
     electricity_basis=ElectricityBasis.RESIDUAL_MIX,
     tags=("electricity", "residual_mix", "kr", "kemco", "kec"),
+    cannot_resolve_action=CannotResolveAction.RAISE_NO_SAFE_MATCH,
+    global_default_tier_allowed=False,
+    replacement_pack_id=None,
+    deprecation_notice_days=180,
 )
 
 
@@ -550,6 +640,10 @@ ELECTRICITY_RESIDUAL_MIX_SG = MethodPack(
     pack_version="1.0.0",
     electricity_basis=ElectricityBasis.RESIDUAL_MIX,
     tags=("electricity", "residual_mix", "sg", "ema"),
+    cannot_resolve_action=CannotResolveAction.RAISE_NO_SAFE_MATCH,
+    global_default_tier_allowed=False,
+    replacement_pack_id=None,
+    deprecation_notice_days=180,
 )
 
 
@@ -615,6 +709,107 @@ def get_residual_mix_pack(country: str):
     )
 
 
+# ---------------------------------------------------------------------------
+# MP4 scaffold — spec template additions (method_pack_template.md)
+# ---------------------------------------------------------------------------
+# TODO(MP4): methodology review required - do not certify.
+# Encodes the gaps flagged in docs/specs/method_pack_audit.md §2 without
+# changing any numeric behaviour or altering selection thresholds.
+
+#: GHG Protocol Scope 2 Quality Criteria 1-7 that a contractual instrument
+#: must satisfy for market-based Scope 2 accounting. These are the LABELS
+#: only; actual enforcement hooks remain TODO.
+ELECTRICITY_SCOPE2_QC: tuple = (
+    "conveys_attributes",                    # QC 1
+    "sole_claim_on_attributes",              # QC 2
+    "tracked_and_redeemed_in_system",        # QC 3 (GO, REC, REGO, LGC...)
+    "issued_and_redeemed_as_near_as_possible_to_consumption_period",   # QC 4
+    "produced_in_or_imported_into_same_market",  # QC 5
+    "vintage_within_15_months_of_consumption",   # QC 6
+    "public_attribute_disclosure",           # QC 7
+)
+
+#: Allowed market instruments per pack (per pack_id).
+#: Populated on a best-effort basis; TODO(MP4) for per-jurisdiction
+#: instrument restrictions (e.g. US packs should exclude EU GOs).
+ELECTRICITY_ALLOWED_INSTRUMENTS: dict = {
+    "electricity_location": (),
+    "electricity_market": ("rec", "i_rec", "go", "ppa_physical", "ppa_virtual", "residual_mix"),
+    "electricity_residual_mix_eu": ("residual_mix",),
+    "electricity_residual_mix_us": ("residual_mix",),
+    "electricity_residual_mix_au": ("residual_mix",),
+    "electricity_residual_mix_jp": ("residual_mix",),
+    "electricity_residual_mix_ca": ("residual_mix",),
+    "electricity_residual_mix_uk_national": ("residual_mix",),
+    "electricity_residual_mix_au_state": ("residual_mix",),
+    "electricity_residual_mix_kr": ("residual_mix",),
+    "electricity_residual_mix_sg": ("residual_mix",),
+}
+
+#: Inclusion / exclusion lists.
+#: TODO(MP4): populate before certification. Empty list = no restriction.
+ELECTRICITY_INCLUSION_ACTIVITIES: dict = {
+    pack_id: []  # TODO(MP4): methodology review required - do not certify
+    for pack_id in ELECTRICITY_ALLOWED_INSTRUMENTS
+}
+ELECTRICITY_EXCLUSION_ACTIVITIES: dict = {
+    pack_id: []  # TODO(MP4): methodology review required - do not certify
+    for pack_id in ELECTRICITY_ALLOWED_INSTRUMENTS
+}
+
+#: Functional unit for every electricity pack is "1 kWh delivered".
+#: Exposed here so the resolver can stamp it onto the receipt.
+ELECTRICITY_FUNCTIONAL_UNIT: str = "1 kWh delivered to customer meter"
+
+#: Deprecation scaffold: residual mix data is republished annually, so each
+#: pack is bound to an explicit replacement_pointer and max_factor_age_days
+#: of 730 (two publication cycles).
+#: TODO(MP4): methodology review required - do not certify.
+ELECTRICITY_DEPRECATION_DEFAULTS: dict = {
+    "advance_notice_days": 180,
+    "grace_period_days": 180,
+    "max_factor_age_days": 730,
+    "replacement_pointer_schema": {
+        "electricity_location": "electricity_location_v2",     # TODO(MP4)
+        "electricity_market": "electricity_market_v2",         # TODO(MP4)
+        "electricity_residual_mix_eu": "electricity_residual_mix_eu_v2",  # TODO(MP4)
+        "electricity_residual_mix_us": "electricity_residual_mix_us_v2",  # TODO(MP4)
+        "electricity_residual_mix_au": "electricity_residual_mix_au_v2",  # TODO(MP4)
+        "electricity_residual_mix_jp": "electricity_residual_mix_jp_v2",  # TODO(MP4)
+        "electricity_residual_mix_ca": "electricity_residual_mix_ca_v2",  # TODO(MP4)
+        "electricity_residual_mix_uk_national": "electricity_residual_mix_uk_national_v2",  # TODO(MP4)
+        "electricity_residual_mix_au_state": "electricity_residual_mix_au_state_v2",  # TODO(MP4)
+        "electricity_residual_mix_kr": "electricity_residual_mix_kr_v2",  # TODO(MP4)
+        "electricity_residual_mix_sg": "electricity_residual_mix_sg_v2",  # TODO(MP4)
+    },
+    "webhook_fan_out": ("factors.deprecations", "factors.methodology", "factors.residual_mix_vintage"),
+    "migration_notes": (
+        "Annual republication cadence for residual mix. "
+        "TODO(MP4): link to Methodology Review Board decision record."
+    ),
+}
+
+#: Fallback policy: residual mix is lossy for unknown jurisdictions.
+#: Current `get_residual_mix_pack` falls back to EU for any unknown country
+#: which is methodologically unsafe. Flag for resolver to raise NoSafeMatch.
+#: TODO(MP4): gate the EU fallback on an explicit opt-in, raise otherwise.
+ELECTRICITY_FALLBACK_DEFAULTS: dict = {
+    "cannot_resolve_action": "raise_no_safe_match",   # TODO(MP4): enforce in resolver
+    "global_default_tier_allowed": False,
+    "stale_factor_cutoff_days": 730,
+}
+
+#: GWP basis overrides.
+ELECTRICITY_GWP_ALLOWED_OVERRIDES: tuple = ("IPCC_AR5_100",)
+ELECTRICITY_GWP_HORIZON_YEARS: int = 100
+ELECTRICITY_GWP_METRIC: str = "GWP"
+
+#: Audit-text template file names (Jinja).
+ELECTRICITY_AUDIT_TEMPLATE_FILES: dict = {
+    pack_id: "electricity.j2" for pack_id in ELECTRICITY_ALLOWED_INSTRUMENTS
+}
+
+
 __all__ = [
     "ELECTRICITY_LOCATION",
     "ELECTRICITY_MARKET",
@@ -630,4 +825,16 @@ __all__ = [
     "RESIDUAL_MIX_FALLBACK",
     "RESIDUAL_MIX_PACKS_BY_COUNTRY",
     "get_residual_mix_pack",
+    # MP4 scaffold exports
+    "ELECTRICITY_SCOPE2_QC",
+    "ELECTRICITY_ALLOWED_INSTRUMENTS",
+    "ELECTRICITY_INCLUSION_ACTIVITIES",
+    "ELECTRICITY_EXCLUSION_ACTIVITIES",
+    "ELECTRICITY_FUNCTIONAL_UNIT",
+    "ELECTRICITY_DEPRECATION_DEFAULTS",
+    "ELECTRICITY_FALLBACK_DEFAULTS",
+    "ELECTRICITY_GWP_ALLOWED_OVERRIDES",
+    "ELECTRICITY_GWP_HORIZON_YEARS",
+    "ELECTRICITY_GWP_METRIC",
+    "ELECTRICITY_AUDIT_TEMPLATE_FILES",
 ]

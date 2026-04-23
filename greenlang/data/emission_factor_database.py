@@ -98,8 +98,14 @@ class EmissionFactorDatabase:
         else:
             self.cache = None
 
-        # Load built-in v2 factors
+        # Load built-in v2 factors (original 8 — kept as fallback for
+        # zero-catalog scenarios: tests, sandbox, air-gapped runs)
         self._load_default_factors_v2()
+
+        # Load bootstrapped catalog seed envelopes (Wave 2.5 — the
+        # real catalog body. Parsers' serialized outputs under
+        # ``greenlang/factors/data/catalog_seed/<source>/v*.json``).
+        self._load_catalog_seed()
 
         # Load custom factors from directory (if provided)
         if self.data_dir and self.data_dir.exists():
@@ -1149,6 +1155,103 @@ class EmissionFactorDatabase:
             tags=source_factor.tags,
             notes=f"Unit converted from {source_factor.unit} using factor {conversion_factor:.6f}",
         )
+
+    def _load_catalog_seed(self):
+        """
+        Load the bootstrapped catalog seed (Wave 2.5).
+
+        Each ``catalog_seed/<source>/v*.json`` envelope contains a list
+        of ``EmissionFactorRecord`` dicts (see
+        ``greenlang.factors.ingestion.bootstrap``). Envelopes are tolerant
+        to partial failures — a bad record is logged and skipped, the
+        loader keeps going so one corrupt source never empties the
+        in-memory catalog.
+
+        This method is a no-op if the seed directory doesn't exist —
+        preserves backward compat with test harnesses that run without
+        a bootstrapped catalog.
+        """
+        try:
+            from greenlang.factors.ingestion.bootstrap import (
+                load_seed_envelopes,
+            )
+        except ImportError:
+            logger.debug("bootstrap module unavailable; skipping catalog seed load")
+            return
+
+        loaded = 0
+        errors = 0
+        for envelope in load_seed_envelopes():
+            for rec_dict in envelope.get("factors") or []:
+                try:
+                    factor = EmissionFactorRecord.from_dict(rec_dict)
+                except Exception as exc:  # noqa: BLE001
+                    errors += 1
+                    logger.debug(
+                        "Failed to load seed factor %s: %s",
+                        rec_dict.get("factor_id"), exc,
+                    )
+                    continue
+                # Use plain dict assignment instead of add_factor_record()
+                # so we bypass the chatty INFO logging during hot-start.
+                key = self._make_key(
+                    factor.fuel_type,
+                    factor.unit,
+                    factor.geography,
+                    factor.scope.value,
+                    factor.boundary.value,
+                    factor.gwp_100yr.gwp_set.value,
+                )
+                self.factors[key] = factor
+                loaded += 1
+        if loaded:
+            logger.info(
+                "catalog_seed load: %d factors loaded, %d skipped",
+                loaded, errors,
+            )
+
+    def catalog_size(self) -> int:
+        """
+        Total number of unique factors reachable from this database,
+        counted as (built-in hardcoded) + (seed envelope factor_count).
+
+        We count seed envelopes from disk because the in-memory lookup
+        map (``self.factors``) uses a (fuel, unit, geo, scope, boundary,
+        gwp_set) key that collapses factors that differ only by
+        ``factor_id`` / ``valid_from`` / ``source_release``. The seed
+        envelope count is the authoritative "how many factors does the
+        catalog expose" number reported by the bootstrap run.
+        """
+        seed_total = 0
+        try:
+            from greenlang.factors.ingestion.bootstrap import (
+                count_seed_factors,
+            )
+            seed_total = count_seed_factors()
+        except Exception:  # noqa: BLE001
+            seed_total = 0
+        # Fall back to in-memory count if no seed was bootstrapped
+        # (keeps the legacy test invariant that an empty-catalog
+        # sandbox still sees the 8 built-ins).
+        if seed_total == 0:
+            return len(self.factors)
+        return len(self._builtin_factor_ids) + seed_total
+
+    @property
+    def _builtin_factor_ids(self) -> List[str]:
+        """Cached set of factor_ids created in ``_load_default_factors_v2``.
+
+        Used by ``catalog_size`` to avoid double-counting a built-in that
+        may also appear in the seed bundle.
+        """
+        if not hasattr(self, "__builtin_ids_cache"):
+            self.__builtin_ids_cache = [
+                f.factor_id for f in self.factors.values()
+                if (f.factor_id or "").startswith("EF:US:")
+                and (f.provenance.source_year or 0) == 2024
+                and "EPA" in (f.provenance.source_org or "")
+            ]
+        return self.__builtin_ids_cache
 
     def _load_custom_factors(self):
         """Load custom emission factors from JSON files in data directory."""

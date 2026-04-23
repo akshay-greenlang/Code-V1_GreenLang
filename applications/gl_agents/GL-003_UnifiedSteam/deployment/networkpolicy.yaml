@@ -1,0 +1,647 @@
+# =============================================================================
+# GL-003 UNIFIEDSTEAM - Network Policies
+# Steam System Optimization Agent
+# =============================================================================
+# Implements Zero-Trust Network Security:
+# - Default deny all ingress and egress traffic
+# - Explicitly allow only required connections
+# - Restrict pod-to-pod communication
+# - Limit external access to specific services
+#
+# Prerequisites:
+# - CNI plugin with NetworkPolicy support (Calico, Cilium, Weave Net)
+# - Network policy enforcement enabled in cluster
+# =============================================================================
+
+---
+# =============================================================================
+# Default Deny All - Namespace Wide
+# =============================================================================
+# Start with a deny-all policy, then explicitly allow required traffic
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-all
+  namespace: greenlang-steam
+  labels:
+    app.kubernetes.io/name: unifiedsteam
+    app.kubernetes.io/component: network-policy
+    policy-type: deny-all
+  annotations:
+    description: "Default deny all ingress and egress traffic in namespace"
+spec:
+  # Apply to all pods in the namespace
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+
+---
+# =============================================================================
+# Allow DNS Egress for All Pods
+# =============================================================================
+# Required for service discovery within the cluster
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-dns-egress
+  namespace: greenlang-steam
+  labels:
+    app.kubernetes.io/name: unifiedsteam
+    app.kubernetes.io/component: network-policy
+    policy-type: dns
+  annotations:
+    description: "Allow DNS resolution for all pods"
+spec:
+  podSelector: {}
+  policyTypes:
+    - Egress
+  egress:
+    # Allow DNS queries to kube-dns/CoreDNS
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+
+    # Also allow DNS to CoreDNS if labeled differently
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+          podSelector:
+            matchLabels:
+              app: coredns
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+
+---
+# =============================================================================
+# UnifiedSteam Ingress Policy - Main Application
+# =============================================================================
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: unifiedsteam-ingress
+  namespace: greenlang-steam
+  labels:
+    app.kubernetes.io/name: unifiedsteam
+    app.kubernetes.io/component: network-policy
+    policy-type: ingress
+  annotations:
+    description: "Ingress rules for GL-003 UNIFIEDSTEAM pods"
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: unifiedsteam
+  policyTypes:
+    - Ingress
+  ingress:
+    # =========================================================================
+    # Allow traffic from Ingress Controller (NGINX)
+    # =========================================================================
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ingress-nginx
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 8080   # HTTP API
+        - protocol: TCP
+          port: 50051  # gRPC
+
+    # =========================================================================
+    # Allow traffic from Istio Ingress Gateway
+    # =========================================================================
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: istio-system
+          podSelector:
+            matchLabels:
+              istio: ingressgateway
+      ports:
+        - protocol: TCP
+          port: 8080
+        - protocol: TCP
+          port: 50051
+
+    # =========================================================================
+    # Allow traffic from Prometheus for metrics scraping
+    # =========================================================================
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+          podSelector:
+            matchLabels:
+              app: prometheus
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: observability
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: prometheus
+      ports:
+        - protocol: TCP
+          port: 9090  # Metrics port
+
+    # =========================================================================
+    # Allow traffic from Istio sidecars (service mesh)
+    # =========================================================================
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              istio-injection: enabled
+      ports:
+        - protocol: TCP
+          port: 8080
+        - protocol: TCP
+          port: 50051
+        - protocol: TCP
+          port: 15090  # Istio telemetry
+        - protocol: TCP
+          port: 15020  # Istio health
+
+    # =========================================================================
+    # Allow internal namespace traffic (pod-to-pod)
+    # =========================================================================
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/part-of: greenlang
+      ports:
+        - protocol: TCP
+          port: 8080
+        - protocol: TCP
+          port: 50051
+        - protocol: TCP
+          port: 9090
+
+    # =========================================================================
+    # Allow traffic from other GreenLang namespaces
+    # =========================================================================
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              app.kubernetes.io/part-of: greenlang
+      ports:
+        - protocol: TCP
+          port: 8080
+        - protocol: TCP
+          port: 50051
+
+---
+# =============================================================================
+# UnifiedSteam Egress Policy - Main Application
+# =============================================================================
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: unifiedsteam-egress
+  namespace: greenlang-steam
+  labels:
+    app.kubernetes.io/name: unifiedsteam
+    app.kubernetes.io/component: network-policy
+    policy-type: egress
+  annotations:
+    description: "Egress rules for GL-003 UNIFIEDSTEAM pods"
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: unifiedsteam
+  policyTypes:
+    - Egress
+  egress:
+    # =========================================================================
+    # Allow egress to Kafka
+    # =========================================================================
+    - to:
+        - podSelector:
+            matchLabels:
+              app: kafka
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: kafka
+      ports:
+        - protocol: TCP
+          port: 9092  # Kafka plaintext
+        - protocol: TCP
+          port: 9093  # Kafka SASL/SSL
+        - protocol: TCP
+          port: 9094  # Kafka external
+
+    # =========================================================================
+    # Allow egress to Redis
+    # =========================================================================
+    - to:
+        - podSelector:
+            matchLabels:
+              app: redis
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: redis
+      ports:
+        - protocol: TCP
+          port: 6379  # Redis
+        - protocol: TCP
+          port: 6380  # Redis TLS
+
+    # =========================================================================
+    # Allow egress to PostgreSQL
+    # =========================================================================
+    - to:
+        - podSelector:
+            matchLabels:
+              app: postgres
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: postgresql
+      ports:
+        - protocol: TCP
+          port: 5432
+
+    # =========================================================================
+    # Allow egress to OPC-UA Server (External SCADA)
+    # =========================================================================
+    # Allow connections to internal industrial networks
+    - to:
+        - ipBlock:
+            cidr: 10.0.0.0/8  # Internal network CIDR
+            except:
+              - 10.0.0.0/24  # Exclude management network
+        - ipBlock:
+            cidr: 172.16.0.0/12  # Private network
+        - ipBlock:
+            cidr: 192.168.0.0/16  # Private network
+      ports:
+        - protocol: TCP
+          port: 4840  # OPC-UA default port
+        - protocol: TCP
+          port: 4843  # OPC-UA secure port
+
+    # =========================================================================
+    # Allow egress to OpenTelemetry Collector
+    # =========================================================================
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: observability
+          podSelector:
+            matchLabels:
+              app: otel-collector
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: opentelemetry-collector
+      ports:
+        - protocol: TCP
+          port: 4317  # OTLP gRPC
+        - protocol: TCP
+          port: 4318  # OTLP HTTP
+        - protocol: TCP
+          port: 14268 # Jaeger HTTP
+
+    # =========================================================================
+    # Allow egress to Prometheus Pushgateway
+    # =========================================================================
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+          podSelector:
+            matchLabels:
+              app: pushgateway
+      ports:
+        - protocol: TCP
+          port: 9091
+
+    # =========================================================================
+    # Allow egress to other GreenLang services
+    # =========================================================================
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              app.kubernetes.io/part-of: greenlang
+      ports:
+        - protocol: TCP
+          port: 80
+        - protocol: TCP
+          port: 443
+        - protocol: TCP
+          port: 8080
+        - protocol: TCP
+          port: 50051
+
+    # =========================================================================
+    # Allow egress to internal pods (same namespace)
+    # =========================================================================
+    - to:
+        - podSelector: {}
+      ports:
+        - protocol: TCP
+          port: 8080
+        - protocol: TCP
+          port: 50051
+        - protocol: TCP
+          port: 9090
+
+    # =========================================================================
+    # Allow HTTPS egress for external APIs (webhooks, notifications)
+    # =========================================================================
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except:
+              # Exclude private networks
+              - 10.0.0.0/8
+              - 172.16.0.0/12
+              - 192.168.0.0/16
+              - 169.254.0.0/16  # Link-local
+      ports:
+        - protocol: TCP
+          port: 443  # HTTPS only
+
+---
+# =============================================================================
+# Kafka Ingress Policy
+# =============================================================================
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: kafka-ingress
+  namespace: greenlang-steam
+  labels:
+    app.kubernetes.io/name: kafka
+    app.kubernetes.io/component: network-policy
+    policy-type: ingress
+  annotations:
+    description: "Ingress rules for Kafka brokers"
+spec:
+  podSelector:
+    matchLabels:
+      app: kafka
+  policyTypes:
+    - Ingress
+  ingress:
+    # Allow from UnifiedSteam application
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: unifiedsteam
+      ports:
+        - protocol: TCP
+          port: 9092
+        - protocol: TCP
+          port: 9093
+
+    # Allow Kafka internal replication
+    - from:
+        - podSelector:
+            matchLabels:
+              app: kafka
+      ports:
+        - protocol: TCP
+          port: 9092
+        - protocol: TCP
+          port: 9093
+        - protocol: TCP
+          port: 9091  # JMX (optional)
+
+    # Allow from ZooKeeper
+    - from:
+        - podSelector:
+            matchLabels:
+              app: zookeeper
+      ports:
+        - protocol: TCP
+          port: 9092
+
+---
+# =============================================================================
+# Redis Ingress Policy
+# =============================================================================
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: redis-ingress
+  namespace: greenlang-steam
+  labels:
+    app.kubernetes.io/name: redis
+    app.kubernetes.io/component: network-policy
+    policy-type: ingress
+  annotations:
+    description: "Ingress rules for Redis"
+spec:
+  podSelector:
+    matchLabels:
+      app: redis
+  policyTypes:
+    - Ingress
+  ingress:
+    # Allow from UnifiedSteam application
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: unifiedsteam
+      ports:
+        - protocol: TCP
+          port: 6379
+
+    # Allow Redis Sentinel (if using)
+    - from:
+        - podSelector:
+            matchLabels:
+              app: redis-sentinel
+      ports:
+        - protocol: TCP
+          port: 6379
+        - protocol: TCP
+          port: 26379
+
+    # Allow Redis cluster replication
+    - from:
+        - podSelector:
+            matchLabels:
+              app: redis
+      ports:
+        - protocol: TCP
+          port: 6379
+        - protocol: TCP
+          port: 16379  # Cluster bus
+
+---
+# =============================================================================
+# PostgreSQL Ingress Policy
+# =============================================================================
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: postgres-ingress
+  namespace: greenlang-steam
+  labels:
+    app.kubernetes.io/name: postgres
+    app.kubernetes.io/component: network-policy
+    policy-type: ingress
+  annotations:
+    description: "Ingress rules for PostgreSQL"
+spec:
+  podSelector:
+    matchLabels:
+      app: postgres
+  policyTypes:
+    - Ingress
+  ingress:
+    # Allow from UnifiedSteam application
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: unifiedsteam
+      ports:
+        - protocol: TCP
+          port: 5432
+
+    # Allow from database backup jobs
+    - from:
+        - podSelector:
+            matchLabels:
+              app: postgres-backup
+      ports:
+        - protocol: TCP
+          port: 5432
+
+    # Allow PostgreSQL replication
+    - from:
+        - podSelector:
+            matchLabels:
+              app: postgres
+      ports:
+        - protocol: TCP
+          port: 5432
+
+---
+# =============================================================================
+# Metrics Exporter Ingress Policy
+# =============================================================================
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: metrics-ingress
+  namespace: greenlang-steam
+  labels:
+    app.kubernetes.io/component: network-policy
+    policy-type: ingress-metrics
+  annotations:
+    description: "Allow Prometheus to scrape all metrics endpoints"
+spec:
+  podSelector: {}  # All pods in namespace
+  policyTypes:
+    - Ingress
+  ingress:
+    # Allow Prometheus to scrape metrics
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+          podSelector:
+            matchLabels:
+              app: prometheus
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: observability
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: prometheus
+      ports:
+        - protocol: TCP
+          port: 9090
+        - protocol: TCP
+          port: 9091
+        - protocol: TCP
+          port: 9100  # Node exporter
+        - protocol: TCP
+          port: 9187  # PostgreSQL exporter
+        - protocol: TCP
+          port: 9121  # Redis exporter
+
+---
+# =============================================================================
+# Deny Egress to Metadata Services
+# =============================================================================
+# Prevent access to cloud provider metadata endpoints (security best practice)
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: deny-cloud-metadata
+  namespace: greenlang-steam
+  labels:
+    app.kubernetes.io/component: network-policy
+    policy-type: deny-metadata
+  annotations:
+    description: "Block access to cloud metadata services"
+spec:
+  podSelector: {}
+  policyTypes:
+    - Egress
+  egress:
+    # Deny access to AWS metadata
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except:
+              - 169.254.169.254/32  # AWS metadata endpoint
+              - 169.254.170.2/32   # AWS ECS metadata
+              - 100.100.100.200/32 # Alibaba Cloud metadata
+              - 192.0.0.192/32     # Oracle Cloud metadata
+
+---
+# =============================================================================
+# Cilium Network Policy (if using Cilium CNI)
+# =============================================================================
+# Uncomment if using Cilium for enhanced network security
+# apiVersion: cilium.io/v2
+# kind: CiliumNetworkPolicy
+# metadata:
+#   name: unifiedsteam-cilium-policy
+#   namespace: greenlang-steam
+# spec:
+#   endpointSelector:
+#     matchLabels:
+#       app.kubernetes.io/name: unifiedsteam
+#   ingress:
+#     - fromEndpoints:
+#         - matchLabels:
+#             io.kubernetes.pod.namespace: ingress-nginx
+#       toPorts:
+#         - ports:
+#             - port: "8080"
+#               protocol: TCP
+#   egress:
+#     - toEndpoints:
+#         - matchLabels:
+#             app: kafka
+#       toPorts:
+#         - ports:
+#             - port: "9092"
+#               protocol: TCP
+#     - toFQDNs:
+#         - matchName: "*.greenlang.io"
+#       toPorts:
+#         - ports:
+#             - port: "443"
+#               protocol: TCP

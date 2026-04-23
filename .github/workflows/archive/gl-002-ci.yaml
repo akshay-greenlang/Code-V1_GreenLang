@@ -8,20 +8,32 @@ on:
   push:
     branches: ['**']
     paths:
+<<<<<<< Updated upstream:.github/workflows/archive/gl-002-ci.yaml
       - 'applications/GL Agents/GL-002_Flameguard/**'
+=======
+      - 'applications/gl_agents/GL-002_Flameguard/**'
+>>>>>>> Stashed changes:.github/workflows/gl-002-ci.yaml
       - '.github/workflows/gl-002-ci.yaml'
 
   pull_request:
     branches: [main, master, develop]
     paths:
+<<<<<<< Updated upstream:.github/workflows/archive/gl-002-ci.yaml
       - 'applications/GL Agents/GL-002_Flameguard/**'
+=======
+      - 'applications/gl_agents/GL-002_Flameguard/**'
+>>>>>>> Stashed changes:.github/workflows/gl-002-ci.yaml
       - '.github/workflows/gl-002-ci.yaml'
 
   workflow_dispatch:
 
 env:
   PYTHON_VERSION: '3.11'
+<<<<<<< Updated upstream:.github/workflows/archive/gl-002-ci.yaml
   AGENT_PATH: 'applications/GL Agents/GL-002_Flameguard'
+=======
+  AGENT_PATH: 'applications/gl_agents/GL-002_Flameguard'
+>>>>>>> Stashed changes:.github/workflows/gl-002-ci.yaml
   COVERAGE_THRESHOLD: 95
   COMPLEXITY_THRESHOLD: 10
   MIN_TYPE_COVERAGE: 100
@@ -54,22 +66,38 @@ jobs:
       - name: Lint with ruff
         run: |
           echo "Running ruff linter..."
+<<<<<<< Updated upstream:.github/workflows/archive/gl-002-ci.yaml
           ruff check applications/GL Agents/GL-002_Flameguard --exit-zero
+=======
+          ruff check applications/gl_agents/GL-002_Flameguard --exit-zero
+>>>>>>> Stashed changes:.github/workflows/gl-002-ci.yaml
 
       - name: Format check with black
         run: |
           echo "Checking code formatting with black..."
+<<<<<<< Updated upstream:.github/workflows/archive/gl-002-ci.yaml
           black --check applications/GL Agents/GL-002_Flameguard || true
+=======
+          black --check applications/gl_agents/GL-002_Flameguard || true
+>>>>>>> Stashed changes:.github/workflows/gl-002-ci.yaml
 
       - name: Import sort check
         run: |
           echo "Checking import sorting with isort..."
+<<<<<<< Updated upstream:.github/workflows/archive/gl-002-ci.yaml
           isort --check-only applications/GL Agents/GL-002_Flameguard || true
+=======
+          isort --check-only applications/gl_agents/GL-002_Flameguard || true
+>>>>>>> Stashed changes:.github/workflows/gl-002-ci.yaml
 
       - name: Type check with mypy
         run: |
           echo "Running type checker mypy..."
+<<<<<<< Updated upstream:.github/workflows/archive/gl-002-ci.yaml
           mypy applications/GL Agents/GL-002_Flameguard --ignore-missing-imports --exit-code=0 || true
+=======
+          mypy applications/gl_agents/GL-002_Flameguard --ignore-missing-imports --exit-code=0 || true
+>>>>>>> Stashed changes:.github/workflows/gl-002-ci.yaml
 
   # Job 2: Unit and integration tests
   test:
@@ -121,8 +149,13 @@ jobs:
       - name: Run unit tests
         run: |
           echo "Running unit tests..."
+<<<<<<< Updated upstream:.github/workflows/archive/gl-002-ci.yaml
           pytest applications/GL Agents/GL-002_Flameguard/tests/unit \
             --cov=. \
+=======
+          pytest applications/gl_agents/GL-002_Flameguard/tests/unit \
+            --cov=applications.gl_agents.GL_002_Flameguard \
+>>>>>>> Stashed changes:.github/workflows/gl-002-ci.yaml
             --cov-report=xml \
             --cov-report=term \
             --cov-fail-under=75 \
@@ -134,7 +167,11 @@ jobs:
       - name: Run integration tests
         run: |
           echo "Running integration tests..."
+<<<<<<< Updated upstream:.github/workflows/archive/gl-002-ci.yaml
           pytest applications/GL Agents/GL-002_Flameguard/tests/integration \
+=======
+          pytest applications/gl_agents/GL-002_Flameguard/tests/integration \
+>>>>>>> Stashed changes:.github/workflows/gl-002-ci.yaml
             -v \
             --timeout=60 || true
         env:
@@ -175,9 +212,15 @@ jobs:
       - name: Security scan with bandit
         run: |
           echo "Running security scan with bandit..."
+<<<<<<< Updated upstream:.github/workflows/archive/gl-002-ci.yaml
           bandit -r applications/GL Agents/GL-002_Flameguard \
             -f json -o bandit-report.json || true
           bandit -r applications/GL Agents/GL-002_Flameguard || true
+=======
+          bandit -r applications/gl_agents/GL-002_Flameguard \
+            -f json -o bandit-report.json || true
+          bandit -r applications/gl_agents/GL-002_Flameguard || true
+>>>>>>> Stashed changes:.github/workflows/gl-002-ci.yaml
 
       - name: Dependency vulnerability check
         run: |
@@ -238,7 +281,11 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
+<<<<<<< Updated upstream:.github/workflows/archive/gl-002-ci.yaml
           context: ./applications/GL Agents/GL-002_Flameguard
+=======
+          context: ./applications/gl_agents/GL-002_Flameguard
+>>>>>>> Stashed changes:.github/workflows/gl-002-ci.yaml
           push: ${{ github.event_name == 'push' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}

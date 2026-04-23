@@ -1,0 +1,77 @@
+# GL-003 UNIFIEDSTEAM - Pod Disruption Budget
+# Steam System Optimization Agent
+#
+# Ensures minimum availability during voluntary disruptions like:
+# - Kubernetes upgrades
+# - Node maintenance/drain
+# - Manual pod deletions
+# - Cluster autoscaler scale-down
+
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: unifiedsteam-pdb
+  namespace: greenlang-steam
+  labels:
+    app.kubernetes.io/name: unifiedsteam
+    app.kubernetes.io/component: pdb
+    app.kubernetes.io/part-of: greenlang
+    agent-id: gl-003
+spec:
+  # Minimum number of pods that must remain available
+  # This ensures at least 2 pods are always running during disruptions
+  minAvailable: 2
+
+  # Alternative: maxUnavailable - maximum pods that can be unavailable
+  # maxUnavailable: 1  # Use this instead if you prefer percentage-based
+
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: unifiedsteam
+      app.kubernetes.io/instance: unifiedsteam-production
+
+  # Unhealthy pod eviction policy (Kubernetes 1.27+)
+  # Options:
+  # - IfHealthyBudget: Only evict unhealthy pods if healthy pods meet budget
+  # - AlwaysAllow: Always allow eviction of unhealthy pods
+  unhealthyPodEvictionPolicy: IfHealthyBudget
+---
+# ==============================================================================
+# PDB for Kafka consumers (if using StatefulSet)
+# ==============================================================================
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: unifiedsteam-kafka-consumer-pdb
+  namespace: greenlang-steam
+  labels:
+    app.kubernetes.io/name: unifiedsteam
+    app.kubernetes.io/component: pdb-kafka
+spec:
+  # Ensure at least 1 Kafka consumer is always available
+  # to prevent message processing interruptions
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: unifiedsteam
+      app.kubernetes.io/component: kafka-consumer
+---
+# ==============================================================================
+# PDB for OPC-UA connector (if separate deployment)
+# ==============================================================================
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: unifiedsteam-opcua-connector-pdb
+  namespace: greenlang-steam
+  labels:
+    app.kubernetes.io/name: unifiedsteam
+    app.kubernetes.io/component: pdb-opcua
+spec:
+  # OPC-UA connectors are critical for real-time data
+  # Ensure at least 1 is always available
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: unifiedsteam
+      app.kubernetes.io/component: opcua-connector

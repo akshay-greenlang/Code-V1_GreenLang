@@ -48,7 +48,7 @@ import logging
 import threading
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 from greenlang.data.canonical_v2 import (
     FactorFamily,
@@ -58,6 +58,7 @@ from greenlang.data.canonical_v2 import (
 from greenlang.factors.method_packs.base import (
     BiogenicTreatment,
     BoundaryRule,
+    CannotResolveAction,
     DEFAULT_FALLBACK,
     DeprecationRule,
     FallbackStep,
@@ -115,6 +116,103 @@ class PCAFIntensityMode(str, Enum):
     PHYSICAL_INTENSITY_FLOOR_AREA = "tco2e_per_m2"
     PHYSICAL_INTENSITY_ENERGY = "tco2e_per_mwh"
     PHYSICAL_INTENSITY_DISTANCE = "tco2e_per_km_driven"
+
+
+# ---------------------------------------------------------------------------
+# v0.2 enums (Wave 4-G promotion) — standard-template alignment
+# ---------------------------------------------------------------------------
+
+
+class PCAFAssetClassV2(str, Enum):
+    """The 7 PCAF asset classes — v0.2 canonical labels per audit spec §7.
+
+    Distinct from :class:`PCAFAssetClass` so the v0.2 surface uses the
+    exact category names the audit spec demands (hyphenless snake_case
+    aligned with the 7-tuple in the audit spec).
+    """
+
+    LISTED_EQUITY_BONDS = "listed_equity_bonds"
+    CORPORATE_LOANS_UNLISTED_EQUITY = "corporate_loans_unlisted_equity"
+    PROJECT_FINANCE = "project_finance"
+    COMMERCIAL_REAL_ESTATE = "commercial_real_estate"
+    MORTGAGES = "mortgages"
+    MOTOR_VEHICLE_LOANS = "motor_vehicle_loans"
+    SOVEREIGN_DEBT = "sovereign_debt"
+
+
+class IntensityBasis(str, Enum):
+    """Intensity denominator options per PCAF Ch. 5 (v0.2 spec)."""
+
+    REVENUE = "revenue"
+    EBITDA = "ebitda"
+    ASSET_VALUE = "asset_value"
+    EMPLOYEE_COUNT = "employee_count"
+    LOAN_TO_VALUE = "loan_to_value"
+
+
+class ProxyConfidenceClass(str, Enum):
+    """PCAF proxy-confidence class A-E (audit-spec §7 v0.2 additions).
+
+    Maps from DQS 1-5 but surfaces the PCAF Part A §5.9 confidence tier
+    for reporting templates.
+    """
+
+    A = "A"  # highest confidence (verified)
+    B = "B"
+    C = "C"
+    D = "D"
+    E = "E"  # lowest confidence (asset-class default)
+
+
+# ---------------------------------------------------------------------------
+# PCAF DQS 1-5 -> 0-100 composite FQS mapping.
+#
+# The audit spec suggests: 5 -> 95, 4 -> 80, 3 -> 60, 2 -> 40, 1 -> 20.
+# BUT PCAF's own convention is 1 = best, 5 = worst, which is INVERTED
+# from the composite FQS (0-100, higher is better). We therefore invert
+# the suggested mapping: DQS 1 (best) -> FQS ~95, DQS 5 (worst) -> FQS ~20.
+# This aligns with the existing ``composite_fqs.rating_label`` bands
+# (excellent >= 85, good >= 70, fair >= 50, poor < 50).
+#
+# TODO(methodology-review): the methodology spec note in the prompt
+# referenced both directions ("5 -> 95" and "1 -> 20 as the mapping —
+# confirm with methodology"). The current implementation uses the
+# SEMANTICALLY-CORRECT inverted form; methodology lead must confirm
+# before the pack flips to `certified`.
+# ---------------------------------------------------------------------------
+
+
+PCAF_DQS_TO_FQS: Dict[int, int] = {
+    1: 95,   # verified / audited -> excellent
+    2: 80,   # unverified counterparty data -> good
+    3: 60,   # sector + physical proxy -> fair
+    4: 40,   # sector + economic proxy -> poor
+    5: 20,   # asset-class default -> poor (lowest)
+}
+
+
+PCAF_DQS_TO_PROXY_CONFIDENCE: Dict[int, ProxyConfidenceClass] = {
+    1: ProxyConfidenceClass.A,
+    2: ProxyConfidenceClass.B,
+    3: ProxyConfidenceClass.C,
+    4: ProxyConfidenceClass.D,
+    5: ProxyConfidenceClass.E,
+}
+
+
+def pcaf_dqs_to_fqs(dqs: int) -> int:
+    """Rescale a PCAF DQS (1-5) to the 0-100 composite FQS surface.
+
+    See :data:`PCAF_DQS_TO_FQS` for the mapping. Raises ``ValueError``
+    when ``dqs`` is not in ``{1,2,3,4,5}``.
+
+    TODO(methodology-review): final mapping pending methodology lead
+    sign-off (see module docstring).
+    """
+    d = int(dqs)
+    if d not in PCAF_DQS_TO_FQS:
+        raise ValueError(f"pcaf_dqs must be 1..5 (got {dqs!r})")
+    return PCAF_DQS_TO_FQS[d]
 
 
 # ---------------------------------------------------------------------------
@@ -295,7 +393,7 @@ def _build_pack(
     display_name: str,
     description: str,
     audit_template: str,
-    pack_version: str = "1.0.0",
+    pack_version: str = "0.2.0",
     tags: Tuple[str, ...] = ("finance", "pcaf", "licensed"),
     allowed_scopes: Tuple[str, ...] = ("1", "2", "3"),
 ) -> MethodPack:
@@ -304,6 +402,14 @@ def _build_pack(
     Every variant re-uses the MethodProfile.FINANCE_PROXY enum value —
     differentiation is by ``variant_name`` (string) and by the per-variant
     metadata registered alongside.
+
+    v0.2 (Wave 4-G): uses :data:`PCAF_ATTRIBUTION_HIERARCHY` (5-step
+    customer -> supplier -> sector-regional -> sector-global -> asset-
+    class-default). Unlike the product / LSR packs, finance proxy DOES
+    permit tier-7-equivalent asset-class default (PCAF methodology is
+    explicit that the DQS-5 default IS the defined terminal tier);
+    ``cannot_resolve_action = ALLOW_GLOBAL_DEFAULT`` is therefore set.
+    Document this exception clearly per the audit spec.
     """
     return MethodPack(
         profile=MethodProfile.FINANCE_PROXY,
@@ -312,17 +418,23 @@ def _build_pack(
         selection_rule=_pcaf_selection_rule(),
         boundary_rule=_pcaf_boundary(allowed_scopes),
         gwp_basis="IPCC_AR6_100",
-        region_hierarchy=DEFAULT_FALLBACK,
+        region_hierarchy=PCAF_ATTRIBUTION_HIERARCHY,
         deprecation=_DEPRECATION,
         reporting_labels=(
             "PCAF",
             "PCAF_Part_A_v2.0",
+            "PCAF_Part_B_Facilitated_2024",
+            "PCAF_Part_C_Insurance_2024",
             "GHG_Protocol_Scope3_Cat15",
             "IFRS_S2",
         ),
         audit_text_template=audit_template,
         pack_version=pack_version,
         tags=tags + (variant_name,),
+        cannot_resolve_action=CannotResolveAction.ALLOW_GLOBAL_DEFAULT,
+        global_default_tier_allowed=True,
+        replacement_pack_id=None,
+        deprecation_notice_days=180,
     )
 
 
@@ -762,6 +874,193 @@ class PCAFMotorVehicleLoansPack(_PCAFVariantHolder):
         super().__init__(variant_name="pcaf_motor_vehicle_loans")
 
 
+# ---------------------------------------------------------------------------
+# v0.2 sidecar metadata (Wave 4-G) — standards_alignment + intensity_basis
+# + sector-code taxonomy per audit spec §7.
+# ---------------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class PCAFV02Metadata:
+    """v0.2 template-spec fields for a PCAF variant.
+
+    Stored in :data:`PCAF_V02_METADATA` keyed by pack id. Consumed by
+    /explain, coverage endpoint, and conformance test harness.
+    """
+
+    pack_id: str
+    asset_class_v2: PCAFAssetClassV2
+    standards_alignment: Tuple[str, ...]
+    attribution_formula: str                    # TODO(methodology-review): numeric review
+    intensity_basis: Tuple[IntensityBasis, ...]
+    sector_code_taxonomies: Tuple[str, ...] = ("NACE", "NAICS", "ISIC")
+    deprecation_notice_days: int = 180
+
+
+_PCAF_STANDARDS_ALIGNMENT: Tuple[str, ...] = (
+    "PCAF Global GHG Accounting and Reporting Standard for the Financial "
+    "Industry (Part A - Financed Emissions, 2024)",
+    "PCAF Part B - Facilitated Emissions, 2024",
+    "PCAF Part C - Insurance-Associated Emissions, 2024",
+    "GHG Protocol Scope 3 Standard — Category 15 (Investments)",
+    "IFRS S2 Climate-related Disclosures",
+)
+
+
+PCAF_V02_METADATA: Dict[str, PCAFV02Metadata] = {
+    "pcaf_listed_equity": PCAFV02Metadata(
+        pack_id="pcaf_listed_equity",
+        asset_class_v2=PCAFAssetClassV2.LISTED_EQUITY_BONDS,
+        standards_alignment=_PCAF_STANDARDS_ALIGNMENT,
+        attribution_formula=(
+            "attribution_factor = outstanding_amount / EVIC  "
+            "(TODO: methodology-review)"
+        ),
+        intensity_basis=(
+            IntensityBasis.REVENUE,
+            IntensityBasis.EBITDA,
+            IntensityBasis.ASSET_VALUE,
+        ),
+    ),
+    "pcaf_corporate_bonds": PCAFV02Metadata(
+        pack_id="pcaf_corporate_bonds",
+        asset_class_v2=PCAFAssetClassV2.LISTED_EQUITY_BONDS,
+        standards_alignment=_PCAF_STANDARDS_ALIGNMENT,
+        attribution_formula=(
+            "attribution_factor = bond_outstanding / EVIC  "
+            "(TODO: methodology-review)"
+        ),
+        intensity_basis=(
+            IntensityBasis.REVENUE,
+            IntensityBasis.EBITDA,
+            IntensityBasis.ASSET_VALUE,
+        ),
+    ),
+    "pcaf_business_loans": PCAFV02Metadata(
+        pack_id="pcaf_business_loans",
+        asset_class_v2=PCAFAssetClassV2.CORPORATE_LOANS_UNLISTED_EQUITY,
+        standards_alignment=_PCAF_STANDARDS_ALIGNMENT,
+        attribution_formula=(
+            "attribution_factor = outstanding_amount / (total_equity + total_debt); "
+            "fallback: outstanding / revenue  "
+            "(TODO: methodology-review)"
+        ),
+        intensity_basis=(IntensityBasis.REVENUE, IntensityBasis.EBITDA),
+    ),
+    "pcaf_project_finance": PCAFV02Metadata(
+        pack_id="pcaf_project_finance",
+        asset_class_v2=PCAFAssetClassV2.PROJECT_FINANCE,
+        standards_alignment=_PCAF_STANDARDS_ALIGNMENT,
+        attribution_formula=(
+            "attribution_factor = outstanding_amount / committed_capital  "
+            "(TODO: methodology-review)"
+        ),
+        intensity_basis=(IntensityBasis.ASSET_VALUE,),
+    ),
+    "pcaf_commercial_real_estate": PCAFV02Metadata(
+        pack_id="pcaf_commercial_real_estate",
+        asset_class_v2=PCAFAssetClassV2.COMMERCIAL_REAL_ESTATE,
+        standards_alignment=_PCAF_STANDARDS_ALIGNMENT,
+        attribution_formula=(
+            "emissions = floor_area_m2 * energy_intensity * grid_factor * "
+            "attribution_factor; "
+            "attribution_factor = outstanding / property_value_at_origination  "
+            "(TODO: methodology-review)"
+        ),
+        intensity_basis=(IntensityBasis.ASSET_VALUE, IntensityBasis.LOAN_TO_VALUE),
+    ),
+    "pcaf_mortgages": PCAFV02Metadata(
+        pack_id="pcaf_mortgages",
+        asset_class_v2=PCAFAssetClassV2.MORTGAGES,
+        standards_alignment=_PCAF_STANDARDS_ALIGNMENT,
+        attribution_formula=(
+            "emissions = floor_area_m2 * energy_intensity * grid_factor * "
+            "attribution_factor; "
+            "attribution_factor = outstanding_mortgage / property_value  "
+            "(TODO: methodology-review)"
+        ),
+        intensity_basis=(IntensityBasis.ASSET_VALUE, IntensityBasis.LOAN_TO_VALUE),
+    ),
+    "pcaf_motor_vehicle_loans": PCAFV02Metadata(
+        pack_id="pcaf_motor_vehicle_loans",
+        asset_class_v2=PCAFAssetClassV2.MOTOR_VEHICLE_LOANS,
+        standards_alignment=_PCAF_STANDARDS_ALIGNMENT,
+        attribution_formula=(
+            "emissions = km_driven * fuel_economy * emission_factor * "
+            "attribution_factor; "
+            "attribution_factor = outstanding_loan / vehicle_value_at_origination  "
+            "(TODO: methodology-review)"
+        ),
+        intensity_basis=(IntensityBasis.ASSET_VALUE, IntensityBasis.LOAN_TO_VALUE),
+    ),
+}
+
+
+#: Per-variant changelog (MP12) — v0.1.0 baseline + v0.2.0 promotion.
+PCAF_CHANGELOG: Dict[str, Tuple[Dict[str, Any], ...]] = {
+    variant: (
+        {
+            "version": "0.1.0",
+            "date": "2026-03-15",
+            "changes": [
+                f"Initial PCAF variant {variant} (GAP-8 scaffold)",
+                "PCAF v2.0 Part A selection + boundary rules",
+                "DQS 1-5 + attribution formula sidecar metadata",
+            ],
+            "impact": "none (new variant)",
+            "migration_notes": "N/A — variant introduction.",
+        },
+        {
+            "version": "0.2.0",
+            "date": "2026-04-23",
+            "changes": [
+                "Standards alignment promoted to PCAF 2024 Part A/B/C",
+                "Swapped DEFAULT_FALLBACK for PCAF_ATTRIBUTION_HIERARCHY (5-step)",
+                "Added PCAFAssetClassV2 enum (7 classes incl. sovereign_debt)",
+                "Added IntensityBasis + ProxyConfidenceClass enums",
+                "Added PCAF_DQS_TO_FQS rescale (DQS 1-5 -> 0-100 composite FQS)",
+                "cannot_resolve_action=ALLOW_GLOBAL_DEFAULT (PCAF-specific exception)",
+                "global_default_tier_allowed=True (PCAF methodology permits DQS-5)",
+                "Added Part B Facilitated + Part C Insurance reporting labels",
+                "deprecation_notice_days=180",
+            ],
+            "impact": (
+                "Attribution hierarchy now PCAF-specific (was generic 7-tier); "
+                "asset-class default still permitted per PCAF Ch. 5 methodology."
+            ),
+            "migration_notes": (
+                "Callers previously resolving via DEFAULT_FALLBACK get the "
+                "same tier ordering for tiers 1-3; tiers 4-5 now correctly "
+                "read 'sector-regional / sector-global' instead of "
+                "'country / sector average'. "
+                "TODO(methodology-review): attribution-formula numeric review "
+                "pending; DQS-to-FQS mapping pending sign-off."
+            ),
+        },
+    )
+    for variant in (
+        "pcaf_listed_equity",
+        "pcaf_corporate_bonds",
+        "pcaf_business_loans",
+        "pcaf_project_finance",
+        "pcaf_commercial_real_estate",
+        "pcaf_mortgages",
+        "pcaf_motor_vehicle_loans",
+    )
+}
+
+
+def get_pcaf_v02_metadata(variant_name: str) -> PCAFV02Metadata:
+    """Retrieve v0.2 scaffold metadata for a PCAF variant."""
+    meta = PCAF_V02_METADATA.get(variant_name)
+    if meta is None:
+        raise KeyError(
+            "no v0.2 PCAF metadata for %r; available: %s"
+            % (variant_name, sorted(PCAF_V02_METADATA))
+        )
+    return meta
+
+
 __all__ = [
     # Enums
     "PCAFAssetClass",
@@ -795,4 +1094,15 @@ __all__ = [
     # Reference data
     "PCAF_DQS_RUBRIC",
     "PCAF_ATTRIBUTION_HIERARCHY",
+    # v0.2 (Wave 4-G)
+    "PCAFAssetClassV2",
+    "IntensityBasis",
+    "ProxyConfidenceClass",
+    "PCAFV02Metadata",
+    "PCAF_V02_METADATA",
+    "PCAF_DQS_TO_FQS",
+    "PCAF_DQS_TO_PROXY_CONFIDENCE",
+    "PCAF_CHANGELOG",
+    "get_pcaf_v02_metadata",
+    "pcaf_dqs_to_fqs",
 ]

@@ -1,0 +1,67 @@
+---
+# =============================================================================
+# IngressRoute + Ingress patch — factors-api (production)
+# =============================================================================
+# Public host: factors.greenlang.com
+# TLS: cert-manager uses letsencrypt-prod. HSTS enforced. HTTP -> HTTPS redirect.
+# =============================================================================
+apiVersion: configuration.konghq.com/v1beta1
+kind: IngressRoute
+metadata:
+  name: factors-api
+spec:
+  rules:
+    - host: factors.greenlang.com
+      paths:
+        - path: /v1
+          pathType: Prefix
+          backend:
+            service:
+              name: factors-api
+              port: 8080
+        - path: /api/v1
+          pathType: Prefix
+          backend:
+            service:
+              name: factors-api
+              port: 8080
+        - path: /metrics
+          pathType: Prefix
+          backend:
+            service:
+              name: factors-api
+              port: 8080
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: factors-api
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    konghq.com/protocols: "https"
+    konghq.com/strip-path: "false"
+    konghq.com/https-redirect-status-code: "308"
+    konghq.com/plugins: "factors-jwt,factors-key-auth,factors-rate-limit,factors-req-transform,factors-resp-headers,factors-correlation,factors-prometheus,factors-hsts"
+spec:
+  tls:
+    - hosts:
+        - factors.greenlang.com
+      secretName: factors-api-tls-prod
+  rules:
+    - host: factors.greenlang.com
+      http:
+        paths:
+          - path: /v1
+            pathType: Prefix
+            backend:
+              service:
+                name: factors-api
+                port:
+                  number: 8080
+          - path: /api/v1
+            pathType: Prefix
+            backend:
+              service:
+                name: factors-api
+                port:
+                  number: 8080

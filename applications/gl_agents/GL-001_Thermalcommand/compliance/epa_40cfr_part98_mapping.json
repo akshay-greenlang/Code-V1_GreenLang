@@ -1,0 +1,302 @@
+{
+  "metadata": {
+    "regulation": "EPA 40 CFR Part 98",
+    "title": "Mandatory Greenhouse Gas Reporting Rule",
+    "version": "2024.1",
+    "last_updated": "2024-01-15",
+    "agent": "GL-001_ThermalCommand",
+    "maintained_by": "GreenLang Framework"
+  },
+  "subparts": {
+    "subpart_A": {
+      "title": "General Provisions",
+      "sections": {
+        "98.1": {
+          "title": "Purpose and scope",
+          "description": "Mandatory reporting of GHG emissions for facilities ≥25,000 metric tons CO2e/year"
+        },
+        "98.2": {
+          "title": "Applicability",
+          "threshold": "25,000 metric tons CO2e per year",
+          "covered_gases": ["CO2", "CH4", "N2O", "HFCs", "PFCs", "SF6", "NF3"]
+        },
+        "98.3": {
+          "title": "Reporting requirements",
+          "annual_deadline": "March 31",
+          "format": "e-GGRT electronic submission"
+        }
+      }
+    },
+    "subpart_C": {
+      "title": "General Stationary Fuel Combustion Sources",
+      "description": "Applies to boilers, turbines, engines, and other combustion equipment",
+      "calculation_tiers": {
+        "tier_1": {
+          "description": "Default emission factors",
+          "applicability": "Solid and liquid fuels with default EFs",
+          "calculation": "CO2 = Fuel × HHV × EF"
+        },
+        "tier_2": {
+          "description": "Fuel-specific HHV",
+          "applicability": "Gaseous fuels, facility-specific HHV",
+          "calculation": "CO2 = Fuel × HHV_measured × EF"
+        },
+        "tier_3": {
+          "description": "Fuel analysis",
+          "applicability": "Carbon content analysis required",
+          "calculation": "CO2 = Fuel × CC × 44/12"
+        },
+        "tier_4": {
+          "description": "CEMS",
+          "applicability": "Continuous emission monitoring",
+          "calculation": "CO2 = ΣHourly_CEMS_data"
+        }
+      },
+      "equations": {
+        "C-1": {
+          "title": "CO2 emissions (Tier 1)",
+          "formula": "CO2 = Fuel × EF",
+          "units": {
+            "fuel": "scf or gallons or tons",
+            "EF": "kg CO2/unit fuel",
+            "result": "metric tons CO2"
+          }
+        },
+        "C-2a": {
+          "title": "CO2 from liquid fuels (Tier 2)",
+          "formula": "CO2 = Fuel × HHV × EF × 0.001",
+          "units": {
+            "fuel": "gallons",
+            "HHV": "MMBtu/gallon",
+            "EF": "kg CO2/MMBtu"
+          }
+        },
+        "C-2b": {
+          "title": "CO2 from solid fuels (Tier 2)",
+          "formula": "CO2 = Fuel × HHV × EF × 0.001",
+          "units": {
+            "fuel": "short tons",
+            "HHV": "MMBtu/ton",
+            "EF": "kg CO2/MMBtu"
+          }
+        },
+        "C-2c": {
+          "title": "CO2 from gaseous fuels (Tier 2)",
+          "formula": "CO2 = Fuel × HHV × EF × 0.001",
+          "units": {
+            "fuel": "scf",
+            "HHV": "MMBtu/scf",
+            "EF": "kg CO2/MMBtu"
+          }
+        },
+        "C-5": {
+          "title": "CH4 emissions",
+          "formula": "CH4 = Fuel × EF_CH4",
+          "notes": "Use Table C-2 emission factors"
+        },
+        "C-6": {
+          "title": "N2O emissions",
+          "formula": "N2O = Fuel × EF_N2O",
+          "notes": "Use Table C-2 emission factors"
+        }
+      }
+    }
+  },
+  "tables": {
+    "table_C-1": {
+      "title": "Default CO2 Emission Factors and HHV by Fuel Type",
+      "fuels": {
+        "natural_gas": {
+          "hhv_mmbtu_scf": 0.001028,
+          "co2_kg_mmbtu": 53.06,
+          "co2_kg_scf": 0.05455
+        },
+        "distillate_fuel_oil_2": {
+          "hhv_mmbtu_gal": 0.138,
+          "co2_kg_mmbtu": 73.96,
+          "co2_kg_gal": 10.21
+        },
+        "residual_fuel_oil_6": {
+          "hhv_mmbtu_gal": 0.150,
+          "co2_kg_mmbtu": 75.10,
+          "co2_kg_gal": 11.27
+        },
+        "propane": {
+          "hhv_mmbtu_gal": 0.091,
+          "co2_kg_mmbtu": 62.87,
+          "co2_kg_gal": 5.72
+        },
+        "bituminous_coal": {
+          "hhv_mmbtu_ton": 24.93,
+          "co2_kg_mmbtu": 93.28,
+          "co2_kg_ton": 2325.7
+        },
+        "subbituminous_coal": {
+          "hhv_mmbtu_ton": 17.25,
+          "co2_kg_mmbtu": 97.17,
+          "co2_kg_ton": 1676.2
+        },
+        "lignite": {
+          "hhv_mmbtu_ton": 14.21,
+          "co2_kg_mmbtu": 97.72,
+          "co2_kg_ton": 1388.6
+        },
+        "wood_biomass": {
+          "hhv_mmbtu_ton": 15.38,
+          "co2_kg_mmbtu": 93.80,
+          "co2_kg_ton": 1442.7,
+          "biogenic": true
+        },
+        "landfill_gas": {
+          "hhv_mmbtu_scf": 0.000485,
+          "co2_kg_mmbtu": 52.07,
+          "co2_kg_scf": 0.02525
+        },
+        "petroleum_coke": {
+          "hhv_mmbtu_ton": 30.00,
+          "co2_kg_mmbtu": 102.41,
+          "co2_kg_ton": 3072.3
+        }
+      }
+    },
+    "table_C-2": {
+      "title": "Default CH4 and N2O Emission Factors by Fuel and Technology",
+      "units": "kg/MMBtu",
+      "boilers": {
+        "natural_gas": {
+          "ch4": 0.001,
+          "n2o": 0.0001
+        },
+        "fuel_oil": {
+          "ch4": 0.003,
+          "n2o": 0.0006
+        },
+        "coal": {
+          "ch4": 0.011,
+          "n2o": 0.0016
+        },
+        "wood": {
+          "ch4": 0.032,
+          "n2o": 0.0042
+        }
+      }
+    }
+  },
+  "gwp_values": {
+    "source": "IPCC AR4 (100-year)",
+    "values": {
+      "CO2": 1,
+      "CH4": 25,
+      "N2O": 298,
+      "SF6": 22800,
+      "NF3": 17200
+    }
+  },
+  "calculation_mappings": {
+    "co2_tier1_gas": {
+      "agent_function": "calculate_co2_tier1",
+      "regulation_section": "Subpart C, Eq. C-1",
+      "inputs": ["fuel_scf", "fuel_type"],
+      "output_units": "metric tons CO2",
+      "formula": "CO2_mt = Fuel_scf × EF_kg_scf / 1000"
+    },
+    "co2_tier2_gas": {
+      "agent_function": "calculate_co2_tier2_gas",
+      "regulation_section": "Subpart C, Eq. C-2c",
+      "inputs": ["fuel_scf", "hhv_mmbtu_scf", "ef_kg_mmbtu"],
+      "output_units": "metric tons CO2",
+      "formula": "CO2_mt = Fuel_scf × HHV × EF × 0.001"
+    },
+    "co2_tier2_liquid": {
+      "agent_function": "calculate_co2_tier2_liquid",
+      "regulation_section": "Subpart C, Eq. C-2a",
+      "inputs": ["fuel_gal", "hhv_mmbtu_gal", "ef_kg_mmbtu"],
+      "output_units": "metric tons CO2",
+      "formula": "CO2_mt = Fuel_gal × HHV × EF × 0.001"
+    },
+    "co2_tier2_solid": {
+      "agent_function": "calculate_co2_tier2_solid",
+      "regulation_section": "Subpart C, Eq. C-2b",
+      "inputs": ["fuel_tons", "hhv_mmbtu_ton", "ef_kg_mmbtu"],
+      "output_units": "metric tons CO2",
+      "formula": "CO2_mt = Fuel_tons × HHV × EF × 0.001"
+    },
+    "ch4_emissions": {
+      "agent_function": "calculate_ch4_emissions",
+      "regulation_section": "Subpart C, Eq. C-5",
+      "inputs": ["heat_input_mmbtu", "fuel_type", "equipment_type"],
+      "output_units": "metric tons CH4",
+      "formula": "CH4_mt = HI_MMBtu × EF_CH4 / 1000"
+    },
+    "n2o_emissions": {
+      "agent_function": "calculate_n2o_emissions",
+      "regulation_section": "Subpart C, Eq. C-6",
+      "inputs": ["heat_input_mmbtu", "fuel_type", "equipment_type"],
+      "output_units": "metric tons N2O",
+      "formula": "N2O_mt = HI_MMBtu × EF_N2O / 1000"
+    },
+    "co2e_total": {
+      "agent_function": "calculate_total_co2e",
+      "regulation_section": "Subpart A",
+      "inputs": ["co2_mt", "ch4_mt", "n2o_mt"],
+      "output_units": "metric tons CO2e",
+      "formula": "CO2e = CO2 + (CH4 × 25) + (N2O × 298)"
+    },
+    "biogenic_co2": {
+      "agent_function": "calculate_biogenic_co2",
+      "regulation_section": "Subpart C",
+      "inputs": ["biomass_fuel", "hhv", "ef"],
+      "output_units": "metric tons CO2",
+      "notes": "Reported separately from fossil CO2"
+    }
+  },
+  "data_requirements": {
+    "fuel_consumption": {
+      "natural_gas": ["metered_volume_scf", "heating_value_btu_scf"],
+      "liquid_fuels": ["metered_volume_gal", "density_lb_gal", "heating_value_btu_gal"],
+      "solid_fuels": ["weight_tons", "moisture_pct", "heating_value_btu_lb", "carbon_pct"]
+    },
+    "emissions_data": {
+      "cems": ["co2_concentration_pct", "flow_rate_scfh", "operating_hours"],
+      "calculated": ["fuel_type", "fuel_quantity", "heating_value"]
+    }
+  },
+  "reporting_requirements": {
+    "annual_report": {
+      "deadline": "March 31",
+      "submission": "e-GGRT electronic system",
+      "contents": [
+        "Facility identification",
+        "Subpart applicability",
+        "Total emissions by GHG",
+        "Total CO2e",
+        "Biogenic CO2 (separate)",
+        "Methodology descriptions",
+        "Missing data procedures"
+      ]
+    },
+    "recordkeeping": {
+      "retention_period_years": 3,
+      "required_records": [
+        "Fuel purchase records",
+        "Fuel analysis results",
+        "Meter calibration records",
+        "Calculation worksheets"
+      ]
+    }
+  },
+  "verification": {
+    "third_party": {
+      "required": false,
+      "notes": "EPA may require verification for specific sectors"
+    },
+    "internal_qa": {
+      "recommended": [
+        "Mass balance checks",
+        "Year-over-year comparison",
+        "Fuel throughput reconciliation",
+        "Equipment operating hour validation"
+      ]
+    }
+  }
+}

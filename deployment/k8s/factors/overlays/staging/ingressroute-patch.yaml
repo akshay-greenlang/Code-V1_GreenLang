@@ -1,0 +1,69 @@
+---
+# =============================================================================
+# IngressRoute + Ingress patch — factors-api (staging)
+# =============================================================================
+# Public host: factors-staging.greenlang.com
+# TLS: cert-manager issues a Let's Encrypt staging cert (reduced rate limits).
+# The base file defines the same route with host=factors.greenlang.io; this
+# patch rewrites host and TLS secret for staging isolation.
+# =============================================================================
+apiVersion: configuration.konghq.com/v1beta1
+kind: IngressRoute
+metadata:
+  name: factors-api
+spec:
+  rules:
+    - host: factors-staging.greenlang.com
+      paths:
+        - path: /v1
+          pathType: Prefix
+          backend:
+            service:
+              name: factors-api
+              port: 8080
+        - path: /api/v1
+          pathType: Prefix
+          backend:
+            service:
+              name: factors-api
+              port: 8080
+        - path: /metrics
+          pathType: Prefix
+          backend:
+            service:
+              name: factors-api
+              port: 8080
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: factors-api
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-staging"
+    konghq.com/protocols: "https"
+    konghq.com/strip-path: "false"
+    konghq.com/https-redirect-status-code: "308"
+    konghq.com/plugins: "factors-jwt,factors-key-auth,factors-rate-limit,factors-req-transform,factors-resp-headers,factors-correlation,factors-prometheus"
+spec:
+  tls:
+    - hosts:
+        - factors-staging.greenlang.com
+      secretName: factors-api-tls-staging
+  rules:
+    - host: factors-staging.greenlang.com
+      http:
+        paths:
+          - path: /v1
+            pathType: Prefix
+            backend:
+              service:
+                name: factors-api
+                port:
+                  number: 8080
+          - path: /api/v1
+            pathType: Prefix
+            backend:
+              service:
+                name: factors-api
+                port:
+                  number: 8080

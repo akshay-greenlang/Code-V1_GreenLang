@@ -1,0 +1,19 @@
+# Staging Environment - Resource Limits Patch
+# Medium resources (50% of production)
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gl-005-combustion-control
+spec:
+  template:
+    spec:
+      containers:
+        - name: gl-005-combustion-control
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "500m"
+            limits:
+              memory: "1Gi"
+              cpu: "1000m"

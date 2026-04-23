@@ -1,0 +1,107 @@
+---
+# =============================================================================
+# GreenLang Factors - public status page config (DEP10)
+# =============================================================================
+# Drop-in config for statuspage.io (SaaS) and Cachet (self-host alternative).
+# Both formats kept in-sync; pick whichever your ops team uses.
+#
+# Severity mapping is aligned to deployment/runbooks/factors_incidents.md:
+#   SEV1 -> "Major Outage"
+#   SEV2 -> "Partial Outage"
+#   SEV3 -> "Degraded Performance"
+# =============================================================================
+
+# ----- statuspage.io format --------------------------------------------------
+statuspage:
+  page:
+    name: GreenLang Factors API
+    url: https://status.greenlang.com
+    support_url: https://greenlang.ai/support
+    time_zone: Etc/UTC
+    brand_color: "#1f8f4e"
+
+  components:
+    - name: Factors API - US East
+      description: Primary production endpoint (factors.greenlang.com)
+      group: API
+    - name: Factors API - EU West
+      description: European production endpoint (enterprise only)
+      group: API
+    - name: Factors Worker Pool
+      description: Background resolution + watch tasks
+      group: Background
+    - name: Signed Receipts Service
+      description: Ed25519 receipt issuance + verification
+      group: API
+    - name: Operator Console
+      description: Internal admin UI (operator.greenlang.com)
+      group: Internal
+    - name: Factors Explorer
+      description: Public factor browser (explorer.greenlang.com)
+      group: Public
+    - name: Stripe Billing Webhook
+      description: Subscription + metering sync
+      group: Integrations
+
+  groups:
+    - name: API
+      description: Public API surface
+    - name: Background
+      description: Workers + batch jobs
+    - name: Integrations
+      description: Third-party bridges
+    - name: Public
+      description: Customer-facing web surfaces
+    - name: Internal
+      description: GreenLang-only tools (surfaces for enterprise admin)
+
+  incident_templates:
+    - name: Elevated API Errors
+      description: We're seeing elevated 5xx on the Factors API.
+      impact: minor
+      components_affected: ["Factors API - US East"]
+    - name: Degraded Latency
+      description: p95 latency exceeds SLO; investigation in progress.
+      impact: minor
+      components_affected: ["Factors API - US East"]
+    - name: Planned Maintenance
+      description: Scheduled maintenance window for Postgres / cache upgrades.
+      impact: none
+
+  metrics:
+    # Pulled from Prometheus via the status page's metric integration.
+    - name: Factors API Uptime (30d)
+      promql: |
+        1 - (
+          sum(increase(factors_http_requests_total{code=~"5.."}[30d]))
+          /
+          sum(increase(factors_http_requests_total[30d]))
+        )
+    - name: Factors API p95 Latency
+      promql: |
+        histogram_quantile(0.95, sum by (le) (
+          rate(factors_http_request_duration_seconds_bucket[5m])
+        ))
+
+# ----- Cachet (self-host) format --------------------------------------------
+cachet:
+  settings:
+    app_name: GreenLang Factors
+    app_domain: https://status.greenlang.com
+    app_timezone: UTC
+    theme: auto
+
+  components:
+    - { name: Factors API - US East,  status: 1, group: API }
+    - { name: Factors API - EU West,  status: 1, group: API }
+    - { name: Factors Worker Pool,    status: 1, group: Background }
+    - { name: Signed Receipts,        status: 1, group: API }
+    - { name: Operator Console,       status: 1, group: Internal }
+    - { name: Factors Explorer,       status: 1, group: Public }
+    - { name: Stripe Billing Webhook, status: 1, group: Integrations }
+
+  incident_categories:
+    - SEV1_major_outage:   { impact: 4, label: "Major Outage"    }
+    - SEV2_partial_outage: { impact: 3, label: "Partial Outage"  }
+    - SEV3_degraded:       { impact: 2, label: "Degraded Performance" }
+    - planned_maintenance: { impact: 1, label: "Under Maintenance" }

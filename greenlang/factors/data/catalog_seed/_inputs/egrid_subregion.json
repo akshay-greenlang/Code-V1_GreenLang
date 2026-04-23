@@ -1,0 +1,41 @@
+{
+  "metadata": {
+    "source": "EPA eGRID (subregion extension)",
+    "version": "2022",
+    "source_publication": "eGRID2022 Annual Report — Subregion Summary Tables",
+    "source_url": "https://www.epa.gov/egrid",
+    "target_year": 2026
+  },
+  "_seed_note": "US EPA eGRID2022 subregion emission rates (lb/MWh) reused from the canonical egrid.json seed. target_years drives which vintage year(s) get emitted — the gold-set references 2026 subregion factors for CY26 purchased-electricity accounting. EPA publishes eGRID annually with a ~2-year lag, so 2026 values here are the latest published 2022 rates held constant with an illustrative-vintage flag until the 2026 eGRID release lands.",
+  "_todo": "refresh with eGRID2024 / eGRID2026 releases when EPA publishes them",
+  "target_years": [2022, 2024, 2026],
+  "subregions": [
+    {"acronym": "AKGD", "name": "ASCC Alaska Grid",          "co2_lb_mwh": 1113.0, "ch4_lb_mwh": 0.10, "n2o_lb_mwh": 0.010, "generation_mix": {"coal_pct": 12, "gas_pct": 41}},
+    {"acronym": "AKMS", "name": "ASCC Miscellaneous",        "co2_lb_mwh": 505.0,  "ch4_lb_mwh": 0.04, "n2o_lb_mwh": 0.005},
+    {"acronym": "AZNM", "name": "WECC Southwest",            "co2_lb_mwh": 840.0,  "ch4_lb_mwh": 0.07, "n2o_lb_mwh": 0.010},
+    {"acronym": "CAMX", "name": "WECC California",           "co2_lb_mwh": 474.0,  "ch4_lb_mwh": 0.04, "n2o_lb_mwh": 0.005},
+    {"acronym": "ERCT", "name": "ERCOT All",                 "co2_lb_mwh": 869.0,  "ch4_lb_mwh": 0.07, "n2o_lb_mwh": 0.009},
+    {"acronym": "FRCC", "name": "FRCC All",                  "co2_lb_mwh": 833.0,  "ch4_lb_mwh": 0.06, "n2o_lb_mwh": 0.008},
+    {"acronym": "HIMS", "name": "HICC Miscellaneous",        "co2_lb_mwh": 1220.0, "ch4_lb_mwh": 0.11, "n2o_lb_mwh": 0.011},
+    {"acronym": "HIOA", "name": "HICC Oahu",                 "co2_lb_mwh": 1608.0, "ch4_lb_mwh": 0.14, "n2o_lb_mwh": 0.014},
+    {"acronym": "MROE", "name": "MRO East",                  "co2_lb_mwh": 1325.0, "ch4_lb_mwh": 0.10, "n2o_lb_mwh": 0.015},
+    {"acronym": "MROW", "name": "MRO West",                  "co2_lb_mwh": 902.0,  "ch4_lb_mwh": 0.08, "n2o_lb_mwh": 0.013},
+    {"acronym": "NEWE", "name": "NPCC New England",          "co2_lb_mwh": 530.0,  "ch4_lb_mwh": 0.05, "n2o_lb_mwh": 0.006},
+    {"acronym": "NWPP", "name": "WECC Northwest",            "co2_lb_mwh": 640.0,  "ch4_lb_mwh": 0.06, "n2o_lb_mwh": 0.011},
+    {"acronym": "NYCW", "name": "NPCC NYC/Westchester",      "co2_lb_mwh": 530.0,  "ch4_lb_mwh": 0.04, "n2o_lb_mwh": 0.004},
+    {"acronym": "NYLI", "name": "NPCC Long Island",          "co2_lb_mwh": 1215.0, "ch4_lb_mwh": 0.10, "n2o_lb_mwh": 0.014},
+    {"acronym": "NYUP", "name": "NPCC Upstate NY",           "co2_lb_mwh": 258.0,  "ch4_lb_mwh": 0.02, "n2o_lb_mwh": 0.002},
+    {"acronym": "PRMS", "name": "Puerto Rico",               "co2_lb_mwh": 1605.0, "ch4_lb_mwh": 0.15, "n2o_lb_mwh": 0.014},
+    {"acronym": "RFCE", "name": "RFC East",                  "co2_lb_mwh": 591.0,  "ch4_lb_mwh": 0.05, "n2o_lb_mwh": 0.007},
+    {"acronym": "RFCM", "name": "RFC Michigan",              "co2_lb_mwh": 1196.0, "ch4_lb_mwh": 0.11, "n2o_lb_mwh": 0.019},
+    {"acronym": "RFCW", "name": "RFC West",                  "co2_lb_mwh": 1070.0, "ch4_lb_mwh": 0.10, "n2o_lb_mwh": 0.015},
+    {"acronym": "RMPA", "name": "WECC Rockies",              "co2_lb_mwh": 1186.0, "ch4_lb_mwh": 0.10, "n2o_lb_mwh": 0.018},
+    {"acronym": "SPNO", "name": "SPP North",                 "co2_lb_mwh": 1040.0, "ch4_lb_mwh": 0.09, "n2o_lb_mwh": 0.015},
+    {"acronym": "SPSO", "name": "SPP South",                 "co2_lb_mwh": 1016.0, "ch4_lb_mwh": 0.08, "n2o_lb_mwh": 0.012},
+    {"acronym": "SRMV", "name": "SERC Mississippi Valley",   "co2_lb_mwh": 864.0,  "ch4_lb_mwh": 0.07, "n2o_lb_mwh": 0.009},
+    {"acronym": "SRMW", "name": "SERC Midwest",              "co2_lb_mwh": 1576.0, "ch4_lb_mwh": 0.15, "n2o_lb_mwh": 0.022},
+    {"acronym": "SRSO", "name": "SERC South",                "co2_lb_mwh": 850.0,  "ch4_lb_mwh": 0.07, "n2o_lb_mwh": 0.010},
+    {"acronym": "SRTV", "name": "SERC Tennessee Valley",     "co2_lb_mwh": 906.0,  "ch4_lb_mwh": 0.08, "n2o_lb_mwh": 0.012},
+    {"acronym": "SRVC", "name": "SERC Virginia/Carolinas",   "co2_lb_mwh": 631.0,  "ch4_lb_mwh": 0.05, "n2o_lb_mwh": 0.007}
+  ]
+}

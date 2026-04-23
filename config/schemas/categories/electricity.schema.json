@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.greenlang.io/factors/categories/electricity.schema.json",
+  "title": "Factor Parameters — Electricity (v1.0)",
+  "description": "Parameter sub-schema applied when factor_record.factor_family == 'electricity'. Encodes GHG Protocol Scope 2 Guidance dual-reporting requirements. Frozen v1.0 — 2026-04-22.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["electricity_basis"],
+  "properties": {
+    "scope_applicability": {
+      "type": "array",
+      "items": { "type": "string", "enum": ["scope_1", "scope_2", "scope_3", "scope_4"] },
+      "uniqueItems": true,
+      "default": ["scope_2"],
+      "description": "Electricity factors default to scope_2; T&D-loss factors may be scope_3."
+    },
+    "uncertainty_low": {
+      "type": ["number", "null"],
+      "description": "Lower 95% CI as signed fractional deviation."
+    },
+    "uncertainty_high": {
+      "type": ["number", "null"],
+      "description": "Upper 95% CI as signed fractional deviation."
+    },
+    "electricity_basis": {
+      "type": "string",
+      "enum": ["location_based", "market_based", "supplier_specific", "residual_mix"],
+      "description": "GHG Protocol Scope 2 basis. 'location_based' uses grid-average intensity; 'market_based' reflects contractual instruments; 'supplier_specific' is the contracted supplier's disclosed mix; 'residual_mix' is the market-based factor after contractual instruments are removed (AIB-style)."
+    },
+    "residual_mix_applicable": {
+      "type": "boolean",
+      "default": false,
+      "description": "True when this factor is the residual mix for the given region/year. At most one residual_mix factor may be 'active' per (country, region, grid_region, valid_from..valid_to) window."
+    },
+    "supplier_specific": {
+      "type": "boolean",
+      "default": false,
+      "description": "True when this factor represents a specific supplier contract (e.g., a green tariff). Implies electricity_basis == 'supplier_specific'."
+    },
+    "transmission_loss_included": {
+      "type": "boolean",
+      "default": false,
+      "description": "True when transmission & distribution losses are already embedded in the emission intensity (delivered basis). False means busbar / generation basis."
+    },
+    "certificate_handling": {
+      "type": "string",
+      "enum": ["none", "rec", "go", "ppa", "i_rec"],
+      "default": "none",
+      "description": "Contractual instrument reflected in this factor: 'none' (no instrument), 'rec' (US REC), 'go' (EU Guarantee of Origin), 'ppa' (Power Purchase Agreement), 'i_rec' (International REC)."
+    },
+    "subregion_code": {
+      "type": ["string", "null"],
+      "maxLength": 64,
+      "description": "Grid sub-region code (e.g., 'eGRID-SERC', 'NERC-WECC', 'ENTSOE-DE-LU'). Mirrors factor_record.jurisdiction.grid_region for in-parameters resolution convenience."
+    }
+  }
+}

@@ -1,0 +1,34 @@
+---
+# =============================================================================
+# GreenLang Factors API - Private Deploy overlay (Enterprise, VPC-isolated)
+# =============================================================================
+# Applies the hardening documented in docs/security/private_deploy_hardening.md
+# on top of the standard production overlay. Targets dedicated Enterprise
+# customer deployments.
+#
+# Render (dry-run):
+#   kubectl kustomize deployment/k8s/factors/overlays/private_deploy
+# =============================================================================
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+bases:
+  - ../production
+
+namespace: factors-enterprise
+
+namePrefix: ent-
+
+commonLabels:
+  env: enterprise
+  deploy.greenlang.io/profile: private
+
+commonAnnotations:
+  greenlang.io/env: enterprise
+  greenlang.io/profile: private
+  greenlang.io/private-deploy: "true"
+
+patches:
+  - path: configmap-patch.yaml
+  - path: networkpolicy-strict.yaml
+  - path: deployment-readonly-fs.yaml

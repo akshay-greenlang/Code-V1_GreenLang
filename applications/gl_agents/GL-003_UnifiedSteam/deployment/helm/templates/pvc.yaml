@@ -1,0 +1,46 @@
+{{/*
+GL-003 UNIFIEDSTEAM - PVC Templates
+*/}}
+{{- if .Values.persistence.data.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "unifiedsteam.fullname" . }}-data
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "unifiedsteam.labels" . | nindent 4 }}
+    app.kubernetes.io/component: storage
+spec:
+  accessModes:
+    - {{ .Values.persistence.data.accessMode }}
+  resources:
+    requests:
+      storage: {{ .Values.persistence.data.size }}
+  {{- if .Values.persistence.data.storageClass }}
+  storageClassName: {{ .Values.persistence.data.storageClass | quote }}
+  {{- else if .Values.global.storageClass }}
+  storageClassName: {{ .Values.global.storageClass | quote }}
+  {{- end }}
+{{- end }}
+---
+{{- if .Values.persistence.models.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "unifiedsteam.fullname" . }}-models
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "unifiedsteam.labels" . | nindent 4 }}
+    app.kubernetes.io/component: storage
+spec:
+  accessModes:
+    - {{ .Values.persistence.models.accessMode }}
+  resources:
+    requests:
+      storage: {{ .Values.persistence.models.size }}
+  {{- if .Values.persistence.models.storageClass }}
+  storageClassName: {{ .Values.persistence.models.storageClass | quote }}
+  {{- else if .Values.global.storageClass }}
+  storageClassName: {{ .Values.global.storageClass | quote }}
+  {{- end }}
+{{- end }}

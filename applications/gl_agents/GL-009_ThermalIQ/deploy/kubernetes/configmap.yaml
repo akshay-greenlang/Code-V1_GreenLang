@@ -1,0 +1,38 @@
+# GL-009 ThermalIQ ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gl-009-thermaliq-config
+  namespace: greenlang
+  labels:
+    app: gl-009-thermaliq
+    agent-id: GL-009
+    codename: THERMALIQ
+data:
+  ENVIRONMENT: "production"
+  LOG_LEVEL: "INFO"
+  
+  # Thermal Efficiency Parameters
+  EFFICIENCY_CALCULATION_INTERVAL_MINUTES: "15"
+  HEAT_BALANCE_METHOD: "indirect"
+  STACK_LOSS_CALCULATION: "true"
+  RADIATION_LOSS_ESTIMATION: "true"
+  
+  # Benchmarking Parameters
+  EFFICIENCY_BASELINE: "0.85"
+  PERFORMANCE_DEGRADATION_THRESHOLD: "0.05"
+  BEST_PRACTICE_EFFICIENCY: "0.92"
+  
+  # Energy Accounting Parameters
+  FUEL_COST_PER_MMBTU: "8.0"
+  CARBON_INTENSITY_KG_CO2_PER_MMBTU: "53.0"
+  
+  # Feature Flags
+  FEATURE_REAL_TIME_EFFICIENCY: "true"
+  FEATURE_BENCHMARKING: "true"
+  FEATURE_OPPORTUNITY_IDENTIFICATION: "true"
+  FEATURE_CARBON_TRACKING: "true"
+  
+  # API Configuration
+  API_RATE_LIMIT: "1000"
+  API_TIMEOUT_SECONDS: "30"

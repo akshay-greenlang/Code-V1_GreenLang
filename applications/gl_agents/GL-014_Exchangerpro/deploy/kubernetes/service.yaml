@@ -1,0 +1,67 @@
+# GL-014 Exchangerpro Service
+# Heat Exchanger Performance Optimization Agent
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-014-exchangerpro
+  namespace: greenlang
+  labels:
+    app: gl-014-exchangerpro
+    component: thermal-optimizer
+    agent-id: GL-014
+    codename: EXCHANGERPRO
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9090"
+    prometheus.io/path: "/metrics"
+spec:
+  type: ClusterIP
+  selector:
+    app: gl-014-exchangerpro
+  ports:
+    - name: http
+      port: 8000
+      targetPort: 8000
+      protocol: TCP
+    - name: metrics
+      port: 9090
+      targetPort: 9090
+      protocol: TCP
+---
+# Headless Service for StatefulSet-like discovery (if needed)
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-014-exchangerpro-headless
+  namespace: greenlang
+  labels:
+    app: gl-014-exchangerpro
+    component: thermal-optimizer
+spec:
+  type: ClusterIP
+  clusterIP: None
+  selector:
+    app: gl-014-exchangerpro
+  ports:
+    - name: http
+      port: 8000
+      targetPort: 8000
+---
+# Dedicated Metrics Service for Prometheus ServiceMonitor
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-014-exchangerpro-metrics
+  namespace: greenlang
+  labels:
+    app: gl-014-exchangerpro
+    component: thermal-optimizer
+    monitoring: prometheus
+spec:
+  type: ClusterIP
+  selector:
+    app: gl-014-exchangerpro
+  ports:
+    - name: metrics
+      port: 9090
+      targetPort: 9090

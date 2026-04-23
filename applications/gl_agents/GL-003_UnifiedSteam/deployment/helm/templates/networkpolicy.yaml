@@ -1,0 +1,125 @@
+{{/*
+GL-003 UNIFIEDSTEAM - NetworkPolicy Template
+*/}}
+{{- if .Values.networkPolicy.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "unifiedsteam.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "unifiedsteam.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      {{- include "unifiedsteam.selectorLabels" . | nindent 6 }}
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # Allow from ingress controller namespaces
+    {{- range .Values.networkPolicy.ingress.allowFromNamespaces }}
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: {{ . }}
+      ports:
+        - protocol: TCP
+          port: {{ $.Values.containerPorts.http }}
+        - protocol: TCP
+          port: {{ $.Values.containerPorts.grpc }}
+    {{- end }}
+
+    # Allow from pods with specific labels
+    {{- if .Values.networkPolicy.ingress.allowFromPodLabels }}
+    - from:
+        - podSelector:
+            matchLabels:
+              {{- toYaml .Values.networkPolicy.ingress.allowFromPodLabels | nindent 14 }}
+      ports:
+        - protocol: TCP
+          port: {{ .Values.containerPorts.http }}
+        - protocol: TCP
+          port: {{ .Values.containerPorts.grpc }}
+    {{- end }}
+
+    # Allow internal namespace traffic
+    - from:
+        - podSelector: {}
+      ports:
+        - protocol: TCP
+          port: {{ .Values.containerPorts.http }}
+        - protocol: TCP
+          port: {{ .Values.containerPorts.grpc }}
+        - protocol: TCP
+          port: {{ .Values.containerPorts.metrics }}
+
+  egress:
+    # Allow DNS
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+
+    {{- if .Values.networkPolicy.egress.allowToKafka }}
+    # Allow Kafka
+    - to:
+        - podSelector:
+            matchLabels:
+              app: kafka
+      ports:
+        - protocol: TCP
+          port: 9092
+        - protocol: TCP
+          port: 9093
+    {{- end }}
+
+    {{- if .Values.networkPolicy.egress.allowToRedis }}
+    # Allow Redis
+    - to:
+        - podSelector:
+            matchLabels:
+              app: redis
+      ports:
+        - protocol: TCP
+          port: 6379
+    {{- end }}
+
+    {{- if .Values.networkPolicy.egress.allowToPostgres }}
+    # Allow PostgreSQL
+    - to:
+        - podSelector:
+            matchLabels:
+              app: postgres
+      ports:
+        - protocol: TCP
+          port: 5432
+    {{- end }}
+
+    {{- if .Values.networkPolicy.egress.allowToOtel }}
+    # Allow OpenTelemetry
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: observability
+      ports:
+        - protocol: TCP
+          port: 4317
+        - protocol: TCP
+          port: 4318
+    {{- end }}
+
+    # Allow internal namespace traffic
+    - to:
+        - podSelector: {}
+
+    # Custom egress rules
+    {{- with .Values.networkPolicy.egress.customRules }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+{{- end }}

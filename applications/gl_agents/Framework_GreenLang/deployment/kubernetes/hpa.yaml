@@ -1,0 +1,207 @@
+# GreenLang Agent Horizontal Pod Autoscaler Template
+# Template Version: 1.0.0
+# Customize: Replace ${VARIABLE} placeholders with actual values
+
+---
+# Horizontal Pod Autoscaler v2
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: ${AGENT_ID}-hpa
+  namespace: ${NAMESPACE}
+  labels:
+    app: ${AGENT_ID}
+    app.kubernetes.io/name: ${AGENT_ID}
+    app.kubernetes.io/component: autoscaler
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: ${AGENT_ID}
+
+  # Replica Limits
+  minReplicas: 3
+  maxReplicas: 20
+
+  # Scaling Metrics
+  metrics:
+    # CPU Utilization
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+
+    # Memory Utilization
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+
+    # Custom Metrics (Prometheus)
+    # Requires prometheus-adapter
+    - type: Pods
+      pods:
+        metric:
+          name: http_requests_per_second
+        target:
+          type: AverageValue
+          averageValue: 1000m  # 1 request per second per pod
+
+    # External Metrics (e.g., queue length)
+    # Requires external-metrics-server
+    # - type: External
+    #   external:
+    #     metric:
+    #       name: queue_messages_ready
+    #       selector:
+    #         matchLabels:
+    #           queue: ${AGENT_ID}-tasks
+    #     target:
+    #       type: AverageValue
+    #       averageValue: 30
+
+  # Scaling Behavior
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+        - type: Pods
+          value: 4
+          periodSeconds: 60
+        - type: Percent
+          value: 100
+          periodSeconds: 60
+      selectPolicy: Max
+
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Pods
+          value: 2
+          periodSeconds: 120
+        - type: Percent
+          value: 25
+          periodSeconds: 120
+      selectPolicy: Min
+
+---
+# Vertical Pod Autoscaler (VPA)
+# Requires VPA controller to be installed
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: ${AGENT_ID}-vpa
+  namespace: ${NAMESPACE}
+  labels:
+    app: ${AGENT_ID}
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: ${AGENT_ID}
+  updatePolicy:
+    updateMode: "Auto"  # Options: Off, Initial, Recreate, Auto
+  resourcePolicy:
+    containerPolicies:
+      - containerName: ${AGENT_ID}
+        minAllowed:
+          cpu: 100m
+          memory: 128Mi
+        maxAllowed:
+          cpu: 4
+          memory: 8Gi
+        controlledResources:
+          - cpu
+          - memory
+        controlledValues: RequestsAndLimits
+
+---
+# KEDA ScaledObject (Alternative/Additional Scaling)
+# Requires KEDA operator to be installed
+# apiVersion: keda.sh/v1alpha1
+# kind: ScaledObject
+# metadata:
+#   name: ${AGENT_ID}-keda
+#   namespace: ${NAMESPACE}
+#   labels:
+#     app: ${AGENT_ID}
+# spec:
+#   scaleTargetRef:
+#     apiVersion: apps/v1
+#     kind: Deployment
+#     name: ${AGENT_ID}
+#   pollingInterval: 30
+#   cooldownPeriod: 300
+#   minReplicaCount: 3
+#   maxReplicaCount: 50
+#   advanced:
+#     horizontalPodAutoscalerConfig:
+#       behavior:
+#         scaleDown:
+#           stabilizationWindowSeconds: 300
+#           policies:
+#             - type: Percent
+#               value: 25
+#               periodSeconds: 120
+#   triggers:
+#     # Prometheus Trigger
+#     - type: prometheus
+#       metadata:
+#         serverAddress: http://prometheus-server.monitoring.svc.cluster.local:9090
+#         metricName: http_requests_total
+#         threshold: "100"
+#         query: sum(rate(http_requests_total{app="${AGENT_ID}"}[2m]))
+#
+#     # Redis Queue Trigger
+#     - type: redis
+#       metadata:
+#         address: redis.${NAMESPACE}.svc.cluster.local:6379
+#         listName: ${AGENT_ID}-tasks
+#         listLength: "50"
+#
+#     # AWS SQS Trigger
+#     - type: aws-sqs-queue
+#       metadata:
+#         queueURL: https://sqs.us-east-1.amazonaws.com/ACCOUNT_ID/${AGENT_ID}-queue
+#         queueLength: "100"
+#         awsRegion: us-east-1
+#       authenticationRef:
+#         name: aws-credentials
+
+---
+# Pod Autoscaler Metrics Configuration
+# ConfigMap for custom metrics configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ${AGENT_ID}-autoscaler-config
+  namespace: ${NAMESPACE}
+  labels:
+    app: ${AGENT_ID}
+data:
+  # Prometheus Adapter rules for custom metrics
+  custom-metrics-rules.yaml: |
+    rules:
+      - seriesQuery: 'http_requests_total{namespace="${NAMESPACE}",app="${AGENT_ID}"}'
+        resources:
+          overrides:
+            namespace: {resource: "namespace"}
+            pod: {resource: "pod"}
+        name:
+          matches: "^(.*)_total$"
+          as: "${1}_per_second"
+        metricsQuery: 'sum(rate(<<.Series>>{<<.LabelMatchers>>}[2m])) by (<<.GroupBy>>)'
+
+      - seriesQuery: 'http_request_duration_seconds_bucket{namespace="${NAMESPACE}",app="${AGENT_ID}"}'
+        resources:
+          overrides:
+            namespace: {resource: "namespace"}
+            pod: {resource: "pod"}
+        name:
+          matches: "^(.*)_bucket$"
+          as: "${1}_p95"
+        metricsQuery: 'histogram_quantile(0.95, sum(rate(<<.Series>>{<<.LabelMatchers>>}[5m])) by (le, <<.GroupBy>>))'

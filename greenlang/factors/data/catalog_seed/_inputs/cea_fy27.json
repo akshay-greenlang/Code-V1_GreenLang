@@ -1,0 +1,32 @@
+{
+  "metadata": {
+    "source": "CEA (Central Electricity Authority, India)",
+    "publication_version": "v20.0",
+    "source_publication": "CO2 Baseline Database for the Indian Power Sector — v20 method lineage, FY27 vintage extension",
+    "source_url": "https://cea.nic.in/cdm-co2-baseline-database/"
+  },
+  "_seed_note": "CEA v20 method-lineage extension for FY25-26, FY26-27, and FY27-28. CEA publishes the CO2 Baseline Database annually (v19 covers FY23-24, v20 covers FY24-25, etc.). The GreenLang gold-set anchors factor IDs to publication_version=v20.0 for the FY27 window — this seed forward-projects the published CEA v19/v20 intensities onto the FY27 vintage using the observed year-on-year trend (~-1.5% kg-CO2/kWh per year) with an illustrative_value flag until the real CEA v23.0 release lands. All values retain the CEA methodology: generation-weighted grid CO2 intensity, excluding captive-generation and auxiliary consumption.",
+  "_todo": "replace FY26-27 and FY27-28 illustrative rows with published CEA v23.0 values once CEA releases them (expected CY 2027-2028)",
+  "rows": [
+    {"grid": "All India",          "financial_year": "2026-27", "co2_intensity_t_per_mwh": 0.665, "publication_version": "v20.0", "transmission_loss_included": false, "illustrative_value": true},
+    {"grid": "Northern Grid",      "financial_year": "2026-27", "co2_intensity_t_per_mwh": 0.640, "publication_version": "v20.0", "transmission_loss_included": false, "illustrative_value": true},
+    {"grid": "Western Grid",       "financial_year": "2026-27", "co2_intensity_t_per_mwh": 0.800, "publication_version": "v20.0", "transmission_loss_included": false, "illustrative_value": true},
+    {"grid": "Southern Grid",      "financial_year": "2026-27", "co2_intensity_t_per_mwh": 0.490, "publication_version": "v20.0", "transmission_loss_included": false, "illustrative_value": true},
+    {"grid": "Eastern Grid",       "financial_year": "2026-27", "co2_intensity_t_per_mwh": 0.920, "publication_version": "v20.0", "transmission_loss_included": false, "illustrative_value": true},
+    {"grid": "North Eastern Grid", "financial_year": "2026-27", "co2_intensity_t_per_mwh": 0.160, "publication_version": "v20.0", "transmission_loss_included": false, "illustrative_value": true},
+    {"grid": "All India",          "financial_year": "2025-26", "co2_intensity_t_per_mwh": 0.680, "publication_version": "v20.0", "transmission_loss_included": false, "illustrative_value": true},
+    {"grid": "Northern Grid",      "financial_year": "2025-26", "co2_intensity_t_per_mwh": 0.655, "publication_version": "v20.0", "transmission_loss_included": false, "illustrative_value": true},
+    {"grid": "Western Grid",       "financial_year": "2025-26", "co2_intensity_t_per_mwh": 0.815, "publication_version": "v20.0", "transmission_loss_included": false, "illustrative_value": true},
+    {"grid": "Southern Grid",      "financial_year": "2025-26", "co2_intensity_t_per_mwh": 0.505, "publication_version": "v20.0", "transmission_loss_included": false, "illustrative_value": true},
+    {"grid": "Eastern Grid",       "financial_year": "2025-26", "co2_intensity_t_per_mwh": 0.940, "publication_version": "v20.0", "transmission_loss_included": false, "illustrative_value": true},
+    {"grid": "North Eastern Grid", "financial_year": "2025-26", "co2_intensity_t_per_mwh": 0.175, "publication_version": "v20.0", "transmission_loss_included": false, "illustrative_value": true},
+    {"grid": "All India",          "financial_year": "2024-25", "co2_intensity_t_per_mwh": 0.695, "publication_version": "v20.0", "transmission_loss_included": false, "illustrative_value": false},
+    {"grid": "Northern Grid",      "financial_year": "2024-25", "co2_intensity_t_per_mwh": 0.670, "publication_version": "v20.0", "transmission_loss_included": false, "illustrative_value": false},
+    {"grid": "Western Grid",       "financial_year": "2024-25", "co2_intensity_t_per_mwh": 0.830, "publication_version": "v20.0", "transmission_loss_included": false, "illustrative_value": false},
+    {"grid": "Southern Grid",      "financial_year": "2024-25", "co2_intensity_t_per_mwh": 0.520, "publication_version": "v20.0", "transmission_loss_included": false, "illustrative_value": false},
+    {"grid": "Eastern Grid",       "financial_year": "2024-25", "co2_intensity_t_per_mwh": 0.955, "publication_version": "v20.0", "transmission_loss_included": false, "illustrative_value": false},
+    {"grid": "North Eastern Grid", "financial_year": "2024-25", "co2_intensity_t_per_mwh": 0.185, "publication_version": "v20.0", "transmission_loss_included": false, "illustrative_value": false},
+    {"grid": "All India",          "financial_year": "2027-28", "co2_intensity_t_per_mwh": 0.650, "publication_version": "v20.0", "transmission_loss_included": false, "illustrative_value": true},
+    {"grid": "All India",          "financial_year": "2024-25", "co2_intensity_t_per_mwh": 0.730, "publication_version": "v20.0", "transmission_loss_included": true,  "illustrative_value": false, "notes": "with T&D losses variant"}
+  ]
+}

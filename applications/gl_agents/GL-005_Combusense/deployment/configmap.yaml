@@ -1,0 +1,107 @@
+# GL-005 CombustionControlAgent - ConfigMap
+# Non-sensitive configuration data
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gl-005-config
+  namespace: greenlang
+  labels:
+    app: gl-005-combustion-control
+    agent: "GL-005"
+  annotations:
+    description: "Configuration for GL-005 CombustionControlAgent"
+data:
+  # Application configuration
+  app_name: "GL-005 CombustionControlAgent"
+  app_version: "1.0.0"
+  environment: "production"
+  log_level: "INFO"
+  log_format: "json"
+
+  # Server configuration
+  host: "0.0.0.0"
+  port: "8000"
+  metrics_port: "8001"
+  workers: "4"
+
+  # Database configuration
+  database_host: "postgresql-service"
+  database_port: "5432"
+  database_name: "greenlang_gl005"
+  database_pool_size: "20"
+  database_max_overflow: "10"
+
+  # Redis configuration
+  redis_host: "redis-service"
+  redis_port: "6379"
+  redis_db: "0"
+  redis_max_connections: "50"
+
+  # Control system configuration
+  control_loop_interval_ms: "100"
+  max_control_latency_ms: "100"
+  control_stability_window_s: "60"
+
+  # PID controller tuning
+  pid_kp: "1.0"
+  pid_ki: "0.1"
+  pid_kd: "0.05"
+  pid_setpoint_min: "0.0"
+  pid_setpoint_max: "100.0"
+
+  # Safety limits
+  safety_check_enabled: "true"
+  emergency_shutdown_enabled: "true"
+  max_temperature_c: "1200"
+  min_oxygen_percent: "2.0"
+  max_co_ppm: "400"
+  max_pressure_bar: "10.0"
+
+  # Modbus configuration
+  modbus_enabled: "true"
+  modbus_host: "192.168.1.100"
+  modbus_port: "502"
+  modbus_slave_id: "1"
+  modbus_timeout: "3"
+
+  # OPC UA configuration
+  opcua_enabled: "true"
+  opcua_endpoint: "opc.tcp://192.168.1.101:4840"
+  opcua_security_mode: "SignAndEncrypt"
+  opcua_timeout: "10"
+
+  # MQTT configuration
+  mqtt_enabled: "true"
+  mqtt_broker: "mqtt.greenlang.io"
+  mqtt_port: "8883"
+  mqtt_qos: "2"
+  mqtt_keepalive: "60"
+  mqtt_tls_enabled: "true"
+
+  # Monitoring configuration
+  prometheus_enabled: "true"
+  metrics_enabled: "true"
+  metrics_interval_seconds: "15"
+  metrics_history_hours: "24"
+
+  # Alerting configuration
+  alerts_enabled: "true"
+  alert_email_enabled: "true"
+  alert_slack_enabled: "true"
+
+  # Performance tuning
+  max_concurrent_requests: "100"
+  request_timeout_seconds: "30"
+  keepalive_timeout_seconds: "5"
+
+  # Feature flags
+  feature_advanced_control: "true"
+  feature_predictive_optimization: "true"
+  feature_autonomous_mode: "true"
+  feature_multi_burner_coordination: "true"
+
+  # Health checks
+  health_check_path: "/api/v1/health"
+  readiness_check_path: "/api/v1/ready"
+  liveness_check_path: "/api/v1/alive"

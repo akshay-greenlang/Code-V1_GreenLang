@@ -48,7 +48,7 @@ import logging
 import threading
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 from greenlang.data.canonical_v2 import (
     FactorFamily,
@@ -58,6 +58,7 @@ from greenlang.data.canonical_v2 import (
 from greenlang.factors.method_packs.base import (
     BiogenicTreatment,
     BoundaryRule,
+    CannotResolveAction,
     DEFAULT_FALLBACK,
     DeprecationRule,
     FallbackStep,
@@ -151,6 +152,51 @@ class ReportingFrequency(str, Enum):
 
 
 # ---------------------------------------------------------------------------
+# v0.2 enums (Wave 4-G promotion) — standard-template alignment
+# ---------------------------------------------------------------------------
+
+
+class LandUseCategory(str, Enum):
+    """IPCC 2006 GL / 2019 Refinement Volume 4 land-use categories."""
+
+    FOREST = "forest"
+    GRASSLAND = "grassland"
+    CROPLAND = "cropland"
+    WETLAND = "wetland"
+    SETTLEMENT = "settlement"
+    OTHER = "other"
+
+
+class SequestrationBasis(str, Enum):
+    """Basis on which sequestration / removals are accounted for."""
+
+    BIOMASS = "biomass"                             # above + below-ground biomass
+    SOIL = "soil"                                   # soil organic carbon
+    HARVESTED_WOOD_PRODUCTS = "harvested_wood_products"
+    MINERALIZATION = "mineralization"
+
+
+class RemovalBasis(str, Enum):
+    """GHG Protocol LSR Ch. 6 removal-basis classification."""
+
+    NATURE_BASED = "nature_based"
+    TECHNOLOGY_BASED = "technology_based"
+    HYBRID = "hybrid"
+
+
+class PermanenceClassV2(str, Enum):
+    """Permanence class per GHG LSR Ch. 9 + ICVCM-CCP paragraph 8.
+
+    Distinct from the legacy :class:`PermanenceClass` (short / medium /
+    long) so the v0.2 surface aligns with the audit spec's exact labels.
+    """
+
+    LONG_TERM_100YR = "long_term_100yr"             # >= 100 years durable
+    MEDIUM_25_100YR = "medium_25_100yr"             # 25 - 99 years
+    SHORT_LT_25YR = "short_lt_25yr"                 # < 25 years
+
+
+# ---------------------------------------------------------------------------
 # Metadata payload carried on each LSR variant
 # ---------------------------------------------------------------------------
 
@@ -205,6 +251,48 @@ LSR_FALLBACK_HIERARCHY: Tuple[FallbackStep, ...] = (
     FallbackStep(4, "global_default",
                  "Global average proxy (last resort - DQS reduced)"),
 )
+
+
+# ---------------------------------------------------------------------------
+# v0.2 — LSR-specific fallback hierarchy (customer > supplier > project
+# > national default). NO global default tier (cannot resolve safely is
+# the contract when all four tiers fail).
+# ---------------------------------------------------------------------------
+
+
+LSR_V02_FALLBACK_HIERARCHY: Tuple[FallbackStep, ...] = (
+    FallbackStep(1, "customer_removal",
+                 "Tenant-supplied / customer-measured removal factor"),
+    FallbackStep(2, "supplier_removal",
+                 "Supplier-specific measured removal factor"),
+    FallbackStep(3, "project_level",
+                 "Project-level site-measured data (VCS / Puro.earth / etc.)"),
+    FallbackStep(4, "national_default",
+                 "National / IPCC Tier 2 default factor"),
+    # NOTE: no global-default tier — cannot_resolve_safely fires instead.
+)
+
+
+def icvcm_ccp_compliant(verification_standards: Tuple[VerificationStandard, ...]) -> bool:
+    """Check whether any of the given verification standards satisfies the
+    ICVCM Core Carbon Principles compliance gate.
+
+    The ICVCM-CCP designation itself is direct approval; VCS, Gold Standard,
+    Puro.earth, and Isometric are eligible when the *specific methodology*
+    has been ICVCM-CCP approved. TODO(methodology-review): we currently
+    treat the presence of ``ICVCM_CCP_APPROVED`` OR any of the four
+    top-tier standards as "compliant"; methodology lead must confirm
+    whether we should gate on ICVCM approval exclusively.
+    """
+    if VerificationStandard.ICVCM_CCP_APPROVED in verification_standards:
+        return True
+    compliant_via_methodology = {
+        VerificationStandard.VCS,
+        VerificationStandard.GOLD_STANDARD,
+        VerificationStandard.PURO_EARTH,
+        VerificationStandard.ISOMETRIC,
+    }
+    return bool(set(verification_standards) & compliant_via_methodology)
 
 
 # ---------------------------------------------------------------------------
@@ -306,10 +394,16 @@ def _build_pack(
     biogenic: BiogenicTreatment,
     market_instruments: MarketInstrumentTreatment,
     allowed_scopes: Tuple[str, ...] = ("1", "3"),
-    pack_version: str = "1.0.0",
+    pack_version: str = "0.2.0",
     tags: Tuple[str, ...] = ("land", "lsr", "licensed"),
 ) -> MethodPack:
-    """Build an LSR MethodPack for a given variant."""
+    """Build an LSR MethodPack for a given variant.
+
+    v0.2 (Wave 4-G): uses :data:`LSR_V02_FALLBACK_HIERARCHY` (customer ->
+    supplier -> project -> national default, NO global default), strict
+    ``RAISE_NO_SAFE_MATCH`` contract, and 180-day advance notice on
+    deprecation.
+    """
     return MethodPack(
         profile=MethodProfile.LAND_REMOVALS,
         name=display_name,
@@ -322,16 +416,22 @@ def _build_pack(
             market_instruments=market_instruments,
         ),
         gwp_basis="IPCC_AR6_100",
-        region_hierarchy=DEFAULT_FALLBACK,
+        region_hierarchy=LSR_V02_FALLBACK_HIERARCHY,
         deprecation=_DEPRECATION,
         reporting_labels=(
             "GHG_Protocol_LSR",
+            "GHG_Protocol_LSR_Standard_2024",
             "IPCC_2006_GL",
             "IPCC_2019_Refinement",
+            "ICVCM_CCP",
         ),
         audit_text_template=audit_template,
         pack_version=pack_version,
         tags=tags + (variant_name,),
+        cannot_resolve_action=CannotResolveAction.RAISE_NO_SAFE_MATCH,
+        global_default_tier_allowed=False,
+        replacement_pack_id=None,
+        deprecation_notice_days=180,
     )
 
 
@@ -666,6 +766,147 @@ def compute_buffer_pool_pct(
     return min(1.0, round(base * mult, 4))
 
 
+# ---------------------------------------------------------------------------
+# v0.2 sidecar metadata map (Wave 4-G scaffold).
+# TODO(methodology-review): each entry's standards_alignment and
+# reversal_risk_flag must be confirmed before the pack flips to certified.
+# ---------------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class LSRV02Metadata:
+    """v0.2 scaffold metadata stored alongside the frozen MethodPack.
+
+    Spec-driven fields (audit template §5). Not mutated at runtime.
+    """
+
+    pack_id: str
+    standards_alignment: Tuple[str, ...]
+    land_use_category: LandUseCategory
+    sequestration_basis: SequestrationBasis
+    removal_basis: Optional[RemovalBasis]
+    permanence_class_v2: PermanenceClassV2
+    reversal_risk_flag: bool
+    biogenic_accounting_treatment: str   # "neutral" | "separate_report" | "include_co2"
+    icvcm_ccp_required: bool = True
+    deprecation_notice_days: int = 180
+
+
+LSR_V02_METADATA: Dict[str, LSRV02Metadata] = {
+    "lsr_land_use_emissions": LSRV02Metadata(
+        pack_id="lsr_land_use_emissions",
+        standards_alignment=(
+            "GHG Protocol Land Sector and Removals Standard (2024)",
+            "IPCC 2006 GL + 2019 Refinement",
+        ),
+        land_use_category=LandUseCategory.FOREST,        # primary (cross-category data allowed)
+        sequestration_basis=SequestrationBasis.BIOMASS,
+        removal_basis=None,                              # emissions, not removals
+        permanence_class_v2=PermanenceClassV2.LONG_TERM_100YR,
+        reversal_risk_flag=False,                        # emissions already realised
+        biogenic_accounting_treatment="include_co2",
+        icvcm_ccp_required=False,                        # applies only to project-based removals
+    ),
+    "lsr_land_management": LSRV02Metadata(
+        pack_id="lsr_land_management",
+        standards_alignment=(
+            "GHG Protocol Land Sector and Removals Standard (2024)",
+            "IPCC 2019 Refinement",
+        ),
+        land_use_category=LandUseCategory.CROPLAND,
+        sequestration_basis=SequestrationBasis.SOIL,
+        removal_basis=RemovalBasis.NATURE_BASED,
+        permanence_class_v2=PermanenceClassV2.MEDIUM_25_100YR,
+        reversal_risk_flag=True,
+        biogenic_accounting_treatment="separate_report",
+        icvcm_ccp_required=False,
+    ),
+    "lsr_removals": LSRV02Metadata(
+        pack_id="lsr_removals",
+        standards_alignment=(
+            "GHG Protocol Land Sector and Removals Standard (2024)",
+            "ICVCM Core Carbon Principles",
+        ),
+        land_use_category=LandUseCategory.FOREST,
+        sequestration_basis=SequestrationBasis.BIOMASS,
+        removal_basis=RemovalBasis.HYBRID,               # covers both nature + tech
+        permanence_class_v2=PermanenceClassV2.MEDIUM_25_100YR,
+        reversal_risk_flag=True,
+        biogenic_accounting_treatment="separate_report",
+        icvcm_ccp_required=True,                         # ICVCM-CCP enforced
+    ),
+    "lsr_storage": LSRV02Metadata(
+        pack_id="lsr_storage",
+        standards_alignment=(
+            "GHG Protocol Land Sector and Removals Standard (2024)",
+            "ICVCM Core Carbon Principles",
+            "Puro.earth Supplier General Rules v2.0",
+        ),
+        land_use_category=LandUseCategory.OTHER,         # geologic / product
+        sequestration_basis=SequestrationBasis.MINERALIZATION,
+        removal_basis=RemovalBasis.TECHNOLOGY_BASED,
+        permanence_class_v2=PermanenceClassV2.LONG_TERM_100YR,
+        reversal_risk_flag=False,
+        biogenic_accounting_treatment="include_co2",
+        icvcm_ccp_required=True,
+    ),
+}
+
+
+#: Per-variant changelog (MP12) — v0.1.0 baseline + v0.2.0 promotion.
+LSR_CHANGELOG: Dict[str, Tuple[Dict[str, Any], ...]] = {
+    variant: (
+        {
+            "version": "0.1.0",
+            "date": "2026-03-15",
+            "changes": [
+                f"Initial LSR variant {variant} (MP9 scaffold)",
+                "IPCC 2006 GL + 2019 Refinement selection rules",
+                "Permanence + reversal-risk sidecar metadata",
+            ],
+            "impact": "none (new variant)",
+            "migration_notes": "N/A — variant introduction.",
+        },
+        {
+            "version": "0.2.0",
+            "date": "2026-04-23",
+            "changes": [
+                "Added LandUseCategory / SequestrationBasis / RemovalBasis enums",
+                "Replaced DEFAULT_FALLBACK with LSR_V02_FALLBACK_HIERARCHY "
+                "(customer -> supplier -> project -> national, NO global default)",
+                "cannot_resolve_action=RAISE_NO_SAFE_MATCH; "
+                "global_default_tier_allowed=False",
+                "ICVCM-CCP enforcement flag on project-based removal variants",
+                "Added ICVCM_CCP reporting label",
+                "deprecation_notice_days=180",
+            ],
+            "impact": (
+                "Resolver now refuses tier-7 global default; unresolvable "
+                "requests raise FactorCannotResolveSafelyError instead."
+            ),
+            "migration_notes": (
+                "Callers that previously relied on silent global-default "
+                "fall-through must switch to explicit region-specific lookups "
+                "or populate project-level data. "
+                "TODO(methodology-review) before promoting to `certified`."
+            ),
+        },
+    )
+    for variant in ("lsr_land_use_emissions", "lsr_land_management", "lsr_removals", "lsr_storage")
+}
+
+
+def get_lsr_v02_metadata(variant_name: str) -> LSRV02Metadata:
+    """Retrieve v0.2 scaffold metadata for an LSR variant."""
+    meta = LSR_V02_METADATA.get(variant_name)
+    if meta is None:
+        raise KeyError(
+            "no v0.2 LSR metadata for %r; available: %s"
+            % (variant_name, sorted(LSR_V02_METADATA))
+        )
+    return meta
+
+
 __all__ = [
     # Enums
     "PermanenceClass",
@@ -697,6 +938,17 @@ __all__ = [
     "DEFAULT_BUFFER_POOL",
     "RISK_BUFFER_MULTIPLIER",
     "LSR_FALLBACK_HIERARCHY",
+    # v0.2 (Wave 4-G)
+    "LandUseCategory",
+    "SequestrationBasis",
+    "RemovalBasis",
+    "PermanenceClassV2",
+    "LSRV02Metadata",
+    "LSR_V02_METADATA",
+    "LSR_V02_FALLBACK_HIERARCHY",
+    "LSR_CHANGELOG",
+    "get_lsr_v02_metadata",
+    "icvcm_ccp_compliant",
     # Utilities
     "compute_buffer_pool_pct",
 ]

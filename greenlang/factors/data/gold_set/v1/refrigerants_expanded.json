@@ -1,0 +1,96 @@
+[
+  {
+    "id": "gs_refrigerants_US_2026_033",
+    "activity_description": "R-1234yf refrigerant recharge on new passenger-vehicle MAC systems, US fleet, 2026",
+    "amount": 4.2,
+    "unit": "kg",
+    "expected_method_profile": "corporate_scope1",
+    "expected_factor_family": "refrigerant_gwp",
+    "expected_jurisdiction": {"country": "US", "region": null},
+    "expected_factor_id_pattern": "EF:IPCC:r_1234yf:GLOBAL:.*",
+    "tier_acceptance": ["primary", "alternate_top3"],
+    "notes": "HFO replacement for R-134a; AR5 GWP ~4 (<1 under newer refinements). Flag if catalog lacks HFO entries."
+  },
+  {
+    "id": "gs_refrigerants_EU_2026_034",
+    "activity_description": "R-32 single-component refrigerant recharge, EU mini-split heat pump fleet",
+    "amount": 28.5,
+    "unit": "kg",
+    "expected_method_profile": "corporate_scope1",
+    "expected_factor_family": "refrigerant_gwp",
+    "expected_jurisdiction": {"country": "EU", "region": null},
+    "expected_factor_id_pattern": "EF:IPCC:r_32:GLOBAL:.*",
+    "tier_acceptance": ["primary", "alternate_top3"],
+    "notes": "Pure R-32 GWP_100 AR5 = 677"
+  },
+  {
+    "id": "gs_refrigerants_US_2026_035",
+    "activity_description": "R-452A blend leak in refrigerated transport reefer unit, US logistics",
+    "amount": 6.8,
+    "unit": "kg",
+    "expected_method_profile": "corporate_scope1",
+    "expected_factor_family": "refrigerant_gwp",
+    "expected_jurisdiction": {"country": "US", "region": null},
+    "expected_factor_id_pattern": "EF:IPCC:r_452a:GLOBAL:.*",
+    "tier_acceptance": ["primary", "alternate_top3"],
+    "notes": "Blend: R-32/R-125/R-1234yf. Weighted GWP_AR5 ~2141. Some catalogs do not yet index blends - may miss primary."
+  },
+  {
+    "id": "gs_refrigerants_EU_2026_036",
+    "activity_description": "R-407F replacement charge in EU supermarket refrigeration rack",
+    "amount": 55,
+    "unit": "kg",
+    "expected_method_profile": "corporate_scope1",
+    "expected_factor_family": "refrigerant_gwp",
+    "expected_jurisdiction": {"country": "EU", "region": null},
+    "expected_factor_id_pattern": "EF:IPCC:r_407f:GLOBAL:.*",
+    "tier_acceptance": ["primary", "alternate_top3"]
+  },
+  {
+    "id": "gs_refrigerants_US_2026_037",
+    "activity_description": "R-448A used as low-GWP alternative in new supermarket installation, US",
+    "amount": 72,
+    "unit": "kg",
+    "expected_method_profile": "corporate_scope1",
+    "expected_factor_family": "refrigerant_gwp",
+    "expected_jurisdiction": {"country": "US", "region": null},
+    "expected_factor_id_pattern": "EF:IPCC:r_448a:GLOBAL:.*",
+    "tier_acceptance": ["primary", "alternate_top3"]
+  },
+  {
+    "id": "gs_refrigerants_US_2026_038",
+    "activity_description": "HFC-23 fugitive emissions from HCFC-22 manufacturing byproduct, US industrial",
+    "amount": 1.1,
+    "unit": "kg",
+    "expected_method_profile": "corporate_scope1",
+    "expected_factor_family": "refrigerant_gwp",
+    "expected_jurisdiction": {"country": "US", "region": null},
+    "expected_factor_id_pattern": "EF:IPCC:hfc_23:GLOBAL:.*",
+    "tier_acceptance": ["primary", "alternate_top3"],
+    "notes": "Extremely high-GWP (AR5 ~12400). Kigali Amendment priority gas."
+  },
+  {
+    "id": "gs_refrigerants_EU_2026_039",
+    "activity_description": "R-1234ze HFO charge in EU commercial chiller, centrifugal compressor",
+    "amount": 240,
+    "unit": "kg",
+    "expected_method_profile": "corporate_scope1",
+    "expected_factor_family": "refrigerant_gwp",
+    "expected_jurisdiction": {"country": "EU", "region": null},
+    "expected_factor_id_pattern": "EF:IPCC:r_1234ze:GLOBAL:.*",
+    "tier_acceptance": ["primary", "alternate_top3"],
+    "notes": "HFO GWP <1 under AR5; flag if catalog lacks HFO entries"
+  },
+  {
+    "id": "gs_refrigerants_US_2026_040",
+    "activity_description": "R-513A retrofit in chiller replacing R-134a, US commercial building",
+    "amount": 190,
+    "unit": "kg",
+    "expected_method_profile": "corporate_scope1",
+    "expected_factor_family": "refrigerant_gwp",
+    "expected_jurisdiction": {"country": "US", "region": null},
+    "expected_factor_id_pattern": "EF:IPCC:r_513a:GLOBAL:.*",
+    "tier_acceptance": ["primary", "alternate_top3"],
+    "notes": "Blend R-1234yf/R-134a; weighted GWP_AR5 ~631"
+  }
+]

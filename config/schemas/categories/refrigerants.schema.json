@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.greenlang.io/factors/categories/refrigerants.schema.json",
+  "title": "Factor Parameters — Refrigerants (v1.0)",
+  "description": "Parameter sub-schema applied when factor_record.factor_family == 'refrigerants'. Covers fluorinated gases and natural refrigerant leakage / recharge / recovery. Frozen v1.0 — 2026-04-22.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["gas_code", "leakage_basis"],
+  "properties": {
+    "scope_applicability": {
+      "type": "array",
+      "items": { "type": "string", "enum": ["scope_1", "scope_2", "scope_3", "scope_4"] },
+      "uniqueItems": true,
+      "default": ["scope_1"]
+    },
+    "uncertainty_low": { "type": ["number", "null"] },
+    "uncertainty_high": { "type": ["number", "null"] },
+    "gas_code": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "description": "Refrigerant gas code per ASHRAE R-number convention (e.g., 'R-134a', 'R-410A', 'HFC-32', 'CO2', 'NH3', 'R-404A'). For blends, use the blend R-number; itemise components in gas_blend_components."
+    },
+    "gas_blend_components": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["component", "mass_fraction"],
+        "properties": {
+          "component": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "description": "Pure-gas component code (e.g., 'HFC-32', 'HFC-125')."
+          },
+          "mass_fraction": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "description": "Mass fraction of this component in the blend."
+          }
+        }
+      },
+      "default": [],
+      "description": "Array of {component, mass_fraction} pairs for refrigerant blends. INVARIANT: sum of mass_fraction values MUST equal 1.0 ± 0.001."
+    },
+    "leakage_basis": {
+      "type": "string",
+      "enum": ["annual", "charge", "disposal"],
+      "description": "How the factor quantifies leakage. 'annual' = kg leaked per year of operation; 'charge' = kg leaked per kg installed (initial charge basis); 'disposal' = kg leaked at end-of-life."
+    },
+    "recharge_assumption": {
+      "type": ["number", "null"],
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Annual recharge rate as fraction of full charge. Typical 0.05–0.20 for commercial refrigeration."
+    },
+    "recovery_treatment": {
+      "type": "string",
+      "enum": ["none", "partial_recovery", "full_recovery", "destroyed"],
+      "default": "none",
+      "description": "End-of-life treatment. 'none' = vented; 'partial_recovery' = some mass recovered, rest vented; 'full_recovery' = ≥95% recovered; 'destroyed' = recovered and destroyed (incineration / plasma)."
+    },
+    "destruction_treatment": {
+      "type": ["string", "null"],
+      "enum": ["none", "incineration", "plasma_arc", "other", null],
+      "description": "Destruction technology when recovery_treatment == 'destroyed'."
+    }
+  }
+}

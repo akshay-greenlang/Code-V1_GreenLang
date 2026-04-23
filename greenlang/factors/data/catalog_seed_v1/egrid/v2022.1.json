@@ -1,0 +1,6413 @@
+{
+  "attribution_text": "U.S. EPA eGRID2022 subregion emission rates.",
+  "factor_count": 79,
+  "factor_status_default": "certified",
+  "factors": [
+    {
+      "activity_schema": {
+        "category": "electricity_grid",
+        "classification_codes": [],
+        "sub_category": null
+      },
+      "denominator": {
+        "unit": "kwh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:eGRID:sub_AKGD:AKGD:2022:v1",
+      "factor_name": "electricity_grid | kwh | AKGD",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:52Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 4.5359200000000004e-05,
+        "co2": 0.504847896,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 4.53592e-06,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 100.0,
+        "geographic_score": 5,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "egrid",
+      "source_version": "2022",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "electricity_grid",
+        "classification_codes": [],
+        "sub_category": null
+      },
+      "denominator": {
+        "unit": "kwh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:eGRID:sub_AKMS:AKMS:2022:v1",
+      "factor_name": "electricity_grid | kwh | AKMS",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:52Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 1.814368e-05,
+        "co2": 0.22906396,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 2.26796e-06,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 100.0,
+        "geographic_score": 5,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "egrid",
+      "source_version": "2022",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "electricity_grid",
+        "classification_codes": [],
+        "sub_category": null
+      },
+      "denominator": {
+        "unit": "kwh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:eGRID:sub_AZNM:AZNM:2022:v1",
+      "factor_name": "electricity_grid | kwh | AZNM",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:52Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 3.1751440000000005e-05,
+        "co2": 0.38101728,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 4.53592e-06,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 100.0,
+        "geographic_score": 5,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "egrid",
+      "source_version": "2022",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "electricity_grid",
+        "classification_codes": [],
+        "sub_category": null
+      },
+      "denominator": {
+        "unit": "kwh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:eGRID:sub_CAMX:CAMX:2022:v1",
+      "factor_name": "electricity_grid | kwh | CAMX",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:52Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 1.814368e-05,
+        "co2": 0.215002608,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 2.26796e-06,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 100.0,
+        "geographic_score": 5,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "egrid",
+      "source_version": "2022",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "electricity_grid",
+        "classification_codes": [],
+        "sub_category": null
+      },
+      "denominator": {
+        "unit": "kwh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:eGRID:sub_ERCT:ERCT:2022:v1",
+      "factor_name": "electricity_grid | kwh | ERCT",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:52Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 3.1751440000000005e-05,
+        "co2": 0.394171448,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 4.082328e-06,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 100.0,
+        "geographic_score": 5,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "egrid",
+      "source_version": "2022",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "electricity_grid",
+        "classification_codes": [],
+        "sub_category": null
+      },
+      "denominator": {
+        "unit": "kwh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:eGRID:sub_FRCC:FRCC:2022:v1",
+      "factor_name": "electricity_grid | kwh | FRCC",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:52Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 2.721552e-05,
+        "co2": 0.377842136,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 3.6287360000000002e-06,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 100.0,
+        "geographic_score": 5,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "egrid",
+      "source_version": "2022",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "electricity_grid",
+        "classification_codes": [],
+        "sub_category": null
+      },
+      "denominator": {
+        "unit": "kwh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:eGRID:sub_HIMS:HIMS:2022:v1",
+      "factor_name": "electricity_grid | kwh | HIMS",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:52Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 4.989512e-05,
+        "co2": 0.55338224,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 4.989512e-06,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 100.0,
+        "geographic_score": 5,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "egrid",
+      "source_version": "2022",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "electricity_grid",
+        "classification_codes": [],
+        "sub_category": null
+      },
+      "denominator": {
+        "unit": "kwh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:eGRID:sub_HIOA:HIOA:2022:v1",
+      "factor_name": "electricity_grid | kwh | HIOA",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:52Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 6.350288000000001e-05,
+        "co2": 0.7293759360000001,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 6.3502880000000005e-06,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 100.0,
+        "geographic_score": 5,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "egrid",
+      "source_version": "2022",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "electricity_grid",
+        "classification_codes": [],
+        "sub_category": null
+      },
+      "denominator": {
+        "unit": "kwh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:eGRID:sub_MROE:MROE:2022:v1",
+      "factor_name": "electricity_grid | kwh | MROE",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:52Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 4.5359200000000004e-05,
+        "co2": 0.6010094,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 6.80388e-06,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 100.0,
+        "geographic_score": 5,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "egrid",
+      "source_version": "2022",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "electricity_grid",
+        "classification_codes": [],
+        "sub_category": null
+      },
+      "denominator": {
+        "unit": "kwh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:eGRID:sub_MROW:MROW:2022:v1",
+      "factor_name": "electricity_grid | kwh | MROW",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:52Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 3.628736e-05,
+        "co2": 0.409139984,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 5.896696e-06,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 100.0,
+        "geographic_score": 5,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "egrid",
+      "source_version": "2022",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "electricity_grid",
+        "classification_codes": [],
+        "sub_category": null
+      },
+      "denominator": {
+        "unit": "kwh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:eGRID:sub_NEWE:NEWE:2022:v1",
+      "factor_name": "electricity_grid | kwh | NEWE",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:52Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 2.2679600000000002e-05,
+        "co2": 0.24040376,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 2.7215520000000003e-06,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 100.0,
+        "geographic_score": 5,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "egrid",
+      "source_version": "2022",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "electricity_grid",
+        "classification_codes": [],
+        "sub_category": null
+      },
+      "denominator": {
+        "unit": "kwh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:eGRID:sub_NWPP:NWPP:2022:v1",
+      "factor_name": "electricity_grid | kwh | NWPP",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:52Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 2.721552e-05,
+        "co2": 0.29029888,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 4.989512e-06,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 100.0,
+        "geographic_score": 5,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "egrid",
+      "source_version": "2022",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "electricity_grid",
+        "classification_codes": [],
+        "sub_category": null
+      },
+      "denominator": {
+        "unit": "kwh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:eGRID:sub_NYCW:NYCW:2022:v1",
+      "factor_name": "electricity_grid | kwh | NYCW",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:52Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 1.814368e-05,
+        "co2": 0.24040376,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 1.8143680000000001e-06,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 100.0,
+        "geographic_score": 5,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "egrid",
+      "source_version": "2022",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "electricity_grid",
+        "classification_codes": [],
+        "sub_category": null
+      },
+      "denominator": {
+        "unit": "kwh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:eGRID:sub_NYLI:NYLI:2022:v1",
+      "factor_name": "electricity_grid | kwh | NYLI",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:52Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 4.5359200000000004e-05,
+        "co2": 0.55111428,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 6.3502880000000005e-06,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 100.0,
+        "geographic_score": 5,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "egrid",
+      "source_version": "2022",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "electricity_grid",
+        "classification_codes": [],
+        "sub_category": null
+      },
+      "denominator": {
+        "unit": "kwh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:eGRID:sub_NYUP:NYUP:2022:v1",
+      "factor_name": "electricity_grid | kwh | NYUP",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:52Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 9.07184e-06,
+        "co2": 0.117026736,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 9.071840000000001e-07,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 100.0,
+        "geographic_score": 5,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "egrid",
+      "source_version": "2022",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "electricity_grid",
+        "classification_codes": [],
+        "sub_category": null
+      },
+      "denominator": {
+        "unit": "kwh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:eGRID:sub_PRMS:PRMS:2022:v1",
+      "factor_name": "electricity_grid | kwh | PRMS",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:52Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 6.80388e-05,
+        "co2": 0.72801516,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 6.3502880000000005e-06,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 100.0,
+        "geographic_score": 5,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "egrid",
+      "source_version": "2022",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "electricity_grid",
+        "classification_codes": [],
+        "sub_category": null
+      },
+      "denominator": {
+        "unit": "kwh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:eGRID:sub_RFCE:RFCE:2022:v1",
+      "factor_name": "electricity_grid | kwh | RFCE",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:52Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 2.2679600000000002e-05,
+        "co2": 0.268072872,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 3.1751440000000003e-06,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 100.0,
+        "geographic_score": 5,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "egrid",
+      "source_version": "2022",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "electricity_grid",
+        "classification_codes": [],
+        "sub_category": null
+      },
+      "denominator": {
+        "unit": "kwh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:eGRID:sub_RFCM:RFCM:2022:v1",
+      "factor_name": "electricity_grid | kwh | RFCM",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:52Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 4.989512e-05,
+        "co2": 0.542496032,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 8.618248e-06,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 100.0,
+        "geographic_score": 5,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "egrid",
+      "source_version": "2022",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "electricity_grid",
+        "classification_codes": [],
+        "sub_category": null
+      },
+      "denominator": {
+        "unit": "kwh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:eGRID:sub_RFCW:RFCW:2022:v1",
+      "factor_name": "electricity_grid | kwh | RFCW",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:52Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 4.5359200000000004e-05,
+        "co2": 0.48534344,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 6.80388e-06,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 100.0,
+        "geographic_score": 5,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "egrid",
+      "source_version": "2022",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "electricity_grid",
+        "classification_codes": [],
+        "sub_category": null
+      },
+      "denominator": {
+        "unit": "kwh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:eGRID:sub_RMPA:RMPA:2022:v1",
+      "factor_name": "electricity_grid | kwh | RMPA",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:52Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 4.5359200000000004e-05,
+        "co2": 0.537960112,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 8.164656e-06,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 100.0,
+        "geographic_score": 5,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "egrid",
+      "source_version": "2022",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "electricity_grid",
+        "classification_codes": [],
+        "sub_category": null
+      },
+      "denominator": {
+        "unit": "kwh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:eGRID:sub_SPNO:SPNO:2022:v1",
+      "factor_name": "electricity_grid | kwh | SPNO",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:52Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 4.082328e-05,
+        "co2": 0.47173568,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 6.80388e-06,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 100.0,
+        "geographic_score": 5,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "egrid",
+      "source_version": "2022",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "electricity_grid",
+        "classification_codes": [],
+        "sub_category": null
+      },
+      "denominator": {
+        "unit": "kwh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:eGRID:sub_SPSO:SPSO:2022:v1",
+      "factor_name": "electricity_grid | kwh | SPSO",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:52Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 3.628736e-05,
+        "co2": 0.460849472,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 5.4431040000000006e-06,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 100.0,
+        "geographic_score": 5,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "egrid",
+      "source_version": "2022",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "electricity_grid",
+        "classification_codes": [],
+        "sub_category": null
+      },
+      "denominator": {
+        "unit": "kwh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:eGRID:sub_SRMV:SRMV:2022:v1",
+      "factor_name": "electricity_grid | kwh | SRMV",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:52Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 3.1751440000000005e-05,
+        "co2": 0.391903488,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 4.082328e-06,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 100.0,
+        "geographic_score": 5,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "egrid",
+      "source_version": "2022",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "electricity_grid",
+        "classification_codes": [],
+        "sub_category": null
+      },
+      "denominator": {
+        "unit": "kwh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:eGRID:sub_SRMW:SRMW:2022:v1",
+      "factor_name": "electricity_grid | kwh | SRMW",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:52Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 6.80388e-05,
+        "co2": 0.714860992,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 9.979024e-06,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 100.0,
+        "geographic_score": 5,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "egrid",
+      "source_version": "2022",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "electricity_grid",
+        "classification_codes": [],
+        "sub_category": null
+      },
+      "denominator": {
+        "unit": "kwh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:eGRID:sub_SRSO:SRSO:2022:v1",
+      "factor_name": "electricity_grid | kwh | SRSO",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:52Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 3.1751440000000005e-05,
+        "co2": 0.3855532,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 4.53592e-06,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 100.0,
+        "geographic_score": 5,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "egrid",
+      "source_version": "2022",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "electricity_grid",
+        "classification_codes": [],
+        "sub_category": null
+      },
+      "denominator": {
+        "unit": "kwh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:eGRID:sub_SRTV:SRTV:2022:v1",
+      "factor_name": "electricity_grid | kwh | SRTV",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:52Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 3.628736e-05,
+        "co2": 0.410954352,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 5.4431040000000006e-06,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 100.0,
+        "geographic_score": 5,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "egrid",
+      "source_version": "2022",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "electricity_grid",
+        "classification_codes": [],
+        "sub_category": null
+      },
+      "denominator": {
+        "unit": "kwh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:eGRID:sub_SRVC:SRVC:2022:v1",
+      "factor_name": "electricity_grid | kwh | SRVC",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:52Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 2.2679600000000002e-05,
+        "co2": 0.286216552,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 3.1751440000000003e-06,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 100.0,
+        "geographic_score": 5,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "egrid",
+      "source_version": "2022",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "electricity_grid",
+        "classification_codes": [],
+        "sub_category": null
+      },
+      "denominator": {
+        "unit": "kwh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:eGRID:state_AL:US-AL:2022:v1",
+      "factor_name": "electricity_grid | kwh | US-AL",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:52Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 2.721552e-05,
+        "co2": 0.313432072,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 3.6287360000000002e-06,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 92.0,
+        "geographic_score": 4,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "egrid",
+      "source_version": "2022",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "electricity_grid",
+        "classification_codes": [],
+        "sub_category": null
+      },
+      "denominator": {
+        "unit": "kwh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:eGRID:state_AK:US-AK:2022:v1",
+      "factor_name": "electricity_grid | kwh | US-AK",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:52Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 3.628736e-05,
+        "co2": 0.405057656,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 3.6287360000000002e-06,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 92.0,
+        "geographic_score": 4,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "egrid",
+      "source_version": "2022",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "electricity_grid",
+        "classification_codes": [],
+        "sub_category": null
+      },
+      "denominator": {
+        "unit": "kwh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:eGRID:state_AZ:US-AZ:2022:v1",
+      "factor_name": "electricity_grid | kwh | US-AZ",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:52Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 2.721552e-05,
+        "co2": 0.334297304,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 4.082328e-06,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 92.0,
+        "geographic_score": 4,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "egrid",
+      "source_version": "2022",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "electricity_grid",
+        "classification_codes": [],
+        "sub_category": null
+      },
+      "denominator": {
+        "unit": "kwh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:eGRID:state_AR:US-AR:2022:v1",
+      "factor_name": "electricity_grid | kwh | US-AR",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:52Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 3.628736e-05,
+        "co2": 0.46946772,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 6.3502880000000005e-06,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 92.0,
+        "geographic_score": 4,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "egrid",
+      "source_version": "2022",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "electricity_grid",
+        "classification_codes": [],
+        "sub_category": null
+      },
+      "denominator": {
+        "unit": "kwh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:eGRID:state_CA:US-CA:2022:v1",
+      "factor_name": "electricity_grid | kwh | US-CA",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:52Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 1.814368e-05,
+        "co2": 0.211373872,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 2.26796e-06,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 92.0,
+        "geographic_score": 4,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "egrid",
+      "source_version": "2022",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "electricity_grid",
+        "classification_codes": [],
+        "sub_category": null
+      },
+      "denominator": {
+        "unit": "kwh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:eGRID:state_CO:US-CO:2022:v1",
+      "factor_name": "electricity_grid | kwh | US-CO",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:52Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 4.5359200000000004e-05,
+        "co2": 0.557464568,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 8.164656e-06,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 92.0,
+        "geographic_score": 4,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "egrid",
+      "source_version": "2022",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "electricity_grid",
+        "classification_codes": [],
+        "sub_category": null
+      },
+      "denominator": {
+        "unit": "kwh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:eGRID:state_CT:US-CT:2022:v1",
+      "factor_name": "electricity_grid | kwh | US-CT",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:52Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 2.2679600000000002e-05,
+        "co2": 0.237228616,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 2.7215520000000003e-06,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 92.0,
+        "geographic_score": 4,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "egrid",
+      "source_version": "2022",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "electricity_grid",
+        "classification_codes": [],
+        "sub_category": null
+      },
+      "denominator": {
+        "unit": "kwh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:eGRID:state_DE:US-DE:2022:v1",
+      "factor_name": "electricity_grid | kwh | US-DE",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:52Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 3.1751440000000005e-05,
+        "co2": 0.389181936,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 4.53592e-06,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 92.0,
+        "geographic_score": 4,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "egrid",
+      "source_version": "2022",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "electricity_grid",
+        "classification_codes": [],
+        "sub_category": null
+      },
+      "denominator": {
+        "unit": "kwh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:eGRID:state_FL:US-FL:2022:v1",
+      "factor_name": "electricity_grid | kwh | US-FL",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:52Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 3.1751440000000005e-05,
+        "co2": 0.381470872,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 3.6287360000000002e-06,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 92.0,
+        "geographic_score": 4,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "egrid",
+      "source_version": "2022",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "electricity_grid",
+        "classification_codes": [],
+        "sub_category": null
+      },
+      "denominator": {
+        "unit": "kwh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:eGRID:state_GA:US-GA:2022:v1",
+      "factor_name": "electricity_grid | kwh | US-GA",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:52Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 2.721552e-05,
+        "co2": 0.347905064,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 4.082328e-06,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 92.0,
+        "geographic_score": 4,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "egrid",
+      "source_version": "2022",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "electricity_grid",
+        "classification_codes": [],
+        "sub_category": null
+      },
+      "denominator": {
+        "unit": "kwh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:eGRID:state_HI:US-HI:2022:v1",
+      "factor_name": "electricity_grid | kwh | US-HI",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:52Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 6.350288000000001e-05,
+        "co2": 0.688099064,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 6.3502880000000005e-06,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 92.0,
+        "geographic_score": 4,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "egrid",
+      "source_version": "2022",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "electricity_grid",
+        "classification_codes": [],
+        "sub_category": null
+      },
+      "denominator": {
+        "unit": "kwh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:eGRID:state_ID:US-ID:2022:v1",
+      "factor_name": "electricity_grid | kwh | US-ID",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:52Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 9.07184e-06,
+        "co2": 0.093439952,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 1.3607760000000001e-06,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 92.0,
+        "geographic_score": 4,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "egrid",
+      "source_version": "2022",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "electricity_grid",
+        "classification_codes": [],
+        "sub_category": null
+      },
+      "denominator": {
+        "unit": "kwh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:eGRID:state_IL:US-IL:2022:v1",
+      "factor_name": "electricity_grid | kwh | US-IL",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:52Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 2.721552e-05,
+        "co2": 0.309803336,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 4.082328e-06,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 92.0,
+        "geographic_score": 4,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "egrid",
+      "source_version": "2022",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "electricity_grid",
+        "classification_codes": [],
+        "sub_category": null
+      },
+      "denominator": {
+        "unit": "kwh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:eGRID:state_IN:US-IN:2022:v1",
+      "factor_name": "electricity_grid | kwh | US-IN",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:52Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 6.80388e-05,
+        "co2": 0.757045048,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 1.0886208000000001e-05,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 92.0,
+        "geographic_score": 4,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "egrid",
+      "source_version": "2022",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "electricity_grid",
+        "classification_codes": [],
+        "sub_category": null
+      },
+      "denominator": {
+        "unit": "kwh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:eGRID:state_IA:US-IA:2022:v1",
+      "factor_name": "electricity_grid | kwh | US-IA",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:52Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 3.1751440000000005e-05,
+        "co2": 0.387367568,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 5.4431040000000006e-06,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 92.0,
+        "geographic_score": 4,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "egrid",
+      "source_version": "2022",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "electricity_grid",
+        "classification_codes": [],
+        "sub_category": null
+      },
+      "denominator": {
+        "unit": "kwh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:eGRID:state_KS:US-KS:2022:v1",
+      "factor_name": "electricity_grid | kwh | US-KS",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:52Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 3.628736e-05,
+        "co2": 0.41276872,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 5.896696e-06,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 92.0,
+        "geographic_score": 4,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "egrid",
+      "source_version": "2022",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "electricity_grid",
+        "classification_codes": [],
+        "sub_category": null
+      },
+      "denominator": {
+        "unit": "kwh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:eGRID:state_KY:US-KY:2022:v1",
+      "factor_name": "electricity_grid | kwh | US-KY",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:52Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 7.257472e-05,
+        "co2": 0.797868328,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 1.1339800000000001e-05,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 92.0,
+        "geographic_score": 4,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "egrid",
+      "source_version": "2022",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "electricity_grid",
+        "classification_codes": [],
+        "sub_category": null
+      },
+      "denominator": {
+        "unit": "kwh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:eGRID:state_LA:US-LA:2022:v1",
+      "factor_name": "electricity_grid | kwh | US-LA",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:52Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 3.628736e-05,
+        "co2": 0.42410852,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 4.53592e-06,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 92.0,
+        "geographic_score": 4,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "egrid",
+      "source_version": "2022",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "electricity_grid",
+        "classification_codes": [],
+        "sub_category": null
+      },
+      "denominator": {
+        "unit": "kwh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:eGRID:state_ME:US-ME:2022:v1",
+      "factor_name": "electricity_grid | kwh | US-ME",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:52Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 9.07184e-06,
+        "co2": 0.089811216,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 9.071840000000001e-07,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 92.0,
+        "geographic_score": 4,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "egrid",
+      "source_version": "2022",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "electricity_grid",
+        "classification_codes": [],
+        "sub_category": null
+      },
+      "denominator": {
+        "unit": "kwh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:eGRID:state_MD:US-MD:2022:v1",
+      "factor_name": "electricity_grid | kwh | US-MD",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:52Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 2.2679600000000002e-05,
+        "co2": 0.258093848,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 2.7215520000000003e-06,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 92.0,
+        "geographic_score": 4,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "egrid",
+      "source_version": "2022",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "electricity_grid",
+        "classification_codes": [],
+        "sub_category": null
+      },
+      "denominator": {
+        "unit": "kwh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:eGRID:state_MA:US-MA:2022:v1",
+      "factor_name": "electricity_grid | kwh | US-MA",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:52Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 2.2679600000000002e-05,
+        "co2": 0.29029888,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 3.1751440000000003e-06,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 92.0,
+        "geographic_score": 4,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "egrid",
+      "source_version": "2022",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "electricity_grid",
+        "classification_codes": [],
+        "sub_category": null
+      },
+      "denominator": {
+        "unit": "kwh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:eGRID:state_MI:US-MI:2022:v1",
+      "factor_name": "electricity_grid | kwh | US-MI",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:52Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 4.5359200000000004e-05,
+        "co2": 0.518455656,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 8.164656e-06,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 92.0,
+        "geographic_score": 4,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "egrid",
+      "source_version": "2022",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "electricity_grid",
+        "classification_codes": [],
+        "sub_category": null
+      },
+      "denominator": {
+        "unit": "kwh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:eGRID:state_MN:US-MN:2022:v1",
+      "factor_name": "electricity_grid | kwh | US-MN",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:52Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 2.721552e-05,
+        "co2": 0.322957504,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 4.53592e-06,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 92.0,
+        "geographic_score": 4,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "egrid",
+      "source_version": "2022",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "electricity_grid",
+        "classification_codes": [],
+        "sub_category": null
+      },
+      "denominator": {
+        "unit": "kwh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:eGRID:state_MS:US-MS:2022:v1",
+      "factor_name": "electricity_grid | kwh | US-MS",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:52Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 2.721552e-05,
+        "co2": 0.354708944,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 3.6287360000000002e-06,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 92.0,
+        "geographic_score": 4,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "egrid",
+      "source_version": "2022",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "electricity_grid",
+        "classification_codes": [],
+        "sub_category": null
+      },
+      "denominator": {
+        "unit": "kwh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:eGRID:state_MO:US-MO:2022:v1",
+      "factor_name": "electricity_grid | kwh | US-MO",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:52Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 6.350288000000001e-05,
+        "co2": 0.686738288,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 9.979024e-06,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 92.0,
+        "geographic_score": 4,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "egrid",
+      "source_version": "2022",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "electricity_grid",
+        "classification_codes": [],
+        "sub_category": null
+      },
+      "denominator": {
+        "unit": "kwh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:eGRID:state_MT:US-MT:2022:v1",
+      "factor_name": "electricity_grid | kwh | US-MT",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:52Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 4.989512e-05,
+        "co2": 0.5329706,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 8.618248e-06,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 92.0,
+        "geographic_score": 4,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "egrid",
+      "source_version": "2022",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "electricity_grid",
+        "classification_codes": [],
+        "sub_category": null
+      },
+      "denominator": {
+        "unit": "kwh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:eGRID:state_NE:US-NE:2022:v1",
+      "factor_name": "electricity_grid | kwh | US-NE",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:52Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 4.5359200000000004e-05,
+        "co2": 0.531609824,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 7.711064000000001e-06,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 92.0,
+        "geographic_score": 4,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "egrid",
+      "source_version": "2022",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "electricity_grid",
+        "classification_codes": [],
+        "sub_category": null
+      },
+      "denominator": {
+        "unit": "kwh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:eGRID:state_NV:US-NV:2022:v1",
+      "factor_name": "electricity_grid | kwh | US-NV",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:52Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 2.2679600000000002e-05,
+        "co2": 0.3061746,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 3.6287360000000002e-06,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 92.0,
+        "geographic_score": 4,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "egrid",
+      "source_version": "2022",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "electricity_grid",
+        "classification_codes": [],
+        "sub_category": null
+      },
+      "denominator": {
+        "unit": "kwh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:eGRID:state_NH:US-NH:2022:v1",
+      "factor_name": "electricity_grid | kwh | US-NH",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:52Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 1.360776e-05,
+        "co2": 0.169189816,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 1.8143680000000001e-06,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 92.0,
+        "geographic_score": 4,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "egrid",
+      "source_version": "2022",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "electricity_grid",
+        "classification_codes": [],
+        "sub_category": null
+      },
+      "denominator": {
+        "unit": "kwh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:eGRID:state_NJ:US-NJ:2022:v1",
+      "factor_name": "electricity_grid | kwh | US-NJ",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:52Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 1.814368e-05,
+        "co2": 0.236775024,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 2.7215520000000003e-06,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 92.0,
+        "geographic_score": 4,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "egrid",
+      "source_version": "2022",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "electricity_grid",
+        "classification_codes": [],
+        "sub_category": null
+      },
+      "denominator": {
+        "unit": "kwh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:eGRID:state_NM:US-NM:2022:v1",
+      "factor_name": "electricity_grid | kwh | US-NM",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:52Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 4.5359200000000004e-05,
+        "co2": 0.542496032,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 7.711064000000001e-06,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 92.0,
+        "geographic_score": 4,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "egrid",
+      "source_version": "2022",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "electricity_grid",
+        "classification_codes": [],
+        "sub_category": null
+      },
+      "denominator": {
+        "unit": "kwh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:eGRID:state_NY:US-NY:2022:v1",
+      "factor_name": "electricity_grid | kwh | US-NY",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:52Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 1.814368e-05,
+        "co2": 0.211373872,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 2.26796e-06,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 92.0,
+        "geographic_score": 4,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "egrid",
+      "source_version": "2022",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "electricity_grid",
+        "classification_codes": [],
+        "sub_category": null
+      },
+      "denominator": {
+        "unit": "kwh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:eGRID:state_NC:US-NC:2022:v1",
+      "factor_name": "electricity_grid | kwh | US-NC",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:52Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 2.2679600000000002e-05,
+        "co2": 0.275783936,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 3.1751440000000003e-06,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 92.0,
+        "geographic_score": 4,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "egrid",
+      "source_version": "2022",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "electricity_grid",
+        "classification_codes": [],
+        "sub_category": null
+      },
+      "denominator": {
+        "unit": "kwh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:eGRID:state_ND:US-ND:2022:v1",
+      "factor_name": "electricity_grid | kwh | US-ND",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:52Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 6.350288000000001e-05,
+        "co2": 0.700346048,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 1.0432616e-05,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 92.0,
+        "geographic_score": 4,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "egrid",
+      "source_version": "2022",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "electricity_grid",
+        "classification_codes": [],
+        "sub_category": null
+      },
+      "denominator": {
+        "unit": "kwh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:eGRID:state_OH:US-OH:2022:v1",
+      "factor_name": "electricity_grid | kwh | US-OH",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:52Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 4.5359200000000004e-05,
+        "co2": 0.506208672,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 6.80388e-06,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 92.0,
+        "geographic_score": 4,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "egrid",
+      "source_version": "2022",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "electricity_grid",
+        "classification_codes": [],
+        "sub_category": null
+      },
+      "denominator": {
+        "unit": "kwh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:eGRID:state_OK:US-OK:2022:v1",
+      "factor_name": "electricity_grid | kwh | US-OK",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:52Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 3.1751440000000005e-05,
+        "co2": 0.369223888,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 4.082328e-06,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 92.0,
+        "geographic_score": 4,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "egrid",
+      "source_version": "2022",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "electricity_grid",
+        "classification_codes": [],
+        "sub_category": null
+      },
+      "denominator": {
+        "unit": "kwh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:eGRID:state_OR:US-OR:2022:v1",
+      "factor_name": "electricity_grid | kwh | US-OR",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:52Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 1.360776e-05,
+        "co2": 0.137891968,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 1.8143680000000001e-06,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 92.0,
+        "geographic_score": 4,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "egrid",
+      "source_version": "2022",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "electricity_grid",
+        "classification_codes": [],
+        "sub_category": null
+      },
+      "denominator": {
+        "unit": "kwh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:eGRID:state_PA:US-PA:2022:v1",
+      "factor_name": "electricity_grid | kwh | US-PA",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:52Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 2.721552e-05,
+        "co2": 0.325679056,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 4.53592e-06,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 92.0,
+        "geographic_score": 4,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "egrid",
+      "source_version": "2022",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "electricity_grid",
+        "classification_codes": [],
+        "sub_category": null
+      },
+      "denominator": {
+        "unit": "kwh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:eGRID:state_RI:US-RI:2022:v1",
+      "factor_name": "electricity_grid | kwh | US-RI",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:52Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 3.1751440000000005e-05,
+        "co2": 0.399614552,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 4.53592e-06,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 92.0,
+        "geographic_score": 4,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "egrid",
+      "source_version": "2022",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "electricity_grid",
+        "classification_codes": [],
+        "sub_category": null
+      },
+      "denominator": {
+        "unit": "kwh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:eGRID:state_SC:US-SC:2022:v1",
+      "factor_name": "electricity_grid | kwh | US-SC",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:52Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 1.814368e-05,
+        "co2": 0.23450706400000002,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 2.7215520000000003e-06,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 92.0,
+        "geographic_score": 4,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "egrid",
+      "source_version": "2022",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "electricity_grid",
+        "classification_codes": [],
+        "sub_category": null
+      },
+      "denominator": {
+        "unit": "kwh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:eGRID:state_SD:US-SD:2022:v1",
+      "factor_name": "electricity_grid | kwh | US-SD",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:52Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 2.2679600000000002e-05,
+        "co2": 0.245846864,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 3.6287360000000002e-06,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 92.0,
+        "geographic_score": 4,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "egrid",
+      "source_version": "2022",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "electricity_grid",
+        "classification_codes": [],
+        "sub_category": null
+      },
+      "denominator": {
+        "unit": "kwh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:eGRID:state_TN:US-TN:2022:v1",
+      "factor_name": "electricity_grid | kwh | US-TN",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:52Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 2.721552e-05,
+        "co2": 0.302092272,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 3.6287360000000002e-06,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 92.0,
+        "geographic_score": 4,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "egrid",
+      "source_version": "2022",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "electricity_grid",
+        "classification_codes": [],
+        "sub_category": null
+      },
+      "denominator": {
+        "unit": "kwh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:eGRID:state_TX:US-TX:2022:v1",
+      "factor_name": "electricity_grid | kwh | US-TX",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:52Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 3.1751440000000005e-05,
+        "co2": 0.386460384,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 4.082328e-06,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 92.0,
+        "geographic_score": 4,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "egrid",
+      "source_version": "2022",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "electricity_grid",
+        "classification_codes": [],
+        "sub_category": null
+      },
+      "denominator": {
+        "unit": "kwh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:eGRID:state_UT:US-UT:2022:v1",
+      "factor_name": "electricity_grid | kwh | US-UT",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:52Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 5.443104e-05,
+        "co2": 0.640471904,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 9.07184e-06,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 92.0,
+        "geographic_score": 4,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "egrid",
+      "source_version": "2022",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "electricity_grid",
+        "classification_codes": [],
+        "sub_category": null
+      },
+      "denominator": {
+        "unit": "kwh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:eGRID:state_VT:US-VT:2022:v1",
+      "factor_name": "electricity_grid | kwh | US-VT",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:52Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.006350288,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 92.0,
+        "geographic_score": 4,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "egrid",
+      "source_version": "2022",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "electricity_grid",
+        "classification_codes": [],
+        "sub_category": null
+      },
+      "denominator": {
+        "unit": "kwh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:eGRID:state_VA:US-VA:2022:v1",
+      "factor_name": "electricity_grid | kwh | US-VA",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:52Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 2.2679600000000002e-05,
+        "co2": 0.302999456,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 3.1751440000000003e-06,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 92.0,
+        "geographic_score": 4,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "egrid",
+      "source_version": "2022",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "electricity_grid",
+        "classification_codes": [],
+        "sub_category": null
+      },
+      "denominator": {
+        "unit": "kwh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:eGRID:state_WA:US-WA:2022:v1",
+      "factor_name": "electricity_grid | kwh | US-WA",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:52Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 9.07184e-06,
+        "co2": 0.097975872,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 1.3607760000000001e-06,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 92.0,
+        "geographic_score": 4,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "egrid",
+      "source_version": "2022",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "electricity_grid",
+        "classification_codes": [],
+        "sub_category": null
+      },
+      "denominator": {
+        "unit": "kwh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:eGRID:state_WV:US-WV:2022:v1",
+      "factor_name": "electricity_grid | kwh | US-WV",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:52Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 8.164656e-05,
+        "co2": 0.884050808,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 1.3154168000000001e-05,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 92.0,
+        "geographic_score": 4,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "egrid",
+      "source_version": "2022",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "electricity_grid",
+        "classification_codes": [],
+        "sub_category": null
+      },
+      "denominator": {
+        "unit": "kwh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:eGRID:state_WI:US-WI:2022:v1",
+      "factor_name": "electricity_grid | kwh | US-WI",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:52Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 4.5359200000000004e-05,
+        "co2": 0.49759042400000003,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 6.80388e-06,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 92.0,
+        "geographic_score": 4,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "egrid",
+      "source_version": "2022",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "electricity_grid",
+        "classification_codes": [],
+        "sub_category": null
+      },
+      "denominator": {
+        "unit": "kwh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:eGRID:state_WY:US-WY:2022:v1",
+      "factor_name": "electricity_grid | kwh | US-WY",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:52Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 8.164656e-05,
+        "co2": 0.892669056,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 1.360776e-05,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 92.0,
+        "geographic_score": 4,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "egrid",
+      "source_version": "2022",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "electricity_grid",
+        "classification_codes": [],
+        "sub_category": null
+      },
+      "denominator": {
+        "unit": "kwh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:eGRID:state_DC:US-DC:2022:v1",
+      "factor_name": "electricity_grid | kwh | US-DC",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:52Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 2.2679600000000002e-05,
+        "co2": 0.264897728,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 2.7215520000000003e-06,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 92.0,
+        "geographic_score": 4,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "egrid",
+      "source_version": "2022",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "electricity_grid",
+        "classification_codes": [],
+        "sub_category": null
+      },
+      "denominator": {
+        "unit": "kwh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:eGRID:national:US:2022:v1",
+      "factor_name": "electricity_grid | kwh | US",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "US",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:52Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 3.1751440000000005e-05,
+        "co2": 0.380563688,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 4.53592e-06,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 90.0,
+        "geographic_score": 3,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "egrid",
+      "source_version": "2022",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31"
+    }
+  ],
+  "ingested_at": "2026-04-23T18:26:52+00:00",
+  "license_class": "public_us_government",
+  "license_name": "US-Public-Domain",
+  "redistribution_class": "open",
+  "schema_version": "factor_record_v1",
+  "source_id": "egrid",
+  "source_version": "2022.1"
+}

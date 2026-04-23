@@ -1,0 +1,15 @@
+---
+# Per-tenant Enterprise deploy tightening. Retention forced to Enterprise
+# tier defaults; all SSO + SCIM endpoints enabled; OTel export kept on the
+# customer's collector only.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: factors-api-env
+data:
+  GL_FACTORS_FORCE_TIER: "enterprise"
+  GL_FACTORS_RETENTION_TIER_OVERRIDE: "enterprise"
+  GL_FACTORS_PRIVATE_DEPLOY: "true"
+  GL_FACTORS_FIPS_MODE: "true"
+  OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector.customer-obs.svc.cluster.local:4317"
+  OTEL_RESOURCE_ATTRIBUTES: "service.name=factors-api,service.namespace=greenlang,deployment.environment=enterprise,private.deploy=true"

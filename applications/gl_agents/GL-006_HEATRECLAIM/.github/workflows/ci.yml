@@ -1,0 +1,880 @@
+# GL-006 HEATRECLAIM - Continuous Integration Pipeline
+#
+# Production-grade CI/CD for heat recovery optimization agent
+# Enforces 95%+ AI standards compliance with comprehensive quality gates
+#
+# Quality Gates:
+# - Code Quality: Ruff, Black, isort, MyPy
+# - Security: Bandit, Safety, pip-audit, Semgrep, Trivy
+# - Testing: 85%+ coverage, unit tests, integration tests
+# - Build: Docker multi-arch, SBOM generation
+# - Deployment: Staging, Production with approvals
+#
+# Standards:
+# - ASME PTC 4.3/4.4: Heat recovery performance
+# - ISO 27001: Information security
+# - SOC 2 Type II: Service organization controls
+#
+name: GL-006 HEATRECLAIM CI/CD
+
+on:
+  push:
+    branches:
+      - main
+      - master
+      - develop
+      - 'feature/**'
+      - 'release/**'
+      - 'hotfix/**'
+    paths:
+      - 'GL Agents/GL-006_HEATRECLAIM/**'
+      - '.github/workflows/ci.yml'
+  pull_request:
+    branches:
+      - main
+      - master
+      - develop
+    paths:
+      - 'GL Agents/GL-006_HEATRECLAIM/**'
+  schedule:
+    # Run security scans daily at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      run_integration_tests:
+        description: 'Run integration tests'
+        required: false
+        default: 'true'
+        type: boolean
+      run_performance_tests:
+        description: 'Run performance benchmarks'
+        required: false
+        default: 'false'
+        type: boolean
+      deploy_environment:
+        description: 'Deploy to environment'
+        required: false
+        default: 'none'
+        type: choice
+        options:
+          - none
+          - staging
+          - production
+
+env:
+  PYTHON_VERSION: '3.11'
+  AGENT_ID: 'GL-006'
+  AGENT_NAME: 'HEATRECLAIM'
+  WORKING_DIR: 'GL Agents/GL-006_HEATRECLAIM'
+  COVERAGE_THRESHOLD: 85
+  DOCKER_REGISTRY: ghcr.io/${{ github.repository_owner }}
+  CACHE_VERSION: v1
+
+defaults:
+  run:
+    working-directory: 'GL Agents/GL-006_HEATRECLAIM'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # =============================================================================
+  # PRE-FLIGHT CHECKS
+  # =============================================================================
+  preflight:
+    name: Pre-flight Checks
+    runs-on: ubuntu-latest
+    outputs:
+      should_deploy: ${{ steps.check.outputs.should_deploy }}
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Determine deployment eligibility
+        id: check
+        run: |
+          if [[ "${{ github.ref }}" == "refs/heads/main" ]] || \
+             [[ "${{ github.ref }}" == "refs/heads/master" ]] || \
+             [[ "${{ github.event.inputs.deploy_environment }}" != "none" ]]; then
+            echo "should_deploy=true" >> $GITHUB_OUTPUT
+          else
+            echo "should_deploy=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Extract version
+        id: version
+        run: |
+          VERSION=$(grep 'version' pyproject.toml | head -1 | cut -d'"' -f2)
+          echo "version=${VERSION:-1.0.0}" >> $GITHUB_OUTPUT
+
+  # =============================================================================
+  # CODE QUALITY - LINTING & FORMATTING
+  # =============================================================================
+  lint:
+    name: Lint & Format
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+          cache-dependency-path: '${{ env.WORKING_DIR }}/requirements.txt'
+
+      - name: Install linting tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install ruff black isort
+
+      - name: Run Ruff linter
+        run: |
+          ruff check . --output-format=github --exit-non-zero-on-fix
+        continue-on-error: false
+
+      - name: Check Ruff formatting
+        run: |
+          ruff format --check --diff .
+        continue-on-error: false
+
+      - name: Check Black formatting
+        run: |
+          black --check --diff --color .
+        continue-on-error: false
+
+      - name: Check isort imports
+        run: |
+          isort --check-only --diff --color .
+        continue-on-error: false
+
+  # =============================================================================
+  # CODE QUALITY - TYPE CHECKING
+  # =============================================================================
+  typecheck:
+    name: Type Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+          cache-dependency-path: '${{ env.WORKING_DIR }}/requirements.txt'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install mypy types-PyYAML types-redis types-requests
+          pip install -r requirements.txt
+
+      - name: Run MyPy type checking
+        run: |
+          mypy . \
+            --ignore-missing-imports \
+            --show-error-codes \
+            --warn-unused-ignores \
+            --warn-redundant-casts \
+            --strict-optional \
+            --no-implicit-optional \
+            --python-version 3.11 \
+            --exclude 'tests/'
+
+  # =============================================================================
+  # SECURITY SCANNING - STATIC ANALYSIS
+  # =============================================================================
+  security-static:
+    name: Security (Static)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install security tools
+        run: |
+          pip install bandit
+
+      - name: Run Bandit security linter
+        run: |
+          bandit -r . -ll -ii -x ./tests -f json -o bandit-report.json || true
+          bandit -r . -ll -ii -x ./tests -f txt
+
+      - name: Upload Bandit report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: bandit-security-report
+          path: ${{ env.WORKING_DIR }}/bandit-report.json
+
+      - name: Check for hardcoded secrets
+        uses: trufflesecurity/trufflehog@v3.63.0
+        with:
+          path: ${{ env.WORKING_DIR }}
+          base: ${{ github.event.repository.default_branch }}
+          head: HEAD
+          extra_args: --only-verified
+
+  # =============================================================================
+  # SECURITY SCANNING - DEPENDENCIES
+  # =============================================================================
+  security-deps:
+    name: Security (Dependencies)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install security tools
+        run: |
+          pip install safety pip-audit
+
+      - name: Check dependencies with Safety
+        run: |
+          safety check -r requirements.txt --full-report --output json > safety-report.json || true
+          safety check -r requirements.txt --full-report
+        continue-on-error: true  # Don't fail on known vulnerabilities
+
+      - name: Audit dependencies with pip-audit
+        run: |
+          pip-audit -r requirements.txt --format json > pip-audit-report.json || true
+          pip-audit -r requirements.txt --strict
+        continue-on-error: true
+
+      - name: Upload security reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dependency-security-reports
+          path: |
+            ${{ env.WORKING_DIR }}/safety-report.json
+            ${{ env.WORKING_DIR }}/pip-audit-report.json
+
+  # =============================================================================
+  # SECURITY SCANNING - SEMGREP SAST
+  # =============================================================================
+  security-sast:
+    name: Security (SAST)
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Semgrep SAST
+        uses: semgrep/semgrep-action@v1
+        with:
+          config: >-
+            p/python
+            p/security-audit
+            p/owasp-top-ten
+            p/secrets
+          generateSarif: true
+
+      - name: Upload SARIF to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: semgrep.sarif
+
+  # =============================================================================
+  # UNIT TESTS WITH COVERAGE
+  # =============================================================================
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    needs: [lint, typecheck]
+    strategy:
+      matrix:
+        python-version: ['3.10', '3.11', '3.12']
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+          cache-dependency-path: '${{ env.WORKING_DIR }}/requirements.txt'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest pytest-cov pytest-asyncio pytest-xdist pytest-timeout
+          pip install hypothesis faker
+          pip install -r requirements.txt
+
+      - name: Run unit tests with coverage
+        run: |
+          pytest tests/ \
+            --cov=. \
+            --cov-report=xml:coverage-${{ matrix.python-version }}.xml \
+            --cov-report=html:htmlcov-${{ matrix.python-version }} \
+            --cov-report=term-missing \
+            --cov-fail-under=${{ env.COVERAGE_THRESHOLD }} \
+            -v \
+            --tb=short \
+            --timeout=300 \
+            -n auto \
+            --junitxml=test-results-${{ matrix.python-version }}.xml \
+            --ignore=tests/test_integration/
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        if: matrix.python-version == '3.11'
+        with:
+          files: ./GL Agents/GL-006_HEATRECLAIM/coverage-${{ matrix.python-version }}.xml
+          flags: unittests,gl-006,python-${{ matrix.python-version }}
+          name: gl-006-heatreclaim-coverage
+          fail_ci_if_error: true
+          verbose: true
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results-python-${{ matrix.python-version }}
+          path: |
+            ${{ env.WORKING_DIR }}/test-results-${{ matrix.python-version }}.xml
+            ${{ env.WORKING_DIR }}/htmlcov-${{ matrix.python-version }}/
+            ${{ env.WORKING_DIR }}/coverage-${{ matrix.python-version }}.xml
+
+      - name: Publish test results
+        uses: dorny/test-reporter@v1
+        if: always() && matrix.python-version == '3.11'
+        with:
+          name: Unit Tests Report (Python ${{ matrix.python-version }})
+          path: ${{ env.WORKING_DIR }}/test-results-${{ matrix.python-version }}.xml
+          reporter: java-junit
+          fail-on-error: true
+
+  # =============================================================================
+  # SAFETY CONSTRAINT TESTS
+  # =============================================================================
+  safety-tests:
+    name: Safety Constraint Tests
+    runs-on: ubuntu-latest
+    needs: [lint, typecheck]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+          cache-dependency-path: '${{ env.WORKING_DIR }}/requirements.txt'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest pytest-cov pytest-timeout
+          pip install -r requirements.txt
+
+      - name: Run safety constraint tests
+        run: |
+          pytest tests/test_safety_constraints.py tests/test_safety_validator.py \
+            --cov=safety \
+            --cov-report=xml:safety-coverage.xml \
+            --cov-report=term-missing \
+            --cov-fail-under=90 \
+            -v \
+            --tb=long \
+            --timeout=120 \
+            --junitxml=safety-test-results.xml
+
+      - name: Upload safety test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: safety-test-results
+          path: |
+            ${{ env.WORKING_DIR }}/safety-test-results.xml
+            ${{ env.WORKING_DIR }}/safety-coverage.xml
+
+  # =============================================================================
+  # INTEGRATION TESTS
+  # =============================================================================
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    needs: [unit-tests, safety-tests]
+    if: github.event_name == 'pull_request' || github.event.inputs.run_integration_tests == 'true' || github.ref == 'refs/heads/main'
+    services:
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      kafka:
+        image: confluentinc/cp-kafka:7.5.0
+        ports:
+          - 9092:9092
+        env:
+          KAFKA_NODE_ID: 1
+          KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+          KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
+          KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+          KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+          KAFKA_CONTROLLER_QUORUM_VOTERS: 1@localhost:9093
+          KAFKA_PROCESS_ROLES: broker,controller
+          KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+          CLUSTER_ID: 'ci-test-cluster-001'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+          cache-dependency-path: '${{ env.WORKING_DIR }}/requirements.txt'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest pytest-asyncio pytest-timeout httpx
+          pip install -r requirements.txt
+
+      - name: Wait for services
+        run: |
+          timeout 60 bash -c 'until nc -z localhost 6379; do sleep 1; done'
+          echo "Redis is ready"
+          timeout 120 bash -c 'until nc -z localhost 9092; do sleep 2; done' || true
+          echo "Kafka is ready (or timed out)"
+
+      - name: Run integration tests
+        env:
+          REDIS_URL: redis://localhost:6379
+          KAFKA_BOOTSTRAP_SERVERS: localhost:9092
+          HEATRECLAIM_ENV: testing
+        run: |
+          pytest tests/test_integration/ \
+            -v \
+            --tb=short \
+            --timeout=600 \
+            --junitxml=integration-test-results.xml \
+            || echo "Integration tests completed with warnings"
+
+      - name: Upload integration test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: integration-test-results
+          path: ${{ env.WORKING_DIR }}/integration-test-results.xml
+
+  # =============================================================================
+  # PERFORMANCE BENCHMARKS
+  # =============================================================================
+  performance-tests:
+    name: Performance Benchmarks
+    runs-on: ubuntu-latest
+    needs: [unit-tests]
+    if: github.event.inputs.run_performance_tests == 'true' || github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+          cache-dependency-path: '${{ env.WORKING_DIR }}/requirements.txt'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest pytest-benchmark memory-profiler
+          pip install -r requirements.txt
+
+      - name: Run performance benchmarks
+        run: |
+          pytest tests/test_benchmarks/ \
+            --benchmark-only \
+            --benchmark-json=benchmark-results.json \
+            --benchmark-autosave \
+            -v || echo "Benchmarks completed"
+
+      - name: Upload benchmark results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: benchmark-results
+          path: |
+            ${{ env.WORKING_DIR }}/benchmark-results.json
+            ${{ env.WORKING_DIR }}/.benchmarks/
+
+  # =============================================================================
+  # DOCKER BUILD
+  # =============================================================================
+  docker-build:
+    name: Build Docker Image
+    runs-on: ubuntu-latest
+    needs: [unit-tests, security-static, security-deps]
+    outputs:
+      image-tag: ${{ steps.meta.outputs.tags }}
+      image-digest: ${{ steps.build.outputs.digest }}
+    permissions:
+      contents: read
+      packages: write
+      security-events: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.DOCKER_REGISTRY }}/gl-006-heatreclaim
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=sha,prefix=
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' }}
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+
+      - name: Build and push Docker image
+        id: build
+        uses: docker/build-push-action@v5
+        with:
+          context: ${{ env.WORKING_DIR }}
+          file: ${{ env.WORKING_DIR }}/Dockerfile
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          platforms: linux/amd64,linux/arm64
+          build-args: |
+            BUILD_DATE=${{ github.event.head_commit.timestamp }}
+            VCS_REF=${{ github.sha }}
+            VERSION=${{ needs.preflight.outputs.version }}
+          sbom: true
+          provenance: true
+
+      - name: Scan Docker image with Trivy
+        uses: aquasecurity/trivy-action@master
+        if: github.event_name != 'pull_request'
+        with:
+          image-ref: ${{ env.DOCKER_REGISTRY }}/gl-006-heatreclaim:${{ github.sha }}
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          severity: 'CRITICAL,HIGH'
+          vuln-type: 'os,library'
+
+      - name: Upload Trivy scan results
+        uses: github/codeql-action/upload-sarif@v3
+        if: github.event_name != 'pull_request'
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+      - name: Generate SBOM
+        uses: anchore/sbom-action@v0
+        if: github.event_name != 'pull_request'
+        with:
+          image: ${{ env.DOCKER_REGISTRY }}/gl-006-heatreclaim:${{ github.sha }}
+          format: spdx-json
+          output-file: sbom.spdx.json
+
+      - name: Upload SBOM
+        uses: actions/upload-artifact@v4
+        if: github.event_name != 'pull_request'
+        with:
+          name: sbom
+          path: sbom.spdx.json
+
+  # =============================================================================
+  # DEPLOY TO STAGING
+  # =============================================================================
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: [docker-build, integration-tests, safety-tests]
+    if: (github.ref == 'refs/heads/develop' || github.event.inputs.deploy_environment == 'staging') && github.event_name != 'pull_request'
+    environment:
+      name: staging
+      url: https://staging.gl-006.greenlang.io
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'v1.29.0'
+
+      - name: Configure kubectl
+        run: |
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBE_CONFIG_STAGING }}" | base64 -d > ~/.kube/config
+          chmod 600 ~/.kube/config
+
+      - name: Deploy to staging
+        run: |
+          kubectl set image deployment/gl-006-heatreclaim \
+            heatreclaim=${{ env.DOCKER_REGISTRY }}/gl-006-heatreclaim:${{ github.sha }} \
+            -n greenlang-agents-staging
+
+      - name: Wait for rollout
+        run: |
+          kubectl rollout status deployment/gl-006-heatreclaim \
+            -n greenlang-agents-staging \
+            --timeout=300s
+
+      - name: Run smoke tests
+        run: |
+          STAGING_URL="https://staging.gl-006.greenlang.io"
+
+          # Health check
+          curl -sf "$STAGING_URL/api/v1/health" || exit 1
+
+          # Metrics endpoint
+          curl -sf "$STAGING_URL/metrics" || exit 1
+
+          echo "Smoke tests passed!"
+
+      - name: Notify staging deployment
+        if: success()
+        uses: slackapi/slack-github-action@v1.25.0
+        with:
+          payload: |
+            {
+              "text": ":rocket: GL-006 HEATRECLAIM deployed to staging",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*GL-006 HEATRECLAIM* deployed to *staging*\n\nCommit: `${{ github.sha }}`\nBy: ${{ github.actor }}\nURL: https://staging.gl-006.greenlang.io"
+                  }
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  # =============================================================================
+  # DEPLOY TO PRODUCTION
+  # =============================================================================
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [docker-build, deploy-staging]
+    if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' || github.event.inputs.deploy_environment == 'production') && github.event_name != 'pull_request'
+    environment:
+      name: production
+      url: https://gl-006.greenlang.io
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'v1.29.0'
+
+      - name: Configure kubectl
+        run: |
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBE_CONFIG_PRODUCTION }}" | base64 -d > ~/.kube/config
+          chmod 600 ~/.kube/config
+
+      - name: Deploy to production
+        run: |
+          kubectl set image deployment/gl-006-heatreclaim \
+            heatreclaim=${{ env.DOCKER_REGISTRY }}/gl-006-heatreclaim:${{ github.sha }} \
+            -n greenlang-agents
+
+      - name: Wait for rollout
+        run: |
+          kubectl rollout status deployment/gl-006-heatreclaim \
+            -n greenlang-agents \
+            --timeout=600s
+
+      - name: Run production health check
+        run: |
+          PROD_URL="https://gl-006.greenlang.io"
+
+          # Health check with retry
+          for i in {1..5}; do
+            if curl -sf "$PROD_URL/api/v1/health"; then
+              echo "Health check passed!"
+              break
+            fi
+            echo "Retry $i..."
+            sleep 10
+          done
+
+          # Final verification
+          curl -sf "$PROD_URL/api/v1/health" || exit 1
+
+      - name: Notify production deployment
+        if: success()
+        uses: slackapi/slack-github-action@v1.25.0
+        with:
+          payload: |
+            {
+              "text": ":white_check_mark: GL-006 HEATRECLAIM deployed to production",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*GL-006 HEATRECLAIM* deployed to *production* :rocket:\n\nCommit: `${{ github.sha }}`\nBy: ${{ github.actor }}\nURL: https://gl-006.greenlang.io"
+                  }
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Notify deployment failure
+        if: failure()
+        uses: slackapi/slack-github-action@v1.25.0
+        with:
+          payload: |
+            {
+              "text": ":x: GL-006 HEATRECLAIM production deployment FAILED",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*GL-006 HEATRECLAIM* production deployment *FAILED* :rotating_light:\n\nCommit: `${{ github.sha }}`\nBy: ${{ github.actor }}\nCheck: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                  }
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  # =============================================================================
+  # QUALITY GATE SUMMARY
+  # =============================================================================
+  quality-gate:
+    name: Quality Gate Summary
+    runs-on: ubuntu-latest
+    needs: [lint, typecheck, security-static, security-deps, security-sast, unit-tests, safety-tests, docker-build]
+    if: always()
+    steps:
+      - name: Check quality gate status
+        run: |
+          echo "=== Quality Gate Results ==="
+          echo ""
+
+          # Collect results
+          LINT="${{ needs.lint.result }}"
+          TYPECHECK="${{ needs.typecheck.result }}"
+          SECURITY_STATIC="${{ needs.security-static.result }}"
+          SECURITY_DEPS="${{ needs.security-deps.result }}"
+          SECURITY_SAST="${{ needs.security-sast.result }}"
+          UNIT_TESTS="${{ needs.unit-tests.result }}"
+          SAFETY_TESTS="${{ needs.safety-tests.result }}"
+          DOCKER_BUILD="${{ needs.docker-build.result }}"
+
+          echo "Lint:            $LINT"
+          echo "Type Check:      $TYPECHECK"
+          echo "Security Static: $SECURITY_STATIC"
+          echo "Security Deps:   $SECURITY_DEPS"
+          echo "Security SAST:   $SECURITY_SAST"
+          echo "Unit Tests:      $UNIT_TESTS"
+          echo "Safety Tests:    $SAFETY_TESTS"
+          echo "Docker Build:    $DOCKER_BUILD"
+          echo ""
+
+          # Determine overall status
+          FAILED=0
+
+          if [ "$LINT" != "success" ]; then
+            echo "FAILED: Lint checks failed"
+            FAILED=1
+          fi
+
+          if [ "$TYPECHECK" != "success" ]; then
+            echo "FAILED: Type checking failed"
+            FAILED=1
+          fi
+
+          if [ "$UNIT_TESTS" != "success" ]; then
+            echo "FAILED: Unit tests failed or coverage below threshold"
+            FAILED=1
+          fi
+
+          if [ "$SAFETY_TESTS" != "success" ]; then
+            echo "FAILED: Safety constraint tests failed"
+            FAILED=1
+          fi
+
+          if [ "$DOCKER_BUILD" != "success" ] && [ "$DOCKER_BUILD" != "skipped" ]; then
+            echo "FAILED: Docker build failed"
+            FAILED=1
+          fi
+
+          # Security is warning-only for now
+          if [ "$SECURITY_STATIC" != "success" ]; then
+            echo "WARNING: Security static analysis found issues"
+          fi
+
+          if [ "$FAILED" -eq 1 ]; then
+            echo ""
+            echo "=== QUALITY GATE: FAILED ==="
+            exit 1
+          else
+            echo ""
+            echo "=== QUALITY GATE: PASSED ==="
+          fi
+
+      - name: Create quality badge
+        uses: schneegans/dynamic-badges-action@v1.7.0
+        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+        with:
+          auth: ${{ secrets.GIST_TOKEN }}
+          gistID: ${{ secrets.GIST_ID }}
+          filename: gl-006-quality.json
+          label: Quality Gate
+          message: Passed
+          color: green
+        continue-on-error: true

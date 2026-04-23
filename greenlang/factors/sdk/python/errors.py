@@ -138,6 +138,55 @@ class EditionPinError(FactorsAPIError):
     """
 
 
+class FactorCannotResolveSafelyError(FactorsAPIError):
+    """Wave 2 — resolver refused to return a factor because no candidate
+    met the method-pack's safety floor.
+
+    Mapped from 422 responses whose body contains an
+    ``error_code == "factor_cannot_resolve_safely"`` discriminator. The
+    structured fields let client code branch on *why* the resolver bailed
+    without parsing message strings.
+
+    Attributes:
+        pack_id: Method pack that refused to resolve.
+        method_profile: Profile the caller asked for.
+        evaluated_candidates_count: How many candidates the cascade
+            considered before giving up.
+    """
+
+    def __init__(
+        self,
+        message: str,
+        *,
+        pack_id: Optional[str] = None,
+        method_profile: Optional[str] = None,
+        evaluated_candidates_count: Optional[int] = None,
+        status_code: Optional[int] = None,
+        response_body: Optional[Any] = None,
+        request_id: Optional[str] = None,
+        error_code: Optional[str] = "factor_cannot_resolve_safely",
+        context: Optional[Dict[str, Any]] = None,
+    ) -> None:
+        ctx: Dict[str, Any] = dict(context or {})
+        if pack_id is not None:
+            ctx["pack_id"] = pack_id
+        if method_profile is not None:
+            ctx["method_profile"] = method_profile
+        if evaluated_candidates_count is not None:
+            ctx["evaluated_candidates_count"] = evaluated_candidates_count
+        super().__init__(
+            message,
+            status_code=status_code,
+            response_body=response_body,
+            request_id=request_id,
+            error_code=error_code,
+            context=ctx,
+        )
+        self.pack_id = pack_id
+        self.method_profile = method_profile
+        self.evaluated_candidates_count = evaluated_candidates_count
+
+
 class EditionMismatchError(FactorsAPIError):
     """Client pinned edition X, server returned a different edition Y.
 
@@ -233,6 +282,27 @@ def error_from_response(
             request_id=request_id,
         )
     if status_code in (400, 422):
+        # Wave 2: the resolver can return 422 with a dedicated error_code
+        # when no candidate meets the safety floor. Surface it as a
+        # discriminable exception so callers can branch without message
+        # parsing.
+        if isinstance(body, dict):
+            err_code = body.get("error_code") or body.get("code")
+            if err_code == "factor_cannot_resolve_safely":
+                details = body.get("details")
+                if not isinstance(details, dict):
+                    details = body
+                return FactorCannotResolveSafelyError(
+                    msg,
+                    pack_id=details.get("pack_id"),
+                    method_profile=details.get("method_profile"),
+                    evaluated_candidates_count=details.get(
+                        "evaluated_candidates_count"
+                    ),
+                    status_code=status_code,
+                    response_body=body,
+                    request_id=request_id,
+                )
         return ValidationError(
             msg,
             status_code=status_code,
@@ -281,6 +351,7 @@ __all__ = [
     "LicensingGapError",
     "EntitlementError",
     "FactorNotFoundError",
+    "FactorCannotResolveSafelyError",
     "ValidationError",
     "RateLimitError",
     "EditionPinError",

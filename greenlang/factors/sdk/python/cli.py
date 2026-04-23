@@ -90,6 +90,22 @@ def cmd_get_factor(args: argparse.Namespace) -> int:
     return 0
 
 
+#: Visual length cap for CLI rendering of ``audit_text`` so short
+#: terminals stay readable. Longer narratives are truncated with an
+#: ellipsis; use ``--show-full-audit`` to print the whole thing.
+AUDIT_TEXT_PREVIEW_CHARS = 200
+
+
+def _truncate_audit_text(text: Optional[str], *, limit: int = AUDIT_TEXT_PREVIEW_CHARS) -> str:
+    """Return ``text`` trimmed to ``limit`` chars with an ellipsis when cut."""
+    if text is None:
+        return ""
+    t = str(text).strip()
+    if len(t) <= limit:
+        return t
+    return t[:limit].rstrip() + "..."
+
+
 def cmd_resolve(args: argparse.Namespace) -> int:
     req = ResolutionRequest(
         activity=args.activity,
@@ -99,7 +115,24 @@ def cmd_resolve(args: argparse.Namespace) -> int:
     )
     with _build_client(args) as client:
         resolved = client.resolve(req, alternates=args.alternates, edition=args.edition)
-    _print_json(_model_to_dict(resolved), pretty=args.pretty)
+
+    payload = _model_to_dict(resolved)
+
+    # Wave 2.5: surface ``audit_text`` at the top of the CLI output so
+    # operators can eyeball the narrative without digging through JSON.
+    # Truncated to 200 chars by default; ``--show-full-audit`` prints all.
+    audit_text = payload.get("audit_text")
+    audit_text_draft = payload.get("audit_text_draft")
+    if audit_text:
+        preview = (
+            audit_text
+            if getattr(args, "show_full_audit", False)
+            else _truncate_audit_text(audit_text)
+        )
+        banner = "[audit_text draft] " if audit_text_draft else "[audit_text] "
+        sys.stdout.write(banner + preview + "\n\n")
+
+    _print_json(payload, pretty=args.pretty)
     return 0
 
 
@@ -111,8 +144,84 @@ def cmd_explain(args: argparse.Namespace) -> int:
             alternates=args.alternates,
             edition=args.edition,
         )
-    _print_json(_model_to_dict(payload), pretty=args.pretty)
+    data = _model_to_dict(payload)
+
+    # Wave 2 pretty-print: group the 16 envelope fields so an operator can
+    # scan the resolve outcome without parsing a wall of JSON. Raw JSON is
+    # still printed afterwards for machine-consumable output.
+    if args.pretty:
+        sys.stdout.write(_format_explain_groups(data))
+        sys.stdout.write("\n")
+    _print_json(data, pretty=args.pretty)
     return 0
+
+
+# ---------------------------------------------------------------------------
+# Wave 2 /explain pretty-printer.
+# ---------------------------------------------------------------------------
+
+
+#: 16 envelope fields grouped for human-readable display on ``explain``.
+_EXPLAIN_FIELD_GROUPS: List[tuple] = [
+    (
+        "Chosen factor",
+        [
+            "chosen_factor",
+            "chosen_factor_id",
+            "factor_id",
+            "factor_version",
+            "release_version",
+        ],
+    ),
+    (
+        "Method",
+        [
+            "method_profile",
+            "method_pack_version",
+            "fallback_rank",
+            "step_label",
+            "why_chosen",
+        ],
+    ),
+    (
+        "Source & licensing",
+        ["source", "licensing"],
+    ),
+    (
+        "Quality & uncertainty",
+        ["quality", "quality_score", "uncertainty", "gas_breakdown"],
+    ),
+    (
+        "Status",
+        ["deprecation_status", "deprecation_replacement", "edition_id"],
+    ),
+    (
+        "Audit narrative (Wave 2.5)",
+        ["audit_text", "audit_text_draft"],
+    ),
+]
+
+
+def _format_explain_groups(payload: Dict[str, Any]) -> str:
+    """Render the 16 envelope fields as a grouped human-readable block."""
+    lines: List[str] = []
+    for heading, keys in _EXPLAIN_FIELD_GROUPS:
+        present = [(k, payload.get(k)) for k in keys if k in payload]
+        if not present:
+            continue
+        lines.append(f"== {heading} ==")
+        for k, v in present:
+            if k == "audit_text" and isinstance(v, str):
+                v = _truncate_audit_text(v)
+            if isinstance(v, (dict, list)):
+                rendered = json.dumps(v, indent=2, sort_keys=True, default=str)
+                # Indent nested JSON under the key name.
+                indented = "\n    ".join(rendered.splitlines())
+                lines.append(f"  {k}:\n    {indented}")
+            else:
+                lines.append(f"  {k}: {v}")
+        lines.append("")
+    return "\n".join(lines)
 
 
 def cmd_list_editions(args: argparse.Namespace) -> int:
@@ -128,17 +237,52 @@ def cmd_verify_receipt(args: argparse.Namespace) -> int:
     Reads a JSON response from a file (or stdin when path is ``-``) and
     runs :func:`verify_receipt`. Exits 0 on success, 3 on verification
     failure, 2 on usage / IO errors.
+
+    The optional ``--key`` flag points to a file containing the HMAC
+    secret (plain text) — convenient when the secret is managed via
+    Vault/K8s secrets and mounted as a file rather than passed on the
+    command line. For Ed25519 verification, the public key is fetched
+    from ``--jwks-url``; pointing ``--key`` at a local JWKS file is also
+    supported.
     """
     if args.response_path == "-":
         payload_text = sys.stdin.read()
     else:
         with open(args.response_path, "r", encoding="utf-8") as fh:
             payload_text = fh.read()
+
+    secret = args.secret
+    jwks_url = args.jwks_url
+    if getattr(args, "key", None):
+        key_path = args.key
+        try:
+            with open(key_path, "r", encoding="utf-8") as fh:
+                key_content = fh.read().strip()
+        except OSError as exc:
+            sys.stderr.write(f"could not read key file {key_path}: {exc}\n")
+            return 2
+        # If the file looks like a JWKS document, treat it as one; else
+        # treat it as a raw HMAC secret.
+        stripped = key_content.lstrip()
+        if stripped.startswith("{") and "keys" in stripped:
+            jwks_url = jwks_url or f"file://{os.path.abspath(key_path)}"
+            # verify_receipt only accepts http(s); for JWKS-from-file
+            # we inline-parse via a tiny helper rather than reimplement.
+            sys.stderr.write(
+                "verify-receipt --key pointing at a JWKS file is not yet "
+                "supported on the CLI; pass --jwks-url with a http(s) URL "
+                "or use the SDK programmatically.\n"
+            )
+            return 2
+        # Otherwise, treat as HMAC secret material.
+        if secret is None:
+            secret = key_content
+
     try:
         result = verify_receipt(
             payload_text,
-            secret=args.secret,
-            jwks_url=args.jwks_url,
+            secret=secret,
+            jwks_url=jwks_url,
             algorithm=args.algorithm,
         )
     except ReceiptVerificationError as exc:
@@ -209,6 +353,14 @@ def build_parser() -> argparse.ArgumentParser:
     p_resolve.add_argument("--jurisdiction", default=None)
     p_resolve.add_argument("--reporting-date", default=None)
     p_resolve.add_argument("--alternates", type=int, default=None)
+    p_resolve.add_argument(
+        "--show-full-audit",
+        action="store_true",
+        help=(
+            "Print the full ``audit_text`` narrative (default: truncate to "
+            f"{AUDIT_TEXT_PREVIEW_CHARS} chars with an ellipsis)."
+        ),
+    )
     _add_common(p_resolve)
     p_resolve.set_defaults(func=cmd_resolve)
 
@@ -243,6 +395,15 @@ def build_parser() -> argparse.ArgumentParser:
         "--secret",
         default=None,
         help="HMAC secret (defaults to GL_FACTORS_SIGNING_SECRET env var)",
+    )
+    p_verify.add_argument(
+        "--key",
+        default=None,
+        help=(
+            "Path to a file containing the HMAC secret (plain text). "
+            "Takes precedence over GL_FACTORS_SIGNING_SECRET but not over "
+            "--secret. Useful when keys are mounted as files by Vault/K8s."
+        ),
     )
     p_verify.add_argument(
         "--jwks-url",

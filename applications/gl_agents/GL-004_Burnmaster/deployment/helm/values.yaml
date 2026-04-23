@@ -1,0 +1,409 @@
+# GL-004 BURNMASTER - Helm Values
+# ================================
+# Default values for gl004-burnmaster deployment
+
+# Global settings
+global:
+  # Image pull secrets
+  imagePullSecrets: []
+  # Storage class
+  storageClass: ""
+
+# Namespace
+namespace: greenlang
+
+# Application settings
+nameOverride: ""
+fullnameOverride: ""
+
+# Image configuration
+image:
+  repository: gcr.io/greenlang/gl-004-burnmaster
+  pullPolicy: Always
+  tag: "1.0.0"
+
+# Replica count
+replicaCount: 3
+
+# Service Account
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+  automountServiceAccountToken: false
+
+# Pod annotations
+podAnnotations:
+  prometheus.io/scrape: "true"
+  prometheus.io/port: "9090"
+  prometheus.io/path: "/metrics"
+
+# Pod labels
+podLabels: {}
+
+# Pod security context
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  runAsGroup: 1000
+  fsGroup: 1000
+  seccompProfile:
+    type: RuntimeDefault
+
+# Container security context
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop:
+      - ALL
+
+# Service configuration
+service:
+  type: ClusterIP
+  http:
+    port: 80
+    targetPort: 8080
+  grpc:
+    port: 50051
+    targetPort: 50051
+  metrics:
+    port: 9090
+    targetPort: 9090
+
+# Ingress configuration
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+  hosts:
+    - host: api.burnmaster.greenlang.io
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: gl004-burnmaster-tls
+      hosts:
+        - api.burnmaster.greenlang.io
+
+# gRPC Ingress (separate for backend protocol)
+grpcIngress:
+  enabled: true
+  className: nginx
+  annotations:
+    nginx.ingress.kubernetes.io/backend-protocol: "GRPC"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+  hosts:
+    - host: grpc.burnmaster.greenlang.io
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: gl004-burnmaster-grpc-tls
+      hosts:
+        - grpc.burnmaster.greenlang.io
+
+# Resource configuration
+resources:
+  limits:
+    cpu: 2000m
+    memory: 4Gi
+    ephemeral-storage: 2Gi
+  requests:
+    cpu: 500m
+    memory: 1Gi
+    ephemeral-storage: 1Gi
+
+# Autoscaling
+autoscaling:
+  enabled: true
+  minReplicas: 3
+  maxReplicas: 20
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 80
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+    scaleUp:
+      stabilizationWindowSeconds: 0
+
+# Node selector
+nodeSelector: {}
+
+# Tolerations
+tolerations:
+  - key: "dedicated"
+    operator: "Equal"
+    value: "greenlang"
+    effect: "NoSchedule"
+
+# Affinity
+affinity:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: gl004-burnmaster
+          topologyKey: kubernetes.io/hostname
+
+# Topology spread constraints
+topologySpreadConstraints:
+  - maxSkew: 1
+    topologyKey: topology.kubernetes.io/zone
+    whenUnsatisfiable: ScheduleAnyway
+    labelSelector:
+      matchLabels:
+        app.kubernetes.io/name: gl004-burnmaster
+
+# Pod disruption budget
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 2
+
+# Liveness probe
+livenessProbe:
+  httpGet:
+    path: /health/live
+    port: http
+  initialDelaySeconds: 60
+  periodSeconds: 15
+  timeoutSeconds: 5
+  failureThreshold: 3
+
+# Readiness probe
+readinessProbe:
+  httpGet:
+    path: /health/ready
+    port: http
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+
+# Startup probe
+startupProbe:
+  httpGet:
+    path: /health/startup
+    port: http
+  initialDelaySeconds: 10
+  periodSeconds: 10
+  failureThreshold: 30
+
+# Environment variables
+env:
+  GL_ENVIRONMENT: production
+  GL_LOG_LEVEL: INFO
+  GL_LOG_FORMAT: json
+
+# Environment variables from ConfigMap
+envFrom:
+  - configMapRef:
+      name: gl004-burnmaster-config
+
+# Secrets environment variables
+secrets:
+  enabled: true
+  existingSecret: ""
+  # Values to create secret (if existingSecret is empty)
+  values:
+    DATABASE_URL: ""
+    REDIS_URL: ""
+    INFLUXDB_TOKEN: ""
+    API_SECRET_KEY: ""
+
+# External secrets (using External Secrets Operator)
+externalSecrets:
+  enabled: false
+  secretStoreRef:
+    name: aws-secrets-manager
+    kind: ClusterSecretStore
+  refreshInterval: 1h
+  data: []
+
+# Volumes
+volumes:
+  - name: tmp
+    emptyDir:
+      sizeLimit: 500Mi
+  - name: cache
+    emptyDir:
+      sizeLimit: 1Gi
+  - name: logs
+    emptyDir:
+      sizeLimit: 2Gi
+
+# Volume mounts
+volumeMounts:
+  - name: tmp
+    mountPath: /tmp
+  - name: cache
+    mountPath: /app/cache
+  - name: logs
+    mountPath: /app/logs
+
+# Init containers
+initContainers: []
+
+# Extra containers (sidecars)
+extraContainers: []
+
+# Network policies
+networkPolicy:
+  enabled: true
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ingress-nginx
+      ports:
+        - port: 8080
+        - port: 50051
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+      ports:
+        - port: 9090
+
+# Service Monitor for Prometheus
+serviceMonitor:
+  enabled: true
+  interval: 30s
+  scrapeTimeout: 10s
+  labels: {}
+  annotations: {}
+
+# Prometheus Rules
+prometheusRules:
+  enabled: true
+  rules:
+    - alert: GL004HighErrorRate
+      expr: rate(gl004_errors_total[5m]) > 0.1
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: High error rate detected
+        description: Error rate is above 10% for GL-004 BURNMASTER
+    - alert: GL004HighLatency
+      expr: histogram_quantile(0.95, rate(gl004_request_duration_seconds_bucket[5m])) > 2
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: High latency detected
+        description: P95 latency is above 2 seconds
+
+# =====================================================
+# Dependency Configurations
+# =====================================================
+
+# PostgreSQL configuration
+postgresql:
+  enabled: false  # Use external by default
+  auth:
+    username: burnmaster
+    database: burnmaster
+  primary:
+    persistence:
+      size: 50Gi
+  # External PostgreSQL config (when postgresql.enabled=false)
+  external:
+    host: postgres.databases.svc.cluster.local
+    port: 5432
+    database: burnmaster
+
+# Redis configuration
+redis:
+  enabled: false  # Use external by default
+  auth:
+    enabled: true
+  master:
+    persistence:
+      size: 10Gi
+  # External Redis config (when redis.enabled=false)
+  external:
+    host: redis.databases.svc.cluster.local
+    port: 6379
+
+# Kafka configuration
+kafka:
+  enabled: false  # Use external by default
+  # External Kafka config (when kafka.enabled=false)
+  external:
+    bootstrapServers: kafka.kafka.svc.cluster.local:9092
+
+# InfluxDB configuration
+influxdb:
+  enabled: false  # Use external by default
+  # External InfluxDB config (when influxdb.enabled=false)
+  external:
+    url: http://influxdb.databases.svc.cluster.local:8086
+    org: greenlang
+    bucket: burnmaster
+
+# Monitoring stack
+monitoring:
+  enabled: false  # Assumes monitoring stack is installed separately
+
+# =====================================================
+# Environment-specific overrides
+# =====================================================
+
+# Development environment
+development:
+  replicaCount: 1
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 2Gi
+    requests:
+      cpu: 250m
+      memory: 512Mi
+  autoscaling:
+    enabled: false
+  env:
+    GL_ENVIRONMENT: development
+    GL_LOG_LEVEL: DEBUG
+
+# Staging environment
+staging:
+  replicaCount: 2
+  resources:
+    limits:
+      cpu: 2000m
+      memory: 4Gi
+    requests:
+      cpu: 500m
+      memory: 1Gi
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 5
+  env:
+    GL_ENVIRONMENT: staging
+    GL_LOG_LEVEL: DEBUG
+
+# Production environment (default)
+production:
+  replicaCount: 3
+  resources:
+    limits:
+      cpu: 4000m
+      memory: 8Gi
+    requests:
+      cpu: 1000m
+      memory: 2Gi
+  autoscaling:
+    enabled: true
+    minReplicas: 3
+    maxReplicas: 20
+  env:
+    GL_ENVIRONMENT: production
+    GL_LOG_LEVEL: INFO

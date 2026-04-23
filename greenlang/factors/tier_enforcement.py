@@ -122,6 +122,59 @@ def factor_visible_for_tier(
     return False
 
 
+# ---------------------------------------------------------------------------
+# N7 invariant: Community tier is forbidden from oem_redistributable and
+# customer_private classes REGARDLESS of any per-caller grant. This is the
+# final line of defense behind the licensing guard — if a mis-wired
+# entitlement row accidentally carries a premium class for a community
+# caller, this check blocks it at the tier layer.
+# ---------------------------------------------------------------------------
+
+# Redistribution classes the Community tier is never allowed to see.
+COMMUNITY_FORBIDDEN_CLASSES = frozenset(
+    {
+        "oem_redistributable",
+        "oem-redistributable",
+        "customer_private",
+        "customer-private",
+        "private",
+    }
+)
+
+
+def tier_allows_class(tier: str, redistribution_class: str) -> bool:
+    """Return True iff ``tier`` is allowed to receive ``redistribution_class``.
+
+    **N7 invariant**: Community tier can NEVER receive ``customer_private``
+    or ``oem_redistributable`` factors, even if a per-caller grant (e.g. a
+    mis-wired entitlement row) would otherwise allow it.
+
+    This function is a pure, deterministic check used by
+    :class:`LicensingGuardMiddleware` as a final safety net behind the
+    class-rank grant logic.
+    """
+    if not redistribution_class:
+        return True
+    klass = redistribution_class.strip().lower()
+    t = (tier or "").strip().lower() or Tier.COMMUNITY.value
+    if t == Tier.COMMUNITY.value and klass in COMMUNITY_FORBIDDEN_CLASSES:
+        return False
+    return True
+
+
+def assert_tier_can_read_class(tier: str, redistribution_class: str) -> None:
+    """Raise PermissionError if the tier is forbidden from this class.
+
+    Thin wrapper around :func:`tier_allows_class` for call-sites that
+    prefer exceptions over booleans.
+    """
+    if not tier_allows_class(tier, redistribution_class):
+        raise PermissionError(
+            f"Tier {tier!r} is forbidden from reading factors of class "
+            f"{redistribution_class!r} (N7 open-core boundary)."
+        )
+
+
 def enforce_tier_on_request(
     user_context: Optional[Dict[str, Any]],
     *,

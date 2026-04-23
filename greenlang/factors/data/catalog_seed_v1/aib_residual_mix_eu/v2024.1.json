@@ -1,0 +1,5404 @@
+{
+  "attribution_text": "European Residual Mixes, Association of Issuing Bodies (annual).",
+  "factor_count": 70,
+  "factor_status_default": "certified",
+  "factors": [
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for Scope 2 market-based accounting when no supplier-specific contract (PPA, GO, REC) applies.",
+          "Residual mix already nets out allocated attributes (tracked via Guarantees of Origin)."
+        ],
+        "audit_text": "AIB European Residual Mix for AT, calendar year 2023. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "fallback_rank": 5,
+        "rationale": "AIB European Residual Mix for AT, calendar year 2023. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:AT:residual_mix:2023:aib-2024-v1",
+      "factor_name": "European residual mix \u2014 AT 2023",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "AT",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "AIB Residual Mix \u2014 redistribution with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.721976Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.526,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 92.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "aib_residual_mix_eu",
+      "source_version": "AIB-2024-v1",
+      "status": "certified",
+      "valid_from": "2023-01-01",
+      "valid_to": "2023-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for Scope 2 market-based accounting when no supplier-specific contract (PPA, GO, REC) applies.",
+          "Residual mix already nets out allocated attributes (tracked via Guarantees of Origin)."
+        ],
+        "audit_text": "AIB European Residual Mix for BE, calendar year 2023. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "fallback_rank": 5,
+        "rationale": "AIB European Residual Mix for BE, calendar year 2023. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:BE:residual_mix:2023:aib-2024-v1",
+      "factor_name": "European residual mix \u2014 BE 2023",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "BE",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "AIB Residual Mix \u2014 redistribution with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.721976Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.306,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 92.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "aib_residual_mix_eu",
+      "source_version": "AIB-2024-v1",
+      "status": "certified",
+      "valid_from": "2023-01-01",
+      "valid_to": "2023-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for Scope 2 market-based accounting when no supplier-specific contract (PPA, GO, REC) applies.",
+          "Residual mix already nets out allocated attributes (tracked via Guarantees of Origin)."
+        ],
+        "audit_text": "AIB European Residual Mix for BG, calendar year 2023. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "fallback_rank": 5,
+        "rationale": "AIB European Residual Mix for BG, calendar year 2023. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:BG:residual_mix:2023:aib-2024-v1",
+      "factor_name": "European residual mix \u2014 BG 2023",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "BG",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "AIB Residual Mix \u2014 redistribution with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.722970Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.578,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 92.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "aib_residual_mix_eu",
+      "source_version": "AIB-2024-v1",
+      "status": "certified",
+      "valid_from": "2023-01-01",
+      "valid_to": "2023-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for Scope 2 market-based accounting when no supplier-specific contract (PPA, GO, REC) applies.",
+          "Residual mix already nets out allocated attributes (tracked via Guarantees of Origin)."
+        ],
+        "audit_text": "AIB European Residual Mix for CH, calendar year 2023. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "fallback_rank": 5,
+        "rationale": "AIB European Residual Mix for CH, calendar year 2023. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:CH:residual_mix:2023:aib-2024-v1",
+      "factor_name": "European residual mix \u2014 CH 2023",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "CH",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "AIB Residual Mix \u2014 redistribution with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.722970Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.492,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 92.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "aib_residual_mix_eu",
+      "source_version": "AIB-2024-v1",
+      "status": "certified",
+      "valid_from": "2023-01-01",
+      "valid_to": "2023-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for Scope 2 market-based accounting when no supplier-specific contract (PPA, GO, REC) applies.",
+          "Residual mix already nets out allocated attributes (tracked via Guarantees of Origin)."
+        ],
+        "audit_text": "AIB European Residual Mix for CY, calendar year 2023. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "fallback_rank": 5,
+        "rationale": "AIB European Residual Mix for CY, calendar year 2023. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:CY:residual_mix:2023:aib-2024-v1",
+      "factor_name": "European residual mix \u2014 CY 2023",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "CY",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "AIB Residual Mix \u2014 redistribution with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.722970Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.785,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 92.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "aib_residual_mix_eu",
+      "source_version": "AIB-2024-v1",
+      "status": "certified",
+      "valid_from": "2023-01-01",
+      "valid_to": "2023-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for Scope 2 market-based accounting when no supplier-specific contract (PPA, GO, REC) applies.",
+          "Residual mix already nets out allocated attributes (tracked via Guarantees of Origin)."
+        ],
+        "audit_text": "AIB European Residual Mix for CZ, calendar year 2023. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "fallback_rank": 5,
+        "rationale": "AIB European Residual Mix for CZ, calendar year 2023. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:CZ:residual_mix:2023:aib-2024-v1",
+      "factor_name": "European residual mix \u2014 CZ 2023",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "CZ",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "AIB Residual Mix \u2014 redistribution with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.722970Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.651,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 92.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "aib_residual_mix_eu",
+      "source_version": "AIB-2024-v1",
+      "status": "certified",
+      "valid_from": "2023-01-01",
+      "valid_to": "2023-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for Scope 2 market-based accounting when no supplier-specific contract (PPA, GO, REC) applies.",
+          "Residual mix already nets out allocated attributes (tracked via Guarantees of Origin)."
+        ],
+        "audit_text": "AIB European Residual Mix for DE, calendar year 2023. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "fallback_rank": 5,
+        "rationale": "AIB European Residual Mix for DE, calendar year 2023. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:DE:residual_mix:2023:aib-2024-v1",
+      "factor_name": "European residual mix \u2014 DE 2023",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "DE",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "AIB Residual Mix \u2014 redistribution with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.723968Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.498,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 92.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "aib_residual_mix_eu",
+      "source_version": "AIB-2024-v1",
+      "status": "certified",
+      "valid_from": "2023-01-01",
+      "valid_to": "2023-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for Scope 2 market-based accounting when no supplier-specific contract (PPA, GO, REC) applies.",
+          "Residual mix already nets out allocated attributes (tracked via Guarantees of Origin)."
+        ],
+        "audit_text": "AIB European Residual Mix for DK, calendar year 2023. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "fallback_rank": 5,
+        "rationale": "AIB European Residual Mix for DK, calendar year 2023. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:DK:residual_mix:2023:aib-2024-v1",
+      "factor_name": "European residual mix \u2014 DK 2023",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "DK",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "AIB Residual Mix \u2014 redistribution with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.723968Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.304,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 92.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "aib_residual_mix_eu",
+      "source_version": "AIB-2024-v1",
+      "status": "certified",
+      "valid_from": "2023-01-01",
+      "valid_to": "2023-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for Scope 2 market-based accounting when no supplier-specific contract (PPA, GO, REC) applies.",
+          "Residual mix already nets out allocated attributes (tracked via Guarantees of Origin)."
+        ],
+        "audit_text": "AIB European Residual Mix for EE, calendar year 2023. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "fallback_rank": 5,
+        "rationale": "AIB European Residual Mix for EE, calendar year 2023. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:EE:residual_mix:2023:aib-2024-v1",
+      "factor_name": "European residual mix \u2014 EE 2023",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "EE",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "AIB Residual Mix \u2014 redistribution with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.723968Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.889,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 92.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "aib_residual_mix_eu",
+      "source_version": "AIB-2024-v1",
+      "status": "certified",
+      "valid_from": "2023-01-01",
+      "valid_to": "2023-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for Scope 2 market-based accounting when no supplier-specific contract (PPA, GO, REC) applies.",
+          "Residual mix already nets out allocated attributes (tracked via Guarantees of Origin)."
+        ],
+        "audit_text": "AIB European Residual Mix for ES, calendar year 2023. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "fallback_rank": 5,
+        "rationale": "AIB European Residual Mix for ES, calendar year 2023. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:ES:residual_mix:2023:aib-2024-v1",
+      "factor_name": "European residual mix \u2014 ES 2023",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "ES",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "AIB Residual Mix \u2014 redistribution with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.723968Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.278,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 92.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "aib_residual_mix_eu",
+      "source_version": "AIB-2024-v1",
+      "status": "certified",
+      "valid_from": "2023-01-01",
+      "valid_to": "2023-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for Scope 2 market-based accounting when no supplier-specific contract (PPA, GO, REC) applies.",
+          "Residual mix already nets out allocated attributes (tracked via Guarantees of Origin)."
+        ],
+        "audit_text": "AIB European Residual Mix for FI, calendar year 2023. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "fallback_rank": 5,
+        "rationale": "AIB European Residual Mix for FI, calendar year 2023. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:FI:residual_mix:2023:aib-2024-v1",
+      "factor_name": "European residual mix \u2014 FI 2023",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "FI",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "AIB Residual Mix \u2014 redistribution with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.724967Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.25,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 92.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "aib_residual_mix_eu",
+      "source_version": "AIB-2024-v1",
+      "status": "certified",
+      "valid_from": "2023-01-01",
+      "valid_to": "2023-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for Scope 2 market-based accounting when no supplier-specific contract (PPA, GO, REC) applies.",
+          "Residual mix already nets out allocated attributes (tracked via Guarantees of Origin)."
+        ],
+        "audit_text": "AIB European Residual Mix for FR, calendar year 2023. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "fallback_rank": 5,
+        "rationale": "AIB European Residual Mix for FR, calendar year 2023. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:FR:residual_mix:2023:aib-2024-v1",
+      "factor_name": "European residual mix \u2014 FR 2023",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "FR",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "AIB Residual Mix \u2014 redistribution with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.724967Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.092,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 92.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "aib_residual_mix_eu",
+      "source_version": "AIB-2024-v1",
+      "status": "certified",
+      "valid_from": "2023-01-01",
+      "valid_to": "2023-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for Scope 2 market-based accounting when no supplier-specific contract (PPA, GO, REC) applies.",
+          "Residual mix already nets out allocated attributes (tracked via Guarantees of Origin)."
+        ],
+        "audit_text": "AIB European Residual Mix for GR, calendar year 2023. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "fallback_rank": 5,
+        "rationale": "AIB European Residual Mix for GR, calendar year 2023. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:GR:residual_mix:2023:aib-2024-v1",
+      "factor_name": "European residual mix \u2014 GR 2023",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "GR",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "AIB Residual Mix \u2014 redistribution with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.724967Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.612,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 92.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "aib_residual_mix_eu",
+      "source_version": "AIB-2024-v1",
+      "status": "certified",
+      "valid_from": "2023-01-01",
+      "valid_to": "2023-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for Scope 2 market-based accounting when no supplier-specific contract (PPA, GO, REC) applies.",
+          "Residual mix already nets out allocated attributes (tracked via Guarantees of Origin)."
+        ],
+        "audit_text": "AIB European Residual Mix for HR, calendar year 2023. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "fallback_rank": 5,
+        "rationale": "AIB European Residual Mix for HR, calendar year 2023. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:HR:residual_mix:2023:aib-2024-v1",
+      "factor_name": "European residual mix \u2014 HR 2023",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "HR",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "AIB Residual Mix \u2014 redistribution with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.724967Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.398,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 92.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "aib_residual_mix_eu",
+      "source_version": "AIB-2024-v1",
+      "status": "certified",
+      "valid_from": "2023-01-01",
+      "valid_to": "2023-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for Scope 2 market-based accounting when no supplier-specific contract (PPA, GO, REC) applies.",
+          "Residual mix already nets out allocated attributes (tracked via Guarantees of Origin)."
+        ],
+        "audit_text": "AIB European Residual Mix for HU, calendar year 2023. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "fallback_rank": 5,
+        "rationale": "AIB European Residual Mix for HU, calendar year 2023. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:HU:residual_mix:2023:aib-2024-v1",
+      "factor_name": "European residual mix \u2014 HU 2023",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "HU",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "AIB Residual Mix \u2014 redistribution with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.725967Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.445,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 92.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "aib_residual_mix_eu",
+      "source_version": "AIB-2024-v1",
+      "status": "certified",
+      "valid_from": "2023-01-01",
+      "valid_to": "2023-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for Scope 2 market-based accounting when no supplier-specific contract (PPA, GO, REC) applies.",
+          "Residual mix already nets out allocated attributes (tracked via Guarantees of Origin)."
+        ],
+        "audit_text": "AIB European Residual Mix for IE, calendar year 2023. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "fallback_rank": 5,
+        "rationale": "AIB European Residual Mix for IE, calendar year 2023. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:IE:residual_mix:2023:aib-2024-v1",
+      "factor_name": "European residual mix \u2014 IE 2023",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "IE",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "AIB Residual Mix \u2014 redistribution with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.725967Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.398,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 92.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "aib_residual_mix_eu",
+      "source_version": "AIB-2024-v1",
+      "status": "certified",
+      "valid_from": "2023-01-01",
+      "valid_to": "2023-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for Scope 2 market-based accounting when no supplier-specific contract (PPA, GO, REC) applies.",
+          "Residual mix already nets out allocated attributes (tracked via Guarantees of Origin)."
+        ],
+        "audit_text": "AIB European Residual Mix for IS, calendar year 2023. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "fallback_rank": 5,
+        "rationale": "AIB European Residual Mix for IS, calendar year 2023. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:IS:residual_mix:2023:aib-2024-v1",
+      "factor_name": "European residual mix \u2014 IS 2023",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "IS",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "AIB Residual Mix \u2014 redistribution with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.725967Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.502,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 92.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "aib_residual_mix_eu",
+      "source_version": "AIB-2024-v1",
+      "status": "certified",
+      "valid_from": "2023-01-01",
+      "valid_to": "2023-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for Scope 2 market-based accounting when no supplier-specific contract (PPA, GO, REC) applies.",
+          "Residual mix already nets out allocated attributes (tracked via Guarantees of Origin)."
+        ],
+        "audit_text": "AIB European Residual Mix for IT, calendar year 2023. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "fallback_rank": 5,
+        "rationale": "AIB European Residual Mix for IT, calendar year 2023. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:IT:residual_mix:2023:aib-2024-v1",
+      "factor_name": "European residual mix \u2014 IT 2023",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "IT",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "AIB Residual Mix \u2014 redistribution with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.725967Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.432,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 92.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "aib_residual_mix_eu",
+      "source_version": "AIB-2024-v1",
+      "status": "certified",
+      "valid_from": "2023-01-01",
+      "valid_to": "2023-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for Scope 2 market-based accounting when no supplier-specific contract (PPA, GO, REC) applies.",
+          "Residual mix already nets out allocated attributes (tracked via Guarantees of Origin)."
+        ],
+        "audit_text": "AIB European Residual Mix for LT, calendar year 2023. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "fallback_rank": 5,
+        "rationale": "AIB European Residual Mix for LT, calendar year 2023. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:LT:residual_mix:2023:aib-2024-v1",
+      "factor_name": "European residual mix \u2014 LT 2023",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "LT",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "AIB Residual Mix \u2014 redistribution with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.726967Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.368,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 92.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "aib_residual_mix_eu",
+      "source_version": "AIB-2024-v1",
+      "status": "certified",
+      "valid_from": "2023-01-01",
+      "valid_to": "2023-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for Scope 2 market-based accounting when no supplier-specific contract (PPA, GO, REC) applies.",
+          "Residual mix already nets out allocated attributes (tracked via Guarantees of Origin)."
+        ],
+        "audit_text": "AIB European Residual Mix for LU, calendar year 2023. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "fallback_rank": 5,
+        "rationale": "AIB European Residual Mix for LU, calendar year 2023. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:LU:residual_mix:2023:aib-2024-v1",
+      "factor_name": "European residual mix \u2014 LU 2023",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "LU",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "AIB Residual Mix \u2014 redistribution with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.726967Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.51,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 92.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "aib_residual_mix_eu",
+      "source_version": "AIB-2024-v1",
+      "status": "certified",
+      "valid_from": "2023-01-01",
+      "valid_to": "2023-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for Scope 2 market-based accounting when no supplier-specific contract (PPA, GO, REC) applies.",
+          "Residual mix already nets out allocated attributes (tracked via Guarantees of Origin)."
+        ],
+        "audit_text": "AIB European Residual Mix for LV, calendar year 2023. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "fallback_rank": 5,
+        "rationale": "AIB European Residual Mix for LV, calendar year 2023. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:LV:residual_mix:2023:aib-2024-v1",
+      "factor_name": "European residual mix \u2014 LV 2023",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "LV",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "AIB Residual Mix \u2014 redistribution with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.726967Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.345,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 92.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "aib_residual_mix_eu",
+      "source_version": "AIB-2024-v1",
+      "status": "certified",
+      "valid_from": "2023-01-01",
+      "valid_to": "2023-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for Scope 2 market-based accounting when no supplier-specific contract (PPA, GO, REC) applies.",
+          "Residual mix already nets out allocated attributes (tracked via Guarantees of Origin)."
+        ],
+        "audit_text": "AIB European Residual Mix for NL, calendar year 2023. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "fallback_rank": 5,
+        "rationale": "AIB European Residual Mix for NL, calendar year 2023. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:NL:residual_mix:2023:aib-2024-v1",
+      "factor_name": "European residual mix \u2014 NL 2023",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "NL",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "AIB Residual Mix \u2014 redistribution with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.726967Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.489,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 92.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "aib_residual_mix_eu",
+      "source_version": "AIB-2024-v1",
+      "status": "certified",
+      "valid_from": "2023-01-01",
+      "valid_to": "2023-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for Scope 2 market-based accounting when no supplier-specific contract (PPA, GO, REC) applies.",
+          "Residual mix already nets out allocated attributes (tracked via Guarantees of Origin)."
+        ],
+        "audit_text": "AIB European Residual Mix for NO, calendar year 2023. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "fallback_rank": 5,
+        "rationale": "AIB European Residual Mix for NO, calendar year 2023. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:NO:residual_mix:2023:aib-2024-v1",
+      "factor_name": "European residual mix \u2014 NO 2023",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "NO",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "AIB Residual Mix \u2014 redistribution with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.727967Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.427,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 92.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "aib_residual_mix_eu",
+      "source_version": "AIB-2024-v1",
+      "status": "certified",
+      "valid_from": "2023-01-01",
+      "valid_to": "2023-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for Scope 2 market-based accounting when no supplier-specific contract (PPA, GO, REC) applies.",
+          "Residual mix already nets out allocated attributes (tracked via Guarantees of Origin)."
+        ],
+        "audit_text": "AIB European Residual Mix for PL, calendar year 2023. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "fallback_rank": 5,
+        "rationale": "AIB European Residual Mix for PL, calendar year 2023. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:PL:residual_mix:2023:aib-2024-v1",
+      "factor_name": "European residual mix \u2014 PL 2023",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "PL",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "AIB Residual Mix \u2014 redistribution with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.727967Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.724,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 92.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "aib_residual_mix_eu",
+      "source_version": "AIB-2024-v1",
+      "status": "certified",
+      "valid_from": "2023-01-01",
+      "valid_to": "2023-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for Scope 2 market-based accounting when no supplier-specific contract (PPA, GO, REC) applies.",
+          "Residual mix already nets out allocated attributes (tracked via Guarantees of Origin)."
+        ],
+        "audit_text": "AIB European Residual Mix for PT, calendar year 2023. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "fallback_rank": 5,
+        "rationale": "AIB European Residual Mix for PT, calendar year 2023. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:PT:residual_mix:2023:aib-2024-v1",
+      "factor_name": "European residual mix \u2014 PT 2023",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "PT",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "AIB Residual Mix \u2014 redistribution with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.727967Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.288,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 92.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "aib_residual_mix_eu",
+      "source_version": "AIB-2024-v1",
+      "status": "certified",
+      "valid_from": "2023-01-01",
+      "valid_to": "2023-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for Scope 2 market-based accounting when no supplier-specific contract (PPA, GO, REC) applies.",
+          "Residual mix already nets out allocated attributes (tracked via Guarantees of Origin)."
+        ],
+        "audit_text": "AIB European Residual Mix for RO, calendar year 2023. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "fallback_rank": 5,
+        "rationale": "AIB European Residual Mix for RO, calendar year 2023. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:RO:residual_mix:2023:aib-2024-v1",
+      "factor_name": "European residual mix \u2014 RO 2023",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "RO",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "AIB Residual Mix \u2014 redistribution with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.728970Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.43,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 92.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "aib_residual_mix_eu",
+      "source_version": "AIB-2024-v1",
+      "status": "certified",
+      "valid_from": "2023-01-01",
+      "valid_to": "2023-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for Scope 2 market-based accounting when no supplier-specific contract (PPA, GO, REC) applies.",
+          "Residual mix already nets out allocated attributes (tracked via Guarantees of Origin)."
+        ],
+        "audit_text": "AIB European Residual Mix for SE, calendar year 2023. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "fallback_rank": 5,
+        "rationale": "AIB European Residual Mix for SE, calendar year 2023. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:SE:residual_mix:2023:aib-2024-v1",
+      "factor_name": "European residual mix \u2014 SE 2023",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "SE",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "AIB Residual Mix \u2014 redistribution with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.728970Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.085,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 92.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "aib_residual_mix_eu",
+      "source_version": "AIB-2024-v1",
+      "status": "certified",
+      "valid_from": "2023-01-01",
+      "valid_to": "2023-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for Scope 2 market-based accounting when no supplier-specific contract (PPA, GO, REC) applies.",
+          "Residual mix already nets out allocated attributes (tracked via Guarantees of Origin)."
+        ],
+        "audit_text": "AIB European Residual Mix for SI, calendar year 2023. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "fallback_rank": 5,
+        "rationale": "AIB European Residual Mix for SI, calendar year 2023. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:SI:residual_mix:2023:aib-2024-v1",
+      "factor_name": "European residual mix \u2014 SI 2023",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "SI",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "AIB Residual Mix \u2014 redistribution with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.728970Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.412,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 92.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "aib_residual_mix_eu",
+      "source_version": "AIB-2024-v1",
+      "status": "certified",
+      "valid_from": "2023-01-01",
+      "valid_to": "2023-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for Scope 2 market-based accounting when no supplier-specific contract (PPA, GO, REC) applies.",
+          "Residual mix already nets out allocated attributes (tracked via Guarantees of Origin)."
+        ],
+        "audit_text": "AIB European Residual Mix for SK, calendar year 2023. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "fallback_rank": 5,
+        "rationale": "AIB European Residual Mix for SK, calendar year 2023. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:SK:residual_mix:2023:aib-2024-v1",
+      "factor_name": "European residual mix \u2014 SK 2023",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "SK",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "AIB Residual Mix \u2014 redistribution with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.728970Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.265,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 92.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "aib_residual_mix_eu",
+      "source_version": "AIB-2024-v1",
+      "status": "certified",
+      "valid_from": "2023-01-01",
+      "valid_to": "2023-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for Scope 2 market-based accounting when no supplier-specific contract (PPA, GO, REC) applies.",
+          "Residual mix already nets out allocated attributes (tracked via Guarantees of Origin)."
+        ],
+        "audit_text": "AIB European Residual Mix for AT, calendar year 2022. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "fallback_rank": 5,
+        "rationale": "AIB European Residual Mix for AT, calendar year 2022. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:AT:residual_mix:2022:aib-2023-v1",
+      "factor_name": "European residual mix \u2014 AT 2022",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "AT",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "AIB Residual Mix \u2014 redistribution with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.729969Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.54,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 92.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "aib_residual_mix_eu",
+      "source_version": "AIB-2023-v1",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "2022-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for Scope 2 market-based accounting when no supplier-specific contract (PPA, GO, REC) applies.",
+          "Residual mix already nets out allocated attributes (tracked via Guarantees of Origin)."
+        ],
+        "audit_text": "AIB European Residual Mix for BE, calendar year 2022. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "fallback_rank": 5,
+        "rationale": "AIB European Residual Mix for BE, calendar year 2022. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:BE:residual_mix:2022:aib-2023-v1",
+      "factor_name": "European residual mix \u2014 BE 2022",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "BE",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "AIB Residual Mix \u2014 redistribution with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.729969Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.32,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 92.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "aib_residual_mix_eu",
+      "source_version": "AIB-2023-v1",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "2022-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for Scope 2 market-based accounting when no supplier-specific contract (PPA, GO, REC) applies.",
+          "Residual mix already nets out allocated attributes (tracked via Guarantees of Origin)."
+        ],
+        "audit_text": "AIB European Residual Mix for BG, calendar year 2022. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "fallback_rank": 5,
+        "rationale": "AIB European Residual Mix for BG, calendar year 2022. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:BG:residual_mix:2022:aib-2023-v1",
+      "factor_name": "European residual mix \u2014 BG 2022",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "BG",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "AIB Residual Mix \u2014 redistribution with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.730969Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.59,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 92.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "aib_residual_mix_eu",
+      "source_version": "AIB-2023-v1",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "2022-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for Scope 2 market-based accounting when no supplier-specific contract (PPA, GO, REC) applies.",
+          "Residual mix already nets out allocated attributes (tracked via Guarantees of Origin)."
+        ],
+        "audit_text": "AIB European Residual Mix for DE, calendar year 2022. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "fallback_rank": 5,
+        "rationale": "AIB European Residual Mix for DE, calendar year 2022. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:DE:residual_mix:2022:aib-2023-v1",
+      "factor_name": "European residual mix \u2014 DE 2022",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "DE",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "AIB Residual Mix \u2014 redistribution with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.730969Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.51,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 92.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "aib_residual_mix_eu",
+      "source_version": "AIB-2023-v1",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "2022-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for Scope 2 market-based accounting when no supplier-specific contract (PPA, GO, REC) applies.",
+          "Residual mix already nets out allocated attributes (tracked via Guarantees of Origin)."
+        ],
+        "audit_text": "AIB European Residual Mix for FR, calendar year 2022. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "fallback_rank": 5,
+        "rationale": "AIB European Residual Mix for FR, calendar year 2022. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:FR:residual_mix:2022:aib-2023-v1",
+      "factor_name": "European residual mix \u2014 FR 2022",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "FR",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "AIB Residual Mix \u2014 redistribution with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.730969Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.098,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 92.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "aib_residual_mix_eu",
+      "source_version": "AIB-2023-v1",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "2022-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for Scope 2 market-based accounting when no supplier-specific contract (PPA, GO, REC) applies.",
+          "Residual mix already nets out allocated attributes (tracked via Guarantees of Origin)."
+        ],
+        "audit_text": "AIB European Residual Mix for NL, calendar year 2022. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "fallback_rank": 5,
+        "rationale": "AIB European Residual Mix for NL, calendar year 2022. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:NL:residual_mix:2022:aib-2023-v1",
+      "factor_name": "European residual mix \u2014 NL 2022",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "NL",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "AIB Residual Mix \u2014 redistribution with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.730969Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.5,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 92.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "aib_residual_mix_eu",
+      "source_version": "AIB-2023-v1",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "2022-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for Scope 2 market-based accounting when no supplier-specific contract (PPA, GO, REC) applies.",
+          "Residual mix already nets out allocated attributes (tracked via Guarantees of Origin)."
+        ],
+        "audit_text": "AIB European Residual Mix for SE, calendar year 2022. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "fallback_rank": 5,
+        "rationale": "AIB European Residual Mix for SE, calendar year 2022. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:SE:residual_mix:2022:aib-2023-v1",
+      "factor_name": "European residual mix \u2014 SE 2022",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "SE",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "AIB Residual Mix \u2014 redistribution with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.731975Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.088,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 92.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "aib_residual_mix_eu",
+      "source_version": "AIB-2023-v1",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "2022-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for Scope 2 market-based accounting when no supplier-specific contract (PPA, GO, REC) applies.",
+          "Residual mix already nets out allocated attributes (tracked via Guarantees of Origin)."
+        ],
+        "audit_text": "AIB European Residual Mix for CZ, calendar year 2022. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "fallback_rank": 5,
+        "rationale": "AIB European Residual Mix for CZ, calendar year 2022. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:CZ:residual_mix:2022:aib-2023-v1",
+      "factor_name": "European residual mix \u2014 CZ 2022",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "CZ",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "AIB Residual Mix \u2014 redistribution with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.731975Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.67,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 92.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "aib_residual_mix_eu",
+      "source_version": "AIB-2023-v1",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "2022-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for Scope 2 market-based accounting when no supplier-specific contract (PPA, GO, REC) applies.",
+          "Residual mix already nets out allocated attributes (tracked via Guarantees of Origin)."
+        ],
+        "audit_text": "AIB European Residual Mix for IT, calendar year 2022. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "fallback_rank": 5,
+        "rationale": "AIB European Residual Mix for IT, calendar year 2022. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:IT:residual_mix:2022:aib-2023-v1",
+      "factor_name": "European residual mix \u2014 IT 2022",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "IT",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "AIB Residual Mix \u2014 redistribution with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.731975Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.441,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 92.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "aib_residual_mix_eu",
+      "source_version": "AIB-2023-v1",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "2022-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for Scope 2 market-based accounting when no supplier-specific contract (PPA, GO, REC) applies.",
+          "Residual mix already nets out allocated attributes (tracked via Guarantees of Origin)."
+        ],
+        "audit_text": "AIB European Residual Mix for PL, calendar year 2022. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "fallback_rank": 5,
+        "rationale": "AIB European Residual Mix for PL, calendar year 2022. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:PL:residual_mix:2022:aib-2023-v1",
+      "factor_name": "European residual mix \u2014 PL 2022",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "PL",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "AIB Residual Mix \u2014 redistribution with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.731975Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.742,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 92.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "aib_residual_mix_eu",
+      "source_version": "AIB-2023-v1",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "2022-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for Scope 2 market-based accounting when no supplier-specific contract (PPA, GO, REC) applies.",
+          "Residual mix already nets out allocated attributes (tracked via Guarantees of Origin)."
+        ],
+        "audit_text": "AIB European Residual Mix for PT, calendar year 2022. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "fallback_rank": 5,
+        "rationale": "AIB European Residual Mix for PT, calendar year 2022. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:PT:residual_mix:2022:aib-2023-v1",
+      "factor_name": "European residual mix \u2014 PT 2022",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "PT",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "AIB Residual Mix \u2014 redistribution with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.732977Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.296,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 92.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "aib_residual_mix_eu",
+      "source_version": "AIB-2023-v1",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "2022-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for Scope 2 market-based accounting when no supplier-specific contract (PPA, GO, REC) applies.",
+          "Residual mix already nets out allocated attributes (tracked via Guarantees of Origin)."
+        ],
+        "audit_text": "AIB European Residual Mix for FI, calendar year 2022. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "fallback_rank": 5,
+        "rationale": "AIB European Residual Mix for FI, calendar year 2022. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:FI:residual_mix:2022:aib-2023-v1",
+      "factor_name": "European residual mix \u2014 FI 2022",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "FI",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "AIB Residual Mix \u2014 redistribution with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.732977Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.259,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 92.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "aib_residual_mix_eu",
+      "source_version": "AIB-2023-v1",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "2022-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for Scope 2 market-based accounting when no supplier-specific contract (PPA, GO, REC) applies.",
+          "Residual mix already nets out allocated attributes (tracked via Guarantees of Origin)."
+        ],
+        "audit_text": "AIB European Residual Mix for DK, calendar year 2022. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "fallback_rank": 5,
+        "rationale": "AIB European Residual Mix for DK, calendar year 2022. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:DK:residual_mix:2022:aib-2023-v1",
+      "factor_name": "European residual mix \u2014 DK 2022",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "DK",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "AIB Residual Mix \u2014 redistribution with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.732977Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.316,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 92.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "aib_residual_mix_eu",
+      "source_version": "AIB-2023-v1",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "2022-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for Scope 2 market-based accounting when no supplier-specific contract (PPA, GO, REC) applies.",
+          "Residual mix already nets out allocated attributes (tracked via Guarantees of Origin)."
+        ],
+        "audit_text": "AIB European Residual Mix for IE, calendar year 2022. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "fallback_rank": 5,
+        "rationale": "AIB European Residual Mix for IE, calendar year 2022. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:IE:residual_mix:2022:aib-2023-v1",
+      "factor_name": "European residual mix \u2014 IE 2022",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "IE",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "AIB Residual Mix \u2014 redistribution with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.733974Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.41,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 92.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "aib_residual_mix_eu",
+      "source_version": "AIB-2023-v1",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "2022-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for Scope 2 market-based accounting when no supplier-specific contract (PPA, GO, REC) applies.",
+          "Residual mix already nets out allocated attributes (tracked via Guarantees of Origin)."
+        ],
+        "audit_text": "AIB European Residual Mix for ES, calendar year 2022. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "fallback_rank": 5,
+        "rationale": "AIB European Residual Mix for ES, calendar year 2022. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:ES:residual_mix:2022:aib-2023-v1",
+      "factor_name": "European residual mix \u2014 ES 2022",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "ES",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "AIB Residual Mix \u2014 redistribution with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.733974Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.286,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 92.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "aib_residual_mix_eu",
+      "source_version": "AIB-2023-v1",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "2022-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for Scope 2 market-based accounting when no supplier-specific contract (PPA, GO, REC) applies.",
+          "Residual mix already nets out allocated attributes (tracked via Guarantees of Origin)."
+        ],
+        "audit_text": "AIB European Residual Mix for HU, calendar year 2022. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "fallback_rank": 5,
+        "rationale": "AIB European Residual Mix for HU, calendar year 2022. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:HU:residual_mix:2022:aib-2023-v1",
+      "factor_name": "European residual mix \u2014 HU 2022",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "HU",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "AIB Residual Mix \u2014 redistribution with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.733974Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.459,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 92.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "aib_residual_mix_eu",
+      "source_version": "AIB-2023-v1",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "2022-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for Scope 2 market-based accounting when no supplier-specific contract (PPA, GO, REC) applies.",
+          "Residual mix already nets out allocated attributes (tracked via Guarantees of Origin)."
+        ],
+        "audit_text": "AIB European Residual Mix for AT, calendar year 2021. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "fallback_rank": 5,
+        "rationale": "AIB European Residual Mix for AT, calendar year 2021. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:AT:residual_mix:2021:aib-2022-v1",
+      "factor_name": "European residual mix \u2014 AT 2021",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "AT",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "AIB Residual Mix \u2014 redistribution with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.733974Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.555,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 92.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "aib_residual_mix_eu",
+      "source_version": "AIB-2022-v1",
+      "status": "certified",
+      "valid_from": "2021-01-01",
+      "valid_to": "2021-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for Scope 2 market-based accounting when no supplier-specific contract (PPA, GO, REC) applies.",
+          "Residual mix already nets out allocated attributes (tracked via Guarantees of Origin)."
+        ],
+        "audit_text": "AIB European Residual Mix for BE, calendar year 2021. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "fallback_rank": 5,
+        "rationale": "AIB European Residual Mix for BE, calendar year 2021. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:BE:residual_mix:2021:aib-2022-v1",
+      "factor_name": "European residual mix \u2014 BE 2021",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "BE",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "AIB Residual Mix \u2014 redistribution with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.734972Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.335,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 92.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "aib_residual_mix_eu",
+      "source_version": "AIB-2022-v1",
+      "status": "certified",
+      "valid_from": "2021-01-01",
+      "valid_to": "2021-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for Scope 2 market-based accounting when no supplier-specific contract (PPA, GO, REC) applies.",
+          "Residual mix already nets out allocated attributes (tracked via Guarantees of Origin)."
+        ],
+        "audit_text": "AIB European Residual Mix for DE, calendar year 2021. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "fallback_rank": 5,
+        "rationale": "AIB European Residual Mix for DE, calendar year 2021. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:DE:residual_mix:2021:aib-2022-v1",
+      "factor_name": "European residual mix \u2014 DE 2021",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "DE",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "AIB Residual Mix \u2014 redistribution with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.734972Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.52,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 92.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "aib_residual_mix_eu",
+      "source_version": "AIB-2022-v1",
+      "status": "certified",
+      "valid_from": "2021-01-01",
+      "valid_to": "2021-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for Scope 2 market-based accounting when no supplier-specific contract (PPA, GO, REC) applies.",
+          "Residual mix already nets out allocated attributes (tracked via Guarantees of Origin)."
+        ],
+        "audit_text": "AIB European Residual Mix for FR, calendar year 2021. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "fallback_rank": 5,
+        "rationale": "AIB European Residual Mix for FR, calendar year 2021. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:FR:residual_mix:2021:aib-2022-v1",
+      "factor_name": "European residual mix \u2014 FR 2021",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "FR",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "AIB Residual Mix \u2014 redistribution with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.734972Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.102,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 92.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "aib_residual_mix_eu",
+      "source_version": "AIB-2022-v1",
+      "status": "certified",
+      "valid_from": "2021-01-01",
+      "valid_to": "2021-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for Scope 2 market-based accounting when no supplier-specific contract (PPA, GO, REC) applies.",
+          "Residual mix already nets out allocated attributes (tracked via Guarantees of Origin)."
+        ],
+        "audit_text": "AIB European Residual Mix for IT, calendar year 2021. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "fallback_rank": 5,
+        "rationale": "AIB European Residual Mix for IT, calendar year 2021. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:IT:residual_mix:2021:aib-2022-v1",
+      "factor_name": "European residual mix \u2014 IT 2021",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "IT",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "AIB Residual Mix \u2014 redistribution with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.735973Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.45,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 92.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "aib_residual_mix_eu",
+      "source_version": "AIB-2022-v1",
+      "status": "certified",
+      "valid_from": "2021-01-01",
+      "valid_to": "2021-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for Scope 2 market-based accounting when no supplier-specific contract (PPA, GO, REC) applies.",
+          "Residual mix already nets out allocated attributes (tracked via Guarantees of Origin)."
+        ],
+        "audit_text": "AIB European Residual Mix for NL, calendar year 2021. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "fallback_rank": 5,
+        "rationale": "AIB European Residual Mix for NL, calendar year 2021. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:NL:residual_mix:2021:aib-2022-v1",
+      "factor_name": "European residual mix \u2014 NL 2021",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "NL",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "AIB Residual Mix \u2014 redistribution with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.735973Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.515,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 92.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "aib_residual_mix_eu",
+      "source_version": "AIB-2022-v1",
+      "status": "certified",
+      "valid_from": "2021-01-01",
+      "valid_to": "2021-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for Scope 2 market-based accounting when no supplier-specific contract (PPA, GO, REC) applies.",
+          "Residual mix already nets out allocated attributes (tracked via Guarantees of Origin)."
+        ],
+        "audit_text": "AIB European Residual Mix for SE, calendar year 2021. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "fallback_rank": 5,
+        "rationale": "AIB European Residual Mix for SE, calendar year 2021. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:SE:residual_mix:2021:aib-2022-v1",
+      "factor_name": "European residual mix \u2014 SE 2021",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "SE",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "AIB Residual Mix \u2014 redistribution with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.735973Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.091,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 92.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "aib_residual_mix_eu",
+      "source_version": "AIB-2022-v1",
+      "status": "certified",
+      "valid_from": "2021-01-01",
+      "valid_to": "2021-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for Scope 2 market-based accounting when no supplier-specific contract (PPA, GO, REC) applies.",
+          "Residual mix already nets out allocated attributes (tracked via Guarantees of Origin)."
+        ],
+        "audit_text": "AIB European Residual Mix for PL, calendar year 2021. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "fallback_rank": 5,
+        "rationale": "AIB European Residual Mix for PL, calendar year 2021. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:PL:residual_mix:2021:aib-2022-v1",
+      "factor_name": "European residual mix \u2014 PL 2021",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "PL",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "AIB Residual Mix \u2014 redistribution with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.735973Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.76,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 92.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "aib_residual_mix_eu",
+      "source_version": "AIB-2022-v1",
+      "status": "certified",
+      "valid_from": "2021-01-01",
+      "valid_to": "2021-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for Scope 2 market-based accounting when no supplier-specific contract (PPA, GO, REC) applies.",
+          "Residual mix already nets out allocated attributes (tracked via Guarantees of Origin)."
+        ],
+        "audit_text": "AIB European Residual Mix for ES, calendar year 2021. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "fallback_rank": 5,
+        "rationale": "AIB European Residual Mix for ES, calendar year 2021. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:ES:residual_mix:2021:aib-2022-v1",
+      "factor_name": "European residual mix \u2014 ES 2021",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "ES",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "AIB Residual Mix \u2014 redistribution with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.736973Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.294,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 92.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "aib_residual_mix_eu",
+      "source_version": "AIB-2022-v1",
+      "status": "certified",
+      "valid_from": "2021-01-01",
+      "valid_to": "2021-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for Scope 2 market-based accounting when no supplier-specific contract (PPA, GO, REC) applies.",
+          "Residual mix already nets out allocated attributes (tracked via Guarantees of Origin)."
+        ],
+        "audit_text": "AIB European Residual Mix for CZ, calendar year 2021. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "fallback_rank": 5,
+        "rationale": "AIB European Residual Mix for CZ, calendar year 2021. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:CZ:residual_mix:2021:aib-2022-v1",
+      "factor_name": "European residual mix \u2014 CZ 2021",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "CZ",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "AIB Residual Mix \u2014 redistribution with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.736973Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.685,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 92.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "aib_residual_mix_eu",
+      "source_version": "AIB-2022-v1",
+      "status": "certified",
+      "valid_from": "2021-01-01",
+      "valid_to": "2021-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for Scope 2 market-based accounting when no supplier-specific contract (PPA, GO, REC) applies.",
+          "Residual mix already nets out allocated attributes (tracked via Guarantees of Origin)."
+        ],
+        "audit_text": "AIB European Residual Mix for PT, calendar year 2021. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "fallback_rank": 5,
+        "rationale": "AIB European Residual Mix for PT, calendar year 2021. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:PT:residual_mix:2021:aib-2022-v1",
+      "factor_name": "European residual mix \u2014 PT 2021",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "PT",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "AIB Residual Mix \u2014 redistribution with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.736973Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.305,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 92.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "aib_residual_mix_eu",
+      "source_version": "AIB-2022-v1",
+      "status": "certified",
+      "valid_from": "2021-01-01",
+      "valid_to": "2021-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for Scope 2 market-based accounting when no supplier-specific contract (PPA, GO, REC) applies.",
+          "Residual mix already nets out allocated attributes (tracked via Guarantees of Origin)."
+        ],
+        "audit_text": "AIB European Residual Mix for RO, calendar year 2021. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "fallback_rank": 5,
+        "rationale": "AIB European Residual Mix for RO, calendar year 2021. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:RO:residual_mix:2021:aib-2022-v1",
+      "factor_name": "European residual mix \u2014 RO 2021",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "RO",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "AIB Residual Mix \u2014 redistribution with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.736973Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.44,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 92.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "aib_residual_mix_eu",
+      "source_version": "AIB-2022-v1",
+      "status": "certified",
+      "valid_from": "2021-01-01",
+      "valid_to": "2021-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for Scope 2 market-based accounting when no supplier-specific contract (PPA, GO, REC) applies.",
+          "Residual mix already nets out allocated attributes (tracked via Guarantees of Origin)."
+        ],
+        "audit_text": "AIB European Residual Mix for SK, calendar year 2021. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "fallback_rank": 5,
+        "rationale": "AIB European Residual Mix for SK, calendar year 2021. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:SK:residual_mix:2021:aib-2022-v1",
+      "factor_name": "European residual mix \u2014 SK 2021",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "SK",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "AIB Residual Mix \u2014 redistribution with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.737972Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.272,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 92.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "aib_residual_mix_eu",
+      "source_version": "AIB-2022-v1",
+      "status": "certified",
+      "valid_from": "2021-01-01",
+      "valid_to": "2021-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for Scope 2 market-based accounting when no supplier-specific contract (PPA, GO, REC) applies.",
+          "Residual mix already nets out allocated attributes (tracked via Guarantees of Origin)."
+        ],
+        "audit_text": "AIB European Residual Mix for FI, calendar year 2021. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "fallback_rank": 5,
+        "rationale": "AIB European Residual Mix for FI, calendar year 2021. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:FI:residual_mix:2021:aib-2022-v1",
+      "factor_name": "European residual mix \u2014 FI 2021",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "FI",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "AIB Residual Mix \u2014 redistribution with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.737972Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.262,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 92.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "aib_residual_mix_eu",
+      "source_version": "AIB-2022-v1",
+      "status": "certified",
+      "valid_from": "2021-01-01",
+      "valid_to": "2021-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for Scope 2 market-based accounting when no supplier-specific contract (PPA, GO, REC) applies.",
+          "Residual mix already nets out allocated attributes (tracked via Guarantees of Origin)."
+        ],
+        "audit_text": "AIB European Residual Mix for GR, calendar year 2022. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "fallback_rank": 5,
+        "rationale": "AIB European Residual Mix for GR, calendar year 2022. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:GR:residual_mix:2022:aib-2023-v1",
+      "factor_name": "European residual mix \u2014 GR 2022",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "GR",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "AIB Residual Mix \u2014 redistribution with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.737972Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.63,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 92.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "aib_residual_mix_eu",
+      "source_version": "AIB-2023-v1",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "2022-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for Scope 2 market-based accounting when no supplier-specific contract (PPA, GO, REC) applies.",
+          "Residual mix already nets out allocated attributes (tracked via Guarantees of Origin)."
+        ],
+        "audit_text": "AIB European Residual Mix for GR, calendar year 2021. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "fallback_rank": 5,
+        "rationale": "AIB European Residual Mix for GR, calendar year 2021. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:GR:residual_mix:2021:aib-2022-v1",
+      "factor_name": "European residual mix \u2014 GR 2021",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "GR",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "AIB Residual Mix \u2014 redistribution with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.737972Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.648,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 92.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "aib_residual_mix_eu",
+      "source_version": "AIB-2022-v1",
+      "status": "certified",
+      "valid_from": "2021-01-01",
+      "valid_to": "2021-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for Scope 2 market-based accounting when no supplier-specific contract (PPA, GO, REC) applies.",
+          "Residual mix already nets out allocated attributes (tracked via Guarantees of Origin)."
+        ],
+        "audit_text": "AIB European Residual Mix for BG, calendar year 2021. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "fallback_rank": 5,
+        "rationale": "AIB European Residual Mix for BG, calendar year 2021. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:BG:residual_mix:2021:aib-2022-v1",
+      "factor_name": "European residual mix \u2014 BG 2021",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "BG",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "AIB Residual Mix \u2014 redistribution with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.738972Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.605,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 92.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "aib_residual_mix_eu",
+      "source_version": "AIB-2022-v1",
+      "status": "certified",
+      "valid_from": "2021-01-01",
+      "valid_to": "2021-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for Scope 2 market-based accounting when no supplier-specific contract (PPA, GO, REC) applies.",
+          "Residual mix already nets out allocated attributes (tracked via Guarantees of Origin)."
+        ],
+        "audit_text": "AIB European Residual Mix for HR, calendar year 2022. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "fallback_rank": 5,
+        "rationale": "AIB European Residual Mix for HR, calendar year 2022. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:HR:residual_mix:2022:aib-2023-v1",
+      "factor_name": "European residual mix \u2014 HR 2022",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "HR",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "AIB Residual Mix \u2014 redistribution with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.738972Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.41,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 92.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "aib_residual_mix_eu",
+      "source_version": "AIB-2023-v1",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "2022-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for Scope 2 market-based accounting when no supplier-specific contract (PPA, GO, REC) applies.",
+          "Residual mix already nets out allocated attributes (tracked via Guarantees of Origin)."
+        ],
+        "audit_text": "AIB European Residual Mix for HR, calendar year 2021. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "fallback_rank": 5,
+        "rationale": "AIB European Residual Mix for HR, calendar year 2021. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:HR:residual_mix:2021:aib-2022-v1",
+      "factor_name": "European residual mix \u2014 HR 2021",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "HR",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "AIB Residual Mix \u2014 redistribution with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.738972Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.422,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 92.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "aib_residual_mix_eu",
+      "source_version": "AIB-2022-v1",
+      "status": "certified",
+      "valid_from": "2021-01-01",
+      "valid_to": "2021-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for Scope 2 market-based accounting when no supplier-specific contract (PPA, GO, REC) applies.",
+          "Residual mix already nets out allocated attributes (tracked via Guarantees of Origin)."
+        ],
+        "audit_text": "AIB European Residual Mix for RO, calendar year 2022. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "fallback_rank": 5,
+        "rationale": "AIB European Residual Mix for RO, calendar year 2022. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:RO:residual_mix:2022:aib-2023-v1",
+      "factor_name": "European residual mix \u2014 RO 2022",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "RO",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "AIB Residual Mix \u2014 redistribution with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.738972Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.438,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 92.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "aib_residual_mix_eu",
+      "source_version": "AIB-2023-v1",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "2022-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for Scope 2 market-based accounting when no supplier-specific contract (PPA, GO, REC) applies.",
+          "Residual mix already nets out allocated attributes (tracked via Guarantees of Origin)."
+        ],
+        "audit_text": "AIB European Residual Mix for EE, calendar year 2022. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "fallback_rank": 5,
+        "rationale": "AIB European Residual Mix for EE, calendar year 2022. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:EE:residual_mix:2022:aib-2023-v1",
+      "factor_name": "European residual mix \u2014 EE 2022",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "EE",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "AIB Residual Mix \u2014 redistribution with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.739972Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.905,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 92.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "aib_residual_mix_eu",
+      "source_version": "AIB-2023-v1",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "2022-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for Scope 2 market-based accounting when no supplier-specific contract (PPA, GO, REC) applies.",
+          "Residual mix already nets out allocated attributes (tracked via Guarantees of Origin)."
+        ],
+        "audit_text": "AIB European Residual Mix for LT, calendar year 2022. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "fallback_rank": 5,
+        "rationale": "AIB European Residual Mix for LT, calendar year 2022. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:LT:residual_mix:2022:aib-2023-v1",
+      "factor_name": "European residual mix \u2014 LT 2022",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "LT",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "AIB Residual Mix \u2014 redistribution with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.739972Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.372,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 92.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "aib_residual_mix_eu",
+      "source_version": "AIB-2023-v1",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "2022-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for Scope 2 market-based accounting when no supplier-specific contract (PPA, GO, REC) applies.",
+          "Residual mix already nets out allocated attributes (tracked via Guarantees of Origin)."
+        ],
+        "audit_text": "AIB European Residual Mix for LV, calendar year 2022. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "fallback_rank": 5,
+        "rationale": "AIB European Residual Mix for LV, calendar year 2022. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:LV:residual_mix:2022:aib-2023-v1",
+      "factor_name": "European residual mix \u2014 LV 2022",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "LV",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "AIB Residual Mix \u2014 redistribution with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.739972Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.355,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 92.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "aib_residual_mix_eu",
+      "source_version": "AIB-2023-v1",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "2022-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for Scope 2 market-based accounting when no supplier-specific contract (PPA, GO, REC) applies.",
+          "Residual mix already nets out allocated attributes (tracked via Guarantees of Origin)."
+        ],
+        "audit_text": "AIB European Residual Mix for SK, calendar year 2022. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "fallback_rank": 5,
+        "rationale": "AIB European Residual Mix for SK, calendar year 2022. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:SK:residual_mix:2022:aib-2023-v1",
+      "factor_name": "European residual mix \u2014 SK 2022",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "SK",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "AIB Residual Mix \u2014 redistribution with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.739972Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.27,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 92.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "aib_residual_mix_eu",
+      "source_version": "AIB-2023-v1",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "2022-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for Scope 2 market-based accounting when no supplier-specific contract (PPA, GO, REC) applies.",
+          "Residual mix already nets out allocated attributes (tracked via Guarantees of Origin)."
+        ],
+        "audit_text": "AIB European Residual Mix for SI, calendar year 2022. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "fallback_rank": 5,
+        "rationale": "AIB European Residual Mix for SI, calendar year 2022. Applied per GHG Protocol Scope 2 Quality Criteria when no contractual instrument is available.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:SI:residual_mix:2022:aib-2023-v1",
+      "factor_name": "European residual mix \u2014 SI 2022",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "SI",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "AIB Residual Mix \u2014 redistribution with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.740973Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.42,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 92.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "aib_residual_mix_eu",
+      "source_version": "AIB-2023-v1",
+      "status": "certified",
+      "valid_from": "2022-01-01",
+      "valid_to": "2022-12-31"
+    }
+  ],
+  "ingested_at": "2026-04-23T18:26:52+00:00",
+  "license_class": "eu_publication",
+  "license_name": "AIB-Terms-Open",
+  "redistribution_class": "open",
+  "schema_version": "factor_record_v1",
+  "source_id": "aib_residual_mix_eu",
+  "source_version": "2024.1"
+}

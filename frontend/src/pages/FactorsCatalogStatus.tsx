@@ -34,6 +34,26 @@ import {
   type CoverageTotals,
 } from "../lib/api/factorsClient";
 
+interface CoverageMatrixCell extends CoverageTotals {
+  family: string;
+  jurisdiction: string;
+}
+
+/**
+ * W4-D: Derive a per-family × per-jurisdiction matrix from the coverage
+ * response. The v1.2.0 coverage endpoint SHOULD expose a `by_family_jurisdiction`
+ * array; when it doesn't (older server) we fall back to a one-column
+ * matrix keyed on "ALL" so the page still renders usefully.
+ */
+function deriveMatrix(resp: CoverageResponse): CoverageMatrixCell[] {
+  const extra = resp as unknown as { by_family_jurisdiction?: CoverageMatrixCell[] };
+  if (Array.isArray(extra.by_family_jurisdiction)) return extra.by_family_jurisdiction;
+  return (resp.by_family ?? []).map((f) => ({
+    ...f,
+    jurisdiction: "ALL",
+  }));
+}
+
 const REFRESH_MS = 60_000;
 
 function ProportionBar({ totals }: { totals: CoverageTotals }) {
@@ -287,6 +307,43 @@ export function FactorsCatalogStatus() {
           </CardContent>
         </Card>
       )}
+
+      {/* W4-D: per-family × per-jurisdiction matrix */}
+      <Card sx={{ mt: 3 }}>
+        <CardContent>
+          <Typography variant="h6" gutterBottom>
+            Family × Jurisdiction matrix
+          </Typography>
+          <TableContainer component={Paper} variant="outlined">
+            <Table size="small" aria-label="Family by jurisdiction coverage matrix">
+              <TableHead>
+                <TableRow>
+                  <TableCell>Family</TableCell>
+                  <TableCell>Jurisdiction</TableCell>
+                  <TableCell align="right">Certified</TableCell>
+                  <TableCell align="right">Preview</TableCell>
+                  <TableCell align="right">Connector-only</TableCell>
+                  <TableCell align="right">Total</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {deriveMatrix(summary).map((cell, idx) => (
+                  <TableRow key={`${cell.family}-${cell.jurisdiction}-${idx}`} hover>
+                    <TableCell><code>{cell.family}</code></TableCell>
+                    <TableCell><code>{cell.jurisdiction}</code></TableCell>
+                    <TableCell align="right">{cell.certified.toLocaleString()}</TableCell>
+                    <TableCell align="right">{cell.preview.toLocaleString()}</TableCell>
+                    <TableCell align="right">{cell.connector_only.toLocaleString()}</TableCell>
+                    <TableCell align="right">
+                      <strong>{cell.all.toLocaleString()}</strong>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </CardContent>
+      </Card>
 
       <Alert severity="info" sx={{ mt: 3 }}>
         <Typography variant="body2">

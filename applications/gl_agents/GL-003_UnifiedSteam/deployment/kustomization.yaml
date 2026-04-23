@@ -1,0 +1,143 @@
+# =============================================================================
+# GL-003 UNIFIEDSTEAM - Kustomization
+# Steam System Optimization Agent
+# =============================================================================
+# Kustomize configuration for managing Kubernetes manifests.
+# Use: kubectl apply -k deployment/
+#
+# Kustomize allows:
+# - Base + overlay pattern for multi-environment deployments
+# - ConfigMap and Secret generation
+# - Image tag management
+# - Label and annotation injection
+# - Resource patching
+# =============================================================================
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# =============================================================================
+# Metadata
+# =============================================================================
+namespace: greenlang-steam
+
+# =============================================================================
+# Common Labels (applied to all resources)
+# =============================================================================
+commonLabels:
+  app.kubernetes.io/name: unifiedsteam
+  app.kubernetes.io/instance: unifiedsteam-production
+  app.kubernetes.io/version: "1.0.0"
+  app.kubernetes.io/component: steam-optimizer
+  app.kubernetes.io/part-of: greenlang
+  app.kubernetes.io/managed-by: kustomize
+  agent-id: gl-003
+  environment: production
+
+# =============================================================================
+# Common Annotations (applied to all resources)
+# =============================================================================
+commonAnnotations:
+  app.greenlang.io/agent: "gl-003"
+  app.greenlang.io/team: "steam-optimization"
+  prometheus.io/scrape: "true"
+
+# =============================================================================
+# Resources to Include
+# =============================================================================
+resources:
+  # Namespace and RBAC
+  - namespace.yaml
+
+  # Core application resources
+  - deployment.yaml
+  - service.yaml
+  - configmap.yaml
+  - secrets.yaml
+
+  # Autoscaling and availability
+  - hpa.yaml
+  - pdb.yaml
+
+  # Network security
+  - networkpolicy.yaml
+
+# =============================================================================
+# Image Configuration
+# =============================================================================
+images:
+  - name: greenlang/gl-003-unifiedsteam
+    newName: ghcr.io/greenlang/gl-003-unifiedsteam
+    newTag: "1.0.0"
+  - name: busybox
+    newTag: "1.36"
+
+# =============================================================================
+# ConfigMap Generator
+# =============================================================================
+# Generate ConfigMaps from files or literals
+configMapGenerator:
+  - name: unifiedsteam-app-config
+    files:
+      # Add additional config files here
+      # - config/application.yaml
+    literals:
+      - LOG_LEVEL=INFO
+      - ENVIRONMENT=production
+    options:
+      disableNameSuffixHash: true
+
+# =============================================================================
+# Secret Generator
+# =============================================================================
+# Generate Secrets from files or literals
+# Note: In production, use external secret management (Vault, AWS SM, etc.)
+# secretGenerator:
+#   - name: unifiedsteam-generated-secrets
+#     literals:
+#       - API_KEY=placeholder
+#     options:
+#       disableNameSuffixHash: true
+
+# =============================================================================
+# Patches - Strategic Merge
+# =============================================================================
+# patches:
+#   - path: patches/deployment-patch.yaml
+#     target:
+#       kind: Deployment
+#       name: unifiedsteam
+
+# =============================================================================
+# Replicas Override
+# =============================================================================
+replicas:
+  - name: unifiedsteam
+    count: 3
+
+# =============================================================================
+# Resource Name Prefix (optional)
+# =============================================================================
+# namePrefix: gl003-
+
+# =============================================================================
+# Resource Name Suffix (optional)
+# =============================================================================
+# nameSuffix: -production
+
+# =============================================================================
+# Transformers
+# =============================================================================
+# Add custom transformers here
+
+# =============================================================================
+# Generators
+# =============================================================================
+# Add custom generators here
+
+# =============================================================================
+# Components (Kustomize Components)
+# =============================================================================
+# components:
+#   - ../components/monitoring
+#   - ../components/tracing

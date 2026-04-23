@@ -1,0 +1,51 @@
+{# ---
+approved: false
+approved_by: null
+approved_at: null
+methodology_lead: null
+--- #}
+Factor {{ factor.chosen_factor.name }} ({{ factor.chosen_factor.id }}) was
+selected under the EU Policy method profile ({{ factor.method_pack }}).
+Source: {{ factor.source.authority }} dataset version
+{{ factor.source.version }}, vintage {{ factor.source.vintage }}.
+Verification: {{ factor.verification_status }}. GWP basis:
+{{ factor.gwp_basis }}. The resolver reached this factor at fallback tier
+{{ factor.fallback_rank }} of 7 ({{ factor.step_label }}).
+
+{% if factor.pack_id == "eu_cbam" -%}
+CBAM embedded emissions for CN code {{ factor.cn_code }} per Regulation
+(EU) 2023/956 Annex III (direct + indirect emissions methodology).
+Functional unit: 1 tonne of the CN-coded good. Biogenic CO2 is excluded
+from the CBAM value per Article 7(2). The pack enforces a CBAM-specific
+cannot-resolve-safely contract so silent fallback to a global default is
+blocked.
+{% if factor.fallback_rank and factor.fallback_rank > 1 -%}
+
+**Article 4(2) fallback notice.** Primary operator data was not
+available, so an EU default value has been applied at fallback tier
+{{ factor.fallback_rank }}. Justification:
+{{ factor.article_4_2_justification }}. A CBAM surcharge may apply per
+the definitive-regime implementing regulation.
+{%- endif %}
+
+{%- elif factor.pack_id == "eu_dpp" -%}
+Digital Product Passport entry for product {{ factor.product_id }} per
+Regulation (EU) 2024/1781 (ESPR). LCA boundary:
+{{ factor.boundary }}. Biogenic CO2 reported separately. Per-product
+delegated acts have not yet landed for every ESPR category, so the
+inclusion list is intentionally open until the Commission publishes
+category-specific DPP requirements.
+
+{%- elif factor.pack_id == "eu_battery" -%}
+EU Battery Regulation 2023/1542 Article 7 carbon-footprint declaration.
+Battery class: {{ factor.battery_class }} (capacity
+{{ factor.battery_energy_kwh }} kWh, weight {{ factor.battery_weight_kg }}
+kg). Enforcement date: {{ factor.enforcement_date }}. DPP entry:
+{{ factor.dpp_id }}. Functional unit: 1 kWh of energy delivered over the
+battery service life per the harmonised CFP rules.
+{%- endif %}
+
+{% if factor.fallback_trace -%}
+Fallback trace:
+{%- for step in factor.fallback_trace %} {{ step.rank }}->{{ step.label }}{% if not loop.last %};{% endif %}{% endfor %}.
+{%- endif %}

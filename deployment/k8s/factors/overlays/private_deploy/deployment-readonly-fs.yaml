@@ -1,0 +1,36 @@
+---
+# Tighten the pod security profile for private / VPC-isolated deploys:
+#   * read-only root filesystem
+#   * emptyDir tmpfs for transient scratch
+#   * drop all capabilities, allowPrivilegeEscalation: false
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: factors-api
+spec:
+  template:
+    spec:
+      containers:
+        - name: factors-api
+          securityContext:
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            runAsUser: 10001
+            capabilities:
+              drop:
+                - ALL
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+            - name: prom-metrics
+              mountPath: /var/lib/prom-metrics
+      volumes:
+        - name: tmp
+          emptyDir:
+            medium: Memory
+            sizeLimit: 256Mi
+        - name: prom-metrics
+          emptyDir:
+            medium: Memory
+            sizeLimit: 64Mi

@@ -1,0 +1,195 @@
+# GL-003 UNIFIEDSTEAM - Kubernetes ConfigMap
+# Steam System Optimization Agent
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: unifiedsteam-config
+  namespace: greenlang-steam
+  labels:
+    app.kubernetes.io/name: unifiedsteam
+    app.kubernetes.io/component: config
+    app.kubernetes.io/part-of: greenlang
+    agent-id: gl-003
+data:
+  # ==============================================================================
+  # Application Settings
+  # ==============================================================================
+  log-level: "INFO"
+  api-port: "8080"
+  grpc-port: "50051"
+  metrics-port: "9090"
+
+  # ==============================================================================
+  # Kafka Configuration
+  # ==============================================================================
+  kafka-brokers: "kafka-0.kafka-headless.greenlang-steam:9092,kafka-1.kafka-headless.greenlang-steam:9092,kafka-2.kafka-headless.greenlang-steam:9092"
+  kafka-consumer-group: "unifiedsteam-consumer-group"
+  kafka-auto-offset-reset: "earliest"
+  kafka-enable-auto-commit: "false"
+
+  # Kafka topics
+  kafka-topics: |
+    steam.sensor.readings
+    steam.control.commands
+    steam.optimization.results
+    steam.alerts.critical
+    steam.events.audit
+
+  # ==============================================================================
+  # OPC-UA Configuration
+  # ==============================================================================
+  opcua-endpoint: "opc.tcp://scada.industrial.local:4840"
+  opcua-security-mode: "SignAndEncrypt"
+  opcua-security-policy: "Basic256Sha256"
+  opcua-subscription-interval: "500"
+  opcua-max-keepalive-count: "10"
+
+  # OPC-UA node mappings
+  opcua-nodes: |
+    # Steam header pressure
+    ns=2;s=Steam.Header.Pressure.PV
+    ns=2;s=Steam.Header.Pressure.SP
+    # Steam temperature
+    ns=2;s=Steam.Header.Temperature.PV
+    ns=2;s=Steam.Header.Temperature.SP
+    # Steam flow
+    ns=2;s=Steam.Flow.Total
+    ns=2;s=Steam.Flow.Condensate.Return
+    # Boiler status
+    ns=2;s=Boiler.1.Status
+    ns=2;s=Boiler.2.Status
+    ns=2;s=Boiler.3.Status
+
+  # ==============================================================================
+  # Redis Configuration
+  # ==============================================================================
+  redis-host: "redis.greenlang-steam.svc.cluster.local"
+  redis-port: "6379"
+  redis-db: "0"
+  redis-max-connections: "100"
+  redis-socket-timeout: "5"
+  redis-ttl-default: "3600"
+
+  # ==============================================================================
+  # Database Configuration
+  # ==============================================================================
+  db-pool-size: "10"
+  db-max-overflow: "20"
+  db-pool-timeout: "30"
+  db-pool-recycle: "1800"
+
+  # ==============================================================================
+  # Optimization Settings
+  # ==============================================================================
+  optimization-interval: "60"
+  optimization-horizon: "300"
+  optimization-min-efficiency: "0.75"
+  optimization-max-iterations: "1000"
+  optimization-tolerance: "0.001"
+
+  # ==============================================================================
+  # Thermodynamic Settings
+  # ==============================================================================
+  steam-reference-pressure: "101325"
+  steam-reference-temperature: "298.15"
+  steam-specific-heat-ratio: "1.33"
+  condensate-return-temp-target: "80"
+
+  # ==============================================================================
+  # Safety Limits
+  # ==============================================================================
+  safety-max-pressure: "1200000"
+  safety-min-pressure: "100000"
+  safety-max-temperature: "250"
+  safety-min-temperature: "100"
+  safety-max-flow-rate: "50000"
+  safety-emergency-shutdown-delay: "5"
+
+  # ==============================================================================
+  # OpenTelemetry Configuration
+  # ==============================================================================
+  otel-endpoint: "http://otel-collector.observability:4317"
+  otel-trace-ratio: "0.1"
+  otel-log-level: "INFO"
+
+  # ==============================================================================
+  # Feature Flags
+  # ==============================================================================
+  feature-flags: |
+    {
+      "enable_real_time_optimization": true,
+      "enable_predictive_maintenance": true,
+      "enable_causal_analysis": true,
+      "enable_explainability": true,
+      "enable_uncertainty_quantification": false,
+      "enable_automatic_control": false,
+      "enable_ml_predictions": true,
+      "enable_graphql_subscriptions": true,
+      "enable_grpc_streaming": true,
+      "experimental_advanced_thermodynamics": false
+    }
+
+  # ==============================================================================
+  # Application Configuration File
+  # ==============================================================================
+  application.yaml: |
+    # GL-003 UNIFIEDSTEAM Configuration
+    application:
+      name: unifiedsteam
+      version: "1.0.0"
+      environment: production
+
+    server:
+      http:
+        port: 8080
+        host: "0.0.0.0"
+        workers: 4
+      grpc:
+        port: 50051
+        max_workers: 10
+      metrics:
+        port: 9090
+        enabled: true
+
+    logging:
+      level: INFO
+      format: json
+      include_trace_id: true
+
+    steam_system:
+      units: SI
+      reference_conditions:
+        pressure: 101325  # Pa
+        temperature: 298.15  # K
+
+    optimization:
+      enabled: true
+      interval_seconds: 60
+      prediction_horizon: 300
+      objectives:
+        - minimize_energy_consumption
+        - maximize_efficiency
+        - minimize_emissions
+
+    safety:
+      enabled: true
+      emergency_shutdown:
+        enabled: true
+        delay_seconds: 5
+      alarm_thresholds:
+        pressure_high: 1100000
+        pressure_low: 150000
+        temperature_high: 230
+        temperature_low: 110
+
+    integrations:
+      kafka:
+        enabled: true
+        auto_commit: false
+      opcua:
+        enabled: true
+        reconnect_interval: 10
+      redis:
+        enabled: true
+        cache_ttl: 3600

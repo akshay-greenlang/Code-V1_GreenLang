@@ -1,0 +1,29 @@
+# Dev Environment - Ingress Patch
+# Development domain configuration
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: gl-005-combustion-control-ingress
+  annotations:
+    # Disable rate limiting in dev
+    nginx.ingress.kubernetes.io/rate-limit: "1000"
+    # Allow HTTP (no SSL redirect in dev)
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+spec:
+  tls:
+    - hosts:
+        - gl-005-dev.greenlang.io
+        - api.gl-005-dev.greenlang.io
+      secretName: gl-005-dev-tls-cert
+  rules:
+    - host: gl-005-dev.greenlang.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: gl-005-combustion-control
+                port:
+                  number: 80

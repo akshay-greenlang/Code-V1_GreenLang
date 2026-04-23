@@ -1,0 +1,98 @@
+# GL-003 UNIFIEDSTEAM - Helm Chart
+# Steam System Optimization Agent
+
+apiVersion: v2
+name: unifiedsteam
+description: |
+  GL-003 UNIFIEDSTEAM Steam System Optimization Agent.
+  A comprehensive solution for real-time steam system monitoring,
+  optimization, and control with explainable AI capabilities.
+
+# Chart type: application or library
+type: application
+
+# Chart version - increment for chart changes
+version: 1.0.0
+
+# Application version - the version of the app being deployed
+appVersion: "1.0.0"
+
+# Keywords for searching
+keywords:
+  - greenlang
+  - steam
+  - optimization
+  - industrial
+  - energy
+  - iot
+  - opc-ua
+  - kafka
+  - real-time
+
+# Home page of the project
+home: https://greenlang.io/agents/gl-003
+
+# Source code repositories
+sources:
+  - https://github.com/greenlang/gl-003-unifiedsteam
+
+# Maintainers list
+maintainers:
+  - name: GreenLang DevOps
+    email: devops@greenlang.io
+    url: https://greenlang.io
+
+# Icon for the chart
+icon: https://greenlang.io/assets/icons/gl-003-unifiedsteam.png
+
+# Annotations for additional metadata
+annotations:
+  category: Industrial Optimization
+  licenses: Apache-2.0
+  artifacthub.io/changes: |
+    - Initial release of GL-003 UNIFIEDSTEAM
+    - Real-time steam system optimization
+    - OPC-UA and Kafka integration
+    - Prometheus/Grafana observability
+  artifacthub.io/containsSecurityUpdates: "false"
+  artifacthub.io/prerelease: "false"
+  artifacthub.io/signKey: |
+    fingerprint: CHANGE_ME_TO_ACTUAL_KEY_FINGERPRINT
+    url: https://greenlang.io/keys/helm-signing-key.asc
+
+# Chart dependencies
+dependencies:
+  # Kafka (optional - can use external)
+  - name: kafka
+    version: "26.x.x"
+    repository: https://charts.bitnami.com/bitnami
+    condition: kafka.enabled
+    tags:
+      - messaging
+
+  # Redis (optional - can use external)
+  - name: redis
+    version: "18.x.x"
+    repository: https://charts.bitnami.com/bitnami
+    condition: redis.enabled
+    tags:
+      - caching
+
+  # PostgreSQL (optional - can use external)
+  - name: postgresql
+    version: "13.x.x"
+    repository: https://charts.bitnami.com/bitnami
+    condition: postgresql.enabled
+    tags:
+      - database
+
+  # Prometheus Stack (optional)
+  - name: kube-prometheus-stack
+    version: "54.x.x"
+    repository: https://prometheus-community.github.io/helm-charts
+    condition: prometheus.enabled
+    tags:
+      - monitoring
+
+# Kubernetes version compatibility
+kubeVersion: ">=1.25.0-0"

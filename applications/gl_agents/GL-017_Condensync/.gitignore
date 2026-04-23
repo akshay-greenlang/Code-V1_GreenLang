@@ -1,0 +1,388 @@
+# GL-017_Condensync Git Ignore
+# Condenser Optimization Agent
+# Version: 1.0.0
+
+# =============================================================================
+# Python
+# =============================================================================
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+
+# Translations
+*.mo
+*.pot
+
+# Sphinx documentation
+docs/_build/
+
+# PyBuilder
+target/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IPython
+profile_default/
+ipython_config.py
+
+# pyenv
+.python-version
+
+# pipenv
+Pipfile.lock
+
+# PEP 582
+__pypackages__/
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
+
+# SageMath parsed files
+*.sage.py
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+# Rope project settings
+.ropeproject
+
+# mkdocs documentation
+/site
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Ruff
+.ruff_cache/
+
+# Pyre type checker
+.pyre/
+
+# =============================================================================
+# Virtual Environments
+# =============================================================================
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+.conda/
+conda-env/
+
+# =============================================================================
+# IDE and Editor
+# =============================================================================
+
+# VSCode
+.vscode/
+*.code-workspace
+.history/
+
+# PyCharm / IntelliJ
+.idea/
+*.iml
+*.ipr
+*.iws
+out/
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
+*.swp
+*.swo
+*~
+.netrwhist
+Session.vim
+.vim/
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
+.org-id-locations
+*_archive
+*.org
+
+# =============================================================================
+# Operating System
+# =============================================================================
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# =============================================================================
+# Docker
+# =============================================================================
+.docker/
+docker-compose.override.yml
+.dockerignore.local
+
+# =============================================================================
+# Kubernetes / Helm
+# =============================================================================
+*.tfstate
+*.tfstate.*
+.terraform/
+*.tfvars
+*.tfvars.json
+kubeconfig
+kubeconfig.yaml
+.kube/
+
+# Helm
+charts/*.tgz
+deployment/helm/charts/
+
+# =============================================================================
+# Secrets and Credentials
+# =============================================================================
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+*.jks
+secrets/
+credentials/
+.secrets
+*.secret
+.env.local
+.env.*.local
+.env.development
+.env.staging
+.env.production
+!.env.example
+!.env.template
+
+# =============================================================================
+# Logs
+# =============================================================================
+*.log
+logs/
+log/
+*.log.*
+
+# =============================================================================
+# Database
+# =============================================================================
+*.db
+*.sqlite
+*.sqlite3
+*.sql.gz
+dump.sql
+
+# =============================================================================
+# Temporary Files
+# =============================================================================
+tmp/
+temp/
+*.tmp
+*.temp
+*.bak
+*.backup
+*.orig
+*.rej
+*.swp
+.~*
+
+# =============================================================================
+# Data Files
+# =============================================================================
+data/
+!data/.gitkeep
+*.csv
+*.parquet
+*.feather
+*.pkl
+*.pickle
+
+# Large data files
+*.hdf5
+*.h5
+
+# =============================================================================
+# ML Models
+# =============================================================================
+models/
+!models/.gitkeep
+*.h5
+*.pb
+*.pt
+*.pth
+*.onnx
+*.tflite
+*.keras
+saved_models/
+checkpoints/
+
+# =============================================================================
+# Profiling and Benchmarks
+# =============================================================================
+*.prof
+.benchmarks/
+benchmarks/results/
+profiling/
+
+# =============================================================================
+# Build and Artifacts
+# =============================================================================
+artifacts/
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.rar
+*.7z
+
+# =============================================================================
+# Node.js (if any frontend)
+# =============================================================================
+node_modules/
+npm-debug.log
+yarn-error.log
+yarn.lock
+package-lock.json
+
+# =============================================================================
+# Coverage and Test Results
+# =============================================================================
+.coverage
+coverage/
+htmlcov/
+.pytest_cache/
+test-results/
+junit.xml
+coverage.xml
+.hypothesis/
+
+# =============================================================================
+# Local Development
+# =============================================================================
+local/
+local_settings.py
+*.local
+*.local.*
+scratch/
+sandbox/
+playground/
+
+# =============================================================================
+# CI/CD Artifacts
+# =============================================================================
+.github/workflows/*.local.yml
+ci-artifacts/
+
+# =============================================================================
+# Misc
+# =============================================================================
+*.bak
+*.orig
+*.pid
+*.seed
+*.pid.lock
+.lock-wscript
+
+# Keep these files
+!.gitkeep
+!.editorconfig
+!.pre-commit-config.yaml

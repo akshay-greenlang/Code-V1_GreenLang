@@ -1,0 +1,46 @@
+{# ---
+approved: false
+approved_by: null
+approved_at: null
+methodology_lead: null
+--- #}
+Factor {{ factor.chosen_factor.name }} ({{ factor.chosen_factor.id }}) was
+selected under the Corporate Inventory method profile
+({{ factor.method_pack }}), aligned with the GHG Protocol Corporate
+Standard (WRI/WBCSD, 2004) together with the Scope 2 Guidance (2015) and
+the Scope 3 Corporate Value Chain Standard (2011). The source is
+{{ factor.source.authority }} dataset version
+{{ factor.source.version }}, vintage {{ factor.source.vintage }}.
+
+The resolver reached this factor at fallback tier {{ factor.fallback_rank }}
+of 7 ({{ factor.step_label }}); tiers 1-3 represent primary data and tiers
+4-7 represent progressively less specific defaults. GWP basis:
+{{ factor.gwp_basis }}. Biogenic CO2 is {% if factor.biogenic_treatment %}{{ factor.biogenic_treatment }}{% else %}reported separately{% endif %}
+per the Corporate Standard Chapter 4 and the Scope 2 Guidance §6.
+
+{% if factor.scope == "1" or factor.scope3_category == None -%}
+Scope 1 direct emissions — factor applies to fuel combustion owned or
+operationally controlled by the reporting entity (Corporate Standard
+Chapter 4). Market instruments (RECs / GOs / PPAs) are not applicable
+to Scope 1.
+{%- elif factor.scope == "2" and factor.electricity_basis == "location_based" -%}
+Scope 2 location-based — grid-average factor for the physical geography
+({{ factor.geography }} / {{ factor.grid_region }}) per Scope 2 Guidance
+§6.1. Contractual instruments are deliberately ignored under the
+location-based method.
+{%- elif factor.scope == "2" and factor.electricity_basis == "market_based" -%}
+Scope 2 market-based — contractual instrument applied per Scope 2
+Guidance §6.2 Quality Criteria 1-7. Supplier: {{ factor.supplier }};
+certificate: {{ factor.certificate }}. When no instrument exists, the
+residual mix {{ factor.residual_mix_factor_id }} is applied.
+{%- elif factor.scope == "3" -%}
+Scope 3 Cat {{ factor.scope3_category }} — method:
+{{ factor.calculation_method }}; data quality score
+{{ factor.dqs_score }}/100 per the Scope 3 Technical Guidance. Biogenic
+CO2 is reported separately. {% if factor.cat11_use_phase_block %}{{ factor.cat11_use_phase_block }}{% endif %}
+{%- endif %}
+
+{% if factor.fallback_trace -%}
+Fallback trace:
+{%- for step in factor.fallback_trace %} {{ step.rank }}->{{ step.label }}{% if not loop.last %};{% endif %}{% endfor %}.
+{%- endif %}

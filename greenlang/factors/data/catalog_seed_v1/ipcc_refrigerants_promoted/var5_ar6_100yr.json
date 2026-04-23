@@ -1,0 +1,2734 @@
+{
+  "attribution_text": "IPCC AR5 Working Group I Chapter 8 and AR6 Working Group I Chapter 7 \u2014 100-year GWP values for halogenated gases.",
+  "factor_count": 32,
+  "factor_status_default": "certified",
+  "factors": [
+    {
+      "activity_schema": {
+        "category": "refrigerant_r_22",
+        "classification_codes": [],
+        "sub_category": "fugitive_emission"
+      },
+      "denominator": {
+        "unit": "kg",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "combustion",
+      "factor_id": "EF:IPCC:r_22:GLOBAL:ipcc_ar5_100:v1",
+      "factor_name": "refrigerant_r_22 | kg | GLOBAL",
+      "factor_version": "1.0.0",
+      "formula_type": "combustion",
+      "gwp_set": "IPCC_AR5_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "IPCC-Guideline",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:53Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 1760.0,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "HHV": null,
+        "LHV": null,
+        "ash_share": null,
+        "biogenic_carbon_share": null,
+        "density": null,
+        "fossil_carbon_share": null,
+        "fuel_code": "refrigerant_r_22",
+        "moisture_share": null,
+        "oxidation_factor": null,
+        "scope_applicability": [],
+        "sulfur_share": null,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 100.0,
+        "geographic_score": 5,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "ipcc_refrigerants_promoted",
+      "source_version": "ipcc_ar5_100",
+      "status": "certified",
+      "valid_from": "2013-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "refrigerant_r_22",
+        "classification_codes": [],
+        "sub_category": "fugitive_emission"
+      },
+      "denominator": {
+        "unit": "kg",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "combustion",
+      "factor_id": "EF:IPCC:r_22:GLOBAL:ipcc_ar6_100:v1",
+      "factor_name": "refrigerant_r_22 | kg | GLOBAL",
+      "factor_version": "1.0.0",
+      "formula_type": "combustion",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "IPCC-Guideline",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:53Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 1780.0,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "HHV": null,
+        "LHV": null,
+        "ash_share": null,
+        "biogenic_carbon_share": null,
+        "density": null,
+        "fossil_carbon_share": null,
+        "fuel_code": "refrigerant_r_22",
+        "moisture_share": null,
+        "oxidation_factor": null,
+        "scope_applicability": [],
+        "sulfur_share": null,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 100.0,
+        "geographic_score": 5,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "ipcc_refrigerants_promoted",
+      "source_version": "ipcc_ar6_100",
+      "status": "certified",
+      "valid_from": "2021-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "refrigerant_r_32",
+        "classification_codes": [],
+        "sub_category": "fugitive_emission"
+      },
+      "denominator": {
+        "unit": "kg",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "combustion",
+      "factor_id": "EF:IPCC:r_32:GLOBAL:ipcc_ar5_100:v1",
+      "factor_name": "refrigerant_r_32 | kg | GLOBAL",
+      "factor_version": "1.0.0",
+      "formula_type": "combustion",
+      "gwp_set": "IPCC_AR5_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "IPCC-Guideline",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:53Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 677.0,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "HHV": null,
+        "LHV": null,
+        "ash_share": null,
+        "biogenic_carbon_share": null,
+        "density": null,
+        "fossil_carbon_share": null,
+        "fuel_code": "refrigerant_r_32",
+        "moisture_share": null,
+        "oxidation_factor": null,
+        "scope_applicability": [],
+        "sulfur_share": null,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 100.0,
+        "geographic_score": 5,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "ipcc_refrigerants_promoted",
+      "source_version": "ipcc_ar5_100",
+      "status": "certified",
+      "valid_from": "2013-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "refrigerant_r_32",
+        "classification_codes": [],
+        "sub_category": "fugitive_emission"
+      },
+      "denominator": {
+        "unit": "kg",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "combustion",
+      "factor_id": "EF:IPCC:r_32:GLOBAL:ipcc_ar6_100:v1",
+      "factor_name": "refrigerant_r_32 | kg | GLOBAL",
+      "factor_version": "1.0.0",
+      "formula_type": "combustion",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "IPCC-Guideline",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:53Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 771.0,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "HHV": null,
+        "LHV": null,
+        "ash_share": null,
+        "biogenic_carbon_share": null,
+        "density": null,
+        "fossil_carbon_share": null,
+        "fuel_code": "refrigerant_r_32",
+        "moisture_share": null,
+        "oxidation_factor": null,
+        "scope_applicability": [],
+        "sulfur_share": null,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 100.0,
+        "geographic_score": 5,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "ipcc_refrigerants_promoted",
+      "source_version": "ipcc_ar6_100",
+      "status": "certified",
+      "valid_from": "2021-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "refrigerant_r_134a",
+        "classification_codes": [],
+        "sub_category": "fugitive_emission"
+      },
+      "denominator": {
+        "unit": "kg",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "combustion",
+      "factor_id": "EF:IPCC:r_134a:GLOBAL:ipcc_ar5_100:v1",
+      "factor_name": "refrigerant_r_134a | kg | GLOBAL",
+      "factor_version": "1.0.0",
+      "formula_type": "combustion",
+      "gwp_set": "IPCC_AR5_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "IPCC-Guideline",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:53Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 1300.0,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "HHV": null,
+        "LHV": null,
+        "ash_share": null,
+        "biogenic_carbon_share": null,
+        "density": null,
+        "fossil_carbon_share": null,
+        "fuel_code": "refrigerant_r_134a",
+        "moisture_share": null,
+        "oxidation_factor": null,
+        "scope_applicability": [],
+        "sulfur_share": null,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 100.0,
+        "geographic_score": 5,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "ipcc_refrigerants_promoted",
+      "source_version": "ipcc_ar5_100",
+      "status": "certified",
+      "valid_from": "2013-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "refrigerant_r_134a",
+        "classification_codes": [],
+        "sub_category": "fugitive_emission"
+      },
+      "denominator": {
+        "unit": "kg",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "combustion",
+      "factor_id": "EF:IPCC:r_134a:GLOBAL:ipcc_ar6_100:v1",
+      "factor_name": "refrigerant_r_134a | kg | GLOBAL",
+      "factor_version": "1.0.0",
+      "formula_type": "combustion",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "IPCC-Guideline",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:53Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 1530.0,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "HHV": null,
+        "LHV": null,
+        "ash_share": null,
+        "biogenic_carbon_share": null,
+        "density": null,
+        "fossil_carbon_share": null,
+        "fuel_code": "refrigerant_r_134a",
+        "moisture_share": null,
+        "oxidation_factor": null,
+        "scope_applicability": [],
+        "sulfur_share": null,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 100.0,
+        "geographic_score": 5,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "ipcc_refrigerants_promoted",
+      "source_version": "ipcc_ar6_100",
+      "status": "certified",
+      "valid_from": "2021-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "refrigerant_r_410a",
+        "classification_codes": [],
+        "sub_category": "fugitive_emission"
+      },
+      "denominator": {
+        "unit": "kg",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "combustion",
+      "factor_id": "EF:IPCC:r_410a:GLOBAL:ipcc_ar5_100:v1",
+      "factor_name": "refrigerant_r_410a | kg | GLOBAL",
+      "factor_version": "1.0.0",
+      "formula_type": "combustion",
+      "gwp_set": "IPCC_AR5_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "IPCC-Guideline",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:53Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 1924.0,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "HHV": null,
+        "LHV": null,
+        "ash_share": null,
+        "biogenic_carbon_share": null,
+        "density": null,
+        "fossil_carbon_share": null,
+        "fuel_code": "refrigerant_r_410a",
+        "moisture_share": null,
+        "oxidation_factor": null,
+        "scope_applicability": [],
+        "sulfur_share": null,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 100.0,
+        "geographic_score": 5,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "ipcc_refrigerants_promoted",
+      "source_version": "ipcc_ar5_100",
+      "status": "certified",
+      "valid_from": "2013-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "refrigerant_r_410a",
+        "classification_codes": [],
+        "sub_category": "fugitive_emission"
+      },
+      "denominator": {
+        "unit": "kg",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "combustion",
+      "factor_id": "EF:IPCC:r_410a:GLOBAL:ipcc_ar6_100:v1",
+      "factor_name": "refrigerant_r_410a | kg | GLOBAL",
+      "factor_version": "1.0.0",
+      "formula_type": "combustion",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "IPCC-Guideline",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:53Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 2256.0,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "HHV": null,
+        "LHV": null,
+        "ash_share": null,
+        "biogenic_carbon_share": null,
+        "density": null,
+        "fossil_carbon_share": null,
+        "fuel_code": "refrigerant_r_410a",
+        "moisture_share": null,
+        "oxidation_factor": null,
+        "scope_applicability": [],
+        "sulfur_share": null,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 100.0,
+        "geographic_score": 5,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "ipcc_refrigerants_promoted",
+      "source_version": "ipcc_ar6_100",
+      "status": "certified",
+      "valid_from": "2021-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "refrigerant_r_404a",
+        "classification_codes": [],
+        "sub_category": "fugitive_emission"
+      },
+      "denominator": {
+        "unit": "kg",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "combustion",
+      "factor_id": "EF:IPCC:r_404a:GLOBAL:ipcc_ar5_100:v1",
+      "factor_name": "refrigerant_r_404a | kg | GLOBAL",
+      "factor_version": "1.0.0",
+      "formula_type": "combustion",
+      "gwp_set": "IPCC_AR5_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "IPCC-Guideline",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:53Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 3922.0,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "HHV": null,
+        "LHV": null,
+        "ash_share": null,
+        "biogenic_carbon_share": null,
+        "density": null,
+        "fossil_carbon_share": null,
+        "fuel_code": "refrigerant_r_404a",
+        "moisture_share": null,
+        "oxidation_factor": null,
+        "scope_applicability": [],
+        "sulfur_share": null,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 100.0,
+        "geographic_score": 5,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "ipcc_refrigerants_promoted",
+      "source_version": "ipcc_ar5_100",
+      "status": "certified",
+      "valid_from": "2013-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "refrigerant_r_404a",
+        "classification_codes": [],
+        "sub_category": "fugitive_emission"
+      },
+      "denominator": {
+        "unit": "kg",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "combustion",
+      "factor_id": "EF:IPCC:r_404a:GLOBAL:ipcc_ar6_100:v1",
+      "factor_name": "refrigerant_r_404a | kg | GLOBAL",
+      "factor_version": "1.0.0",
+      "formula_type": "combustion",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "IPCC-Guideline",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:53Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 4728.0,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "HHV": null,
+        "LHV": null,
+        "ash_share": null,
+        "biogenic_carbon_share": null,
+        "density": null,
+        "fossil_carbon_share": null,
+        "fuel_code": "refrigerant_r_404a",
+        "moisture_share": null,
+        "oxidation_factor": null,
+        "scope_applicability": [],
+        "sulfur_share": null,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 100.0,
+        "geographic_score": 5,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "ipcc_refrigerants_promoted",
+      "source_version": "ipcc_ar6_100",
+      "status": "certified",
+      "valid_from": "2021-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "refrigerant_r_507",
+        "classification_codes": [],
+        "sub_category": "fugitive_emission"
+      },
+      "denominator": {
+        "unit": "kg",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "combustion",
+      "factor_id": "EF:IPCC:r_507:GLOBAL:ipcc_ar5_100:v1",
+      "factor_name": "refrigerant_r_507 | kg | GLOBAL",
+      "factor_version": "1.0.0",
+      "formula_type": "combustion",
+      "gwp_set": "IPCC_AR5_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "IPCC-Guideline",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:53Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 3985.0,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "HHV": null,
+        "LHV": null,
+        "ash_share": null,
+        "biogenic_carbon_share": null,
+        "density": null,
+        "fossil_carbon_share": null,
+        "fuel_code": "refrigerant_r_507",
+        "moisture_share": null,
+        "oxidation_factor": null,
+        "scope_applicability": [],
+        "sulfur_share": null,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 100.0,
+        "geographic_score": 5,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "ipcc_refrigerants_promoted",
+      "source_version": "ipcc_ar5_100",
+      "status": "certified",
+      "valid_from": "2013-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "refrigerant_r_507",
+        "classification_codes": [],
+        "sub_category": "fugitive_emission"
+      },
+      "denominator": {
+        "unit": "kg",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "combustion",
+      "factor_id": "EF:IPCC:r_507:GLOBAL:ipcc_ar6_100:v1",
+      "factor_name": "refrigerant_r_507 | kg | GLOBAL",
+      "factor_version": "1.0.0",
+      "formula_type": "combustion",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "IPCC-Guideline",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:53Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 4758.0,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "HHV": null,
+        "LHV": null,
+        "ash_share": null,
+        "biogenic_carbon_share": null,
+        "density": null,
+        "fossil_carbon_share": null,
+        "fuel_code": "refrigerant_r_507",
+        "moisture_share": null,
+        "oxidation_factor": null,
+        "scope_applicability": [],
+        "sulfur_share": null,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 100.0,
+        "geographic_score": 5,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "ipcc_refrigerants_promoted",
+      "source_version": "ipcc_ar6_100",
+      "status": "certified",
+      "valid_from": "2021-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "refrigerant_r_1234yf",
+        "classification_codes": [],
+        "sub_category": "fugitive_emission"
+      },
+      "denominator": {
+        "unit": "kg",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "combustion",
+      "factor_id": "EF:IPCC:r_1234yf:GLOBAL:ipcc_ar5_100:v1",
+      "factor_name": "refrigerant_r_1234yf | kg | GLOBAL",
+      "factor_version": "1.0.0",
+      "formula_type": "combustion",
+      "gwp_set": "IPCC_AR5_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "IPCC-Guideline",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:53Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 4.0,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "HHV": null,
+        "LHV": null,
+        "ash_share": null,
+        "biogenic_carbon_share": null,
+        "density": null,
+        "fossil_carbon_share": null,
+        "fuel_code": "refrigerant_r_1234yf",
+        "moisture_share": null,
+        "oxidation_factor": null,
+        "scope_applicability": [],
+        "sulfur_share": null,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 100.0,
+        "geographic_score": 5,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "ipcc_refrigerants_promoted",
+      "source_version": "ipcc_ar5_100",
+      "status": "certified",
+      "valid_from": "2013-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "refrigerant_r_1234yf",
+        "classification_codes": [],
+        "sub_category": "fugitive_emission"
+      },
+      "denominator": {
+        "unit": "kg",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "combustion",
+      "factor_id": "EF:IPCC:r_1234yf:GLOBAL:ipcc_ar6_100:v1",
+      "factor_name": "refrigerant_r_1234yf | kg | GLOBAL",
+      "factor_version": "1.0.0",
+      "formula_type": "combustion",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "IPCC-Guideline",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:53Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.501,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "HHV": null,
+        "LHV": null,
+        "ash_share": null,
+        "biogenic_carbon_share": null,
+        "density": null,
+        "fossil_carbon_share": null,
+        "fuel_code": "refrigerant_r_1234yf",
+        "moisture_share": null,
+        "oxidation_factor": null,
+        "scope_applicability": [],
+        "sulfur_share": null,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 100.0,
+        "geographic_score": 5,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "ipcc_refrigerants_promoted",
+      "source_version": "ipcc_ar6_100",
+      "status": "certified",
+      "valid_from": "2021-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "refrigerant_r_1234ze",
+        "classification_codes": [],
+        "sub_category": "fugitive_emission"
+      },
+      "denominator": {
+        "unit": "kg",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "combustion",
+      "factor_id": "EF:IPCC:r_1234ze:GLOBAL:ipcc_ar5_100:v1",
+      "factor_name": "refrigerant_r_1234ze | kg | GLOBAL",
+      "factor_version": "1.0.0",
+      "formula_type": "combustion",
+      "gwp_set": "IPCC_AR5_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "IPCC-Guideline",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:53Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 7.0,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "HHV": null,
+        "LHV": null,
+        "ash_share": null,
+        "biogenic_carbon_share": null,
+        "density": null,
+        "fossil_carbon_share": null,
+        "fuel_code": "refrigerant_r_1234ze",
+        "moisture_share": null,
+        "oxidation_factor": null,
+        "scope_applicability": [],
+        "sulfur_share": null,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 100.0,
+        "geographic_score": 5,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "ipcc_refrigerants_promoted",
+      "source_version": "ipcc_ar5_100",
+      "status": "certified",
+      "valid_from": "2013-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "refrigerant_r_1234ze",
+        "classification_codes": [],
+        "sub_category": "fugitive_emission"
+      },
+      "denominator": {
+        "unit": "kg",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "combustion",
+      "factor_id": "EF:IPCC:r_1234ze:GLOBAL:ipcc_ar6_100:v1",
+      "factor_name": "refrigerant_r_1234ze | kg | GLOBAL",
+      "factor_version": "1.0.0",
+      "formula_type": "combustion",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "IPCC-Guideline",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:53Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 1.37,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "HHV": null,
+        "LHV": null,
+        "ash_share": null,
+        "biogenic_carbon_share": null,
+        "density": null,
+        "fossil_carbon_share": null,
+        "fuel_code": "refrigerant_r_1234ze",
+        "moisture_share": null,
+        "oxidation_factor": null,
+        "scope_applicability": [],
+        "sulfur_share": null,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 100.0,
+        "geographic_score": 5,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "ipcc_refrigerants_promoted",
+      "source_version": "ipcc_ar6_100",
+      "status": "certified",
+      "valid_from": "2021-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "refrigerant_r_452a",
+        "classification_codes": [],
+        "sub_category": "fugitive_emission"
+      },
+      "denominator": {
+        "unit": "kg",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "combustion",
+      "factor_id": "EF:IPCC:r_452a:GLOBAL:ipcc_ar5_100:v1",
+      "factor_name": "refrigerant_r_452a | kg | GLOBAL",
+      "factor_version": "1.0.0",
+      "formula_type": "combustion",
+      "gwp_set": "IPCC_AR5_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "IPCC-Guideline",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:53Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 2141.0,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "HHV": null,
+        "LHV": null,
+        "ash_share": null,
+        "biogenic_carbon_share": null,
+        "density": null,
+        "fossil_carbon_share": null,
+        "fuel_code": "refrigerant_r_452a",
+        "moisture_share": null,
+        "oxidation_factor": null,
+        "scope_applicability": [],
+        "sulfur_share": null,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 100.0,
+        "geographic_score": 5,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "ipcc_refrigerants_promoted",
+      "source_version": "ipcc_ar5_100",
+      "status": "certified",
+      "valid_from": "2013-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "refrigerant_r_452a",
+        "classification_codes": [],
+        "sub_category": "fugitive_emission"
+      },
+      "denominator": {
+        "unit": "kg",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "combustion",
+      "factor_id": "EF:IPCC:r_452a:GLOBAL:ipcc_ar6_100:v1",
+      "factor_name": "refrigerant_r_452a | kg | GLOBAL",
+      "factor_version": "1.0.0",
+      "formula_type": "combustion",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "IPCC-Guideline",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:53Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 2292.0,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "HHV": null,
+        "LHV": null,
+        "ash_share": null,
+        "biogenic_carbon_share": null,
+        "density": null,
+        "fossil_carbon_share": null,
+        "fuel_code": "refrigerant_r_452a",
+        "moisture_share": null,
+        "oxidation_factor": null,
+        "scope_applicability": [],
+        "sulfur_share": null,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 100.0,
+        "geographic_score": 5,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "ipcc_refrigerants_promoted",
+      "source_version": "ipcc_ar6_100",
+      "status": "certified",
+      "valid_from": "2021-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "refrigerant_r_513a",
+        "classification_codes": [],
+        "sub_category": "fugitive_emission"
+      },
+      "denominator": {
+        "unit": "kg",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "combustion",
+      "factor_id": "EF:IPCC:r_513a:GLOBAL:ipcc_ar5_100:v1",
+      "factor_name": "refrigerant_r_513a | kg | GLOBAL",
+      "factor_version": "1.0.0",
+      "formula_type": "combustion",
+      "gwp_set": "IPCC_AR5_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "IPCC-Guideline",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:53Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 631.0,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "HHV": null,
+        "LHV": null,
+        "ash_share": null,
+        "biogenic_carbon_share": null,
+        "density": null,
+        "fossil_carbon_share": null,
+        "fuel_code": "refrigerant_r_513a",
+        "moisture_share": null,
+        "oxidation_factor": null,
+        "scope_applicability": [],
+        "sulfur_share": null,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 100.0,
+        "geographic_score": 5,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "ipcc_refrigerants_promoted",
+      "source_version": "ipcc_ar5_100",
+      "status": "certified",
+      "valid_from": "2013-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "refrigerant_r_513a",
+        "classification_codes": [],
+        "sub_category": "fugitive_emission"
+      },
+      "denominator": {
+        "unit": "kg",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "combustion",
+      "factor_id": "EF:IPCC:r_513a:GLOBAL:ipcc_ar6_100:v1",
+      "factor_name": "refrigerant_r_513a | kg | GLOBAL",
+      "factor_version": "1.0.0",
+      "formula_type": "combustion",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "IPCC-Guideline",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:53Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 742.0,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "HHV": null,
+        "LHV": null,
+        "ash_share": null,
+        "biogenic_carbon_share": null,
+        "density": null,
+        "fossil_carbon_share": null,
+        "fuel_code": "refrigerant_r_513a",
+        "moisture_share": null,
+        "oxidation_factor": null,
+        "scope_applicability": [],
+        "sulfur_share": null,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 100.0,
+        "geographic_score": 5,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "ipcc_refrigerants_promoted",
+      "source_version": "ipcc_ar6_100",
+      "status": "certified",
+      "valid_from": "2021-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "refrigerant_r_448a",
+        "classification_codes": [],
+        "sub_category": "fugitive_emission"
+      },
+      "denominator": {
+        "unit": "kg",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "combustion",
+      "factor_id": "EF:IPCC:r_448a:GLOBAL:ipcc_ar5_100:v1",
+      "factor_name": "refrigerant_r_448a | kg | GLOBAL",
+      "factor_version": "1.0.0",
+      "formula_type": "combustion",
+      "gwp_set": "IPCC_AR5_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "IPCC-Guideline",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:53Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 1387.0,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "HHV": null,
+        "LHV": null,
+        "ash_share": null,
+        "biogenic_carbon_share": null,
+        "density": null,
+        "fossil_carbon_share": null,
+        "fuel_code": "refrigerant_r_448a",
+        "moisture_share": null,
+        "oxidation_factor": null,
+        "scope_applicability": [],
+        "sulfur_share": null,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 100.0,
+        "geographic_score": 5,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "ipcc_refrigerants_promoted",
+      "source_version": "ipcc_ar5_100",
+      "status": "certified",
+      "valid_from": "2013-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "refrigerant_r_448a",
+        "classification_codes": [],
+        "sub_category": "fugitive_emission"
+      },
+      "denominator": {
+        "unit": "kg",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "combustion",
+      "factor_id": "EF:IPCC:r_448a:GLOBAL:ipcc_ar6_100:v1",
+      "factor_name": "refrigerant_r_448a | kg | GLOBAL",
+      "factor_version": "1.0.0",
+      "formula_type": "combustion",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "IPCC-Guideline",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:53Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 1526.0,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "HHV": null,
+        "LHV": null,
+        "ash_share": null,
+        "biogenic_carbon_share": null,
+        "density": null,
+        "fossil_carbon_share": null,
+        "fuel_code": "refrigerant_r_448a",
+        "moisture_share": null,
+        "oxidation_factor": null,
+        "scope_applicability": [],
+        "sulfur_share": null,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 100.0,
+        "geographic_score": 5,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "ipcc_refrigerants_promoted",
+      "source_version": "ipcc_ar6_100",
+      "status": "certified",
+      "valid_from": "2021-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "refrigerant_r_407f",
+        "classification_codes": [],
+        "sub_category": "fugitive_emission"
+      },
+      "denominator": {
+        "unit": "kg",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "combustion",
+      "factor_id": "EF:IPCC:r_407f:GLOBAL:ipcc_ar5_100:v1",
+      "factor_name": "refrigerant_r_407f | kg | GLOBAL",
+      "factor_version": "1.0.0",
+      "formula_type": "combustion",
+      "gwp_set": "IPCC_AR5_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "IPCC-Guideline",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:53Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 1825.0,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "HHV": null,
+        "LHV": null,
+        "ash_share": null,
+        "biogenic_carbon_share": null,
+        "density": null,
+        "fossil_carbon_share": null,
+        "fuel_code": "refrigerant_r_407f",
+        "moisture_share": null,
+        "oxidation_factor": null,
+        "scope_applicability": [],
+        "sulfur_share": null,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 100.0,
+        "geographic_score": 5,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "ipcc_refrigerants_promoted",
+      "source_version": "ipcc_ar5_100",
+      "status": "certified",
+      "valid_from": "2013-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "refrigerant_r_407f",
+        "classification_codes": [],
+        "sub_category": "fugitive_emission"
+      },
+      "denominator": {
+        "unit": "kg",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "combustion",
+      "factor_id": "EF:IPCC:r_407f:GLOBAL:ipcc_ar6_100:v1",
+      "factor_name": "refrigerant_r_407f | kg | GLOBAL",
+      "factor_version": "1.0.0",
+      "formula_type": "combustion",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "IPCC-Guideline",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:53Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 2088.0,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "HHV": null,
+        "LHV": null,
+        "ash_share": null,
+        "biogenic_carbon_share": null,
+        "density": null,
+        "fossil_carbon_share": null,
+        "fuel_code": "refrigerant_r_407f",
+        "moisture_share": null,
+        "oxidation_factor": null,
+        "scope_applicability": [],
+        "sulfur_share": null,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 100.0,
+        "geographic_score": 5,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "ipcc_refrigerants_promoted",
+      "source_version": "ipcc_ar6_100",
+      "status": "certified",
+      "valid_from": "2021-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "refrigerant_r_23",
+        "classification_codes": [],
+        "sub_category": "fugitive_emission"
+      },
+      "denominator": {
+        "unit": "kg",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "combustion",
+      "factor_id": "EF:IPCC:r_23:GLOBAL:ipcc_ar5_100:v1",
+      "factor_name": "refrigerant_r_23 | kg | GLOBAL",
+      "factor_version": "1.0.0",
+      "formula_type": "combustion",
+      "gwp_set": "IPCC_AR5_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "IPCC-Guideline",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:53Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 12400.0,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "HHV": null,
+        "LHV": null,
+        "ash_share": null,
+        "biogenic_carbon_share": null,
+        "density": null,
+        "fossil_carbon_share": null,
+        "fuel_code": "refrigerant_r_23",
+        "moisture_share": null,
+        "oxidation_factor": null,
+        "scope_applicability": [],
+        "sulfur_share": null,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 100.0,
+        "geographic_score": 5,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "ipcc_refrigerants_promoted",
+      "source_version": "ipcc_ar5_100",
+      "status": "certified",
+      "valid_from": "2013-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "refrigerant_r_23",
+        "classification_codes": [],
+        "sub_category": "fugitive_emission"
+      },
+      "denominator": {
+        "unit": "kg",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "combustion",
+      "factor_id": "EF:IPCC:r_23:GLOBAL:ipcc_ar6_100:v1",
+      "factor_name": "refrigerant_r_23 | kg | GLOBAL",
+      "factor_version": "1.0.0",
+      "formula_type": "combustion",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "IPCC-Guideline",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:53Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 14600.0,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "HHV": null,
+        "LHV": null,
+        "ash_share": null,
+        "biogenic_carbon_share": null,
+        "density": null,
+        "fossil_carbon_share": null,
+        "fuel_code": "refrigerant_r_23",
+        "moisture_share": null,
+        "oxidation_factor": null,
+        "scope_applicability": [],
+        "sulfur_share": null,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 100.0,
+        "geographic_score": 5,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "ipcc_refrigerants_promoted",
+      "source_version": "ipcc_ar6_100",
+      "status": "certified",
+      "valid_from": "2021-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "refrigerant_sf6",
+        "classification_codes": [],
+        "sub_category": "fugitive_emission"
+      },
+      "denominator": {
+        "unit": "kg",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "combustion",
+      "factor_id": "EF:IPCC:sf6:GLOBAL:ipcc_ar5_100:v1",
+      "factor_name": "refrigerant_sf6 | kg | GLOBAL",
+      "factor_version": "1.0.0",
+      "formula_type": "combustion",
+      "gwp_set": "IPCC_AR5_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "IPCC-Guideline",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:53Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 23500.0,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "HHV": null,
+        "LHV": null,
+        "ash_share": null,
+        "biogenic_carbon_share": null,
+        "density": null,
+        "fossil_carbon_share": null,
+        "fuel_code": "refrigerant_sf6",
+        "moisture_share": null,
+        "oxidation_factor": null,
+        "scope_applicability": [],
+        "sulfur_share": null,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 100.0,
+        "geographic_score": 5,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "ipcc_refrigerants_promoted",
+      "source_version": "ipcc_ar5_100",
+      "status": "certified",
+      "valid_from": "2013-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "refrigerant_sf6",
+        "classification_codes": [],
+        "sub_category": "fugitive_emission"
+      },
+      "denominator": {
+        "unit": "kg",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "combustion",
+      "factor_id": "EF:IPCC:sf6:GLOBAL:ipcc_ar6_100:v1",
+      "factor_name": "refrigerant_sf6 | kg | GLOBAL",
+      "factor_version": "1.0.0",
+      "formula_type": "combustion",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "IPCC-Guideline",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:53Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 24300.0,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "HHV": null,
+        "LHV": null,
+        "ash_share": null,
+        "biogenic_carbon_share": null,
+        "density": null,
+        "fossil_carbon_share": null,
+        "fuel_code": "refrigerant_sf6",
+        "moisture_share": null,
+        "oxidation_factor": null,
+        "scope_applicability": [],
+        "sulfur_share": null,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 100.0,
+        "geographic_score": 5,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "ipcc_refrigerants_promoted",
+      "source_version": "ipcc_ar6_100",
+      "status": "certified",
+      "valid_from": "2021-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "refrigerant_nf3",
+        "classification_codes": [],
+        "sub_category": "fugitive_emission"
+      },
+      "denominator": {
+        "unit": "kg",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "combustion",
+      "factor_id": "EF:IPCC:nf3:GLOBAL:ipcc_ar5_100:v1",
+      "factor_name": "refrigerant_nf3 | kg | GLOBAL",
+      "factor_version": "1.0.0",
+      "formula_type": "combustion",
+      "gwp_set": "IPCC_AR5_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "IPCC-Guideline",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:53Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 16100.0,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "HHV": null,
+        "LHV": null,
+        "ash_share": null,
+        "biogenic_carbon_share": null,
+        "density": null,
+        "fossil_carbon_share": null,
+        "fuel_code": "refrigerant_nf3",
+        "moisture_share": null,
+        "oxidation_factor": null,
+        "scope_applicability": [],
+        "sulfur_share": null,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 100.0,
+        "geographic_score": 5,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "ipcc_refrigerants_promoted",
+      "source_version": "ipcc_ar5_100",
+      "status": "certified",
+      "valid_from": "2013-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "refrigerant_nf3",
+        "classification_codes": [],
+        "sub_category": "fugitive_emission"
+      },
+      "denominator": {
+        "unit": "kg",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "combustion",
+      "factor_id": "EF:IPCC:nf3:GLOBAL:ipcc_ar6_100:v1",
+      "factor_name": "refrigerant_nf3 | kg | GLOBAL",
+      "factor_version": "1.0.0",
+      "formula_type": "combustion",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "IPCC-Guideline",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:53Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 17400.0,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "HHV": null,
+        "LHV": null,
+        "ash_share": null,
+        "biogenic_carbon_share": null,
+        "density": null,
+        "fossil_carbon_share": null,
+        "fuel_code": "refrigerant_nf3",
+        "moisture_share": null,
+        "oxidation_factor": null,
+        "scope_applicability": [],
+        "sulfur_share": null,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 100.0,
+        "geographic_score": 5,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "ipcc_refrigerants_promoted",
+      "source_version": "ipcc_ar6_100",
+      "status": "certified",
+      "valid_from": "2021-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "refrigerant_cf4",
+        "classification_codes": [],
+        "sub_category": "fugitive_emission"
+      },
+      "denominator": {
+        "unit": "kg",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "combustion",
+      "factor_id": "EF:IPCC:cf4:GLOBAL:ipcc_ar5_100:v1",
+      "factor_name": "refrigerant_cf4 | kg | GLOBAL",
+      "factor_version": "1.0.0",
+      "formula_type": "combustion",
+      "gwp_set": "IPCC_AR5_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "IPCC-Guideline",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:53Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 6630.0,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "HHV": null,
+        "LHV": null,
+        "ash_share": null,
+        "biogenic_carbon_share": null,
+        "density": null,
+        "fossil_carbon_share": null,
+        "fuel_code": "refrigerant_cf4",
+        "moisture_share": null,
+        "oxidation_factor": null,
+        "scope_applicability": [],
+        "sulfur_share": null,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 100.0,
+        "geographic_score": 5,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "ipcc_refrigerants_promoted",
+      "source_version": "ipcc_ar5_100",
+      "status": "certified",
+      "valid_from": "2013-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "refrigerant_cf4",
+        "classification_codes": [],
+        "sub_category": "fugitive_emission"
+      },
+      "denominator": {
+        "unit": "kg",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "combustion",
+      "factor_id": "EF:IPCC:cf4:GLOBAL:ipcc_ar6_100:v1",
+      "factor_name": "refrigerant_cf4 | kg | GLOBAL",
+      "factor_version": "1.0.0",
+      "formula_type": "combustion",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "XX",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "IPCC-Guideline",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:53Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 7380.0,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "HHV": null,
+        "LHV": null,
+        "ash_share": null,
+        "biogenic_carbon_share": null,
+        "density": null,
+        "fossil_carbon_share": null,
+        "fuel_code": "refrigerant_cf4",
+        "moisture_share": null,
+        "oxidation_factor": null,
+        "scope_applicability": [],
+        "sulfur_share": null,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 100.0,
+        "geographic_score": 5,
+        "technology_score": 5,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "ipcc_refrigerants_promoted",
+      "source_version": "ipcc_ar6_100",
+      "status": "certified",
+      "valid_from": "2021-01-01",
+      "valid_to": "9999-12-31"
+    }
+  ],
+  "ingested_at": "2026-04-23T18:26:53+00:00",
+  "license_class": "public_international",
+  "license_name": "IPCC-Guideline",
+  "redistribution_class": "open",
+  "schema_version": "factor_record_v1",
+  "source_id": "ipcc_refrigerants_promoted",
+  "source_version": "ar5_ar6_100yr"
+}

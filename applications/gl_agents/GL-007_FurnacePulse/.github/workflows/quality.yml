@@ -1,0 +1,559 @@
+# GL-007 FurnacePulse - CI/CD Quality Pipeline
+#
+# Comprehensive quality gates for furnace performance monitoring agent
+# Enforces 85% test coverage, type checking, linting, and security scanning
+#
+# Reference: NFPA 86 Standard for Ovens and Furnaces
+#
+name: GL-007 FurnacePulse Quality Pipeline
+
+on:
+  push:
+    branches:
+      - main
+      - master
+      - develop
+      - 'feature/**'
+      - 'release/**'
+    paths:
+      - 'GL Agents/GL-007_FurnacePulse/**'
+  pull_request:
+    branches:
+      - main
+      - master
+      - develop
+    paths:
+      - 'GL Agents/GL-007_FurnacePulse/**'
+  workflow_dispatch:
+    inputs:
+      run_integration_tests:
+        description: 'Run integration tests'
+        required: false
+        default: 'false'
+        type: boolean
+      deploy_environment:
+        description: 'Deploy to environment'
+        required: false
+        default: 'none'
+        type: choice
+        options:
+          - none
+          - staging
+          - production
+
+env:
+  PYTHON_VERSION: '3.11'
+  AGENT_ID: 'GL-007'
+  AGENT_NAME: 'FurnacePulse'
+  WORKING_DIR: 'GL Agents/GL-007_FurnacePulse'
+  COVERAGE_THRESHOLD: 85
+  DOCKER_REGISTRY: ghcr.io/greenlang
+
+defaults:
+  run:
+    working-directory: 'GL Agents/GL-007_FurnacePulse'
+
+jobs:
+  # =============================================================================
+  # CODE QUALITY CHECKS
+  # =============================================================================
+  code-quality:
+    name: Code Quality Checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install ruff mypy bandit safety black isort
+          pip install -r requirements.txt
+
+      - name: Run Ruff linter
+        run: |
+          ruff check . --output-format=github
+          ruff format --check .
+
+      - name: Run Black formatter check
+        run: black --check --diff .
+
+      - name: Run isort import check
+        run: isort --check-only --diff .
+
+      - name: Run MyPy type checking
+        run: |
+          mypy . --ignore-missing-imports --show-error-codes \
+            --warn-unused-ignores --warn-redundant-casts \
+            --strict-optional --no-implicit-optional
+
+      - name: Run Bandit security check
+        run: |
+          bandit -r . -ll -ii -x ./tests
+
+      - name: Check for hardcoded secrets
+        uses: trufflesecurity/trufflehog@v3.63.0
+        with:
+          path: ${{ env.WORKING_DIR }}
+          base: ${{ github.event.repository.default_branch }}
+          head: HEAD
+
+  # =============================================================================
+  # UNIT TESTS WITH COVERAGE
+  # =============================================================================
+  unit-tests:
+    name: Unit Tests (Coverage ${{ env.COVERAGE_THRESHOLD }}%)
+    runs-on: ubuntu-latest
+    needs: code-quality
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest pytest-cov pytest-asyncio pytest-xdist pytest-timeout
+          pip install hypothesis faker
+          pip install -r requirements.txt
+
+      - name: Run unit tests with coverage
+        run: |
+          pytest tests/test_unit/ \
+            --cov=. \
+            --cov-report=xml:coverage.xml \
+            --cov-report=html:htmlcov \
+            --cov-report=term-missing \
+            --cov-fail-under=${{ env.COVERAGE_THRESHOLD }} \
+            -v \
+            --tb=short \
+            --timeout=300 \
+            -n auto \
+            --junitxml=test-results.xml
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./GL Agents/GL-007_FurnacePulse/coverage.xml
+          flags: unittests,gl-007
+          name: gl-007-furnacepulse-coverage
+          fail_ci_if_error: true
+          verbose: true
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: unit-test-results
+          path: |
+            ${{ env.WORKING_DIR }}/test-results.xml
+            ${{ env.WORKING_DIR }}/htmlcov/
+
+      - name: Publish test results
+        uses: dorny/test-reporter@v1
+        if: always()
+        with:
+          name: Unit Tests Report
+          path: ${{ env.WORKING_DIR }}/test-results.xml
+          reporter: java-junit
+          fail-on-error: true
+
+  # =============================================================================
+  # INTEGRATION TESTS
+  # =============================================================================
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    needs: unit-tests
+    if: github.event_name == 'pull_request' || github.event.inputs.run_integration_tests == 'true'
+    services:
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      kafka:
+        image: confluentinc/cp-kafka:7.5.0
+        ports:
+          - 9092:9092
+        env:
+          KAFKA_NODE_ID: 1
+          KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+          KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
+          KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+          KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+          KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+          KAFKA_PROCESS_ROLES: broker,controller
+          KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+          CLUSTER_ID: 'ci-test-cluster'
+      influxdb:
+        image: influxdb:2.7
+        ports:
+          - 8086:8086
+        env:
+          DOCKER_INFLUXDB_INIT_MODE: setup
+          DOCKER_INFLUXDB_INIT_USERNAME: admin
+          DOCKER_INFLUXDB_INIT_PASSWORD: adminpass
+          DOCKER_INFLUXDB_INIT_ORG: greenlang
+          DOCKER_INFLUXDB_INIT_BUCKET: furnace_telemetry
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest pytest-asyncio pytest-timeout
+          pip install -r requirements.txt
+
+      - name: Wait for services
+        run: |
+          timeout 60 bash -c 'until nc -z localhost 6379; do sleep 1; done'
+          echo "Redis is ready"
+          timeout 60 bash -c 'until nc -z localhost 8086; do sleep 1; done'
+          echo "InfluxDB is ready"
+
+      - name: Run integration tests
+        env:
+          REDIS_URL: redis://localhost:6379
+          KAFKA_BOOTSTRAP_SERVERS: localhost:9092
+          INFLUXDB_URL: http://localhost:8086
+          INFLUXDB_TOKEN: adminpass
+          INFLUXDB_ORG: greenlang
+          INFLUXDB_BUCKET: furnace_telemetry
+        run: |
+          pytest tests/test_integration/ \
+            -v \
+            --tb=short \
+            --timeout=600 \
+            --junitxml=integration-test-results.xml
+
+      - name: Upload integration test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: integration-test-results
+          path: ${{ env.WORKING_DIR }}/integration-test-results.xml
+
+  # =============================================================================
+  # NFPA 86 COMPLIANCE TESTS
+  # =============================================================================
+  compliance-tests:
+    name: NFPA 86 Compliance Tests
+    runs-on: ubuntu-latest
+    needs: unit-tests
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest pytest-asyncio
+          pip install -r requirements.txt
+
+      - name: Run NFPA 86 compliance tests
+        run: |
+          pytest tests/test_compliance/ \
+            -v \
+            --tb=short \
+            -m "nfpa or safety" \
+            --junitxml=compliance-test-results.xml
+
+      - name: Upload compliance test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: compliance-test-results
+          path: ${{ env.WORKING_DIR }}/compliance-test-results.xml
+
+  # =============================================================================
+  # SECURITY SCANNING
+  # =============================================================================
+  security-scan:
+    name: Security Scanning
+    runs-on: ubuntu-latest
+    needs: code-quality
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install safety pip-audit
+
+      - name: Check dependencies for vulnerabilities (Safety)
+        run: |
+          safety check -r requirements.txt --full-report
+
+      - name: Audit dependencies (pip-audit)
+        run: |
+          pip-audit -r requirements.txt --strict
+
+      - name: SAST with Semgrep
+        uses: semgrep/semgrep-action@v1
+        with:
+          config: >-
+            p/python
+            p/security-audit
+            p/owasp-top-ten
+          generateSarif: true
+
+      - name: Upload SARIF file
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: semgrep.sarif
+
+  # =============================================================================
+  # DOCKER BUILD
+  # =============================================================================
+  docker-build:
+    name: Build Docker Image
+    runs-on: ubuntu-latest
+    needs: [unit-tests, security-scan, compliance-tests]
+    outputs:
+      image-tag: ${{ steps.meta.outputs.tags }}
+      image-digest: ${{ steps.build.outputs.digest }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.DOCKER_REGISTRY }}/gl-007-furnacepulse
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=sha,prefix=
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+
+      - name: Build and push Docker image
+        id: build
+        uses: docker/build-push-action@v5
+        with:
+          context: ${{ env.WORKING_DIR }}
+          file: ${{ env.WORKING_DIR }}/Dockerfile
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          platforms: linux/amd64,linux/arm64
+          build-args: |
+            BUILD_DATE=${{ github.event.head_commit.timestamp }}
+            VCS_REF=${{ github.sha }}
+            VERSION=${{ github.ref_name }}
+
+      - name: Scan Docker image for vulnerabilities
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.DOCKER_REGISTRY }}/gl-007-furnacepulse:${{ github.sha }}
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          severity: 'CRITICAL,HIGH'
+
+      - name: Upload Trivy scan results
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+  # =============================================================================
+  # DEPLOYMENT (STAGING)
+  # =============================================================================
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: docker-build
+    if: github.ref == 'refs/heads/develop' || github.event.inputs.deploy_environment == 'staging'
+    environment:
+      name: staging
+      url: https://staging.gl-007.greenlang.io
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'v1.28.0'
+
+      - name: Configure kubectl
+        run: |
+          echo "${{ secrets.KUBE_CONFIG_STAGING }}" | base64 -d > kubeconfig
+          echo "KUBECONFIG=$(pwd)/kubeconfig" >> $GITHUB_ENV
+
+      - name: Deploy to staging
+        run: |
+          kubectl set image deployment/gl-007-furnacepulse \
+            furnacepulse=${{ env.DOCKER_REGISTRY }}/gl-007-furnacepulse:${{ github.sha }} \
+            -n greenlang-agents-staging
+
+      - name: Wait for rollout
+        run: |
+          kubectl rollout status deployment/gl-007-furnacepulse \
+            -n greenlang-agents-staging \
+            --timeout=300s
+
+      - name: Run smoke tests
+        run: |
+          STAGING_URL="https://staging.gl-007.greenlang.io"
+          curl -f "$STAGING_URL/api/v1/health" || exit 1
+          curl -f "$STAGING_URL/api/v1/nfpa86/status" || exit 1
+
+  # =============================================================================
+  # DEPLOYMENT (PRODUCTION)
+  # =============================================================================
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [docker-build, deploy-staging]
+    if: github.ref == 'refs/heads/main' || github.event.inputs.deploy_environment == 'production'
+    environment:
+      name: production
+      url: https://gl-007.greenlang.io
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'v1.28.0'
+
+      - name: Configure kubectl
+        run: |
+          echo "${{ secrets.KUBE_CONFIG_PRODUCTION }}" | base64 -d > kubeconfig
+          echo "KUBECONFIG=$(pwd)/kubeconfig" >> $GITHUB_ENV
+
+      - name: Deploy to production
+        run: |
+          kubectl set image deployment/gl-007-furnacepulse \
+            furnacepulse=${{ env.DOCKER_REGISTRY }}/gl-007-furnacepulse:${{ github.sha }} \
+            -n greenlang-agents
+
+      - name: Wait for rollout
+        run: |
+          kubectl rollout status deployment/gl-007-furnacepulse \
+            -n greenlang-agents \
+            --timeout=600s
+
+      - name: Run production health check
+        run: |
+          PROD_URL="https://gl-007.greenlang.io"
+          curl -f "$PROD_URL/api/v1/health" || exit 1
+          curl -f "$PROD_URL/api/v1/nfpa86/status" || exit 1
+
+      - name: Notify deployment success
+        uses: slackapi/slack-github-action@v1.25.0
+        if: success()
+        with:
+          payload: |
+            {
+              "text": ":white_check_mark: GL-007 FurnacePulse deployed to production",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*GL-007 FurnacePulse* deployed to production\nCommit: `${{ github.sha }}`\nBy: ${{ github.actor }}"
+                  }
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  # =============================================================================
+  # QUALITY GATE SUMMARY
+  # =============================================================================
+  quality-gate:
+    name: Quality Gate Summary
+    runs-on: ubuntu-latest
+    needs: [code-quality, unit-tests, security-scan, compliance-tests, docker-build]
+    if: always()
+    steps:
+      - name: Check quality gate status
+        run: |
+          if [ "${{ needs.code-quality.result }}" != "success" ]; then
+            echo "Code quality checks failed"
+            exit 1
+          fi
+          if [ "${{ needs.unit-tests.result }}" != "success" ]; then
+            echo "Unit tests failed or coverage below ${{ env.COVERAGE_THRESHOLD }}%"
+            exit 1
+          fi
+          if [ "${{ needs.security-scan.result }}" != "success" ]; then
+            echo "Security scan found vulnerabilities"
+            exit 1
+          fi
+          if [ "${{ needs.compliance-tests.result }}" != "success" ]; then
+            echo "NFPA 86 compliance tests failed"
+            exit 1
+          fi
+          if [ "${{ needs.docker-build.result }}" != "success" ]; then
+            echo "Docker build failed"
+            exit 1
+          fi
+          echo "All quality gates passed!"
+
+      - name: Create quality badge
+        uses: schneegans/dynamic-badges-action@v1.7.0
+        if: github.ref == 'refs/heads/main'
+        with:
+          auth: ${{ secrets.GIST_TOKEN }}
+          gistID: ${{ secrets.GIST_ID }}
+          filename: gl-007-quality.json
+          label: Quality Gate
+          message: Passed
+          color: green

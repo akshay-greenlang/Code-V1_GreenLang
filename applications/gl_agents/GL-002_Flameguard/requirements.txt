@@ -1,0 +1,73 @@
+# GL-002 FLAMEGUARD - Python Dependencies
+# Boiler Efficiency Optimization Agent
+
+# Core framework
+pydantic>=2.0.0,<3.0.0
+python-dotenv>=1.2.1
+
+# API framework
+fastapi>=0.100.0,<1.0.0
+uvicorn[standard]>=0.22.0,<1.0.0
+httpx>=0.28.1
+
+# Async support
+aiohttp>=3.8.0,<4.0.0
+asyncio-throttle>=1.0.0
+
+# Data processing
+numpy>=1.24.0,<2.0.0
+scipy>=1.10.0,<2.0.0
+pandas>=2.0.0,<3.0.0
+
+# Machine learning (optional, for advanced optimization)
+scikit-learn>=1.2.0,<2.0.0
+
+# Kafka streaming
+aiokafka>=0.8.0,<1.0.0
+confluent-kafka>=2.0.0
+
+# Metrics and monitoring
+prometheus-client>=0.17.0,<1.0.0
+
+# Logging
+structlog>=23.1.0
+
+# Configuration
+pyyaml>=6.0.0
+toml>=0.10.0
+
+# Testing (dev dependencies)
+pytest>=7.0.0
+pytest-asyncio>=0.21.0
+pytest-cov>=4.0.0
+pytest-mock>=3.10.0
+hypothesis>=6.0.0
+
+# Linting and formatting (dev dependencies)
+black>=23.0.0
+isort>=5.12.0
+mypy>=1.0.0
+ruff>=0.0.270
+
+# Documentation (dev dependencies)
+mkdocs>=1.4.0
+mkdocs-material>=9.0.0
+
+# Industrial protocols (optional)
+# pymodbus>=3.0.0  # Modbus TCP/RTU
+# asyncua>=1.0.0   # OPC-UA client
+# pydnp3>=0.1.0    # DNP3 protocol
+
+# Database (optional, for persistent storage)
+# sqlalchemy>=2.0.0
+# asyncpg>=0.27.0  # PostgreSQL async
+# aiosqlite>=0.19.0  # SQLite async
+
+# Redis (optional, for caching)
+# redis>=4.5.0
+# aioredis>=2.0.0
+
+# gRPC (optional)
+# grpcio>=1.54.0
+# grpcio-tools>=1.54.0
+# protobuf>=4.0.0

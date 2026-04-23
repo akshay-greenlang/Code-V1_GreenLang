@@ -1,0 +1,834 @@
+# GL-005 Combusense - High Availability Deployment
+# Combustion Control & Sensing Agent
+# Real-time PID control with hot standby failover
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: greenlang
+  labels:
+    name: greenlang
+    agent: gl-005
+
+---
+# ServiceAccount
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: gl-005-combusense-sa
+  namespace: greenlang
+  labels:
+    app: gl-005-combusense
+
+---
+# ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gl-005-combusense-config
+  namespace: greenlang
+data:
+  AGENT_ID: "gl-005"
+  AGENT_NAME: "combusense"
+  ENVIRONMENT: "production"
+  LOG_LEVEL: "INFO"
+  # Control System Configuration
+  PID_UPDATE_INTERVAL_MS: "1"
+  CONTROL_LOOP_INTERVAL_MS: "10"
+  WATCHDOG_TIMEOUT_MS: "100"
+  BUMPLESS_TRANSFER_ENABLED: "true"
+  # Safety Configuration
+  FLAME_FAILURE_RESPONSE_MS: "50"
+  INTERLOCK_ENABLED: "true"
+  SAFE_STATE_ON_FAILURE: "true"
+  # Database Configuration
+  POSTGRES_DB: "greenlang_gl005"
+  POSTGRES_HOST: "gl-005-postgres-ha"
+  POSTGRES_PORT: "5432"
+  # Redis Configuration
+  REDIS_SENTINEL_MASTER: "gl-005-master"
+  REDIS_SENTINEL_HOST: "gl-005-redis-sentinel"
+  REDIS_SENTINEL_PORT: "26379"
+  # InfluxDB Configuration (for time-series metrics)
+  INFLUXDB_HOST: "gl-005-influxdb"
+  INFLUXDB_PORT: "8086"
+  INFLUXDB_ORG: "greenlang"
+  INFLUXDB_BUCKET: "combusense_metrics"
+  # Kafka Configuration
+  KAFKA_BOOTSTRAP_SERVERS: "gl-005-kafka-0.gl-005-kafka-headless:9092,gl-005-kafka-1.gl-005-kafka-headless:9092,gl-005-kafka-2.gl-005-kafka-headless:9092"
+  KAFKA_TOPIC_CONTROL: "gl-005-control-outputs"
+  KAFKA_TOPIC_SENSORS: "gl-005-sensor-data"
+  KAFKA_TOPIC_ALARMS: "gl-005-alarms"
+  # WebSocket/SSE Configuration
+  WEBSOCKET_ENABLED: "true"
+  SSE_ENABLED: "true"
+  STREAMING_BUFFER_SIZE: "1000"
+
+---
+# Secret (reference - actual values in sealed-secrets)
+apiVersion: v1
+kind: Secret
+metadata:
+  name: gl-005-combusense-secrets
+  namespace: greenlang
+type: Opaque
+stringData:
+  POSTGRES_USER: "gl005_user"
+  POSTGRES_PASSWORD: "REPLACE_WITH_SEALED_SECRET"
+  REDIS_PASSWORD: "REPLACE_WITH_SEALED_SECRET"
+  INFLUXDB_TOKEN: "REPLACE_WITH_SEALED_SECRET"
+  API_SECRET_KEY: "REPLACE_WITH_SEALED_SECRET"
+
+---
+# Primary Controller Deployment (Active)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gl-005-combusense-primary
+  namespace: greenlang
+  labels:
+    app: gl-005-combusense
+    role: primary
+    tier: control
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: gl-005-combusense
+      role: primary
+  template:
+    metadata:
+      labels:
+        app: gl-005-combusense
+        role: primary
+        tier: control
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: gl-005-combusense-sa
+      terminationGracePeriodSeconds: 30
+
+      # Pod anti-affinity for HA
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels:
+                  app: gl-005-combusense
+                  role: primary
+              topologyKey: kubernetes.io/hostname
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app: gl-005-combusense
+                topologyKey: topology.kubernetes.io/zone
+        # Prefer nodes with real-time scheduling
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              preference:
+                matchExpressions:
+                  - key: node-type
+                    operator: In
+                    values:
+                      - realtime-control
+
+      # Topology spread across zones
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: DoNotSchedule
+          labelSelector:
+            matchLabels:
+              app: gl-005-combusense
+              role: primary
+
+      # Priority class for control systems
+      priorityClassName: system-cluster-critical
+
+      initContainers:
+        - name: wait-for-postgres
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - |
+              until nc -z gl-005-postgres-ha 5432; do
+                echo "Waiting for PostgreSQL..."
+                sleep 2
+              done
+              echo "PostgreSQL is ready"
+          resources:
+            limits:
+              cpu: 50m
+              memory: 32Mi
+
+        - name: wait-for-redis
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - |
+              until nc -z gl-005-redis-sentinel 26379; do
+                echo "Waiting for Redis Sentinel..."
+                sleep 2
+              done
+              echo "Redis Sentinel is ready"
+          resources:
+            limits:
+              cpu: 50m
+              memory: 32Mi
+
+        - name: wait-for-influxdb
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - |
+              until nc -z gl-005-influxdb 8086; do
+                echo "Waiting for InfluxDB..."
+                sleep 2
+              done
+              echo "InfluxDB is ready"
+          resources:
+            limits:
+              cpu: 50m
+              memory: 32Mi
+
+      containers:
+        - name: combusense
+          image: greenlang/gl-005-combusense:latest
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+            - name: websocket
+              containerPort: 8081
+              protocol: TCP
+            - name: metrics
+              containerPort: 9090
+              protocol: TCP
+            - name: control
+              containerPort: 8082
+              protocol: TCP
+
+          envFrom:
+            - configMapRef:
+                name: gl-005-combusense-config
+            - secretRef:
+                name: gl-005-combusense-secrets
+
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: CONTROLLER_ROLE
+              value: "primary"
+            - name: CONTROLLER_MODE
+              value: "active"
+
+          resources:
+            requests:
+              cpu: 500m
+              memory: 512Mi
+            limits:
+              cpu: 2000m
+              memory: 2Gi
+
+          # Startup probe - allow 60s for initialization
+          startupProbe:
+            httpGet:
+              path: /api/v1/health/startup
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 12
+
+          # Liveness probe - fast detection for control systems
+          livenessProbe:
+            httpGet:
+              path: /api/v1/health/live
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 2
+            failureThreshold: 2
+            successThreshold: 1
+
+          # Readiness probe
+          readinessProbe:
+            httpGet:
+              path: /api/v1/health/ready
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 3
+            timeoutSeconds: 2
+            failureThreshold: 2
+            successThreshold: 1
+
+          volumeMounts:
+            - name: pid-config
+              mountPath: /app/config/pid
+              readOnly: true
+            - name: sensor-calibration
+              mountPath: /app/config/calibration
+              readOnly: true
+            - name: tmp
+              mountPath: /tmp
+
+          securityContext:
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1000
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+
+        # Watchdog sidecar for controller monitoring
+        - name: watchdog
+          image: greenlang/gl-watchdog:latest
+          env:
+            - name: WATCH_TARGET
+              value: "localhost:8080"
+            - name: WATCHDOG_INTERVAL_MS
+              value: "50"
+            - name: FAILOVER_THRESHOLD_MS
+              value: "100"
+            - name: ALERT_ENDPOINT
+              value: "http://alertmanager:9093/api/v1/alerts"
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 100m
+              memory: 128Mi
+
+      volumes:
+        - name: pid-config
+          configMap:
+            name: gl-005-pid-parameters
+        - name: sensor-calibration
+          configMap:
+            name: gl-005-sensor-calibration
+        - name: tmp
+          emptyDir: {}
+
+---
+# Standby Controller Deployment (Hot Standby with Tracking)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gl-005-combusense-standby
+  namespace: greenlang
+  labels:
+    app: gl-005-combusense
+    role: standby
+    tier: control
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: gl-005-combusense
+      role: standby
+  template:
+    metadata:
+      labels:
+        app: gl-005-combusense
+        role: standby
+        tier: control
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: gl-005-combusense-sa
+      terminationGracePeriodSeconds: 30
+
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels:
+                  app: gl-005-combusense
+                  role: standby
+              topologyKey: kubernetes.io/hostname
+            - labelSelector:
+                matchLabels:
+                  app: gl-005-combusense
+                  role: primary
+              topologyKey: topology.kubernetes.io/zone
+
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: DoNotSchedule
+          labelSelector:
+            matchLabels:
+              app: gl-005-combusense
+              role: standby
+
+      priorityClassName: system-cluster-critical
+
+      initContainers:
+        - name: wait-for-primary
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - |
+              until nc -z gl-005-combusense-primary 8080; do
+                echo "Waiting for primary controller..."
+                sleep 2
+              done
+              echo "Primary controller is ready"
+          resources:
+            limits:
+              cpu: 50m
+              memory: 32Mi
+
+      containers:
+        - name: combusense
+          image: greenlang/gl-005-combusense:latest
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+            - name: websocket
+              containerPort: 8081
+              protocol: TCP
+            - name: metrics
+              containerPort: 9090
+              protocol: TCP
+            - name: control
+              containerPort: 8082
+              protocol: TCP
+
+          envFrom:
+            - configMapRef:
+                name: gl-005-combusense-config
+            - secretRef:
+                name: gl-005-combusense-secrets
+
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: CONTROLLER_ROLE
+              value: "standby"
+            - name: CONTROLLER_MODE
+              value: "tracking"
+            - name: PRIMARY_CONTROLLER_HOST
+              value: "gl-005-combusense-primary"
+
+          resources:
+            requests:
+              cpu: 500m
+              memory: 512Mi
+            limits:
+              cpu: 2000m
+              memory: 2Gi
+
+          startupProbe:
+            httpGet:
+              path: /api/v1/health/startup
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 12
+
+          livenessProbe:
+            httpGet:
+              path: /api/v1/health/live
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 2
+            failureThreshold: 2
+
+          readinessProbe:
+            httpGet:
+              path: /api/v1/health/ready
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 3
+            timeoutSeconds: 2
+            failureThreshold: 2
+
+          volumeMounts:
+            - name: pid-config
+              mountPath: /app/config/pid
+              readOnly: true
+            - name: sensor-calibration
+              mountPath: /app/config/calibration
+              readOnly: true
+            - name: tmp
+              mountPath: /tmp
+
+          securityContext:
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1000
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+
+      volumes:
+        - name: pid-config
+          configMap:
+            name: gl-005-pid-parameters
+        - name: sensor-calibration
+          configMap:
+            name: gl-005-sensor-calibration
+        - name: tmp
+          emptyDir: {}
+
+---
+# Primary Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-005-combusense-primary
+  namespace: greenlang
+  labels:
+    app: gl-005-combusense
+    role: primary
+spec:
+  type: ClusterIP
+  selector:
+    app: gl-005-combusense
+    role: primary
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+    - name: websocket
+      port: 8081
+      targetPort: 8081
+    - name: control
+      port: 8082
+      targetPort: 8082
+
+---
+# Standby Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-005-combusense-standby
+  namespace: greenlang
+  labels:
+    app: gl-005-combusense
+    role: standby
+spec:
+  type: ClusterIP
+  selector:
+    app: gl-005-combusense
+    role: standby
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+    - name: websocket
+      port: 8081
+      targetPort: 8081
+    - name: control
+      port: 8082
+      targetPort: 8082
+
+---
+# Headless Service for StatefulSet-like discovery
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-005-combusense-headless
+  namespace: greenlang
+  labels:
+    app: gl-005-combusense
+spec:
+  clusterIP: None
+  selector:
+    app: gl-005-combusense
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+    - name: control
+      port: 8082
+      targetPort: 8082
+
+---
+# HorizontalPodAutoscaler for Primary
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: gl-005-combusense-primary-hpa
+  namespace: greenlang
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: gl-005-combusense-primary
+  minReplicas: 2
+  maxReplicas: 6
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 60
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Pods
+      pods:
+        metric:
+          name: combusense_control_loop_latency_ms
+        target:
+          type: AverageValue
+          averageValue: "50"
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Pods
+          value: 1
+          periodSeconds: 60
+    scaleUp:
+      stabilizationWindowSeconds: 30
+      policies:
+        - type: Pods
+          value: 2
+          periodSeconds: 30
+
+---
+# PodDisruptionBudget for Primary
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: gl-005-combusense-primary-pdb
+  namespace: greenlang
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: gl-005-combusense
+      role: primary
+
+---
+# PodDisruptionBudget for Standby
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: gl-005-combusense-standby-pdb
+  namespace: greenlang
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: gl-005-combusense
+      role: standby
+
+---
+# PID Parameters ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gl-005-pid-parameters
+  namespace: greenlang
+data:
+  temperature-controller.yaml: |
+    controller:
+      name: temperature
+      type: pid
+      kp: 2.5
+      ki: 0.1
+      kd: 0.5
+      setpoint_min: 0
+      setpoint_max: 1200
+      output_min: 0
+      output_max: 100
+      anti_windup: true
+      derivative_filter: 0.1
+      sample_time_ms: 10
+
+  air-fuel-ratio.yaml: |
+    controller:
+      name: air_fuel_ratio
+      type: pid_feedforward
+      kp: 1.5
+      ki: 0.05
+      kd: 0.2
+      feedforward_gain: 0.8
+      setpoint_min: 10
+      setpoint_max: 20
+      output_min: 0
+      output_max: 100
+      anti_windup: true
+      sample_time_ms: 10
+
+  o2-trim.yaml: |
+    controller:
+      name: o2_trim
+      type: pid
+      kp: 0.5
+      ki: 0.02
+      kd: 0.1
+      setpoint_min: 1
+      setpoint_max: 10
+      output_min: -10
+      output_max: 10
+      anti_windup: true
+      sample_time_ms: 100
+
+---
+# Sensor Calibration ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gl-005-sensor-calibration
+  namespace: greenlang
+data:
+  temperature-sensors.yaml: |
+    sensors:
+      - id: TC-001
+        type: thermocouple
+        subtype: K
+        range_min: 0
+        range_max: 1300
+        offset: 0.0
+        scale: 1.0
+        last_calibration: "2025-01-01"
+      - id: TC-002
+        type: thermocouple
+        subtype: K
+        range_min: 0
+        range_max: 1300
+        offset: 0.5
+        scale: 1.001
+        last_calibration: "2025-01-01"
+
+  analyzers.yaml: |
+    analyzers:
+      - id: O2-001
+        type: oxygen
+        range_min: 0
+        range_max: 25
+        offset: 0.0
+        scale: 1.0
+        response_time_ms: 500
+        last_calibration: "2025-01-01"
+      - id: CO-001
+        type: carbon_monoxide
+        range_min: 0
+        range_max: 1000
+        offset: 0.0
+        scale: 1.0
+        response_time_ms: 1000
+        last_calibration: "2025-01-01"
+
+  flame-scanners.yaml: |
+    scanners:
+      - id: FS-001
+        type: uv_ir
+        sensitivity: 0.8
+        threshold: 20
+        voting_group: flame_main
+      - id: FS-002
+        type: uv_ir
+        sensitivity: 0.8
+        threshold: 20
+        voting_group: flame_main
+      - id: FS-003
+        type: uv_ir
+        sensitivity: 0.8
+        threshold: 20
+        voting_group: flame_main
+
+---
+# NetworkPolicy
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: gl-005-combusense-network-policy
+  namespace: greenlang
+spec:
+  podSelector:
+    matchLabels:
+      app: gl-005-combusense
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: greenlang
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+      ports:
+        - protocol: TCP
+          port: 8080
+        - protocol: TCP
+          port: 8081
+        - protocol: TCP
+          port: 8082
+        - protocol: TCP
+          port: 9090
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: greenlang
+      ports:
+        - protocol: TCP
+          port: 5432
+        - protocol: TCP
+          port: 26379
+        - protocol: TCP
+          port: 6379
+        - protocol: TCP
+          port: 8086
+        - protocol: TCP
+          port: 9092
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53

@@ -22,6 +22,7 @@ from greenlang.factors.catalog_repository import (
     _cap_facet_counts,
     _record_from_stored_payload,
 )
+from greenlang.factors.middleware.method_profile_guard import require_method_profile
 
 logger = logging.getLogger(__name__)
 
@@ -180,7 +181,15 @@ class PostgresFactorCatalogRepository(FactorCatalogRepository):
         limit: int = 100,
         include_preview: bool = False,
         include_connector: bool = False,
+        *,
+        method_profile: Optional[Any] = None,
     ) -> Tuple[List[EmissionFactorRecord], int]:
+        # N6 guard — policy workflows must bind a method_profile before
+        # reaching the catalog. No-op outside ``@policy_workflow`` scope.
+        require_method_profile(
+            {"method_profile": method_profile},
+            caller="PostgresFactorCatalogRepository.list_factors",
+        )
         vis = _status_visibility_sql(include_preview, include_connector)
         clauses = ["edition_id = %s", vis]
         params: List[Any] = [edition_id]
@@ -215,7 +224,18 @@ class PostgresFactorCatalogRepository(FactorCatalogRepository):
         recs = [_record_from_stored_payload(json.loads(r[0])) for r in rows]
         return recs, int(total)
 
-    def get_factor(self, edition_id: str, factor_id: str) -> Optional[EmissionFactorRecord]:
+    def get_factor(
+        self,
+        edition_id: str,
+        factor_id: str,
+        *,
+        method_profile: Optional[Any] = None,
+    ) -> Optional[EmissionFactorRecord]:
+        # N6 guard — see ``list_factors`` above.
+        require_method_profile(
+            {"method_profile": method_profile},
+            caller="PostgresFactorCatalogRepository.get_factor",
+        )
         with self._get_sync_conn() as conn:
             with conn.cursor() as cur:
                 cur.execute(

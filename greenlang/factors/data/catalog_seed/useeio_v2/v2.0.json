@@ -1,0 +1,3933 @@
+{
+  "source_id": "useeio_v2",
+  "source_version": "2.0",
+  "ingested_at": "2026-04-23T18:26:53+00:00",
+  "license_class": "public_us_government",
+  "license_name": "US-Public-Domain",
+  "redistribution_class": "open",
+  "attribution_text": "U.S. Environmental Protection Agency, Office of Research and Development \u2014 USEEIO v2.0 Supply Chain GHG Emission Factors.",
+  "factor_status_default": "certified",
+  "factor_count": 35,
+  "factors": [
+    {
+      "factor_id": "EF:EEIO:453210:US:v2.0:v1",
+      "fuel_type": "office_supplies_and_stationery_stores",
+      "unit": "usd",
+      "geography": "US",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 0.251,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR5_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 265
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "US EPA (Office of Research and Development)",
+        "source_publication": "USEEIO v2.0 Supply Chain GHG Emission Factors, US EPA Office of Research and Development",
+        "source_year": 2022,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.epa.gov/land-research/us-environmentally-extended-input-output-useeio-models",
+        "version": "2.0"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.3,
+      "dqs": {
+        "temporal": 3,
+        "geographical": 3,
+        "technological": 3,
+        "representativeness": 3,
+        "methodological": 3
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "useeio",
+        "spend_based",
+        "scope3_cat1",
+        "naics_453210",
+        "illustrative"
+      ],
+      "notes": "USEEIO v2.0 sector: Office supplies and stationery stores; illustrative_value=true; TODO: bulk-import full USEEIO v2 before GA",
+      "factor_family": "finance_proxy",
+      "activity_tags": [
+        "spend_based",
+        "purchased_goods_and_services"
+      ],
+      "sector_tags": [
+        "naics_45"
+      ],
+      "source_id": "useeio_v2",
+      "source_release": "v2.0",
+      "release_version": "useeio-v2.0",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "GHG_Protocol_Scope3",
+        "USEPA_SCGHG"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. Environmental Protection Agency, Office of Research and Development \u2014 USEEIO v2.0 Supply Chain GHG Emission Factors.",
+        "alternates_considered": [
+          "EF:EEIO:541512:US:v2.0:v1",
+          "EF:EEIO:541511:US:v2.0:v1",
+          "EF:EEIO:541110:US:v2.0:v1",
+          "EF:EEIO:541810:US:v2.0:v1",
+          "EF:EEIO:722310:US:v2.0:v1",
+          "EF:EEIO:561720:US:v2.0:v1",
+          "EF:EEIO:334118:US:v2.0:v1",
+          "EF:EEIO:337215:US:v2.0:v1",
+          "EF:EEIO:325120:US:v2.0:v1",
+          "EF:EEIO:323111:US:v2.0:v1",
+          "EF:EEIO:423110:US:v2.0:v1",
+          "EF:EEIO:326199:US:v2.0:v1",
+          "EF:EEIO:331110:US:v2.0:v1",
+          "EF:EEIO:334412:US:v2.0:v1",
+          "EF:EEIO:323113:US:v2.0:v1",
+          "EF:EEIO:518210:US:v2.0:v1",
+          "EF:EEIO:811111:US:v2.0:v1",
+          "EF:EEIO:325412:US:v2.0:v1",
+          "EF:EEIO:336411:US:v2.0:v1",
+          "EF:EEIO:333910:US:v2.0:v1",
+          "EF:EEIO:332710:US:v2.0:v1",
+          "EF:EEIO:611110:US:v2.0:v1",
+          "EF:EEIO:321113:US:v2.0:v1",
+          "EF:EEIO:221112:US:v2.0:v1",
+          "EF:EEIO:236115:US:v2.0:v1",
+          "EF:EEIO:484110:US:v2.0:v1",
+          "EF:EEIO:112120:US:v2.0:v1",
+          "EF:EEIO:311611:US:v2.0:v1",
+          "EF:EEIO:622110:US:v2.0:v1",
+          "EF:EEIO:721110:US:v2.0:v1",
+          "EF:EEIO:551114:US:v2.0:v1",
+          "EF:EEIO:523110:US:v2.0:v1",
+          "EF:EEIO:524113:US:v2.0:v1",
+          "EF:EEIO:481111:US:v2.0:v1"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:EEIO:541512:US:v2.0:v1",
+      "fuel_type": "computer_systems_design_services",
+      "unit": "usd",
+      "geography": "US",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 0.088,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR5_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 265
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "US EPA (Office of Research and Development)",
+        "source_publication": "USEEIO v2.0 Supply Chain GHG Emission Factors, US EPA Office of Research and Development",
+        "source_year": 2022,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.epa.gov/land-research/us-environmentally-extended-input-output-useeio-models",
+        "version": "2.0"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.3,
+      "dqs": {
+        "temporal": 3,
+        "geographical": 3,
+        "technological": 3,
+        "representativeness": 3,
+        "methodological": 3
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "useeio",
+        "spend_based",
+        "scope3_cat1",
+        "naics_541512",
+        "illustrative"
+      ],
+      "notes": "USEEIO v2.0 sector: Computer systems design services; illustrative_value=true; TODO: bulk-import full USEEIO v2 before GA",
+      "factor_family": "finance_proxy",
+      "activity_tags": [
+        "spend_based",
+        "purchased_goods_and_services"
+      ],
+      "sector_tags": [
+        "naics_54"
+      ],
+      "source_id": "useeio_v2",
+      "source_release": "v2.0",
+      "release_version": "useeio-v2.0",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "GHG_Protocol_Scope3",
+        "USEPA_SCGHG"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. Environmental Protection Agency, Office of Research and Development \u2014 USEEIO v2.0 Supply Chain GHG Emission Factors.",
+        "alternates_considered": [
+          "EF:EEIO:453210:US:v2.0:v1",
+          "EF:EEIO:541511:US:v2.0:v1",
+          "EF:EEIO:541110:US:v2.0:v1",
+          "EF:EEIO:541810:US:v2.0:v1",
+          "EF:EEIO:722310:US:v2.0:v1",
+          "EF:EEIO:561720:US:v2.0:v1",
+          "EF:EEIO:334118:US:v2.0:v1",
+          "EF:EEIO:337215:US:v2.0:v1",
+          "EF:EEIO:325120:US:v2.0:v1",
+          "EF:EEIO:323111:US:v2.0:v1",
+          "EF:EEIO:423110:US:v2.0:v1",
+          "EF:EEIO:326199:US:v2.0:v1",
+          "EF:EEIO:331110:US:v2.0:v1",
+          "EF:EEIO:334412:US:v2.0:v1",
+          "EF:EEIO:323113:US:v2.0:v1",
+          "EF:EEIO:518210:US:v2.0:v1",
+          "EF:EEIO:811111:US:v2.0:v1",
+          "EF:EEIO:325412:US:v2.0:v1",
+          "EF:EEIO:336411:US:v2.0:v1",
+          "EF:EEIO:333910:US:v2.0:v1",
+          "EF:EEIO:332710:US:v2.0:v1",
+          "EF:EEIO:611110:US:v2.0:v1",
+          "EF:EEIO:321113:US:v2.0:v1",
+          "EF:EEIO:221112:US:v2.0:v1",
+          "EF:EEIO:236115:US:v2.0:v1",
+          "EF:EEIO:484110:US:v2.0:v1",
+          "EF:EEIO:112120:US:v2.0:v1",
+          "EF:EEIO:311611:US:v2.0:v1",
+          "EF:EEIO:622110:US:v2.0:v1",
+          "EF:EEIO:721110:US:v2.0:v1",
+          "EF:EEIO:551114:US:v2.0:v1",
+          "EF:EEIO:523110:US:v2.0:v1",
+          "EF:EEIO:524113:US:v2.0:v1",
+          "EF:EEIO:481111:US:v2.0:v1"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:EEIO:541511:US:v2.0:v1",
+      "fuel_type": "custom_computer_programming_services",
+      "unit": "usd",
+      "geography": "US",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 0.082,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR5_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 265
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "US EPA (Office of Research and Development)",
+        "source_publication": "USEEIO v2.0 Supply Chain GHG Emission Factors, US EPA Office of Research and Development",
+        "source_year": 2022,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.epa.gov/land-research/us-environmentally-extended-input-output-useeio-models",
+        "version": "2.0"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.3,
+      "dqs": {
+        "temporal": 3,
+        "geographical": 3,
+        "technological": 3,
+        "representativeness": 3,
+        "methodological": 3
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "useeio",
+        "spend_based",
+        "scope3_cat1",
+        "naics_541511",
+        "illustrative"
+      ],
+      "notes": "USEEIO v2.0 sector: Custom computer programming services; illustrative_value=true; TODO: bulk-import full USEEIO v2 before GA",
+      "factor_family": "finance_proxy",
+      "activity_tags": [
+        "spend_based",
+        "purchased_goods_and_services"
+      ],
+      "sector_tags": [
+        "naics_54"
+      ],
+      "source_id": "useeio_v2",
+      "source_release": "v2.0",
+      "release_version": "useeio-v2.0",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "GHG_Protocol_Scope3",
+        "USEPA_SCGHG"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. Environmental Protection Agency, Office of Research and Development \u2014 USEEIO v2.0 Supply Chain GHG Emission Factors.",
+        "alternates_considered": [
+          "EF:EEIO:453210:US:v2.0:v1",
+          "EF:EEIO:541512:US:v2.0:v1",
+          "EF:EEIO:541110:US:v2.0:v1",
+          "EF:EEIO:541810:US:v2.0:v1",
+          "EF:EEIO:722310:US:v2.0:v1",
+          "EF:EEIO:561720:US:v2.0:v1",
+          "EF:EEIO:334118:US:v2.0:v1",
+          "EF:EEIO:337215:US:v2.0:v1",
+          "EF:EEIO:325120:US:v2.0:v1",
+          "EF:EEIO:323111:US:v2.0:v1",
+          "EF:EEIO:423110:US:v2.0:v1",
+          "EF:EEIO:326199:US:v2.0:v1",
+          "EF:EEIO:331110:US:v2.0:v1",
+          "EF:EEIO:334412:US:v2.0:v1",
+          "EF:EEIO:323113:US:v2.0:v1",
+          "EF:EEIO:518210:US:v2.0:v1",
+          "EF:EEIO:811111:US:v2.0:v1",
+          "EF:EEIO:325412:US:v2.0:v1",
+          "EF:EEIO:336411:US:v2.0:v1",
+          "EF:EEIO:333910:US:v2.0:v1",
+          "EF:EEIO:332710:US:v2.0:v1",
+          "EF:EEIO:611110:US:v2.0:v1",
+          "EF:EEIO:321113:US:v2.0:v1",
+          "EF:EEIO:221112:US:v2.0:v1",
+          "EF:EEIO:236115:US:v2.0:v1",
+          "EF:EEIO:484110:US:v2.0:v1",
+          "EF:EEIO:112120:US:v2.0:v1",
+          "EF:EEIO:311611:US:v2.0:v1",
+          "EF:EEIO:622110:US:v2.0:v1",
+          "EF:EEIO:721110:US:v2.0:v1",
+          "EF:EEIO:551114:US:v2.0:v1",
+          "EF:EEIO:523110:US:v2.0:v1",
+          "EF:EEIO:524113:US:v2.0:v1",
+          "EF:EEIO:481111:US:v2.0:v1"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:EEIO:541110:US:v2.0:v1",
+      "fuel_type": "offices_of_lawyers",
+      "unit": "usd",
+      "geography": "US",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 0.071,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR5_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 265
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "US EPA (Office of Research and Development)",
+        "source_publication": "USEEIO v2.0 Supply Chain GHG Emission Factors, US EPA Office of Research and Development",
+        "source_year": 2022,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.epa.gov/land-research/us-environmentally-extended-input-output-useeio-models",
+        "version": "2.0"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.3,
+      "dqs": {
+        "temporal": 3,
+        "geographical": 3,
+        "technological": 3,
+        "representativeness": 3,
+        "methodological": 3
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "useeio",
+        "spend_based",
+        "scope3_cat1",
+        "naics_541110",
+        "illustrative"
+      ],
+      "notes": "USEEIO v2.0 sector: Offices of lawyers; illustrative_value=true; TODO: bulk-import full USEEIO v2 before GA",
+      "factor_family": "finance_proxy",
+      "activity_tags": [
+        "spend_based",
+        "purchased_goods_and_services"
+      ],
+      "sector_tags": [
+        "naics_54"
+      ],
+      "source_id": "useeio_v2",
+      "source_release": "v2.0",
+      "release_version": "useeio-v2.0",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "GHG_Protocol_Scope3",
+        "USEPA_SCGHG"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. Environmental Protection Agency, Office of Research and Development \u2014 USEEIO v2.0 Supply Chain GHG Emission Factors.",
+        "alternates_considered": [
+          "EF:EEIO:453210:US:v2.0:v1",
+          "EF:EEIO:541512:US:v2.0:v1",
+          "EF:EEIO:541511:US:v2.0:v1",
+          "EF:EEIO:541810:US:v2.0:v1",
+          "EF:EEIO:722310:US:v2.0:v1",
+          "EF:EEIO:561720:US:v2.0:v1",
+          "EF:EEIO:334118:US:v2.0:v1",
+          "EF:EEIO:337215:US:v2.0:v1",
+          "EF:EEIO:325120:US:v2.0:v1",
+          "EF:EEIO:323111:US:v2.0:v1",
+          "EF:EEIO:423110:US:v2.0:v1",
+          "EF:EEIO:326199:US:v2.0:v1",
+          "EF:EEIO:331110:US:v2.0:v1",
+          "EF:EEIO:334412:US:v2.0:v1",
+          "EF:EEIO:323113:US:v2.0:v1",
+          "EF:EEIO:518210:US:v2.0:v1",
+          "EF:EEIO:811111:US:v2.0:v1",
+          "EF:EEIO:325412:US:v2.0:v1",
+          "EF:EEIO:336411:US:v2.0:v1",
+          "EF:EEIO:333910:US:v2.0:v1",
+          "EF:EEIO:332710:US:v2.0:v1",
+          "EF:EEIO:611110:US:v2.0:v1",
+          "EF:EEIO:321113:US:v2.0:v1",
+          "EF:EEIO:221112:US:v2.0:v1",
+          "EF:EEIO:236115:US:v2.0:v1",
+          "EF:EEIO:484110:US:v2.0:v1",
+          "EF:EEIO:112120:US:v2.0:v1",
+          "EF:EEIO:311611:US:v2.0:v1",
+          "EF:EEIO:622110:US:v2.0:v1",
+          "EF:EEIO:721110:US:v2.0:v1",
+          "EF:EEIO:551114:US:v2.0:v1",
+          "EF:EEIO:523110:US:v2.0:v1",
+          "EF:EEIO:524113:US:v2.0:v1",
+          "EF:EEIO:481111:US:v2.0:v1"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:EEIO:541810:US:v2.0:v1",
+      "fuel_type": "advertising_agencies",
+      "unit": "usd",
+      "geography": "US",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 0.144,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR5_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 265
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "US EPA (Office of Research and Development)",
+        "source_publication": "USEEIO v2.0 Supply Chain GHG Emission Factors, US EPA Office of Research and Development",
+        "source_year": 2022,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.epa.gov/land-research/us-environmentally-extended-input-output-useeio-models",
+        "version": "2.0"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.3,
+      "dqs": {
+        "temporal": 3,
+        "geographical": 3,
+        "technological": 3,
+        "representativeness": 3,
+        "methodological": 3
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "useeio",
+        "spend_based",
+        "scope3_cat1",
+        "naics_541810",
+        "illustrative"
+      ],
+      "notes": "USEEIO v2.0 sector: Advertising agencies; illustrative_value=true; TODO: bulk-import full USEEIO v2 before GA",
+      "factor_family": "finance_proxy",
+      "activity_tags": [
+        "spend_based",
+        "purchased_goods_and_services"
+      ],
+      "sector_tags": [
+        "naics_54"
+      ],
+      "source_id": "useeio_v2",
+      "source_release": "v2.0",
+      "release_version": "useeio-v2.0",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "GHG_Protocol_Scope3",
+        "USEPA_SCGHG"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. Environmental Protection Agency, Office of Research and Development \u2014 USEEIO v2.0 Supply Chain GHG Emission Factors.",
+        "alternates_considered": [
+          "EF:EEIO:453210:US:v2.0:v1",
+          "EF:EEIO:541512:US:v2.0:v1",
+          "EF:EEIO:541511:US:v2.0:v1",
+          "EF:EEIO:541110:US:v2.0:v1",
+          "EF:EEIO:722310:US:v2.0:v1",
+          "EF:EEIO:561720:US:v2.0:v1",
+          "EF:EEIO:334118:US:v2.0:v1",
+          "EF:EEIO:337215:US:v2.0:v1",
+          "EF:EEIO:325120:US:v2.0:v1",
+          "EF:EEIO:323111:US:v2.0:v1",
+          "EF:EEIO:423110:US:v2.0:v1",
+          "EF:EEIO:326199:US:v2.0:v1",
+          "EF:EEIO:331110:US:v2.0:v1",
+          "EF:EEIO:334412:US:v2.0:v1",
+          "EF:EEIO:323113:US:v2.0:v1",
+          "EF:EEIO:518210:US:v2.0:v1",
+          "EF:EEIO:811111:US:v2.0:v1",
+          "EF:EEIO:325412:US:v2.0:v1",
+          "EF:EEIO:336411:US:v2.0:v1",
+          "EF:EEIO:333910:US:v2.0:v1",
+          "EF:EEIO:332710:US:v2.0:v1",
+          "EF:EEIO:611110:US:v2.0:v1",
+          "EF:EEIO:321113:US:v2.0:v1",
+          "EF:EEIO:221112:US:v2.0:v1",
+          "EF:EEIO:236115:US:v2.0:v1",
+          "EF:EEIO:484110:US:v2.0:v1",
+          "EF:EEIO:112120:US:v2.0:v1",
+          "EF:EEIO:311611:US:v2.0:v1",
+          "EF:EEIO:622110:US:v2.0:v1",
+          "EF:EEIO:721110:US:v2.0:v1",
+          "EF:EEIO:551114:US:v2.0:v1",
+          "EF:EEIO:523110:US:v2.0:v1",
+          "EF:EEIO:524113:US:v2.0:v1",
+          "EF:EEIO:481111:US:v2.0:v1"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:EEIO:722310:US:v2.0:v1",
+      "fuel_type": "food_service_contractors",
+      "unit": "usd",
+      "geography": "US",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 0.62,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR5_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 265
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "US EPA (Office of Research and Development)",
+        "source_publication": "USEEIO v2.0 Supply Chain GHG Emission Factors, US EPA Office of Research and Development",
+        "source_year": 2022,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.epa.gov/land-research/us-environmentally-extended-input-output-useeio-models",
+        "version": "2.0"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.3,
+      "dqs": {
+        "temporal": 3,
+        "geographical": 3,
+        "technological": 3,
+        "representativeness": 3,
+        "methodological": 3
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "useeio",
+        "spend_based",
+        "scope3_cat1",
+        "naics_722310",
+        "illustrative"
+      ],
+      "notes": "USEEIO v2.0 sector: Food service contractors; illustrative_value=true; TODO: bulk-import full USEEIO v2 before GA",
+      "factor_family": "finance_proxy",
+      "activity_tags": [
+        "spend_based",
+        "purchased_goods_and_services"
+      ],
+      "sector_tags": [
+        "naics_72"
+      ],
+      "source_id": "useeio_v2",
+      "source_release": "v2.0",
+      "release_version": "useeio-v2.0",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "GHG_Protocol_Scope3",
+        "USEPA_SCGHG"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. Environmental Protection Agency, Office of Research and Development \u2014 USEEIO v2.0 Supply Chain GHG Emission Factors.",
+        "alternates_considered": [
+          "EF:EEIO:453210:US:v2.0:v1",
+          "EF:EEIO:541512:US:v2.0:v1",
+          "EF:EEIO:541511:US:v2.0:v1",
+          "EF:EEIO:541110:US:v2.0:v1",
+          "EF:EEIO:541810:US:v2.0:v1",
+          "EF:EEIO:561720:US:v2.0:v1",
+          "EF:EEIO:334118:US:v2.0:v1",
+          "EF:EEIO:337215:US:v2.0:v1",
+          "EF:EEIO:325120:US:v2.0:v1",
+          "EF:EEIO:323111:US:v2.0:v1",
+          "EF:EEIO:423110:US:v2.0:v1",
+          "EF:EEIO:326199:US:v2.0:v1",
+          "EF:EEIO:331110:US:v2.0:v1",
+          "EF:EEIO:334412:US:v2.0:v1",
+          "EF:EEIO:323113:US:v2.0:v1",
+          "EF:EEIO:518210:US:v2.0:v1",
+          "EF:EEIO:811111:US:v2.0:v1",
+          "EF:EEIO:325412:US:v2.0:v1",
+          "EF:EEIO:336411:US:v2.0:v1",
+          "EF:EEIO:333910:US:v2.0:v1",
+          "EF:EEIO:332710:US:v2.0:v1",
+          "EF:EEIO:611110:US:v2.0:v1",
+          "EF:EEIO:321113:US:v2.0:v1",
+          "EF:EEIO:221112:US:v2.0:v1",
+          "EF:EEIO:236115:US:v2.0:v1",
+          "EF:EEIO:484110:US:v2.0:v1",
+          "EF:EEIO:112120:US:v2.0:v1",
+          "EF:EEIO:311611:US:v2.0:v1",
+          "EF:EEIO:622110:US:v2.0:v1",
+          "EF:EEIO:721110:US:v2.0:v1",
+          "EF:EEIO:551114:US:v2.0:v1",
+          "EF:EEIO:523110:US:v2.0:v1",
+          "EF:EEIO:524113:US:v2.0:v1",
+          "EF:EEIO:481111:US:v2.0:v1"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:EEIO:561720:US:v2.0:v1",
+      "fuel_type": "janitorial_services",
+      "unit": "usd",
+      "geography": "US",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 0.112,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR5_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 265
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "US EPA (Office of Research and Development)",
+        "source_publication": "USEEIO v2.0 Supply Chain GHG Emission Factors, US EPA Office of Research and Development",
+        "source_year": 2022,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.epa.gov/land-research/us-environmentally-extended-input-output-useeio-models",
+        "version": "2.0"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.3,
+      "dqs": {
+        "temporal": 3,
+        "geographical": 3,
+        "technological": 3,
+        "representativeness": 3,
+        "methodological": 3
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "useeio",
+        "spend_based",
+        "scope3_cat1",
+        "naics_561720",
+        "illustrative"
+      ],
+      "notes": "USEEIO v2.0 sector: Janitorial services; illustrative_value=true; TODO: bulk-import full USEEIO v2 before GA",
+      "factor_family": "finance_proxy",
+      "activity_tags": [
+        "spend_based",
+        "purchased_goods_and_services"
+      ],
+      "sector_tags": [
+        "naics_56"
+      ],
+      "source_id": "useeio_v2",
+      "source_release": "v2.0",
+      "release_version": "useeio-v2.0",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "GHG_Protocol_Scope3",
+        "USEPA_SCGHG"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. Environmental Protection Agency, Office of Research and Development \u2014 USEEIO v2.0 Supply Chain GHG Emission Factors.",
+        "alternates_considered": [
+          "EF:EEIO:453210:US:v2.0:v1",
+          "EF:EEIO:541512:US:v2.0:v1",
+          "EF:EEIO:541511:US:v2.0:v1",
+          "EF:EEIO:541110:US:v2.0:v1",
+          "EF:EEIO:541810:US:v2.0:v1",
+          "EF:EEIO:722310:US:v2.0:v1",
+          "EF:EEIO:334118:US:v2.0:v1",
+          "EF:EEIO:337215:US:v2.0:v1",
+          "EF:EEIO:325120:US:v2.0:v1",
+          "EF:EEIO:323111:US:v2.0:v1",
+          "EF:EEIO:423110:US:v2.0:v1",
+          "EF:EEIO:326199:US:v2.0:v1",
+          "EF:EEIO:331110:US:v2.0:v1",
+          "EF:EEIO:334412:US:v2.0:v1",
+          "EF:EEIO:323113:US:v2.0:v1",
+          "EF:EEIO:518210:US:v2.0:v1",
+          "EF:EEIO:811111:US:v2.0:v1",
+          "EF:EEIO:325412:US:v2.0:v1",
+          "EF:EEIO:336411:US:v2.0:v1",
+          "EF:EEIO:333910:US:v2.0:v1",
+          "EF:EEIO:332710:US:v2.0:v1",
+          "EF:EEIO:611110:US:v2.0:v1",
+          "EF:EEIO:321113:US:v2.0:v1",
+          "EF:EEIO:221112:US:v2.0:v1",
+          "EF:EEIO:236115:US:v2.0:v1",
+          "EF:EEIO:484110:US:v2.0:v1",
+          "EF:EEIO:112120:US:v2.0:v1",
+          "EF:EEIO:311611:US:v2.0:v1",
+          "EF:EEIO:622110:US:v2.0:v1",
+          "EF:EEIO:721110:US:v2.0:v1",
+          "EF:EEIO:551114:US:v2.0:v1",
+          "EF:EEIO:523110:US:v2.0:v1",
+          "EF:EEIO:524113:US:v2.0:v1",
+          "EF:EEIO:481111:US:v2.0:v1"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:EEIO:334118:US:v2.0:v1",
+      "fuel_type": "computer_terminal_and_other_peripheral_m",
+      "unit": "usd",
+      "geography": "US",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 0.304,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR5_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 265
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "US EPA (Office of Research and Development)",
+        "source_publication": "USEEIO v2.0 Supply Chain GHG Emission Factors, US EPA Office of Research and Development",
+        "source_year": 2022,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.epa.gov/land-research/us-environmentally-extended-input-output-useeio-models",
+        "version": "2.0"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.3,
+      "dqs": {
+        "temporal": 3,
+        "geographical": 3,
+        "technological": 3,
+        "representativeness": 3,
+        "methodological": 3
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "useeio",
+        "spend_based",
+        "scope3_cat1",
+        "naics_334118",
+        "illustrative"
+      ],
+      "notes": "USEEIO v2.0 sector: Computer terminal and other peripheral manufacturing; illustrative_value=true; TODO: bulk-import full USEEIO v2 before GA",
+      "factor_family": "finance_proxy",
+      "activity_tags": [
+        "spend_based",
+        "purchased_goods_and_services"
+      ],
+      "sector_tags": [
+        "naics_33"
+      ],
+      "source_id": "useeio_v2",
+      "source_release": "v2.0",
+      "release_version": "useeio-v2.0",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "GHG_Protocol_Scope3",
+        "USEPA_SCGHG"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. Environmental Protection Agency, Office of Research and Development \u2014 USEEIO v2.0 Supply Chain GHG Emission Factors.",
+        "alternates_considered": [
+          "EF:EEIO:453210:US:v2.0:v1",
+          "EF:EEIO:541512:US:v2.0:v1",
+          "EF:EEIO:541511:US:v2.0:v1",
+          "EF:EEIO:541110:US:v2.0:v1",
+          "EF:EEIO:541810:US:v2.0:v1",
+          "EF:EEIO:722310:US:v2.0:v1",
+          "EF:EEIO:561720:US:v2.0:v1",
+          "EF:EEIO:337215:US:v2.0:v1",
+          "EF:EEIO:325120:US:v2.0:v1",
+          "EF:EEIO:323111:US:v2.0:v1",
+          "EF:EEIO:423110:US:v2.0:v1",
+          "EF:EEIO:326199:US:v2.0:v1",
+          "EF:EEIO:331110:US:v2.0:v1",
+          "EF:EEIO:334412:US:v2.0:v1",
+          "EF:EEIO:323113:US:v2.0:v1",
+          "EF:EEIO:518210:US:v2.0:v1",
+          "EF:EEIO:811111:US:v2.0:v1",
+          "EF:EEIO:325412:US:v2.0:v1",
+          "EF:EEIO:336411:US:v2.0:v1",
+          "EF:EEIO:333910:US:v2.0:v1",
+          "EF:EEIO:332710:US:v2.0:v1",
+          "EF:EEIO:611110:US:v2.0:v1",
+          "EF:EEIO:321113:US:v2.0:v1",
+          "EF:EEIO:221112:US:v2.0:v1",
+          "EF:EEIO:236115:US:v2.0:v1",
+          "EF:EEIO:484110:US:v2.0:v1",
+          "EF:EEIO:112120:US:v2.0:v1",
+          "EF:EEIO:311611:US:v2.0:v1",
+          "EF:EEIO:622110:US:v2.0:v1",
+          "EF:EEIO:721110:US:v2.0:v1",
+          "EF:EEIO:551114:US:v2.0:v1",
+          "EF:EEIO:523110:US:v2.0:v1",
+          "EF:EEIO:524113:US:v2.0:v1",
+          "EF:EEIO:481111:US:v2.0:v1"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:EEIO:337215:US:v2.0:v1",
+      "fuel_type": "showcase_partition_shelving_and_locker_m",
+      "unit": "usd",
+      "geography": "US",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 0.296,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR5_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 265
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "US EPA (Office of Research and Development)",
+        "source_publication": "USEEIO v2.0 Supply Chain GHG Emission Factors, US EPA Office of Research and Development",
+        "source_year": 2022,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.epa.gov/land-research/us-environmentally-extended-input-output-useeio-models",
+        "version": "2.0"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.3,
+      "dqs": {
+        "temporal": 3,
+        "geographical": 3,
+        "technological": 3,
+        "representativeness": 3,
+        "methodological": 3
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "useeio",
+        "spend_based",
+        "scope3_cat1",
+        "naics_337215",
+        "illustrative"
+      ],
+      "notes": "USEEIO v2.0 sector: Showcase, partition, shelving, and locker manufacturing; illustrative_value=true; TODO: bulk-import full USEEIO v2 before GA",
+      "factor_family": "finance_proxy",
+      "activity_tags": [
+        "spend_based",
+        "purchased_goods_and_services"
+      ],
+      "sector_tags": [
+        "naics_33"
+      ],
+      "source_id": "useeio_v2",
+      "source_release": "v2.0",
+      "release_version": "useeio-v2.0",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "GHG_Protocol_Scope3",
+        "USEPA_SCGHG"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. Environmental Protection Agency, Office of Research and Development \u2014 USEEIO v2.0 Supply Chain GHG Emission Factors.",
+        "alternates_considered": [
+          "EF:EEIO:453210:US:v2.0:v1",
+          "EF:EEIO:541512:US:v2.0:v1",
+          "EF:EEIO:541511:US:v2.0:v1",
+          "EF:EEIO:541110:US:v2.0:v1",
+          "EF:EEIO:541810:US:v2.0:v1",
+          "EF:EEIO:722310:US:v2.0:v1",
+          "EF:EEIO:561720:US:v2.0:v1",
+          "EF:EEIO:334118:US:v2.0:v1",
+          "EF:EEIO:325120:US:v2.0:v1",
+          "EF:EEIO:323111:US:v2.0:v1",
+          "EF:EEIO:423110:US:v2.0:v1",
+          "EF:EEIO:326199:US:v2.0:v1",
+          "EF:EEIO:331110:US:v2.0:v1",
+          "EF:EEIO:334412:US:v2.0:v1",
+          "EF:EEIO:323113:US:v2.0:v1",
+          "EF:EEIO:518210:US:v2.0:v1",
+          "EF:EEIO:811111:US:v2.0:v1",
+          "EF:EEIO:325412:US:v2.0:v1",
+          "EF:EEIO:336411:US:v2.0:v1",
+          "EF:EEIO:333910:US:v2.0:v1",
+          "EF:EEIO:332710:US:v2.0:v1",
+          "EF:EEIO:611110:US:v2.0:v1",
+          "EF:EEIO:321113:US:v2.0:v1",
+          "EF:EEIO:221112:US:v2.0:v1",
+          "EF:EEIO:236115:US:v2.0:v1",
+          "EF:EEIO:484110:US:v2.0:v1",
+          "EF:EEIO:112120:US:v2.0:v1",
+          "EF:EEIO:311611:US:v2.0:v1",
+          "EF:EEIO:622110:US:v2.0:v1",
+          "EF:EEIO:721110:US:v2.0:v1",
+          "EF:EEIO:551114:US:v2.0:v1",
+          "EF:EEIO:523110:US:v2.0:v1",
+          "EF:EEIO:524113:US:v2.0:v1",
+          "EF:EEIO:481111:US:v2.0:v1"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:EEIO:325120:US:v2.0:v1",
+      "fuel_type": "industrial_gas_manufacturing",
+      "unit": "usd",
+      "geography": "US",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 1.05,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR5_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 265
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "US EPA (Office of Research and Development)",
+        "source_publication": "USEEIO v2.0 Supply Chain GHG Emission Factors, US EPA Office of Research and Development",
+        "source_year": 2022,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.epa.gov/land-research/us-environmentally-extended-input-output-useeio-models",
+        "version": "2.0"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.3,
+      "dqs": {
+        "temporal": 3,
+        "geographical": 3,
+        "technological": 3,
+        "representativeness": 3,
+        "methodological": 3
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "useeio",
+        "spend_based",
+        "scope3_cat1",
+        "naics_325120",
+        "illustrative"
+      ],
+      "notes": "USEEIO v2.0 sector: Industrial gas manufacturing; illustrative_value=true; TODO: bulk-import full USEEIO v2 before GA",
+      "factor_family": "finance_proxy",
+      "activity_tags": [
+        "spend_based",
+        "purchased_goods_and_services"
+      ],
+      "sector_tags": [
+        "naics_32"
+      ],
+      "source_id": "useeio_v2",
+      "source_release": "v2.0",
+      "release_version": "useeio-v2.0",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "GHG_Protocol_Scope3",
+        "USEPA_SCGHG"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. Environmental Protection Agency, Office of Research and Development \u2014 USEEIO v2.0 Supply Chain GHG Emission Factors.",
+        "alternates_considered": [
+          "EF:EEIO:453210:US:v2.0:v1",
+          "EF:EEIO:541512:US:v2.0:v1",
+          "EF:EEIO:541511:US:v2.0:v1",
+          "EF:EEIO:541110:US:v2.0:v1",
+          "EF:EEIO:541810:US:v2.0:v1",
+          "EF:EEIO:722310:US:v2.0:v1",
+          "EF:EEIO:561720:US:v2.0:v1",
+          "EF:EEIO:334118:US:v2.0:v1",
+          "EF:EEIO:337215:US:v2.0:v1",
+          "EF:EEIO:323111:US:v2.0:v1",
+          "EF:EEIO:423110:US:v2.0:v1",
+          "EF:EEIO:326199:US:v2.0:v1",
+          "EF:EEIO:331110:US:v2.0:v1",
+          "EF:EEIO:334412:US:v2.0:v1",
+          "EF:EEIO:323113:US:v2.0:v1",
+          "EF:EEIO:518210:US:v2.0:v1",
+          "EF:EEIO:811111:US:v2.0:v1",
+          "EF:EEIO:325412:US:v2.0:v1",
+          "EF:EEIO:336411:US:v2.0:v1",
+          "EF:EEIO:333910:US:v2.0:v1",
+          "EF:EEIO:332710:US:v2.0:v1",
+          "EF:EEIO:611110:US:v2.0:v1",
+          "EF:EEIO:321113:US:v2.0:v1",
+          "EF:EEIO:221112:US:v2.0:v1",
+          "EF:EEIO:236115:US:v2.0:v1",
+          "EF:EEIO:484110:US:v2.0:v1",
+          "EF:EEIO:112120:US:v2.0:v1",
+          "EF:EEIO:311611:US:v2.0:v1",
+          "EF:EEIO:622110:US:v2.0:v1",
+          "EF:EEIO:721110:US:v2.0:v1",
+          "EF:EEIO:551114:US:v2.0:v1",
+          "EF:EEIO:523110:US:v2.0:v1",
+          "EF:EEIO:524113:US:v2.0:v1",
+          "EF:EEIO:481111:US:v2.0:v1"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:EEIO:323111:US:v2.0:v1",
+      "fuel_type": "commercial_printing",
+      "unit": "usd",
+      "geography": "US",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 0.415,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR5_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 265
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "US EPA (Office of Research and Development)",
+        "source_publication": "USEEIO v2.0 Supply Chain GHG Emission Factors, US EPA Office of Research and Development",
+        "source_year": 2022,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.epa.gov/land-research/us-environmentally-extended-input-output-useeio-models",
+        "version": "2.0"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.3,
+      "dqs": {
+        "temporal": 3,
+        "geographical": 3,
+        "technological": 3,
+        "representativeness": 3,
+        "methodological": 3
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "useeio",
+        "spend_based",
+        "scope3_cat1",
+        "naics_323111",
+        "illustrative"
+      ],
+      "notes": "USEEIO v2.0 sector: Commercial printing; illustrative_value=true; TODO: bulk-import full USEEIO v2 before GA",
+      "factor_family": "finance_proxy",
+      "activity_tags": [
+        "spend_based",
+        "purchased_goods_and_services"
+      ],
+      "sector_tags": [
+        "naics_32"
+      ],
+      "source_id": "useeio_v2",
+      "source_release": "v2.0",
+      "release_version": "useeio-v2.0",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "GHG_Protocol_Scope3",
+        "USEPA_SCGHG"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. Environmental Protection Agency, Office of Research and Development \u2014 USEEIO v2.0 Supply Chain GHG Emission Factors.",
+        "alternates_considered": [
+          "EF:EEIO:453210:US:v2.0:v1",
+          "EF:EEIO:541512:US:v2.0:v1",
+          "EF:EEIO:541511:US:v2.0:v1",
+          "EF:EEIO:541110:US:v2.0:v1",
+          "EF:EEIO:541810:US:v2.0:v1",
+          "EF:EEIO:722310:US:v2.0:v1",
+          "EF:EEIO:561720:US:v2.0:v1",
+          "EF:EEIO:334118:US:v2.0:v1",
+          "EF:EEIO:337215:US:v2.0:v1",
+          "EF:EEIO:325120:US:v2.0:v1",
+          "EF:EEIO:423110:US:v2.0:v1",
+          "EF:EEIO:326199:US:v2.0:v1",
+          "EF:EEIO:331110:US:v2.0:v1",
+          "EF:EEIO:334412:US:v2.0:v1",
+          "EF:EEIO:323113:US:v2.0:v1",
+          "EF:EEIO:518210:US:v2.0:v1",
+          "EF:EEIO:811111:US:v2.0:v1",
+          "EF:EEIO:325412:US:v2.0:v1",
+          "EF:EEIO:336411:US:v2.0:v1",
+          "EF:EEIO:333910:US:v2.0:v1",
+          "EF:EEIO:332710:US:v2.0:v1",
+          "EF:EEIO:611110:US:v2.0:v1",
+          "EF:EEIO:321113:US:v2.0:v1",
+          "EF:EEIO:221112:US:v2.0:v1",
+          "EF:EEIO:236115:US:v2.0:v1",
+          "EF:EEIO:484110:US:v2.0:v1",
+          "EF:EEIO:112120:US:v2.0:v1",
+          "EF:EEIO:311611:US:v2.0:v1",
+          "EF:EEIO:622110:US:v2.0:v1",
+          "EF:EEIO:721110:US:v2.0:v1",
+          "EF:EEIO:551114:US:v2.0:v1",
+          "EF:EEIO:523110:US:v2.0:v1",
+          "EF:EEIO:524113:US:v2.0:v1",
+          "EF:EEIO:481111:US:v2.0:v1"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:EEIO:423110:US:v2.0:v1",
+      "fuel_type": "automobile_and_motor_vehicle_merchant_wh",
+      "unit": "usd",
+      "geography": "US",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 0.178,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR5_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 265
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "US EPA (Office of Research and Development)",
+        "source_publication": "USEEIO v2.0 Supply Chain GHG Emission Factors, US EPA Office of Research and Development",
+        "source_year": 2022,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.epa.gov/land-research/us-environmentally-extended-input-output-useeio-models",
+        "version": "2.0"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.3,
+      "dqs": {
+        "temporal": 3,
+        "geographical": 3,
+        "technological": 3,
+        "representativeness": 3,
+        "methodological": 3
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "useeio",
+        "spend_based",
+        "scope3_cat1",
+        "naics_423110",
+        "illustrative"
+      ],
+      "notes": "USEEIO v2.0 sector: Automobile and motor vehicle merchant wholesalers; illustrative_value=true; TODO: bulk-import full USEEIO v2 before GA",
+      "factor_family": "finance_proxy",
+      "activity_tags": [
+        "spend_based",
+        "purchased_goods_and_services"
+      ],
+      "sector_tags": [
+        "naics_42"
+      ],
+      "source_id": "useeio_v2",
+      "source_release": "v2.0",
+      "release_version": "useeio-v2.0",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "GHG_Protocol_Scope3",
+        "USEPA_SCGHG"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. Environmental Protection Agency, Office of Research and Development \u2014 USEEIO v2.0 Supply Chain GHG Emission Factors.",
+        "alternates_considered": [
+          "EF:EEIO:453210:US:v2.0:v1",
+          "EF:EEIO:541512:US:v2.0:v1",
+          "EF:EEIO:541511:US:v2.0:v1",
+          "EF:EEIO:541110:US:v2.0:v1",
+          "EF:EEIO:541810:US:v2.0:v1",
+          "EF:EEIO:722310:US:v2.0:v1",
+          "EF:EEIO:561720:US:v2.0:v1",
+          "EF:EEIO:334118:US:v2.0:v1",
+          "EF:EEIO:337215:US:v2.0:v1",
+          "EF:EEIO:325120:US:v2.0:v1",
+          "EF:EEIO:323111:US:v2.0:v1",
+          "EF:EEIO:326199:US:v2.0:v1",
+          "EF:EEIO:331110:US:v2.0:v1",
+          "EF:EEIO:334412:US:v2.0:v1",
+          "EF:EEIO:323113:US:v2.0:v1",
+          "EF:EEIO:518210:US:v2.0:v1",
+          "EF:EEIO:811111:US:v2.0:v1",
+          "EF:EEIO:325412:US:v2.0:v1",
+          "EF:EEIO:336411:US:v2.0:v1",
+          "EF:EEIO:333910:US:v2.0:v1",
+          "EF:EEIO:332710:US:v2.0:v1",
+          "EF:EEIO:611110:US:v2.0:v1",
+          "EF:EEIO:321113:US:v2.0:v1",
+          "EF:EEIO:221112:US:v2.0:v1",
+          "EF:EEIO:236115:US:v2.0:v1",
+          "EF:EEIO:484110:US:v2.0:v1",
+          "EF:EEIO:112120:US:v2.0:v1",
+          "EF:EEIO:311611:US:v2.0:v1",
+          "EF:EEIO:622110:US:v2.0:v1",
+          "EF:EEIO:721110:US:v2.0:v1",
+          "EF:EEIO:551114:US:v2.0:v1",
+          "EF:EEIO:523110:US:v2.0:v1",
+          "EF:EEIO:524113:US:v2.0:v1",
+          "EF:EEIO:481111:US:v2.0:v1"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:EEIO:326199:US:v2.0:v1",
+      "fuel_type": "all_other_plastics_product_manufacturing",
+      "unit": "usd",
+      "geography": "US",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 0.63,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR5_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 265
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "US EPA (Office of Research and Development)",
+        "source_publication": "USEEIO v2.0 Supply Chain GHG Emission Factors, US EPA Office of Research and Development",
+        "source_year": 2022,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.epa.gov/land-research/us-environmentally-extended-input-output-useeio-models",
+        "version": "2.0"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.3,
+      "dqs": {
+        "temporal": 3,
+        "geographical": 3,
+        "technological": 3,
+        "representativeness": 3,
+        "methodological": 3
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "useeio",
+        "spend_based",
+        "scope3_cat1",
+        "naics_326199",
+        "illustrative"
+      ],
+      "notes": "USEEIO v2.0 sector: All other plastics product manufacturing; illustrative_value=true; TODO: bulk-import full USEEIO v2 before GA",
+      "factor_family": "finance_proxy",
+      "activity_tags": [
+        "spend_based",
+        "purchased_goods_and_services"
+      ],
+      "sector_tags": [
+        "naics_32"
+      ],
+      "source_id": "useeio_v2",
+      "source_release": "v2.0",
+      "release_version": "useeio-v2.0",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "GHG_Protocol_Scope3",
+        "USEPA_SCGHG"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. Environmental Protection Agency, Office of Research and Development \u2014 USEEIO v2.0 Supply Chain GHG Emission Factors.",
+        "alternates_considered": [
+          "EF:EEIO:453210:US:v2.0:v1",
+          "EF:EEIO:541512:US:v2.0:v1",
+          "EF:EEIO:541511:US:v2.0:v1",
+          "EF:EEIO:541110:US:v2.0:v1",
+          "EF:EEIO:541810:US:v2.0:v1",
+          "EF:EEIO:722310:US:v2.0:v1",
+          "EF:EEIO:561720:US:v2.0:v1",
+          "EF:EEIO:334118:US:v2.0:v1",
+          "EF:EEIO:337215:US:v2.0:v1",
+          "EF:EEIO:325120:US:v2.0:v1",
+          "EF:EEIO:323111:US:v2.0:v1",
+          "EF:EEIO:423110:US:v2.0:v1",
+          "EF:EEIO:331110:US:v2.0:v1",
+          "EF:EEIO:334412:US:v2.0:v1",
+          "EF:EEIO:323113:US:v2.0:v1",
+          "EF:EEIO:518210:US:v2.0:v1",
+          "EF:EEIO:811111:US:v2.0:v1",
+          "EF:EEIO:325412:US:v2.0:v1",
+          "EF:EEIO:336411:US:v2.0:v1",
+          "EF:EEIO:333910:US:v2.0:v1",
+          "EF:EEIO:332710:US:v2.0:v1",
+          "EF:EEIO:611110:US:v2.0:v1",
+          "EF:EEIO:321113:US:v2.0:v1",
+          "EF:EEIO:221112:US:v2.0:v1",
+          "EF:EEIO:236115:US:v2.0:v1",
+          "EF:EEIO:484110:US:v2.0:v1",
+          "EF:EEIO:112120:US:v2.0:v1",
+          "EF:EEIO:311611:US:v2.0:v1",
+          "EF:EEIO:622110:US:v2.0:v1",
+          "EF:EEIO:721110:US:v2.0:v1",
+          "EF:EEIO:551114:US:v2.0:v1",
+          "EF:EEIO:523110:US:v2.0:v1",
+          "EF:EEIO:524113:US:v2.0:v1",
+          "EF:EEIO:481111:US:v2.0:v1"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:EEIO:331110:US:v2.0:v1",
+      "fuel_type": "iron_and_steel_mills",
+      "unit": "usd",
+      "geography": "US",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 2.45,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR5_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 265
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "US EPA (Office of Research and Development)",
+        "source_publication": "USEEIO v2.0 Supply Chain GHG Emission Factors, US EPA Office of Research and Development",
+        "source_year": 2022,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.epa.gov/land-research/us-environmentally-extended-input-output-useeio-models",
+        "version": "2.0"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.3,
+      "dqs": {
+        "temporal": 3,
+        "geographical": 3,
+        "technological": 3,
+        "representativeness": 3,
+        "methodological": 3
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "useeio",
+        "spend_based",
+        "scope3_cat1",
+        "naics_331110",
+        "illustrative"
+      ],
+      "notes": "USEEIO v2.0 sector: Iron and steel mills; illustrative_value=true; TODO: bulk-import full USEEIO v2 before GA",
+      "factor_family": "finance_proxy",
+      "activity_tags": [
+        "spend_based",
+        "purchased_goods_and_services"
+      ],
+      "sector_tags": [
+        "naics_33"
+      ],
+      "source_id": "useeio_v2",
+      "source_release": "v2.0",
+      "release_version": "useeio-v2.0",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "GHG_Protocol_Scope3",
+        "USEPA_SCGHG"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. Environmental Protection Agency, Office of Research and Development \u2014 USEEIO v2.0 Supply Chain GHG Emission Factors.",
+        "alternates_considered": [
+          "EF:EEIO:453210:US:v2.0:v1",
+          "EF:EEIO:541512:US:v2.0:v1",
+          "EF:EEIO:541511:US:v2.0:v1",
+          "EF:EEIO:541110:US:v2.0:v1",
+          "EF:EEIO:541810:US:v2.0:v1",
+          "EF:EEIO:722310:US:v2.0:v1",
+          "EF:EEIO:561720:US:v2.0:v1",
+          "EF:EEIO:334118:US:v2.0:v1",
+          "EF:EEIO:337215:US:v2.0:v1",
+          "EF:EEIO:325120:US:v2.0:v1",
+          "EF:EEIO:323111:US:v2.0:v1",
+          "EF:EEIO:423110:US:v2.0:v1",
+          "EF:EEIO:326199:US:v2.0:v1",
+          "EF:EEIO:334412:US:v2.0:v1",
+          "EF:EEIO:323113:US:v2.0:v1",
+          "EF:EEIO:518210:US:v2.0:v1",
+          "EF:EEIO:811111:US:v2.0:v1",
+          "EF:EEIO:325412:US:v2.0:v1",
+          "EF:EEIO:336411:US:v2.0:v1",
+          "EF:EEIO:333910:US:v2.0:v1",
+          "EF:EEIO:332710:US:v2.0:v1",
+          "EF:EEIO:611110:US:v2.0:v1",
+          "EF:EEIO:321113:US:v2.0:v1",
+          "EF:EEIO:221112:US:v2.0:v1",
+          "EF:EEIO:236115:US:v2.0:v1",
+          "EF:EEIO:484110:US:v2.0:v1",
+          "EF:EEIO:112120:US:v2.0:v1",
+          "EF:EEIO:311611:US:v2.0:v1",
+          "EF:EEIO:622110:US:v2.0:v1",
+          "EF:EEIO:721110:US:v2.0:v1",
+          "EF:EEIO:551114:US:v2.0:v1",
+          "EF:EEIO:523110:US:v2.0:v1",
+          "EF:EEIO:524113:US:v2.0:v1",
+          "EF:EEIO:481111:US:v2.0:v1"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:EEIO:334412:US:v2.0:v1",
+      "fuel_type": "bare_printed_circuit_board_manufacturing",
+      "unit": "usd",
+      "geography": "US",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 0.54,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR5_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 265
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "US EPA (Office of Research and Development)",
+        "source_publication": "USEEIO v2.0 Supply Chain GHG Emission Factors, US EPA Office of Research and Development",
+        "source_year": 2022,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.epa.gov/land-research/us-environmentally-extended-input-output-useeio-models",
+        "version": "2.0"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.3,
+      "dqs": {
+        "temporal": 3,
+        "geographical": 3,
+        "technological": 3,
+        "representativeness": 3,
+        "methodological": 3
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "useeio",
+        "spend_based",
+        "scope3_cat1",
+        "naics_334412",
+        "illustrative"
+      ],
+      "notes": "USEEIO v2.0 sector: Bare printed circuit board manufacturing; illustrative_value=true; TODO: bulk-import full USEEIO v2 before GA",
+      "factor_family": "finance_proxy",
+      "activity_tags": [
+        "spend_based",
+        "purchased_goods_and_services"
+      ],
+      "sector_tags": [
+        "naics_33"
+      ],
+      "source_id": "useeio_v2",
+      "source_release": "v2.0",
+      "release_version": "useeio-v2.0",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "GHG_Protocol_Scope3",
+        "USEPA_SCGHG"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. Environmental Protection Agency, Office of Research and Development \u2014 USEEIO v2.0 Supply Chain GHG Emission Factors.",
+        "alternates_considered": [
+          "EF:EEIO:453210:US:v2.0:v1",
+          "EF:EEIO:541512:US:v2.0:v1",
+          "EF:EEIO:541511:US:v2.0:v1",
+          "EF:EEIO:541110:US:v2.0:v1",
+          "EF:EEIO:541810:US:v2.0:v1",
+          "EF:EEIO:722310:US:v2.0:v1",
+          "EF:EEIO:561720:US:v2.0:v1",
+          "EF:EEIO:334118:US:v2.0:v1",
+          "EF:EEIO:337215:US:v2.0:v1",
+          "EF:EEIO:325120:US:v2.0:v1",
+          "EF:EEIO:323111:US:v2.0:v1",
+          "EF:EEIO:423110:US:v2.0:v1",
+          "EF:EEIO:326199:US:v2.0:v1",
+          "EF:EEIO:331110:US:v2.0:v1",
+          "EF:EEIO:323113:US:v2.0:v1",
+          "EF:EEIO:518210:US:v2.0:v1",
+          "EF:EEIO:811111:US:v2.0:v1",
+          "EF:EEIO:325412:US:v2.0:v1",
+          "EF:EEIO:336411:US:v2.0:v1",
+          "EF:EEIO:333910:US:v2.0:v1",
+          "EF:EEIO:332710:US:v2.0:v1",
+          "EF:EEIO:611110:US:v2.0:v1",
+          "EF:EEIO:321113:US:v2.0:v1",
+          "EF:EEIO:221112:US:v2.0:v1",
+          "EF:EEIO:236115:US:v2.0:v1",
+          "EF:EEIO:484110:US:v2.0:v1",
+          "EF:EEIO:112120:US:v2.0:v1",
+          "EF:EEIO:311611:US:v2.0:v1",
+          "EF:EEIO:622110:US:v2.0:v1",
+          "EF:EEIO:721110:US:v2.0:v1",
+          "EF:EEIO:551114:US:v2.0:v1",
+          "EF:EEIO:523110:US:v2.0:v1",
+          "EF:EEIO:524113:US:v2.0:v1",
+          "EF:EEIO:481111:US:v2.0:v1"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:EEIO:323113:US:v2.0:v1",
+      "fuel_type": "commercial_screen_printing",
+      "unit": "usd",
+      "geography": "US",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 0.395,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR5_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 265
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "US EPA (Office of Research and Development)",
+        "source_publication": "USEEIO v2.0 Supply Chain GHG Emission Factors, US EPA Office of Research and Development",
+        "source_year": 2022,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.epa.gov/land-research/us-environmentally-extended-input-output-useeio-models",
+        "version": "2.0"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.3,
+      "dqs": {
+        "temporal": 3,
+        "geographical": 3,
+        "technological": 3,
+        "representativeness": 3,
+        "methodological": 3
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "useeio",
+        "spend_based",
+        "scope3_cat1",
+        "naics_323113",
+        "illustrative"
+      ],
+      "notes": "USEEIO v2.0 sector: Commercial screen printing; illustrative_value=true; TODO: bulk-import full USEEIO v2 before GA",
+      "factor_family": "finance_proxy",
+      "activity_tags": [
+        "spend_based",
+        "purchased_goods_and_services"
+      ],
+      "sector_tags": [
+        "naics_32"
+      ],
+      "source_id": "useeio_v2",
+      "source_release": "v2.0",
+      "release_version": "useeio-v2.0",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "GHG_Protocol_Scope3",
+        "USEPA_SCGHG"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. Environmental Protection Agency, Office of Research and Development \u2014 USEEIO v2.0 Supply Chain GHG Emission Factors.",
+        "alternates_considered": [
+          "EF:EEIO:453210:US:v2.0:v1",
+          "EF:EEIO:541512:US:v2.0:v1",
+          "EF:EEIO:541511:US:v2.0:v1",
+          "EF:EEIO:541110:US:v2.0:v1",
+          "EF:EEIO:541810:US:v2.0:v1",
+          "EF:EEIO:722310:US:v2.0:v1",
+          "EF:EEIO:561720:US:v2.0:v1",
+          "EF:EEIO:334118:US:v2.0:v1",
+          "EF:EEIO:337215:US:v2.0:v1",
+          "EF:EEIO:325120:US:v2.0:v1",
+          "EF:EEIO:323111:US:v2.0:v1",
+          "EF:EEIO:423110:US:v2.0:v1",
+          "EF:EEIO:326199:US:v2.0:v1",
+          "EF:EEIO:331110:US:v2.0:v1",
+          "EF:EEIO:334412:US:v2.0:v1",
+          "EF:EEIO:518210:US:v2.0:v1",
+          "EF:EEIO:811111:US:v2.0:v1",
+          "EF:EEIO:325412:US:v2.0:v1",
+          "EF:EEIO:336411:US:v2.0:v1",
+          "EF:EEIO:333910:US:v2.0:v1",
+          "EF:EEIO:332710:US:v2.0:v1",
+          "EF:EEIO:611110:US:v2.0:v1",
+          "EF:EEIO:321113:US:v2.0:v1",
+          "EF:EEIO:221112:US:v2.0:v1",
+          "EF:EEIO:236115:US:v2.0:v1",
+          "EF:EEIO:484110:US:v2.0:v1",
+          "EF:EEIO:112120:US:v2.0:v1",
+          "EF:EEIO:311611:US:v2.0:v1",
+          "EF:EEIO:622110:US:v2.0:v1",
+          "EF:EEIO:721110:US:v2.0:v1",
+          "EF:EEIO:551114:US:v2.0:v1",
+          "EF:EEIO:523110:US:v2.0:v1",
+          "EF:EEIO:524113:US:v2.0:v1",
+          "EF:EEIO:481111:US:v2.0:v1"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:EEIO:518210:US:v2.0:v1",
+      "fuel_type": "data_processing_hosting_and_related_serv",
+      "unit": "usd",
+      "geography": "US",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 0.19,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR5_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 265
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "US EPA (Office of Research and Development)",
+        "source_publication": "USEEIO v2.0 Supply Chain GHG Emission Factors, US EPA Office of Research and Development",
+        "source_year": 2022,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.epa.gov/land-research/us-environmentally-extended-input-output-useeio-models",
+        "version": "2.0"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.3,
+      "dqs": {
+        "temporal": 3,
+        "geographical": 3,
+        "technological": 3,
+        "representativeness": 3,
+        "methodological": 3
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "useeio",
+        "spend_based",
+        "scope3_cat1",
+        "naics_518210",
+        "illustrative"
+      ],
+      "notes": "USEEIO v2.0 sector: Data processing, hosting and related services; illustrative_value=true; TODO: bulk-import full USEEIO v2 before GA",
+      "factor_family": "finance_proxy",
+      "activity_tags": [
+        "spend_based",
+        "purchased_goods_and_services"
+      ],
+      "sector_tags": [
+        "naics_51"
+      ],
+      "source_id": "useeio_v2",
+      "source_release": "v2.0",
+      "release_version": "useeio-v2.0",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "GHG_Protocol_Scope3",
+        "USEPA_SCGHG"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. Environmental Protection Agency, Office of Research and Development \u2014 USEEIO v2.0 Supply Chain GHG Emission Factors.",
+        "alternates_considered": [
+          "EF:EEIO:453210:US:v2.0:v1",
+          "EF:EEIO:541512:US:v2.0:v1",
+          "EF:EEIO:541511:US:v2.0:v1",
+          "EF:EEIO:541110:US:v2.0:v1",
+          "EF:EEIO:541810:US:v2.0:v1",
+          "EF:EEIO:722310:US:v2.0:v1",
+          "EF:EEIO:561720:US:v2.0:v1",
+          "EF:EEIO:334118:US:v2.0:v1",
+          "EF:EEIO:337215:US:v2.0:v1",
+          "EF:EEIO:325120:US:v2.0:v1",
+          "EF:EEIO:323111:US:v2.0:v1",
+          "EF:EEIO:423110:US:v2.0:v1",
+          "EF:EEIO:326199:US:v2.0:v1",
+          "EF:EEIO:331110:US:v2.0:v1",
+          "EF:EEIO:334412:US:v2.0:v1",
+          "EF:EEIO:323113:US:v2.0:v1",
+          "EF:EEIO:811111:US:v2.0:v1",
+          "EF:EEIO:325412:US:v2.0:v1",
+          "EF:EEIO:336411:US:v2.0:v1",
+          "EF:EEIO:333910:US:v2.0:v1",
+          "EF:EEIO:332710:US:v2.0:v1",
+          "EF:EEIO:611110:US:v2.0:v1",
+          "EF:EEIO:321113:US:v2.0:v1",
+          "EF:EEIO:221112:US:v2.0:v1",
+          "EF:EEIO:236115:US:v2.0:v1",
+          "EF:EEIO:484110:US:v2.0:v1",
+          "EF:EEIO:112120:US:v2.0:v1",
+          "EF:EEIO:311611:US:v2.0:v1",
+          "EF:EEIO:622110:US:v2.0:v1",
+          "EF:EEIO:721110:US:v2.0:v1",
+          "EF:EEIO:551114:US:v2.0:v1",
+          "EF:EEIO:523110:US:v2.0:v1",
+          "EF:EEIO:524113:US:v2.0:v1",
+          "EF:EEIO:481111:US:v2.0:v1"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:EEIO:811111:US:v2.0:v1",
+      "fuel_type": "general_automotive_repair",
+      "unit": "usd",
+      "geography": "US",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 0.225,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR5_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 265
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "US EPA (Office of Research and Development)",
+        "source_publication": "USEEIO v2.0 Supply Chain GHG Emission Factors, US EPA Office of Research and Development",
+        "source_year": 2022,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.epa.gov/land-research/us-environmentally-extended-input-output-useeio-models",
+        "version": "2.0"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.3,
+      "dqs": {
+        "temporal": 3,
+        "geographical": 3,
+        "technological": 3,
+        "representativeness": 3,
+        "methodological": 3
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "useeio",
+        "spend_based",
+        "scope3_cat1",
+        "naics_811111",
+        "illustrative"
+      ],
+      "notes": "USEEIO v2.0 sector: General automotive repair; illustrative_value=true; TODO: bulk-import full USEEIO v2 before GA",
+      "factor_family": "finance_proxy",
+      "activity_tags": [
+        "spend_based",
+        "purchased_goods_and_services"
+      ],
+      "sector_tags": [
+        "naics_81"
+      ],
+      "source_id": "useeio_v2",
+      "source_release": "v2.0",
+      "release_version": "useeio-v2.0",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "GHG_Protocol_Scope3",
+        "USEPA_SCGHG"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. Environmental Protection Agency, Office of Research and Development \u2014 USEEIO v2.0 Supply Chain GHG Emission Factors.",
+        "alternates_considered": [
+          "EF:EEIO:453210:US:v2.0:v1",
+          "EF:EEIO:541512:US:v2.0:v1",
+          "EF:EEIO:541511:US:v2.0:v1",
+          "EF:EEIO:541110:US:v2.0:v1",
+          "EF:EEIO:541810:US:v2.0:v1",
+          "EF:EEIO:722310:US:v2.0:v1",
+          "EF:EEIO:561720:US:v2.0:v1",
+          "EF:EEIO:334118:US:v2.0:v1",
+          "EF:EEIO:337215:US:v2.0:v1",
+          "EF:EEIO:325120:US:v2.0:v1",
+          "EF:EEIO:323111:US:v2.0:v1",
+          "EF:EEIO:423110:US:v2.0:v1",
+          "EF:EEIO:326199:US:v2.0:v1",
+          "EF:EEIO:331110:US:v2.0:v1",
+          "EF:EEIO:334412:US:v2.0:v1",
+          "EF:EEIO:323113:US:v2.0:v1",
+          "EF:EEIO:518210:US:v2.0:v1",
+          "EF:EEIO:325412:US:v2.0:v1",
+          "EF:EEIO:336411:US:v2.0:v1",
+          "EF:EEIO:333910:US:v2.0:v1",
+          "EF:EEIO:332710:US:v2.0:v1",
+          "EF:EEIO:611110:US:v2.0:v1",
+          "EF:EEIO:321113:US:v2.0:v1",
+          "EF:EEIO:221112:US:v2.0:v1",
+          "EF:EEIO:236115:US:v2.0:v1",
+          "EF:EEIO:484110:US:v2.0:v1",
+          "EF:EEIO:112120:US:v2.0:v1",
+          "EF:EEIO:311611:US:v2.0:v1",
+          "EF:EEIO:622110:US:v2.0:v1",
+          "EF:EEIO:721110:US:v2.0:v1",
+          "EF:EEIO:551114:US:v2.0:v1",
+          "EF:EEIO:523110:US:v2.0:v1",
+          "EF:EEIO:524113:US:v2.0:v1",
+          "EF:EEIO:481111:US:v2.0:v1"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:EEIO:325412:US:v2.0:v1",
+      "fuel_type": "pharmaceutical_preparation_manufacturing",
+      "unit": "usd",
+      "geography": "US",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 0.37,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR5_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 265
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "US EPA (Office of Research and Development)",
+        "source_publication": "USEEIO v2.0 Supply Chain GHG Emission Factors, US EPA Office of Research and Development",
+        "source_year": 2022,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.epa.gov/land-research/us-environmentally-extended-input-output-useeio-models",
+        "version": "2.0"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.3,
+      "dqs": {
+        "temporal": 3,
+        "geographical": 3,
+        "technological": 3,
+        "representativeness": 3,
+        "methodological": 3
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "useeio",
+        "spend_based",
+        "scope3_cat1",
+        "naics_325412",
+        "illustrative"
+      ],
+      "notes": "USEEIO v2.0 sector: Pharmaceutical preparation manufacturing; illustrative_value=true; TODO: bulk-import full USEEIO v2 before GA",
+      "factor_family": "finance_proxy",
+      "activity_tags": [
+        "spend_based",
+        "purchased_goods_and_services"
+      ],
+      "sector_tags": [
+        "naics_32"
+      ],
+      "source_id": "useeio_v2",
+      "source_release": "v2.0",
+      "release_version": "useeio-v2.0",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "GHG_Protocol_Scope3",
+        "USEPA_SCGHG"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. Environmental Protection Agency, Office of Research and Development \u2014 USEEIO v2.0 Supply Chain GHG Emission Factors.",
+        "alternates_considered": [
+          "EF:EEIO:453210:US:v2.0:v1",
+          "EF:EEIO:541512:US:v2.0:v1",
+          "EF:EEIO:541511:US:v2.0:v1",
+          "EF:EEIO:541110:US:v2.0:v1",
+          "EF:EEIO:541810:US:v2.0:v1",
+          "EF:EEIO:722310:US:v2.0:v1",
+          "EF:EEIO:561720:US:v2.0:v1",
+          "EF:EEIO:334118:US:v2.0:v1",
+          "EF:EEIO:337215:US:v2.0:v1",
+          "EF:EEIO:325120:US:v2.0:v1",
+          "EF:EEIO:323111:US:v2.0:v1",
+          "EF:EEIO:423110:US:v2.0:v1",
+          "EF:EEIO:326199:US:v2.0:v1",
+          "EF:EEIO:331110:US:v2.0:v1",
+          "EF:EEIO:334412:US:v2.0:v1",
+          "EF:EEIO:323113:US:v2.0:v1",
+          "EF:EEIO:518210:US:v2.0:v1",
+          "EF:EEIO:811111:US:v2.0:v1",
+          "EF:EEIO:336411:US:v2.0:v1",
+          "EF:EEIO:333910:US:v2.0:v1",
+          "EF:EEIO:332710:US:v2.0:v1",
+          "EF:EEIO:611110:US:v2.0:v1",
+          "EF:EEIO:321113:US:v2.0:v1",
+          "EF:EEIO:221112:US:v2.0:v1",
+          "EF:EEIO:236115:US:v2.0:v1",
+          "EF:EEIO:484110:US:v2.0:v1",
+          "EF:EEIO:112120:US:v2.0:v1",
+          "EF:EEIO:311611:US:v2.0:v1",
+          "EF:EEIO:622110:US:v2.0:v1",
+          "EF:EEIO:721110:US:v2.0:v1",
+          "EF:EEIO:551114:US:v2.0:v1",
+          "EF:EEIO:523110:US:v2.0:v1",
+          "EF:EEIO:524113:US:v2.0:v1",
+          "EF:EEIO:481111:US:v2.0:v1"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:EEIO:336411:US:v2.0:v1",
+      "fuel_type": "aircraft_manufacturing",
+      "unit": "usd",
+      "geography": "US",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 0.285,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR5_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 265
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "US EPA (Office of Research and Development)",
+        "source_publication": "USEEIO v2.0 Supply Chain GHG Emission Factors, US EPA Office of Research and Development",
+        "source_year": 2022,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.epa.gov/land-research/us-environmentally-extended-input-output-useeio-models",
+        "version": "2.0"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.3,
+      "dqs": {
+        "temporal": 3,
+        "geographical": 3,
+        "technological": 3,
+        "representativeness": 3,
+        "methodological": 3
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "useeio",
+        "spend_based",
+        "scope3_cat1",
+        "naics_336411",
+        "illustrative"
+      ],
+      "notes": "USEEIO v2.0 sector: Aircraft manufacturing; illustrative_value=true; TODO: bulk-import full USEEIO v2 before GA",
+      "factor_family": "finance_proxy",
+      "activity_tags": [
+        "spend_based",
+        "purchased_goods_and_services"
+      ],
+      "sector_tags": [
+        "naics_33"
+      ],
+      "source_id": "useeio_v2",
+      "source_release": "v2.0",
+      "release_version": "useeio-v2.0",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "GHG_Protocol_Scope3",
+        "USEPA_SCGHG"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. Environmental Protection Agency, Office of Research and Development \u2014 USEEIO v2.0 Supply Chain GHG Emission Factors.",
+        "alternates_considered": [
+          "EF:EEIO:453210:US:v2.0:v1",
+          "EF:EEIO:541512:US:v2.0:v1",
+          "EF:EEIO:541511:US:v2.0:v1",
+          "EF:EEIO:541110:US:v2.0:v1",
+          "EF:EEIO:541810:US:v2.0:v1",
+          "EF:EEIO:722310:US:v2.0:v1",
+          "EF:EEIO:561720:US:v2.0:v1",
+          "EF:EEIO:334118:US:v2.0:v1",
+          "EF:EEIO:337215:US:v2.0:v1",
+          "EF:EEIO:325120:US:v2.0:v1",
+          "EF:EEIO:323111:US:v2.0:v1",
+          "EF:EEIO:423110:US:v2.0:v1",
+          "EF:EEIO:326199:US:v2.0:v1",
+          "EF:EEIO:331110:US:v2.0:v1",
+          "EF:EEIO:334412:US:v2.0:v1",
+          "EF:EEIO:323113:US:v2.0:v1",
+          "EF:EEIO:518210:US:v2.0:v1",
+          "EF:EEIO:811111:US:v2.0:v1",
+          "EF:EEIO:325412:US:v2.0:v1",
+          "EF:EEIO:333910:US:v2.0:v1",
+          "EF:EEIO:332710:US:v2.0:v1",
+          "EF:EEIO:611110:US:v2.0:v1",
+          "EF:EEIO:321113:US:v2.0:v1",
+          "EF:EEIO:221112:US:v2.0:v1",
+          "EF:EEIO:236115:US:v2.0:v1",
+          "EF:EEIO:484110:US:v2.0:v1",
+          "EF:EEIO:112120:US:v2.0:v1",
+          "EF:EEIO:311611:US:v2.0:v1",
+          "EF:EEIO:622110:US:v2.0:v1",
+          "EF:EEIO:721110:US:v2.0:v1",
+          "EF:EEIO:551114:US:v2.0:v1",
+          "EF:EEIO:523110:US:v2.0:v1",
+          "EF:EEIO:524113:US:v2.0:v1",
+          "EF:EEIO:481111:US:v2.0:v1"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:EEIO:333910:US:v2.0:v1",
+      "fuel_type": "pump_and_pumping_equipment_manufacturing",
+      "unit": "usd",
+      "geography": "US",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 0.39,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR5_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 265
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "US EPA (Office of Research and Development)",
+        "source_publication": "USEEIO v2.0 Supply Chain GHG Emission Factors, US EPA Office of Research and Development",
+        "source_year": 2022,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.epa.gov/land-research/us-environmentally-extended-input-output-useeio-models",
+        "version": "2.0"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.3,
+      "dqs": {
+        "temporal": 3,
+        "geographical": 3,
+        "technological": 3,
+        "representativeness": 3,
+        "methodological": 3
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "useeio",
+        "spend_based",
+        "scope3_cat1",
+        "naics_333910",
+        "illustrative"
+      ],
+      "notes": "USEEIO v2.0 sector: Pump and pumping equipment manufacturing; illustrative_value=true; TODO: bulk-import full USEEIO v2 before GA",
+      "factor_family": "finance_proxy",
+      "activity_tags": [
+        "spend_based",
+        "purchased_goods_and_services"
+      ],
+      "sector_tags": [
+        "naics_33"
+      ],
+      "source_id": "useeio_v2",
+      "source_release": "v2.0",
+      "release_version": "useeio-v2.0",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "GHG_Protocol_Scope3",
+        "USEPA_SCGHG"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. Environmental Protection Agency, Office of Research and Development \u2014 USEEIO v2.0 Supply Chain GHG Emission Factors.",
+        "alternates_considered": [
+          "EF:EEIO:453210:US:v2.0:v1",
+          "EF:EEIO:541512:US:v2.0:v1",
+          "EF:EEIO:541511:US:v2.0:v1",
+          "EF:EEIO:541110:US:v2.0:v1",
+          "EF:EEIO:541810:US:v2.0:v1",
+          "EF:EEIO:722310:US:v2.0:v1",
+          "EF:EEIO:561720:US:v2.0:v1",
+          "EF:EEIO:334118:US:v2.0:v1",
+          "EF:EEIO:337215:US:v2.0:v1",
+          "EF:EEIO:325120:US:v2.0:v1",
+          "EF:EEIO:323111:US:v2.0:v1",
+          "EF:EEIO:423110:US:v2.0:v1",
+          "EF:EEIO:326199:US:v2.0:v1",
+          "EF:EEIO:331110:US:v2.0:v1",
+          "EF:EEIO:334412:US:v2.0:v1",
+          "EF:EEIO:323113:US:v2.0:v1",
+          "EF:EEIO:518210:US:v2.0:v1",
+          "EF:EEIO:811111:US:v2.0:v1",
+          "EF:EEIO:325412:US:v2.0:v1",
+          "EF:EEIO:336411:US:v2.0:v1",
+          "EF:EEIO:332710:US:v2.0:v1",
+          "EF:EEIO:611110:US:v2.0:v1",
+          "EF:EEIO:321113:US:v2.0:v1",
+          "EF:EEIO:221112:US:v2.0:v1",
+          "EF:EEIO:236115:US:v2.0:v1",
+          "EF:EEIO:484110:US:v2.0:v1",
+          "EF:EEIO:112120:US:v2.0:v1",
+          "EF:EEIO:311611:US:v2.0:v1",
+          "EF:EEIO:622110:US:v2.0:v1",
+          "EF:EEIO:721110:US:v2.0:v1",
+          "EF:EEIO:551114:US:v2.0:v1",
+          "EF:EEIO:523110:US:v2.0:v1",
+          "EF:EEIO:524113:US:v2.0:v1",
+          "EF:EEIO:481111:US:v2.0:v1"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:EEIO:332710:US:v2.0:v1",
+      "fuel_type": "machine_shops",
+      "unit": "usd",
+      "geography": "US",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 0.335,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR5_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 265
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "US EPA (Office of Research and Development)",
+        "source_publication": "USEEIO v2.0 Supply Chain GHG Emission Factors, US EPA Office of Research and Development",
+        "source_year": 2022,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.epa.gov/land-research/us-environmentally-extended-input-output-useeio-models",
+        "version": "2.0"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.3,
+      "dqs": {
+        "temporal": 3,
+        "geographical": 3,
+        "technological": 3,
+        "representativeness": 3,
+        "methodological": 3
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "useeio",
+        "spend_based",
+        "scope3_cat1",
+        "naics_332710",
+        "illustrative"
+      ],
+      "notes": "USEEIO v2.0 sector: Machine shops; illustrative_value=true; TODO: bulk-import full USEEIO v2 before GA",
+      "factor_family": "finance_proxy",
+      "activity_tags": [
+        "spend_based",
+        "purchased_goods_and_services"
+      ],
+      "sector_tags": [
+        "naics_33"
+      ],
+      "source_id": "useeio_v2",
+      "source_release": "v2.0",
+      "release_version": "useeio-v2.0",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "GHG_Protocol_Scope3",
+        "USEPA_SCGHG"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. Environmental Protection Agency, Office of Research and Development \u2014 USEEIO v2.0 Supply Chain GHG Emission Factors.",
+        "alternates_considered": [
+          "EF:EEIO:453210:US:v2.0:v1",
+          "EF:EEIO:541512:US:v2.0:v1",
+          "EF:EEIO:541511:US:v2.0:v1",
+          "EF:EEIO:541110:US:v2.0:v1",
+          "EF:EEIO:541810:US:v2.0:v1",
+          "EF:EEIO:722310:US:v2.0:v1",
+          "EF:EEIO:561720:US:v2.0:v1",
+          "EF:EEIO:334118:US:v2.0:v1",
+          "EF:EEIO:337215:US:v2.0:v1",
+          "EF:EEIO:325120:US:v2.0:v1",
+          "EF:EEIO:323111:US:v2.0:v1",
+          "EF:EEIO:423110:US:v2.0:v1",
+          "EF:EEIO:326199:US:v2.0:v1",
+          "EF:EEIO:331110:US:v2.0:v1",
+          "EF:EEIO:334412:US:v2.0:v1",
+          "EF:EEIO:323113:US:v2.0:v1",
+          "EF:EEIO:518210:US:v2.0:v1",
+          "EF:EEIO:811111:US:v2.0:v1",
+          "EF:EEIO:325412:US:v2.0:v1",
+          "EF:EEIO:336411:US:v2.0:v1",
+          "EF:EEIO:333910:US:v2.0:v1",
+          "EF:EEIO:611110:US:v2.0:v1",
+          "EF:EEIO:321113:US:v2.0:v1",
+          "EF:EEIO:221112:US:v2.0:v1",
+          "EF:EEIO:236115:US:v2.0:v1",
+          "EF:EEIO:484110:US:v2.0:v1",
+          "EF:EEIO:112120:US:v2.0:v1",
+          "EF:EEIO:311611:US:v2.0:v1",
+          "EF:EEIO:622110:US:v2.0:v1",
+          "EF:EEIO:721110:US:v2.0:v1",
+          "EF:EEIO:551114:US:v2.0:v1",
+          "EF:EEIO:523110:US:v2.0:v1",
+          "EF:EEIO:524113:US:v2.0:v1",
+          "EF:EEIO:481111:US:v2.0:v1"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:EEIO:611110:US:v2.0:v1",
+      "fuel_type": "elementary_and_secondary_schools",
+      "unit": "usd",
+      "geography": "US",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 0.095,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR5_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 265
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "US EPA (Office of Research and Development)",
+        "source_publication": "USEEIO v2.0 Supply Chain GHG Emission Factors, US EPA Office of Research and Development",
+        "source_year": 2022,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.epa.gov/land-research/us-environmentally-extended-input-output-useeio-models",
+        "version": "2.0"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.3,
+      "dqs": {
+        "temporal": 3,
+        "geographical": 3,
+        "technological": 3,
+        "representativeness": 3,
+        "methodological": 3
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "useeio",
+        "spend_based",
+        "scope3_cat1",
+        "naics_611110",
+        "illustrative"
+      ],
+      "notes": "USEEIO v2.0 sector: Elementary and secondary schools; illustrative_value=true; TODO: bulk-import full USEEIO v2 before GA",
+      "factor_family": "finance_proxy",
+      "activity_tags": [
+        "spend_based",
+        "purchased_goods_and_services"
+      ],
+      "sector_tags": [
+        "naics_61"
+      ],
+      "source_id": "useeio_v2",
+      "source_release": "v2.0",
+      "release_version": "useeio-v2.0",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "GHG_Protocol_Scope3",
+        "USEPA_SCGHG"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. Environmental Protection Agency, Office of Research and Development \u2014 USEEIO v2.0 Supply Chain GHG Emission Factors.",
+        "alternates_considered": [
+          "EF:EEIO:453210:US:v2.0:v1",
+          "EF:EEIO:541512:US:v2.0:v1",
+          "EF:EEIO:541511:US:v2.0:v1",
+          "EF:EEIO:541110:US:v2.0:v1",
+          "EF:EEIO:541810:US:v2.0:v1",
+          "EF:EEIO:722310:US:v2.0:v1",
+          "EF:EEIO:561720:US:v2.0:v1",
+          "EF:EEIO:334118:US:v2.0:v1",
+          "EF:EEIO:337215:US:v2.0:v1",
+          "EF:EEIO:325120:US:v2.0:v1",
+          "EF:EEIO:323111:US:v2.0:v1",
+          "EF:EEIO:423110:US:v2.0:v1",
+          "EF:EEIO:326199:US:v2.0:v1",
+          "EF:EEIO:331110:US:v2.0:v1",
+          "EF:EEIO:334412:US:v2.0:v1",
+          "EF:EEIO:323113:US:v2.0:v1",
+          "EF:EEIO:518210:US:v2.0:v1",
+          "EF:EEIO:811111:US:v2.0:v1",
+          "EF:EEIO:325412:US:v2.0:v1",
+          "EF:EEIO:336411:US:v2.0:v1",
+          "EF:EEIO:333910:US:v2.0:v1",
+          "EF:EEIO:332710:US:v2.0:v1",
+          "EF:EEIO:321113:US:v2.0:v1",
+          "EF:EEIO:221112:US:v2.0:v1",
+          "EF:EEIO:236115:US:v2.0:v1",
+          "EF:EEIO:484110:US:v2.0:v1",
+          "EF:EEIO:112120:US:v2.0:v1",
+          "EF:EEIO:311611:US:v2.0:v1",
+          "EF:EEIO:622110:US:v2.0:v1",
+          "EF:EEIO:721110:US:v2.0:v1",
+          "EF:EEIO:551114:US:v2.0:v1",
+          "EF:EEIO:523110:US:v2.0:v1",
+          "EF:EEIO:524113:US:v2.0:v1",
+          "EF:EEIO:481111:US:v2.0:v1"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:EEIO:321113:US:v2.0:v1",
+      "fuel_type": "sawmills",
+      "unit": "usd",
+      "geography": "US",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 0.48,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR5_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 265
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "US EPA (Office of Research and Development)",
+        "source_publication": "USEEIO v2.0 Supply Chain GHG Emission Factors, US EPA Office of Research and Development",
+        "source_year": 2022,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.epa.gov/land-research/us-environmentally-extended-input-output-useeio-models",
+        "version": "2.0"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.3,
+      "dqs": {
+        "temporal": 3,
+        "geographical": 3,
+        "technological": 3,
+        "representativeness": 3,
+        "methodological": 3
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "useeio",
+        "spend_based",
+        "scope3_cat1",
+        "naics_321113",
+        "illustrative"
+      ],
+      "notes": "USEEIO v2.0 sector: Sawmills; illustrative_value=true; TODO: bulk-import full USEEIO v2 before GA",
+      "factor_family": "finance_proxy",
+      "activity_tags": [
+        "spend_based",
+        "purchased_goods_and_services"
+      ],
+      "sector_tags": [
+        "naics_32"
+      ],
+      "source_id": "useeio_v2",
+      "source_release": "v2.0",
+      "release_version": "useeio-v2.0",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "GHG_Protocol_Scope3",
+        "USEPA_SCGHG"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. Environmental Protection Agency, Office of Research and Development \u2014 USEEIO v2.0 Supply Chain GHG Emission Factors.",
+        "alternates_considered": [
+          "EF:EEIO:453210:US:v2.0:v1",
+          "EF:EEIO:541512:US:v2.0:v1",
+          "EF:EEIO:541511:US:v2.0:v1",
+          "EF:EEIO:541110:US:v2.0:v1",
+          "EF:EEIO:541810:US:v2.0:v1",
+          "EF:EEIO:722310:US:v2.0:v1",
+          "EF:EEIO:561720:US:v2.0:v1",
+          "EF:EEIO:334118:US:v2.0:v1",
+          "EF:EEIO:337215:US:v2.0:v1",
+          "EF:EEIO:325120:US:v2.0:v1",
+          "EF:EEIO:323111:US:v2.0:v1",
+          "EF:EEIO:423110:US:v2.0:v1",
+          "EF:EEIO:326199:US:v2.0:v1",
+          "EF:EEIO:331110:US:v2.0:v1",
+          "EF:EEIO:334412:US:v2.0:v1",
+          "EF:EEIO:323113:US:v2.0:v1",
+          "EF:EEIO:518210:US:v2.0:v1",
+          "EF:EEIO:811111:US:v2.0:v1",
+          "EF:EEIO:325412:US:v2.0:v1",
+          "EF:EEIO:336411:US:v2.0:v1",
+          "EF:EEIO:333910:US:v2.0:v1",
+          "EF:EEIO:332710:US:v2.0:v1",
+          "EF:EEIO:611110:US:v2.0:v1",
+          "EF:EEIO:221112:US:v2.0:v1",
+          "EF:EEIO:236115:US:v2.0:v1",
+          "EF:EEIO:484110:US:v2.0:v1",
+          "EF:EEIO:112120:US:v2.0:v1",
+          "EF:EEIO:311611:US:v2.0:v1",
+          "EF:EEIO:622110:US:v2.0:v1",
+          "EF:EEIO:721110:US:v2.0:v1",
+          "EF:EEIO:551114:US:v2.0:v1",
+          "EF:EEIO:523110:US:v2.0:v1",
+          "EF:EEIO:524113:US:v2.0:v1",
+          "EF:EEIO:481111:US:v2.0:v1"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:EEIO:221112:US:v2.0:v1",
+      "fuel_type": "fossil_fuel_electric_power_generation",
+      "unit": "usd",
+      "geography": "US",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 4.2,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR5_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 265
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "US EPA (Office of Research and Development)",
+        "source_publication": "USEEIO v2.0 Supply Chain GHG Emission Factors, US EPA Office of Research and Development",
+        "source_year": 2022,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.epa.gov/land-research/us-environmentally-extended-input-output-useeio-models",
+        "version": "2.0"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.3,
+      "dqs": {
+        "temporal": 3,
+        "geographical": 3,
+        "technological": 3,
+        "representativeness": 3,
+        "methodological": 3
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "useeio",
+        "spend_based",
+        "scope3_cat1",
+        "naics_221112",
+        "illustrative"
+      ],
+      "notes": "USEEIO v2.0 sector: Fossil fuel electric power generation; illustrative_value=true; TODO: bulk-import full USEEIO v2 before GA",
+      "factor_family": "finance_proxy",
+      "activity_tags": [
+        "spend_based",
+        "purchased_goods_and_services"
+      ],
+      "sector_tags": [
+        "naics_22"
+      ],
+      "source_id": "useeio_v2",
+      "source_release": "v2.0",
+      "release_version": "useeio-v2.0",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "GHG_Protocol_Scope3",
+        "USEPA_SCGHG"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. Environmental Protection Agency, Office of Research and Development \u2014 USEEIO v2.0 Supply Chain GHG Emission Factors.",
+        "alternates_considered": [
+          "EF:EEIO:453210:US:v2.0:v1",
+          "EF:EEIO:541512:US:v2.0:v1",
+          "EF:EEIO:541511:US:v2.0:v1",
+          "EF:EEIO:541110:US:v2.0:v1",
+          "EF:EEIO:541810:US:v2.0:v1",
+          "EF:EEIO:722310:US:v2.0:v1",
+          "EF:EEIO:561720:US:v2.0:v1",
+          "EF:EEIO:334118:US:v2.0:v1",
+          "EF:EEIO:337215:US:v2.0:v1",
+          "EF:EEIO:325120:US:v2.0:v1",
+          "EF:EEIO:323111:US:v2.0:v1",
+          "EF:EEIO:423110:US:v2.0:v1",
+          "EF:EEIO:326199:US:v2.0:v1",
+          "EF:EEIO:331110:US:v2.0:v1",
+          "EF:EEIO:334412:US:v2.0:v1",
+          "EF:EEIO:323113:US:v2.0:v1",
+          "EF:EEIO:518210:US:v2.0:v1",
+          "EF:EEIO:811111:US:v2.0:v1",
+          "EF:EEIO:325412:US:v2.0:v1",
+          "EF:EEIO:336411:US:v2.0:v1",
+          "EF:EEIO:333910:US:v2.0:v1",
+          "EF:EEIO:332710:US:v2.0:v1",
+          "EF:EEIO:611110:US:v2.0:v1",
+          "EF:EEIO:321113:US:v2.0:v1",
+          "EF:EEIO:236115:US:v2.0:v1",
+          "EF:EEIO:484110:US:v2.0:v1",
+          "EF:EEIO:112120:US:v2.0:v1",
+          "EF:EEIO:311611:US:v2.0:v1",
+          "EF:EEIO:622110:US:v2.0:v1",
+          "EF:EEIO:721110:US:v2.0:v1",
+          "EF:EEIO:551114:US:v2.0:v1",
+          "EF:EEIO:523110:US:v2.0:v1",
+          "EF:EEIO:524113:US:v2.0:v1",
+          "EF:EEIO:481111:US:v2.0:v1"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:EEIO:236115:US:v2.0:v1",
+      "fuel_type": "new_single_family_housing_construction",
+      "unit": "usd",
+      "geography": "US",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 0.34,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR5_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 265
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "US EPA (Office of Research and Development)",
+        "source_publication": "USEEIO v2.0 Supply Chain GHG Emission Factors, US EPA Office of Research and Development",
+        "source_year": 2022,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.epa.gov/land-research/us-environmentally-extended-input-output-useeio-models",
+        "version": "2.0"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.3,
+      "dqs": {
+        "temporal": 3,
+        "geographical": 3,
+        "technological": 3,
+        "representativeness": 3,
+        "methodological": 3
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "useeio",
+        "spend_based",
+        "scope3_cat1",
+        "naics_236115",
+        "illustrative"
+      ],
+      "notes": "USEEIO v2.0 sector: New single-family housing construction; illustrative_value=true; TODO: bulk-import full USEEIO v2 before GA",
+      "factor_family": "finance_proxy",
+      "activity_tags": [
+        "spend_based",
+        "purchased_goods_and_services"
+      ],
+      "sector_tags": [
+        "naics_23"
+      ],
+      "source_id": "useeio_v2",
+      "source_release": "v2.0",
+      "release_version": "useeio-v2.0",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "GHG_Protocol_Scope3",
+        "USEPA_SCGHG"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. Environmental Protection Agency, Office of Research and Development \u2014 USEEIO v2.0 Supply Chain GHG Emission Factors.",
+        "alternates_considered": [
+          "EF:EEIO:453210:US:v2.0:v1",
+          "EF:EEIO:541512:US:v2.0:v1",
+          "EF:EEIO:541511:US:v2.0:v1",
+          "EF:EEIO:541110:US:v2.0:v1",
+          "EF:EEIO:541810:US:v2.0:v1",
+          "EF:EEIO:722310:US:v2.0:v1",
+          "EF:EEIO:561720:US:v2.0:v1",
+          "EF:EEIO:334118:US:v2.0:v1",
+          "EF:EEIO:337215:US:v2.0:v1",
+          "EF:EEIO:325120:US:v2.0:v1",
+          "EF:EEIO:323111:US:v2.0:v1",
+          "EF:EEIO:423110:US:v2.0:v1",
+          "EF:EEIO:326199:US:v2.0:v1",
+          "EF:EEIO:331110:US:v2.0:v1",
+          "EF:EEIO:334412:US:v2.0:v1",
+          "EF:EEIO:323113:US:v2.0:v1",
+          "EF:EEIO:518210:US:v2.0:v1",
+          "EF:EEIO:811111:US:v2.0:v1",
+          "EF:EEIO:325412:US:v2.0:v1",
+          "EF:EEIO:336411:US:v2.0:v1",
+          "EF:EEIO:333910:US:v2.0:v1",
+          "EF:EEIO:332710:US:v2.0:v1",
+          "EF:EEIO:611110:US:v2.0:v1",
+          "EF:EEIO:321113:US:v2.0:v1",
+          "EF:EEIO:221112:US:v2.0:v1",
+          "EF:EEIO:484110:US:v2.0:v1",
+          "EF:EEIO:112120:US:v2.0:v1",
+          "EF:EEIO:311611:US:v2.0:v1",
+          "EF:EEIO:622110:US:v2.0:v1",
+          "EF:EEIO:721110:US:v2.0:v1",
+          "EF:EEIO:551114:US:v2.0:v1",
+          "EF:EEIO:523110:US:v2.0:v1",
+          "EF:EEIO:524113:US:v2.0:v1",
+          "EF:EEIO:481111:US:v2.0:v1"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:EEIO:484110:US:v2.0:v1",
+      "fuel_type": "general_freight_trucking_local",
+      "unit": "usd",
+      "geography": "US",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 0.91,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR5_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 265
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "US EPA (Office of Research and Development)",
+        "source_publication": "USEEIO v2.0 Supply Chain GHG Emission Factors, US EPA Office of Research and Development",
+        "source_year": 2022,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.epa.gov/land-research/us-environmentally-extended-input-output-useeio-models",
+        "version": "2.0"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.3,
+      "dqs": {
+        "temporal": 3,
+        "geographical": 3,
+        "technological": 3,
+        "representativeness": 3,
+        "methodological": 3
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "useeio",
+        "spend_based",
+        "scope3_cat1",
+        "naics_484110",
+        "illustrative"
+      ],
+      "notes": "USEEIO v2.0 sector: General freight trucking, local; illustrative_value=true; TODO: bulk-import full USEEIO v2 before GA",
+      "factor_family": "finance_proxy",
+      "activity_tags": [
+        "spend_based",
+        "purchased_goods_and_services"
+      ],
+      "sector_tags": [
+        "naics_48"
+      ],
+      "source_id": "useeio_v2",
+      "source_release": "v2.0",
+      "release_version": "useeio-v2.0",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "GHG_Protocol_Scope3",
+        "USEPA_SCGHG"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. Environmental Protection Agency, Office of Research and Development \u2014 USEEIO v2.0 Supply Chain GHG Emission Factors.",
+        "alternates_considered": [
+          "EF:EEIO:453210:US:v2.0:v1",
+          "EF:EEIO:541512:US:v2.0:v1",
+          "EF:EEIO:541511:US:v2.0:v1",
+          "EF:EEIO:541110:US:v2.0:v1",
+          "EF:EEIO:541810:US:v2.0:v1",
+          "EF:EEIO:722310:US:v2.0:v1",
+          "EF:EEIO:561720:US:v2.0:v1",
+          "EF:EEIO:334118:US:v2.0:v1",
+          "EF:EEIO:337215:US:v2.0:v1",
+          "EF:EEIO:325120:US:v2.0:v1",
+          "EF:EEIO:323111:US:v2.0:v1",
+          "EF:EEIO:423110:US:v2.0:v1",
+          "EF:EEIO:326199:US:v2.0:v1",
+          "EF:EEIO:331110:US:v2.0:v1",
+          "EF:EEIO:334412:US:v2.0:v1",
+          "EF:EEIO:323113:US:v2.0:v1",
+          "EF:EEIO:518210:US:v2.0:v1",
+          "EF:EEIO:811111:US:v2.0:v1",
+          "EF:EEIO:325412:US:v2.0:v1",
+          "EF:EEIO:336411:US:v2.0:v1",
+          "EF:EEIO:333910:US:v2.0:v1",
+          "EF:EEIO:332710:US:v2.0:v1",
+          "EF:EEIO:611110:US:v2.0:v1",
+          "EF:EEIO:321113:US:v2.0:v1",
+          "EF:EEIO:221112:US:v2.0:v1",
+          "EF:EEIO:236115:US:v2.0:v1",
+          "EF:EEIO:112120:US:v2.0:v1",
+          "EF:EEIO:311611:US:v2.0:v1",
+          "EF:EEIO:622110:US:v2.0:v1",
+          "EF:EEIO:721110:US:v2.0:v1",
+          "EF:EEIO:551114:US:v2.0:v1",
+          "EF:EEIO:523110:US:v2.0:v1",
+          "EF:EEIO:524113:US:v2.0:v1",
+          "EF:EEIO:481111:US:v2.0:v1"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:EEIO:112120:US:v2.0:v1",
+      "fuel_type": "dairy_cattle_and_milk_production",
+      "unit": "usd",
+      "geography": "US",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 1.18,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR5_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 265
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "US EPA (Office of Research and Development)",
+        "source_publication": "USEEIO v2.0 Supply Chain GHG Emission Factors, US EPA Office of Research and Development",
+        "source_year": 2022,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.epa.gov/land-research/us-environmentally-extended-input-output-useeio-models",
+        "version": "2.0"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.3,
+      "dqs": {
+        "temporal": 3,
+        "geographical": 3,
+        "technological": 3,
+        "representativeness": 3,
+        "methodological": 3
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "useeio",
+        "spend_based",
+        "scope3_cat1",
+        "naics_112120",
+        "illustrative"
+      ],
+      "notes": "USEEIO v2.0 sector: Dairy cattle and milk production; illustrative_value=true; TODO: bulk-import full USEEIO v2 before GA",
+      "factor_family": "finance_proxy",
+      "activity_tags": [
+        "spend_based",
+        "purchased_goods_and_services"
+      ],
+      "sector_tags": [
+        "naics_11"
+      ],
+      "source_id": "useeio_v2",
+      "source_release": "v2.0",
+      "release_version": "useeio-v2.0",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "GHG_Protocol_Scope3",
+        "USEPA_SCGHG"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. Environmental Protection Agency, Office of Research and Development \u2014 USEEIO v2.0 Supply Chain GHG Emission Factors.",
+        "alternates_considered": [
+          "EF:EEIO:453210:US:v2.0:v1",
+          "EF:EEIO:541512:US:v2.0:v1",
+          "EF:EEIO:541511:US:v2.0:v1",
+          "EF:EEIO:541110:US:v2.0:v1",
+          "EF:EEIO:541810:US:v2.0:v1",
+          "EF:EEIO:722310:US:v2.0:v1",
+          "EF:EEIO:561720:US:v2.0:v1",
+          "EF:EEIO:334118:US:v2.0:v1",
+          "EF:EEIO:337215:US:v2.0:v1",
+          "EF:EEIO:325120:US:v2.0:v1",
+          "EF:EEIO:323111:US:v2.0:v1",
+          "EF:EEIO:423110:US:v2.0:v1",
+          "EF:EEIO:326199:US:v2.0:v1",
+          "EF:EEIO:331110:US:v2.0:v1",
+          "EF:EEIO:334412:US:v2.0:v1",
+          "EF:EEIO:323113:US:v2.0:v1",
+          "EF:EEIO:518210:US:v2.0:v1",
+          "EF:EEIO:811111:US:v2.0:v1",
+          "EF:EEIO:325412:US:v2.0:v1",
+          "EF:EEIO:336411:US:v2.0:v1",
+          "EF:EEIO:333910:US:v2.0:v1",
+          "EF:EEIO:332710:US:v2.0:v1",
+          "EF:EEIO:611110:US:v2.0:v1",
+          "EF:EEIO:321113:US:v2.0:v1",
+          "EF:EEIO:221112:US:v2.0:v1",
+          "EF:EEIO:236115:US:v2.0:v1",
+          "EF:EEIO:484110:US:v2.0:v1",
+          "EF:EEIO:311611:US:v2.0:v1",
+          "EF:EEIO:622110:US:v2.0:v1",
+          "EF:EEIO:721110:US:v2.0:v1",
+          "EF:EEIO:551114:US:v2.0:v1",
+          "EF:EEIO:523110:US:v2.0:v1",
+          "EF:EEIO:524113:US:v2.0:v1",
+          "EF:EEIO:481111:US:v2.0:v1"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:EEIO:311611:US:v2.0:v1",
+      "fuel_type": "animal_slaughtering_except_poultry",
+      "unit": "usd",
+      "geography": "US",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 1.055,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR5_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 265
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "US EPA (Office of Research and Development)",
+        "source_publication": "USEEIO v2.0 Supply Chain GHG Emission Factors, US EPA Office of Research and Development",
+        "source_year": 2022,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.epa.gov/land-research/us-environmentally-extended-input-output-useeio-models",
+        "version": "2.0"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.3,
+      "dqs": {
+        "temporal": 3,
+        "geographical": 3,
+        "technological": 3,
+        "representativeness": 3,
+        "methodological": 3
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "useeio",
+        "spend_based",
+        "scope3_cat1",
+        "naics_311611",
+        "illustrative"
+      ],
+      "notes": "USEEIO v2.0 sector: Animal slaughtering, except poultry; illustrative_value=true; TODO: bulk-import full USEEIO v2 before GA",
+      "factor_family": "finance_proxy",
+      "activity_tags": [
+        "spend_based",
+        "purchased_goods_and_services"
+      ],
+      "sector_tags": [
+        "naics_31"
+      ],
+      "source_id": "useeio_v2",
+      "source_release": "v2.0",
+      "release_version": "useeio-v2.0",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "GHG_Protocol_Scope3",
+        "USEPA_SCGHG"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. Environmental Protection Agency, Office of Research and Development \u2014 USEEIO v2.0 Supply Chain GHG Emission Factors.",
+        "alternates_considered": [
+          "EF:EEIO:453210:US:v2.0:v1",
+          "EF:EEIO:541512:US:v2.0:v1",
+          "EF:EEIO:541511:US:v2.0:v1",
+          "EF:EEIO:541110:US:v2.0:v1",
+          "EF:EEIO:541810:US:v2.0:v1",
+          "EF:EEIO:722310:US:v2.0:v1",
+          "EF:EEIO:561720:US:v2.0:v1",
+          "EF:EEIO:334118:US:v2.0:v1",
+          "EF:EEIO:337215:US:v2.0:v1",
+          "EF:EEIO:325120:US:v2.0:v1",
+          "EF:EEIO:323111:US:v2.0:v1",
+          "EF:EEIO:423110:US:v2.0:v1",
+          "EF:EEIO:326199:US:v2.0:v1",
+          "EF:EEIO:331110:US:v2.0:v1",
+          "EF:EEIO:334412:US:v2.0:v1",
+          "EF:EEIO:323113:US:v2.0:v1",
+          "EF:EEIO:518210:US:v2.0:v1",
+          "EF:EEIO:811111:US:v2.0:v1",
+          "EF:EEIO:325412:US:v2.0:v1",
+          "EF:EEIO:336411:US:v2.0:v1",
+          "EF:EEIO:333910:US:v2.0:v1",
+          "EF:EEIO:332710:US:v2.0:v1",
+          "EF:EEIO:611110:US:v2.0:v1",
+          "EF:EEIO:321113:US:v2.0:v1",
+          "EF:EEIO:221112:US:v2.0:v1",
+          "EF:EEIO:236115:US:v2.0:v1",
+          "EF:EEIO:484110:US:v2.0:v1",
+          "EF:EEIO:112120:US:v2.0:v1",
+          "EF:EEIO:622110:US:v2.0:v1",
+          "EF:EEIO:721110:US:v2.0:v1",
+          "EF:EEIO:551114:US:v2.0:v1",
+          "EF:EEIO:523110:US:v2.0:v1",
+          "EF:EEIO:524113:US:v2.0:v1",
+          "EF:EEIO:481111:US:v2.0:v1"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:EEIO:622110:US:v2.0:v1",
+      "fuel_type": "general_medical_and_surgical_hospitals",
+      "unit": "usd",
+      "geography": "US",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 0.168,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR5_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 265
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "US EPA (Office of Research and Development)",
+        "source_publication": "USEEIO v2.0 Supply Chain GHG Emission Factors, US EPA Office of Research and Development",
+        "source_year": 2022,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.epa.gov/land-research/us-environmentally-extended-input-output-useeio-models",
+        "version": "2.0"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.3,
+      "dqs": {
+        "temporal": 3,
+        "geographical": 3,
+        "technological": 3,
+        "representativeness": 3,
+        "methodological": 3
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "useeio",
+        "spend_based",
+        "scope3_cat1",
+        "naics_622110",
+        "illustrative"
+      ],
+      "notes": "USEEIO v2.0 sector: General medical and surgical hospitals; illustrative_value=true; TODO: bulk-import full USEEIO v2 before GA",
+      "factor_family": "finance_proxy",
+      "activity_tags": [
+        "spend_based",
+        "purchased_goods_and_services"
+      ],
+      "sector_tags": [
+        "naics_62"
+      ],
+      "source_id": "useeio_v2",
+      "source_release": "v2.0",
+      "release_version": "useeio-v2.0",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "GHG_Protocol_Scope3",
+        "USEPA_SCGHG"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. Environmental Protection Agency, Office of Research and Development \u2014 USEEIO v2.0 Supply Chain GHG Emission Factors.",
+        "alternates_considered": [
+          "EF:EEIO:453210:US:v2.0:v1",
+          "EF:EEIO:541512:US:v2.0:v1",
+          "EF:EEIO:541511:US:v2.0:v1",
+          "EF:EEIO:541110:US:v2.0:v1",
+          "EF:EEIO:541810:US:v2.0:v1",
+          "EF:EEIO:722310:US:v2.0:v1",
+          "EF:EEIO:561720:US:v2.0:v1",
+          "EF:EEIO:334118:US:v2.0:v1",
+          "EF:EEIO:337215:US:v2.0:v1",
+          "EF:EEIO:325120:US:v2.0:v1",
+          "EF:EEIO:323111:US:v2.0:v1",
+          "EF:EEIO:423110:US:v2.0:v1",
+          "EF:EEIO:326199:US:v2.0:v1",
+          "EF:EEIO:331110:US:v2.0:v1",
+          "EF:EEIO:334412:US:v2.0:v1",
+          "EF:EEIO:323113:US:v2.0:v1",
+          "EF:EEIO:518210:US:v2.0:v1",
+          "EF:EEIO:811111:US:v2.0:v1",
+          "EF:EEIO:325412:US:v2.0:v1",
+          "EF:EEIO:336411:US:v2.0:v1",
+          "EF:EEIO:333910:US:v2.0:v1",
+          "EF:EEIO:332710:US:v2.0:v1",
+          "EF:EEIO:611110:US:v2.0:v1",
+          "EF:EEIO:321113:US:v2.0:v1",
+          "EF:EEIO:221112:US:v2.0:v1",
+          "EF:EEIO:236115:US:v2.0:v1",
+          "EF:EEIO:484110:US:v2.0:v1",
+          "EF:EEIO:112120:US:v2.0:v1",
+          "EF:EEIO:311611:US:v2.0:v1",
+          "EF:EEIO:721110:US:v2.0:v1",
+          "EF:EEIO:551114:US:v2.0:v1",
+          "EF:EEIO:523110:US:v2.0:v1",
+          "EF:EEIO:524113:US:v2.0:v1",
+          "EF:EEIO:481111:US:v2.0:v1"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:EEIO:721110:US:v2.0:v1",
+      "fuel_type": "hotels_except_casino_hotels_and_motels",
+      "unit": "usd",
+      "geography": "US",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 0.248,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR5_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 265
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "US EPA (Office of Research and Development)",
+        "source_publication": "USEEIO v2.0 Supply Chain GHG Emission Factors, US EPA Office of Research and Development",
+        "source_year": 2022,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.epa.gov/land-research/us-environmentally-extended-input-output-useeio-models",
+        "version": "2.0"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.3,
+      "dqs": {
+        "temporal": 3,
+        "geographical": 3,
+        "technological": 3,
+        "representativeness": 3,
+        "methodological": 3
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "useeio",
+        "spend_based",
+        "scope3_cat1",
+        "naics_721110",
+        "illustrative"
+      ],
+      "notes": "USEEIO v2.0 sector: Hotels (except casino hotels) and motels; illustrative_value=true; TODO: bulk-import full USEEIO v2 before GA",
+      "factor_family": "finance_proxy",
+      "activity_tags": [
+        "spend_based",
+        "purchased_goods_and_services"
+      ],
+      "sector_tags": [
+        "naics_72"
+      ],
+      "source_id": "useeio_v2",
+      "source_release": "v2.0",
+      "release_version": "useeio-v2.0",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "GHG_Protocol_Scope3",
+        "USEPA_SCGHG"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. Environmental Protection Agency, Office of Research and Development \u2014 USEEIO v2.0 Supply Chain GHG Emission Factors.",
+        "alternates_considered": [
+          "EF:EEIO:453210:US:v2.0:v1",
+          "EF:EEIO:541512:US:v2.0:v1",
+          "EF:EEIO:541511:US:v2.0:v1",
+          "EF:EEIO:541110:US:v2.0:v1",
+          "EF:EEIO:541810:US:v2.0:v1",
+          "EF:EEIO:722310:US:v2.0:v1",
+          "EF:EEIO:561720:US:v2.0:v1",
+          "EF:EEIO:334118:US:v2.0:v1",
+          "EF:EEIO:337215:US:v2.0:v1",
+          "EF:EEIO:325120:US:v2.0:v1",
+          "EF:EEIO:323111:US:v2.0:v1",
+          "EF:EEIO:423110:US:v2.0:v1",
+          "EF:EEIO:326199:US:v2.0:v1",
+          "EF:EEIO:331110:US:v2.0:v1",
+          "EF:EEIO:334412:US:v2.0:v1",
+          "EF:EEIO:323113:US:v2.0:v1",
+          "EF:EEIO:518210:US:v2.0:v1",
+          "EF:EEIO:811111:US:v2.0:v1",
+          "EF:EEIO:325412:US:v2.0:v1",
+          "EF:EEIO:336411:US:v2.0:v1",
+          "EF:EEIO:333910:US:v2.0:v1",
+          "EF:EEIO:332710:US:v2.0:v1",
+          "EF:EEIO:611110:US:v2.0:v1",
+          "EF:EEIO:321113:US:v2.0:v1",
+          "EF:EEIO:221112:US:v2.0:v1",
+          "EF:EEIO:236115:US:v2.0:v1",
+          "EF:EEIO:484110:US:v2.0:v1",
+          "EF:EEIO:112120:US:v2.0:v1",
+          "EF:EEIO:311611:US:v2.0:v1",
+          "EF:EEIO:622110:US:v2.0:v1",
+          "EF:EEIO:551114:US:v2.0:v1",
+          "EF:EEIO:523110:US:v2.0:v1",
+          "EF:EEIO:524113:US:v2.0:v1",
+          "EF:EEIO:481111:US:v2.0:v1"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:EEIO:551114:US:v2.0:v1",
+      "fuel_type": "corporate_subsidiary_and_regional_managi",
+      "unit": "usd",
+      "geography": "US",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 0.062,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR5_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 265
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "US EPA (Office of Research and Development)",
+        "source_publication": "USEEIO v2.0 Supply Chain GHG Emission Factors, US EPA Office of Research and Development",
+        "source_year": 2022,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.epa.gov/land-research/us-environmentally-extended-input-output-useeio-models",
+        "version": "2.0"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.3,
+      "dqs": {
+        "temporal": 3,
+        "geographical": 3,
+        "technological": 3,
+        "representativeness": 3,
+        "methodological": 3
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "useeio",
+        "spend_based",
+        "scope3_cat1",
+        "naics_551114",
+        "illustrative"
+      ],
+      "notes": "USEEIO v2.0 sector: Corporate, subsidiary, and regional managing offices; illustrative_value=true; TODO: bulk-import full USEEIO v2 before GA",
+      "factor_family": "finance_proxy",
+      "activity_tags": [
+        "spend_based",
+        "purchased_goods_and_services"
+      ],
+      "sector_tags": [
+        "naics_55"
+      ],
+      "source_id": "useeio_v2",
+      "source_release": "v2.0",
+      "release_version": "useeio-v2.0",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "GHG_Protocol_Scope3",
+        "USEPA_SCGHG"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. Environmental Protection Agency, Office of Research and Development \u2014 USEEIO v2.0 Supply Chain GHG Emission Factors.",
+        "alternates_considered": [
+          "EF:EEIO:453210:US:v2.0:v1",
+          "EF:EEIO:541512:US:v2.0:v1",
+          "EF:EEIO:541511:US:v2.0:v1",
+          "EF:EEIO:541110:US:v2.0:v1",
+          "EF:EEIO:541810:US:v2.0:v1",
+          "EF:EEIO:722310:US:v2.0:v1",
+          "EF:EEIO:561720:US:v2.0:v1",
+          "EF:EEIO:334118:US:v2.0:v1",
+          "EF:EEIO:337215:US:v2.0:v1",
+          "EF:EEIO:325120:US:v2.0:v1",
+          "EF:EEIO:323111:US:v2.0:v1",
+          "EF:EEIO:423110:US:v2.0:v1",
+          "EF:EEIO:326199:US:v2.0:v1",
+          "EF:EEIO:331110:US:v2.0:v1",
+          "EF:EEIO:334412:US:v2.0:v1",
+          "EF:EEIO:323113:US:v2.0:v1",
+          "EF:EEIO:518210:US:v2.0:v1",
+          "EF:EEIO:811111:US:v2.0:v1",
+          "EF:EEIO:325412:US:v2.0:v1",
+          "EF:EEIO:336411:US:v2.0:v1",
+          "EF:EEIO:333910:US:v2.0:v1",
+          "EF:EEIO:332710:US:v2.0:v1",
+          "EF:EEIO:611110:US:v2.0:v1",
+          "EF:EEIO:321113:US:v2.0:v1",
+          "EF:EEIO:221112:US:v2.0:v1",
+          "EF:EEIO:236115:US:v2.0:v1",
+          "EF:EEIO:484110:US:v2.0:v1",
+          "EF:EEIO:112120:US:v2.0:v1",
+          "EF:EEIO:311611:US:v2.0:v1",
+          "EF:EEIO:622110:US:v2.0:v1",
+          "EF:EEIO:721110:US:v2.0:v1",
+          "EF:EEIO:523110:US:v2.0:v1",
+          "EF:EEIO:524113:US:v2.0:v1",
+          "EF:EEIO:481111:US:v2.0:v1"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:EEIO:523110:US:v2.0:v1",
+      "fuel_type": "investment_banking_and_securities_dealin",
+      "unit": "usd",
+      "geography": "US",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 0.048,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR5_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 265
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "US EPA (Office of Research and Development)",
+        "source_publication": "USEEIO v2.0 Supply Chain GHG Emission Factors, US EPA Office of Research and Development",
+        "source_year": 2022,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.epa.gov/land-research/us-environmentally-extended-input-output-useeio-models",
+        "version": "2.0"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.3,
+      "dqs": {
+        "temporal": 3,
+        "geographical": 3,
+        "technological": 3,
+        "representativeness": 3,
+        "methodological": 3
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "useeio",
+        "spend_based",
+        "scope3_cat1",
+        "naics_523110",
+        "illustrative"
+      ],
+      "notes": "USEEIO v2.0 sector: Investment banking and securities dealing; illustrative_value=true; TODO: bulk-import full USEEIO v2 before GA",
+      "factor_family": "finance_proxy",
+      "activity_tags": [
+        "spend_based",
+        "purchased_goods_and_services"
+      ],
+      "sector_tags": [
+        "naics_52"
+      ],
+      "source_id": "useeio_v2",
+      "source_release": "v2.0",
+      "release_version": "useeio-v2.0",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "GHG_Protocol_Scope3",
+        "USEPA_SCGHG"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. Environmental Protection Agency, Office of Research and Development \u2014 USEEIO v2.0 Supply Chain GHG Emission Factors.",
+        "alternates_considered": [
+          "EF:EEIO:453210:US:v2.0:v1",
+          "EF:EEIO:541512:US:v2.0:v1",
+          "EF:EEIO:541511:US:v2.0:v1",
+          "EF:EEIO:541110:US:v2.0:v1",
+          "EF:EEIO:541810:US:v2.0:v1",
+          "EF:EEIO:722310:US:v2.0:v1",
+          "EF:EEIO:561720:US:v2.0:v1",
+          "EF:EEIO:334118:US:v2.0:v1",
+          "EF:EEIO:337215:US:v2.0:v1",
+          "EF:EEIO:325120:US:v2.0:v1",
+          "EF:EEIO:323111:US:v2.0:v1",
+          "EF:EEIO:423110:US:v2.0:v1",
+          "EF:EEIO:326199:US:v2.0:v1",
+          "EF:EEIO:331110:US:v2.0:v1",
+          "EF:EEIO:334412:US:v2.0:v1",
+          "EF:EEIO:323113:US:v2.0:v1",
+          "EF:EEIO:518210:US:v2.0:v1",
+          "EF:EEIO:811111:US:v2.0:v1",
+          "EF:EEIO:325412:US:v2.0:v1",
+          "EF:EEIO:336411:US:v2.0:v1",
+          "EF:EEIO:333910:US:v2.0:v1",
+          "EF:EEIO:332710:US:v2.0:v1",
+          "EF:EEIO:611110:US:v2.0:v1",
+          "EF:EEIO:321113:US:v2.0:v1",
+          "EF:EEIO:221112:US:v2.0:v1",
+          "EF:EEIO:236115:US:v2.0:v1",
+          "EF:EEIO:484110:US:v2.0:v1",
+          "EF:EEIO:112120:US:v2.0:v1",
+          "EF:EEIO:311611:US:v2.0:v1",
+          "EF:EEIO:622110:US:v2.0:v1",
+          "EF:EEIO:721110:US:v2.0:v1",
+          "EF:EEIO:551114:US:v2.0:v1",
+          "EF:EEIO:524113:US:v2.0:v1",
+          "EF:EEIO:481111:US:v2.0:v1"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:EEIO:524113:US:v2.0:v1",
+      "fuel_type": "direct_life_insurance_carriers",
+      "unit": "usd",
+      "geography": "US",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 0.052,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR5_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 265
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "US EPA (Office of Research and Development)",
+        "source_publication": "USEEIO v2.0 Supply Chain GHG Emission Factors, US EPA Office of Research and Development",
+        "source_year": 2022,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.epa.gov/land-research/us-environmentally-extended-input-output-useeio-models",
+        "version": "2.0"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.3,
+      "dqs": {
+        "temporal": 3,
+        "geographical": 3,
+        "technological": 3,
+        "representativeness": 3,
+        "methodological": 3
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "useeio",
+        "spend_based",
+        "scope3_cat1",
+        "naics_524113",
+        "illustrative"
+      ],
+      "notes": "USEEIO v2.0 sector: Direct life insurance carriers; illustrative_value=true; TODO: bulk-import full USEEIO v2 before GA",
+      "factor_family": "finance_proxy",
+      "activity_tags": [
+        "spend_based",
+        "purchased_goods_and_services"
+      ],
+      "sector_tags": [
+        "naics_52"
+      ],
+      "source_id": "useeio_v2",
+      "source_release": "v2.0",
+      "release_version": "useeio-v2.0",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "GHG_Protocol_Scope3",
+        "USEPA_SCGHG"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. Environmental Protection Agency, Office of Research and Development \u2014 USEEIO v2.0 Supply Chain GHG Emission Factors.",
+        "alternates_considered": [
+          "EF:EEIO:453210:US:v2.0:v1",
+          "EF:EEIO:541512:US:v2.0:v1",
+          "EF:EEIO:541511:US:v2.0:v1",
+          "EF:EEIO:541110:US:v2.0:v1",
+          "EF:EEIO:541810:US:v2.0:v1",
+          "EF:EEIO:722310:US:v2.0:v1",
+          "EF:EEIO:561720:US:v2.0:v1",
+          "EF:EEIO:334118:US:v2.0:v1",
+          "EF:EEIO:337215:US:v2.0:v1",
+          "EF:EEIO:325120:US:v2.0:v1",
+          "EF:EEIO:323111:US:v2.0:v1",
+          "EF:EEIO:423110:US:v2.0:v1",
+          "EF:EEIO:326199:US:v2.0:v1",
+          "EF:EEIO:331110:US:v2.0:v1",
+          "EF:EEIO:334412:US:v2.0:v1",
+          "EF:EEIO:323113:US:v2.0:v1",
+          "EF:EEIO:518210:US:v2.0:v1",
+          "EF:EEIO:811111:US:v2.0:v1",
+          "EF:EEIO:325412:US:v2.0:v1",
+          "EF:EEIO:336411:US:v2.0:v1",
+          "EF:EEIO:333910:US:v2.0:v1",
+          "EF:EEIO:332710:US:v2.0:v1",
+          "EF:EEIO:611110:US:v2.0:v1",
+          "EF:EEIO:321113:US:v2.0:v1",
+          "EF:EEIO:221112:US:v2.0:v1",
+          "EF:EEIO:236115:US:v2.0:v1",
+          "EF:EEIO:484110:US:v2.0:v1",
+          "EF:EEIO:112120:US:v2.0:v1",
+          "EF:EEIO:311611:US:v2.0:v1",
+          "EF:EEIO:622110:US:v2.0:v1",
+          "EF:EEIO:721110:US:v2.0:v1",
+          "EF:EEIO:551114:US:v2.0:v1",
+          "EF:EEIO:523110:US:v2.0:v1",
+          "EF:EEIO:481111:US:v2.0:v1"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:EEIO:481111:US:v2.0:v1",
+      "fuel_type": "scheduled_passenger_air_transportation",
+      "unit": "usd",
+      "geography": "US",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 1.32,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR5_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 265
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "US EPA (Office of Research and Development)",
+        "source_publication": "USEEIO v2.0 Supply Chain GHG Emission Factors, US EPA Office of Research and Development",
+        "source_year": 2022,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.epa.gov/land-research/us-environmentally-extended-input-output-useeio-models",
+        "version": "2.0"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.3,
+      "dqs": {
+        "temporal": 3,
+        "geographical": 3,
+        "technological": 3,
+        "representativeness": 3,
+        "methodological": 3
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "useeio",
+        "spend_based",
+        "scope3_cat1",
+        "naics_481111",
+        "illustrative"
+      ],
+      "notes": "USEEIO v2.0 sector: Scheduled passenger air transportation; illustrative_value=true; TODO: bulk-import full USEEIO v2 before GA",
+      "factor_family": "finance_proxy",
+      "activity_tags": [
+        "spend_based",
+        "purchased_goods_and_services"
+      ],
+      "sector_tags": [
+        "naics_48"
+      ],
+      "source_id": "useeio_v2",
+      "source_release": "v2.0",
+      "release_version": "useeio-v2.0",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "GHG_Protocol_Scope3",
+        "USEPA_SCGHG"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. Environmental Protection Agency, Office of Research and Development \u2014 USEEIO v2.0 Supply Chain GHG Emission Factors.",
+        "alternates_considered": [
+          "EF:EEIO:453210:US:v2.0:v1",
+          "EF:EEIO:541512:US:v2.0:v1",
+          "EF:EEIO:541511:US:v2.0:v1",
+          "EF:EEIO:541110:US:v2.0:v1",
+          "EF:EEIO:541810:US:v2.0:v1",
+          "EF:EEIO:722310:US:v2.0:v1",
+          "EF:EEIO:561720:US:v2.0:v1",
+          "EF:EEIO:334118:US:v2.0:v1",
+          "EF:EEIO:337215:US:v2.0:v1",
+          "EF:EEIO:325120:US:v2.0:v1",
+          "EF:EEIO:323111:US:v2.0:v1",
+          "EF:EEIO:423110:US:v2.0:v1",
+          "EF:EEIO:326199:US:v2.0:v1",
+          "EF:EEIO:331110:US:v2.0:v1",
+          "EF:EEIO:334412:US:v2.0:v1",
+          "EF:EEIO:323113:US:v2.0:v1",
+          "EF:EEIO:518210:US:v2.0:v1",
+          "EF:EEIO:811111:US:v2.0:v1",
+          "EF:EEIO:325412:US:v2.0:v1",
+          "EF:EEIO:336411:US:v2.0:v1",
+          "EF:EEIO:333910:US:v2.0:v1",
+          "EF:EEIO:332710:US:v2.0:v1",
+          "EF:EEIO:611110:US:v2.0:v1",
+          "EF:EEIO:321113:US:v2.0:v1",
+          "EF:EEIO:221112:US:v2.0:v1",
+          "EF:EEIO:236115:US:v2.0:v1",
+          "EF:EEIO:484110:US:v2.0:v1",
+          "EF:EEIO:112120:US:v2.0:v1",
+          "EF:EEIO:311611:US:v2.0:v1",
+          "EF:EEIO:622110:US:v2.0:v1",
+          "EF:EEIO:721110:US:v2.0:v1",
+          "EF:EEIO:551114:US:v2.0:v1",
+          "EF:EEIO:523110:US:v2.0:v1",
+          "EF:EEIO:524113:US:v2.0:v1"
+        ]
+      }
+    }
+  ]
+}

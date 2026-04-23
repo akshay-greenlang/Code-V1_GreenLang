@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Callable, List, Optional, Tuple
+from typing import Any, Callable, FrozenSet, List, Optional, Tuple
 
 from greenlang.data.canonical_v2 import (
     ElectricityBasis,
@@ -12,6 +12,17 @@ from greenlang.data.canonical_v2 import (
     FormulaType,
     MethodProfile,
 )
+
+
+class CannotResolveAction(str, Enum):
+    """What the resolver does when no candidate survives the selection gate.
+
+    Values mirror the ``fallback.cannot_resolve_action`` field in
+    ``docs/specs/method_pack_template.md`` §9.
+    """
+
+    RAISE_NO_SAFE_MATCH = "raise_no_safe_match"
+    ALLOW_GLOBAL_DEFAULT = "allow_global_default"
 
 
 class BiogenicTreatment(str, Enum):
@@ -48,6 +59,11 @@ class SelectionRule:
     allowed_statuses: Tuple[str, ...] = ("certified",)
     # Optional predicate — returns True to keep the candidate.
     custom_filter: Optional[Callable[[Any], bool]] = None
+    # Structured activity-category allow / deny lists (MP3/MP4/MP5). Empty
+    # frozenset = "no restriction". Populated per-pack in the three P0 method
+    # modules — see docs/specs/method_pack_template.md §4.
+    included_activity_categories: FrozenSet[str] = field(default_factory=frozenset)
+    excluded_activity_categories: FrozenSet[str] = field(default_factory=frozenset)
 
     def accepts(self, record: Any) -> bool:
         status = str(getattr(record, "factor_status", "certified") or "certified")
@@ -81,6 +97,33 @@ class SelectionRule:
         if self.require_primary_data:
             pdf = str(getattr(record, "primary_data_flag", "") or "").lower()
             if pdf not in ("primary", "primary_modeled"):
+                return False
+
+        # Activity-category inclusion / exclusion gate. We look at either the
+        # first-class ``activity_category`` attribute if present, or fall back
+        # to the record's ``category`` / ``activity`` fields.
+        #
+        # Backwards-compat note: a record that carries NO category attribute
+        # at all (legacy records that predate structured categorisation) is
+        # allowed through even when the pack sets an inclusion allow-list.
+        # The inclusion gate only rejects records that explicitly declare a
+        # category outside the allow-list. This keeps the new contract from
+        # breaking existing fixtures and gold-label records while still
+        # providing a defensive denylist for the cases the auditor cares
+        # about.
+        has_category_attr = any(
+            hasattr(record, name) for name in ("activity_category", "category", "activity")
+        )
+        rec_cat = (
+            getattr(record, "activity_category", None)
+            or getattr(record, "category", None)
+            or getattr(record, "activity", None)
+        )
+        rec_cat_str = str(rec_cat).strip() if rec_cat is not None else ""
+        if self.excluded_activity_categories and rec_cat_str in self.excluded_activity_categories:
+            return False
+        if self.included_activity_categories and has_category_attr and rec_cat_str:
+            if rec_cat_str not in self.included_activity_categories:
                 return False
 
         if self.custom_filter is not None and not self.custom_filter(record):
@@ -141,6 +184,24 @@ class MethodPack:
     pack_version: str = "1.0.0"
     # Free-form tags — used by SKU entitlement (Phase F8).
     tags: Tuple[str, ...] = field(default_factory=tuple)
+    # --- cannot_resolve_safely contract --------------------------------
+    # Strict default: certified packs MUST raise a structured error when
+    # no candidate survives the selection gate; opting into
+    # ``ALLOW_GLOBAL_DEFAULT`` preserves the pre-FY27 legacy behaviour
+    # where the 7-tier cascade's global default was returned silently.
+    # See docs/specs/method_pack_template.md §9.
+    cannot_resolve_action: CannotResolveAction = CannotResolveAction.RAISE_NO_SAFE_MATCH
+    # When false the resolver is not allowed to return a rank-7 global
+    # default, even if a candidate exists at that tier. Certified
+    # regulatory packs (CBAM, Battery, DPP) MUST keep this False.
+    global_default_tier_allowed: bool = False
+    # --- deprecation policy structured fields --------------------------
+    # ``None`` = no successor declared yet (acceptable while pack is
+    # active; required before a pack can be flipped to ``deprecated``).
+    replacement_pack_id: Optional[str] = None
+    # Advance notice period before a deprecated pack stops resolving.
+    # Default 180 days matches docs/specs/method_pack_template.md §12.
+    deprecation_notice_days: int = 180
 
 
 # Standard 7-step fallback chain used by most packs.
@@ -158,6 +219,7 @@ DEFAULT_FALLBACK = (
 __all__ = [
     "BiogenicTreatment",
     "BoundaryRule",
+    "CannotResolveAction",
     "DeprecationRule",
     "DEFAULT_FALLBACK",
     "FallbackStep",

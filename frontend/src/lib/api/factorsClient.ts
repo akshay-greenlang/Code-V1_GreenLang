@@ -588,6 +588,218 @@ export async function simulateImpact(payload: ImpactRequest): Promise<ImpactRepo
   });
 }
 
+// ---------------------------------------------------------------- v1.2.0 resolve (Wave 2/2a/2.5)
+
+/**
+ * Resolve a factor via the Wave 2 envelope endpoint. Returns the full
+ * `ResolvedFactor` with `chosen_factor`, composite FQS 0-100, uncertainty
+ * envelope, licensing envelope, audit_text (+ draft flag), and the
+ * top-level signed_receipt.
+ *
+ * This is a thin pass-through to `/v1/factors/resolve-explain` — the
+ * typed SDK wrapper in `lib/factorsClient.ts` is preferred for new code.
+ */
+export async function resolveExplain(
+  body: Record<string, unknown>,
+): Promise<Record<string, unknown>> {
+  return request<Record<string, unknown>>("/v1/factors/resolve-explain", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+}
+
+// ---------------------------------------------------------------- method packs (O5)
+
+export interface MethodPackSummary {
+  method_pack_id: string;
+  name?: string;
+  version?: string;
+  status?: "draft" | "active" | "deprecated" | "retired" | string;
+  scope?: string;
+  description?: string;
+  jurisdictions?: string[];
+  cannot_resolve_safely_count?: number;
+  conformance_pass?: number;
+  conformance_total?: number;
+  deprecated_at?: string | null;
+  replacement_pack_id?: string | null;
+}
+
+export async function listMethodPacks(): Promise<{ method_packs: MethodPackSummary[] }> {
+  return request<{ method_packs: MethodPackSummary[] }>("/v1/method-packs");
+}
+
+// ---------------------------------------------------------------- entitlements (O6)
+
+export interface EntitlementGrant {
+  tenant_id: string;
+  plan?: string;
+  packs: string[];
+  data_classes: string[];
+  sub_tenants?: Array<{ tenant_id: string; plan?: string; packs: string[] }>;
+  updated_at?: string;
+}
+
+export async function listEntitlements(): Promise<{ grants: EntitlementGrant[] }> {
+  return request<{ grants: EntitlementGrant[] }>("/v1/admin/entitlements");
+}
+
+export async function upsertEntitlement(payload: EntitlementGrant): Promise<EntitlementGrant> {
+  return request<EntitlementGrant>("/v1/admin/entitlements", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function revokeEntitlement(tenantId: string): Promise<void> {
+  return request<void>(
+    `/v1/admin/entitlements/${encodeURIComponent(tenantId)}`,
+    { method: "DELETE" },
+  );
+}
+
+// ---------------------------------------------------------------- audit bundle export (O7)
+
+export interface AuditBundleJob {
+  job_id: string;
+  status: "queued" | "running" | "completed" | "failed";
+  download_url?: string | null;
+  created_at?: string;
+  completed_at?: string | null;
+  included_factors?: number;
+  error_message?: string | null;
+}
+
+export async function submitAuditBundleExport(payload: {
+  factor_ids?: string[];
+  tenant_id?: string;
+  include_method_packs?: boolean;
+  include_signed_receipts?: boolean;
+  edition?: string;
+}): Promise<AuditBundleJob> {
+  return request<AuditBundleJob>("/v1/admin/audit-bundles/export", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function getAuditBundleJob(jobId: string): Promise<AuditBundleJob> {
+  return request<AuditBundleJob>(
+    `/v1/admin/audit-bundles/jobs/${encodeURIComponent(jobId)}`,
+  );
+}
+
+// ---------------------------------------------------------------- release notes (O9)
+
+export interface ReleaseNoteEntry {
+  edition_id: string;
+  published_at: string;
+  summary: string;
+  sections: Array<{ title: string; body: string }>;
+  factor_diff_url?: string | null;
+  previous_edition_id?: string | null;
+}
+
+export async function listReleaseNotes(): Promise<{ notes: ReleaseNoteEntry[] }> {
+  return request<{ notes: ReleaseNoteEntry[] }>("/v1/release-notes");
+}
+
+// ---------------------------------------------------------------- webhooks (O10)
+
+export interface WebhookRegistration {
+  id: string;
+  tenant_id: string;
+  url: string;
+  events: string[];
+  enabled: boolean;
+  secret_hint?: string;
+  created_at: string;
+}
+
+export interface WebhookDelivery {
+  id: string;
+  webhook_id: string;
+  event: string;
+  delivered_at: string;
+  status: "success" | "failed" | "retrying" | string;
+  response_code?: number;
+  attempts?: number;
+  payload_digest?: string;
+}
+
+export async function listWebhooks(): Promise<{ webhooks: WebhookRegistration[] }> {
+  return request<{ webhooks: WebhookRegistration[] }>("/v1/admin/webhooks");
+}
+
+export async function createWebhook(payload: {
+  url: string;
+  events: string[];
+}): Promise<WebhookRegistration> {
+  return request<WebhookRegistration>("/v1/admin/webhooks", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function deleteWebhook(id: string): Promise<void> {
+  return request<void>(`/v1/admin/webhooks/${encodeURIComponent(id)}`, {
+    method: "DELETE",
+  });
+}
+
+export async function listWebhookDeliveries(
+  webhookId: string,
+): Promise<{ deliveries: WebhookDelivery[] }> {
+  return request<{ deliveries: WebhookDelivery[] }>(
+    `/v1/admin/webhooks/${encodeURIComponent(webhookId)}/deliveries`,
+  );
+}
+
+export async function replayWebhookDelivery(
+  webhookId: string,
+  deliveryId: string,
+): Promise<{ ok: true }> {
+  return request<{ ok: true }>(
+    `/v1/admin/webhooks/${encodeURIComponent(webhookId)}/deliveries/${encodeURIComponent(deliveryId)}/replay`,
+    { method: "POST" },
+  );
+}
+
+// ---------------------------------------------------------------- batch jobs (O11)
+
+export interface BatchJobRecord {
+  job_id: string;
+  status: "queued" | "running" | "completed" | "failed" | "cancelled" | string;
+  created_at: string;
+  completed_at?: string | null;
+  total_items?: number;
+  processed_items?: number;
+  progress_percent?: number;
+  results_url?: string | null;
+  errors_url?: string | null;
+  error_message?: string | null;
+}
+
+export async function submitBatchResolveJob(
+  requests: Array<Record<string, unknown>>,
+): Promise<BatchJobRecord> {
+  return request<BatchJobRecord>("/v1/factors/resolve/batch", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ requests }),
+  });
+}
+
+export async function getBatchJob(jobId: string): Promise<BatchJobRecord> {
+  return request<BatchJobRecord>(
+    `/v1/factors/jobs/${encodeURIComponent(jobId)}`,
+  );
+}
+
 // ---------------------------------------------------------------- helpers
 
 /**

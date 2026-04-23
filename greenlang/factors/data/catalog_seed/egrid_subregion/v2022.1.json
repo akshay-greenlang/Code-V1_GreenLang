@@ -1,0 +1,6331 @@
+{
+  "source_id": "egrid_subregion",
+  "source_version": "2022.1",
+  "ingested_at": "2026-04-23T18:26:53+00:00",
+  "license_class": "public_us_government",
+  "license_name": "US-Public-Domain",
+  "redistribution_class": "open",
+  "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension).",
+  "factor_status_default": "certified",
+  "factor_count": 81,
+  "factors": [
+    {
+      "factor_id": "EF:eGRID:akgd:US:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-AKGD",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.504847896,
+        "CH4": 4.5359200000000004e-05,
+        "N2O": 4.53592e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report \u2014 Subregion Summary Tables",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "scope2_location_based",
+        "akgd"
+      ],
+      "notes": "eGRID 2022 subregion AKGD (ASCC Alaska Grid) \u2014 location-based US grid factor; coal_pct=12, gas_pct=41",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "egrid_subregion",
+      "source_release": "2022",
+      "release_version": "egrid-2022",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:akms:US:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-AKMS",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.22906396,
+        "CH4": 1.814368e-05,
+        "N2O": 2.26796e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report \u2014 Subregion Summary Tables",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "scope2_location_based",
+        "akms"
+      ],
+      "notes": "eGRID 2022 subregion AKMS (ASCC Miscellaneous) \u2014 location-based US grid factor",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "egrid_subregion",
+      "source_release": "2022",
+      "release_version": "egrid-2022",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:aznm:US:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-AZNM",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.38101728,
+        "CH4": 3.1751440000000005e-05,
+        "N2O": 4.53592e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report \u2014 Subregion Summary Tables",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "scope2_location_based",
+        "aznm"
+      ],
+      "notes": "eGRID 2022 subregion AZNM (WECC Southwest) \u2014 location-based US grid factor",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "egrid_subregion",
+      "source_release": "2022",
+      "release_version": "egrid-2022",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:camx:US:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-CAMX",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.215002608,
+        "CH4": 1.814368e-05,
+        "N2O": 2.26796e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report \u2014 Subregion Summary Tables",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "scope2_location_based",
+        "camx"
+      ],
+      "notes": "eGRID 2022 subregion CAMX (WECC California) \u2014 location-based US grid factor",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "egrid_subregion",
+      "source_release": "2022",
+      "release_version": "egrid-2022",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:erct:US:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-ERCT",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.394171448,
+        "CH4": 3.1751440000000005e-05,
+        "N2O": 4.082328e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report \u2014 Subregion Summary Tables",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "scope2_location_based",
+        "erct"
+      ],
+      "notes": "eGRID 2022 subregion ERCT (ERCOT All) \u2014 location-based US grid factor",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "egrid_subregion",
+      "source_release": "2022",
+      "release_version": "egrid-2022",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:frcc:US:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-FRCC",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.377842136,
+        "CH4": 2.721552e-05,
+        "N2O": 3.6287360000000002e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report \u2014 Subregion Summary Tables",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "scope2_location_based",
+        "frcc"
+      ],
+      "notes": "eGRID 2022 subregion FRCC (FRCC All) \u2014 location-based US grid factor",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "egrid_subregion",
+      "source_release": "2022",
+      "release_version": "egrid-2022",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:hims:US:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-HIMS",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.55338224,
+        "CH4": 4.989512e-05,
+        "N2O": 4.989512e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report \u2014 Subregion Summary Tables",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "scope2_location_based",
+        "hims"
+      ],
+      "notes": "eGRID 2022 subregion HIMS (HICC Miscellaneous) \u2014 location-based US grid factor",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "egrid_subregion",
+      "source_release": "2022",
+      "release_version": "egrid-2022",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:hioa:US:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-HIOA",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.7293759360000001,
+        "CH4": 6.350288000000001e-05,
+        "N2O": 6.3502880000000005e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report \u2014 Subregion Summary Tables",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "scope2_location_based",
+        "hioa"
+      ],
+      "notes": "eGRID 2022 subregion HIOA (HICC Oahu) \u2014 location-based US grid factor",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "egrid_subregion",
+      "source_release": "2022",
+      "release_version": "egrid-2022",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:mroe:US:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-MROE",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.6010094,
+        "CH4": 4.5359200000000004e-05,
+        "N2O": 6.80388e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report \u2014 Subregion Summary Tables",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "scope2_location_based",
+        "mroe"
+      ],
+      "notes": "eGRID 2022 subregion MROE (MRO East) \u2014 location-based US grid factor",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "egrid_subregion",
+      "source_release": "2022",
+      "release_version": "egrid-2022",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:mrow:US:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-MROW",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.409139984,
+        "CH4": 3.628736e-05,
+        "N2O": 5.896696e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report \u2014 Subregion Summary Tables",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "scope2_location_based",
+        "mrow"
+      ],
+      "notes": "eGRID 2022 subregion MROW (MRO West) \u2014 location-based US grid factor",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "egrid_subregion",
+      "source_release": "2022",
+      "release_version": "egrid-2022",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:newe:US:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-NEWE",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.24040376,
+        "CH4": 2.2679600000000002e-05,
+        "N2O": 2.7215520000000003e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report \u2014 Subregion Summary Tables",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "scope2_location_based",
+        "newe"
+      ],
+      "notes": "eGRID 2022 subregion NEWE (NPCC New England) \u2014 location-based US grid factor",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "egrid_subregion",
+      "source_release": "2022",
+      "release_version": "egrid-2022",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:nwpp:US:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-NWPP",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.29029888,
+        "CH4": 2.721552e-05,
+        "N2O": 4.989512e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report \u2014 Subregion Summary Tables",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "scope2_location_based",
+        "nwpp"
+      ],
+      "notes": "eGRID 2022 subregion NWPP (WECC Northwest) \u2014 location-based US grid factor",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "egrid_subregion",
+      "source_release": "2022",
+      "release_version": "egrid-2022",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:nycw:US:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-NYCW",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.24040376,
+        "CH4": 1.814368e-05,
+        "N2O": 1.8143680000000001e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report \u2014 Subregion Summary Tables",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "scope2_location_based",
+        "nycw"
+      ],
+      "notes": "eGRID 2022 subregion NYCW (NPCC NYC/Westchester) \u2014 location-based US grid factor",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "egrid_subregion",
+      "source_release": "2022",
+      "release_version": "egrid-2022",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:nyli:US:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-NYLI",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.55111428,
+        "CH4": 4.5359200000000004e-05,
+        "N2O": 6.3502880000000005e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report \u2014 Subregion Summary Tables",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "scope2_location_based",
+        "nyli"
+      ],
+      "notes": "eGRID 2022 subregion NYLI (NPCC Long Island) \u2014 location-based US grid factor",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "egrid_subregion",
+      "source_release": "2022",
+      "release_version": "egrid-2022",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:nyup:US:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-NYUP",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.117026736,
+        "CH4": 9.07184e-06,
+        "N2O": 9.071840000000001e-07
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report \u2014 Subregion Summary Tables",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "scope2_location_based",
+        "nyup"
+      ],
+      "notes": "eGRID 2022 subregion NYUP (NPCC Upstate NY) \u2014 location-based US grid factor",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "egrid_subregion",
+      "source_release": "2022",
+      "release_version": "egrid-2022",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:prms:US:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-PRMS",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.72801516,
+        "CH4": 6.80388e-05,
+        "N2O": 6.3502880000000005e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report \u2014 Subregion Summary Tables",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "scope2_location_based",
+        "prms"
+      ],
+      "notes": "eGRID 2022 subregion PRMS (Puerto Rico) \u2014 location-based US grid factor",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "egrid_subregion",
+      "source_release": "2022",
+      "release_version": "egrid-2022",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:rfce:US:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-RFCE",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.268072872,
+        "CH4": 2.2679600000000002e-05,
+        "N2O": 3.1751440000000003e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report \u2014 Subregion Summary Tables",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "scope2_location_based",
+        "rfce"
+      ],
+      "notes": "eGRID 2022 subregion RFCE (RFC East) \u2014 location-based US grid factor",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "egrid_subregion",
+      "source_release": "2022",
+      "release_version": "egrid-2022",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:rfcm:US:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-RFCM",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.542496032,
+        "CH4": 4.989512e-05,
+        "N2O": 8.618248e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report \u2014 Subregion Summary Tables",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "scope2_location_based",
+        "rfcm"
+      ],
+      "notes": "eGRID 2022 subregion RFCM (RFC Michigan) \u2014 location-based US grid factor",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "egrid_subregion",
+      "source_release": "2022",
+      "release_version": "egrid-2022",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:rfcw:US:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-RFCW",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.48534344,
+        "CH4": 4.5359200000000004e-05,
+        "N2O": 6.80388e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report \u2014 Subregion Summary Tables",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "scope2_location_based",
+        "rfcw"
+      ],
+      "notes": "eGRID 2022 subregion RFCW (RFC West) \u2014 location-based US grid factor",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "egrid_subregion",
+      "source_release": "2022",
+      "release_version": "egrid-2022",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:rmpa:US:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-RMPA",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.537960112,
+        "CH4": 4.5359200000000004e-05,
+        "N2O": 8.164656e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report \u2014 Subregion Summary Tables",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "scope2_location_based",
+        "rmpa"
+      ],
+      "notes": "eGRID 2022 subregion RMPA (WECC Rockies) \u2014 location-based US grid factor",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "egrid_subregion",
+      "source_release": "2022",
+      "release_version": "egrid-2022",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:spno:US:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-SPNO",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.47173568,
+        "CH4": 4.082328e-05,
+        "N2O": 6.80388e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report \u2014 Subregion Summary Tables",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "scope2_location_based",
+        "spno"
+      ],
+      "notes": "eGRID 2022 subregion SPNO (SPP North) \u2014 location-based US grid factor",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "egrid_subregion",
+      "source_release": "2022",
+      "release_version": "egrid-2022",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:spso:US:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-SPSO",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.460849472,
+        "CH4": 3.628736e-05,
+        "N2O": 5.4431040000000006e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report \u2014 Subregion Summary Tables",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "scope2_location_based",
+        "spso"
+      ],
+      "notes": "eGRID 2022 subregion SPSO (SPP South) \u2014 location-based US grid factor",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "egrid_subregion",
+      "source_release": "2022",
+      "release_version": "egrid-2022",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:srmv:US:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-SRMV",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.391903488,
+        "CH4": 3.1751440000000005e-05,
+        "N2O": 4.082328e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report \u2014 Subregion Summary Tables",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "scope2_location_based",
+        "srmv"
+      ],
+      "notes": "eGRID 2022 subregion SRMV (SERC Mississippi Valley) \u2014 location-based US grid factor",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "egrid_subregion",
+      "source_release": "2022",
+      "release_version": "egrid-2022",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:srmw:US:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-SRMW",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.714860992,
+        "CH4": 6.80388e-05,
+        "N2O": 9.979024e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report \u2014 Subregion Summary Tables",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "scope2_location_based",
+        "srmw"
+      ],
+      "notes": "eGRID 2022 subregion SRMW (SERC Midwest) \u2014 location-based US grid factor",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "egrid_subregion",
+      "source_release": "2022",
+      "release_version": "egrid-2022",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:srso:US:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-SRSO",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.3855532,
+        "CH4": 3.1751440000000005e-05,
+        "N2O": 4.53592e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report \u2014 Subregion Summary Tables",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "scope2_location_based",
+        "srso"
+      ],
+      "notes": "eGRID 2022 subregion SRSO (SERC South) \u2014 location-based US grid factor",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "egrid_subregion",
+      "source_release": "2022",
+      "release_version": "egrid-2022",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:srtv:US:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-SRTV",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.410954352,
+        "CH4": 3.628736e-05,
+        "N2O": 5.4431040000000006e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report \u2014 Subregion Summary Tables",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "scope2_location_based",
+        "srtv"
+      ],
+      "notes": "eGRID 2022 subregion SRTV (SERC Tennessee Valley) \u2014 location-based US grid factor",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "egrid_subregion",
+      "source_release": "2022",
+      "release_version": "egrid-2022",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:srvc:US:2022:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-SRVC",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.286216552,
+        "CH4": 2.2679600000000002e-05,
+        "N2O": 3.1751440000000003e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report \u2014 Subregion Summary Tables",
+        "source_year": 2022,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2022-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "scope2_location_based",
+        "srvc"
+      ],
+      "notes": "eGRID 2022 subregion SRVC (SERC Virginia/Carolinas) \u2014 location-based US grid factor",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "egrid_subregion",
+      "source_release": "2022",
+      "release_version": "egrid-2022",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:akgd:US:2024:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-AKGD",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.504847896,
+        "CH4": 4.5359200000000004e-05,
+        "N2O": 4.53592e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report \u2014 Subregion Summary Tables",
+        "source_year": 2024,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2024-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "scope2_location_based",
+        "akgd"
+      ],
+      "notes": "eGRID 2024 subregion AKGD (ASCC Alaska Grid) \u2014 location-based US grid factor; coal_pct=12, gas_pct=41",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "egrid_subregion",
+      "source_release": "2024",
+      "release_version": "egrid-2024",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:akms:US:2024:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-AKMS",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.22906396,
+        "CH4": 1.814368e-05,
+        "N2O": 2.26796e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report \u2014 Subregion Summary Tables",
+        "source_year": 2024,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2024-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "scope2_location_based",
+        "akms"
+      ],
+      "notes": "eGRID 2024 subregion AKMS (ASCC Miscellaneous) \u2014 location-based US grid factor",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "egrid_subregion",
+      "source_release": "2024",
+      "release_version": "egrid-2024",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:aznm:US:2024:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-AZNM",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.38101728,
+        "CH4": 3.1751440000000005e-05,
+        "N2O": 4.53592e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report \u2014 Subregion Summary Tables",
+        "source_year": 2024,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2024-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "scope2_location_based",
+        "aznm"
+      ],
+      "notes": "eGRID 2024 subregion AZNM (WECC Southwest) \u2014 location-based US grid factor",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "egrid_subregion",
+      "source_release": "2024",
+      "release_version": "egrid-2024",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:camx:US:2024:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-CAMX",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.215002608,
+        "CH4": 1.814368e-05,
+        "N2O": 2.26796e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report \u2014 Subregion Summary Tables",
+        "source_year": 2024,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2024-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "scope2_location_based",
+        "camx"
+      ],
+      "notes": "eGRID 2024 subregion CAMX (WECC California) \u2014 location-based US grid factor",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "egrid_subregion",
+      "source_release": "2024",
+      "release_version": "egrid-2024",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:erct:US:2024:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-ERCT",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.394171448,
+        "CH4": 3.1751440000000005e-05,
+        "N2O": 4.082328e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report \u2014 Subregion Summary Tables",
+        "source_year": 2024,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2024-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "scope2_location_based",
+        "erct"
+      ],
+      "notes": "eGRID 2024 subregion ERCT (ERCOT All) \u2014 location-based US grid factor",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "egrid_subregion",
+      "source_release": "2024",
+      "release_version": "egrid-2024",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:frcc:US:2024:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-FRCC",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.377842136,
+        "CH4": 2.721552e-05,
+        "N2O": 3.6287360000000002e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report \u2014 Subregion Summary Tables",
+        "source_year": 2024,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2024-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "scope2_location_based",
+        "frcc"
+      ],
+      "notes": "eGRID 2024 subregion FRCC (FRCC All) \u2014 location-based US grid factor",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "egrid_subregion",
+      "source_release": "2024",
+      "release_version": "egrid-2024",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:hims:US:2024:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-HIMS",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.55338224,
+        "CH4": 4.989512e-05,
+        "N2O": 4.989512e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report \u2014 Subregion Summary Tables",
+        "source_year": 2024,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2024-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "scope2_location_based",
+        "hims"
+      ],
+      "notes": "eGRID 2024 subregion HIMS (HICC Miscellaneous) \u2014 location-based US grid factor",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "egrid_subregion",
+      "source_release": "2024",
+      "release_version": "egrid-2024",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:hioa:US:2024:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-HIOA",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.7293759360000001,
+        "CH4": 6.350288000000001e-05,
+        "N2O": 6.3502880000000005e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report \u2014 Subregion Summary Tables",
+        "source_year": 2024,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2024-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "scope2_location_based",
+        "hioa"
+      ],
+      "notes": "eGRID 2024 subregion HIOA (HICC Oahu) \u2014 location-based US grid factor",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "egrid_subregion",
+      "source_release": "2024",
+      "release_version": "egrid-2024",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:mroe:US:2024:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-MROE",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.6010094,
+        "CH4": 4.5359200000000004e-05,
+        "N2O": 6.80388e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report \u2014 Subregion Summary Tables",
+        "source_year": 2024,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2024-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "scope2_location_based",
+        "mroe"
+      ],
+      "notes": "eGRID 2024 subregion MROE (MRO East) \u2014 location-based US grid factor",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "egrid_subregion",
+      "source_release": "2024",
+      "release_version": "egrid-2024",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:mrow:US:2024:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-MROW",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.409139984,
+        "CH4": 3.628736e-05,
+        "N2O": 5.896696e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report \u2014 Subregion Summary Tables",
+        "source_year": 2024,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2024-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "scope2_location_based",
+        "mrow"
+      ],
+      "notes": "eGRID 2024 subregion MROW (MRO West) \u2014 location-based US grid factor",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "egrid_subregion",
+      "source_release": "2024",
+      "release_version": "egrid-2024",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:newe:US:2024:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-NEWE",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.24040376,
+        "CH4": 2.2679600000000002e-05,
+        "N2O": 2.7215520000000003e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report \u2014 Subregion Summary Tables",
+        "source_year": 2024,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2024-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "scope2_location_based",
+        "newe"
+      ],
+      "notes": "eGRID 2024 subregion NEWE (NPCC New England) \u2014 location-based US grid factor",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "egrid_subregion",
+      "source_release": "2024",
+      "release_version": "egrid-2024",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:nwpp:US:2024:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-NWPP",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.29029888,
+        "CH4": 2.721552e-05,
+        "N2O": 4.989512e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report \u2014 Subregion Summary Tables",
+        "source_year": 2024,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2024-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "scope2_location_based",
+        "nwpp"
+      ],
+      "notes": "eGRID 2024 subregion NWPP (WECC Northwest) \u2014 location-based US grid factor",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "egrid_subregion",
+      "source_release": "2024",
+      "release_version": "egrid-2024",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:nycw:US:2024:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-NYCW",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.24040376,
+        "CH4": 1.814368e-05,
+        "N2O": 1.8143680000000001e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report \u2014 Subregion Summary Tables",
+        "source_year": 2024,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2024-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "scope2_location_based",
+        "nycw"
+      ],
+      "notes": "eGRID 2024 subregion NYCW (NPCC NYC/Westchester) \u2014 location-based US grid factor",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "egrid_subregion",
+      "source_release": "2024",
+      "release_version": "egrid-2024",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:nyli:US:2024:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-NYLI",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.55111428,
+        "CH4": 4.5359200000000004e-05,
+        "N2O": 6.3502880000000005e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report \u2014 Subregion Summary Tables",
+        "source_year": 2024,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2024-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "scope2_location_based",
+        "nyli"
+      ],
+      "notes": "eGRID 2024 subregion NYLI (NPCC Long Island) \u2014 location-based US grid factor",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "egrid_subregion",
+      "source_release": "2024",
+      "release_version": "egrid-2024",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:nyup:US:2024:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-NYUP",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.117026736,
+        "CH4": 9.07184e-06,
+        "N2O": 9.071840000000001e-07
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report \u2014 Subregion Summary Tables",
+        "source_year": 2024,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2024-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "scope2_location_based",
+        "nyup"
+      ],
+      "notes": "eGRID 2024 subregion NYUP (NPCC Upstate NY) \u2014 location-based US grid factor",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "egrid_subregion",
+      "source_release": "2024",
+      "release_version": "egrid-2024",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:prms:US:2024:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-PRMS",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.72801516,
+        "CH4": 6.80388e-05,
+        "N2O": 6.3502880000000005e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report \u2014 Subregion Summary Tables",
+        "source_year": 2024,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2024-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "scope2_location_based",
+        "prms"
+      ],
+      "notes": "eGRID 2024 subregion PRMS (Puerto Rico) \u2014 location-based US grid factor",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "egrid_subregion",
+      "source_release": "2024",
+      "release_version": "egrid-2024",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:rfce:US:2024:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-RFCE",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.268072872,
+        "CH4": 2.2679600000000002e-05,
+        "N2O": 3.1751440000000003e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report \u2014 Subregion Summary Tables",
+        "source_year": 2024,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2024-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "scope2_location_based",
+        "rfce"
+      ],
+      "notes": "eGRID 2024 subregion RFCE (RFC East) \u2014 location-based US grid factor",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "egrid_subregion",
+      "source_release": "2024",
+      "release_version": "egrid-2024",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:rfcm:US:2024:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-RFCM",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.542496032,
+        "CH4": 4.989512e-05,
+        "N2O": 8.618248e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report \u2014 Subregion Summary Tables",
+        "source_year": 2024,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2024-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "scope2_location_based",
+        "rfcm"
+      ],
+      "notes": "eGRID 2024 subregion RFCM (RFC Michigan) \u2014 location-based US grid factor",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "egrid_subregion",
+      "source_release": "2024",
+      "release_version": "egrid-2024",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:rfcw:US:2024:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-RFCW",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.48534344,
+        "CH4": 4.5359200000000004e-05,
+        "N2O": 6.80388e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report \u2014 Subregion Summary Tables",
+        "source_year": 2024,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2024-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "scope2_location_based",
+        "rfcw"
+      ],
+      "notes": "eGRID 2024 subregion RFCW (RFC West) \u2014 location-based US grid factor",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "egrid_subregion",
+      "source_release": "2024",
+      "release_version": "egrid-2024",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:rmpa:US:2024:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-RMPA",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.537960112,
+        "CH4": 4.5359200000000004e-05,
+        "N2O": 8.164656e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report \u2014 Subregion Summary Tables",
+        "source_year": 2024,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2024-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "scope2_location_based",
+        "rmpa"
+      ],
+      "notes": "eGRID 2024 subregion RMPA (WECC Rockies) \u2014 location-based US grid factor",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "egrid_subregion",
+      "source_release": "2024",
+      "release_version": "egrid-2024",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:spno:US:2024:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-SPNO",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.47173568,
+        "CH4": 4.082328e-05,
+        "N2O": 6.80388e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report \u2014 Subregion Summary Tables",
+        "source_year": 2024,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2024-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "scope2_location_based",
+        "spno"
+      ],
+      "notes": "eGRID 2024 subregion SPNO (SPP North) \u2014 location-based US grid factor",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "egrid_subregion",
+      "source_release": "2024",
+      "release_version": "egrid-2024",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:spso:US:2024:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-SPSO",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.460849472,
+        "CH4": 3.628736e-05,
+        "N2O": 5.4431040000000006e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report \u2014 Subregion Summary Tables",
+        "source_year": 2024,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2024-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "scope2_location_based",
+        "spso"
+      ],
+      "notes": "eGRID 2024 subregion SPSO (SPP South) \u2014 location-based US grid factor",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "egrid_subregion",
+      "source_release": "2024",
+      "release_version": "egrid-2024",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:srmv:US:2024:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-SRMV",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.391903488,
+        "CH4": 3.1751440000000005e-05,
+        "N2O": 4.082328e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report \u2014 Subregion Summary Tables",
+        "source_year": 2024,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2024-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "scope2_location_based",
+        "srmv"
+      ],
+      "notes": "eGRID 2024 subregion SRMV (SERC Mississippi Valley) \u2014 location-based US grid factor",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "egrid_subregion",
+      "source_release": "2024",
+      "release_version": "egrid-2024",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:srmw:US:2024:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-SRMW",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.714860992,
+        "CH4": 6.80388e-05,
+        "N2O": 9.979024e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report \u2014 Subregion Summary Tables",
+        "source_year": 2024,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2024-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "scope2_location_based",
+        "srmw"
+      ],
+      "notes": "eGRID 2024 subregion SRMW (SERC Midwest) \u2014 location-based US grid factor",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "egrid_subregion",
+      "source_release": "2024",
+      "release_version": "egrid-2024",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:srso:US:2024:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-SRSO",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.3855532,
+        "CH4": 3.1751440000000005e-05,
+        "N2O": 4.53592e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report \u2014 Subregion Summary Tables",
+        "source_year": 2024,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2024-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "scope2_location_based",
+        "srso"
+      ],
+      "notes": "eGRID 2024 subregion SRSO (SERC South) \u2014 location-based US grid factor",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "egrid_subregion",
+      "source_release": "2024",
+      "release_version": "egrid-2024",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:srtv:US:2024:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-SRTV",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.410954352,
+        "CH4": 3.628736e-05,
+        "N2O": 5.4431040000000006e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report \u2014 Subregion Summary Tables",
+        "source_year": 2024,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2024-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "scope2_location_based",
+        "srtv"
+      ],
+      "notes": "eGRID 2024 subregion SRTV (SERC Tennessee Valley) \u2014 location-based US grid factor",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "egrid_subregion",
+      "source_release": "2024",
+      "release_version": "egrid-2024",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:srvc:US:2024:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-SRVC",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.286216552,
+        "CH4": 2.2679600000000002e-05,
+        "N2O": 3.1751440000000003e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report \u2014 Subregion Summary Tables",
+        "source_year": 2024,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2024-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "scope2_location_based",
+        "srvc"
+      ],
+      "notes": "eGRID 2024 subregion SRVC (SERC Virginia/Carolinas) \u2014 location-based US grid factor",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "egrid_subregion",
+      "source_release": "2024",
+      "release_version": "egrid-2024",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:akgd:US:2026:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-AKGD",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.504847896,
+        "CH4": 4.5359200000000004e-05,
+        "N2O": 4.53592e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report \u2014 Subregion Summary Tables",
+        "source_year": 2026,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2026-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "scope2_location_based",
+        "akgd"
+      ],
+      "notes": "eGRID 2026 subregion AKGD (ASCC Alaska Grid) \u2014 location-based US grid factor; coal_pct=12, gas_pct=41",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "egrid_subregion",
+      "source_release": "2026",
+      "release_version": "egrid-2026",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:akms:US:2026:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-AKMS",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.22906396,
+        "CH4": 1.814368e-05,
+        "N2O": 2.26796e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report \u2014 Subregion Summary Tables",
+        "source_year": 2026,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2026-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "scope2_location_based",
+        "akms"
+      ],
+      "notes": "eGRID 2026 subregion AKMS (ASCC Miscellaneous) \u2014 location-based US grid factor",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "egrid_subregion",
+      "source_release": "2026",
+      "release_version": "egrid-2026",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:aznm:US:2026:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-AZNM",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.38101728,
+        "CH4": 3.1751440000000005e-05,
+        "N2O": 4.53592e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report \u2014 Subregion Summary Tables",
+        "source_year": 2026,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2026-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "scope2_location_based",
+        "aznm"
+      ],
+      "notes": "eGRID 2026 subregion AZNM (WECC Southwest) \u2014 location-based US grid factor",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "egrid_subregion",
+      "source_release": "2026",
+      "release_version": "egrid-2026",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:camx:US:2026:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-CAMX",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.215002608,
+        "CH4": 1.814368e-05,
+        "N2O": 2.26796e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report \u2014 Subregion Summary Tables",
+        "source_year": 2026,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2026-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "scope2_location_based",
+        "camx"
+      ],
+      "notes": "eGRID 2026 subregion CAMX (WECC California) \u2014 location-based US grid factor",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "egrid_subregion",
+      "source_release": "2026",
+      "release_version": "egrid-2026",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:erct:US:2026:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-ERCT",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.394171448,
+        "CH4": 3.1751440000000005e-05,
+        "N2O": 4.082328e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report \u2014 Subregion Summary Tables",
+        "source_year": 2026,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2026-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "scope2_location_based",
+        "erct"
+      ],
+      "notes": "eGRID 2026 subregion ERCT (ERCOT All) \u2014 location-based US grid factor",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "egrid_subregion",
+      "source_release": "2026",
+      "release_version": "egrid-2026",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:frcc:US:2026:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-FRCC",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.377842136,
+        "CH4": 2.721552e-05,
+        "N2O": 3.6287360000000002e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report \u2014 Subregion Summary Tables",
+        "source_year": 2026,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2026-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "scope2_location_based",
+        "frcc"
+      ],
+      "notes": "eGRID 2026 subregion FRCC (FRCC All) \u2014 location-based US grid factor",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "egrid_subregion",
+      "source_release": "2026",
+      "release_version": "egrid-2026",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:hims:US:2026:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-HIMS",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.55338224,
+        "CH4": 4.989512e-05,
+        "N2O": 4.989512e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report \u2014 Subregion Summary Tables",
+        "source_year": 2026,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2026-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "scope2_location_based",
+        "hims"
+      ],
+      "notes": "eGRID 2026 subregion HIMS (HICC Miscellaneous) \u2014 location-based US grid factor",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "egrid_subregion",
+      "source_release": "2026",
+      "release_version": "egrid-2026",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:hioa:US:2026:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-HIOA",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.7293759360000001,
+        "CH4": 6.350288000000001e-05,
+        "N2O": 6.3502880000000005e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report \u2014 Subregion Summary Tables",
+        "source_year": 2026,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2026-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "scope2_location_based",
+        "hioa"
+      ],
+      "notes": "eGRID 2026 subregion HIOA (HICC Oahu) \u2014 location-based US grid factor",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "egrid_subregion",
+      "source_release": "2026",
+      "release_version": "egrid-2026",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:mroe:US:2026:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-MROE",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.6010094,
+        "CH4": 4.5359200000000004e-05,
+        "N2O": 6.80388e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report \u2014 Subregion Summary Tables",
+        "source_year": 2026,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2026-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "scope2_location_based",
+        "mroe"
+      ],
+      "notes": "eGRID 2026 subregion MROE (MRO East) \u2014 location-based US grid factor",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "egrid_subregion",
+      "source_release": "2026",
+      "release_version": "egrid-2026",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:mrow:US:2026:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-MROW",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.409139984,
+        "CH4": 3.628736e-05,
+        "N2O": 5.896696e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report \u2014 Subregion Summary Tables",
+        "source_year": 2026,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2026-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "scope2_location_based",
+        "mrow"
+      ],
+      "notes": "eGRID 2026 subregion MROW (MRO West) \u2014 location-based US grid factor",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "egrid_subregion",
+      "source_release": "2026",
+      "release_version": "egrid-2026",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:newe:US:2026:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-NEWE",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.24040376,
+        "CH4": 2.2679600000000002e-05,
+        "N2O": 2.7215520000000003e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report \u2014 Subregion Summary Tables",
+        "source_year": 2026,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2026-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "scope2_location_based",
+        "newe"
+      ],
+      "notes": "eGRID 2026 subregion NEWE (NPCC New England) \u2014 location-based US grid factor",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "egrid_subregion",
+      "source_release": "2026",
+      "release_version": "egrid-2026",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:nwpp:US:2026:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-NWPP",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.29029888,
+        "CH4": 2.721552e-05,
+        "N2O": 4.989512e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report \u2014 Subregion Summary Tables",
+        "source_year": 2026,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2026-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "scope2_location_based",
+        "nwpp"
+      ],
+      "notes": "eGRID 2026 subregion NWPP (WECC Northwest) \u2014 location-based US grid factor",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "egrid_subregion",
+      "source_release": "2026",
+      "release_version": "egrid-2026",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:nycw:US:2026:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-NYCW",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.24040376,
+        "CH4": 1.814368e-05,
+        "N2O": 1.8143680000000001e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report \u2014 Subregion Summary Tables",
+        "source_year": 2026,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2026-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "scope2_location_based",
+        "nycw"
+      ],
+      "notes": "eGRID 2026 subregion NYCW (NPCC NYC/Westchester) \u2014 location-based US grid factor",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "egrid_subregion",
+      "source_release": "2026",
+      "release_version": "egrid-2026",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:nyli:US:2026:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-NYLI",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.55111428,
+        "CH4": 4.5359200000000004e-05,
+        "N2O": 6.3502880000000005e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report \u2014 Subregion Summary Tables",
+        "source_year": 2026,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2026-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "scope2_location_based",
+        "nyli"
+      ],
+      "notes": "eGRID 2026 subregion NYLI (NPCC Long Island) \u2014 location-based US grid factor",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "egrid_subregion",
+      "source_release": "2026",
+      "release_version": "egrid-2026",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:nyup:US:2026:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-NYUP",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.117026736,
+        "CH4": 9.07184e-06,
+        "N2O": 9.071840000000001e-07
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report \u2014 Subregion Summary Tables",
+        "source_year": 2026,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2026-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "scope2_location_based",
+        "nyup"
+      ],
+      "notes": "eGRID 2026 subregion NYUP (NPCC Upstate NY) \u2014 location-based US grid factor",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "egrid_subregion",
+      "source_release": "2026",
+      "release_version": "egrid-2026",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:prms:US:2026:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-PRMS",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.72801516,
+        "CH4": 6.80388e-05,
+        "N2O": 6.3502880000000005e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report \u2014 Subregion Summary Tables",
+        "source_year": 2026,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2026-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "scope2_location_based",
+        "prms"
+      ],
+      "notes": "eGRID 2026 subregion PRMS (Puerto Rico) \u2014 location-based US grid factor",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "egrid_subregion",
+      "source_release": "2026",
+      "release_version": "egrid-2026",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:rfce:US:2026:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-RFCE",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.268072872,
+        "CH4": 2.2679600000000002e-05,
+        "N2O": 3.1751440000000003e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report \u2014 Subregion Summary Tables",
+        "source_year": 2026,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2026-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "scope2_location_based",
+        "rfce"
+      ],
+      "notes": "eGRID 2026 subregion RFCE (RFC East) \u2014 location-based US grid factor",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "egrid_subregion",
+      "source_release": "2026",
+      "release_version": "egrid-2026",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:rfcm:US:2026:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-RFCM",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.542496032,
+        "CH4": 4.989512e-05,
+        "N2O": 8.618248e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report \u2014 Subregion Summary Tables",
+        "source_year": 2026,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2026-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "scope2_location_based",
+        "rfcm"
+      ],
+      "notes": "eGRID 2026 subregion RFCM (RFC Michigan) \u2014 location-based US grid factor",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "egrid_subregion",
+      "source_release": "2026",
+      "release_version": "egrid-2026",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:rfcw:US:2026:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-RFCW",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.48534344,
+        "CH4": 4.5359200000000004e-05,
+        "N2O": 6.80388e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report \u2014 Subregion Summary Tables",
+        "source_year": 2026,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2026-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "scope2_location_based",
+        "rfcw"
+      ],
+      "notes": "eGRID 2026 subregion RFCW (RFC West) \u2014 location-based US grid factor",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "egrid_subregion",
+      "source_release": "2026",
+      "release_version": "egrid-2026",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:rmpa:US:2026:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-RMPA",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.537960112,
+        "CH4": 4.5359200000000004e-05,
+        "N2O": 8.164656e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report \u2014 Subregion Summary Tables",
+        "source_year": 2026,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2026-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "scope2_location_based",
+        "rmpa"
+      ],
+      "notes": "eGRID 2026 subregion RMPA (WECC Rockies) \u2014 location-based US grid factor",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "egrid_subregion",
+      "source_release": "2026",
+      "release_version": "egrid-2026",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:spno:US:2026:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-SPNO",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.47173568,
+        "CH4": 4.082328e-05,
+        "N2O": 6.80388e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report \u2014 Subregion Summary Tables",
+        "source_year": 2026,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2026-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "scope2_location_based",
+        "spno"
+      ],
+      "notes": "eGRID 2026 subregion SPNO (SPP North) \u2014 location-based US grid factor",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "egrid_subregion",
+      "source_release": "2026",
+      "release_version": "egrid-2026",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:spso:US:2026:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-SPSO",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.460849472,
+        "CH4": 3.628736e-05,
+        "N2O": 5.4431040000000006e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report \u2014 Subregion Summary Tables",
+        "source_year": 2026,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2026-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "scope2_location_based",
+        "spso"
+      ],
+      "notes": "eGRID 2026 subregion SPSO (SPP South) \u2014 location-based US grid factor",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "egrid_subregion",
+      "source_release": "2026",
+      "release_version": "egrid-2026",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:srmv:US:2026:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-SRMV",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.391903488,
+        "CH4": 3.1751440000000005e-05,
+        "N2O": 4.082328e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report \u2014 Subregion Summary Tables",
+        "source_year": 2026,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2026-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "scope2_location_based",
+        "srmv"
+      ],
+      "notes": "eGRID 2026 subregion SRMV (SERC Mississippi Valley) \u2014 location-based US grid factor",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "egrid_subregion",
+      "source_release": "2026",
+      "release_version": "egrid-2026",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:srmw:US:2026:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-SRMW",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.714860992,
+        "CH4": 6.80388e-05,
+        "N2O": 9.979024e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report \u2014 Subregion Summary Tables",
+        "source_year": 2026,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2026-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "scope2_location_based",
+        "srmw"
+      ],
+      "notes": "eGRID 2026 subregion SRMW (SERC Midwest) \u2014 location-based US grid factor",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "egrid_subregion",
+      "source_release": "2026",
+      "release_version": "egrid-2026",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:srso:US:2026:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-SRSO",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.3855532,
+        "CH4": 3.1751440000000005e-05,
+        "N2O": 4.53592e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report \u2014 Subregion Summary Tables",
+        "source_year": 2026,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2026-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "scope2_location_based",
+        "srso"
+      ],
+      "notes": "eGRID 2026 subregion SRSO (SERC South) \u2014 location-based US grid factor",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "egrid_subregion",
+      "source_release": "2026",
+      "release_version": "egrid-2026",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:srtv:US:2026:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-SRTV",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.410954352,
+        "CH4": 3.628736e-05,
+        "N2O": 5.4431040000000006e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report \u2014 Subregion Summary Tables",
+        "source_year": 2026,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2026-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "scope2_location_based",
+        "srtv"
+      ],
+      "notes": "eGRID 2026 subregion SRTV (SERC Tennessee Valley) \u2014 location-based US grid factor",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "egrid_subregion",
+      "source_release": "2026",
+      "release_version": "egrid-2026",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
+      }
+    },
+    {
+      "factor_id": "EF:eGRID:srvc:US:2026:v1",
+      "fuel_type": "electricity_grid",
+      "unit": "kwh",
+      "geography": "US-SRVC",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": 0.286216552,
+        "CH4": 2.2679600000000002e-05,
+        "N2O": 3.1751440000000003e-06
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "EPA",
+        "source_publication": "eGRID2022 Annual Report \u2014 Subregion Summary Tables",
+        "source_year": 2026,
+        "methodology": "direct_measurement",
+        "source_url": "https://www.epa.gov/egrid",
+        "version": "2022"
+      },
+      "valid_from": "2026-01-01",
+      "uncertainty_95ci": 0.03,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "scope2_location_based",
+        "srvc"
+      ],
+      "notes": "eGRID 2026 subregion SRVC (SERC Virginia/Carolinas) \u2014 location-based US grid factor",
+      "factor_family": "grid_intensity",
+      "activity_tags": [
+        "purchased_electricity",
+        "grid_average"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "source_id": "egrid_subregion",
+      "source_release": "2026",
+      "release_version": "egrid-2026",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "EPA_MRR",
+        "eGRID"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
+      }
+    }
+  ]
+}

@@ -1,0 +1,650 @@
+# ---------------------------------------------------------------------------
+# Resolver Contract — OpenAPI 3.1 patch (Wave 1, additions-only).
+#
+# Extends docs/api/factors-v1.yaml with the schemas required by the CTO's
+# 16-element resolve/explain contract. No breaking removals: every existing
+# schema stays valid; this file only ADDS new schemas and new optional
+# sibling properties on ResolvedFactor / ResolvedFactorResponse /
+# ExplainResponse via allOf-merge.
+#
+# Apply strategy (Wave 2):
+#   1) Merge each `components.schemas.<NewName>` block verbatim into
+#      factors-v1.yaml (no collisions — all names are new).
+#   2) For existing schemas listed under `_patches`, use the documented
+#      merge recipe (allOf-wrap or property-add). Each _patches block
+#      shows both the "before" pointer and the additive change.
+#   3) Regenerate the SDKs (Python + TypeScript) after merge.
+#
+# Nothing here is authoritative until merged; this file is a PLAN artefact.
+# ---------------------------------------------------------------------------
+
+openapi: "3.1.0"
+info:
+  title: "GreenLang Factors API — Resolver contract patch"
+  version: "1.0.0-patch-r4-r6-api2"
+  description: |
+    Additions-only extension of factors-v1.yaml to satisfy the 16-element
+    resolve/explain contract. Consumed by Wave-2 implementers; not served
+    by the FastAPI app directly.
+
+# ---------------------------------------------------------------------------
+# NEW SCHEMAS
+# ---------------------------------------------------------------------------
+components:
+  schemas:
+
+    # -------- (1) Chosen-factor envelope --------
+    ChosenFactor:
+      type: object
+      additionalProperties: false
+      required: [id, name, version, factor_family]
+      description: |
+        CTO contract element #1. Compact nested envelope returned at the
+        top level of every /v1/resolve and /v1/explain response.
+      properties:
+        id:
+          type: string
+          example: "EF:IN:electricity:grid:2027:v1"
+        name:
+          type: string
+          example: "India national grid electricity — location-based"
+        version:
+          type: string
+          example: "1.0.0"
+        factor_family:
+          $ref: '#/components/schemas/FactorFamily'
+      example:
+        id: "EF:IN:electricity:grid:2027:v1"
+        name: "India national grid electricity — location-based"
+        version: "1.0.0"
+        factor_family: "electricity"
+
+    # -------- (2) Alternates with CTO-spec field names --------
+    AlternateCandidateV2:
+      type: object
+      additionalProperties: false
+      required: [factor_id, reason_lost]
+      description: |
+        CTO contract element #2. Canonical alternate shape. The legacy
+        AlternateCandidate (with `why_not_chosen`, `tie_break_score`)
+        remains emitted for backwards compatibility; AlternateCandidateV2
+        is the new canonical name.
+      properties:
+        factor_id: { type: string, example: "EF:IN:electricity:state-MH:2027:v1" }
+        reason_lost:
+          type: string
+          description: Non-empty natural-language reason this factor did not win.
+          example: "narrower geo match required — request jurisdiction was IN (national) not IN-MH"
+        tie_break_score:
+          type: number
+          format: double
+          description: Legacy scoring; retained so existing SDK callers keep working.
+        source_id: { type: string, nullable: true }
+        vintage:   { type: integer, nullable: true }
+        redistribution_class:
+          $ref: '#/components/schemas/RedistributionClass'
+
+    # -------- (4) Source envelope --------
+    SourceDescriptor:
+      type: object
+      additionalProperties: false
+      required: [id, version, name, authority]
+      description: |
+        CTO contract element #4. Replaces the flat `source_id` + `source_version`
+        scalars with the nested 4-tuple the spec requires.
+      properties:
+        id:
+          type: string
+          example: "cea-india-2027"
+        version:
+          type: string
+          example: "2027.q1"
+        name:
+          type: string
+          example: "CEA — Central Electricity Authority of India"
+        authority:
+          type: string
+          description: Regulatory / publishing authority — "who stands behind this number".
+          example: "Government of India — Ministry of Power"
+
+    # -------- (9) Explicit co2e_basis --------
+    Co2eBasis:
+      type: object
+      additionalProperties: false
+      required: [gwp_set, horizon_years]
+      description: |
+        CTO contract element #9. Top-level alias for `gas_breakdown.gwp_basis`
+        with the horizon split out explicitly so developers don't have to
+        parse the joined string (e.g. "IPCC_AR6_100" → set=IPCC_AR6, horizon=100).
+      properties:
+        gwp_set:
+          $ref: '#/components/schemas/GWPSet'
+        horizon_years:
+          type: integer
+          enum: [20, 100]
+        label:
+          type: string
+          description: Joined label for display, e.g. "IPCC_AR6_100".
+          example: "IPCC_AR6_100"
+
+    # -------- (10) Composite FQS quality envelope --------
+    QualityEnvelope:
+      type: object
+      additionalProperties: false
+      required:
+        - composite_fqs_0_100
+        - temporal_score
+        - geographic_score
+        - technology_score
+        - verification_score
+        - completeness_score
+      description: |
+        CTO contract element #10. Wraps the 5-dimension DQS in the 0-100
+        surface plus the composite FQS. All per-dimension scores are
+        rescaled from the underlying 1-5 DQS to 0-100 per the
+        `composite_fqs.py` formula (weighted average; FORMULA_VERSION).
+      properties:
+        composite_fqs_0_100:
+          type: number
+          format: double
+          minimum: 0
+          maximum: 100
+          example: 82.5
+        temporal_score:
+          type: number
+          format: double
+          minimum: 0
+          maximum: 100
+          example: 80
+        geographic_score:
+          type: number
+          format: double
+          minimum: 0
+          maximum: 100
+          example: 100
+        technology_score:
+          type: number
+          format: double
+          minimum: 0
+          maximum: 100
+          example: 80
+        verification_score:
+          type: number
+          format: double
+          minimum: 0
+          maximum: 100
+          example: 60
+        completeness_score:
+          type: number
+          format: double
+          minimum: 0
+          maximum: 100
+          example: 80
+        rating:
+          type: string
+          enum: [excellent, good, fair, poor]
+          example: "good"
+        formula_version:
+          type: string
+          example: "fqs-1.0.0"
+        weights:
+          type: object
+          additionalProperties: { type: number, format: double }
+          example:
+            temporal: 0.25
+            geographical: 0.25
+            technological: 0.20
+            representativeness: 0.15
+            methodological: 0.15
+
+    # -------- (11) Richer uncertainty --------
+    UncertaintyEnvelope:
+      type: object
+      additionalProperties: false
+      required: [type, distribution]
+      description: |
+        CTO contract element #11. Extension of the existing UncertaintyBand
+        with a `type` discriminator and explicit numeric bounds. When
+        `type = "95_percent_ci"` the engine populates `low` and `high`
+        from the 1-σ band applied to `co2e_total_kg`; when
+        `type = "qualitative"` only `note` is meaningful.
+      properties:
+        type:
+          type: string
+          enum: ["95_percent_ci", "qualitative"]
+          example: "95_percent_ci"
+        low:
+          type: number
+          format: double
+          nullable: true
+          description: Lower bound (kg CO2e per denominator unit) at 95% CI.
+        high:
+          type: number
+          format: double
+          nullable: true
+          description: Upper bound (kg CO2e per denominator unit) at 95% CI.
+        distribution:
+          $ref: '#/components/schemas/UncertaintyDistribution'
+        note:
+          type: string
+          nullable: true
+          example: "±5% one-sigma assumed lognormal; bounds derived from CEA methodology §4.2"
+
+    # -------- (12) Licensing envelope --------
+    LicensingEnvelope:
+      type: object
+      additionalProperties: false
+      required: [redistribution_class]
+      description: |
+        CTO contract element #12. Wraps `redistribution_class` in a nested
+        object (mirrors the existing `Factor.licensing` envelope so resolve
+        and explain align with the catalog record).
+      properties:
+        redistribution_class:
+          type: string
+          enum: [open, licensed_embedded, customer_private, oem_redistributable]
+        customer_entitlement_required:
+          type: boolean
+          default: false
+        watermark_required:
+          type: boolean
+          default: false
+
+    # -------- (15) Deprecation pointer --------
+    DeprecationStatus:
+      type: object
+      additionalProperties: false
+      required: [status]
+      description: |
+        CTO contract element #15. Always present (never null envelope);
+        `status="active"` is the default. `replacement_pointer_factor_id`
+        is non-null only when `status in ("deprecated", "superseded")`.
+      properties:
+        status:
+          type: string
+          enum: [active, deprecated, superseded]
+          default: active
+          example: "active"
+        replacement_pointer_factor_id:
+          type: string
+          nullable: true
+          example: null
+        deprecated_at:
+          type: string
+          format: date
+          nullable: true
+        reason:
+          type: string
+          nullable: true
+
+    # -------- (16) Canonical signed receipt --------
+    SignedReceipt:
+      type: object
+      additionalProperties: false
+      required: [receipt_id, signature, verification_key_hint, alg]
+      description: |
+        CTO contract element #16. Canonical name for the signed receipt
+        top-level envelope. Replaces the middleware's current `_signed_receipt`
+        key. The existing `Receipt` schema (factors-v1.yaml:2347) is kept
+        as a compatibility alias; new clients must consume `signed_receipt`.
+      properties:
+        receipt_id:
+          type: string
+          format: uuid
+          description: Server-issued UUIDv7 for receipt lookup / revocation.
+          example: "018f3b21-9c4a-7abe-8f10-2c1a0c9e1b77"
+        signature:
+          type: string
+          description: Base64 signature over the canonical payload hash.
+        verification_key_hint:
+          type: string
+          description: Hint (not the full key id) for selecting the verification key.
+          example: "gl-factors-ed25519-2026q2"
+        alg:
+          type: string
+          enum: [sha256-hmac, ed25519]
+        signed_at:
+          type: string
+          format: date-time
+        payload_hash:
+          type: string
+          description: Hex SHA-256 of the canonical response body excluding this envelope.
+        key_id:
+          type: string
+          description: Full key id (alias of verification_key_hint for legacy clients).
+
+    # -------- NEW canonical resolve payload --------
+    ResolvedFactorV2:
+      type: object
+      additionalProperties: false
+      description: |
+        CTO-canonical resolve/explain payload — carries all 16 required
+        fields. Additive extension of ResolvedFactor; every legacy field
+        stays available at root for a deprecation window.
+      required:
+        - chosen_factor
+        - alternates
+        - why_this_won
+        - source
+        - factor_version
+        - release_version
+        - method_pack
+        - method_pack_version
+        - valid_from
+        - gas_breakdown
+        - co2e_basis
+        - quality
+        - uncertainty
+        - licensing
+        - assumptions
+        - fallback_rank
+        - deprecation_status
+      properties:
+        chosen_factor: { $ref: '#/components/schemas/ChosenFactor' }
+        alternates:
+          type: array
+          maxItems: 20
+          items: { $ref: '#/components/schemas/AlternateCandidateV2' }
+        why_this_won:
+          type: string
+          minLength: 1
+          example: "Step 5 (country_or_sector_average) — India national grid factor won on geo-proximity (exact match) and newest vintage (2027)."
+        source: { $ref: '#/components/schemas/SourceDescriptor' }
+        factor_version:
+          type: string
+          example: "1.0.0"
+        release_version:
+          type: string
+          description: Catalog release version (distinct from factor_version — tracks when THIS record entered the edition).
+          example: "2027.04.0"
+        method_pack:
+          type: string
+          example: "ghg_protocol_corporate"
+        method_pack_version:
+          type: string
+          example: "2024.12"
+        valid_from:
+          type: string
+          format: date
+          example: "2027-04-01"
+        valid_to:
+          type: string
+          format: date
+          nullable: true
+          example: "2028-03-31"
+        gas_breakdown: { $ref: '#/components/schemas/GasBreakdown' }
+        co2e_basis:    { $ref: '#/components/schemas/Co2eBasis' }
+        quality:       { $ref: '#/components/schemas/QualityEnvelope' }
+        uncertainty:   { $ref: '#/components/schemas/UncertaintyEnvelope' }
+        licensing:     { $ref: '#/components/schemas/LicensingEnvelope' }
+        assumptions:
+          type: array
+          items: { type: string }
+          example:
+            - "Location-based method applied (scope 2, corporate boundary)."
+            - "Grid losses already embedded in CEA published value (not added)."
+        fallback_rank:
+          type: integer
+          minimum: 1
+          maximum: 7
+          example: 5
+        step_label:
+          type: string
+          enum:
+            - customer_override
+            - supplier_specific
+            - facility_specific
+            - utility_or_grid_subregion
+            - country_or_sector_average
+            - method_pack_default
+            - global_default
+          example: "country_or_sector_average"
+        deprecation_status: { $ref: '#/components/schemas/DeprecationStatus' }
+        # --- legacy fields retained for deprecation window ---
+        chosen_factor_id: { type: string, deprecated: true }
+        why_chosen:       { type: string, deprecated: true }
+        method_profile:   { $ref: '#/components/schemas/MethodProfile' }
+        resolved_at:      { type: string, format: date-time }
+        engine_version:   { type: string }
+      example:
+        chosen_factor:
+          id: "EF:IN:electricity:grid:2027:v1"
+          name: "India national grid electricity — location-based"
+          version: "1.0.0"
+          factor_family: "electricity"
+        alternates:
+          - factor_id: "EF:IN:electricity:state-MH:2027:v1"
+            reason_lost: "narrower geo match required — national preferred when request jurisdiction is IN"
+            source_id: "cea-india-2027"
+            vintage: 2027
+            redistribution_class: "licensed_embedded"
+        why_this_won: "Step 5 (country_or_sector_average) — India national grid factor won on geo-proximity (exact match) and newest vintage (2027)."
+        source:
+          id: "cea-india-2027"
+          version: "2027.q1"
+          name: "CEA — Central Electricity Authority of India"
+          authority: "Government of India — Ministry of Power"
+        factor_version: "1.0.0"
+        release_version: "2027.04.0"
+        method_pack: "ghg_protocol_corporate"
+        method_pack_version: "2024.12"
+        valid_from: "2027-04-01"
+        valid_to: "2028-03-31"
+        gas_breakdown:
+          co2_kg: 0.697
+          ch4_kg: 0.0
+          n2o_kg: 0.0
+          co2e_total_kg: 0.712
+          gwp_basis: "IPCC_AR6_100"
+        co2e_basis:
+          gwp_set: "IPCC_AR6"
+          horizon_years: 100
+          label: "IPCC_AR6_100"
+        quality:
+          composite_fqs_0_100: 82.5
+          temporal_score: 80
+          geographic_score: 100
+          technology_score: 80
+          verification_score: 60
+          completeness_score: 80
+          rating: "good"
+          formula_version: "fqs-1.0.0"
+        uncertainty:
+          type: "95_percent_ci"
+          low: 0.67
+          high: 0.75
+          distribution: "lognormal"
+          note: "±5% one-sigma assumed lognormal; bounds derived from CEA methodology §4.2"
+        licensing:
+          redistribution_class: "licensed_embedded"
+          customer_entitlement_required: true
+        assumptions:
+          - "Location-based method applied (scope 2, corporate boundary)."
+          - "Grid losses already embedded in CEA published value (not added)."
+        fallback_rank: 5
+        step_label: "country_or_sector_average"
+        deprecation_status:
+          status: "active"
+          replacement_pointer_factor_id: null
+
+    # -------- NEW canonical response envelopes --------
+    ResolveResponseV2:
+      type: object
+      additionalProperties: false
+      required: [resolved, edition_id, signed_receipt]
+      description: |
+        CTO-canonical POST /v1/resolve 200 body. Wraps ResolvedFactorV2
+        in the standard {resolved, edition_id, edition_source, signed_receipt}
+        envelope so the contract is satisfied even when the caller passes
+        ?compact=true (signed_receipt + edition_id stay, only the explain
+        block drops).
+      properties:
+        resolved:        { $ref: '#/components/schemas/ResolvedFactorV2' }
+        edition_id:
+          type: string
+          example: "factors-ga-2027.04.0"
+        edition_source:
+          type: string
+          enum: [header, query, default, rollback_override]
+          example: "default"
+        signed_receipt:  { $ref: '#/components/schemas/SignedReceipt' }
+        explain:
+          $ref: '#/components/schemas/ExplainPayload'
+          description: Present unless ?compact=true; mirrors the existing ExplainPayload.
+
+    ExplainResponseV2:
+      type: object
+      additionalProperties: false
+      required:
+        - chosen_factor
+        - method_pack
+        - fallback_rank
+        - step_label
+        - gas_breakdown
+        - uncertainty
+        - alternates
+        - explain
+        - edition_id
+        - signed_receipt
+      description: |
+        CTO-canonical GET /v1/factors/{id}/explain 200 body. Every field
+        required by the 16-element contract is reachable at the top level
+        OR inside `explain`. Mirrors what build_factor_explain() should
+        return post-Wave-2.
+      properties:
+        chosen_factor: { $ref: '#/components/schemas/ChosenFactor' }
+        method_pack:
+          type: string
+          example: "ghg_protocol_corporate"
+        method_pack_version:
+          type: string
+          example: "2024.12"
+        fallback_rank:
+          type: integer
+          minimum: 1
+          maximum: 7
+        step_label:
+          type: string
+        gas_breakdown: { $ref: '#/components/schemas/GasBreakdown' }
+        co2e_basis:    { $ref: '#/components/schemas/Co2eBasis' }
+        quality:       { $ref: '#/components/schemas/QualityEnvelope' }
+        uncertainty:   { $ref: '#/components/schemas/UncertaintyEnvelope' }
+        licensing:     { $ref: '#/components/schemas/LicensingEnvelope' }
+        deprecation_status: { $ref: '#/components/schemas/DeprecationStatus' }
+        source:        { $ref: '#/components/schemas/SourceDescriptor' }
+        alternates:
+          type: array
+          maxItems: 20
+          items: { $ref: '#/components/schemas/AlternateCandidateV2' }
+        explain:       { $ref: '#/components/schemas/ExplainPayload' }
+        edition_id:    { type: string }
+        signed_receipt: { $ref: '#/components/schemas/SignedReceipt' }
+
+# ---------------------------------------------------------------------------
+# ADDITIVE PATCHES to existing schemas (merge recipe for Wave 2)
+# ---------------------------------------------------------------------------
+_patches:
+
+  # 1) GasBreakdown — add CTO-short-named aliases (no _kg suffix).
+  #    Merge recipe: extend the `properties` block. Keep _kg names for
+  #    backwards-compat; the new names are the canonical ones going forward.
+  GasBreakdown_addAliases:
+    target: "#/components/schemas/GasBreakdown"
+    add_properties:
+      co2:          { type: number, format: double, description: "Alias of co2_kg." }
+      ch4:          { type: number, format: double, description: "Alias of ch4_kg." }
+      n2o:          { type: number, format: double, description: "Alias of n2o_kg." }
+      hfcs:         { type: number, format: double, description: "Alias of hfcs_kg." }
+      pfcs:         { type: number, format: double, description: "Alias of pfcs_kg." }
+      sf6:          { type: number, format: double, description: "Alias of sf6_kg." }
+      nf3:          { type: number, format: double, description: "Alias of nf3_kg." }
+      biogenic_co2: { type: number, format: double, description: "Alias of biogenic_co2_kg." }
+      co2e_total:   { type: number, format: double, description: "Alias of co2e_total_kg." }
+
+  # 2) ResolvedFactor — add the new nested/envelope fields alongside the
+  #    existing flat fields. No required changes (additions only).
+  ResolvedFactor_addCanonicalEnvelopes:
+    target: "#/components/schemas/ResolvedFactor"
+    add_properties:
+      chosen_factor:      { $ref: '#/components/schemas/ChosenFactor' }
+      source:             { $ref: '#/components/schemas/SourceDescriptor' }
+      quality_envelope:   { $ref: '#/components/schemas/QualityEnvelope' }
+      uncertainty_envelope: { $ref: '#/components/schemas/UncertaintyEnvelope' }
+      licensing:          { $ref: '#/components/schemas/LicensingEnvelope' }
+      deprecation_status_envelope: { $ref: '#/components/schemas/DeprecationStatus' }
+      co2e_basis:         { $ref: '#/components/schemas/Co2eBasis' }
+      release_version:    { type: string, description: "Catalog release version — distinct from factor_version." }
+      valid_from:         { type: string, format: date }
+      valid_to:           { type: string, format: date, nullable: true }
+      method_pack:        { type: string, example: "ghg_protocol_corporate" }
+      why_this_won:       { type: string, description: "Alias of why_chosen for CTO contract #3." }
+
+  # 3) ResolvedFactorResponse — make signed_receipt point to SignedReceipt
+  #    canonical schema (Receipt stays as compat alias).
+  ResolvedFactorResponse_addSignedReceiptV2:
+    target: "#/components/schemas/ResolvedFactorResponse"
+    add_properties:
+      signed_receipt_v2: { $ref: '#/components/schemas/SignedReceipt' }
+    note: |
+      During the deprecation window, both `signed_receipt` (Receipt shape)
+      and `signed_receipt_v2` (SignedReceipt shape) are emitted. SDKs
+      prefer `signed_receipt_v2` when present. Post-deprecation,
+      `signed_receipt` is renamed to point at SignedReceipt directly and
+      `signed_receipt_v2` is removed.
+
+  # 4) AlternateCandidate — accept the new reason_lost field as a sibling.
+  AlternateCandidate_addReasonLost:
+    target: "#/components/schemas/AlternateCandidate"
+    add_properties:
+      reason_lost:
+        type: string
+        description: "Canonical name for why_not_chosen (CTO contract #2)."
+
+  # 5) ExplainResponse — carry the canonical envelopes into the top level.
+  ExplainResponse_addCanonicalEnvelopes:
+    target: "#/components/schemas/ExplainResponse"
+    add_properties:
+      chosen_factor:      { $ref: '#/components/schemas/ChosenFactor' }
+      source:             { $ref: '#/components/schemas/SourceDescriptor' }
+      method_pack:        { type: string }
+      method_pack_version: { type: string }
+      valid_from:         { type: string, format: date }
+      valid_to:           { type: string, format: date, nullable: true }
+      quality_envelope:   { $ref: '#/components/schemas/QualityEnvelope' }
+      uncertainty_envelope: { $ref: '#/components/schemas/UncertaintyEnvelope' }
+      licensing:          { $ref: '#/components/schemas/LicensingEnvelope' }
+      deprecation_status_envelope: { $ref: '#/components/schemas/DeprecationStatus' }
+      co2e_basis:         { $ref: '#/components/schemas/Co2eBasis' }
+      release_version:    { type: string }
+      factor_version:     { type: string }
+      why_this_won:       { type: string }
+
+  # 6) Paths: point the 200 responses at the new canonical schemas.
+  #    Wave 2 flips the schema ref once the route returns the V2 shape.
+  paths_updates:
+    - path: "/v1/resolve"
+      operation: "post"
+      response: "200"
+      new_schema_ref: "#/components/schemas/ResolveResponseV2"
+    - path: "/v1/factors/{factor_id}/explain"
+      operation: "get"
+      response: "200"
+      new_schema_ref: "#/components/schemas/ExplainResponseV2"
+    - path: "/v1/factors/{factor_id}"
+      operation: "get"
+      response: "200"
+      # Existing FactorEnvelope gains signed_receipt_v2 + licensing envelope via _patches above.
+      new_schema_ref: "#/components/schemas/FactorEnvelope"
+
+# ---------------------------------------------------------------------------
+# MERGE ORDER
+# ---------------------------------------------------------------------------
+# 1. Add every block under `components.schemas` above to factors-v1.yaml.
+# 2. Apply `_patches.*.add_properties` as additive property-merges on the
+#    targeted existing schemas.
+# 3. Flip `paths_updates` refs once the router code returns the new shape
+#    (Wave 2). Before the code flip, the new schemas are safe extras — no
+#    existing client breaks because every new field is optional on the
+#    legacy endpoints.
+# 4. Regenerate Python + TS SDKs; confirm no required-field regressions.
+# 5. Bump factors-v1.yaml `info.version` to 1.1.0 on merge.

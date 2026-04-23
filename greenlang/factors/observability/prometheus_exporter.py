@@ -91,6 +91,41 @@ class FactorsMetrics:
                 "QA gate failures",
                 ["gate_name"],
             )
+            # ---- DEP2: factors-specific resolve / entitlement / signing ----
+            # Names here match the PrometheusRule expressions exactly. Do not
+            # rename without updating deployment/k8s/factors/base/prometheusrule.yaml
+            # and deployment/observability/grafana/dashboards/factors.json.
+            self._resolve_requests = Counter(
+                "factors_resolve_requests_total",
+                "Resolve requests by family, method profile, fallback rank, outcome",
+                ["family", "method_profile", "fallback_rank", "outcome"],
+            )
+            self._resolve_latency = Histogram(
+                "factors_resolve_latency_seconds",
+                "Resolve end-to-end latency by family",
+                ["family"],
+                buckets=(0.01, 0.05, 0.1, 0.25, 0.5, 1.0, 2.0, 5.0),
+            )
+            self._entitlement_denials = Counter(
+                "factors_entitlement_denials_total",
+                "Entitlement / licensing denials",
+                ["class", "tier"],
+            )
+            self._signed_receipt_failures = Counter(
+                "factors_signed_receipt_failures_total",
+                "Signed-receipt generation / verification failures",
+                ["reason"],
+            )
+            self._source_watch_failures = Counter(
+                "factors_source_watch_failures_total",
+                "Source-watch probe failures (per source_id)",
+                ["source_id"],
+            )
+            self._cannot_resolve_safely = Counter(
+                "factors_cannot_resolve_safely_total",
+                "Cannot-resolve-safely events (N-safety gate rejection)",
+                ["pack_id", "method_profile"],
+            )
 
     # ------------------------------------------------------------------
     # API metrics
@@ -173,6 +208,61 @@ class FactorsMetrics:
             self._qa_failures.labels(gate_name=gate_name).inc()
         else:
             k = f"qa:{gate_name}"
+            self._fallback.counters[k] = self._fallback.counters.get(k, 0) + 1
+
+    # ------------------------------------------------------------------
+    # DEP2: resolve / entitlement / signing / source-watch metrics
+    # ------------------------------------------------------------------
+
+    def record_resolve(
+        self,
+        *,
+        family: str,
+        method_profile: str,
+        fallback_rank: int,
+        outcome: str,
+        latency_sec: float,
+    ) -> None:
+        """Record one /v1/resolve call's outcome + latency."""
+        if _PROM:
+            self._resolve_requests.labels(
+                family=family,
+                method_profile=method_profile,
+                fallback_rank=str(fallback_rank),
+                outcome=outcome,
+            ).inc()
+            self._resolve_latency.labels(family=family).observe(latency_sec)
+        else:
+            k = f"resolve:{family}:{method_profile}:{fallback_rank}:{outcome}"
+            self._fallback.counters[k] = self._fallback.counters.get(k, 0) + 1
+            self._fallback.histograms.setdefault(f"resolve_latency:{family}", []).append(latency_sec)
+
+    def record_entitlement_denial(self, *, denial_class: str, tier: str) -> None:
+        if _PROM:
+            self._entitlement_denials.labels(**{"class": denial_class, "tier": tier}).inc()
+        else:
+            k = f"denial:{denial_class}:{tier}"
+            self._fallback.counters[k] = self._fallback.counters.get(k, 0) + 1
+
+    def record_signed_receipt_failure(self, *, reason: str) -> None:
+        if _PROM:
+            self._signed_receipt_failures.labels(reason=reason).inc()
+        else:
+            k = f"signed_receipt_fail:{reason}"
+            self._fallback.counters[k] = self._fallback.counters.get(k, 0) + 1
+
+    def record_source_watch_failure(self, *, source_id: str) -> None:
+        if _PROM:
+            self._source_watch_failures.labels(source_id=source_id).inc()
+        else:
+            k = f"source_watch_fail:{source_id}"
+            self._fallback.counters[k] = self._fallback.counters.get(k, 0) + 1
+
+    def record_cannot_resolve_safely(self, *, pack_id: str, method_profile: str) -> None:
+        if _PROM:
+            self._cannot_resolve_safely.labels(pack_id=pack_id, method_profile=method_profile).inc()
+        else:
+            k = f"cannot_resolve_safely:{pack_id}:{method_profile}"
             self._fallback.counters[k] = self._fallback.counters.get(k, 0) + 1
 
     @property

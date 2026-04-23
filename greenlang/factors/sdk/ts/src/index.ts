@@ -21,7 +21,7 @@
  * ```
  */
 
-export const SDK_VERSION = '1.0.0';
+export const SDK_VERSION = '1.2.0';
 
 // Client
 export {
@@ -38,21 +38,28 @@ export type {
   AuditBundle,
   BatchJobHandle,
   BatchJobStatus,
+  ChosenFactor,
   CoverageReport,
+  DeprecationStatus,
   Edition,
   Factor,
   FactorDiff,
   FactorMatch,
   GasBreakdown,
   Jurisdiction,
+  LicensingEnvelope,
   MethodPack,
   Override,
+  QualityEnvelope,
   QualityScore,
   ResolutionRequest,
   ResolvedFactor,
   SearchResponse,
+  SignedReceiptEnvelope,
   Source,
+  SourceDescriptor,
   Uncertainty,
+  UncertaintyEnvelope,
 } from './models';
 export { isTerminalBatchStatus } from './models';
 
@@ -63,6 +70,7 @@ export {
   EditionMismatchError,
   EditionPinError,
   EntitlementError,
+  FactorCannotResolveSafelyError,
   FactorNotFoundError,
   FactorsAPIError,
   LicenseError,

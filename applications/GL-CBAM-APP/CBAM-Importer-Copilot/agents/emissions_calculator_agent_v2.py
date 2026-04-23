@@ -37,6 +37,14 @@ from greenlang.data.canonical_v2 import MethodProfile
 from greenlang.factors.resolution.engine import ResolutionEngine, ResolutionError
 from greenlang.factors.resolution.request import ResolutionRequest
 
+# CTO non-negotiable #6 — policy-workflow guard. Marking this agent
+# as a policy workflow flips a ContextVar while its entrypoint methods
+# run so that any raw ``FactorCatalogRepository.list_factors`` /
+# ``get_factor`` lookup underneath will raise
+# :class:`MethodProfileMissingError` unless a ``method_profile`` is
+# supplied. See ``greenlang/factors/middleware/method_profile_guard.py``.
+from greenlang.factors.middleware.method_profile_guard import policy_workflow
+
 # Add parent directory to path to import emission_factors
 sys.path.insert(0, str(Path(__file__).parent.parent / "data"))
 
@@ -114,6 +122,7 @@ class CalculatorOutput(BaseModel):
 # EMISSIONS CALCULATOR AGENT V2 (Framework-Integrated)
 # ============================================================================
 
+@policy_workflow
 class EmissionsCalculatorAgent_v2(Agent[CalculatorInput, CalculatorOutput]):
     """
     CBAM emissions calculator using GreenLang SDK infrastructure.
@@ -125,6 +134,13 @@ class EmissionsCalculatorAgent_v2(Agent[CalculatorInput, CalculatorOutput]):
     - Consistent API across all agents
 
     Business logic: ZERO HALLUCINATION emissions calculation (preserved from v1)
+
+    CTO non-negotiable #6: the class is decorated with
+    :func:`policy_workflow`, which sets ``_gl_policy_workflow = True``
+    and wraps ``run`` / ``process`` / ``calculate_batch`` so any raw
+    catalog lookup reached from inside those methods without a
+    ``method_profile`` raises
+    :class:`~greenlang.factors.middleware.method_profile_guard.MethodProfileMissingError`.
     """
 
     def __init__(
@@ -604,6 +620,17 @@ class EmissionsCalculatorAgent_v2(Agent[CalculatorInput, CalculatorOutput]):
         with open(output_path, 'w', encoding='utf-8') as f:
             json.dump(result, f, indent=2, default=str)
         logger.info(f"Wrote emissions calculations to {output_path}")
+
+
+# ----------------------------------------------------------------------------
+# Public aliases
+# ----------------------------------------------------------------------------
+# Tests and downstream consumers (see
+# ``applications/GL-CBAM-APP/.../tests/test_agents_v2.py`` and the N6
+# factor-gate suite) import this class under the PEP8-compliant
+# ``EmissionsCalculatorAgentV2`` spelling.  The canonical class above keeps
+# the historical ``_v2`` suffix so legacy pipelines continue to work.
+EmissionsCalculatorAgentV2 = EmissionsCalculatorAgent_v2
 
 
 # ============================================================================

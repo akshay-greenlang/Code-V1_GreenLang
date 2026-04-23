@@ -1,0 +1,636 @@
+# GL-001 ThermalCommand - Redis Sentinel High Availability Configuration
+# 3-node Redis Sentinel cluster with automatic failover
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gl-001-redis-config
+  namespace: greenlang
+  labels:
+    app: gl-001-redis
+data:
+  redis.conf: |
+    # Redis Configuration for GL-001 ThermalCommand
+
+    # Network
+    bind 0.0.0.0
+    port 6379
+    protected-mode no
+    tcp-backlog 511
+    timeout 0
+    tcp-keepalive 300
+
+    # General
+    daemonize no
+    supervised no
+    loglevel notice
+    logfile ""
+    databases 16
+
+    # Snapshotting (RDB)
+    save 900 1
+    save 300 10
+    save 60 10000
+    stop-writes-on-bgsave-error yes
+    rdbcompression yes
+    rdbchecksum yes
+    dbfilename dump.rdb
+    dir /data
+
+    # Replication
+    replica-serve-stale-data yes
+    replica-read-only yes
+    repl-diskless-sync no
+    repl-diskless-sync-delay 5
+    repl-disable-tcp-nodelay no
+    replica-priority 100
+    min-replicas-to-write 1
+    min-replicas-max-lag 10
+
+    # Security
+    requirepass ${REDIS_PASSWORD}
+    masterauth ${REDIS_PASSWORD}
+
+    # Memory Management
+    maxmemory 2gb
+    maxmemory-policy allkeys-lru
+    maxmemory-samples 5
+
+    # Append Only File (AOF)
+    appendonly yes
+    appendfilename "appendonly.aof"
+    appendfsync everysec
+    no-appendfsync-on-rewrite no
+    auto-aof-rewrite-percentage 100
+    auto-aof-rewrite-min-size 64mb
+    aof-load-truncated yes
+    aof-use-rdb-preamble yes
+
+    # Slow Log
+    slowlog-log-slower-than 10000
+    slowlog-max-len 128
+
+    # Latency Monitor
+    latency-monitor-threshold 100
+
+    # Event Notification
+    notify-keyspace-events ""
+
+    # Advanced
+    hash-max-ziplist-entries 512
+    hash-max-ziplist-value 64
+    list-max-ziplist-size -2
+    list-compress-depth 0
+    set-max-intset-entries 512
+    zset-max-ziplist-entries 128
+    zset-max-ziplist-value 64
+    hll-sparse-max-bytes 3000
+    stream-node-max-bytes 4096
+    stream-node-max-entries 100
+    activerehashing yes
+    client-output-buffer-limit normal 0 0 0
+    client-output-buffer-limit replica 256mb 64mb 60
+    client-output-buffer-limit pubsub 32mb 8mb 60
+    hz 10
+    dynamic-hz yes
+    aof-rewrite-incremental-fsync yes
+    rdb-save-incremental-fsync yes
+
+  sentinel.conf: |
+    # Redis Sentinel Configuration for GL-001 ThermalCommand
+
+    port 26379
+
+    # Sentinel monitoring
+    sentinel monitor gl-001-redis gl-001-redis-master.greenlang.svc.cluster.local 6379 2
+    sentinel auth-pass gl-001-redis ${REDIS_PASSWORD}
+
+    # Failover configuration
+    sentinel down-after-milliseconds gl-001-redis 5000
+    sentinel failover-timeout gl-001-redis 60000
+    sentinel parallel-syncs gl-001-redis 1
+
+    # Notification
+    sentinel notification-script gl-001-redis /scripts/notify.sh
+    sentinel client-reconfig-script gl-001-redis /scripts/reconfig.sh
+
+    # Deny scripts
+    sentinel deny-scripts-reconfig yes
+
+    # Announce IP (for Kubernetes)
+    sentinel announce-ip ${POD_IP}
+    sentinel announce-port 26379
+
+  notify.sh: |
+    #!/bin/bash
+    # Sentinel notification script
+    EVENT=$1
+    MASTER=$2
+
+    echo "[$(date)] Sentinel Event: $EVENT for master: $MASTER"
+
+    # Send to Slack
+    if [ -n "$SLACK_WEBHOOK" ]; then
+      curl -X POST -H 'Content-type: application/json' \
+        --data "{\"text\":\"Redis Sentinel Alert: $EVENT for $MASTER\"}" \
+        "$SLACK_WEBHOOK"
+    fi
+
+  reconfig.sh: |
+    #!/bin/bash
+    # Sentinel reconfiguration script - called after failover
+    MASTER_NAME=$1
+    ROLE=$2
+    STATE=$3
+    FROM_IP=$4
+    FROM_PORT=$5
+    TO_IP=$6
+    TO_PORT=$7
+
+    echo "[$(date)] Failover: $MASTER_NAME $FROM_IP:$FROM_PORT -> $TO_IP:$TO_PORT"
+
+    # Update DNS or service discovery if needed
+    # This is handled by Kubernetes service in our setup
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: gl-001-redis-credentials
+  namespace: greenlang
+  labels:
+    app: gl-001-redis
+type: Opaque
+stringData:
+  password: "${REDIS_PASSWORD}"
+  host: "gl-001-redis-master.greenlang.svc.cluster.local"
+  port: "6379"
+  sentinel-host: "gl-001-redis-sentinel.greenlang.svc.cluster.local"
+  sentinel-port: "26379"
+  url: "redis://:${REDIS_PASSWORD}@gl-001-redis-master.greenlang.svc.cluster.local:6379/0"
+---
+# Redis Master StatefulSet
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: gl-001-redis-master
+  namespace: greenlang
+  labels:
+    app: gl-001-redis
+    role: master
+spec:
+  serviceName: gl-001-redis-master
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gl-001-redis
+      role: master
+  template:
+    metadata:
+      labels:
+        app: gl-001-redis
+        role: master
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9121"
+    spec:
+      securityContext:
+        fsGroup: 1000
+        runAsUser: 1000
+        runAsNonRoot: true
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels:
+                  app: gl-001-redis
+              topologyKey: topology.kubernetes.io/zone
+      containers:
+        - name: redis
+          image: redis:7.2-alpine
+          imagePullPolicy: IfNotPresent
+          command:
+            - redis-server
+            - /config/redis.conf
+          ports:
+            - containerPort: 6379
+              name: redis
+          env:
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: gl-001-redis-credentials
+                  key: password
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: 1000m
+              memory: 2Gi
+          volumeMounts:
+            - name: data
+              mountPath: /data
+            - name: config
+              mountPath: /config
+          livenessProbe:
+            exec:
+              command:
+                - redis-cli
+                - -a
+                - $(REDIS_PASSWORD)
+                - ping
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            exec:
+              command:
+                - redis-cli
+                - -a
+                - $(REDIS_PASSWORD)
+                - ping
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+
+        - name: redis-exporter
+          image: oliver006/redis_exporter:v1.55.0
+          ports:
+            - containerPort: 9121
+              name: metrics
+          env:
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: gl-001-redis-credentials
+                  key: password
+            - name: REDIS_ADDR
+              value: "redis://localhost:6379"
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 100m
+              memory: 128Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+
+      volumes:
+        - name: config
+          configMap:
+            name: gl-001-redis-config
+            items:
+              - key: redis.conf
+                path: redis.conf
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+        labels:
+          app: gl-001-redis
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        storageClassName: gp3
+        resources:
+          requests:
+            storage: 10Gi
+---
+# Redis Replica StatefulSet
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: gl-001-redis-replica
+  namespace: greenlang
+  labels:
+    app: gl-001-redis
+    role: replica
+spec:
+  serviceName: gl-001-redis-replica
+  replicas: 2
+  selector:
+    matchLabels:
+      app: gl-001-redis
+      role: replica
+  template:
+    metadata:
+      labels:
+        app: gl-001-redis
+        role: replica
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9121"
+    spec:
+      securityContext:
+        fsGroup: 1000
+        runAsUser: 1000
+        runAsNonRoot: true
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels:
+                  app: gl-001-redis
+              topologyKey: topology.kubernetes.io/zone
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app: gl-001-redis
+                topologyKey: kubernetes.io/hostname
+      containers:
+        - name: redis
+          image: redis:7.2-alpine
+          imagePullPolicy: IfNotPresent
+          command:
+            - redis-server
+            - /config/redis.conf
+            - --replicaof
+            - gl-001-redis-master.greenlang.svc.cluster.local
+            - "6379"
+          ports:
+            - containerPort: 6379
+              name: redis
+          env:
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: gl-001-redis-credentials
+                  key: password
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: 1000m
+              memory: 2Gi
+          volumeMounts:
+            - name: data
+              mountPath: /data
+            - name: config
+              mountPath: /config
+          livenessProbe:
+            exec:
+              command:
+                - redis-cli
+                - -a
+                - $(REDIS_PASSWORD)
+                - ping
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            exec:
+              command:
+                - redis-cli
+                - -a
+                - $(REDIS_PASSWORD)
+                - ping
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+
+        - name: redis-exporter
+          image: oliver006/redis_exporter:v1.55.0
+          ports:
+            - containerPort: 9121
+              name: metrics
+          env:
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: gl-001-redis-credentials
+                  key: password
+            - name: REDIS_ADDR
+              value: "redis://localhost:6379"
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 100m
+              memory: 128Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+
+      volumes:
+        - name: config
+          configMap:
+            name: gl-001-redis-config
+            items:
+              - key: redis.conf
+                path: redis.conf
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+        labels:
+          app: gl-001-redis
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        storageClassName: gp3
+        resources:
+          requests:
+            storage: 10Gi
+---
+# Redis Sentinel StatefulSet
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: gl-001-redis-sentinel
+  namespace: greenlang
+  labels:
+    app: gl-001-redis-sentinel
+spec:
+  serviceName: gl-001-redis-sentinel
+  replicas: 3
+  selector:
+    matchLabels:
+      app: gl-001-redis-sentinel
+  template:
+    metadata:
+      labels:
+        app: gl-001-redis-sentinel
+    spec:
+      securityContext:
+        fsGroup: 1000
+        runAsUser: 1000
+        runAsNonRoot: true
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels:
+                  app: gl-001-redis-sentinel
+              topologyKey: topology.kubernetes.io/zone
+      containers:
+        - name: sentinel
+          image: redis:7.2-alpine
+          imagePullPolicy: IfNotPresent
+          command:
+            - redis-sentinel
+            - /config/sentinel.conf
+          ports:
+            - containerPort: 26379
+              name: sentinel
+          env:
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: gl-001-redis-credentials
+                  key: password
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: scripts
+              mountPath: /scripts
+          livenessProbe:
+            exec:
+              command:
+                - redis-cli
+                - -p
+                - "26379"
+                - ping
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+
+      volumes:
+        - name: config
+          configMap:
+            name: gl-001-redis-config
+            items:
+              - key: sentinel.conf
+                path: sentinel.conf
+        - name: scripts
+          configMap:
+            name: gl-001-redis-config
+            defaultMode: 0755
+            items:
+              - key: notify.sh
+                path: notify.sh
+              - key: reconfig.sh
+                path: reconfig.sh
+---
+# Redis Master Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-001-redis-master
+  namespace: greenlang
+  labels:
+    app: gl-001-redis
+    role: master
+spec:
+  type: ClusterIP
+  ports:
+    - port: 6379
+      targetPort: 6379
+      name: redis
+    - port: 9121
+      targetPort: 9121
+      name: metrics
+  selector:
+    app: gl-001-redis
+    role: master
+---
+# Redis Replica Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-001-redis-replica
+  namespace: greenlang
+  labels:
+    app: gl-001-redis
+    role: replica
+spec:
+  type: ClusterIP
+  ports:
+    - port: 6379
+      targetPort: 6379
+      name: redis
+    - port: 9121
+      targetPort: 9121
+      name: metrics
+  selector:
+    app: gl-001-redis
+    role: replica
+---
+# Redis Sentinel Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-001-redis-sentinel
+  namespace: greenlang
+  labels:
+    app: gl-001-redis-sentinel
+spec:
+  type: ClusterIP
+  ports:
+    - port: 26379
+      targetPort: 26379
+      name: sentinel
+  selector:
+    app: gl-001-redis-sentinel
+---
+# Redis PodDisruptionBudget
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: gl-001-redis-pdb
+  namespace: greenlang
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: gl-001-redis
+---
+# Sentinel PodDisruptionBudget
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: gl-001-redis-sentinel-pdb
+  namespace: greenlang
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: gl-001-redis-sentinel

@@ -190,10 +190,100 @@ export interface ResolutionRequest {
   extras?: Record<string, unknown>;
 }
 
+// ---------------------------------------------------------------------------
+// Wave 2 envelope types
+// ---------------------------------------------------------------------------
+
+/** Typed ``chosen_factor`` block the Wave 2 resolver returns. */
+export interface ChosenFactor {
+  factor_id: string;
+  factor_version?: string | null;
+  /** Method-pack release, distinct from ``factor_version`` (record rev). */
+  release_version?: string | null;
+  method_profile?: string | null;
+  method_pack_id?: string | null;
+  method_pack_version?: string | null;
+  /** Alias of ``method_pack_id`` used by some Wave 2 endpoints. */
+  pack_id?: string | null;
+  co2e_per_unit?: number | null;
+  unit?: string | null;
+  geography?: string | null;
+  scope?: string | null;
+  [extra: string]: unknown;
+}
+
+/** Nested ``source`` block on the Wave 2 envelope. */
+export interface SourceDescriptor {
+  source_id: string;
+  organization?: string | null;
+  publication?: string | null;
+  year?: number | null;
+  url?: string | null;
+  methodology?: string | null;
+  license?: string | null;
+  license_class?: string | null;
+  version?: string | null;
+  release_version?: string | null;
+  provenance?: Record<string, unknown>;
+  [extra: string]: unknown;
+}
+
+/** Composite quality envelope — Wave 2 surfaces ``composite_fqs_0_100``. */
+export interface QualityEnvelope {
+  composite_fqs_0_100?: number | null;
+  overall_score?: number | null;
+  rating?: string | null;
+  temporal?: number | null;
+  geographical?: number | null;
+  technological?: number | null;
+  representativeness?: number | null;
+  methodological?: number | null;
+  [extra: string]: unknown;
+}
+
+/** Richer Wave 2 uncertainty envelope (superset of {@link Uncertainty}). */
+export interface UncertaintyEnvelope {
+  ci_95?: number | null;
+  ci_lower?: number | null;
+  ci_upper?: number | null;
+  distribution?: string | null;
+  std_dev?: number | null;
+  sample_size?: number | null;
+  pedigree_matrix?: Record<string, unknown>;
+  [extra: string]: unknown;
+}
+
+/** Licensing envelope — full upstream chain surfaced by Wave 2. */
+export interface LicensingEnvelope {
+  license?: string | null;
+  /** ``certified | preview | connector_only | redistributable`` */
+  license_class?: string | null;
+  redistribution_class?: string | null;
+  upstream_licenses?: string[];
+  attribution?: string | null;
+  restrictions?: string[];
+  [extra: string]: unknown;
+}
+
+/** Structured Wave 2 deprecation status (pre-Wave-2 was a bare string). */
+export interface DeprecationStatus {
+  status?: string | null;
+  effective_from?: string | null;
+  effective_to?: string | null;
+  replacement_factor_id?: string | null;
+  reason?: string | null;
+  notice_url?: string | null;
+  [extra: string]: unknown;
+}
+
 export interface ResolvedFactor {
   chosen_factor_id?: string | null;
+  /** Wave 2: typed ``chosen_factor`` envelope. */
+  chosen_factor?: ChosenFactor | null;
   factor_id?: string | null;
   factor_version?: string | null;
+  /** Method-pack release — distinct from ``factor_version``. */
+  release_version?: string | null;
   method_profile?: string | null;
   method_pack_version?: string | null;
 
@@ -201,20 +291,61 @@ export interface ResolvedFactor {
   step_label?: string | null;
   why_chosen?: string | null;
 
+  /** Wave 2: nested source descriptor. */
+  source?: SourceDescriptor | null;
   quality_score?: QualityScore | null;
-  uncertainty?: Uncertainty | null;
+  /** Wave 2: composite FQS envelope (``composite_fqs_0_100``). */
+  quality?: QualityEnvelope | null;
+  /** Wave 2: richer uncertainty envelope. */
+  uncertainty?: UncertaintyEnvelope | null;
   gas_breakdown?: GasBreakdown | null;
   co2e_basis?: string | null;
 
   assumptions?: string[];
   alternates?: Array<Record<string, unknown>>;
 
-  deprecation_status?: string | null;
+  /** Wave 2: structured licensing envelope. */
+  licensing?: LicensingEnvelope | null;
+  /**
+   * May be a plain string (pre-Wave-2) or a structured
+   * {@link DeprecationStatus} object (Wave 2+).
+   */
+  deprecation_status?: string | DeprecationStatus | null;
   deprecation_replacement?: string | null;
+
+  /** Wave 2.5: human-readable narrative explaining the resolution. */
+  audit_text?: string | null;
+  /** Wave 2.5: true when ``audit_text`` is a draft from an unapproved template. */
+  audit_text_draft?: boolean | null;
+
+  /** Wave 2a: canonical top-level signed receipt. */
+  signed_receipt?: SignedReceiptEnvelope | null;
 
   explain?: Record<string, unknown>;
   edition_id?: string | null;
 
+  [extra: string]: unknown;
+}
+
+/**
+ * Wave 2a signed receipt envelope as it lives on response objects.
+ *
+ * Separate from the ``SignedReceipt`` interface in ``verify.ts`` so
+ * consumers of ``models.ts`` do not need to import the verifier. The
+ * shape is identical; re-export here keeps the model surface self-
+ * contained.
+ */
+export interface SignedReceiptEnvelope {
+  receipt_id?: string | null;
+  signature: string;
+  verification_key_hint?: string | null;
+  /** Wave 2a canonical — was ``algorithm`` pre-2a. */
+  alg: string;
+  /** Wave 2a canonical — was ``signed_over`` pre-2a. */
+  payload_hash?: string | null;
+  signed_at?: string | null;
+  key_id?: string | null;
+  edition_id?: string | null;
   [extra: string]: unknown;
 }
 

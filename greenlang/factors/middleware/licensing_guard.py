@@ -36,14 +36,30 @@ from starlette.responses import JSONResponse, Response
 logger = logging.getLogger(__name__)
 
 # Redistribution classes ranked from least to most restrictive.
-# A caller granted "licensed" implicitly receives "open"; "customer_private"
-# is per-tenant and never granted by class alone.
+#
+# Semantic rank (higher rank = more access required):
+#     open                 = 0   public, redistributable, every caller
+#     licensed_embedded    = 1   previously "restricted" — embedded licensee
+#     licensed/commercial  = 2   requires a paid entitlement / pack SKU
+#     oem_redistributable  = 2   same rank as licensed but only granted
+#                                 when the caller presents a matching oem_id
+#                                 AND the factor's oem_redistributable_allowed
+#                                 flag is True (see ``_caller_grants``).
+#     customer_private     = 3   tenant-scoped data; never granted by class
+#                                 alone — only auto-granted to the owning
+#                                 tenant via ``_caller_grants``.
+#
+# A caller granted "licensed" implicitly receives "open".  "customer_private"
+# and "oem_redistributable" require the same-tenant / OEM auto-grant logic.
 _CLASS_RANK = {
     "open": 0,
     "public": 0,
     "restricted": 1,
+    "licensed_embedded": 1,
     "licensed": 2,
     "commercial": 2,
+    "oem_redistributable": 2,
+    "oem-redistributable": 2,
     "customer_private": 3,
     "customer-private": 3,
     "private": 3,
@@ -106,18 +122,88 @@ def _find_request(args: tuple) -> Optional[Request]:
     return None
 
 
-def _caller_grants(request: Request) -> Set[str]:
+def _caller_grants(
+    request: Request, factor: Optional[dict] = None
+) -> Set[str]:
+    """Compute the set of redistribution classes the caller may read.
+
+    The base set is tier-driven (Community → open only; Pro → +restricted;
+    Enterprise / Internal → +licensed / +commercial). Two per-factor
+    auto-grants extend the base set when the caller is looking at a
+    specific factor:
+
+    1. **Same-tenant auto-grant for ``customer_private``** — if
+       ``user.tenant_id`` is set AND equals the factor's ``tenant_id`` /
+       ``owning_tenant_id`` / ``owner_tenant_id`` field, the caller
+       receives the ``customer_private`` grant for that factor only.
+
+    2. **OEM auto-grant for ``oem_redistributable``** — if
+       ``user.oem_id`` is set AND the factor's class is
+       ``oem_redistributable`` AND the factor carries
+       ``oem_redistributable_allowed=True`` (or a matching
+       ``oem_id`` / ``allowed_oem_ids`` entry), the caller receives the
+       ``oem_redistributable`` grant for that factor only.
+
+    **N7 invariant**: Community tier NEVER receives ``customer_private``
+    or ``oem_redistributable``, regardless of the auto-grant rules. This
+    is also enforced by :mod:`greenlang.factors.tier_enforcement` but
+    re-checked here so a mis-wired middleware stack cannot leak premium
+    data to community callers.
+    """
     user = getattr(request.state, "user", None) or {}
     grants = user.get("entitlements") or user.get("packs") or []
     base = {"open", "public"}  # everyone gets open data
     base.update(g.strip().lower() for g in grants if isinstance(g, str))
     tier = (user.get("tier") or "").lower()
     if tier in ("enterprise", "internal"):
-        base.update({"licensed", "commercial", "restricted"})
+        base.update({"licensed", "commercial", "restricted", "licensed_embedded"})
     elif tier in ("consulting_platform", "consulting", "platform"):
-        base.update({"licensed", "restricted"})
+        base.update({"licensed", "restricted", "licensed_embedded"})
     elif tier in ("developer_pro", "pro", "developer"):
-        base.add("restricted")
+        base.update({"restricted", "licensed_embedded"})
+
+    # Per-factor auto-grants (same-tenant + OEM). Only applied when a
+    # factor payload is supplied so the decorator path (no factor) stays
+    # pure-tier based.
+    if factor is not None and isinstance(factor, dict):
+        # Same-tenant: owning tenant reads its own customer_private data.
+        user_tenant = user.get("tenant_id")
+        factor_owner = (
+            factor.get("tenant_id")
+            or factor.get("owning_tenant_id")
+            or factor.get("owner_tenant_id")
+        )
+        if user_tenant and factor_owner and user_tenant == factor_owner:
+            base.add("customer_private")
+
+        # OEM partner: factor's oem_redistributable flag is live + caller
+        # presents matching oem_id.
+        user_oem = user.get("oem_id")
+        klass = _redistribution_class(factor)
+        if user_oem and klass and klass.lower().replace("-", "_") == "oem_redistributable":
+            allowed_flag = bool(
+                factor.get("oem_redistributable_allowed")
+                or factor.get("oem_allowed")
+            )
+            allowed_oem_ids = factor.get("allowed_oem_ids") or []
+            factor_oem_id = factor.get("oem_id")
+            oem_match = (
+                allowed_flag
+                or user_oem == factor_oem_id
+                or user_oem in allowed_oem_ids
+            )
+            if oem_match:
+                base.add("oem_redistributable")
+
+    # N7 invariant: community tier is *never* granted oem / private,
+    # even if an upstream entitlement row accidentally contained them.
+    if tier in ("community", ""):
+        base.discard("customer_private")
+        base.discard("customer-private")
+        base.discard("private")
+        base.discard("oem_redistributable")
+        base.discard("oem-redistributable")
+
     return base
 
 
@@ -138,12 +224,10 @@ async def _scan_response(request: Request, response: Response) -> Response:
     except (TypeError, ValueError):
         return _rebuild(response, body)
 
-    grants = _caller_grants(request)
-    max_allowed = _max_class(grants)
     user = getattr(request.state, "user", None) or {}
     tenant_id = user.get("tenant_id") or user.get("oem_id")
 
-    violation = _walk_for_violation(payload, max_allowed, tenant_id)
+    violation = _walk_for_violation(payload, request, tenant_id)
     if violation is not None:
         klass, factor_id, reason = violation
         status = 403 if reason == "tenant_mismatch" else 402
@@ -163,23 +247,54 @@ async def _scan_response(request: Request, response: Response) -> Response:
     return _rebuild(response, body)
 
 
-def _walk_for_violation(payload: Any, max_allowed: int, tenant_id: Optional[str]):
+def _walk_for_violation(
+    payload: Any, request: "Request", tenant_id: Optional[str]
+):
+    """Walk ``payload`` looking for a factor the caller cannot read.
+
+    Grants are recomputed **per-factor** so same-tenant and OEM auto-grants
+    can fire only when the current factor's tenant/OEM metadata matches.
+    """
     if isinstance(payload, dict):
         klass = _redistribution_class(payload)
         if klass is not None:
-            rank = _CLASS_RANK.get(klass.lower(), 0)
+            klass_key = klass.lower().replace("-", "_")
+            rank = _CLASS_RANK.get(klass.lower(), _CLASS_RANK.get(klass_key, 0))
             owner = payload.get("tenant_id") or payload.get("owner_tenant_id")
-            if rank == 3 and owner and owner != tenant_id:
+            # N7 invariant: community tier is forbidden from oem/private
+            # classes regardless of any per-caller grant. Check this BEFORE
+            # computing grants so nothing else can override it.
+            user = getattr(request.state, "user", None) or {}
+            tier = (user.get("tier") or "").lower()
+            try:
+                from greenlang.factors.tier_enforcement import tier_allows_class
+                if not tier_allows_class(tier, klass):
+                    return klass, payload.get("factor_id"), "class_above_grant"
+            except ImportError:  # pragma: no cover — defensive
+                pass
+            # Per-factor grants (may include customer_private / oem_*).
+            grants = _caller_grants(request, factor=payload)
+            max_allowed = _max_class(grants)
+            # Tenant mismatch on customer_private factors = 403 regardless
+            # of any class-rank-based grant the caller may carry.
+            if klass_key in ("customer_private", "private") and owner and owner != tenant_id:
                 return klass, payload.get("factor_id"), "tenant_mismatch"
+            # oem_redistributable requires an explicit, literal grant — the
+            # tier-driven auto-grants (licensed / commercial) share the same
+            # rank as oem but do NOT imply OEM redistribution rights. A
+            # non-OEM caller with "licensed" must be denied the OEM row.
+            if klass_key == "oem_redistributable":
+                if "oem_redistributable" not in grants and "oem-redistributable" not in grants:
+                    return klass, payload.get("factor_id"), "class_above_grant"
             if rank > max_allowed:
                 return klass, payload.get("factor_id"), "class_above_grant"
         for v in payload.values():
-            hit = _walk_for_violation(v, max_allowed, tenant_id)
+            hit = _walk_for_violation(v, request, tenant_id)
             if hit:
                 return hit
     elif isinstance(payload, list):
         for item in payload:
-            hit = _walk_for_violation(item, max_allowed, tenant_id)
+            hit = _walk_for_violation(item, request, tenant_id)
             if hit:
                 return hit
     return None

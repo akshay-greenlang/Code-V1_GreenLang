@@ -1,0 +1,598 @@
+# =============================================================================
+# GL-001 ThermalCommand - Vault Kubernetes Integration
+# =============================================================================
+#
+# This file contains Kubernetes resources for HashiCorp Vault integration:
+#   1. ServiceAccount with Vault authentication annotations
+#   2. Vault Agent Injector configuration
+#   3. Secret injection via annotations
+#   4. External Secrets Operator configuration (alternative)
+#
+# Prerequisites:
+#   - Vault Agent Injector installed in cluster
+#   - Kubernetes auth method configured in Vault
+#   - Vault policies created for GL-001
+#
+# Author: GreenLang Security Engineering
+# Version: 1.0.0
+# =============================================================================
+
+---
+# =============================================================================
+# SERVICE ACCOUNT FOR VAULT AUTHENTICATION
+# =============================================================================
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: gl-001-thermalcommand
+  namespace: greenlang
+  labels:
+    app: gl-001-thermalcommand
+    agent-id: GL-001
+    component: secrets-management
+  annotations:
+    # Vault Kubernetes auth role
+    vault.hashicorp.com/agent-inject: "true"
+    vault.hashicorp.com/role: "gl-001-thermalcommand"
+    vault.hashicorp.com/agent-pre-populate-only: "false"
+
+---
+# =============================================================================
+# CLUSTER ROLE BINDING FOR VAULT AUTH
+# =============================================================================
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: gl-001-vault-auth-delegator
+  labels:
+    app: gl-001-thermalcommand
+subjects:
+  - kind: ServiceAccount
+    name: gl-001-thermalcommand
+    namespace: greenlang
+roleRef:
+  kind: ClusterRole
+  name: system:auth-delegator
+  apiGroup: rbac.authorization.k8s.io
+
+---
+# =============================================================================
+# VAULT AGENT SIDECAR CONFIGURATION
+# =============================================================================
+# This ConfigMap contains the Vault Agent configuration for the sidecar
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gl-001-vault-agent-config
+  namespace: greenlang
+  labels:
+    app: gl-001-thermalcommand
+data:
+  vault-agent-config.hcl: |
+    # Vault Agent Configuration for GL-001 ThermalCommand
+    # This runs as a sidecar container to manage secrets
+
+    pid_file = "/home/vault/.pid"
+
+    vault {
+      address = "https://vault.greenlang.local:8200"
+      # For Vault Enterprise with namespaces
+      # namespace = "greenlang"
+    }
+
+    auto_auth {
+      method "kubernetes" {
+        mount_path = "auth/kubernetes"
+        config = {
+          role = "gl-001-thermalcommand"
+        }
+      }
+
+      sink "file" {
+        config = {
+          path = "/home/vault/.vault-token"
+          mode = 0640
+        }
+      }
+    }
+
+    # Template for database credentials
+    template {
+      destination = "/vault/secrets/database.json"
+      contents = <<EOF
+    {
+      "postgres": {
+        "username": "{{ with secret "database/creds/gl-001-postgres" }}{{ .Data.username }}{{ end }}",
+        "password": "{{ with secret "database/creds/gl-001-postgres" }}{{ .Data.password }}{{ end }}"
+      },
+      "timescale": {
+        "username": "{{ with secret "database/creds/gl-001-timescale" }}{{ .Data.username }}{{ end }}",
+        "password": "{{ with secret "database/creds/gl-001-timescale" }}{{ .Data.password }}{{ end }}"
+      }
+    }
+    EOF
+      command = "pkill -HUP python || true"
+    }
+
+    # Template for API keys
+    template {
+      destination = "/vault/secrets/api-keys.json"
+      contents = <<EOF
+    {
+      "weather_api_key": "{{ with secret "secret/data/greenlang/agents/GL-001/api-keys/weather" }}{{ .Data.data.api_key }}{{ end }}",
+      "erp_api_key": "{{ with secret "secret/data/greenlang/agents/GL-001/api-keys/erp" }}{{ .Data.data.api_key }}{{ end }}",
+      "cmms_api_key": "{{ with secret "secret/data/greenlang/agents/GL-001/api-keys/cmms" }}{{ .Data.data.api_key }}{{ end }}"
+    }
+    EOF
+    }
+
+    # Template for JWT secret
+    template {
+      destination = "/vault/secrets/jwt-secret"
+      contents = "{{ with secret \"secret/data/greenlang/agents/GL-001/auth/jwt\" }}{{ .Data.data.secret }}{{ end }}"
+      perms = "0400"
+    }
+
+    # Template for Kafka credentials
+    template {
+      destination = "/vault/secrets/kafka.json"
+      contents = <<EOF
+    {
+      "sasl_username": "{{ with secret "secret/data/greenlang/agents/GL-001/integrations/kafka" }}{{ .Data.data.username }}{{ end }}",
+      "sasl_password": "{{ with secret "secret/data/greenlang/agents/GL-001/integrations/kafka" }}{{ .Data.data.password }}{{ end }}"
+    }
+    EOF
+    }
+
+    # Template for OPC-UA credentials
+    template {
+      destination = "/vault/secrets/opcua.json"
+      contents = <<EOF
+    {
+      "username": "{{ with secret "secret/data/greenlang/agents/GL-001/integrations/opcua" }}{{ .Data.data.username }}{{ end }}",
+      "password": "{{ with secret "secret/data/greenlang/agents/GL-001/integrations/opcua" }}{{ .Data.data.password }}{{ end }}",
+      "certificate": "{{ with secret "secret/data/greenlang/agents/GL-001/integrations/opcua" }}{{ .Data.data.certificate }}{{ end }}"
+    }
+    EOF
+    }
+
+    # Template for environment variables (sourced by init container)
+    template {
+      destination = "/vault/secrets/env.sh"
+      contents = <<EOF
+    #!/bin/sh
+    export DATABASE_URL="{{ with secret "secret/data/greenlang/agents/GL-001/database/url" }}{{ .Data.data.url }}{{ end }}"
+    export JWT_SECRET="{{ with secret "secret/data/greenlang/agents/GL-001/auth/jwt" }}{{ .Data.data.secret }}{{ end }}"
+    export KAFKA_SASL_PASSWORD="{{ with secret "secret/data/greenlang/agents/GL-001/integrations/kafka" }}{{ .Data.data.password }}{{ end }}"
+    EOF
+      perms = "0700"
+    }
+
+---
+# =============================================================================
+# UPDATED DEPLOYMENT WITH VAULT AGENT SIDECAR
+# =============================================================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gl-001-thermalcommand-vault
+  namespace: greenlang
+  labels:
+    app: gl-001-thermalcommand
+    agent-id: GL-001
+    vault-integration: enabled
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: gl-001-thermalcommand
+  template:
+    metadata:
+      labels:
+        app: gl-001-thermalcommand
+        agent-id: GL-001
+      annotations:
+        # Vault Agent Injector annotations
+        vault.hashicorp.com/agent-inject: "true"
+        vault.hashicorp.com/agent-inject-status: "update"
+        vault.hashicorp.com/role: "gl-001-thermalcommand"
+
+        # Inject database credentials
+        vault.hashicorp.com/agent-inject-secret-database.json: "database/creds/gl-001-postgres"
+        vault.hashicorp.com/agent-inject-template-database.json: |
+          {{ with secret "database/creds/gl-001-postgres" }}
+          {
+            "username": "{{ .Data.username }}",
+            "password": "{{ .Data.password }}"
+          }
+          {{ end }}
+
+        # Inject JWT secret
+        vault.hashicorp.com/agent-inject-secret-jwt-secret: "secret/data/greenlang/agents/GL-001/auth/jwt"
+        vault.hashicorp.com/agent-inject-template-jwt-secret: |
+          {{ with secret "secret/data/greenlang/agents/GL-001/auth/jwt" }}{{ .Data.data.secret }}{{ end }}
+
+        # Inject API keys
+        vault.hashicorp.com/agent-inject-secret-api-keys.json: "secret/data/greenlang/agents/GL-001/api-keys/weather"
+        vault.hashicorp.com/agent-inject-template-api-keys.json: |
+          {{ with secret "secret/data/greenlang/agents/GL-001/api-keys/weather" }}
+          {
+            "weather_api_key": "{{ .Data.data.api_key }}"
+          }
+          {{ end }}
+
+        # Inject Kafka credentials
+        vault.hashicorp.com/agent-inject-secret-kafka.json: "secret/data/greenlang/agents/GL-001/integrations/kafka"
+        vault.hashicorp.com/agent-inject-template-kafka.json: |
+          {{ with secret "secret/data/greenlang/agents/GL-001/integrations/kafka" }}
+          {
+            "username": "{{ .Data.data.username }}",
+            "password": "{{ .Data.data.password }}"
+          }
+          {{ end }}
+
+        # Inject OPC-UA credentials
+        vault.hashicorp.com/agent-inject-secret-opcua.json: "secret/data/greenlang/agents/GL-001/integrations/opcua"
+        vault.hashicorp.com/agent-inject-template-opcua.json: |
+          {{ with secret "secret/data/greenlang/agents/GL-001/integrations/opcua" }}
+          {
+            "username": "{{ .Data.data.username }}",
+            "password": "{{ .Data.data.password }}"
+          }
+          {{ end }}
+
+        # Agent configuration
+        vault.hashicorp.com/agent-pre-populate-only: "false"
+        vault.hashicorp.com/agent-revoke-on-shutdown: "true"
+        vault.hashicorp.com/agent-revoke-grace: "180"
+        vault.hashicorp.com/secret-volume-path: "/vault/secrets"
+
+        # TLS configuration for Vault connection
+        vault.hashicorp.com/tls-secret: "vault-tls"
+        vault.hashicorp.com/ca-cert: "/vault/tls/ca.crt"
+
+    spec:
+      serviceAccountName: gl-001-thermalcommand
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+
+      containers:
+        - name: orchestrator
+          image: greenlang/gl-001-thermalcommand:1.0.0
+          imagePullPolicy: Always
+
+          ports:
+            - name: http
+              containerPort: 8000
+            - name: graphql
+              containerPort: 8001
+            - name: grpc
+              containerPort: 50051
+            - name: metrics
+              containerPort: 9090
+
+          env:
+            - name: GL_ORCHESTRATOR_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: GL_ENVIRONMENT
+              value: "production"
+            - name: GL_LOG_LEVEL
+              value: "INFO"
+
+            # Vault configuration (for direct API access)
+            - name: VAULT_ADDR
+              value: "https://vault.greenlang.local:8200"
+            - name: VAULT_AUTH_METHOD
+              value: "kubernetes"
+            - name: VAULT_KUBERNETES_ROLE
+              value: "gl-001-thermalcommand"
+            - name: VAULT_CACERT
+              value: "/vault/tls/ca.crt"
+
+            # Secret file paths (injected by Vault Agent)
+            - name: DATABASE_CREDENTIALS_FILE
+              value: "/vault/secrets/database.json"
+            - name: API_KEYS_FILE
+              value: "/vault/secrets/api-keys.json"
+            - name: JWT_SECRET_FILE
+              value: "/vault/secrets/jwt-secret"
+            - name: KAFKA_CREDENTIALS_FILE
+              value: "/vault/secrets/kafka.json"
+            - name: OPCUA_CREDENTIALS_FILE
+              value: "/vault/secrets/opcua.json"
+
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "500m"
+            limits:
+              memory: "2Gi"
+              cpu: "2000m"
+
+          livenessProbe:
+            httpGet:
+              path: /health/live
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 10
+
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 5
+
+          volumeMounts:
+            - name: config
+              mountPath: /etc/gl001/config
+              readOnly: true
+            - name: vault-tls
+              mountPath: /vault/tls
+              readOnly: true
+            # Vault agent injects secrets to /vault/secrets automatically
+
+          securityContext:
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+
+      volumes:
+        - name: config
+          configMap:
+            name: gl-001-config
+        - name: vault-tls
+          secret:
+            secretName: vault-tls-cert
+
+---
+# =============================================================================
+# VAULT TLS CERTIFICATE SECRET
+# =============================================================================
+# This should be created by cert-manager or manually
+apiVersion: v1
+kind: Secret
+metadata:
+  name: vault-tls-cert
+  namespace: greenlang
+  labels:
+    app: gl-001-thermalcommand
+type: kubernetes.io/tls
+data:
+  # Base64 encoded certificates - replace with actual certs
+  tls.crt: LS0tLS1CRUdJTi...  # Placeholder - replace with actual cert
+  tls.key: LS0tLS1CRUdJTi...  # Placeholder - replace with actual key
+  ca.crt: LS0tLS1CRUdJTi...   # Placeholder - replace with CA cert
+
+---
+# =============================================================================
+# EXTERNAL SECRETS OPERATOR (ALTERNATIVE APPROACH)
+# =============================================================================
+# If using External Secrets Operator instead of Vault Agent Injector
+
+apiVersion: external-secrets.io/v1beta1
+kind: SecretStore
+metadata:
+  name: vault-backend
+  namespace: greenlang
+spec:
+  provider:
+    vault:
+      server: "https://vault.greenlang.local:8200"
+      path: "secret"
+      version: "v2"
+      namespace: "greenlang"
+      auth:
+        kubernetes:
+          mountPath: "kubernetes"
+          role: "gl-001-thermalcommand"
+          serviceAccountRef:
+            name: "gl-001-thermalcommand"
+
+---
+apiVersion: external-secrets.io/v1beta1
+kind: ExternalSecret
+metadata:
+  name: gl-001-database-credentials
+  namespace: greenlang
+  labels:
+    app: gl-001-thermalcommand
+spec:
+  refreshInterval: "5m"
+  secretStoreRef:
+    kind: SecretStore
+    name: vault-backend
+  target:
+    name: gl-001-database-secret
+    creationPolicy: Owner
+    template:
+      type: Opaque
+      data:
+        DATABASE_URL: "postgresql://{{ .username }}:{{ .password }}@postgres.greenlang.svc:5432/greenlang"
+  dataFrom:
+    - extract:
+        key: greenlang/agents/GL-001/database/postgres-main
+
+---
+apiVersion: external-secrets.io/v1beta1
+kind: ExternalSecret
+metadata:
+  name: gl-001-api-keys
+  namespace: greenlang
+  labels:
+    app: gl-001-thermalcommand
+spec:
+  refreshInterval: "15m"
+  secretStoreRef:
+    kind: SecretStore
+    name: vault-backend
+  target:
+    name: gl-001-api-keys-secret
+    creationPolicy: Owner
+  data:
+    - secretKey: WEATHER_API_KEY
+      remoteRef:
+        key: greenlang/agents/GL-001/api-keys/weather
+        property: api_key
+    - secretKey: ERP_API_KEY
+      remoteRef:
+        key: greenlang/agents/GL-001/api-keys/erp
+        property: api_key
+
+---
+apiVersion: external-secrets.io/v1beta1
+kind: ExternalSecret
+metadata:
+  name: gl-001-jwt-secret
+  namespace: greenlang
+  labels:
+    app: gl-001-thermalcommand
+spec:
+  refreshInterval: "1h"
+  secretStoreRef:
+    kind: SecretStore
+    name: vault-backend
+  target:
+    name: gl-001-jwt-secret
+    creationPolicy: Owner
+  data:
+    - secretKey: JWT_SECRET
+      remoteRef:
+        key: greenlang/agents/GL-001/auth/jwt
+        property: secret
+
+---
+apiVersion: external-secrets.io/v1beta1
+kind: ExternalSecret
+metadata:
+  name: gl-001-kafka-credentials
+  namespace: greenlang
+  labels:
+    app: gl-001-thermalcommand
+spec:
+  refreshInterval: "5m"
+  secretStoreRef:
+    kind: SecretStore
+    name: vault-backend
+  target:
+    name: gl-001-kafka-secret
+    creationPolicy: Owner
+  data:
+    - secretKey: KAFKA_SASL_USERNAME
+      remoteRef:
+        key: greenlang/agents/GL-001/integrations/kafka
+        property: username
+    - secretKey: KAFKA_SASL_PASSWORD
+      remoteRef:
+        key: greenlang/agents/GL-001/integrations/kafka
+        property: password
+
+---
+# =============================================================================
+# VAULT POLICY SETUP JOB
+# =============================================================================
+# This job sets up Vault policies and auth for the agent
+# Run once during initial setup
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: gl-001-vault-setup
+  namespace: greenlang
+  labels:
+    app: gl-001-thermalcommand
+    component: vault-setup
+spec:
+  ttlSecondsAfterFinished: 3600
+  template:
+    spec:
+      restartPolicy: OnFailure
+      serviceAccountName: vault-setup-sa
+      containers:
+        - name: vault-setup
+          image: hashicorp/vault:1.15
+          command:
+            - /bin/sh
+            - -c
+            - |
+              set -e
+
+              # Wait for Vault to be ready
+              until vault status; do
+                echo "Waiting for Vault..."
+                sleep 5
+              done
+
+              # Create policy
+              vault policy write gl-001-thermalcommand - <<EOF
+              # GL-001 ThermalCommand Vault Policy
+
+              # KV v2 secrets - agent-specific path
+              path "secret/data/greenlang/agents/GL-001/*" {
+                capabilities = ["read", "list"]
+              }
+
+              path "secret/metadata/greenlang/agents/GL-001/*" {
+                capabilities = ["read", "list"]
+              }
+
+              # Database dynamic credentials
+              path "database/creds/gl-001-*" {
+                capabilities = ["read"]
+              }
+
+              # PKI certificate issuance
+              path "pki/issue/gl-001-thermalcommand" {
+                capabilities = ["create", "update"]
+              }
+
+              # Transit encryption/decryption
+              path "transit/encrypt/gl-001-encryption-key" {
+                capabilities = ["update"]
+              }
+
+              path "transit/decrypt/gl-001-encryption-key" {
+                capabilities = ["update"]
+              }
+
+              # Lease management
+              path "sys/leases/renew" {
+                capabilities = ["update"]
+              }
+
+              path "sys/leases/revoke" {
+                capabilities = ["update"]
+              }
+
+              # Token self-management
+              path "auth/token/renew-self" {
+                capabilities = ["update"]
+              }
+
+              path "auth/token/lookup-self" {
+                capabilities = ["read"]
+              }
+              EOF
+
+              # Configure Kubernetes auth role
+              vault write auth/kubernetes/role/gl-001-thermalcommand \
+                bound_service_account_names=gl-001-thermalcommand \
+                bound_service_account_namespaces=greenlang \
+                policies=gl-001-thermalcommand \
+                ttl=1h \
+                max_ttl=24h
+
+              echo "Vault setup complete for GL-001"
+          env:
+            - name: VAULT_ADDR
+              value: "https://vault.greenlang.local:8200"
+            - name: VAULT_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: vault-admin-token
+                  key: token

@@ -28,6 +28,9 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import Switch from "@mui/material/Switch";
+import Tooltip from "@mui/material/Tooltip";
 import {
   FactorsApiError,
   approve,
@@ -35,6 +38,26 @@ import {
   reject,
   type QueueItem,
 } from "../lib/api/factorsClient";
+import { AuditTextPanel } from "../components/AuditTextPanel";
+
+// Draft-narrative predicate — methodology leads filter on items whose
+// proposed audit_text still carries the [Draft] banner (Wave 2.5).
+function isDraftItem(item: QueueItem): boolean {
+  const ev = (item.evidence ?? {}) as Record<string, unknown>;
+  return (
+    ev.audit_text_draft === true ||
+    (item as unknown as { audit_text_draft?: boolean }).audit_text_draft === true ||
+    (item.current_status === "draft")
+  );
+}
+
+function readAuditText(item: QueueItem): { text?: string; draft?: boolean } {
+  const ev = (item.evidence ?? {}) as Record<string, unknown>;
+  return {
+    text: typeof ev.audit_text === "string" ? ev.audit_text : undefined,
+    draft: ev.audit_text_draft === true,
+  };
+}
 
 export function FactorsApprovalQueue() {
   const [items, setItems] = useState<QueueItem[]>([]);
@@ -44,6 +67,7 @@ export function FactorsApprovalQueue() {
   const [rejectTarget, setRejectTarget] = useState<QueueItem | null>(null);
   const [rejectReason, setRejectReason] = useState("");
   const [evidenceTarget, setEvidenceTarget] = useState<QueueItem | null>(null);
+  const [filterDraftOnly, setFilterDraftOnly] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -107,6 +131,23 @@ export function FactorsApprovalQueue() {
         </Alert>
       )}
 
+      <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+        <FormControlLabel
+          control={
+            <Switch
+              checked={filterDraftOnly}
+              onChange={(_, v) => setFilterDraftOnly(v)}
+              inputProps={{ "aria-label": "Show only draft audit texts" }}
+              data-testid="filter-draft-only"
+            />
+          }
+          label={`Drafts only (${items.filter(isDraftItem).length})`}
+        />
+        <Typography variant="caption" color="text.secondary">
+          Filter toggle hides items whose audit_text is already approved.
+        </Typography>
+      </Stack>
+
       <Card>
         <CardContent>
           <TableContainer component={Paper} variant="outlined">
@@ -116,6 +157,7 @@ export function FactorsApprovalQueue() {
                   <TableCell>Review ID</TableCell>
                   <TableCell>Factor / family</TableCell>
                   <TableCell>Status</TableCell>
+                  <TableCell>Audit text</TableCell>
                   <TableCell>Submitted by</TableCell>
                   <TableCell>Submitted at</TableCell>
                   <TableCell>Rationale</TableCell>
@@ -125,7 +167,7 @@ export function FactorsApprovalQueue() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {items.map((it) => (
+                {(filterDraftOnly ? items.filter(isDraftItem) : items).map((it) => (
                   <TableRow key={it.review_id}>
                     <TableCell><code>{it.review_id.slice(0, 10)}…</code></TableCell>
                     <TableCell>
@@ -142,6 +184,25 @@ export function FactorsApprovalQueue() {
                         <span>→</span>
                         <Chip label={it.proposed_status} color="primary" size="small" />
                       </Stack>
+                    </TableCell>
+                    <TableCell>
+                      {readAuditText(it).text ? (
+                        <Tooltip title={readAuditText(it).text ?? ""} arrow>
+                          <Chip
+                            size="small"
+                            color={readAuditText(it).draft ? "error" : "success"}
+                            variant={readAuditText(it).draft ? "filled" : "outlined"}
+                            label={readAuditText(it).draft ? "[DRAFT]" : "approved"}
+                            data-testid={
+                              readAuditText(it).draft
+                                ? "audit-text-chip-draft"
+                                : "audit-text-chip-approved"
+                            }
+                          />
+                        </Tooltip>
+                      ) : (
+                        "—"
+                      )}
                     </TableCell>
                     <TableCell>{it.submitted_by}</TableCell>
                     <TableCell>{new Date(it.submitted_at).toLocaleString()}</TableCell>
@@ -189,7 +250,7 @@ export function FactorsApprovalQueue() {
                 ))}
                 {!loading && items.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={9} align="center">
+                    <TableCell colSpan={10} align="center">
                       <Typography variant="body2" color="text.secondary">
                         Review queue is empty.
                       </Typography>
@@ -229,6 +290,14 @@ export function FactorsApprovalQueue() {
       <Dialog open={evidenceTarget !== null} onClose={() => setEvidenceTarget(null)} maxWidth="md" fullWidth>
         <DialogTitle>Evidence</DialogTitle>
         <DialogContent>
+          {evidenceTarget && readAuditText(evidenceTarget).text && (
+            <Box sx={{ mb: 2 }}>
+              <AuditTextPanel
+                auditText={readAuditText(evidenceTarget).text}
+                draft={readAuditText(evidenceTarget).draft}
+              />
+            </Box>
+          )}
           <pre style={{ margin: 0, fontSize: 12, whiteSpace: "pre-wrap", maxHeight: 480, overflow: "auto" }}>
             {JSON.stringify(evidenceTarget?.evidence ?? {}, null, 2)}
           </pre>

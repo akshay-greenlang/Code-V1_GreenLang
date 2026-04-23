@@ -20,7 +20,7 @@ import pytest
 from decimal import Decimal
 import math
 
-from greenlang.calculations.asme.b31_1_pipe_stress import (
+from greenlang.calculation.physics.asme.b31_1_pipe_stress import (
     ASMEB311PipeStress,
     B311StressResult,
     MinimumThicknessResult,

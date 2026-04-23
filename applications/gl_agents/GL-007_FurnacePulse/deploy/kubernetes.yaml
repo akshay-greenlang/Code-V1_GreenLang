@@ -1,0 +1,537 @@
+# GL-007 FURNACEPULSE - Kubernetes Deployment
+# Furnace Performance Monitoring Agent
+#
+# Apply: kubectl apply -f deploy/kubernetes.yaml
+# Check: kubectl get all -n greenlang-agents -l app=gl-007-furnacepulse
+
+---
+# ========================================
+# Namespace
+# ========================================
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: greenlang-agents
+  labels:
+    name: greenlang-agents
+    environment: production
+
+---
+# ========================================
+# ConfigMap - Application Configuration
+# ========================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gl-007-furnacepulse-config
+  namespace: greenlang-agents
+  labels:
+    app: gl-007-furnacepulse
+    agent-id: GL-007
+data:
+  # Agent Configuration
+  GL_AGENT_ID: "GL-007"
+  GL_AGENT_NAME: "FURNACEPULSE"
+  GL_ENV: "production"
+  GL_LOG_LEVEL: "INFO"
+  GL_DEBUG: "false"
+
+  # Kafka Configuration
+  KAFKA_CONSUMER_GROUP: "furnacepulse-consumer"
+  KAFKA_AUTO_OFFSET_RESET: "latest"
+  KAFKA_ENABLE_AUTO_COMMIT: "false"
+
+  # Kafka Topics
+  KAFKA_TOPIC_TELEMETRY_RAW: "furnacepulse.telemetry.raw"
+  KAFKA_TOPIC_TELEMETRY_CANONICAL: "furnacepulse.telemetry.canonical"
+  KAFKA_TOPIC_ALERTS: "furnacepulse.alerts.generated"
+  KAFKA_TOPIC_KPIS: "furnacepulse.kpis.calculated"
+  KAFKA_TOPIC_RUL: "furnacepulse.rul.predictions"
+
+  # OPC-UA Configuration
+  OPCUA_SECURITY_POLICY: "Basic256Sha256"
+  OPCUA_MESSAGE_SECURITY_MODE: "SignAndEncrypt"
+  OPCUA_SUBSCRIPTION_INTERVAL_MS: "1000"
+
+  # Safety Thresholds (from NFPA 86 / API 560)
+  TMT_MAX_LIMIT_C: "950"
+  TMT_RATE_OF_RISE_LIMIT_C_MIN: "10"
+  DRAFT_MIN_PA: "-250"
+  DRAFT_MAX_PA: "25"
+  EXCESS_AIR_MIN_PERCENT: "10"
+  EXCESS_AIR_MAX_PERCENT: "30"
+  STACK_TEMP_MAX_C: "450"
+
+  # Monitoring Configuration
+  METRICS_PORT: "9090"
+  METRICS_PATH: "/metrics"
+  HEALTH_PORT: "8080"
+  HEALTH_PATH: "/health"
+
+---
+# ========================================
+# Secret References (External Secrets or Sealed Secrets)
+# ========================================
+apiVersion: v1
+kind: Secret
+metadata:
+  name: gl-007-furnacepulse-secrets
+  namespace: greenlang-agents
+  labels:
+    app: gl-007-furnacepulse
+    agent-id: GL-007
+type: Opaque
+stringData:
+  # Placeholders - replace with actual secrets via external-secrets or sealed-secrets
+  DATABASE_URL: "postgresql://furnacepulse:REPLACE_ME@timescaledb:5432/furnacepulse"
+  REDIS_URL: "redis://redis:6379/0"
+  KAFKA_BOOTSTRAP_SERVERS: "kafka:9092"
+  OPCUA_ENDPOINT: "opc.tcp://opcua-gateway:4840"
+  OPCUA_USERNAME: "furnacepulse-agent"
+  OPCUA_PASSWORD: "REPLACE_ME"
+  CMMS_URL: "https://cmms.example.com"
+  CMMS_API_KEY: "REPLACE_ME"
+  ALERT_WEBHOOK_URL: "https://alerts.example.com/webhook"
+
+---
+# ========================================
+# ServiceAccount
+# ========================================
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: gl-007-furnacepulse-sa
+  namespace: greenlang-agents
+  labels:
+    app: gl-007-furnacepulse
+
+---
+# ========================================
+# Deployment
+# ========================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gl-007-furnacepulse
+  namespace: greenlang-agents
+  labels:
+    app: gl-007-furnacepulse
+    agent-id: GL-007
+    agent-class: monitor
+    domain: furnaces
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: gl-007-furnacepulse
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: gl-007-furnacepulse
+        agent-id: GL-007
+        version: v1.0.0
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+        prometheus.io/path: "/metrics"
+        # Force rolling update on config changes
+        checksum/config: "{{ include (print $.Template.BasePath \"/configmap.yaml\") . | sha256sum }}"
+    spec:
+      serviceAccountName: gl-007-furnacepulse-sa
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+
+      # Init container to wait for dependencies
+      initContainers:
+        - name: wait-for-kafka
+          image: busybox:1.36
+          command: ['sh', '-c', 'until nc -z kafka 9092; do echo waiting for kafka; sleep 2; done']
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+
+      containers:
+        - name: furnacepulse
+          image: ghcr.io/greenlang/gl-007-furnacepulse:latest
+          imagePullPolicy: Always
+
+          ports:
+            - containerPort: 8080
+              name: http
+              protocol: TCP
+            - containerPort: 9090
+              name: metrics
+              protocol: TCP
+
+          envFrom:
+            - configMapRef:
+                name: gl-007-furnacepulse-config
+
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: gl-007-furnacepulse-secrets
+                  key: DATABASE_URL
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: gl-007-furnacepulse-secrets
+                  key: REDIS_URL
+            - name: KAFKA_BOOTSTRAP_SERVERS
+              valueFrom:
+                secretKeyRef:
+                  name: gl-007-furnacepulse-secrets
+                  key: KAFKA_BOOTSTRAP_SERVERS
+            - name: OPCUA_ENDPOINT
+              valueFrom:
+                secretKeyRef:
+                  name: gl-007-furnacepulse-secrets
+                  key: OPCUA_ENDPOINT
+            - name: OPCUA_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: gl-007-furnacepulse-secrets
+                  key: OPCUA_USERNAME
+            - name: OPCUA_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: gl-007-furnacepulse-secrets
+                  key: OPCUA_PASSWORD
+            - name: CMMS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: gl-007-furnacepulse-secrets
+                  key: CMMS_URL
+            - name: CMMS_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: gl-007-furnacepulse-secrets
+                  key: CMMS_API_KEY
+
+          resources:
+            requests:
+              memory: "1Gi"
+              cpu: "1000m"
+            limits:
+              memory: "8Gi"
+              cpu: "4000m"
+
+          livenessProbe:
+            httpGet:
+              path: /api/v1/health
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 3
+
+          readinessProbe:
+            httpGet:
+              path: /api/v1/ready
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 3
+
+          startupProbe:
+            httpGet:
+              path: /api/v1/health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 30
+
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+            - name: cache
+              mountPath: /app/.cache
+            - name: prometheus-multiproc
+              mountPath: /tmp/prometheus
+
+      volumes:
+        - name: tmp
+          emptyDir: {}
+        - name: cache
+          emptyDir:
+            sizeLimit: 1Gi
+        - name: prometheus-multiproc
+          emptyDir: {}
+
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - gl-007-furnacepulse
+                topologyKey: kubernetes.io/hostname
+
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app: gl-007-furnacepulse
+
+      terminationGracePeriodSeconds: 60
+
+---
+# ========================================
+# Service (ClusterIP)
+# ========================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-007-furnacepulse
+  namespace: greenlang-agents
+  labels:
+    app: gl-007-furnacepulse
+    agent-id: GL-007
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8080
+      targetPort: http
+      protocol: TCP
+      name: http
+    - port: 9090
+      targetPort: metrics
+      protocol: TCP
+      name: metrics
+  selector:
+    app: gl-007-furnacepulse
+
+---
+# ========================================
+# Horizontal Pod Autoscaler
+# ========================================
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: gl-007-furnacepulse-hpa
+  namespace: greenlang-agents
+  labels:
+    app: gl-007-furnacepulse
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: gl-007-furnacepulse
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Pods
+          value: 1
+          periodSeconds: 60
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+        - type: Pods
+          value: 2
+          periodSeconds: 30
+        - type: Percent
+          value: 100
+          periodSeconds: 30
+      selectPolicy: Max
+
+---
+# ========================================
+# PodDisruptionBudget
+# ========================================
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: gl-007-furnacepulse-pdb
+  namespace: greenlang-agents
+  labels:
+    app: gl-007-furnacepulse
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: gl-007-furnacepulse
+
+---
+# ========================================
+# NetworkPolicy - OT/IT Segmentation
+# ========================================
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: gl-007-furnacepulse-netpol
+  namespace: greenlang-agents
+  labels:
+    app: gl-007-furnacepulse
+spec:
+  podSelector:
+    matchLabels:
+      app: gl-007-furnacepulse
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # Allow traffic from ingress controller
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 8080
+    # Allow traffic from Prometheus for metrics scraping
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+      ports:
+        - protocol: TCP
+          port: 9090
+    # Allow traffic from other GL agents
+    - from:
+        - podSelector:
+            matchLabels:
+              agent-class: monitor
+        - podSelector:
+            matchLabels:
+              agent-class: optimizer
+      ports:
+        - protocol: TCP
+          port: 8080
+  egress:
+    # Allow DNS
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: UDP
+          port: 53
+    # Allow Kafka
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: kafka
+      ports:
+        - protocol: TCP
+          port: 9092
+    # Allow TimescaleDB
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: databases
+      ports:
+        - protocol: TCP
+          port: 5432
+    # Allow Redis
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: databases
+      ports:
+        - protocol: TCP
+          port: 6379
+    # Allow OPC-UA Gateway (OT network boundary)
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: ot-gateway
+      ports:
+        - protocol: TCP
+          port: 4840
+    # Allow CMMS (external service)
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except:
+              - 10.0.0.0/8
+              - 172.16.0.0/12
+              - 192.168.0.0/16
+      ports:
+        - protocol: TCP
+          port: 443
+
+---
+# ========================================
+# Ingress (Optional)
+# ========================================
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: gl-007-furnacepulse-ingress
+  namespace: greenlang-agents
+  labels:
+    app: gl-007-furnacepulse
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+    nginx.ingress.kubernetes.io/rate-limit-window: "1m"
+spec:
+  tls:
+    - hosts:
+        - furnacepulse.greenlang.io
+      secretName: gl-007-furnacepulse-tls
+  rules:
+    - host: furnacepulse.greenlang.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: gl-007-furnacepulse
+                port:
+                  number: 8080

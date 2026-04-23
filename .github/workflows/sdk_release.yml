@@ -1,0 +1,197 @@
+# =============================================================================
+# GreenLang Factors SDK Release (W4-C / API14)
+# =============================================================================
+# Tag-driven publish of the Python + TypeScript SDKs to PyPI and npm.
+#
+# Trigger: push a tag matching ``sdk-v*`` (e.g. ``sdk-v1.3.0``).
+#
+# Guarantees:
+#   * PyPI publish uses OIDC trusted-publisher (no long-lived token).
+#   * npm publish uses provenance attestation.
+#   * Each publish job is gated by GitHub Environment protection rules
+#     (``pypi`` / ``npm``) so a required reviewer must approve before
+#     the tag reaches a public registry.
+#   * Wheels + tsc output are uploaded to the GitHub Release.
+# =============================================================================
+
+name: SDK Release
+
+on:
+  push:
+    tags:
+      - "sdk-v*"
+
+permissions:
+  contents: write        # release creation
+  id-token: write        # OIDC for PyPI trusted-publisher + npm provenance
+
+concurrency:
+  group: sdk-release-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  PYTHON_VERSION: "3.11"
+  NODE_VERSION: "20"
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Validate the tag + version strings line up with the SDK metadata.
+  # ---------------------------------------------------------------------------
+  validate:
+    name: Validate tag + versions
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.extract.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: extract
+        name: Extract version from tag
+        run: |
+          TAG="${GITHUB_REF#refs/tags/sdk-v}"
+          echo "version=$TAG" >> "$GITHUB_OUTPUT"
+          echo "Resolved SDK version: $TAG"
+
+      - name: Check Python SDK version
+        run: |
+          TAG="${{ steps.extract.outputs.version }}"
+          python3 -c "
+          import tomllib, pathlib
+          p = pathlib.Path('greenlang/factors/sdk/pyproject.toml')
+          data = tomllib.loads(p.read_text())
+          v = data['project']['version']
+          assert v == '$TAG', f'pyproject version ({v}) != tag ($TAG)'
+          print('Python SDK version OK:', v)
+          "
+
+      - name: Check TypeScript SDK version
+        run: |
+          TAG="${{ steps.extract.outputs.version }}"
+          V=$(node -e "console.log(require('./greenlang/factors/sdk/ts/package.json').version)")
+          test "$V" = "$TAG" || (echo "npm pkg version ($V) != tag ($TAG)" && exit 1)
+          echo "TypeScript SDK version OK: $V"
+
+  # ---------------------------------------------------------------------------
+  # Python publish (requires a manual approval from the ``pypi`` environment).
+  # ---------------------------------------------------------------------------
+  publish-python:
+    name: Publish Python SDK (PyPI, trusted-publisher)
+    needs: [validate]
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/project/greenlang-factors-sdk/
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install build tools
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install build twine
+
+      - name: Build wheel + sdist
+        working-directory: greenlang/factors/sdk
+        run: python -m build
+
+      - name: twine check
+        working-directory: greenlang/factors/sdk
+        run: twine check dist/*
+
+      - name: Publish to PyPI (OIDC trusted-publisher)
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: greenlang/factors/sdk/dist/
+          # No user/password — trusted publisher on PyPI project settings
+          # authenticates this workflow via OIDC.
+
+      - name: Upload wheel + sdist as artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-sdk-${{ needs.validate.outputs.version }}
+          path: greenlang/factors/sdk/dist/
+          retention-days: 90
+
+  # ---------------------------------------------------------------------------
+  # TypeScript publish (requires manual approval from ``npm`` environment).
+  # ---------------------------------------------------------------------------
+  publish-typescript:
+    name: Publish TypeScript SDK (npm, provenance)
+    needs: [validate]
+    runs-on: ubuntu-latest
+    environment:
+      name: npm
+      url: https://www.npmjs.com/package/@greenlang/factors-sdk
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Install deps
+        working-directory: greenlang/factors/sdk/ts
+        run: npm ci
+
+      - name: Type check
+        working-directory: greenlang/factors/sdk/ts
+        run: npm run typecheck
+
+      - name: Build
+        working-directory: greenlang/factors/sdk/ts
+        run: npm run build
+
+      - name: Verify output
+        working-directory: greenlang/factors/sdk/ts
+        run: |
+          test -f dist/index.js || (echo "missing dist/index.js" && exit 1)
+          test -f dist/index.d.ts || (echo "missing dist/index.d.ts" && exit 1)
+
+      - name: Publish to npm (with provenance)
+        working-directory: greenlang/factors/sdk/ts
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --access public --provenance
+
+      - name: Upload tsc output as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: typescript-sdk-${{ needs.validate.outputs.version }}
+          path: greenlang/factors/sdk/ts/dist/
+          retention-days: 90
+
+  # ---------------------------------------------------------------------------
+  # Final: attach artifacts to a GitHub Release.
+  # ---------------------------------------------------------------------------
+  release:
+    name: Attach artifacts to GitHub Release
+    needs: [validate, publish-python, publish-typescript]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download Python artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: python-sdk-${{ needs.validate.outputs.version }}
+          path: dist-python
+
+      - name: Download TS artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: typescript-sdk-${{ needs.validate.outputs.version }}
+          path: dist-ts
+
+      - name: Create / update GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: sdk-v${{ needs.validate.outputs.version }}
+          name: SDK v${{ needs.validate.outputs.version }}
+          generate_release_notes: true
+          files: |
+            dist-python/*
+            dist-ts/**

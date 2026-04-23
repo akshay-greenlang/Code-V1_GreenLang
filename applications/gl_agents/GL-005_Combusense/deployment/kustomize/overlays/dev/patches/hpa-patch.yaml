@@ -1,0 +1,17 @@
+# Dev Environment - HPA Patch
+# Disable autoscaling in dev (single replica is sufficient)
+
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: gl-005-combustion-control-hpa
+spec:
+  minReplicas: 1
+  maxReplicas: 2  # Allow max 2 replicas in dev
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 80  # Higher threshold in dev

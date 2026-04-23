@@ -1,0 +1,59 @@
+---
+# =============================================================================
+# HPA patch — factors-api (production)
+# =============================================================================
+# Targets:
+#   min = 5    (survive rolling update + AZ loss without cold starts)
+#   max = 30   (handle 10x surge while keeping spend predictable)
+#   CPU    = 65%  (slightly more aggressive than staging)
+#   Memory = 75%
+#   Pods RPS = 75 rps/pod  (scale out before p95 regresses)
+# =============================================================================
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: factors-api
+spec:
+  minReplicas: 5
+  maxReplicas: 30
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 30
+      policies:
+        - type: Percent
+          value: 100
+          periodSeconds: 30
+        - type: Pods
+          value: 4
+          periodSeconds: 30
+      selectPolicy: Max
+    scaleDown:
+      stabilizationWindowSeconds: 600
+      policies:
+        - type: Percent
+          value: 25
+          periodSeconds: 60
+      selectPolicy: Min
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 65
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 75
+    - type: Pods
+      pods:
+        metric:
+          name: factors_request_rate
+          selector:
+            matchLabels:
+              service: factors-api
+        target:
+          type: AverageValue
+          averageValue: "75"

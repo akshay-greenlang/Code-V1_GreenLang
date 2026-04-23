@@ -11,10 +11,11 @@ strict only on request models where typos are bugs worth catching early.
 """
 from __future__ import annotations
 
+import warnings
 from datetime import date, datetime
 from typing import Any, Dict, List, Optional
 
-from pydantic import ConfigDict, Field
+from pydantic import ConfigDict, Field, model_validator
 
 from greenlang.schemas.base import GreenLangBase
 
@@ -273,17 +274,209 @@ class ResolutionRequest(GreenLangBase):
     )
 
 
+# ---------------------------------------------------------------------------
+# Wave 2 envelope models — new typed surfaces the resolver now emits.
+# ---------------------------------------------------------------------------
+
+
+class ChosenFactor(_SDKResponseModel):
+    """Wave 2 ``chosen_factor`` envelope.
+
+    Describes the factor the resolver selected plus the pack-level
+    metadata needed to reproduce the decision.
+    """
+
+    factor_id: str = Field(..., description="Stable factor identifier")
+    factor_version: Optional[str] = Field(None, description="Semver of the factor record itself")
+    release_version: Optional[str] = Field(
+        None,
+        description=(
+            "Release version of the method pack that produced the factor — "
+            "distinct from ``factor_version`` (individual record rev)."
+        ),
+    )
+    method_profile: Optional[str] = Field(None)
+    method_pack_id: Optional[str] = Field(None)
+    method_pack_version: Optional[str] = Field(None)
+    pack_id: Optional[str] = Field(None, description="Alias of method_pack_id used by some Wave 2 endpoints")
+    co2e_per_unit: Optional[float] = Field(None)
+    unit: Optional[str] = Field(None)
+    geography: Optional[str] = Field(None)
+    scope: Optional[str] = Field(None)
+
+
+class SourceDescriptor(_SDKResponseModel):
+    """Nested ``source`` block on the Wave 2 envelope."""
+
+    source_id: str = Field(..., description="Stable source id (e.g. 'epa_ghg_2026')")
+    organization: Optional[str] = Field(None)
+    publication: Optional[str] = Field(None)
+    year: Optional[int] = Field(None)
+    url: Optional[str] = Field(None)
+    methodology: Optional[str] = Field(None)
+    license: Optional[str] = Field(None)
+    license_class: Optional[str] = Field(None)
+    version: Optional[str] = Field(None)
+    release_version: Optional[str] = Field(None)
+    provenance: Dict[str, Any] = Field(default_factory=dict)
+
+
+class QualityEnvelope(_SDKResponseModel):
+    """Composite quality envelope — Wave 2 surfaces the 0-100 FQS scalar."""
+
+    composite_fqs_0_100: Optional[float] = Field(
+        None,
+        ge=0,
+        le=100,
+        description="Composite Factor Quality Score (0 worst, 100 best)",
+    )
+    overall_score: Optional[float] = Field(None)
+    rating: Optional[str] = Field(None)
+    temporal: Optional[float] = Field(None)
+    geographical: Optional[float] = Field(None)
+    technological: Optional[float] = Field(None)
+    representativeness: Optional[float] = Field(None)
+    methodological: Optional[float] = Field(None)
+
+
+class UncertaintyEnvelope(_SDKResponseModel):
+    """Richer Wave 2 uncertainty envelope (superset of :class:`Uncertainty`)."""
+
+    ci_95: Optional[float] = Field(None, description="95% CI half-width as a fraction")
+    ci_lower: Optional[float] = Field(None)
+    ci_upper: Optional[float] = Field(None)
+    distribution: Optional[str] = Field(None)
+    std_dev: Optional[float] = Field(None)
+    sample_size: Optional[int] = Field(None)
+    pedigree_matrix: Dict[str, Any] = Field(default_factory=dict)
+
+
+class LicensingEnvelope(_SDKResponseModel):
+    """Licensing envelope — Wave 2 surfaces the full upstream chain."""
+
+    license: Optional[str] = Field(None, description="Human-readable license name")
+    license_class: Optional[str] = Field(
+        None, description="certified | preview | connector_only | redistributable"
+    )
+    redistribution_class: Optional[str] = Field(None)
+    upstream_licenses: List[str] = Field(default_factory=list)
+    attribution: Optional[str] = Field(None)
+    restrictions: List[str] = Field(default_factory=list)
+
+
+class DeprecationStatus(_SDKResponseModel):
+    """Structured Wave 2 deprecation status (was a bare string pre-Wave 2)."""
+
+    status: Optional[str] = Field(
+        None, description="current | scheduled | deprecated | retired"
+    )
+    effective_from: Optional[str] = Field(None)
+    effective_to: Optional[str] = Field(None)
+    replacement_factor_id: Optional[str] = Field(None)
+    reason: Optional[str] = Field(None)
+    notice_url: Optional[str] = Field(None)
+
+
+class SignedReceipt(_SDKResponseModel):
+    """Wave 2a canonical signed receipt.
+
+    Fields match the server emission in
+    :mod:`greenlang.factors.middleware.signed_receipts`. Backward-compatible
+    parsing of the pre-Wave-2a shape is handled via
+    :meth:`from_response_dict`.
+
+    New (canonical) fields:
+        * ``receipt_id`` — UUIDv4 minted per response.
+        * ``signature`` — base64 signature bytes.
+        * ``verification_key_hint`` — 16-hex-char fingerprint for key lookup.
+        * ``alg`` — ``"sha256-hmac"`` or ``"ed25519"`` (was ``algorithm``).
+        * ``payload_hash`` — SHA-256 hex of the canonical signed payload
+          (was ``signed_over`` pre-Wave-2a).
+    """
+
+    receipt_id: Optional[str] = Field(None)
+    signature: str = Field(...)
+    verification_key_hint: Optional[str] = Field(None)
+    alg: str = Field(..., description="sha256-hmac | ed25519")
+    payload_hash: Optional[str] = Field(None)
+    signed_at: Optional[str] = Field(None)
+    key_id: Optional[str] = Field(None, description="Retained for key rotation")
+    edition_id: Optional[str] = Field(None)
+
+    # --- Compatibility layer --------------------------------------------
+
+    @classmethod
+    def from_response_dict(
+        cls, raw: Dict[str, Any]
+    ) -> "SignedReceipt":
+        """Build a :class:`SignedReceipt` from any supported wire shape.
+
+        Wave 2a renamed several keys; we read the new names first and fall
+        back to the deprecated aliases. A :class:`DeprecationWarning` is
+        emitted exactly once per alias encountered so callers can migrate
+        before v2.0.0 removes the fallbacks.
+        """
+        if not isinstance(raw, dict):
+            raise TypeError(
+                f"SignedReceipt.from_response_dict expected dict, got {type(raw).__name__}"
+            )
+
+        data: Dict[str, Any] = dict(raw)
+
+        # alg <- algorithm (deprecated)
+        if "alg" not in data and "algorithm" in data:
+            warnings.warn(
+                "Signed receipt key 'algorithm' is deprecated; server should emit 'alg'. "
+                "SDK fallback will be removed in v2.0.0.",
+                DeprecationWarning,
+                stacklevel=3,
+            )
+            data["alg"] = data.get("algorithm")
+
+        # payload_hash <- signed_over.body_hash / signed_over (deprecated)
+        if "payload_hash" not in data and "signed_over" in data:
+            warnings.warn(
+                "Signed receipt key 'signed_over' is deprecated; use 'payload_hash'. "
+                "SDK fallback will be removed in v2.0.0.",
+                DeprecationWarning,
+                stacklevel=3,
+            )
+            so = data.get("signed_over")
+            if isinstance(so, dict):
+                # pre-Wave-2a emitted a nested envelope; pull body_hash
+                data["payload_hash"] = so.get("body_hash") or so.get("payload_hash")
+            elif isinstance(so, str):
+                data["payload_hash"] = so
+
+        return cls.model_validate(data)
+
+
 class ResolvedFactor(_SDKResponseModel):
     """Output payload from /explain and /resolve-explain.
 
     The server returns a rich structure; we surface the most useful
     fields as typed attributes and keep the raw payload under ``.raw``
     for forward compatibility.
+
+    Wave 2/2.5 additions (all optional for forward compatibility):
+        * ``chosen_factor`` — typed :class:`ChosenFactor` envelope.
+        * ``source`` — nested :class:`SourceDescriptor`.
+        * ``quality`` — :class:`QualityEnvelope` with composite FQS 0-100.
+        * ``licensing`` — :class:`LicensingEnvelope`.
+        * ``release_version`` — method-pack release (distinct from
+          ``factor_version`` which tracks a single record rev).
+        * ``audit_text`` / ``audit_text_draft`` — Wave 2.5 narrative.
+        * ``signed_receipt`` — Wave 2a canonical receipt.
     """
 
     chosen_factor_id: Optional[str] = Field(None)
+    chosen_factor: Optional[ChosenFactor] = Field(None)
     factor_id: Optional[str] = Field(None)
     factor_version: Optional[str] = Field(None)
+    release_version: Optional[str] = Field(
+        None,
+        description="Method-pack release version (distinct from factor_version).",
+    )
     method_profile: Optional[str] = Field(None)
     method_pack_version: Optional[str] = Field(None)
 
@@ -293,19 +486,71 @@ class ResolvedFactor(_SDKResponseModel):
     step_label: Optional[str] = Field(None)
     why_chosen: Optional[str] = Field(None)
 
+    source: Optional[SourceDescriptor] = Field(None)
     quality_score: Optional[QualityScore] = Field(None)
-    uncertainty: Optional[Uncertainty] = Field(None)
+    quality: Optional[QualityEnvelope] = Field(None)
+    uncertainty: Optional[UncertaintyEnvelope] = Field(None)
     gas_breakdown: Optional[GasBreakdown] = Field(None)
     co2e_basis: Optional[str] = Field(None, description="GWP set applied")
 
     assumptions: List[str] = Field(default_factory=list)
     alternates: List[Dict[str, Any]] = Field(default_factory=list)
 
-    deprecation_status: Optional[str] = Field(None)
+    licensing: Optional[LicensingEnvelope] = Field(None)
+    deprecation_status: Optional[Any] = Field(
+        None,
+        description=(
+            "Deprecation status — may be a plain string (pre-Wave-2) or a "
+            "structured DeprecationStatus object (Wave 2+)."
+        ),
+    )
     deprecation_replacement: Optional[str] = Field(None)
+
+    # Wave 2.5: narrative audit text. ``audit_text_draft=True`` indicates
+    # the template has not yet been reviewed/approved by a human auditor.
+    audit_text: Optional[str] = Field(
+        None,
+        description="Human-readable narrative explaining the resolution decision.",
+    )
+    audit_text_draft: Optional[bool] = Field(
+        None,
+        description="True when ``audit_text`` is a draft from an unapproved template.",
+    )
+
+    # Wave 2a signed receipt (top-level).
+    signed_receipt: Optional[SignedReceipt] = Field(None)
 
     explain: Dict[str, Any] = Field(default_factory=dict)
     edition_id: Optional[str] = Field(None)
+
+    @model_validator(mode="before")
+    @classmethod
+    def _coerce_legacy_receipt_key(cls, data: Any) -> Any:
+        """Accept either ``signed_receipt`` (Wave 2a) or ``_signed_receipt``
+        (legacy) when parsing a resolved-factor payload.
+
+        Emits a :class:`DeprecationWarning` on the legacy key so callers can
+        migrate their integrations before v2.0.0.
+        """
+        if not isinstance(data, dict):
+            return data
+        out = dict(data)
+        if "signed_receipt" not in out and "_signed_receipt" in out:
+            warnings.warn(
+                "Top-level '_signed_receipt' is deprecated; server should emit 'signed_receipt'. "
+                "SDK fallback will be removed in v2.0.0.",
+                DeprecationWarning,
+                stacklevel=3,
+            )
+            out["signed_receipt"] = out.pop("_signed_receipt")
+        # Normalise a dict receipt through the compat parser so that the
+        # key renames (algorithm -> alg, signed_over -> payload_hash) are
+        # handled before Pydantic validation rejects the unknown aliases.
+        if isinstance(out.get("signed_receipt"), dict):
+            out["signed_receipt"] = SignedReceipt.from_response_dict(
+                out["signed_receipt"]
+            )
+        return out
 
 
 # ---------------------------------------------------------------------------
@@ -434,4 +679,12 @@ __all__ = [
     "AuditBundle",
     "Override",
     "BatchJobHandle",
+    # Wave 2 envelope models
+    "ChosenFactor",
+    "SourceDescriptor",
+    "QualityEnvelope",
+    "UncertaintyEnvelope",
+    "LicensingEnvelope",
+    "DeprecationStatus",
+    "SignedReceipt",
 ]

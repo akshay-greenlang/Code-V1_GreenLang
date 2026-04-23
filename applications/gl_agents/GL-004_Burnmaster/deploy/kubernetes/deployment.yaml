@@ -1,0 +1,239 @@
+# GL-004 Burnmaster Kubernetes Deployment
+# Combustion Control Optimization Agent
+#
+# Reference Standards:
+#   - ASME PTC 4 (Boiler Efficiency)
+#   - EPA Method 19 (Emissions)
+#   - TCFD (Climate Disclosure)
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gl-004-burnmaster
+  namespace: greenlang-agents
+  labels:
+    app: gl-004-burnmaster
+    tier: optimization
+    version: v1.0.0
+    compliance: "asme-ptc4,epa-method19,tcfd"
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: gl-004-burnmaster
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: gl-004-burnmaster
+        version: v1.0.0
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: gl-004-burnmaster
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+      containers:
+        - name: burnmaster
+          image: greenlang/gl-004-burnmaster:v1.0.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+            - name: grpc
+              containerPort: 50051
+              protocol: TCP
+            - name: metrics
+              containerPort: 9090
+              protocol: TCP
+          env:
+            - name: ENVIRONMENT
+              value: "production"
+            - name: LOG_LEVEL
+              value: "INFO"
+            - name: PYTHONDONTWRITEBYTECODE
+              value: "1"
+            - name: PYTHONUNBUFFERED
+              value: "1"
+            - name: AUDIT_RETENTION_DAYS
+              value: "2555"  # 7 years for regulatory compliance
+          envFrom:
+            - configMapRef:
+                name: gl-004-burnmaster-config
+            - secretRef:
+                name: gl-004-burnmaster-secrets
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
+            limits:
+              cpu: "1000m"
+              memory: "2Gi"
+          livenessProbe:
+            httpGet:
+              path: /health/live
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+          startupProbe:
+            httpGet:
+              path: /health/startup
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 30
+          volumeMounts:
+            - name: audit-logs
+              mountPath: /var/log/burnmaster/audit
+            - name: config
+              mountPath: /etc/burnmaster
+              readOnly: true
+            - name: tmp
+              mountPath: /tmp
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+      volumes:
+        - name: audit-logs
+          persistentVolumeClaim:
+            claimName: gl-004-burnmaster-audit-pvc
+        - name: config
+          configMap:
+            name: gl-004-burnmaster-config
+        - name: tmp
+          emptyDir: {}
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app: gl-004-burnmaster
+                topologyKey: kubernetes.io/hostname
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app: gl-004-burnmaster
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-004-burnmaster
+  namespace: greenlang-agents
+  labels:
+    app: gl-004-burnmaster
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+      protocol: TCP
+    - name: grpc
+      port: 50051
+      targetPort: grpc
+      protocol: TCP
+    - name: metrics
+      port: 9090
+      targetPort: metrics
+      protocol: TCP
+  selector:
+    app: gl-004-burnmaster
+
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: gl-004-burnmaster-hpa
+  namespace: greenlang-agents
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: gl-004-burnmaster
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Percent
+          value: 10
+          periodSeconds: 60
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+        - type: Pods
+          value: 2
+          periodSeconds: 60
+
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: gl-004-burnmaster-pdb
+  namespace: greenlang-agents
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: gl-004-burnmaster
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gl-004-burnmaster-config
+  namespace: greenlang-agents
+data:
+  COMBUSTION_EFFICIENCY_MIN: "0.75"
+  COMBUSTION_EFFICIENCY_TARGET: "0.92"
+  O2_SETPOINT_MIN: "2.0"
+  O2_SETPOINT_MAX: "6.0"
+  CO_LIMIT_PPM: "200"
+  NOX_LIMIT_PPM: "100"
+  SAFETY_MARGIN_PERCENT: "10"
+  AUDIT_ENABLED: "true"
+  SHAP_ENABLED: "true"
+  CIRCUIT_BREAKER_ENABLED: "true"

@@ -1,0 +1,1686 @@
+# ==============================================================================
+# GL-009 THERMALIQ - ThermalFluidAnalyzer Pack Manifest
+# GreenLang Pack Specification v2.0
+# ==============================================================================
+# Agent_ID: GL-009
+# Unique_Name: THERMALIQ
+# Agent_Name: ThermalFluidAnalyzer
+# Category: Analytics
+# Type: Calculator
+# Priority: P1
+# Market_Size: $7B
+# Complexity: Medium
+# Score: 93
+# ==============================================================================
+
+name: gl-009-thermaliq
+version: 2.0.0
+description: |
+  GL-009 ThermalIQ - ThermalFluidAnalyzer
+  Shared calculation library with exergy analysis, SHAP/LIME explainability support
+  for 25+ heat transfer fluids, zero-hallucination deterministic compliance,
+  Sankey diagram generation, and comprehensive thermodynamic property calculations.
+
+# ------------------------------------------------------------------------------
+# METADATA
+# ------------------------------------------------------------------------------
+
+metadata:
+  agent_id: GL-009
+  agent_name: ThermalFluidAnalyzer
+  codename: THERMALIQ
+  category: analytics
+  type: calculator
+  priority: P1
+  complexity: medium
+  quality_score: 93
+
+  # Market Information
+  market_size_usd: 7000000000  # $7B TAM
+  target_deployment: 2025-Q4
+  status: in_development
+  readiness_score: 78
+
+  # Program Identity
+  program_value: "$7B"
+  tier: 1
+
+  # Classification Tags
+  tags:
+    - thermal-efficiency
+    - heat-transfer-fluids
+    - exergy-analysis
+    - sankey-diagram
+    - shap-explainability
+    - lime-explainability
+    - thermodynamics
+    - first-law
+    - second-law
+    - zero-hallucination
+    - coolprop
+    - iapws
+    - process-heat
+    - industrial-analytics
+
+  # Documentation
+  author: GreenLang Process Heat Team
+  email: process-heat@greenlang.ai
+  license: Apache-2.0
+  homepage: https://greenlang.org/agents/gl-009
+  repository: https://github.com/greenlang/agents/gl-009-thermaliq
+  documentation: https://docs.greenlang.org/agents/gl-009
+
+# ------------------------------------------------------------------------------
+# MISSION STATEMENT
+# ------------------------------------------------------------------------------
+
+mission:
+  primary_function: |
+    Provide a shared calculation library for thermal efficiency analysis
+    across 25+ heat transfer fluids with zero-hallucination deterministic
+    calculations, comprehensive exergy analysis, and ML explainability.
+
+  value_proposition: |
+    Transform complex thermodynamic data into actionable insights with
+    Sankey energy flow diagrams, fluid recommendations, uncertainty
+    quantification, and full SHAP/LIME explainability for regulatory compliance.
+
+  target_users:
+    - Energy engineers
+    - Process engineers
+    - Thermal systems designers
+    - Plant managers
+    - Sustainability officers
+    - Energy auditors
+    - Operations teams
+    - R&D engineers
+
+# ------------------------------------------------------------------------------
+# CORE CAPABILITIES
+# ------------------------------------------------------------------------------
+
+capabilities:
+  # Primary Capabilities
+  primary:
+    - multi_fluid_thermodynamic_calculations
+    - exergy_analysis_second_law
+    - first_law_efficiency_calculations
+    - sankey_diagram_generation
+    - shap_explainability
+    - lime_explainability
+    - uncertainty_quantification
+    - fluid_property_lookups
+    - heat_balance_closure
+    - benchmark_comparison
+
+  # Integration Capabilities
+  integration:
+    - opcua_connectivity
+    - kafka_streaming
+    - graphql_api
+    - rest_api
+    - process_historian_integration
+    - energy_meter_integration
+
+  # Analysis Modes
+  operation_modes:
+    - calculate          # Calculate efficiency from inputs
+    - analyze            # Deep analysis with loss breakdown
+    - benchmark          # Compare against industry benchmarks
+    - visualize          # Generate Sankey diagrams and charts
+    - report             # Generate comprehensive efficiency report
+    - optimize           # Identify improvement opportunities
+    - monitor            # Real-time efficiency monitoring
+    - explain            # SHAP/LIME explanations for predictions
+    - compare_fluids     # Multi-fluid comparison analysis
+
+  # Calculation Tools (Deterministic)
+  tools:
+    - name: calculate_fluid_properties
+      deterministic: true
+      description: Calculate thermodynamic properties for any supported fluid
+      inputs: [fluid_name, temperature_C, pressure_bar]
+      outputs: [density_kg_m3, Cp_kJ_kgK, viscosity_mPas, thermal_conductivity_W_mK, enthalpy_kJ_kg, entropy_kJ_kgK]
+      library: CoolProp
+
+    - name: calculate_first_law_efficiency
+      deterministic: true
+      description: Calculate energy efficiency using First Law of Thermodynamics
+      formula: "eta_1 = Q_useful / Q_input = (Q_input - Q_losses) / Q_input"
+      inputs: [energy_inputs, useful_outputs, heat_losses]
+      outputs: [efficiency_percent, energy_balance_mw, closure_error_percent]
+
+    - name: calculate_second_law_efficiency
+      deterministic: true
+      description: Calculate exergy efficiency using Second Law of Thermodynamics
+      formula: "eta_2 = Ex_useful / Ex_input = 1 - (Ex_destruction / Ex_input)"
+      inputs: [exergy_inputs, exergy_outputs, reference_state]
+      outputs: [exergy_efficiency_percent, exergy_destruction_mw, improvement_potential_mw]
+
+    - name: calculate_exergy_flows
+      deterministic: true
+      description: Calculate exergy flows for any thermal stream
+      formula: "Ex = m_dot * [(h - h_0) - T_0 * (s - s_0)]"
+      inputs: [fluid_name, mass_flow_kg_s, inlet_T_C, outlet_T_C, pressure_bar, T_reference_C]
+      outputs: [exergy_in_kW, exergy_out_kW, exergy_destruction_kW, exergy_efficiency]
+
+    - name: calculate_combustion_efficiency
+      deterministic: true
+      description: Calculate fuel combustion efficiency from flue gas analysis
+      formula: "eta_comb = 100 - (L_dry + L_moisture + L_unburned)"
+      inputs: [fuel_composition, flue_gas_analysis, excess_air_percent]
+      outputs: [combustion_efficiency_percent, dry_flue_gas_loss_percent, moisture_loss_percent]
+
+    - name: calculate_heat_losses
+      deterministic: true
+      description: Calculate individual heat loss components
+      formulas:
+        radiation: "Q_rad = epsilon * sigma * A * (T_s^4 - T_amb^4)"
+        convection: "Q_conv = h * A * (T_s - T_amb)"
+        flue_gas: "Q_flue = m_dot * Cp * (T_exit - T_ref)"
+      inputs: [surface_conditions, flue_gas_data, ambient_conditions]
+      outputs: [radiation_loss_mw, convection_loss_mw, flue_gas_loss_mw, total_loss_mw]
+
+    - name: generate_sankey_diagram
+      deterministic: true
+      description: Generate Sankey diagram data for energy/exergy flow visualization
+      inputs: [energy_balance, loss_breakdown, diagram_type]
+      outputs: [sankey_nodes, sankey_links, plotly_figure, svg_export]
+
+    - name: calculate_heat_balance
+      deterministic: true
+      description: Perform complete heat balance calculation with closure verification
+      formula: "Q_input = Q_useful + Q_losses (closure within tolerance)"
+      inputs: [all_inputs, all_outputs, all_losses, tolerance_percent]
+      outputs: [heat_balance_mw, closure_error_percent, unaccounted_losses_mw, is_valid]
+
+    - name: explain_prediction_shap
+      deterministic: true
+      description: Generate SHAP explanations for efficiency predictions
+      inputs: [model_prediction, feature_values, background_data]
+      outputs: [shap_values, feature_importance, summary_plot, force_plot]
+
+    - name: explain_prediction_lime
+      deterministic: true
+      description: Generate LIME explanations for efficiency predictions
+      inputs: [model_prediction, feature_values, num_features]
+      outputs: [lime_weights, explanation_text, html_report]
+
+    - name: compare_fluids
+      deterministic: true
+      description: Compare multiple heat transfer fluids for a given application
+      inputs: [application_params, candidate_fluids, operating_range]
+      outputs: [fluid_ranking, property_comparison, recommendation, rationale]
+
+    - name: quantify_uncertainty
+      deterministic: true
+      description: Quantify uncertainty in efficiency calculations
+      inputs: [input_uncertainties, calculation_results, confidence_level]
+      outputs: [uncertainty_range, confidence_interval, sensitivity_analysis]
+
+# ------------------------------------------------------------------------------
+# SUPPORTED THERMAL FLUIDS (25+ Fluids)
+# ------------------------------------------------------------------------------
+
+supported_fluids:
+  # Water and Steam
+  water_steam:
+    - name: Water
+      library: CoolProp
+      formula: H2O
+      temp_range_C: [0, 374]
+      pressure_range_bar: [0.01, 220]
+      applications: [steam_generation, hot_water_heating, condensate]
+
+    - name: Steam
+      library: iapws
+      formula: H2O
+      temp_range_C: [100, 600]
+      pressure_range_bar: [1, 300]
+      applications: [steam_turbines, process_heating, sterilization]
+
+  # Synthetic Heat Transfer Fluids
+  synthetic_oils:
+    - name: Therminol_VP1
+      library: CoolProp
+      temp_range_C: [12, 400]
+      applications: [CSP, chemical_processing, high_temp_heating]
+
+    - name: Therminol_66
+      library: CoolProp
+      temp_range_C: [-3, 345]
+      applications: [chemical_processing, plastics, pharmaceutical]
+
+    - name: Therminol_55
+      library: CoolProp
+      temp_range_C: [-28, 290]
+      applications: [asphalt, food_processing, textile]
+
+    - name: Therminol_XP
+      library: CoolProp
+      temp_range_C: [-20, 315]
+      applications: [low_temp_applications, heating_systems]
+
+    - name: Dowtherm_A
+      library: CoolProp
+      temp_range_C: [15, 400]
+      applications: [CSP, chemical_processing, refineries]
+
+    - name: Dowtherm_G
+      library: CoolProp
+      temp_range_C: [-6, 360]
+      applications: [pharmaceutical, food_processing]
+
+    - name: Dowtherm_Q
+      library: CoolProp
+      temp_range_C: [-35, 330]
+      applications: [low_temp_heating, chemical_processing]
+
+    - name: Marlotherm_SH
+      library: custom
+      temp_range_C: [-5, 350]
+      applications: [chemical_processing, refineries]
+
+    - name: Marlotherm_LH
+      library: custom
+      temp_range_C: [-30, 280]
+      applications: [low_temp_heating, plastics]
+
+  # Glycols
+  glycols:
+    - name: EthyleneGlycol
+      library: CoolProp
+      formula: C2H6O2
+      temp_range_C: [-40, 120]
+      applications: [antifreeze, HVAC, solar_thermal]
+
+    - name: PropyleneGlycol
+      library: CoolProp
+      formula: C3H8O2
+      temp_range_C: [-50, 120]
+      applications: [food_safe_antifreeze, pharmaceutical, HVAC]
+
+    - name: DiethyleneGlycol
+      library: CoolProp
+      temp_range_C: [-10, 160]
+      applications: [dehydration, gas_processing]
+
+    - name: TriethyleneGlycol
+      library: CoolProp
+      temp_range_C: [-5, 200]
+      applications: [gas_dehydration, air_conditioning]
+
+  # Silicone Fluids
+  silicone_fluids:
+    - name: Syltherm_800
+      library: custom
+      temp_range_C: [-40, 400]
+      applications: [CSP, semiconductor, high_temp_processing]
+
+    - name: Syltherm_XLT
+      library: custom
+      temp_range_C: [-100, 260]
+      applications: [cryogenic, pharmaceutical, chemical]
+
+  # Mineral Oils
+  mineral_oils:
+    - name: Mobiltherm_603
+      library: custom
+      temp_range_C: [-10, 315]
+      applications: [general_heating, die_casting]
+
+    - name: Mobiltherm_605
+      library: custom
+      temp_range_C: [-5, 300]
+      applications: [plastics, rubber_processing]
+
+    - name: Shell_Thermia_B
+      library: custom
+      temp_range_C: [-10, 300]
+      applications: [industrial_heating, textile]
+
+  # Molten Salts
+  molten_salts:
+    - name: Solar_Salt
+      library: custom
+      formula: NaNO3_KNO3
+      composition: "60% NaNO3, 40% KNO3"
+      temp_range_C: [220, 600]
+      applications: [CSP_thermal_storage, high_temp_TES]
+
+    - name: Hitec
+      library: custom
+      formula: NaNO3_KNO3_NaNO2
+      composition: "7% NaNO3, 53% KNO3, 40% NaNO2"
+      temp_range_C: [142, 535]
+      applications: [CSP, metallurgical]
+
+    - name: Hitec_XL
+      library: custom
+      temp_range_C: [120, 500]
+      applications: [CSP_lower_melting_point]
+
+  # Refrigerants (for heat pump integration)
+  refrigerants:
+    - name: R134a
+      library: CoolProp
+      formula: CF3CH2F
+      temp_range_C: [-40, 101]
+      applications: [heat_pumps, refrigeration, automotive]
+
+    - name: R410A
+      library: CoolProp
+      temp_range_C: [-50, 70]
+      applications: [heat_pumps, HVAC]
+
+    - name: R717_Ammonia
+      library: CoolProp
+      formula: NH3
+      temp_range_C: [-77, 132]
+      applications: [industrial_refrigeration, heat_pumps]
+
+    - name: CO2_R744
+      library: CoolProp
+      formula: CO2
+      temp_range_C: [-56, 31]
+      applications: [transcritical_heat_pumps, refrigeration]
+
+  # Air and Gases
+  gases:
+    - name: Air
+      library: CoolProp
+      temp_range_C: [-200, 1000]
+      applications: [combustion, drying, gas_turbines]
+
+    - name: Nitrogen
+      library: CoolProp
+      formula: N2
+      temp_range_C: [-200, 500]
+      applications: [inerting, cryogenic, gas_turbines]
+
+    - name: CombustionGas
+      library: custom
+      temp_range_C: [200, 1500]
+      applications: [flue_gas_analysis, waste_heat_recovery]
+
+# ------------------------------------------------------------------------------
+# INPUT SCHEMAS
+# ------------------------------------------------------------------------------
+
+inputs:
+  energy_input_measurements:
+    description: All energy inputs to the thermal process
+    required: true
+    schema:
+      type: object
+      properties:
+        fuel_inputs:
+          type: array
+          items:
+            type: object
+            properties:
+              fuel_type:
+                type: string
+                enum: [natural_gas, coal, fuel_oil, biomass, hydrogen, lpg, electricity, biogas]
+              mass_flow_kg_hr:
+                type: number
+                minimum: 0
+              volume_flow_m3_hr:
+                type: number
+                minimum: 0
+              heating_value_mj_kg:
+                type: number
+                minimum: 0
+              temperature_C:
+                type: number
+              pressure_bar:
+                type: number
+        electrical_inputs:
+          type: array
+          items:
+            type: object
+            properties:
+              power_kw:
+                type: number
+              duration_hours:
+                type: number
+              purpose:
+                type: string
+                enum: [heating, pumping, fans, auxiliary]
+
+  useful_heat_output:
+    description: Heat transferred to the process or product
+    required: true
+    schema:
+      type: object
+      properties:
+        process_heat_mw:
+          type: number
+          description: Direct heat to process
+        steam_output:
+          type: object
+          properties:
+            mass_flow_kg_hr:
+              type: number
+            pressure_bar:
+              type: number
+            temperature_C:
+              type: number
+            quality:
+              type: number
+              minimum: 0
+              maximum: 1
+        hot_fluid_output:
+          type: object
+          properties:
+            fluid_name:
+              type: string
+            mass_flow_kg_hr:
+              type: number
+            inlet_temperature_C:
+              type: number
+            outlet_temperature_C:
+              type: number
+            pressure_bar:
+              type: number
+
+  heat_losses:
+    description: All heat loss mechanisms
+    required: true
+    schema:
+      type: object
+      properties:
+        flue_gas_losses:
+          type: object
+          properties:
+            mass_flow_kg_hr:
+              type: number
+            exit_temperature_C:
+              type: number
+            co2_percent:
+              type: number
+            o2_percent:
+              type: number
+            excess_air_percent:
+              type: number
+        radiation_losses:
+          type: object
+          properties:
+            surface_area_m2:
+              type: number
+            surface_temperature_C:
+              type: number
+            emissivity:
+              type: number
+              minimum: 0
+              maximum: 1
+        convection_losses:
+          type: object
+          properties:
+            surface_area_m2:
+              type: number
+            surface_temperature_C:
+              type: number
+            heat_transfer_coefficient_w_m2_k:
+              type: number
+        blowdown_losses:
+          type: object
+          properties:
+            mass_flow_kg_hr:
+              type: number
+            temperature_C:
+              type: number
+        unaccounted_losses_percent:
+          type: number
+          minimum: 0
+          maximum: 10
+
+  fluid_properties_request:
+    description: Request for fluid property calculations
+    required: false
+    schema:
+      type: object
+      properties:
+        fluid_name:
+          type: string
+          description: Name of heat transfer fluid
+        temperature_C:
+          type: number
+          description: Operating temperature
+        pressure_bar:
+          type: number
+          description: Operating pressure
+        concentration_percent:
+          type: number
+          description: Concentration for mixtures (glycols)
+          minimum: 0
+          maximum: 100
+
+  ambient_conditions:
+    description: Environmental reference conditions
+    required: false
+    schema:
+      type: object
+      properties:
+        ambient_temperature_C:
+          type: number
+          default: 25.0
+        ambient_pressure_bar:
+          type: number
+          default: 1.01325
+        relative_humidity_percent:
+          type: number
+          default: 60.0
+        reference_temperature_C:
+          type: number
+          default: 25.0
+          description: Dead state temperature for exergy calculations
+
+  equipment_specs:
+    description: Equipment specifications for analysis
+    required: false
+    schema:
+      type: object
+      properties:
+        equipment_type:
+          type: string
+          enum: [boiler, furnace, dryer, kiln, heat_exchanger, reactor, distillation, evaporator, heater, economizer]
+        design_efficiency_percent:
+          type: number
+          minimum: 0
+          maximum: 100
+        rated_capacity_mw:
+          type: number
+        operating_hours_per_year:
+          type: number
+          default: 8760
+        age_years:
+          type: number
+        last_maintenance_date:
+          type: string
+          format: date
+
+  operating_conditions:
+    description: Current operating conditions
+    required: false
+    schema:
+      type: object
+      properties:
+        load_percent:
+          type: number
+          minimum: 0
+          maximum: 120
+        turndown_ratio:
+          type: number
+        modulation_mode:
+          type: string
+          enum: [on_off, high_low, modulating, variable_speed]
+
+# ------------------------------------------------------------------------------
+# OUTPUT SCHEMAS
+# ------------------------------------------------------------------------------
+
+outputs:
+  thermal_efficiency:
+    description: Calculated thermal efficiency metrics
+    schema:
+      type: object
+      properties:
+        first_law_efficiency_percent:
+          type: number
+          description: Energy efficiency (useful output / total input)
+        second_law_efficiency_percent:
+          type: number
+          description: Exergy efficiency (useful exergy / exergy input)
+        combustion_efficiency_percent:
+          type: number
+          description: Fuel-to-heat conversion efficiency
+        gross_efficiency_percent:
+          type: number
+        net_efficiency_percent:
+          type: number
+        efficiency_gap_percent:
+          type: number
+          description: Gap from design efficiency
+        calculation_hash:
+          type: string
+          description: SHA-256 provenance hash
+
+  exergy_destruction_analysis:
+    description: Second law exergy analysis results
+    schema:
+      type: object
+      properties:
+        reference_temperature_K:
+          type: number
+        total_exergy_input_kW:
+          type: number
+        total_exergy_output_kW:
+          type: number
+        total_exergy_destruction_kW:
+          type: number
+        exergy_efficiency:
+          type: number
+        exergy_by_component:
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              exergy_destruction_kW:
+                type: number
+              exergy_efficiency:
+                type: number
+        improvement_potential_kW:
+          type: number
+        improvement_potential_percent:
+          type: number
+
+  sankey_diagram_data:
+    description: Data structure for Sankey energy/exergy flow visualization
+    schema:
+      type: object
+      properties:
+        diagram_type:
+          type: string
+          enum: [energy, exergy]
+        nodes:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              label:
+                type: string
+              value_mw:
+                type: number
+              percentage:
+                type: number
+              color:
+                type: string
+        links:
+          type: array
+          items:
+            type: object
+            properties:
+              source:
+                type: string
+              target:
+                type: string
+              value_mw:
+                type: number
+              percentage:
+                type: number
+              color:
+                type: string
+        total_input_mw:
+          type: number
+        total_output_mw:
+          type: number
+        total_losses_mw:
+          type: number
+        plotly_config:
+          type: object
+
+  fluid_recommendations:
+    description: Heat transfer fluid recommendations
+    schema:
+      type: array
+      items:
+        type: object
+        properties:
+          fluid_name:
+            type: string
+          rank:
+            type: integer
+          overall_score:
+            type: number
+            minimum: 0
+            maximum: 100
+          thermal_performance_score:
+            type: number
+          safety_score:
+            type: number
+          cost_score:
+            type: number
+          environmental_score:
+            type: number
+          rationale:
+            type: string
+          warnings:
+            type: array
+            items:
+              type: string
+
+  property_tables:
+    description: Comprehensive fluid property tables
+    schema:
+      type: object
+      properties:
+        fluid_name:
+          type: string
+        temperature_range_C:
+          type: array
+          items:
+            type: number
+        properties:
+          type: array
+          items:
+            type: object
+            properties:
+              temperature_C:
+                type: number
+              density_kg_m3:
+                type: number
+              specific_heat_kJ_kgK:
+                type: number
+              viscosity_mPas:
+                type: number
+              thermal_conductivity_W_mK:
+                type: number
+              vapor_pressure_bar:
+                type: number
+              prandtl_number:
+                type: number
+
+  explainability_reports:
+    description: SHAP/LIME explainability analysis
+    schema:
+      type: object
+      properties:
+        model_type:
+          type: string
+        prediction_value:
+          type: number
+        shap_analysis:
+          type: object
+          properties:
+            feature_importance:
+              type: array
+              items:
+                type: object
+                properties:
+                  feature:
+                    type: string
+                  shap_value:
+                    type: number
+                  contribution:
+                    type: string
+            base_value:
+              type: number
+            summary_plot_base64:
+              type: string
+            force_plot_base64:
+              type: string
+        lime_analysis:
+          type: object
+          properties:
+            local_weights:
+              type: array
+              items:
+                type: object
+                properties:
+                  feature:
+                    type: string
+                  weight:
+                    type: number
+                  range:
+                    type: string
+            explanation_text:
+              type: string
+            confidence:
+              type: number
+
+  uncertainty_analysis:
+    description: Uncertainty quantification results
+    schema:
+      type: object
+      properties:
+        efficiency_estimate:
+          type: number
+        uncertainty_range:
+          type: object
+          properties:
+            lower_bound:
+              type: number
+            upper_bound:
+              type: number
+            confidence_level:
+              type: number
+        sensitivity_analysis:
+          type: array
+          items:
+            type: object
+            properties:
+              parameter:
+                type: string
+              sensitivity_coefficient:
+                type: number
+              contribution_percent:
+                type: number
+        monte_carlo_results:
+          type: object
+          properties:
+            mean:
+              type: number
+            std_dev:
+              type: number
+            percentiles:
+              type: object
+
+# ------------------------------------------------------------------------------
+# CONNECTORS / INTEGRATIONS
+# ------------------------------------------------------------------------------
+
+connectors:
+  opcua:
+    type: opc_ua
+    description: OPC-UA for real-time OT data ingestion
+    config:
+      protocols:
+        - opc.tcp
+      security_modes:
+        - None
+        - Sign
+        - SignAndEncrypt
+      security_policies:
+        - Basic256Sha256
+        - Aes128_Sha256_RsaOaep
+      certificate_required: true
+      network_segmentation: true
+      subscription_interval_ms: 1000
+      reconnect_attempts: 5
+      timeout_ms: 30000
+
+  kafka:
+    type: kafka
+    description: Apache Kafka for event streaming
+    config:
+      broker_version: "3.0+"
+      topics:
+        - name: thermaliq.telemetry.normalized
+          schema: avro
+          partitions: 8
+          replication: 3
+        - name: thermaliq.fluid.properties
+          schema: avro
+          partitions: 4
+          replication: 3
+        - name: thermaliq.efficiency.calculated
+          schema: avro
+          partitions: 4
+          replication: 3
+        - name: thermaliq.exergy.analysis
+          schema: avro
+          partitions: 4
+          replication: 3
+        - name: thermaliq.sankey.generated
+          schema: avro
+          partitions: 4
+          replication: 3
+        - name: thermaliq.explain.reports
+          schema: avro
+          partitions: 4
+          replication: 3
+        - name: thermaliq.audit.log
+          schema: avro
+          partitions: 8
+          replication: 3
+          retention_days: 2555  # 7 years
+      consumer_group: gl-009-thermaliq
+      auto_offset_reset: earliest
+      enable_auto_commit: false
+
+  graphql:
+    type: graphql
+    description: GraphQL API for flexible queries
+    config:
+      entities:
+        - ThermalFluid
+        - FluidProperty
+        - EfficiencyCalculation
+        - ExergyAnalysis
+        - SankeyDiagram
+        - ExplainabilityReport
+        - UncertaintyResult
+        - AuditRecord
+      subscriptions:
+        - efficiencyUpdated
+        - sankeyGenerated
+        - anomalyDetected
+      complexity_limit: 1000
+      depth_limit: 10
+      introspection_enabled: true
+
+  rest:
+    type: rest
+    description: RESTful API endpoints
+    config:
+      base_path: /api/v1/thermaliq
+      endpoints:
+        - path: /health
+          methods: [GET]
+          auth: none
+        - path: /fluids
+          methods: [GET]
+          auth: api_key
+        - path: /fluids/{fluid_name}/properties
+          methods: [GET, POST]
+          auth: api_key
+        - path: /efficiency/calculate
+          methods: [POST]
+          auth: jwt
+        - path: /exergy/analyze
+          methods: [POST]
+          auth: jwt
+        - path: /sankey/generate
+          methods: [POST]
+          auth: jwt
+        - path: /explain/shap
+          methods: [POST]
+          auth: jwt
+        - path: /explain/lime
+          methods: [POST]
+          auth: jwt
+        - path: /uncertainty/quantify
+          methods: [POST]
+          auth: jwt
+        - path: /compare/fluids
+          methods: [POST]
+          auth: jwt
+        - path: /reports/{report_id}
+          methods: [GET]
+          auth: jwt
+      rate_limiting:
+        requests_per_minute: 100
+        burst_limit: 20
+      cors_enabled: true
+
+  process_historians:
+    type: historian
+    description: Process data historian integration
+    config:
+      supported_systems:
+        - name: OSIsoft_PI
+          protocol: PI_Web_API
+          auth: kerberos
+        - name: Honeywell_PHD
+          protocol: OPC_HDA
+          auth: basic
+        - name: AspenTech_InfoPlus21
+          protocol: REST
+          auth: oauth2
+        - name: GE_Proficy_Historian
+          protocol: OPC_HDA
+          auth: basic
+        - name: Wonderware_Historian
+          protocol: SQL
+          auth: windows
+      query_timeout_seconds: 60
+      max_points_per_query: 100000
+
+  energy_meters:
+    type: modbus
+    description: Energy meter integration
+    config:
+      protocols:
+        - Modbus_TCP
+        - Modbus_RTU
+      supported_devices:
+        - Siemens_PAC
+        - Schneider_ION
+        - ABB_M4M
+        - Honeywell_EnergyManager
+        - Carlo_Gavazzi
+      polling_interval_ms: 5000
+      timeout_ms: 3000
+
+# ------------------------------------------------------------------------------
+# DEPENDENCIES
+# ------------------------------------------------------------------------------
+
+dependencies:
+  python: ">=3.10,<4.0"
+
+  packages:
+    # Core Framework
+    - pydantic>=2.5.0,<3.0.0
+    - fastapi>=0.104.0,<1.0.0
+    - uvicorn>=0.24.0,<1.0.0
+    - aiohttp>=3.9.0,<4.0.0
+
+    # Numerical/Scientific Computing
+    - numpy>=1.24.0,<2.0.0
+    - scipy>=1.11.0,<2.0.0
+    - pandas>=2.1.0,<3.0.0
+
+    # Thermodynamic Libraries
+    - CoolProp>=6.6.0,<7.0.0
+    - iapws>=1.5.3,<2.0.0
+
+    # Optimization
+    - pulp>=2.7.0,<3.0.0
+
+    # ML/Explainability
+    - scikit-learn>=1.3.0,<2.0.0
+    - shap>=0.44.0,<1.0.0
+    - lime>=0.2.0,<1.0.0
+
+    # Visualization
+    - matplotlib>=3.8.0,<4.0.0
+    - plotly>=5.18.0,<6.0.0
+    - kaleido>=0.2.1,<1.0.0
+
+    # GraphQL
+    - strawberry-graphql>=0.215.0,<1.0.0
+
+    # Streaming
+    - aiokafka>=0.10.0,<1.0.0
+
+    # OPC-UA
+    - asyncua>=1.0.0,<2.0.0
+
+    # Metrics & Monitoring
+    - prometheus-client>=0.19.0,<1.0.0
+    - opentelemetry-api>=1.22.0,<2.0.0
+    - opentelemetry-sdk>=1.22.0,<2.0.0
+    - opentelemetry-exporter-otlp>=1.22.0,<2.0.0
+
+    # Security
+    - cryptography>=41.0.0,<42.0.0
+    - python-jose>=3.3.0,<4.0.0
+
+    # HTTP Client
+    - httpx>=0.25.0,<1.0.0
+
+    # Logging
+    - python-json-logger>=2.0.7,<3.0.0
+    - structlog>=23.2.0,<24.0.0
+
+    # Data Validation
+    - pyyaml>=6.0.1,<7.0.0
+    - aiofiles>=23.2.0,<24.0.0
+
+  dev_packages:
+    - pytest>=7.4.0,<8.0.0
+    - pytest-asyncio>=0.23.0,<1.0.0
+    - pytest-cov>=4.1.0,<5.0.0
+    - hypothesis>=6.92.0,<7.0.0
+    - black>=23.12.0,<24.0.0
+    - ruff>=0.1.8,<1.0.0
+    - mypy>=1.7.0,<2.0.0
+    - pre-commit>=3.6.0,<4.0.0
+
+  external_services:
+    - service: anthropic
+      optional: true
+      purpose: LLM classification for recommendations (deterministic, temp=0.0)
+      fallback: rule_based_classification
+
+    - service: openai
+      optional: true
+      purpose: Alternative LLM for text generation
+      fallback: template_based_generation
+
+    - service: historian
+      optional: true
+      purpose: Historical process data retrieval
+
+    - service: opc_ua_server
+      optional: true
+      purpose: Real-time process data
+
+# ------------------------------------------------------------------------------
+# RUNTIME CONFIGURATION
+# ------------------------------------------------------------------------------
+
+runtime:
+  language: python
+  python_version: ">=3.10,<4.0"
+  entrypoint: core.orchestrator:ThermalIQOrchestrator
+  main_class: ThermalIQOrchestrator
+
+  async_execution: true
+  requires_gpu: false
+
+  resources:
+    cpu_min: "500m"
+    cpu_max: "4000m"
+    memory_min: "512Mi"
+    memory_max: "4Gi"
+
+  # Zero-hallucination configuration
+  deterministic: true
+  temperature: 0.0
+  seed: 42
+
+  # Performance tuning
+  worker_threads: 4
+  max_concurrent_requests: 100
+  request_timeout_seconds: 60
+  calculation_timeout_seconds: 30
+
+# ------------------------------------------------------------------------------
+# SAFETY CONSTRAINTS
+# ------------------------------------------------------------------------------
+
+safety:
+  # Physical constraints
+  physical_constraints:
+    - tag: MIN_TEMPERATURE_K
+      min_value: 0.0
+      description: Absolute zero physical limit
+
+    - tag: MAX_TEMPERATURE_C
+      max_value: 1500.0
+      description: Maximum practical industrial temperature
+
+    - tag: MIN_PRESSURE_BAR
+      min_value: 0.001
+      description: Minimum pressure for property calculations
+
+    - tag: MAX_PRESSURE_BAR
+      max_value: 500.0
+      description: Maximum practical industrial pressure
+
+    - tag: HEAT_BALANCE_CLOSURE_PERCENT
+      max_value: 5.0
+      description: Maximum allowed heat balance closure error
+
+    - tag: MIN_EXERGY_EFFICIENCY
+      min_value: 0.0
+      description: Exergy efficiency cannot be negative
+
+    - tag: MAX_EXERGY_EFFICIENCY
+      max_value: 1.0
+      description: Exergy efficiency cannot exceed 100%
+
+  # Fluid-specific constraints
+  fluid_constraints:
+    - tag: FLUID_TEMP_RANGE
+      description: Ensure temperature within fluid operating range
+
+    - tag: FLASH_POINT_CHECK
+      description: Check proximity to fluid flash point
+
+    - tag: DECOMPOSITION_TEMP_CHECK
+      description: Warn if approaching decomposition temperature
+
+    - tag: VAPOR_PRESSURE_CHECK
+      description: Check vapor pressure vs system pressure
+
+  # Calculation safety
+  calculation_safety:
+    division_by_zero_protection: true
+    nan_inf_detection: true
+    range_validation: true
+    unit_consistency_check: true
+
+  # Data safety
+  data_safety:
+    input_sanitization: true
+    output_validation: true
+    provenance_tracking: true
+
+# ------------------------------------------------------------------------------
+# GREENLANG COMPLIANCE
+# ------------------------------------------------------------------------------
+
+greenlang:
+  zero_hallucination: true
+  provenance_tracking: true
+  deterministic_calculations: true
+  audit_logging: true
+  fail_closed: true
+
+  # Calculation provenance
+  provenance:
+    hash_algorithm: SHA-256
+    input_hashing: true
+    output_hashing: true
+    formula_versioning: true
+    reproducibility_guarantee: true
+
+  # LLM usage constraints
+  llm_constraints:
+    allowed_purposes:
+      - classification
+      - recommendation_text
+      - report_narrative
+      - entity_resolution
+    prohibited_purposes:
+      - numeric_calculations
+      - thermodynamic_property_lookups
+      - efficiency_calculations
+      - exergy_calculations
+    temperature: 0.0
+    max_tokens: 1000
+    fallback_required: true
+
+# ------------------------------------------------------------------------------
+# AUDIT CONFIGURATION
+# ------------------------------------------------------------------------------
+
+audit:
+  enabled: true
+  retention_days: 2555  # 7 years
+  tamper_detection: true
+  append_only: true
+
+  # Audited events
+  events:
+    - efficiency_calculated
+    - exergy_analyzed
+    - sankey_generated
+    - fluid_properties_retrieved
+    - explanation_generated
+    - uncertainty_quantified
+    - recommendation_made
+    - error_occurred
+    - input_validated
+    - output_validated
+
+  # Queryable dimensions
+  queryable_by:
+    - calculation_id
+    - fluid_name
+    - equipment_id
+    - time_range
+    - user_id
+    - organization_id
+    - calculation_type
+    - provenance_hash
+
+  # Audit record schema
+  record_schema:
+    timestamp: datetime
+    event_type: string
+    calculation_id: uuid
+    input_hash: string
+    output_hash: string
+    formula_version: string
+    duration_ms: number
+    user_id: string
+    organization_id: string
+    metadata: object
+
+# ------------------------------------------------------------------------------
+# MONITORING & OBSERVABILITY
+# ------------------------------------------------------------------------------
+
+monitoring:
+  metrics:
+    enabled: true
+    port: 9090
+    path: /metrics
+    labels:
+      - agent_id
+      - calculation_type
+      - fluid_name
+      - status
+
+    custom_metrics:
+      - name: thermaliq_calculations_total
+        type: counter
+        description: Total number of calculations performed
+
+      - name: thermaliq_calculation_duration_seconds
+        type: histogram
+        description: Calculation duration in seconds
+        buckets: [0.01, 0.05, 0.1, 0.25, 0.5, 1.0, 2.5, 5.0, 10.0]
+
+      - name: thermaliq_efficiency_calculated
+        type: gauge
+        description: Last calculated efficiency value
+
+      - name: thermaliq_exergy_destruction_kw
+        type: gauge
+        description: Last calculated exergy destruction
+
+      - name: thermaliq_fluid_property_lookups_total
+        type: counter
+        description: Total fluid property lookups
+
+      - name: thermaliq_explanation_generated_total
+        type: counter
+        description: Total SHAP/LIME explanations generated
+
+      - name: thermaliq_cache_hit_ratio
+        type: gauge
+        description: Property cache hit ratio
+
+  health:
+    enabled: true
+    port: 8080
+    path: /health
+    readiness_path: /ready
+    liveness_path: /live
+    startup_path: /startup
+
+  tracing:
+    enabled: true
+    exporter: otlp
+    sampling_rate: 0.1
+    service_name: gl-009-thermaliq
+
+  logging:
+    format: json
+    level: INFO
+    include_timestamp: true
+    include_trace_id: true
+    include_span_id: true
+    redact_sensitive: true
+
+  alerting:
+    enabled: true
+    channels:
+      - type: log
+        level: ERROR
+      - type: webhook
+        url: "${ALERT_WEBHOOK_URL}"
+      - type: pagerduty
+        routing_key: "${PAGERDUTY_KEY}"
+        optional: true
+
+    rules:
+      - name: high_calculation_latency
+        condition: calculation_duration_seconds > 10
+        severity: warning
+
+      - name: calculation_failure_rate
+        condition: error_rate > 0.01
+        severity: critical
+
+      - name: heat_balance_closure_warning
+        condition: closure_error_percent > 3
+        severity: warning
+
+# ------------------------------------------------------------------------------
+# REFERENCE STANDARDS
+# ------------------------------------------------------------------------------
+
+standards_compliance:
+  - name: ISO 50001:2018
+    description: Energy management systems
+    applicability: Energy performance indicators (EnPIs)
+
+  - name: ASME PTC 4
+    description: Fired Steam Generators Performance Test Codes
+    applicability: Boiler efficiency calculations
+
+  - name: ASME PTC 4.1
+    description: Steam Generating Units
+    applicability: Input-output and heat loss methods
+
+  - name: ASME PTC 4.3
+    description: Air Heaters
+    applicability: Air heater performance
+
+  - name: ASME PTC 4.4
+    description: Gas Turbine HRSG
+    applicability: Heat recovery steam generator performance
+
+  - name: ASME PTC 19.1
+    description: Test Uncertainty
+    applicability: Uncertainty quantification methods
+
+  - name: ISO 14414
+    description: Pump System Energy Assessment
+    applicability: Auxiliary system efficiency
+
+  - name: API 560
+    description: Fired Heaters for General Refinery Service
+    applicability: Fired heater efficiency
+
+  - name: API 661
+    description: Air-Cooled Heat Exchangers
+    applicability: Heat exchanger performance
+
+  - name: EN 12952
+    description: Water-tube boilers
+    applicability: European boiler efficiency standards
+
+  - name: BS 845
+    description: Methods for assessing thermal performance of boilers
+    applicability: Boiler efficiency testing
+
+  - name: EPA 40 CFR Part 60
+    description: EPA emissions monitoring
+    applicability: Flue gas analysis and emissions
+
+  - name: IEC 61508
+    description: Functional Safety
+    applicability: Safety-critical calculations
+
+# ------------------------------------------------------------------------------
+# PERFORMANCE TARGETS
+# ------------------------------------------------------------------------------
+
+performance_targets:
+  # Accuracy
+  calculation_accuracy: 0.995  # >99.5% accuracy vs validated calculations
+  first_law_closure_tolerance: 0.02  # 2% heat balance closure
+  property_accuracy: 0.999  # CoolProp validated accuracy
+
+  # Latency
+  property_lookup_ms: 10  # <10ms for single property
+  efficiency_calculation_ms: 100  # <100ms for full efficiency calc
+  exergy_analysis_ms: 500  # <500ms for exergy analysis
+  sankey_generation_ms: 1000  # <1s for Sankey diagram
+  explanation_generation_ms: 5000  # <5s for SHAP/LIME
+
+  # Throughput
+  max_calculations_per_second: 100
+  max_concurrent_requests: 50
+
+  # Reliability
+  availability_target: 0.999  # 99.9% uptime
+  error_rate_target: 0.001  # <0.1% error rate
+
+  # Testing
+  test_coverage: 0.90  # >90% code coverage
+  test_pass_rate: 0.99  # >99% test pass rate
+
+  # Cache
+  cache_hit_rate: 0.85  # >85% cache hit for fluid properties
+
+# ------------------------------------------------------------------------------
+# AI CONFIGURATION
+# ------------------------------------------------------------------------------
+
+ai_configuration:
+  deterministic: true
+  temperature: 0.0
+  seed: 42
+  max_llm_cost_per_query_usd: 0.05
+
+  llm_purpose: classification_and_recommendations
+
+  llm_use_cases:
+    - Categorizing efficiency improvement opportunities
+    - Generating natural language recommendations
+    - Root cause classification for inefficiencies
+    - Fluid selection rationale generation
+    - Report narrative synthesis
+
+  llm_constraints:
+    - NEVER used for numerical calculations
+    - NEVER used for thermodynamic property lookups
+    - ALWAYS deterministic (temp=0.0)
+    - Fallback to rule-based if LLM unavailable
+    - All physics calculations use CoolProp/iapws
+
+  fallback_mode: pure_deterministic
+
+# ------------------------------------------------------------------------------
+# SECURITY
+# ------------------------------------------------------------------------------
+
+security:
+  zero_secrets: true
+  secrets_manager: hashicorp_vault
+
+  authentication:
+    methods:
+      - jwt
+      - api_key
+      - oauth2
+    jwt_algorithm: RS256
+    token_expiry_minutes: 60
+
+  authorization:
+    rbac_enabled: true
+    roles:
+      - viewer
+      - analyst
+      - engineer
+      - admin
+    permissions:
+      viewer: [read_results, view_reports]
+      analyst: [read_results, view_reports, generate_reports]
+      engineer: [read_results, view_reports, generate_reports, run_calculations]
+      admin: [read_results, view_reports, generate_reports, run_calculations, manage_config]
+
+  encryption:
+    at_rest: AES-256-GCM
+    in_transit: TLS-1.3
+    key_rotation_days: 90
+
+  api_security:
+    rate_limiting: true
+    input_validation: strict
+    output_sanitization: true
+    cors_enabled: true
+    cors_origins: ["${ALLOWED_ORIGINS}"]
+
+  data_classification: internal
+
+# ------------------------------------------------------------------------------
+# DEPLOYMENT
+# ------------------------------------------------------------------------------
+
+deployment:
+  container_image: greenlang/gl-009-thermaliq:2.0.0
+  platform: kubernetes
+  namespace: greenlang-agents
+
+  replicas:
+    min: 2
+    max: 20
+    initial: 3
+
+  autoscaling:
+    enabled: true
+    metric: cpu_utilization
+    target_percent: 70
+    scale_up_stabilization_seconds: 60
+    scale_down_stabilization_seconds: 300
+
+  resources:
+    requests:
+      cpu: "500m"
+      memory: "512Mi"
+    limits:
+      cpu: "4000m"
+      memory: "4Gi"
+
+  health_check:
+    liveness:
+      http_get:
+        path: /health/live
+        port: 8080
+      initial_delay_seconds: 30
+      period_seconds: 10
+      timeout_seconds: 5
+      failure_threshold: 3
+
+    readiness:
+      http_get:
+        path: /health/ready
+        port: 8080
+      initial_delay_seconds: 10
+      period_seconds: 5
+      timeout_seconds: 3
+      failure_threshold: 3
+
+    startup:
+      http_get:
+        path: /health/startup
+        port: 8080
+      initial_delay_seconds: 5
+      period_seconds: 5
+      failure_threshold: 30
+
+  environment:
+    THERMALIQ_LOG_LEVEL: INFO
+    THERMALIQ_METRICS_PORT: "9090"
+    THERMALIQ_API_PORT: "8080"
+    THERMALIQ_OPCUA_HOST: "${OPCUA_HOST}"
+    THERMALIQ_KAFKA_BROKERS: "${KAFKA_BROKERS}"
+    THERMALIQ_REDIS_URL: "${REDIS_URL}"
+    THERMALIQ_DB_CONNECTION: "${DATABASE_URL}"
+    THERMALIQ_VAULT_ADDR: "${VAULT_ADDR}"
+
+  pod_disruption_budget:
+    min_available: 1
+
+  anti_affinity:
+    preferred_during_scheduling: true
+
+# ------------------------------------------------------------------------------
+# KPIS & BUSINESS METRICS
+# ------------------------------------------------------------------------------
+
+kpis:
+  accuracy:
+    metric: calculation_accuracy
+    target: ">= 99.5%"
+    measurement: vs_validated_test_cases
+
+  latency:
+    metric: p95_calculation_time
+    target: "<= 500ms"
+    measurement: efficiency_calculations
+
+  availability:
+    metric: uptime
+    target: ">= 99.9%"
+    measurement: health_check_success_rate
+
+  throughput:
+    metric: calculations_per_second
+    target: ">= 100"
+    measurement: peak_load_benchmark
+
+  reliability:
+    metric: error_rate
+    target: "<= 0.1%"
+    measurement: calculation_failures
+
+business_metrics:
+  market_segment: industrial-energy-analytics
+  target_customers:
+    - manufacturing
+    - chemical
+    - petrochemical
+    - power_generation
+    - food_processing
+    - pulp_paper
+    - steel
+    - cement
+    - pharmaceutical
+    - HVAC
+
+  typical_savings_percent: 15  # 10-25% efficiency improvement
+  typical_payback_months: 18  # 12-24 month range
+  addressable_emissions_gt_co2e: 2.5
+
+# ------------------------------------------------------------------------------
+# LICENSE
+# ------------------------------------------------------------------------------
+
+license:
+  type: Apache-2.0
+  commercial_use: true
+  attribution_required: true
+  patent_grant: true

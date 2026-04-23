@@ -1,0 +1,47 @@
+---
+# Default-deny ingress; only the customer's PrivateLink NLB pod-selector and
+# the internal Vault / Postgres / Redis SGs may reach the factors pods.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: factors-api
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: factors-api
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: ingress-privatelink
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: privatelink-nlb
+      ports:
+        - protocol: TCP
+          port: 8080
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: databases
+        - namespaceSelector:
+            matchLabels:
+              name: security
+      ports:
+        - protocol: TCP
+          port: 5432
+        - protocol: TCP
+          port: 6379
+        - protocol: TCP
+          port: 8200
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: customer-obs
+      ports:
+        - protocol: TCP
+          port: 4317

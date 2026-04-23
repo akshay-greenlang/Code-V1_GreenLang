@@ -1,0 +1,52 @@
+---
+# =============================================================================
+# ConfigMap patch — factors-api-env (staging)
+# =============================================================================
+# Strategic merge patch. Sets the FY27-launch non-secret config:
+#   * EDITION                 — pre-release pin, updated per deploy
+#   * TIER_*_RPS              — per-tier rate-limit budgets (tokens/sec)
+#   * SIGNING_REQUIRED=true   — signed receipts are mandatory in staging/prod
+#   * LICENSING_GUARD_STRICT  — block any response that fails provenance scan
+#
+# Any key already defined in the base ConfigMap is overridden here; keys only
+# defined here are added. The referenced ExternalSecret supplies all secrets
+# (STRIPE, ED25519, DB, Redis, JWT) — none of them appear in this file.
+# =============================================================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: factors-api-env
+data:
+  # --- Environment ---------------------------------------------------------
+  GL_ENV: "staging"
+  ENVIRONMENT: "staging"
+  APP_ENV: "staging"
+  GL_LOG_LEVEL: "DEBUG"
+
+  # --- Edition pin ---------------------------------------------------------
+  # v0.9-preview is the pre-launch staging edition; prod pins to 1.0.x.
+  EDITION: "v0.9-preview"
+  GL_FACTORS_DEFAULT_EDITION: "v0.9-preview"
+
+  # --- Tier rate-limit budgets (requests/sec/pod) --------------------------
+  TIER_COMMUNITY_RPS: "1"
+  TIER_PRO_RPS: "50"
+  TIER_PLATFORM_RPS: "500"
+  GL_FACTORS_TIER_COMMUNITY_RPS: "1"
+  GL_FACTORS_TIER_PRO_RPS: "50"
+  GL_FACTORS_TIER_PLATFORM_RPS: "500"
+
+  # --- Signed receipts (non-negotiable in staging/prod) --------------------
+  SIGNING_REQUIRED: "true"
+  GL_FACTORS_SIGNING_REQUIRED: "true"
+
+  # --- Licensing guard -----------------------------------------------------
+  LICENSING_GUARD_STRICT: "true"
+  GL_FACTORS_LICENSING_GUARD_STRICT: "true"
+
+  # --- OTel sampling (full in staging for debugging) -----------------------
+  OTEL_TRACES_SAMPLER_ARG: "1.0"
+  OTEL_RESOURCE_ATTRIBUTES: "service.name=factors-api,service.namespace=greenlang,deployment.environment=staging"
+
+  # --- Worker count (staging is cost-sensitive) ----------------------------
+  WORKERS: "2"

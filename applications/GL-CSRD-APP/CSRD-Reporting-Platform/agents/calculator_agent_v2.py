@@ -59,6 +59,14 @@ from greenlang.data.canonical_v2 import MethodProfile
 from greenlang.factors.resolution.engine import ResolutionEngine, ResolutionError
 from greenlang.factors.resolution.request import ResolutionRequest
 
+# CTO non-negotiable #6 — policy-workflow guard. Marking this agent
+# as a policy workflow flips a ContextVar while its entrypoint methods
+# run so that any raw ``FactorCatalogRepository.list_factors`` /
+# ``get_factor`` lookup underneath will raise
+# :class:`MethodProfileMissingError` unless a ``method_profile`` is
+# supplied. See ``greenlang/factors/middleware/method_profile_guard.py``.
+from greenlang.factors.middleware.method_profile_guard import policy_workflow
+
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
@@ -654,6 +662,7 @@ class FormulaEngineV2:
 # CALCULATOR AGENT V2 - WITH DATABASE INTEGRATION
 # ============================================================================
 
+@policy_workflow
 class CalculatorAgentV2:
     """
     Calculate ESRS metrics with ZERO HALLUCINATION guarantee and database integration.
@@ -672,6 +681,13 @@ class CalculatorAgentV2:
 
     Performance: <5ms per metric
     Accuracy: 100% within floating point precision
+
+    CTO non-negotiable #6: the class is decorated with
+    :func:`policy_workflow`, which sets ``_gl_policy_workflow = True``
+    and wraps ``calculate_metric`` / ``calculate_batch`` so any raw
+    catalog lookup reached from inside those methods without a
+    ``method_profile`` raises
+    :class:`~greenlang.factors.middleware.method_profile_guard.MethodProfileMissingError`.
     """
 
     def __init__(

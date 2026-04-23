@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.greenlang.io/factors/categories/transport.schema.json",
+  "title": "Factor Parameters — Transport (v1.0)",
+  "description": "Parameter sub-schema applied when factor_record.factor_family == 'transport'. Aligned with ISO 14083:2023 and Smart Freight Centre GLEC Framework v3. Frozen v1.0 — 2026-04-22.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["mode"],
+  "properties": {
+    "scope_applicability": {
+      "type": "array",
+      "items": { "type": "string", "enum": ["scope_1", "scope_2", "scope_3", "scope_4"] },
+      "uniqueItems": true,
+      "default": []
+    },
+    "uncertainty_low": { "type": ["number", "null"] },
+    "uncertainty_high": { "type": ["number", "null"] },
+    "mode": {
+      "type": "string",
+      "enum": ["road", "rail", "sea", "air", "inland_waterway", "pipeline"],
+      "description": "Top-level transport mode per ISO 14083 §4.3."
+    },
+    "vehicle_class": {
+      "type": ["string", "null"],
+      "maxLength": 128,
+      "description": "GLEC-aligned vehicle / vessel / aircraft class (e.g., 'HGV_rigid_17t', 'HGV_artic_40t', 'container_vessel_14000TEU', 'B777F', 'freight_train_diesel')."
+    },
+    "payload_basis": {
+      "type": "string",
+      "enum": ["t-km", "v-km", "TEU-km", "pax-km"],
+      "description": "Activity basis the denominator expresses: tonne-km, vehicle-km, twenty-foot-equivalent-km, or passenger-km."
+    },
+    "distance_basis": {
+      "type": "string",
+      "enum": ["great_circle", "route", "route_with_empty"],
+      "default": "route",
+      "description": "Distance measurement convention. 'route' = actual driven path; 'route_with_empty' = actual driven path including the empty-return leg; 'great_circle' = shortest arc on the geoid (air/sea)."
+    },
+    "empty_running_assumption": {
+      "type": ["number", "null"],
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Fraction of total distance run empty. Only meaningful when distance_basis == 'route_with_empty'."
+    },
+    "utilization_rate": {
+      "type": ["number", "null"],
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Load factor, i.e., average payload / max payload for the leg. 1.0 = fully loaded."
+    },
+    "refrigerated": {
+      "type": "boolean",
+      "default": false,
+      "description": "True when the factor assumes a reefer / temperature-controlled unit. Non-reefer variants MUST set this to false."
+    },
+    "wtw_ttw_label": {
+      "type": "string",
+      "enum": ["wtw", "ttw", "ttw_plus_wtt"],
+      "default": "wtw",
+      "description": "Life-cycle boundary per ISO 14083. 'wtw' = well-to-wheel (full); 'ttw' = tank-to-wheel (operational only); 'ttw_plus_wtt' = the pair published side-by-side on a single record (rare)."
+    }
+  }
+}

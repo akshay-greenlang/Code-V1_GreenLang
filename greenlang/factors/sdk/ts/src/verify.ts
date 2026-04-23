@@ -29,16 +29,35 @@ const DEFAULT_JWKS_URL =
 /**
  * Parsed receipt block.
  *
+ * Wave 2a canonical fields are `alg` (was `algorithm`), `payload_hash`
+ * (was `signed_over`), and the new `receipt_id` / `verification_key_hint`
+ * pair. Legacy field names remain PARSED for one release with a
+ * `console.warn`-level deprecation notice; they will be removed in v2.0.0.
+ *
  * The server may also include `edition_id`, `factor_ids`, and
  * `caller_id` for additional scope assertions; those fields are
  * surfaced verbatim in {@link VerifiedReceipt}.
  */
 export interface SignedReceipt {
   signature: string;
-  algorithm: 'sha256-hmac' | 'ed25519' | string;
+  /** Wave 2a canonical: short for "algorithm". */
+  alg?: 'sha256-hmac' | 'ed25519' | string;
+  /** @deprecated Use {@link alg}. Removed in v2.0.0. */
+  algorithm?: 'sha256-hmac' | 'ed25519' | string;
   signed_at?: string;
   key_id?: string;
+  /** Wave 2a canonical SHA-256 hex of the signed payload. */
   payload_hash?: string;
+  /**
+   * @deprecated Wave 2a renames this to `payload_hash`. Pre-Wave-2a
+   * servers emitted either a hex string or a nested envelope. Removed
+   * in v2.0.0.
+   */
+  signed_over?: string | Record<string, unknown>;
+  /** Wave 2a: UUIDv4 minted per response for audit lookup. */
+  receipt_id?: string;
+  /** Wave 2a: 16-hex-char fingerprint of the verification key. */
+  verification_key_hint?: string;
   edition_id?: string;
   factor_ids?: readonly string[];
   caller_id?: string;
@@ -46,10 +65,15 @@ export interface SignedReceipt {
 
 export interface VerifiedReceipt {
   verified: true;
+  /** Wave 2a canonical spelling. */
+  alg: string;
+  /** Retained for backwards compatibility with v1.0 / v1.1 callers. */
   algorithm: string;
   key_id: string;
   signed_at: string;
   payload_hash: string;
+  receipt_id?: string;
+  verification_key_hint?: string;
   edition_id?: string;
   factor_ids?: readonly string[];
   caller_id?: string;
@@ -74,51 +98,117 @@ export class ReceiptVerificationError extends Error {
 }
 
 /**
+ * Top-level response keys that may carry the signed receipt. Order
+ * matters: canonical `signed_receipt` is preferred; `_signed_receipt` is
+ * deprecated but still accepted for one release; `receipt` is the
+ * pre-1.0 envelope shape.
+ */
+const RECEIPT_KEY_CANDIDATES = ['signed_receipt', '_signed_receipt', 'receipt'] as const;
+
+const _warnedLegacyKeys = new Set<string>();
+
+function warnDeprecatedReceiptKey(legacy: string, canonical: string): void {
+  if (_warnedLegacyKeys.has(legacy)) return;
+  _warnedLegacyKeys.add(legacy);
+  // Use console.warn so unit tests can spy on it without a logger
+  // framework dep. Matches the Python DeprecationWarning contract.
+  // eslint-disable-next-line no-console
+  console.warn(
+    `[greenlang-factors] Signed receipt key "${legacy}" is deprecated; ` +
+      `server should emit "${canonical}". SDK fallback will be removed in v2.0.0.`,
+  );
+}
+
+/**
+ * Return a receipt dict with Wave 2a canonical keys populated from
+ * legacy aliases if needed. A `console.warn` fires once per alias.
+ */
+function normalizeReceipt(raw: Record<string, unknown>): SignedReceipt {
+  const out: Record<string, unknown> = { ...raw };
+  if (out.alg === undefined && out.algorithm !== undefined) {
+    warnDeprecatedReceiptKey('algorithm', 'alg');
+    out.alg = out.algorithm;
+  }
+  if (out.payload_hash === undefined && out.signed_over !== undefined) {
+    warnDeprecatedReceiptKey('signed_over', 'payload_hash');
+    const so = out.signed_over;
+    if (typeof so === 'string') {
+      out.payload_hash = so;
+    } else if (so && typeof so === 'object') {
+      const envelope = so as Record<string, unknown>;
+      out.payload_hash = (envelope.body_hash ?? envelope.payload_hash) as
+        | string
+        | undefined;
+    }
+  }
+  return out as SignedReceipt;
+}
+
+/**
  * Strip the receipt block from a response so the remaining body can be
  * canonically rehashed. Mirrors the server-side `_extract_payload`.
+ *
+ * Handles every receipt-placement variant (canonical `signed_receipt`,
+ * deprecated `_signed_receipt`, legacy `receipt` sibling, and
+ * `meta.receipt`) so the re-hash matches what the server signed.
  */
 function extractPayload(response: unknown): unknown {
   if (response && typeof response === 'object' && !Array.isArray(response)) {
     const obj = response as Record<string, unknown>;
-    if ('receipt' in obj) {
+    const present = RECEIPT_KEY_CANDIDATES.filter((k) => k in obj);
+    if (present.length > 0) {
       const cleaned: Record<string, unknown> = {};
       for (const [k, v] of Object.entries(obj)) {
-        if (k !== 'receipt') cleaned[k] = v;
+        if (!(present as readonly string[]).includes(k)) cleaned[k] = v;
       }
       return cleaned;
     }
-    if (
-      obj.meta &&
-      typeof obj.meta === 'object' &&
-      'receipt' in (obj.meta as Record<string, unknown>)
-    ) {
+    if (obj.meta && typeof obj.meta === 'object') {
       const meta = obj.meta as Record<string, unknown>;
-      const cleanedMeta: Record<string, unknown> = {};
-      for (const [k, v] of Object.entries(meta)) {
-        if (k !== 'receipt') cleanedMeta[k] = v;
+      const metaPresent = RECEIPT_KEY_CANDIDATES.filter((k) => k in meta);
+      if (metaPresent.length > 0) {
+        const cleanedMeta: Record<string, unknown> = {};
+        for (const [k, v] of Object.entries(meta)) {
+          if (!(metaPresent as readonly string[]).includes(k)) cleanedMeta[k] = v;
+        }
+        return { ...obj, meta: cleanedMeta };
       }
-      const cleaned: Record<string, unknown> = { ...obj, meta: cleanedMeta };
-      return cleaned;
     }
   }
   return response;
 }
 
-/** Locate the receipt block inside `response`, regardless of its envelope shape. */
+/**
+ * Locate the receipt block inside `response`, regardless of its envelope shape.
+ *
+ * Wave 2a preference order: `signed_receipt` (canonical) -> `_signed_receipt`
+ * (deprecated; triggers a console.warn) -> `receipt` (legacy pre-1.0).
+ */
 function extractReceipt(response: unknown): SignedReceipt | undefined {
   if (!response || typeof response !== 'object') return undefined;
   const obj = response as Record<string, unknown>;
-  if (obj.receipt && typeof obj.receipt === 'object') {
-    return obj.receipt as SignedReceipt;
+  for (const key of RECEIPT_KEY_CANDIDATES) {
+    if (obj[key] && typeof obj[key] === 'object') {
+      if (key === '_signed_receipt') {
+        warnDeprecatedReceiptKey('_signed_receipt', 'signed_receipt');
+      }
+      return normalizeReceipt(obj[key] as Record<string, unknown>);
+    }
   }
   if (obj.meta && typeof obj.meta === 'object') {
     const meta = obj.meta as Record<string, unknown>;
-    if (meta.receipt && typeof meta.receipt === 'object') {
-      return meta.receipt as SignedReceipt;
+    for (const key of RECEIPT_KEY_CANDIDATES) {
+      if (meta[key] && typeof meta[key] === 'object') {
+        if (key === '_signed_receipt') {
+          warnDeprecatedReceiptKey('_signed_receipt', 'signed_receipt');
+        }
+        return normalizeReceipt(meta[key] as Record<string, unknown>);
+      }
     }
   }
-  if ('signature' in obj && 'algorithm' in obj) {
-    return obj as unknown as SignedReceipt;
+  // Top-level receipt-shaped dict (either new or legacy).
+  if ('signature' in obj && ('alg' in obj || 'algorithm' in obj)) {
+    return normalizeReceipt(obj);
   }
   return undefined;
 }
@@ -340,12 +430,21 @@ export async function verifyReceipt(
     );
   }
 
-  const algorithm = (options.algorithm ?? receipt.algorithm ?? '')
+  // Wave 2a: canonical field is ``alg``; legacy ``algorithm`` is still
+  // accepted (normalizeReceipt has already copied it forward with a warn).
+  const algorithm = (
+    options.algorithm ??
+    receipt.alg ??
+    receipt.algorithm ??
+    ''
+  )
     .toString()
     .toLowerCase()
     .trim();
   if (!algorithm) {
-    throw new ReceiptVerificationError('Receipt is missing the algorithm field.');
+    throw new ReceiptVerificationError(
+      "Receipt is missing the algorithm field (expected 'alg').",
+    );
   }
 
   if (!receipt.signature) {
@@ -401,10 +500,15 @@ export async function verifyReceipt(
 
   return {
     verified: true,
+    alg: algorithm,
+    // Retained for backwards compat with v1.0 / v1.1 callers that still
+    // read `.algorithm` on the summary.
     algorithm,
-    key_id: receipt.key_id ?? '',
+    key_id: receipt.key_id ?? receipt.verification_key_hint ?? '',
     signed_at: signedAtStr,
     payload_hash: expectedHash,
+    receipt_id: receipt.receipt_id,
+    verification_key_hint: receipt.verification_key_hint,
     edition_id: receipt.edition_id,
     factor_ids: receipt.factor_ids,
     caller_id: receipt.caller_id,

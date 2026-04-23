@@ -892,6 +892,299 @@ paths:
               schema: { type: string }
         '403': { $ref: '#/components/responses/Forbidden' }
 
+  # ==================== W4-C API surfaces ====================
+  # Added by Agent W4-C (R18 / API11..API15). These routes share the
+  # 16-field contract and middleware stack with the rest of /v1.
+
+  /v1/graphql:
+    post:
+      tags: [Resolution]
+      summary: Execute a GraphQL query
+      description: |
+        GraphQL surface mirroring the REST 16-field contract. The schema
+        re-projects `ResolvedFactor`, `QualityEnvelope`,
+        `UncertaintyEnvelope`, `LicensingEnvelope`, `GasBreakdown`,
+        `ChosenFactor`, `SourceDescriptor`, and `DeprecationStatus`
+        one-to-one so neither surface can leak fields the other withholds.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [query]
+              properties:
+                query: { type: string, example: "{ methodPacks { packId name } }" }
+                variables: { type: object, additionalProperties: true }
+                operationName: { type: string, nullable: true }
+      responses:
+        '200':
+          description: GraphQL execution result (may contain errors[])
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { type: object, nullable: true }
+                  errors:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        message: { type: string }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    get:
+      tags: [Resolution]
+      summary: GraphiQL interactive UI (dev only)
+      responses:
+        '200':
+          description: HTML page with GraphiQL (dev environments)
+          content:
+            text/html:
+              schema: { type: string }
+        '404':
+          description: UI disabled in staging/production.
+
+  /v1/graphql/schema:
+    get:
+      tags: [Resolution]
+      summary: Return the GraphQL SDL
+      responses:
+        '200':
+          description: SDL text for client codegen
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  sdl: { type: string }
+
+  /v1/batch/resolve:
+    post:
+      tags: [Bulk]
+      summary: Submit a batch resolution job (up to 10k rows)
+      description: |
+        Accepts `application/json` (array or `{requests: [...]}`) or
+        `text/csv`. Rate-limited per tier: Community N/A, Pro 10k/day,
+        Platform 100k/day, Enterprise unlimited. Hard cap 10k rows per
+        submission regardless of tier.
+      responses:
+        '202':
+          description: Batch queued
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  batch_id: { type: string }
+                  status: { type: string, enum: [queued] }
+                  status_url: { type: string, format: uri }
+                  submitted_at: { type: string, format: date-time }
+                  request_count: { type: integer }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '413': { description: Too many rows (>10000). }
+        '415': { description: Unsupported content type. }
+        '429': { description: Per-tier daily cap exceeded. }
+
+  /v1/batch/{batch_id}:
+    get:
+      tags: [Bulk]
+      summary: Get batch job status
+      parameters:
+        - in: path
+          name: batch_id
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Job status + progress + result/error/signed-receipt URLs
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  batch_id: { type: string }
+                  status:
+                    type: string
+                    enum: [queued, running, completed, failed, cancelled]
+                  progress: { type: number }
+                  result_file_url: { type: string, format: uri, nullable: true }
+                  error_file_url: { type: string, format: uri, nullable: true }
+                  signed_receipt_manifest_url: { type: string, format: uri, nullable: true }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /v1/batch/{batch_id}/results:
+    get:
+      tags: [Bulk]
+      summary: Paginate batch job results
+      parameters:
+        - in: path
+          name: batch_id
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Results page
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  job_id: { type: string }
+                  status: { type: string }
+                  results:
+                    type: array
+                    items: { type: object, additionalProperties: true }
+                  cursor: { type: integer }
+                  total: { type: integer }
+                  has_more: { type: boolean }
+
+  /v1/batch/{batch_id}/errors:
+    get:
+      tags: [Bulk]
+      summary: Retrieve batch job errors
+      parameters:
+        - in: path
+          name: batch_id
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Error log
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  batch_id: { type: string }
+                  errors:
+                    type: array
+                    items: { type: object, additionalProperties: true }
+
+  /v1/explain/subscribe:
+    post:
+      tags: [Explainability]
+      summary: Opt in to hosted explain log retention (Pro+)
+      responses:
+        '200':
+          description: Subscription state
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tenant_id: { type: string }
+                  tier: { type: string }
+                  enabled: { type: boolean }
+                  retention_days: { type: integer, nullable: true }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    delete:
+      tags: [Explainability]
+      summary: Cancel hosted explain retention
+      responses:
+        '200': { description: Subscription disabled }
+
+  /v1/explain/history:
+    get:
+      tags: [Explainability]
+      summary: List past /resolve explain payloads
+      parameters:
+        - in: query
+          name: factor_id
+          schema: { type: string }
+        - in: query
+          name: from
+          schema: { type: string, format: date-time }
+        - in: query
+          name: to
+          schema: { type: string, format: date-time }
+        - in: query
+          name: limit
+          schema: { type: integer, default: 100, maximum: 10000 }
+        - in: query
+          name: offset
+          schema: { type: integer, default: 0 }
+      responses:
+        '200':
+          description: Paged list of prior explains (tenant-scoped)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count: { type: integer }
+                  items:
+                    type: array
+                    items: { type: object, additionalProperties: true }
+
+  /v1/explain/history/{receipt_id}:
+    get:
+      tags: [Explainability]
+      summary: Retrieve a specific retained explain payload
+      parameters:
+        - in: path
+          name: receipt_id
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: The retained explain record
+          content:
+            application/json:
+              schema: { type: object, additionalProperties: true }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /v1/explain/history/purge:
+    post:
+      tags: [Explainability]
+      summary: Enterprise-tier tenant-initiated purge
+      responses:
+        '200':
+          description: Deleted row count
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  deleted: { type: integer }
+                  tenant_id: { type: string }
+
+  /v1/admin/webhooks/dead-letter:
+    get:
+      tags: [Webhooks]
+      summary: List dead-letter webhook deliveries (admin)
+      responses:
+        '200':
+          description: DLQ entries
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count: { type: integer }
+                  items:
+                    type: array
+                    items: { type: object, additionalProperties: true }
+
+  /v1/admin/webhooks/dead-letter/{delivery_id}/replay:
+    post:
+      tags: [Webhooks]
+      summary: Replay a dead-letter webhook delivery (admin)
+      parameters:
+        - in: path
+          name: delivery_id
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: New delivery receipt
+          content:
+            application/json:
+              schema: { type: object, additionalProperties: true }
+
 # ============================================================
 # Components
 # ============================================================

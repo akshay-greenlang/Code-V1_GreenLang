@@ -1,0 +1,63 @@
+---
+# =============================================================================
+# PrometheusRule patch - factors-api (production)
+# =============================================================================
+# Tighter SLO thresholds for production:
+#   p95 latency burn : 2x faster fire than staging
+#   error-rate burn  : 1% trigger (staging = 2%)
+#   availability     : 99.9% vs 99.5% staging
+# =============================================================================
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: factors-api
+spec:
+  groups:
+    - name: factors-api-production.slo
+      interval: 30s
+      rules:
+        # Fast burn: 2% budget / 1 hour => page immediately
+        - alert: FactorsSLOLatencyFastBurn
+          expr: |
+            (
+              sum(rate(factors_http_request_duration_seconds_bucket{le="0.5",env="production"}[5m]))
+              /
+              sum(rate(factors_http_request_duration_seconds_count{env="production"}[5m]))
+            ) < 0.95
+          for: 2m
+          labels:
+            severity: critical
+            slo: latency_p95
+            env: production
+          annotations:
+            summary: "Fast burn on factors p95 latency SLO (production)"
+            runbook_url: "https://github.com/greenlang/greenlang/blob/main/deployment/runbooks/factors_incidents.md#p95-slo-burn"
+        - alert: FactorsSLOErrorRateFastBurn
+          expr: |
+            (
+              sum(rate(factors_http_requests_total{code=~"5..",env="production"}[5m]))
+              /
+              sum(rate(factors_http_requests_total{env="production"}[5m]))
+            ) > 0.01
+          for: 2m
+          labels:
+            severity: critical
+            slo: error_rate
+            env: production
+          annotations:
+            summary: "Fast burn on factors error-rate SLO (production)"
+            runbook_url: "https://github.com/greenlang/greenlang/blob/main/deployment/runbooks/factors_incidents.md#error-rate-spike"
+        - alert: FactorsAvailabilityBelowTarget
+          expr: |
+            (
+              1
+              - sum(rate(factors_http_requests_total{code=~"5..",env="production"}[30m]))
+              / sum(rate(factors_http_requests_total{env="production"}[30m]))
+            ) < 0.999
+          for: 10m
+          labels:
+            severity: critical
+            slo: availability
+            env: production
+          annotations:
+            summary: "Factors availability below 99.9% (30m window, production)"

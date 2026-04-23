@@ -37,6 +37,7 @@ from .errors import (
     EditionMismatchError,
     EditionPinError,
     EntitlementError,
+    FactorCannotResolveSafelyError,
     FactorNotFoundError,
     FactorsAPIError,
     LicenseError,
@@ -62,29 +63,40 @@ from .models import (
     ActivitySchema,
     AuditBundle,
     BatchJobHandle,
+    ChosenFactor,
     CoverageReport,
+    DeprecationStatus,
     Edition,
     Factor,
     FactorDiff,
     FactorMatch,
     GasBreakdown,
     Jurisdiction,
+    LicensingEnvelope,
     MethodPack,
     Override,
+    QualityEnvelope,
     QualityScore,
     ResolutionRequest,
     ResolvedFactor,
     SearchResponse,
+    SignedReceipt,
     Source,
+    SourceDescriptor,
     Uncertainty,
+    UncertaintyEnvelope,
 )
 
-__version__ = "1.0.0"
+__version__ = "1.2.0"
 """Public version string for the GreenLang Factors Python SDK.
 
-Pinned at 1.0.0 for the FY27 launch (planned 2026-05-01). This value is
-the source of truth read by ``setup.py``/``pyproject.toml`` build
-metadata and by the ``greenlang-factors --version`` CLI flag.
+Bumped to 1.2.0 for Wave 2 / Wave 2a / Wave 2.5 envelope support:
+ - Signed receipt key renames (signed_receipt / alg / payload_hash).
+ - New typed envelope models (ChosenFactor, SourceDescriptor, quality
+   composite FQS 0-100, UncertaintyEnvelope, LicensingEnvelope,
+   DeprecationStatus, SignedReceipt).
+ - ``audit_text`` + ``audit_text_draft`` on :class:`ResolvedFactor`.
+ - :class:`FactorCannotResolveSafelyError` for resolver 422 refusals.
 """
 
 __all__ = [
@@ -121,11 +133,20 @@ __all__ = [
     "Override",
     "CoverageReport",
     "BatchJobHandle",
+    # Wave 2 envelopes
+    "ChosenFactor",
+    "SourceDescriptor",
+    "QualityEnvelope",
+    "UncertaintyEnvelope",
+    "LicensingEnvelope",
+    "DeprecationStatus",
+    "SignedReceipt",
     # Errors
     "FactorsAPIError",
     "RateLimitError",
     "TierError",
     "FactorNotFoundError",
+    "FactorCannotResolveSafelyError",
     "LicenseError",
     "LicensingGapError",
     "EntitlementError",

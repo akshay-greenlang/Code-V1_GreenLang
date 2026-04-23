@@ -1,0 +1,72 @@
+# -*- coding: utf-8 -*-
+"""
+LIME Explainer for GL-005 COMBUSENSE Combustion Decisions
+
+Implements LIME (Local Interpretable Model-agnostic Explanations) for
+combustion optimization decisions. Creates locally faithful linear models
+to explain individual predictions.
+
+Zero-Hallucination Guarantee:
+    - All calculations are deterministic Python arithmetic
+    - No ML models in the calculation path
+    - Complete provenance tracking with SHA-256 hashes
+    - Reproducible with fixed random seed
+
+Reference:
+    Ribeiro et al. "Why Should I Trust You?": Explaining the Predictions
+    of Any Classifier. KDD 2016.
+
+Author: GL-BackendDeveloper
+Version: 1.0.0
+"""
+
+from typing import Dict, List, Optional, Any, Tuple, Protocol
+from pydantic import BaseModel, Field
+from enum import Enum
+from dataclasses import dataclass
+import hashlib
+import logging
+import numpy as np
+import uuid
+from datetime import datetime
+
+logger = logging.getLogger(__name__)
+
+
+class ImpactDirection(str, Enum):
+    """Direction of feature impact on prediction."""
+    INCREASE = "increase"
+    DECREASE = "decrease"
+    NO_CHANGE = "no_change"
+
+
+class ConfidenceLevel(str, Enum):
+    """Confidence level categories for explanations."""
+    VERY_HIGH = "very_high"
+    HIGH = "high"
+    MEDIUM = "medium"
+    LOW = "low"
+    VERY_LOW = "very_low"
+
+
+class ExplanationType(str, Enum):
+    """Type of explanation method."""
+    LIME = "lime"
+    SHAP = "shap"
+    COUNTEREACSUAL = "counterfactual"
+
+
+class CombustionParameter(str, Enum):
+    """Combustion-specific parameters for explainability."""
+    O2_PERCENT = "o2_percent"
+    CO_PPM = "co_ppm"
+    TEMPERATURE = "temperature"
+    LOAD_PERCENT = "load_percent"
+    FUEL_FLOW = "fuel_flow"
+    AIR_FLOW = "air_flow"
+    EXCESS_AIR = "excess_air"
+    EFFICIENCY = "efficiency"
+    NOX_PPM = "nox_ppm"
+    FLAME_TEMP = "flame_temp"
+    AFR = "air_fuel_ratio"
+    STABILITY = "stability"

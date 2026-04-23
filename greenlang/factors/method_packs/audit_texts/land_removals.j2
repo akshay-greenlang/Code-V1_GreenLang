@@ -1,0 +1,33 @@
+{# ---
+approved: false
+approved_by: null
+approved_at: null
+methodology_lead: null
+standard_citation: "GHG Protocol Land Sector and Removals Standard (2024), Chapters 6-9; IPCC 2006 GL + 2019 Refinement Volume 4 (AFOLU); ICVCM Core Carbon Principles (2023), paragraphs 4 (Permanence) and 8 (Additionality + Baselines)"
+--- #}
+Factor {{ factor.chosen_factor.name }} ({{ factor.chosen_factor.id }}) was
+selected under the Land Sector & Removals method profile
+({{ factor.method_pack }}), aligned with the GHG Protocol Land Sector
+and Removals Standard (2024) Chapters 6-9, IPCC 2006 GL + 2019
+Refinement Volume 4, and — for project-based removals — the ICVCM Core
+Carbon Principles (2023). Source: {{ factor.source.authority }} dataset
+version {{ factor.source.version }}, vintage {{ factor.source.vintage }}.
+GWP basis: {{ factor.gwp_basis }}. Fallback tier:
+{{ factor.fallback_rank }} ({{ factor.step_label }}) — the v0.2 chain
+runs customer_removal -> supplier_removal -> project_level ->
+national_default (no global-default fall-through).
+
+Land-use category: {{ factor.land_use_category }}. Sequestration basis:
+{{ factor.sequestration_basis }}. Removal basis: {{ factor.removal_basis }}.
+Permanence class: {{ factor.permanence_class_v2 }} (GHG LSR Ch. 9).
+Reversal-risk flag: {{ factor.reversal_risk_flag }}; buffer-pool
+contribution: {{ factor.buffer_pool_pct }}. Biogenic accounting:
+{{ factor.biogenic_accounting_treatment }}. For project-based removals
+the resolver enforces ICVCM-CCP compliance (paragraphs 4, 8):
+verification via {{ factor.verification_standard }} is recorded on
+the receipt and must appear on the ICVCM-CCP approved list.
+
+{% if factor.fallback_trace -%}
+Fallback trace:
+{%- for step in factor.fallback_trace %} {{ step.rank }}->{{ step.label }}{% if not loop.last %};{% endif %}{% endfor %}.
+{%- endif %}

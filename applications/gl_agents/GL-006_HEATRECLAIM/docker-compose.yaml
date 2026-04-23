@@ -1,0 +1,128 @@
+# GL-006 HEATRECLAIM - Docker Compose Configuration
+#
+# Usage:
+#   Development:  docker-compose up -d
+#   Production:   docker-compose -f docker-compose.yaml -f docker-compose.prod.yaml up -d
+#   Test:         docker-compose run --rm heatreclaim pytest
+
+version: '3.9'
+
+services:
+  heatreclaim:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    container_name: gl-006-heatreclaim
+    image: gl-006-heatreclaim:latest
+    ports:
+      - "8006:8006"
+    environment:
+      - GL_AGENT_ID=GL-006
+      - GL_AGENT_NAME=HEATRECLAIM
+      - GL_ENV=development
+      - GL_LOG_LEVEL=INFO
+      - GL_DEBUG=true
+      - PYTHONPATH=/app
+    volumes:
+      - .:/app:cached
+      - heatreclaim_cache:/app/.cache
+    networks:
+      - gl-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8006/api/v1/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.heatreclaim.rule=Host(`heatreclaim.localhost`)"
+      - "traefik.http.services.heatreclaim.loadbalancer.server.port=8006"
+
+  # Redis for caching and job queue
+  redis:
+    image: redis:7-alpine
+    container_name: gl-006-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - gl-network
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # Kafka for event streaming (optional)
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: gl-006-kafka
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      CLUSTER_ID: 'gl006-heatreclaim-cluster'
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+    networks:
+      - gl-network
+    profiles:
+      - streaming
+
+  # Prometheus for metrics (optional)
+  prometheus:
+    image: prom/prometheus:v2.48.0
+    container_name: gl-006-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./deploy/prometheus.yaml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    networks:
+      - gl-network
+    profiles:
+      - monitoring
+
+  # Grafana for dashboards (optional)
+  grafana:
+    image: grafana/grafana:10.2.0
+    container_name: gl-006-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./deploy/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+    networks:
+      - gl-network
+    depends_on:
+      - prometheus
+    profiles:
+      - monitoring
+
+networks:
+  gl-network:
+    driver: bridge
+    name: gl-agents-network
+
+volumes:
+  heatreclaim_cache:
+  redis_data:
+  kafka_data:
+  prometheus_data:
+  grafana_data:

@@ -18,15 +18,23 @@ on:
   pull_request:
     branches: [main, master]
     paths:
+      - 'greenlang/factors/resolution/**'
+      - 'greenlang/factors/matching/**'
+      - 'greenlang/factors/method_packs/**'
+      - 'greenlang/factors/data/**'
       - 'greenlang/factors/**'
-      - 'greenlang/factors/data/gold_set/**'
       - 'tests/factors/test_gold_set_eval.py'
+      - 'tests/factors/matching/test_gold_eval_gate.py'
       - '.github/workflows/factors_gold_eval.yml'
   push:
     branches: [main, master]
     paths:
       - 'greenlang/factors/**'
-      - 'greenlang/factors/data/gold_set/**'
+      - 'greenlang/factors/data/**'
+  # Nightly run on the default branch so the baseline summary stays fresh
+  # and regressions introduced outside the touched-paths filter are caught.
+  schedule:
+    - cron: '17 3 * * *'
   workflow_dispatch:
 
 permissions:
@@ -74,7 +82,7 @@ jobs:
           assert total >= 300, f"need >=300 cases, found {total}"
           PY
 
-      - name: Run gold-set evaluation
+      - name: Run gold-set evaluation (legacy fixture)
         id: eval
         run: |
           mkdir -p artifacts
@@ -84,6 +92,33 @@ jobs:
             -o log_cli=true -o log_cli_level=INFO \
             | tee artifacts/gold_eval_pytest.log
           echo "pytest_exit=$?" >> "$GITHUB_OUTPUT"
+
+      - name: Run gold-set evaluation gate (new - T3/T4)
+        id: eval_gate
+        run: |
+          mkdir -p build artifacts
+          set +e
+          pytest tests/factors/matching/test_gold_eval_gate.py -v \
+            --tb=short \
+            -o log_cli=true -o log_cli_level=INFO \
+            | tee artifacts/gold_eval_gate_pytest.log
+          gate_exit=$?
+          echo "gate_exit=$gate_exit" >> "$GITHUB_OUTPUT"
+          # Copy the CSV artifact into /artifacts so the upload step picks it up
+          if [ -f build/gold_eval_report.csv ]; then
+            cp build/gold_eval_report.csv artifacts/gold_eval_report.csv
+          fi
+
+      - name: Upload gold_eval_report.csv (new gate)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gold-eval-report-csv-${{ github.run_id }}
+          path: |
+            build/gold_eval_report.csv
+            artifacts/gold_eval_gate_pytest.log
+          retention-days: 30
+          if-no-files-found: warn
 
       - name: Print summary JSON
         if: always()

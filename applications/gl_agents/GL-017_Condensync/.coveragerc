@@ -1,0 +1,156 @@
+# GL-017_Condensync Coverage Configuration
+# Condenser Optimization Agent
+# Version: 1.0.0
+
+[run]
+# Source directories to measure
+source =
+    core
+    api
+    calculators
+    integration
+    explainability
+    audit
+    diagnostics
+    monitoring
+    observability
+    optimization
+    reporting
+    models
+
+# Branch coverage
+branch = True
+
+# Parallel execution support
+parallel = True
+
+# Context for organizing coverage data
+context = ${CONTEXT}
+
+# Files and directories to omit from coverage
+omit =
+    */tests/*
+    */test_*
+    */__pycache__/*
+    */.venv/*
+    */venv/*
+    */env/*
+    */migrations/*
+    */conftest.py
+    */setup.py
+    */__init__.py
+    */config.py
+    */settings.py
+    */manage.py
+    */wsgi.py
+    */asgi.py
+
+# Dynamic context (function level)
+dynamic_context = test_function
+
+[paths]
+# Path mappings for combining coverage from different sources
+source =
+    .
+    /app
+    /home/runner/work/gl-017-condensync/gl-017-condensync
+
+[report]
+# Minimum coverage percentage required
+fail_under = 80
+
+# Precision of coverage percentages
+precision = 2
+
+# Show missing lines
+show_missing = True
+
+# Skip covered files in report
+skip_covered = False
+
+# Skip empty files
+skip_empty = True
+
+# Exclude patterns from reporting
+exclude_lines =
+    # Standard exclusions
+    pragma: no cover
+
+    # Debug-only code
+    def __repr__
+    def __str__
+
+    # Type checking blocks
+    if TYPE_CHECKING:
+    if typing.TYPE_CHECKING:
+
+    # Abstract methods
+    @abstractmethod
+    @abc.abstractmethod
+
+    # Defensive assertions
+    raise AssertionError
+    raise NotImplementedError
+
+    # Unreachable code markers
+    if 0:
+    if False:
+    if __name__ == .__main__.:
+
+    # Exception handling noise
+    except ImportError:
+    except ModuleNotFoundError:
+
+    # Protocol definitions
+    @overload
+    class .*\bProtocol\):
+
+    # Deprecation warnings
+    @deprecated
+    warnings.warn
+
+    # Logging statements (optional)
+    # logger.debug
+    # logging.debug
+
+# Partial branches to exclude
+partial_branches =
+    pragma: no branch
+    if TYPE_CHECKING:
+
+# Sort report by coverage percentage
+sort = Cover
+
+[html]
+# HTML report output directory
+directory = htmlcov
+
+# Title for HTML report
+title = GL-017 Condensync Coverage Report
+
+# Extra CSS for HTML report
+extra_css =
+
+# Show contexts in HTML report
+show_contexts = True
+
+[xml]
+# XML report output file
+output = coverage.xml
+
+# Package name for XML report
+package_depth = 3
+
+[json]
+# JSON report output file
+output = coverage.json
+
+# Pretty print JSON
+pretty_print = True
+
+# Show contexts in JSON report
+show_contexts = True
+
+[lcov]
+# LCOV report output file
+output = coverage.lcov

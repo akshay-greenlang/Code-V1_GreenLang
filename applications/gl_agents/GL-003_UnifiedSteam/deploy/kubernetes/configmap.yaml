@@ -1,0 +1,38 @@
+# GL-003 UnifiedSteam ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gl-003-unifiedsteam-config
+  namespace: greenlang
+  labels:
+    app: gl-003-unifiedsteam
+    agent-id: GL-003
+    codename: UNIFIEDSTEAM
+data:
+  ENVIRONMENT: "production"
+  LOG_LEVEL: "INFO"
+  
+  # Steam System Parameters
+  STEAM_HEADER_PRESSURE_SETPOINT: "150.0"
+  STEAM_HEADER_PRESSURE_TOLERANCE: "5.0"
+  BOILER_EFFICIENCY_TARGET: "0.85"
+  CONDENSATE_RECOVERY_TARGET: "0.90"
+  
+  # Optimization Parameters
+  OPTIMIZATION_INTERVAL_MINUTES: "15"
+  LOAD_BALANCING_ENABLED: "true"
+  PREDICTIVE_DEMAND_ENABLED: "true"
+  
+  # Safety Parameters
+  HIGH_PRESSURE_ALARM: "175.0"
+  LOW_PRESSURE_ALARM: "125.0"
+  EMERGENCY_SHUTDOWN_ENABLED: "true"
+  
+  # Feature Flags
+  FEATURE_STEAM_NETWORK_OPTIMIZATION: "true"
+  FEATURE_BOILER_SEQUENCING: "true"
+  FEATURE_DEMAND_FORECASTING: "true"
+  
+  # API Configuration
+  API_RATE_LIMIT: "1000"
+  API_TIMEOUT_SECONDS: "30"

@@ -1,0 +1,505 @@
+{
+  "dashboard": {
+    "title": "GL-005 Combustion Performance Metrics",
+    "uid": "gl005-combustion",
+    "tags": ["gl-005", "combustion", "performance"],
+    "timezone": "UTC",
+    "schemaVersion": 38,
+    "version": 1,
+    "refresh": "10s",
+    "time": {
+      "from": "now-1h",
+      "to": "now"
+    },
+    "panels": [
+      {
+        "id": 1,
+        "title": "Combustion Stability Index",
+        "type": "gauge",
+        "gridPos": {"h": 8, "w": 6, "x": 0, "y": 0},
+        "targets": [{
+          "expr": "gl005_stability_index",
+          "legendFormat": "Stability Index"
+        }],
+        "fieldConfig": {
+          "defaults": {
+            "min": 0,
+            "max": 1,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 0.5, "color": "yellow"},
+                {"value": 0.8, "color": "green"}
+              ]
+            },
+            "unit": "percentunit"
+          }
+        },
+        "options": {
+          "showThresholdLabels": true,
+          "showThresholdMarkers": true
+        }
+      },
+      {
+        "id": 2,
+        "title": "Heat Output (MJ/hr)",
+        "type": "timeseries",
+        "gridPos": {"h": 8, "w": 9, "x": 6, "y": 0},
+        "targets": [
+          {
+            "expr": "gl005_heat_output_mj_per_hr",
+            "legendFormat": "Actual Heat Output"
+          },
+          {
+            "expr": "gl005_heat_output_target_mj_per_hr",
+            "legendFormat": "Target Heat Output"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "palette-classic"},
+            "unit": "MJ/h"
+          }
+        }
+      },
+      {
+        "id": 3,
+        "title": "Heat Output Deviation",
+        "type": "stat",
+        "gridPos": {"h": 8, "w": 3, "x": 15, "y": 0},
+        "targets": [{
+          "expr": "abs(gl005_heat_output_mj_per_hr - gl005_heat_output_target_mj_per_hr) / gl005_heat_output_target_mj_per_hr * 100",
+          "legendFormat": "Deviation %"
+        }],
+        "fieldConfig": {
+          "defaults": {
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "green"},
+                {"value": 3, "color": "yellow"},
+                {"value": 5, "color": "red"}
+              ]
+            },
+            "unit": "percent"
+          }
+        }
+      },
+      {
+        "id": 4,
+        "title": "Fuel Flow Rate (kg/hr)",
+        "type": "timeseries",
+        "gridPos": {"h": 8, "w": 9, "x": 0, "y": 8},
+        "targets": [{
+          "expr": "gl005_fuel_flow_kg_per_hr",
+          "legendFormat": "Fuel Flow"
+        }],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "palette-classic"},
+            "unit": "kg/h"
+          }
+        }
+      },
+      {
+        "id": 5,
+        "title": "Air Flow Rate (kg/hr)",
+        "type": "timeseries",
+        "gridPos": {"h": 8, "w": 9, "x": 9, "y": 8},
+        "targets": [{
+          "expr": "gl005_air_flow_kg_per_hr",
+          "legendFormat": "Air Flow"
+        }],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "palette-classic"},
+            "unit": "kg/h"
+          }
+        }
+      },
+      {
+        "id": 6,
+        "title": "Fuel-Air Ratio",
+        "type": "gauge",
+        "gridPos": {"h": 8, "w": 6, "x": 18, "y": 8},
+        "targets": [{
+          "expr": "gl005_fuel_air_ratio",
+          "legendFormat": "F/A Ratio"
+        }],
+        "fieldConfig": {
+          "defaults": {
+            "min": 0,
+            "max": 0.1,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 0.055, "color": "green"},
+                {"value": 0.075, "color": "red"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 7,
+        "title": "Excess Air %",
+        "type": "timeseries",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 16},
+        "targets": [
+          {
+            "expr": "gl005_excess_air_percent",
+            "legendFormat": "Excess Air"
+          },
+          {
+            "expr": "gl005_excess_air_target_percent",
+            "legendFormat": "Target"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "palette-classic"},
+            "unit": "percent"
+          }
+        }
+      },
+      {
+        "id": 8,
+        "title": "O2 Level in Flue Gas",
+        "type": "timeseries",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 16},
+        "targets": [{
+          "expr": "gl005_o2_percent",
+          "legendFormat": "O2 %"
+        }],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "palette-classic"},
+            "unit": "percent",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 2, "color": "green"},
+                {"value": 10, "color": "yellow"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 9,
+        "title": "NOx Emissions (ppm)",
+        "type": "timeseries",
+        "gridPos": {"h": 8, "w": 8, "x": 0, "y": 24},
+        "targets": [{
+          "expr": "gl005_emissions_nox_ppm",
+          "legendFormat": "NOx"
+        }],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "thresholds"},
+            "unit": "ppm",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "green"},
+                {"value": 40, "color": "yellow"},
+                {"value": 50, "color": "red"}
+              ]
+            }
+          }
+        },
+        "options": {
+          "legend": {"displayMode": "list", "placement": "bottom"}
+        }
+      },
+      {
+        "id": 10,
+        "title": "CO Emissions (ppm)",
+        "type": "timeseries",
+        "gridPos": {"h": 8, "w": 8, "x": 8, "y": 24},
+        "targets": [{
+          "expr": "gl005_emissions_co_ppm",
+          "legendFormat": "CO"
+        }],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "thresholds"},
+            "unit": "ppm",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "green"},
+                {"value": 80, "color": "yellow"},
+                {"value": 100, "color": "red"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 11,
+        "title": "CO2 Emissions (%)",
+        "type": "timeseries",
+        "gridPos": {"h": 8, "w": 8, "x": 16, "y": 24},
+        "targets": [{
+          "expr": "gl005_emissions_co2_percent",
+          "legendFormat": "CO2"
+        }],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "palette-classic"},
+            "unit": "percent"
+          }
+        }
+      },
+      {
+        "id": 12,
+        "title": "Combustion Efficiency %",
+        "type": "gauge",
+        "gridPos": {"h": 8, "w": 8, "x": 0, "y": 32},
+        "targets": [{
+          "expr": "gl005_combustion_efficiency_percent",
+          "legendFormat": "Efficiency"
+        }],
+        "fieldConfig": {
+          "defaults": {
+            "min": 0,
+            "max": 100,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 80, "color": "yellow"},
+                {"value": 90, "color": "green"}
+              ]
+            },
+            "unit": "percent"
+          }
+        }
+      },
+      {
+        "id": 13,
+        "title": "Thermal Efficiency %",
+        "type": "gauge",
+        "gridPos": {"h": 8, "w": 8, "x": 8, "y": 32},
+        "targets": [{
+          "expr": "gl005_thermal_efficiency_percent",
+          "legendFormat": "Thermal Efficiency"
+        }],
+        "fieldConfig": {
+          "defaults": {
+            "min": 0,
+            "max": 100,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 75, "color": "yellow"},
+                {"value": 85, "color": "green"}
+              ]
+            },
+            "unit": "percent"
+          }
+        }
+      },
+      {
+        "id": 14,
+        "title": "Heat Release Rate (MW)",
+        "type": "timeseries",
+        "gridPos": {"h": 8, "w": 8, "x": 16, "y": 32},
+        "targets": [{
+          "expr": "gl005_heat_release_rate_mw",
+          "legendFormat": "Heat Release Rate"
+        }],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "palette-classic"},
+            "unit": "MW"
+          }
+        }
+      },
+      {
+        "id": 15,
+        "title": "Furnace Temperature (°C)",
+        "type": "timeseries",
+        "gridPos": {"h": 8, "w": 8, "x": 0, "y": 40},
+        "targets": [{
+          "expr": "gl005_furnace_temperature_c",
+          "legendFormat": "Furnace Temp"
+        }],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "palette-classic"},
+            "unit": "celsius",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "blue"},
+                {"value": 1200, "color": "green"},
+                {"value": 1400, "color": "red"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 16,
+        "title": "Flue Gas Temperature (°C)",
+        "type": "timeseries",
+        "gridPos": {"h": 8, "w": 8, "x": 8, "y": 40},
+        "targets": [{
+          "expr": "gl005_flue_gas_temperature_c",
+          "legendFormat": "Flue Gas Temp"
+        }],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "palette-classic"},
+            "unit": "celsius"
+          }
+        }
+      },
+      {
+        "id": 17,
+        "title": "Flame Intensity",
+        "type": "gauge",
+        "gridPos": {"h": 8, "w": 8, "x": 16, "y": 40},
+        "targets": [{
+          "expr": "gl005_flame_intensity_percent",
+          "legendFormat": "Flame Intensity"
+        }],
+        "fieldConfig": {
+          "defaults": {
+            "min": 0,
+            "max": 100,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 30, "color": "yellow"},
+                {"value": 50, "color": "green"}
+              ]
+            },
+            "unit": "percent"
+          }
+        }
+      },
+      {
+        "id": 18,
+        "title": "Fuel Pressure (bar)",
+        "type": "timeseries",
+        "gridPos": {"h": 6, "w": 8, "x": 0, "y": 48},
+        "targets": [{
+          "expr": "gl005_fuel_pressure_bar",
+          "legendFormat": "Fuel Pressure"
+        }],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "palette-classic"},
+            "unit": "bar"
+          }
+        }
+      },
+      {
+        "id": 19,
+        "title": "Air Pressure (bar)",
+        "type": "timeseries",
+        "gridPos": {"h": 6, "w": 8, "x": 8, "y": 48},
+        "targets": [{
+          "expr": "gl005_air_pressure_bar",
+          "legendFormat": "Air Pressure"
+        }],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "palette-classic"},
+            "unit": "bar"
+          }
+        }
+      },
+      {
+        "id": 20,
+        "title": "Furnace Draft (mbar)",
+        "type": "timeseries",
+        "gridPos": {"h": 6, "w": 8, "x": 16, "y": 48},
+        "targets": [{
+          "expr": "gl005_furnace_draft_mbar",
+          "legendFormat": "Draft"
+        }],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "palette-classic"},
+            "unit": "mbar"
+          }
+        }
+      },
+      {
+        "id": 21,
+        "title": "Oscillation Frequency (Hz)",
+        "type": "timeseries",
+        "gridPos": {"h": 6, "w": 12, "x": 0, "y": 54},
+        "targets": [{
+          "expr": "gl005_oscillation_frequency_hz",
+          "legendFormat": "Oscillation Frequency"
+        }],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "palette-classic"},
+            "unit": "Hz"
+          }
+        }
+      },
+      {
+        "id": 22,
+        "title": "Oscillation Amplitude",
+        "type": "timeseries",
+        "gridPos": {"h": 6, "w": 12, "x": 12, "y": 54},
+        "targets": [{
+          "expr": "gl005_oscillation_amplitude_percent",
+          "legendFormat": "Amplitude"
+        }],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "thresholds"},
+            "unit": "percent",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "green"},
+                {"value": 5, "color": "yellow"},
+                {"value": 10, "color": "red"}
+              ]
+            }
+          }
+        }
+      }
+    ],
+    "annotations": {
+      "list": [
+        {
+          "name": "Control Actions",
+          "datasource": "Prometheus",
+          "enable": true,
+          "expr": "changes(gl005_control_actions_total[1m]) > 0",
+          "iconColor": "blue",
+          "tagKeys": "action_type"
+        },
+        {
+          "name": "Stability Warnings",
+          "datasource": "Prometheus",
+          "enable": true,
+          "expr": "gl005_stability_index < 0.7",
+          "iconColor": "yellow"
+        },
+        {
+          "name": "Emissions Violations",
+          "datasource": "Prometheus",
+          "enable": true,
+          "expr": "gl005_emissions_nox_ppm > 50 OR gl005_emissions_co_ppm > 100",
+          "iconColor": "red"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "_seed_note": "Australian NGA Factors grid average + LGC surrender share for residual-mix derivation. Source DCCEEW annual publication under CC-BY-4.0.",
+  "rows": [
+    {"region": "NSW", "financial_year": "2023-24", "grid_avg_kg_co2e_per_kwh": 0.68, "lgc_surrendered_share": 0.24, "version": "NGA-2024-v1"},
+    {"region": "QLD", "financial_year": "2023-24", "grid_avg_kg_co2e_per_kwh": 0.73, "lgc_surrendered_share": 0.20, "version": "NGA-2024-v1"},
+    {"region": "VIC", "financial_year": "2023-24", "grid_avg_kg_co2e_per_kwh": 0.85, "lgc_surrendered_share": 0.28, "version": "NGA-2024-v1"},
+    {"region": "SA",  "financial_year": "2023-24", "grid_avg_kg_co2e_per_kwh": 0.25, "lgc_surrendered_share": 0.55, "version": "NGA-2024-v1"},
+    {"region": "TAS", "financial_year": "2023-24", "grid_avg_kg_co2e_per_kwh": 0.17, "lgc_surrendered_share": 0.85, "version": "NGA-2024-v1"},
+    {"region": "WA",  "financial_year": "2023-24", "grid_avg_kg_co2e_per_kwh": 0.51, "lgc_surrendered_share": 0.22, "version": "NGA-2024-v1"},
+    {"region": "NT",  "financial_year": "2023-24", "grid_avg_kg_co2e_per_kwh": 0.56, "lgc_surrendered_share": 0.05, "version": "NGA-2024-v1"},
+    {"region": "NSW", "financial_year": "2022-23", "grid_avg_kg_co2e_per_kwh": 0.71, "lgc_surrendered_share": 0.22, "version": "NGA-2023-v1"},
+    {"region": "QLD", "financial_year": "2022-23", "grid_avg_kg_co2e_per_kwh": 0.75, "lgc_surrendered_share": 0.18, "version": "NGA-2023-v1"},
+    {"region": "VIC", "financial_year": "2022-23", "grid_avg_kg_co2e_per_kwh": 0.88, "lgc_surrendered_share": 0.26, "version": "NGA-2023-v1"},
+    {"region": "SA",  "financial_year": "2022-23", "grid_avg_kg_co2e_per_kwh": 0.28, "lgc_surrendered_share": 0.52, "version": "NGA-2023-v1"},
+    {"region": "TAS", "financial_year": "2022-23", "grid_avg_kg_co2e_per_kwh": 0.19, "lgc_surrendered_share": 0.82, "version": "NGA-2023-v1"},
+    {"region": "WA",  "financial_year": "2022-23", "grid_avg_kg_co2e_per_kwh": 0.55, "lgc_surrendered_share": 0.20, "version": "NGA-2023-v1"},
+    {"region": "NT",  "financial_year": "2022-23", "grid_avg_kg_co2e_per_kwh": 0.58, "lgc_surrendered_share": 0.04, "version": "NGA-2023-v1"},
+    {"region": "NSW", "financial_year": "2021-22", "grid_avg_kg_co2e_per_kwh": 0.73, "lgc_surrendered_share": 0.20, "version": "NGA-2022-v1"},
+    {"region": "QLD", "financial_year": "2021-22", "grid_avg_kg_co2e_per_kwh": 0.78, "lgc_surrendered_share": 0.16, "version": "NGA-2022-v1"},
+    {"region": "VIC", "financial_year": "2021-22", "grid_avg_kg_co2e_per_kwh": 0.91, "lgc_surrendered_share": 0.25, "version": "NGA-2022-v1"},
+    {"region": "SA",  "financial_year": "2021-22", "grid_avg_kg_co2e_per_kwh": 0.30, "lgc_surrendered_share": 0.50, "version": "NGA-2022-v1"},
+    {"region": "TAS", "financial_year": "2021-22", "grid_avg_kg_co2e_per_kwh": 0.20, "lgc_surrendered_share": 0.81, "version": "NGA-2022-v1"},
+    {"region": "WA",  "financial_year": "2021-22", "grid_avg_kg_co2e_per_kwh": 0.58, "lgc_surrendered_share": 0.18, "version": "NGA-2022-v1"},
+    {"region": "NT",  "financial_year": "2021-22", "grid_avg_kg_co2e_per_kwh": 0.61, "lgc_surrendered_share": 0.03, "version": "NGA-2022-v1"},
+    {"region": "NSW", "financial_year": "2024-25", "grid_avg_kg_co2e_per_kwh": 0.65, "lgc_surrendered_share": 0.27, "version": "NGA-2025-v1"},
+    {"region": "QLD", "financial_year": "2024-25", "grid_avg_kg_co2e_per_kwh": 0.69, "lgc_surrendered_share": 0.24, "version": "NGA-2025-v1"},
+    {"region": "VIC", "financial_year": "2024-25", "grid_avg_kg_co2e_per_kwh": 0.81, "lgc_surrendered_share": 0.30, "version": "NGA-2025-v1"},
+    {"region": "SA",  "financial_year": "2024-25", "grid_avg_kg_co2e_per_kwh": 0.22, "lgc_surrendered_share": 0.58, "version": "NGA-2025-v1"},
+    {"region": "TAS", "financial_year": "2024-25", "grid_avg_kg_co2e_per_kwh": 0.15, "lgc_surrendered_share": 0.88, "version": "NGA-2025-v1"}
+  ]
+}

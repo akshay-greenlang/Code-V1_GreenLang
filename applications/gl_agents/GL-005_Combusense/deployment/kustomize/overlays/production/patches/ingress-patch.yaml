@@ -1,0 +1,57 @@
+# Production Environment - Ingress Patch
+# Production domain with strict rate limiting and security
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: gl-005-combustion-control-ingress
+  annotations:
+    # Strict rate limiting for production
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+    nginx.ingress.kubernetes.io/limit-rps: "10"
+
+    # Force SSL
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+
+    # Production timeouts
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "5"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "30"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "30"
+
+    # Security headers
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      more_set_headers "X-Frame-Options: DENY";
+      more_set_headers "X-Content-Type-Options: nosniff";
+      more_set_headers "X-XSS-Protection: 1; mode=block";
+      more_set_headers "Strict-Transport-Security: max-age=31536000; includeSubDomains; preload";
+      more_set_headers "Referrer-Policy: strict-origin-when-cross-origin";
+      more_set_headers "Permissions-Policy: geolocation=(), microphone=(), camera=()";
+
+spec:
+  tls:
+    - hosts:
+        - gl-005.greenlang.io
+        - api.gl-005.greenlang.io
+      secretName: gl-005-production-tls-cert
+  rules:
+    - host: gl-005.greenlang.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: gl-005-combustion-control
+                port:
+                  number: 80
+    - host: api.gl-005.greenlang.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: gl-005-combustion-control
+                port:
+                  number: 80

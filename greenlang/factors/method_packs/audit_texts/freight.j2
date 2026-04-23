@@ -1,0 +1,38 @@
+{# ---
+approved: false
+approved_by: null
+approved_at: null
+methodology_lead: null
+standard_citation: "ISO 14083:2023 (Quantification and reporting of greenhouse gas emissions arising from transport chain operations), sections 6-8; Smart Freight Centre GLEC Framework v3.0"
+--- #}
+Factor {{ factor.chosen_factor.name }} ({{ factor.chosen_factor.id }}) was
+selected under the Freight method profile ({{ factor.method_pack }}),
+aligned with ISO 14083:2023 sections 6-8 and the GLEC Framework v3.0
+(Smart Freight Centre, 2023). Source: {{ factor.source.authority }}
+dataset version {{ factor.source.version }}, vintage
+{{ factor.source.vintage }}. GWP basis: {{ factor.gwp_basis }}. The
+resolver reached this factor at fallback tier {{ factor.fallback_rank }}
+({{ factor.step_label }}).
+
+{% if factor.consignment_legs -%}
+Multi-leg consignment disclosed per ISO 14083 §7.3 (each leg's mode,
+distance, payload, fuel, WTT + TTW + WTW disclosed separately):
+{%- for leg in factor.consignment_legs %}
+- Leg {{ leg.leg_id }}: mode={{ leg.mode }}, distance={{ leg.distance_km }} km,
+  payload={{ leg.payload_t }} t, fuel={{ leg.fuel }}, boundary={{ leg.boundary }}.
+{%- endfor %}
+{%- else -%}
+Single-leg transport per ISO 14083 §6: mode={{ factor.mode }},
+distance={{ factor.distance_km }} km, payload={{ factor.payload_t }} t,
+fuel={{ factor.fuel_type }}. Boundary: {{ factor.boundary }} (TTW vs WTT
+vs WTW label applied conditionally per leg fuel per GLEC Framework §4.5).
+{%- endif %}
+
+Biogenic CO2 is reported separately per ISO 14083 §8.2. Market
+instruments (e.g. biofuel certificates) require GLEC §9.3 book-and-
+claim chain-of-custody documentation when applied.
+
+{% if factor.fallback_trace -%}
+Fallback trace:
+{%- for step in factor.fallback_trace %} {{ step.rank }}->{{ step.label }}{% if not loop.last %};{% endif %}{% endfor %}.
+{%- endif %}

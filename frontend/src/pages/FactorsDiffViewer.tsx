@@ -26,12 +26,16 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
+import ToggleButton from "@mui/material/ToggleButton";
+import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 import {
   FactorsApiError,
   diffEditions,
   type DiffFieldChange,
   type EditionDiffResponse,
 } from "../lib/api/factorsClient";
+
+type DiffAxis = "factor_version" | "release_version";
 
 function ChangeTypeChip({ type }: { type: DiffFieldChange["type"] }) {
   const map: Record<DiffFieldChange["type"], "success" | "warning" | "error"> = {
@@ -48,6 +52,7 @@ export function FactorsDiffViewer() {
   const [diff, setDiff] = useState<EditionDiffResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [axis, setAxis] = useState<DiffAxis>("factor_version");
 
   const run = async () => {
     if (!from.trim() || !to.trim()) {
@@ -78,28 +83,51 @@ export function FactorsDiffViewer() {
 
       <Card sx={{ mb: 3 }}>
         <CardContent>
-          <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
-            <TextField
-              fullWidth
-              label="From edition"
-              placeholder="e.g. v1.0.0"
-              value={from}
-              onChange={(e) => setFrom(e.target.value)}
-            />
-            <TextField
-              fullWidth
-              label="To edition"
-              placeholder="e.g. v1.1.0"
-              value={to}
-              onChange={(e) => setTo(e.target.value)}
-            />
-            <Button
-              variant="contained"
-              onClick={() => void run()}
-              disabled={loading || !from.trim() || !to.trim()}
+          <Stack spacing={2}>
+            <ToggleButtonGroup
+              value={axis}
+              exclusive
+              onChange={(_e, v) => {
+                if (v) setAxis(v as DiffAxis);
+              }}
+              size="small"
+              aria-label="Diff axis"
             >
-              {loading ? "Diffing…" : "Compute diff"}
-            </Button>
+              <ToggleButton value="factor_version" aria-label="Compare factor_version (numeric changes)">
+                factor_version (numeric)
+              </ToggleButton>
+              <ToggleButton value="release_version" aria-label="Compare release_version (edition membership)">
+                release_version (membership)
+              </ToggleButton>
+            </ToggleButtonGroup>
+            <Typography variant="caption" color="text.secondary">
+              Dual axis per W4-D: `factor_version` surfaces numeric-value
+              drift; `release_version` surfaces edition-membership moves
+              (add/remove of factor records across editions).
+            </Typography>
+            <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
+              <TextField
+                fullWidth
+                label="From edition"
+                placeholder="e.g. v1.0.0"
+                value={from}
+                onChange={(e) => setFrom(e.target.value)}
+              />
+              <TextField
+                fullWidth
+                label="To edition"
+                placeholder="e.g. v1.1.0"
+                value={to}
+                onChange={(e) => setTo(e.target.value)}
+              />
+              <Button
+                variant="contained"
+                onClick={() => void run()}
+                disabled={loading || !from.trim() || !to.trim()}
+              >
+                {loading ? "Diffing…" : "Compute diff"}
+              </Button>
+            </Stack>
           </Stack>
         </CardContent>
       </Card>
@@ -241,19 +269,35 @@ export function FactorsDiffViewer() {
                   </TableHead>
                   <TableBody>
                     {diff.changed_factors.flatMap((cf) =>
-                      cf.changes.map((c, idx) => (
-                        <TableRow key={`${cf.factor_id}-${c.field}-${idx}`}>
-                          <TableCell><code>{cf.factor_id}</code></TableCell>
-                          <TableCell><code>{c.field}</code></TableCell>
-                          <TableCell><ChangeTypeChip type={c.type} /></TableCell>
-                          <TableCell>
-                            <code>{JSON.stringify(c.old_value ?? "")}</code>
-                          </TableCell>
-                          <TableCell>
-                            <code>{JSON.stringify(c.new_value ?? "")}</code>
-                          </TableCell>
-                        </TableRow>
-                      )),
+                      cf.changes
+                        .filter((c) => {
+                          if (axis === "release_version") {
+                            return c.field === "release_version" || c.field === "edition_id";
+                          }
+                          // factor_version axis: numeric / record-rev changes
+                          return (
+                            c.field === "factor_version" ||
+                            c.field === "co2e_per_unit" ||
+                            c.field === "co2_per_unit" ||
+                            c.field === "ch4_per_unit" ||
+                            c.field === "n2o_per_unit" ||
+                            c.field === "content_hash" ||
+                            c.field.startsWith("factor_")
+                          );
+                        })
+                        .map((c, idx) => (
+                          <TableRow key={`${cf.factor_id}-${c.field}-${idx}`}>
+                            <TableCell><code>{cf.factor_id}</code></TableCell>
+                            <TableCell><code>{c.field}</code></TableCell>
+                            <TableCell><ChangeTypeChip type={c.type} /></TableCell>
+                            <TableCell>
+                              <code>{JSON.stringify(c.old_value ?? "")}</code>
+                            </TableCell>
+                            <TableCell>
+                              <code>{JSON.stringify(c.new_value ?? "")}</code>
+                            </TableCell>
+                          </TableRow>
+                        )),
                     )}
                     {diff.changed_factors.length === 0 && (
                       <TableRow>

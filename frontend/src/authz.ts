@@ -15,7 +15,14 @@ const appRoutes = [
 ] as const;
 
 // Public Factors dashboards — available to every role.
-const factorsPublicRoutes = ["/factors/status", "/factors/qa"];
+const factorsPublicRoutes = [
+  "/factors/status",
+  "/factors/qa",
+  // W4-D — O8: public coverage dashboard (no auth).
+  "/factors/coverage",
+  // W4-D — O9: public release notes feed.
+  "/factors/release-notes"
+];
 
 // Operator console — admin-only via AdminGate. Listed here so the
 // shell-level RoleGuard doesn't bounce admins on its own.
@@ -26,7 +33,13 @@ const factorsOperatorRoutes = [
   "/factors/diff",
   "/factors/approvals",
   "/factors/overrides",
-  "/factors/impact"
+  "/factors/impact",
+  // W4-D new operator surfaces.
+  "/factors/method-packs",
+  "/factors/entitlements",
+  "/factors/audit-bundles",
+  "/factors/webhooks",
+  "/factors/batch"
 ];
 
 // Track C-5 OEM white-label onboarding routes. Signup is public; the

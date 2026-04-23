@@ -1,13 +1,14 @@
-# GreenLang Factors — Public Gold-Label Evaluation Set
+# GreenLang Factors - Public Gold-Label Evaluation Set
 
-This directory holds the **gold-label evaluation set** used to measure how well
-the factor matching + resolution pipeline picks the right emission factor for
-a given activity.
+This directory holds the **gold-label evaluation set** used to measure how
+well the factor matching + resolution pipeline picks the right emission
+factor for a given activity.
 
 It backs Track B-1 of `FY27_Factors_Launch_Checklist.md` ("Public gold-label
-evaluation set, ≥300 representative activities") and is the data the
-`factors-gold-eval` GitHub Actions job consumes on every PR that touches
-`greenlang/factors/**`.
+evaluation set, >=300 representative activities"), plus Track T3/T4 of
+`GreenLang_Factors_CTO_Master_ToDo.md` (the precision/recall CI gate), and
+is the data the `factors-gold-eval` GitHub Actions job consumes on every PR
+that touches `greenlang/factors/**`.
 
 ---
 
@@ -15,35 +16,68 @@ evaluation set, ≥300 representative activities") and is the data the
 
 ```
 gold_set/
-├── README.md                    # this file
+├── README.md                         # this file
 └── v1/
-    ├── index.json               # case_count + per-family manifest
-    ├── electricity.json         # 60 cases — IN/EU/UK/US, location/market/residual
-    ├── fuel_combustion.json     # 50 cases — NG, diesel, gasoline, coal, LPG, fuel oil
-    ├── refrigerants.json        # 32 cases — R-22 / R-32 / R-134a / R-410A / R-404A / R-507 / R-1234yf
-    ├── freight.json             # 50 cases — road, sea, air, rail, intermodal (WTW/TTW)
-    ├── materials.json           # 50 cases — steel, aluminium, cement, plastic, paper, fertilizer, glass
-    ├── cbam.json                # 35 cases — CN-coded steel, aluminium, cement, fertilizer, hydrogen, electricity
-    └── methodology_profiles.json # 25 cases — cross-cutting profile-routing exercises
+    ├── index.json                    # manifest (schema + case_count per file)
+    ├── electricity.json              # 60 cases  (v1.0)
+    ├── fuel_combustion.json          # 50 cases  (v1.0)
+    ├── refrigerants.json             # 32 cases  (v1.0)
+    ├── refrigerants_expanded.json    #  8 cases  (v1.1) - HFO/R-32/R-1234yf
+    ├── freight.json                  # 50 cases  (v1.0)
+    ├── materials.json                # 50 cases  (v1.0)
+    ├── cbam.json                     # 35 cases  (v1.0)
+    ├── methodology_profiles.json     # 25 cases  (v1.0) - cross-profile routing
+    ├── purchased_goods_proxy.json    # 40 cases  (v1.1) - spend-based screening
+    └── waste.json                    # 20 cases  (v1.1) - landfill/incin/recycle/compost
 ```
 
-Total: **302 cases** (≥ 300 acceptance bar).
+Total: **370 cases** (>= 300 acceptance bar, under the 500 upper bound).
+
+The files split into two schema generations — both are loaded by the CI gate
+and normalized to the same internal `GoldEntry` shape.
 
 ---
 
-## Case schema (v1.0)
+## Case schemas
 
-Each case is a single JSON object inside the family file (the file is a
-top-level array of cases):
+### Schema v1.1 (new, authored 2026-04-23 for the T3/T4 CI gate)
+
+```json
+{
+  "id": "gs_waste_US_2026_001",
+  "activity_description": "Mixed municipal solid waste disposed to US sanitary landfill with LFG collection",
+  "amount": 185,
+  "unit": "tonne",
+  "expected_method_profile": "corporate_scope3",
+  "expected_factor_family": "waste_treatment",
+  "expected_jurisdiction": {"country": "US", "region": null},
+  "expected_factor_id_pattern": "EF:EPA:waste_landfill_msw.*:US:.*",
+  "tier_acceptance": ["primary", "alternate_top3"],
+  "notes": "optional"
+}
+```
+
+| Field | Description |
+|---|---|
+| `id` | Globally unique slug. Convention: `gs_<family>_<jurisdiction>_<year>_<nnn>`. |
+| `activity_description` | Free-text activity. Fed to `ResolutionRequest.activity`. |
+| `amount` / `unit` | Activity quantity + canonical unit. |
+| `expected_method_profile` | Required. One of the `MethodProfile` enum values. |
+| `expected_factor_family` | One of the `FactorFamily` enum values. |
+| `expected_jurisdiction.country` | ISO 3166-1 alpha-2 (`US`, `IN`, `EU`, `UK`, ...). |
+| `expected_jurisdiction.region` | Sub-national code (`US-CA`, `IN-KA`, ...); nullable. |
+| `expected_factor_id_pattern` | **Python regex** that a returned `factor_id` must match to count as a hit. Use an exact-anchor pattern (`^...$`) when the factor is already seeded; use a family-level pattern (`EF:EPA:waste_.*:US:.*`) when only the bucket is known. |
+| `tier_acceptance` | What counts as a hit. `primary` = chosen factor matches; `alternate_top3` = one of the top-3 alternates matches. Most entries allow both. |
+| `notes` | Optional prose context / caveat. |
+
+### Schema v1.0 (legacy, pre-dates T3/T4)
 
 ```json
 {
   "case_id": "elec_in_northern_grid_2027_lb_002",
   "activity": {
-    "description": "Purchased grid electricity, India Northern Grid (FY2026-27), location-based",
-    "quantity": 8200,
-    "unit": "kWh",
-    "metadata": {"country": "IN", "grid_region": "northern_grid", "year": 2027, "scope": "scope2"}
+    "description": "...", "quantity": 8200, "unit": "kWh",
+    "metadata": {"country": "IN", "grid_region": "northern_grid", ...}
   },
   "method_profile": "corporate_scope2_location_based",
   "expected": {
@@ -56,119 +90,173 @@ top-level array of cases):
     "co2e_unit": "kgCO2e/kWh",
     "must_include_assumptions": ["grid average", "location-based", "CEA"]
   },
-  "tags": ["electricity", "india", "location_based", "northern_grid", "fy27_launch"]
+  "tags": [...]
 }
 ```
 
-Field-by-field:
-
-| Field | Description |
-|---|---|
-| `case_id` | Globally unique slug. Convention: `<family>_<geo>_<descriptor>_<seq>`. |
-| `activity.description` | Free-text activity. Fed straight to `match_activity()`. |
-| `activity.quantity` / `unit` | Activity quantity + canonical unit. Used by the resolver to apply unit conversion. |
-| `activity.metadata` | Free-form dict; common keys: `country`, `year`, `scope`, `grid_region`, `instrument`, `cn_code`, `gwp_basis`, `boundary`. |
-| `method_profile` | Required. One of the `MethodProfile` enum values from `greenlang.data.canonical_v2`. |
-| `expected.factor_id` | The exact `factor_id` we expect at rank 1. **`null` is allowed** when the factor is not yet seeded in the catalog — the test then asserts on `factor_family` + `co2e_per_unit_min/max` instead. |
-| `expected.factor_family` | One of the `FactorFamily` enum values. Always required — it is the fallback assertion when `factor_id` is `null`. |
-| `expected.source_authority` | Display authority (CEA / DESNZ / EPA / IPCC / GLEC / EU CBAM / supplier / etc.). |
-| `expected.fallback_rank` | Cascade step we expect the resolver to land on (1 = customer override, 7 = global default). |
-| `expected.co2e_per_unit_min` / `_max` | Acceptable range for the resolved factor's `co2e_per_unit`. Tight where we have published authority data, loose where we are quoting industry ranges. |
-| `expected.co2e_unit` | Canonical unit of the range (`kgCO2e/kWh`, `kgCO2e/tonne`, etc.). |
-| `expected.must_include_assumptions` | Substrings that must appear (case-insensitive) in the resolved factor's assumptions list. |
-| `tags` | Free-form filter tags; every case carries the `fy27_launch` tag so CI can filter on it. |
+v1.0 entries retain their original semantics — when `expected.factor_id`
+is `null`, the loader synthesizes a permissive family/subject-level pattern
+so the entry still participates in the P@1 / R@3 aggregate without
+blanket-failing for reasons unrelated to resolver quality.
 
 ---
 
-## Factor-id convention
+## Coverage per family
 
-The factor-id strings used in this set match the on-disk parsers under
-`greenlang/factors/ingestion/parsers/`:
+| Family | Count | Schema | Coverage target |
+|---|---:|:---:|---:|
+| electricity | 60 | v1.0 | 80 (target), 60 (min) |
+| fuel_combustion | 50 | v1.0 | 60 (target), 50 (min) |
+| refrigerants | 40 | v1.0 + v1.1 | 40 (min) |
+| freight | 50 | v1.0 | 60 (target), 50 (min) |
+| materials | 50 | v1.0 | 40 (min) |
+| waste | 20 | v1.1 | 20 (min) |
+| purchased_goods_proxy | 40 | v1.1 | 40 (min) |
+| cbam | 35 | v1.0 | (cross-cut of materials) |
+| methodology_profiles | 25 | v1.0 | (cross-cut) |
+| **TOTAL** | **370** | | **>=300** |
 
-```
-EF:<authority_or_jurisdiction>:<fuel_or_product>:<geo>:<year>:v<n>
-```
-
-Real-world examples emitted by parsers in the catalog seed:
-
-| Parser | Example id |
-|---|---|
-| `india_cea.py` | `EF:IN:northern_grid:2026-27:cea-v20.0` |
-| `desnz_uk.py` | `EF:DESNZ:s1_natural_gas_kwh:UK:2026:v1` |
-| `iea.py` | `EF:IEA:diesel:US:2026:v1` |
-| `aib_residual_mix.py` | `EF:DE:residual_mix:2026:v1.0` |
-| `eGRID` (planned) | `EF:eGRID:rfce:US:2026:v1` |
-| CBAM (`policy_factor_map.example.yaml`) | `EF:CBAM:steel:CN:2024:v1` |
-
-**Where we don't yet have a real seeded factor** (e.g. supplier-specific
-PPAs, EU country-level location-based factors not yet in the catalog,
-GLEC freight lanes not yet ingested) we set `expected.factor_id` to
-`null`. The test runner then drops the rank-1 id assertion and instead
-asserts that:
-
-1. The pipeline returns *some* candidate, and
-2. the resolved factor's family matches `expected.factor_family`, and
-3. the per-unit CO2e value falls inside `[co2e_per_unit_min,
-   co2e_per_unit_max]`.
-
-This keeps the gold set useful **today** (before the catalog seed lands)
-and **tomorrow** (once it does — at which point the `null` ids should
-be filled in with the real seeded ids).
+Per-family minimums are enforced by
+`tests/factors/matching/test_gold_eval_gate.py::test_minimum_coverage_per_family`.
 
 ---
 
-## Acceptance bar (precision@1)
+## Authenticity rules
 
-The runner (`tests/factors/test_gold_set_eval.py`) computes
-**precision@1** globally and per family:
+1. **Use real industrial activity descriptions.** Acceptable anchor
+   sources for paraphrase: CDP disclosures, IEA World Energy Outlook
+   worked examples, DEFRA/DESNZ GHG Conversion Factors usage notes,
+   PCAF Global GHG Accounting Standard case studies, EU CBAM transitional
+   guidance. Verbatim copying is NOT required — paraphrase plausible
+   real-world scenarios.
 
-```
-P@1 = correct_rank_1_predictions / total_cases
-```
+2. **Do NOT invent obscure scenarios just to hit a count.** Each entry
+   must be independently resolvable (a reasonable method-profile exists
+   and an authoritative factor source can plausibly produce the answer).
 
-A case is "correct at rank 1" if either:
+3. **Mix clean, ambiguous, and edge-case descriptions** to stress the
+   resolver. Examples of intentional edge cases we include:
+   - HFO refrigerant blends (R-1234yf, R-1234ze, R-452A) — catalog may not
+     index every blend composition; we flag these so methodology can seed
+     them.
+   - Indian unmanaged dumpsites (IPCC default MCF 0.6).
+   - CBAM goods with non-primary origin (Korea, Turkey, Ukraine).
+   - Spend-based screening that intentionally overlaps with EPD-available
+     products — a good resolver should still pick the spend-proxy factor
+     when the `finance_proxy` profile is requested.
 
-- `expected.factor_id` is non-null and the matcher returns it as the
-  top-ranked `factor_id`, OR
-- `expected.factor_id` is null and the matcher returns *any* candidate
-  whose family + co2e-range pass the relaxed checks.
+4. **`expected_factor_id_pattern` must map to a real factor-id convention.**
+   Legal prefixes include `EF:CBAM:*`, `EF:IPCC:*`, `EF:IEA:*`,
+   `EF:DESNZ:*`, `EF:EPA:*`, `EF:CEA:*`, `EF:EEIO:*`, `EF:EXIOBASE:*`,
+   `EF:DEFRA_IO:*`, `EF:GLEC:*`, `EF:AIB:*`, `EF:EEA:*`. Cross-reference
+   against `greenlang/factors/ingestion/parsers/` when adding new
+   patterns.
 
-| Bar | Threshold | Status |
+5. **Honest reporting over coverage theatre.** The CI gate will fail
+   loudly when accuracy is below the floor. Do NOT adjust patterns to
+   match whatever the resolver currently returns — that hides the bug.
+
+---
+
+## Acceptance bars
+
+| Gate | Threshold | Source of truth |
 |---|---|---|
-| Initial (B-1, FY27 launch checklist) | **P@1 ≥ 0.85** | enforced today |
-| Post-launch (B-3) | P@1 ≥ 0.90 | scheduled for raise |
-| CI delta vs `main` | drop ≤ 2 points | enforced today |
+| Overall Precision@1 | `>= 0.85` | `test_overall_precision_at_1_above_floor` |
+| Overall Recall@3 | `>= 0.95` | `test_overall_recall_at_3_above_floor` |
+| Per-family coverage min | see table above | `test_minimum_coverage_per_family` |
+| Total size | `300 <= n <= 1000` | `test_total_entries_within_bounds` |
+| Per-family P@1 (legacy v1.0) | `>= 0.85` | `tests/factors/test_gold_set_eval.py` |
+| Delta vs `main` baseline | drop `<= 2 pp` | CI workflow `delta` step |
 
-The CI job uploads `artifacts/gold_eval_summary.json` and posts a delta
-comment on every PR. A drop > 2 points blocks merge.
+A PR that drops overall P@1 by more than 2 pp vs the most recent
+successful `main` run blocks merge.
+
+---
+
+## Current baseline (recorded 2026-04-23)
+
+Run: `pytest tests/factors/matching/test_gold_eval_gate.py -v`
+
+```
+family                         N      P@1      R@3      MRR   errs
+------------------------------------------------------------------
+cbam                          35    0.00%    0.00%   0.0000     35
+electricity                   60    0.00%    0.00%   0.0000     60
+freight                       50    0.00%    0.00%   0.0000     23
+fuel_combustion               50    0.00%    0.00%   0.0000     18
+materials                     50    0.00%    0.00%   0.0000     14
+methodology_profiles          25    0.00%    0.00%   0.0080     17
+purchased_goods_proxy         40    0.00%    0.00%   0.0000      3
+refrigerants                  40    0.00%    0.00%   0.0000      4
+waste                         20    0.00%    0.00%   0.0000     20
+------------------------------------------------------------------
+OVERALL                      370    0.00%    0.00%   0.0005    230
+```
+
+**Status: BELOW THRESHOLD (gate fails).** This is the honest signal the
+T3/T4 workstream is meant to surface. Root cause: 230 of 370 entries
+(62.2%) raise `FactorCannotResolveSafelyError` because the built-in
+`EmissionFactorDatabase` only ships 8 factors — the majority of the
+catalog required to satisfy the gold set has not yet been ingested. The
+remaining 140 entries also miss because the candidate pool is too shallow
+for the resolver's selection rule to land on a match.
+
+Actions required (owners noted):
+- **Agent A/E (resolver)**: confirm the cascade correctly prefers the
+  highest-specificity candidate when multiple are available; no fix
+  needed for this baseline since the pool is too small to exercise it.
+- **Catalog seeding (parsers)**: once parsers under
+  `greenlang/factors/ingestion/parsers/` load CBAM, CEA, DESNZ, GLEC, and
+  EPA WARM feeds into the built-in DB, re-run the gate and record the
+  new baseline in this README. The gate itself is unchanged.
+- **Methodology owners (HFO refrigerants)**: 8 of the 40 refrigerant
+  entries reference R-1234yf/R-1234ze/R-452A/R-513A/R-448A — add these to
+  the IPCC GWP factor list if not already present, or flag that these
+  blends intentionally fall through to the method-pack default step.
 
 ---
 
 ## How to add a case
 
-1. Edit `scripts/generate_gold_set_v1.py` (the canonical generator), or
-   hand-edit the relevant family JSON file directly. Keep both in sync.
-2. For each new case:
-   - Pick a unique `case_id` (`<family>_<geo>_<seq>`).
-   - Use a real activity description, not a synthetic one.
-   - Use a published authority value for `co2e_per_unit_min/max`. Cite
-     the source in the case-generation script comments. If you can't
-     verify, set a wide range (±20 %) and add a `tags: ["low_confidence"]`
-     entry so we can sweep these later.
-   - Set `expected.factor_id` only if the factor really exists in the
-     catalog seed — otherwise leave it `null`.
-   - Pick the *correct* `method_profile` (this is what most callers get
-     wrong: scope-2 market vs location is the most common mistake).
-3. Re-run `python scripts/generate_gold_set_v1.py` to refresh the file
-   and `index.json`.
-4. Run `pytest tests/factors/test_gold_set_eval.py -v` locally to confirm
-   the new case is parsed and that precision@1 is still ≥ 0.85.
+1. Pick the right file:
+   - New cases in the **v1.1 schema** go under `v1/<family>.json` (append
+     to the existing array).
+   - Legacy v1.0 cases stay in their current files; do NOT mix schemas
+     within a single file unless the file is explicitly new (e.g.
+     `refrigerants_expanded.json` is v1.1-only).
+
+2. For v1.1 entries:
+   - Use `gs_<family>_<country>_<year>_<nnn>` for the id.
+   - Paraphrase a real activity (see Authenticity rules).
+   - Pick a regex pattern that matches the authoritative factor-id your
+     organization would expect. When in doubt, anchor loosely to the
+     family + country (`EF:EPA:waste_landfill_.*:US:.*`) and let the
+     resolver's specificity scoring do the rest.
+   - Set `tier_acceptance` to `["primary"]` for high-confidence entries
+     (factor is definitely seeded) and `["primary", "alternate_top3"]`
+     for entries where the top-3 pool is the real signal.
+
+3. Run the gate locally:
+   ```
+   pytest tests/factors/matching/test_gold_eval_gate.py -v
+   ```
+   Inspect `build/gold_eval_report.csv` for the per-case outcome before
+   pushing.
+
+4. If precision/recall regresses, do NOT tweak the pattern to pass —
+   open a ticket against the resolver/catalog instead.
 
 ---
 
 ## Versioning
 
-This is `v1`. When we make a *backward-incompatible* schema change
-(e.g. renaming `expected.factor_family`), we copy `v1/` to `v2/` and
-keep `v1/` for one release before removing it. The CI job pins the
-version it runs against in `.github/workflows/factors_gold_eval.yml`.
+- **v1.0** — original schema (2026-04-23 initial drop).
+- **v1.1** — new schema (this commit) with
+  `expected_factor_id_pattern` (regex) + `tier_acceptance`. The two
+  co-exist: the loader auto-detects schema per entry.
+
+When we make a backward-incompatible schema change (e.g. renaming a
+required field) we copy `v1/` to `v2/` and keep `v1/` for one release
+before removing it. The CI job pins the version it runs against via the
+entry loader in `tests/factors/matching/test_gold_eval_gate.py`.

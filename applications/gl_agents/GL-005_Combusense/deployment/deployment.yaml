@@ -1,0 +1,292 @@
+# GL-005 CombustionControlAgent - Kubernetes Deployment
+# Real-time control system requiring high availability (99.9% uptime)
+# Low latency requirements (<100ms control loop)
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gl-005-combustion-control
+  namespace: greenlang
+  labels:
+    app: gl-005-combustion-control
+    agent: "GL-005"
+    version: v1.0.0
+    tier: control-system
+  annotations:
+    description: "Real-time combustion control agent with AI optimization"
+    sla.uptime: "99.9%"
+    sla.latency: "<100ms"
+spec:
+  # Replicas managed by HPA (3-15 replicas)
+  replicas: 3
+
+  # Rolling update strategy for zero-downtime deployments
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1        # Add 1 pod before removing old ones
+      maxUnavailable: 0  # Never take down pods during update (zero-downtime)
+
+  # Selector for pod matching
+  selector:
+    matchLabels:
+      app: gl-005-combustion-control
+      agent: "GL-005"
+
+  # Pod template
+  template:
+    metadata:
+      labels:
+        app: gl-005-combustion-control
+        agent: "GL-005"
+        version: v1.0.0
+        tier: control-system
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8001"
+        prometheus.io/path: "/metrics"
+    spec:
+      # Service account for RBAC
+      serviceAccountName: gl-005-service-account
+
+      # Security context for pod
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+
+      # Anti-affinity for high availability (spread across nodes)
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - gl-005-combustion-control
+                topologyKey: kubernetes.io/hostname
+
+      # Topology spread for even distribution
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app: gl-005-combustion-control
+
+      # Init containers for pre-flight checks
+      initContainers:
+        - name: database-ready
+          image: postgres:14-alpine
+          command:
+            - sh
+            - -c
+            - |
+              until pg_isready -h ${DATABASE_HOST} -p ${DATABASE_PORT} -U ${DATABASE_USER}; do
+                echo "Waiting for database..."
+                sleep 2
+              done
+          env:
+            - name: DATABASE_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: gl-005-config
+                  key: database_host
+            - name: DATABASE_PORT
+              value: "5432"
+            - name: DATABASE_USER
+              valueFrom:
+                secretKeyRef:
+                  name: gl-005-secrets
+                  key: database_user
+
+        - name: redis-ready
+          image: redis:7-alpine
+          command:
+            - sh
+            - -c
+            - |
+              until redis-cli -h ${REDIS_HOST} -p ${REDIS_PORT} ping; do
+                echo "Waiting for Redis..."
+                sleep 2
+              done
+          env:
+            - name: REDIS_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: gl-005-config
+                  key: redis_host
+            - name: REDIS_PORT
+              value: "6379"
+
+      # Main application container
+      containers:
+        - name: gl-005-combustion-control
+          image: gcr.io/greenlang/gl-005-combustion-control:1.0.0
+          imagePullPolicy: Always
+
+          # Ports
+          ports:
+            - name: http
+              containerPort: 8000
+              protocol: TCP
+            - name: metrics
+              containerPort: 8001
+              protocol: TCP
+
+          # Environment variables
+          env:
+            - name: ENVIRONMENT
+              value: "production"
+            - name: APP_NAME
+              value: "GL-005 CombustionControlAgent"
+            - name: LOG_LEVEL
+              value: "INFO"
+            - name: PORT
+              value: "8000"
+            - name: METRICS_PORT
+              value: "8001"
+
+            # Database configuration
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: gl-005-secrets
+                  key: database_url
+
+            # Redis configuration
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: gl-005-secrets
+                  key: redis_url
+
+            # AI API keys
+            - name: ANTHROPIC_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: gl-005-secrets
+                  key: anthropic_api_key
+
+            # Control system configuration
+            - name: CONTROL_LOOP_INTERVAL_MS
+              valueFrom:
+                configMapKeyRef:
+                  name: gl-005-config
+                  key: control_loop_interval_ms
+
+            # Kubernetes metadata
+            - name: KUBERNETES_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: KUBERNETES_POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: KUBERNETES_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+
+          # Environment from ConfigMap
+          envFrom:
+            - configMapRef:
+                name: gl-005-config
+
+          # Resource requests and limits
+          resources:
+            requests:
+              memory: "1Gi"
+              cpu: "1000m"
+            limits:
+              memory: "2Gi"
+              cpu: "2000m"
+
+          # Liveness probe (is the app alive?)
+          livenessProbe:
+            httpGet:
+              path: /api/v1/health
+              port: 8000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+            successThreshold: 1
+
+          # Readiness probe (is the app ready to serve traffic?)
+          readinessProbe:
+            httpGet:
+              path: /api/v1/ready
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+            successThreshold: 1
+
+          # Startup probe (for slow-starting containers)
+          startupProbe:
+            httpGet:
+              path: /api/v1/health
+              port: 8000
+            initialDelaySeconds: 0
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 12  # 12 * 5s = 60s max startup time
+            successThreshold: 1
+
+          # Security context for container
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            runAsUser: 1000
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+
+          # Volume mounts
+          volumeMounts:
+            - name: logs
+              mountPath: /app/logs
+            - name: data
+              mountPath: /app/data
+            - name: cache
+              mountPath: /app/cache
+            - name: tmp
+              mountPath: /tmp
+
+      # Volumes
+      volumes:
+        - name: logs
+          emptyDir:
+            sizeLimit: 1Gi
+        - name: data
+          emptyDir:
+            sizeLimit: 2Gi
+        - name: cache
+          emptyDir:
+            sizeLimit: 512Mi
+        - name: tmp
+          emptyDir:
+            sizeLimit: 256Mi
+
+      # DNS policy
+      dnsPolicy: ClusterFirst
+
+      # Restart policy
+      restartPolicy: Always
+
+      # Termination grace period (for graceful shutdown)
+      terminationGracePeriodSeconds: 30
+
+      # Priority class (for critical workloads)
+      # priorityClassName: high-priority

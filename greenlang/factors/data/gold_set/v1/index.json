@@ -1,44 +1,74 @@
 {
-  "version": "1.0",
-  "case_count": 302,
+  "version": "1.1",
+  "case_count": 370,
   "families": [
     {
       "family": "electricity",
       "case_count": 60,
-      "file": "electricity.json"
+      "file": "electricity.json",
+      "schema": "v1.0"
     },
     {
       "family": "fuel_combustion",
       "case_count": 50,
-      "file": "fuel_combustion.json"
+      "file": "fuel_combustion.json",
+      "schema": "v1.0"
     },
     {
       "family": "refrigerants",
       "case_count": 32,
-      "file": "refrigerants.json"
+      "file": "refrigerants.json",
+      "schema": "v1.0"
+    },
+    {
+      "family": "refrigerants",
+      "case_count": 8,
+      "file": "refrigerants_expanded.json",
+      "schema": "v1.1"
     },
     {
       "family": "freight",
       "case_count": 50,
-      "file": "freight.json"
+      "file": "freight.json",
+      "schema": "v1.0"
     },
     {
       "family": "materials",
       "case_count": 50,
-      "file": "materials.json"
+      "file": "materials.json",
+      "schema": "v1.0"
     },
     {
       "family": "cbam",
       "case_count": 35,
-      "file": "cbam.json"
+      "file": "cbam.json",
+      "schema": "v1.0"
     },
     {
       "family": "methodology_profiles",
       "case_count": 25,
-      "file": "methodology_profiles.json"
+      "file": "methodology_profiles.json",
+      "schema": "v1.0"
+    },
+    {
+      "family": "purchased_goods_proxy",
+      "case_count": 40,
+      "file": "purchased_goods_proxy.json",
+      "schema": "v1.1"
+    },
+    {
+      "family": "waste",
+      "case_count": 20,
+      "file": "waste.json",
+      "schema": "v1.1"
     }
   ],
   "created": "2026-04-23",
-  "schema_version": "1.0",
-  "schema_doc": "greenlang/factors/data/gold_set/README.md"
+  "last_updated": "2026-04-23",
+  "schema_version": "1.1",
+  "schema_doc": "greenlang/factors/data/gold_set/README.md",
+  "schema_notes": {
+    "v1.0": "Original schema with 'case_id', 'activity.description/quantity/unit/metadata', 'method_profile', 'expected.factor_id/factor_family/co2e_per_unit_min/max'",
+    "v1.1": "New schema with 'id', 'activity_description', 'amount/unit', 'expected_method_profile', 'expected_factor_family', 'expected_jurisdiction{country,region}', 'expected_factor_id_pattern' (regex), 'tier_acceptance' (['primary'|'alternate_top3'])"
+  }
 }

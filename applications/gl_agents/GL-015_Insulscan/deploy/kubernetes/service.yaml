@@ -1,0 +1,190 @@
+# GL-015 INSULSCAN Service
+# Insulation Scanning & Thermal Assessment Agent
+# Kubernetes Service definitions for HTTP, gRPC, and metrics endpoints
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-015-insulscan
+  namespace: greenlang
+  labels:
+    app: gl-015-insulscan
+    app.kubernetes.io/name: gl-015-insulscan
+    app.kubernetes.io/instance: gl-015-insulscan-production
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/component: thermal-assessment
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/managed-by: gitops
+    component: insulation-scanner
+    agent-id: GL-015
+    codename: INSULSCAN
+  annotations:
+    kubernetes.io/description: "Primary service for GL-015 INSULSCAN Insulation Scanning Agent"
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9090"
+    prometheus.io/path: "/metrics"
+    # Service mesh annotations
+    service.beta.kubernetes.io/aws-load-balancer-internal: "true"
+    # Health check annotations
+    service.kubernetes.io/healthcheck-node-port: "0"
+spec:
+  type: ClusterIP
+  selector:
+    app: gl-015-insulscan
+  ports:
+    - name: http
+      port: 8015
+      targetPort: 8015
+      protocol: TCP
+      appProtocol: http
+    - name: grpc
+      port: 50051
+      targetPort: 50051
+      protocol: TCP
+      appProtocol: grpc
+    - name: metrics
+      port: 9090
+      targetPort: 9090
+      protocol: TCP
+      appProtocol: http
+  sessionAffinity: None
+
+---
+# Headless Service for StatefulSet-like discovery and direct pod addressing
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-015-insulscan-headless
+  namespace: greenlang
+  labels:
+    app: gl-015-insulscan
+    app.kubernetes.io/name: gl-015-insulscan
+    app.kubernetes.io/component: thermal-assessment
+    component: insulation-scanner
+    agent-id: GL-015
+    codename: INSULSCAN
+  annotations:
+    kubernetes.io/description: "Headless service for GL-015 INSULSCAN direct pod discovery"
+    service.alpha.kubernetes.io/tolerate-unready-endpoints: "true"
+spec:
+  type: ClusterIP
+  clusterIP: None
+  selector:
+    app: gl-015-insulscan
+  ports:
+    - name: http
+      port: 8015
+      targetPort: 8015
+      protocol: TCP
+    - name: grpc
+      port: 50051
+      targetPort: 50051
+      protocol: TCP
+  publishNotReadyAddresses: true
+
+---
+# Dedicated Metrics Service for Prometheus ServiceMonitor
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-015-insulscan-metrics
+  namespace: greenlang
+  labels:
+    app: gl-015-insulscan
+    app.kubernetes.io/name: gl-015-insulscan
+    app.kubernetes.io/component: metrics
+    component: insulation-scanner
+    agent-id: GL-015
+    codename: INSULSCAN
+    monitoring: prometheus
+  annotations:
+    kubernetes.io/description: "Metrics service for GL-015 INSULSCAN Prometheus scraping"
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9090"
+    prometheus.io/path: "/metrics"
+spec:
+  type: ClusterIP
+  selector:
+    app: gl-015-insulscan
+  ports:
+    - name: metrics
+      port: 9090
+      targetPort: 9090
+      protocol: TCP
+      appProtocol: http
+
+---
+# gRPC Service for thermal image streaming and high-performance RPC
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-015-insulscan-grpc
+  namespace: greenlang
+  labels:
+    app: gl-015-insulscan
+    app.kubernetes.io/name: gl-015-insulscan
+    app.kubernetes.io/component: grpc
+    component: insulation-scanner
+    agent-id: GL-015
+    codename: INSULSCAN
+    protocol: grpc
+  annotations:
+    kubernetes.io/description: "gRPC service for GL-015 INSULSCAN thermal image streaming"
+    # gRPC-specific load balancing
+    service.kubernetes.io/topology-aware-hints: "auto"
+spec:
+  type: ClusterIP
+  selector:
+    app: gl-015-insulscan
+  ports:
+    - name: grpc
+      port: 50051
+      targetPort: 50051
+      protocol: TCP
+      appProtocol: grpc
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 3600
+
+---
+# ServiceMonitor for Prometheus Operator (if using Prometheus Operator)
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: gl-015-insulscan-monitor
+  namespace: greenlang
+  labels:
+    app: gl-015-insulscan
+    app.kubernetes.io/name: gl-015-insulscan
+    app.kubernetes.io/component: monitoring
+    agent-id: GL-015
+    codename: INSULSCAN
+    release: prometheus
+spec:
+  selector:
+    matchLabels:
+      app: gl-015-insulscan
+      monitoring: prometheus
+  namespaceSelector:
+    matchNames:
+      - greenlang
+  endpoints:
+    - port: metrics
+      path: /metrics
+      interval: 30s
+      scrapeTimeout: 10s
+      scheme: http
+      honorLabels: true
+      metricRelabelings:
+        - sourceLabels: [__name__]
+          regex: "go_.*"
+          action: drop
+      relabelings:
+        - sourceLabels: [__meta_kubernetes_pod_label_agent_id]
+          targetLabel: agent_id
+        - sourceLabels: [__meta_kubernetes_pod_label_codename]
+          targetLabel: codename
+        - sourceLabels: [__meta_kubernetes_pod_name]
+          targetLabel: pod
+        - sourceLabels: [__meta_kubernetes_namespace]
+          targetLabel: namespace

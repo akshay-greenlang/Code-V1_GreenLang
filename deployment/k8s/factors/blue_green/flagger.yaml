@@ -1,0 +1,51 @@
+---
+# =============================================================================
+# Flagger (Linkerd / Kong service mesh) alternative to Argo Rollouts
+# =============================================================================
+# Pick ONE of Argo Rollouts (rollout.yaml) or Flagger (this file). Shipping
+# both lets SRE choose based on the cluster's service mesh.
+#
+# Behavior matches rollout.yaml: 10 -> 25 -> 50 -> 100 with SLO gates.
+# =============================================================================
+apiVersion: flagger.app/v1beta1
+kind: Canary
+metadata:
+  name: factors-api
+  namespace: factors-production
+spec:
+  provider: kong
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: factors-api
+  progressDeadlineSeconds: 1800
+  service:
+    port: 8080
+    targetPort: 8080
+  analysis:
+    interval: 1m
+    threshold: 3
+    maxWeight: 100
+    stepWeights: [10, 25, 50, 100]
+    metrics:
+      - name: request-success-rate
+        thresholdRange:
+          min: 99.0   # 99% 2xx/3xx/4xx (5xx excluded)
+        interval: 1m
+      - name: request-duration
+        thresholdRange:
+          max: 500    # ms p95
+        interval: 1m
+    webhooks:
+      - name: smoke-tests
+        type: pre-rollout
+        url: http://flagger-loadtester.test/
+        timeout: 60s
+        metadata:
+          cmd: curl -sf https://factors-canary.factors-production.svc.cluster.local/v1/health
+      - name: slack-canary-alert
+        type: rollback
+        url: http://alertmanager.observability.svc.cluster.local:9093/api/v2/alerts
+        metadata:
+          severity: page
+          channel: "#factors-oncall"

@@ -1,0 +1,403 @@
+# GreenLang Agent Security Pipeline
+# Security Scanning: Bandit, Safety, Dependabot, SAST, Container Scanning
+# Template Version: 1.0.0
+# Usage: Copy to .github/workflows/security.yml and customize variables
+
+name: Security Scanning
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+    branches:
+      - main
+      - master
+  schedule:
+    # Run weekly security scans on Monday at 6 AM UTC
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+    inputs:
+      full_scan:
+        description: 'Run full security scan'
+        required: false
+        type: boolean
+        default: true
+
+env:
+  # Customize these variables for each agent
+  AGENT_NAME: "GL-XXX_AgentName"
+  AGENT_ID: "gl-xxx"
+  PYTHON_VERSION: "3.11"
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Python Code Security (Bandit)
+  # ---------------------------------------------------------------------------
+  bandit:
+    name: Bandit Security Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install Bandit
+        run: pip install bandit bandit-sarif-formatter
+
+      - name: Run Bandit scan
+        run: |
+          bandit -r . \
+            -x tests/,venv/,__pycache__/ \
+            -ll \
+            -ii \
+            --format sarif \
+            --output bandit-results.sarif || true
+
+      - name: Upload Bandit SARIF
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: bandit-results.sarif
+          category: bandit
+
+      - name: Generate Bandit report
+        run: |
+          bandit -r . \
+            -x tests/,venv/,__pycache__/ \
+            -ll \
+            -ii \
+            --format html \
+            --output bandit-report.html || true
+
+      - name: Upload Bandit HTML report
+        uses: actions/upload-artifact@v4
+        with:
+          name: bandit-security-report
+          path: bandit-report.html
+          retention-days: 30
+
+  # ---------------------------------------------------------------------------
+  # Dependency Vulnerability Scan (Safety + pip-audit)
+  # ---------------------------------------------------------------------------
+  dependency-scan:
+    name: Dependency Vulnerability Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies and scanners
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install safety pip-audit
+
+      - name: Run Safety check
+        run: |
+          echo "=== Safety Vulnerability Check ===" > dependency-report.txt
+          safety check --full-report >> dependency-report.txt 2>&1 || true
+          cat dependency-report.txt
+
+      - name: Run pip-audit
+        run: |
+          echo "" >> dependency-report.txt
+          echo "=== pip-audit Vulnerability Check ===" >> dependency-report.txt
+          pip-audit --format json --output pip-audit.json || true
+          pip-audit >> dependency-report.txt 2>&1 || true
+
+      - name: Check for critical vulnerabilities
+        id: vuln-check
+        run: |
+          CRITICAL_COUNT=$(pip-audit --format json 2>/dev/null | jq '[.[] | select(.vulns[].fix_versions != null)] | length' || echo "0")
+          echo "critical_count=$CRITICAL_COUNT" >> $GITHUB_OUTPUT
+
+          if [ "$CRITICAL_COUNT" -gt 0 ]; then
+            echo "::warning::Found $CRITICAL_COUNT critical vulnerabilities with available fixes"
+          fi
+
+      - name: Upload dependency report
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependency-security-report
+          path: |
+            dependency-report.txt
+            pip-audit.json
+          retention-days: 30
+
+  # ---------------------------------------------------------------------------
+  # Secret Scanning
+  # ---------------------------------------------------------------------------
+  secret-scan:
+    name: Secret Scanning
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
+
+      - name: Run TruffleHog
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: ./
+          base: ${{ github.event.repository.default_branch }}
+          head: HEAD
+          extra_args: --only-verified
+
+  # ---------------------------------------------------------------------------
+  # SAST (CodeQL)
+  # ---------------------------------------------------------------------------
+  codeql:
+    name: CodeQL Analysis
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: python
+          queries: security-and-quality
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:python"
+
+  # ---------------------------------------------------------------------------
+  # Container Image Scanning
+  # ---------------------------------------------------------------------------
+  container-scan:
+    name: Container Image Scan
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || github.event_name == 'schedule' || github.event.inputs.full_scan == 'true'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build image for scanning
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: false
+          load: true
+          tags: ${{ env.AGENT_ID }}:scan
+          cache-from: type=gha
+
+      - name: Run Trivy vulnerability scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.AGENT_ID }}:scan
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          severity: 'CRITICAL,HIGH,MEDIUM'
+          ignore-unfixed: true
+
+      - name: Upload Trivy SARIF
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: trivy-results.sarif
+          category: trivy
+
+      - name: Run Grype scan
+        uses: anchore/scan-action@v3
+        with:
+          image: ${{ env.AGENT_ID }}:scan
+          fail-build: false
+          severity-cutoff: high
+          output-format: sarif
+
+      - name: Generate container security report
+        run: |
+          docker run --rm \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            aquasec/trivy image \
+            --format table \
+            --severity CRITICAL,HIGH \
+            ${{ env.AGENT_ID }}:scan > container-security-report.txt || true
+
+      - name: Upload container report
+        uses: actions/upload-artifact@v4
+        with:
+          name: container-security-report
+          path: container-security-report.txt
+          retention-days: 30
+
+  # ---------------------------------------------------------------------------
+  # License Compliance
+  # ---------------------------------------------------------------------------
+  license-check:
+    name: License Compliance Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install pip-licenses
+
+      - name: Check licenses
+        run: |
+          pip-licenses --format=markdown --output-file=licenses.md
+          pip-licenses --format=json --output-file=licenses.json
+
+          # Check for copyleft licenses
+          COPYLEFT=$(pip-licenses --format=csv | grep -iE "GPL|AGPL|LGPL|SSPL" | wc -l)
+
+          if [ "$COPYLEFT" -gt 0 ]; then
+            echo "::warning::Found $COPYLEFT packages with copyleft licenses"
+            pip-licenses --format=csv | grep -iE "GPL|AGPL|LGPL|SSPL"
+          fi
+
+      - name: Upload license report
+        uses: actions/upload-artifact@v4
+        with:
+          name: license-report
+          path: |
+            licenses.md
+            licenses.json
+          retention-days: 90
+
+  # ---------------------------------------------------------------------------
+  # Infrastructure as Code Scanning
+  # ---------------------------------------------------------------------------
+  iac-scan:
+    name: IaC Security Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Checkov on Kubernetes manifests
+        uses: bridgecrewio/checkov-action@master
+        with:
+          directory: .
+          framework: kubernetes,dockerfile
+          output_format: sarif
+          output_file_path: checkov-results.sarif
+          soft_fail: true
+
+      - name: Upload Checkov SARIF
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: checkov-results.sarif
+          category: checkov
+
+      - name: Run Kubesec
+        run: |
+          if ls *.yaml 1> /dev/null 2>&1 || ls k8s/*.yaml 1> /dev/null 2>&1; then
+            docker run -i kubesec/kubesec:latest scan /dev/stdin < deployment.yaml > kubesec-report.json || true
+          fi
+        continue-on-error: true
+
+  # ---------------------------------------------------------------------------
+  # Security Report Summary
+  # ---------------------------------------------------------------------------
+  security-summary:
+    name: Security Summary
+    runs-on: ubuntu-latest
+    needs: [bandit, dependency-scan, secret-scan, codeql, license-check, iac-scan]
+    if: always()
+
+    steps:
+      - name: Download all reports
+        uses: actions/download-artifact@v4
+        with:
+          path: security-reports
+
+      - name: Generate summary
+        run: |
+          echo "# Security Scan Summary" > security-summary.md
+          echo "" >> security-summary.md
+          echo "## Scan Results" >> security-summary.md
+          echo "" >> security-summary.md
+          echo "| Check | Status |" >> security-summary.md
+          echo "|-------|--------|" >> security-summary.md
+          echo "| Bandit | ${{ needs.bandit.result }} |" >> security-summary.md
+          echo "| Dependency Scan | ${{ needs.dependency-scan.result }} |" >> security-summary.md
+          echo "| Secret Scan | ${{ needs.secret-scan.result }} |" >> security-summary.md
+          echo "| CodeQL | ${{ needs.codeql.result }} |" >> security-summary.md
+          echo "| License Check | ${{ needs.license-check.result }} |" >> security-summary.md
+          echo "| IaC Scan | ${{ needs.iac-scan.result }} |" >> security-summary.md
+
+          cat security-summary.md
+
+      - name: Upload summary
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-summary
+          path: security-summary.md
+          retention-days: 90
+
+      - name: Create issue for failures
+        if: |
+          needs.bandit.result == 'failure' ||
+          needs.dependency-scan.result == 'failure' ||
+          needs.secret-scan.result == 'failure'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = `Security Scan Failures - ${new Date().toISOString().split('T')[0]}`;
+            const body = `
+            ## Security Scan Summary
+
+            The following security scans have issues:
+
+            - Bandit: ${{ needs.bandit.result }}
+            - Dependency Scan: ${{ needs.dependency-scan.result }}
+            - Secret Scan: ${{ needs.secret-scan.result }}
+
+            Please review the security artifacts and address any findings.
+
+            [View Workflow Run](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})
+            `;
+
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: title,
+              body: body,
+              labels: ['security', 'automated']
+            });

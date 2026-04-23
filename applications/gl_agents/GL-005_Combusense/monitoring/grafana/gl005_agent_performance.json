@@ -1,0 +1,622 @@
+{
+  "dashboard": {
+    "id": null,
+    "uid": "gl005-agent-performance",
+    "title": "GL-005 CombustionControlAgent - Agent Performance Dashboard",
+    "tags": ["gl-005", "combustion-control", "agents", "performance"],
+    "timezone": "browser",
+    "schemaVersion": 38,
+    "version": 1,
+    "refresh": "10s",
+    "time": {
+      "from": "now-6h",
+      "to": "now"
+    },
+    "timepicker": {
+      "refresh_intervals": ["5s", "10s", "30s", "1m", "5m", "15m", "30m", "1h"],
+      "time_options": ["5m", "15m", "1h", "6h", "12h", "24h", "7d", "30d"]
+    },
+    "editable": true,
+    "fiscalYearStartMonth": 0,
+    "graphTooltip": 1,
+    "description": "Real-time agent-level performance metrics for GL-005 combustion control agents (Data Intake, Combustion Analysis, Control Optimizer, Command Execution, Audit & Safety)",
+    "links": [
+      {
+        "title": "GL-005 Combustion Metrics",
+        "url": "/d/gl005-combustion-metrics",
+        "type": "dashboard"
+      },
+      {
+        "title": "GL-005 Safety Monitoring",
+        "url": "/d/gl005-safety-monitoring",
+        "type": "dashboard"
+      }
+    ],
+    "panels": [
+      {
+        "id": 1,
+        "type": "row",
+        "title": "Control Loop Overview",
+        "gridPos": {"x": 0, "y": 0, "w": 24, "h": 1},
+        "collapsed": false
+      },
+      {
+        "id": 2,
+        "type": "stat",
+        "title": "Control Loop Latency (P95)",
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "gridPos": {"x": 0, "y": 1, "w": 6, "h": 4},
+        "description": "95th percentile control loop latency (target: <100ms)",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, sum(rate(gl005_control_loop_duration_seconds_bucket[5m])) by (le))",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "reduceOptions": {"values": false, "calcs": ["lastNotNull"]},
+          "orientation": "auto",
+          "textMode": "value_and_name",
+          "colorMode": "background",
+          "graphMode": "area"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "s",
+            "decimals": 3,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "green"},
+                {"value": 0.08, "color": "yellow"},
+                {"value": 0.1, "color": "red"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 3,
+        "type": "stat",
+        "title": "Control Frequency",
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "gridPos": {"x": 6, "y": 1, "w": 6, "h": 4},
+        "description": "Current control loop frequency (Hz)",
+        "targets": [
+          {
+            "expr": "gl005_control_frequency_hz",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "reduceOptions": {"values": false, "calcs": ["lastNotNull"]},
+          "orientation": "auto",
+          "textMode": "value_and_name",
+          "colorMode": "background",
+          "graphMode": "area"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "hertz",
+            "decimals": 1,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 5, "color": "yellow"},
+                {"value": 8, "color": "green"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 4,
+        "type": "stat",
+        "title": "Active Control Points",
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "gridPos": {"x": 12, "y": 1, "w": 6, "h": 4},
+        "description": "Number of burners under active control",
+        "targets": [
+          {
+            "expr": "sum(gl005_active_burners)",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "reduceOptions": {"values": false, "calcs": ["lastNotNull"]},
+          "orientation": "auto",
+          "textMode": "value_and_name",
+          "colorMode": "value",
+          "graphMode": "area"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "decimals": 0,
+            "color": {"mode": "thresholds"},
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "blue"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 5,
+        "type": "stat",
+        "title": "Overall Control Success Rate",
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "gridPos": {"x": 18, "y": 1, "w": 6, "h": 4},
+        "description": "Success rate for control loop executions (target: >99%)",
+        "targets": [
+          {
+            "expr": "sum(rate(gl005_control_loop_executions_total{status=\"success\"}[5m])) / sum(rate(gl005_control_loop_executions_total[5m])) * 100",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "reduceOptions": {"values": false, "calcs": ["lastNotNull"]},
+          "orientation": "auto",
+          "textMode": "value_and_name",
+          "colorMode": "background",
+          "graphMode": "area"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "decimals": 2,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 95, "color": "yellow"},
+                {"value": 99, "color": "green"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 6,
+        "type": "row",
+        "title": "Agent Execution Times",
+        "gridPos": {"x": 0, "y": 5, "w": 24, "h": 1},
+        "collapsed": false
+      },
+      {
+        "id": 7,
+        "type": "graph",
+        "title": "Agent 1: Data Intake - Execution Time",
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "gridPos": {"x": 0, "y": 6, "w": 8, "h": 7},
+        "description": "Execution time percentiles for Data Intake Agent (DCS/PLC/CEMS data acquisition)",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.50, sum(rate(gl005_agent_duration_seconds_bucket{agent=\"data_intake\"}[5m])) by (le))",
+            "refId": "A",
+            "legendFormat": "P50 (Median)"
+          },
+          {
+            "expr": "histogram_quantile(0.95, sum(rate(gl005_agent_duration_seconds_bucket{agent=\"data_intake\"}[5m])) by (le))",
+            "refId": "B",
+            "legendFormat": "P95"
+          },
+          {
+            "expr": "histogram_quantile(0.99, sum(rate(gl005_agent_duration_seconds_bucket{agent=\"data_intake\"}[5m])) by (le))",
+            "refId": "C",
+            "legendFormat": "P99"
+          }
+        ],
+        "yaxes": [
+          {"format": "s", "label": "Duration", "min": 0},
+          {"format": "short"}
+        ],
+        "legend": {"show": true, "alignAsTable": true, "avg": true, "max": true, "min": true, "current": true},
+        "thresholds": [
+          {"value": 0.05, "colorMode": "critical", "op": "gt", "fill": true, "line": true}
+        ]
+      },
+      {
+        "id": 8,
+        "type": "graph",
+        "title": "Agent 2: Combustion Analysis - Execution Time",
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "gridPos": {"x": 8, "y": 6, "w": 8, "h": 7},
+        "description": "Execution time percentiles for Combustion Analysis Agent (efficiency, emissions calculations)",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.50, sum(rate(gl005_agent_duration_seconds_bucket{agent=\"combustion_analysis\"}[5m])) by (le))",
+            "refId": "A",
+            "legendFormat": "P50 (Median)"
+          },
+          {
+            "expr": "histogram_quantile(0.95, sum(rate(gl005_agent_duration_seconds_bucket{agent=\"combustion_analysis\"}[5m])) by (le))",
+            "refId": "B",
+            "legendFormat": "P95"
+          },
+          {
+            "expr": "histogram_quantile(0.99, sum(rate(gl005_agent_duration_seconds_bucket{agent=\"combustion_analysis\"}[5m])) by (le))",
+            "refId": "C",
+            "legendFormat": "P99"
+          }
+        ],
+        "yaxes": [
+          {"format": "s", "label": "Duration", "min": 0},
+          {"format": "short"}
+        ],
+        "legend": {"show": true, "alignAsTable": true, "avg": true, "max": true, "min": true, "current": true},
+        "thresholds": [
+          {"value": 0.03, "colorMode": "critical", "op": "gt", "fill": true, "line": true}
+        ]
+      },
+      {
+        "id": 9,
+        "type": "graph",
+        "title": "Agent 3: Control Optimizer - Execution Time",
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "gridPos": {"x": 16, "y": 6, "w": 8, "h": 7},
+        "description": "Execution time percentiles for Control Optimizer Agent (PID + multi-objective optimization)",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.50, sum(rate(gl005_agent_duration_seconds_bucket{agent=\"control_optimizer\"}[5m])) by (le))",
+            "refId": "A",
+            "legendFormat": "P50 (Median)"
+          },
+          {
+            "expr": "histogram_quantile(0.95, sum(rate(gl005_agent_duration_seconds_bucket{agent=\"control_optimizer\"}[5m])) by (le))",
+            "refId": "B",
+            "legendFormat": "P95"
+          },
+          {
+            "expr": "histogram_quantile(0.99, sum(rate(gl005_agent_duration_seconds_bucket{agent=\"control_optimizer\"}[5m])) by (le))",
+            "refId": "C",
+            "legendFormat": "P99"
+          }
+        ],
+        "yaxes": [
+          {"format": "s", "label": "Duration", "min": 0},
+          {"format": "short"}
+        ],
+        "legend": {"show": true, "alignAsTable": true, "avg": true, "max": true, "min": true, "current": true},
+        "thresholds": [
+          {"value": 0.05, "colorMode": "critical", "op": "gt", "fill": true, "line": true}
+        ]
+      },
+      {
+        "id": 10,
+        "type": "graph",
+        "title": "Agent 4: Command Execution - Execution Time",
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "gridPos": {"x": 0, "y": 13, "w": 12, "h": 7},
+        "description": "Execution time percentiles for Command Execution Agent (DCS/PLC command writes)",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.50, sum(rate(gl005_agent_duration_seconds_bucket{agent=\"command_execution\"}[5m])) by (le))",
+            "refId": "A",
+            "legendFormat": "P50 (Median)"
+          },
+          {
+            "expr": "histogram_quantile(0.95, sum(rate(gl005_agent_duration_seconds_bucket{agent=\"command_execution\"}[5m])) by (le))",
+            "refId": "B",
+            "legendFormat": "P95"
+          },
+          {
+            "expr": "histogram_quantile(0.99, sum(rate(gl005_agent_duration_seconds_bucket{agent=\"command_execution\"}[5m])) by (le))",
+            "refId": "C",
+            "legendFormat": "P99"
+          }
+        ],
+        "yaxes": [
+          {"format": "s", "label": "Duration", "min": 0},
+          {"format": "short"}
+        ],
+        "legend": {"show": true, "alignAsTable": true, "avg": true, "max": true, "min": true, "current": true},
+        "thresholds": [
+          {"value": 0.02, "colorMode": "critical", "op": "gt", "fill": true, "line": true}
+        ]
+      },
+      {
+        "id": 11,
+        "type": "graph",
+        "title": "Agent 5: Audit & Safety - Execution Time",
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "gridPos": {"x": 12, "y": 13, "w": 12, "h": 7},
+        "description": "Execution time percentiles for Audit & Safety Agent (provenance tracking, safety validation)",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.50, sum(rate(gl005_agent_duration_seconds_bucket{agent=\"audit_safety\"}[5m])) by (le))",
+            "refId": "A",
+            "legendFormat": "P50 (Median)"
+          },
+          {
+            "expr": "histogram_quantile(0.95, sum(rate(gl005_agent_duration_seconds_bucket{agent=\"audit_safety\"}[5m])) by (le))",
+            "refId": "B",
+            "legendFormat": "P95"
+          },
+          {
+            "expr": "histogram_quantile(0.99, sum(rate(gl005_agent_duration_seconds_bucket{agent=\"audit_safety\"}[5m])) by (le))",
+            "refId": "C",
+            "legendFormat": "P99"
+          }
+        ],
+        "yaxes": [
+          {"format": "s", "label": "Duration", "min": 0},
+          {"format": "short"}
+        ],
+        "legend": {"show": true, "alignAsTable": true, "avg": true, "max": true, "min": true, "current": true},
+        "thresholds": [
+          {"value": 0.01, "colorMode": "critical", "op": "gt", "fill": true, "line": true}
+        ]
+      },
+      {
+        "id": 12,
+        "type": "row",
+        "title": "Agent Success Rates",
+        "gridPos": {"x": 0, "y": 20, "w": 24, "h": 1},
+        "collapsed": false
+      },
+      {
+        "id": 13,
+        "type": "stat",
+        "title": "Data Intake Success Rate",
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "gridPos": {"x": 0, "y": 21, "w": 5, "h": 5},
+        "targets": [
+          {
+            "expr": "sum(rate(gl005_agent_executions_total{agent=\"data_intake\",status=\"success\"}[5m])) / sum(rate(gl005_agent_executions_total{agent=\"data_intake\"}[5m])) * 100",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "reduceOptions": {"values": false, "calcs": ["lastNotNull"]},
+          "orientation": "auto",
+          "textMode": "value_and_name",
+          "colorMode": "background",
+          "graphMode": "area"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "decimals": 2,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 95, "color": "yellow"},
+                {"value": 99, "color": "green"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 14,
+        "type": "stat",
+        "title": "Combustion Analysis Success Rate",
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "gridPos": {"x": 5, "y": 21, "w": 5, "h": 5},
+        "targets": [
+          {
+            "expr": "sum(rate(gl005_agent_executions_total{agent=\"combustion_analysis\",status=\"success\"}[5m])) / sum(rate(gl005_agent_executions_total{agent=\"combustion_analysis\"}[5m])) * 100",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "reduceOptions": {"values": false, "calcs": ["lastNotNull"]},
+          "orientation": "auto",
+          "textMode": "value_and_name",
+          "colorMode": "background",
+          "graphMode": "area"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "decimals": 2,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 95, "color": "yellow"},
+                {"value": 99, "color": "green"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 15,
+        "type": "stat",
+        "title": "Control Optimizer Success Rate",
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "gridPos": {"x": 10, "y": 21, "w": 5, "h": 5},
+        "targets": [
+          {
+            "expr": "sum(rate(gl005_agent_executions_total{agent=\"control_optimizer\",status=\"success\"}[5m])) / sum(rate(gl005_agent_executions_total{agent=\"control_optimizer\"}[5m])) * 100",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "reduceOptions": {"values": false, "calcs": ["lastNotNull"]},
+          "orientation": "auto",
+          "textMode": "value_and_name",
+          "colorMode": "background",
+          "graphMode": "area"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "decimals": 2,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 95, "color": "yellow"},
+                {"value": 99, "color": "green"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 16,
+        "type": "stat",
+        "title": "Command Execution Success Rate",
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "gridPos": {"x": 15, "y": 21, "w": 5, "h": 5},
+        "targets": [
+          {
+            "expr": "sum(rate(gl005_agent_executions_total{agent=\"command_execution\",status=\"success\"}[5m])) / sum(rate(gl005_agent_executions_total{agent=\"command_execution\"}[5m])) * 100",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "reduceOptions": {"values": false, "calcs": ["lastNotNull"]},
+          "orientation": "auto",
+          "textMode": "value_and_name",
+          "colorMode": "background",
+          "graphMode": "area"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "decimals": 2,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 95, "color": "yellow"},
+                {"value": 99, "color": "green"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 17,
+        "type": "stat",
+        "title": "Audit & Safety Success Rate",
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "gridPos": {"x": 20, "y": 21, "w": 4, "h": 5},
+        "targets": [
+          {
+            "expr": "sum(rate(gl005_agent_executions_total{agent=\"audit_safety\",status=\"success\"}[5m])) / sum(rate(gl005_agent_executions_total{agent=\"audit_safety\"}[5m])) * 100",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "reduceOptions": {"values": false, "calcs": ["lastNotNull"]},
+          "orientation": "auto",
+          "textMode": "value_and_name",
+          "colorMode": "background",
+          "graphMode": "area"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "decimals": 2,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 95, "color": "yellow"},
+                {"value": 99, "color": "green"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 18,
+        "type": "row",
+        "title": "Agent Throughput",
+        "gridPos": {"x": 0, "y": 26, "w": 24, "h": 1},
+        "collapsed": false
+      },
+      {
+        "id": 19,
+        "type": "graph",
+        "title": "Agent Execution Rate (ops/sec)",
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "gridPos": {"x": 0, "y": 27, "w": 24, "h": 8},
+        "description": "Number of executions per second for each agent",
+        "targets": [
+          {
+            "expr": "sum(rate(gl005_agent_executions_total{agent=\"data_intake\"}[5m]))",
+            "refId": "A",
+            "legendFormat": "Data Intake"
+          },
+          {
+            "expr": "sum(rate(gl005_agent_executions_total{agent=\"combustion_analysis\"}[5m]))",
+            "refId": "B",
+            "legendFormat": "Combustion Analysis"
+          },
+          {
+            "expr": "sum(rate(gl005_agent_executions_total{agent=\"control_optimizer\"}[5m]))",
+            "refId": "C",
+            "legendFormat": "Control Optimizer"
+          },
+          {
+            "expr": "sum(rate(gl005_agent_executions_total{agent=\"command_execution\"}[5m]))",
+            "refId": "D",
+            "legendFormat": "Command Execution"
+          },
+          {
+            "expr": "sum(rate(gl005_agent_executions_total{agent=\"audit_safety\"}[5m]))",
+            "refId": "E",
+            "legendFormat": "Audit & Safety"
+          }
+        ],
+        "yaxes": [
+          {"format": "ops", "label": "Executions/sec", "min": 0},
+          {"format": "short"}
+        ],
+        "legend": {"show": true, "alignAsTable": true, "avg": true, "max": true, "current": true}
+      }
+    ],
+    "templating": {
+      "list": [
+        {
+          "name": "DS_PROMETHEUS",
+          "type": "datasource",
+          "query": "prometheus",
+          "current": {"text": "Prometheus", "value": "Prometheus"}
+        },
+        {
+          "name": "unit_id",
+          "type": "query",
+          "datasource": "${DS_PROMETHEUS}",
+          "query": "label_values(gl005_control_loop_duration_seconds, unit_id)",
+          "refresh": 1,
+          "multi": true,
+          "includeAll": true,
+          "allValue": ".*"
+        }
+      ]
+    },
+    "annotations": {
+      "list": [
+        {
+          "datasource": "${DS_PROMETHEUS}",
+          "enable": true,
+          "expr": "changes(gl005_application_info[5m]) > 0",
+          "name": "Deployments",
+          "tagKeys": "version",
+          "textFormat": "New deployment: {{version}}",
+          "titleFormat": "Deployment"
+        },
+        {
+          "datasource": "${DS_PROMETHEUS}",
+          "enable": true,
+          "expr": "gl005_safety_interlocks_triggered > 0",
+          "name": "Safety Events",
+          "titleFormat": "Safety Interlock Triggered"
+        }
+      ]
+    }
+  },
+  "overwrite": true,
+  "message": "GL-005 Agent Performance Dashboard v1.0.0"
+}

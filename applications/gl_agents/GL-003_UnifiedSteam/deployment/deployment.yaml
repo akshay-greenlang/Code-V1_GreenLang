@@ -1,0 +1,767 @@
+# =============================================================================
+# GL-003 UNIFIEDSTEAM - Production Kubernetes Deployment
+# Steam System Optimization Agent
+# =============================================================================
+# Enterprise-grade deployment with:
+# - Rolling update strategy (zero-downtime deployments)
+# - Pod anti-affinity for high availability
+# - Security context (non-root, read-only filesystem, dropped capabilities)
+# - Liveness, readiness, and startup probes
+# - Resource limits and requests
+# - Environment variables from ConfigMap and Secrets
+# =============================================================================
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: unifiedsteam
+  namespace: greenlang-steam
+  labels:
+    app.kubernetes.io/name: unifiedsteam
+    app.kubernetes.io/instance: unifiedsteam-production
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/component: api-server
+    app.kubernetes.io/part-of: greenlang
+    app.kubernetes.io/managed-by: kubectl
+    agent-id: gl-003
+    tier: steam-optimization
+    environment: production
+  annotations:
+    deployment.kubernetes.io/revision: "1"
+    kubernetes.io/change-cause: "Production deployment of GL-003 UNIFIEDSTEAM v1.0.0"
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9090"
+    prometheus.io/path: "/metrics"
+spec:
+  # =============================================================================
+  # Replica Configuration
+  # =============================================================================
+  replicas: 3
+  revisionHistoryLimit: 10
+
+  # =============================================================================
+  # Rolling Update Strategy (Zero-Downtime)
+  # =============================================================================
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      # Maximum number of pods that can be created over the desired number
+      maxSurge: 1
+      # Maximum number of pods that can be unavailable during update
+      # Set to 0 to ensure all existing pods are running before new ones are created
+      maxUnavailable: 0
+
+  # =============================================================================
+  # Pod Selector
+  # =============================================================================
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: unifiedsteam
+      app.kubernetes.io/instance: unifiedsteam-production
+
+  # =============================================================================
+  # Pod Template
+  # =============================================================================
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: unifiedsteam
+        app.kubernetes.io/instance: unifiedsteam-production
+        app.kubernetes.io/version: "1.0.0"
+        app.kubernetes.io/component: api-server
+        agent-id: gl-003
+        tier: steam-optimization
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+        prometheus.io/path: "/metrics"
+        # Istio sidecar injection
+        sidecar.istio.io/inject: "true"
+        # Force pod restart on config changes (use with Helm)
+        checksum/config: "{{ include (print $.Template.BasePath \"/configmap.yaml\") . | sha256sum }}"
+        checksum/secrets: "{{ include (print $.Template.BasePath \"/secrets.yaml\") . | sha256sum }}"
+
+    spec:
+      # =============================================================================
+      # Service Account
+      # =============================================================================
+      serviceAccountName: unifiedsteam-sa
+      automountServiceAccountToken: true
+
+      # =============================================================================
+      # Pod Security Context (Security Hardening)
+      # =============================================================================
+      securityContext:
+        # Run as non-root user
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        # Secure computing mode
+        seccompProfile:
+          type: RuntimeDefault
+        # Supplemental groups for file access
+        supplementalGroups:
+          - 1000
+
+      # =============================================================================
+      # Graceful Shutdown
+      # =============================================================================
+      terminationGracePeriodSeconds: 60
+
+      # =============================================================================
+      # DNS Configuration
+      # =============================================================================
+      dnsPolicy: ClusterFirst
+      dnsConfig:
+        options:
+          - name: ndots
+            value: "2"
+          - name: single-request-reopen
+
+      # =============================================================================
+      # Init Containers (Dependency Checks)
+      # =============================================================================
+      initContainers:
+        # Wait for Kafka to be available
+        - name: wait-for-kafka
+          image: busybox:1.36
+          imagePullPolicy: IfNotPresent
+          command:
+            - sh
+            - -c
+            - |
+              echo "Waiting for Kafka..."
+              until nc -z kafka.greenlang-steam.svc.cluster.local 9092; do
+                echo "Kafka not ready, waiting..."
+                sleep 2
+              done
+              echo "Kafka is ready!"
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1000
+            capabilities:
+              drop:
+                - ALL
+          resources:
+            requests:
+              cpu: "10m"
+              memory: "16Mi"
+            limits:
+              cpu: "50m"
+              memory: "32Mi"
+
+        # Wait for Redis to be available
+        - name: wait-for-redis
+          image: busybox:1.36
+          imagePullPolicy: IfNotPresent
+          command:
+            - sh
+            - -c
+            - |
+              echo "Waiting for Redis..."
+              until nc -z redis.greenlang-steam.svc.cluster.local 6379; do
+                echo "Redis not ready, waiting..."
+                sleep 2
+              done
+              echo "Redis is ready!"
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1000
+            capabilities:
+              drop:
+                - ALL
+          resources:
+            requests:
+              cpu: "10m"
+              memory: "16Mi"
+            limits:
+              cpu: "50m"
+              memory: "32Mi"
+
+        # Wait for PostgreSQL to be available
+        - name: wait-for-postgres
+          image: busybox:1.36
+          imagePullPolicy: IfNotPresent
+          command:
+            - sh
+            - -c
+            - |
+              echo "Waiting for PostgreSQL..."
+              until nc -z postgres.greenlang-steam.svc.cluster.local 5432; do
+                echo "PostgreSQL not ready, waiting..."
+                sleep 2
+              done
+              echo "PostgreSQL is ready!"
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1000
+            capabilities:
+              drop:
+                - ALL
+          resources:
+            requests:
+              cpu: "10m"
+              memory: "16Mi"
+            limits:
+              cpu: "50m"
+              memory: "32Mi"
+
+      # =============================================================================
+      # Main Container
+      # =============================================================================
+      containers:
+        - name: unifiedsteam
+          image: greenlang/gl-003-unifiedsteam:1.0.0
+          imagePullPolicy: IfNotPresent
+
+          # ===========================================================================
+          # Container Security Context (Hardened)
+          # ===========================================================================
+          securityContext:
+            # Prevent privilege escalation
+            allowPrivilegeEscalation: false
+            # Read-only root filesystem (writable via emptyDir volumes)
+            readOnlyRootFilesystem: true
+            # Run as non-root
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
+            # Drop all Linux capabilities
+            capabilities:
+              drop:
+                - ALL
+            # Secure computing mode
+            seccompProfile:
+              type: RuntimeDefault
+
+          # ===========================================================================
+          # Container Ports
+          # ===========================================================================
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+            - name: grpc
+              containerPort: 50051
+              protocol: TCP
+            - name: metrics
+              containerPort: 9090
+              protocol: TCP
+
+          # ===========================================================================
+          # Environment Variables from ConfigMap
+          # ===========================================================================
+          env:
+            # Application configuration
+            - name: UNIFIEDSTEAM_ENV
+              value: "production"
+            - name: UNIFIEDSTEAM_LOG_LEVEL
+              valueFrom:
+                configMapKeyRef:
+                  name: unifiedsteam-config
+                  key: log-level
+            - name: UNIFIEDSTEAM_API_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: unifiedsteam-config
+                  key: api-port
+            - name: UNIFIEDSTEAM_GRPC_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: unifiedsteam-config
+                  key: grpc-port
+            - name: UNIFIEDSTEAM_METRICS_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: unifiedsteam-config
+                  key: metrics-port
+
+            # Pod metadata (for logging and tracing)
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: POD_SERVICE_ACCOUNT
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.serviceAccountName
+
+            # Kafka configuration
+            - name: KAFKA_BROKERS
+              valueFrom:
+                configMapKeyRef:
+                  name: unifiedsteam-config
+                  key: kafka-brokers
+            - name: KAFKA_CONSUMER_GROUP
+              valueFrom:
+                configMapKeyRef:
+                  name: unifiedsteam-config
+                  key: kafka-consumer-group
+            - name: KAFKA_AUTO_OFFSET_RESET
+              valueFrom:
+                configMapKeyRef:
+                  name: unifiedsteam-config
+                  key: kafka-auto-offset-reset
+
+            # Redis configuration
+            - name: REDIS_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: unifiedsteam-config
+                  key: redis-host
+            - name: REDIS_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: unifiedsteam-config
+                  key: redis-port
+            - name: REDIS_DB
+              valueFrom:
+                configMapKeyRef:
+                  name: unifiedsteam-config
+                  key: redis-db
+
+            # OPC-UA configuration
+            - name: OPCUA_ENDPOINT
+              valueFrom:
+                configMapKeyRef:
+                  name: unifiedsteam-config
+                  key: opcua-endpoint
+            - name: OPCUA_SECURITY_MODE
+              valueFrom:
+                configMapKeyRef:
+                  name: unifiedsteam-config
+                  key: opcua-security-mode
+
+            # OpenTelemetry configuration
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              valueFrom:
+                configMapKeyRef:
+                  name: unifiedsteam-config
+                  key: otel-endpoint
+            - name: OTEL_SERVICE_NAME
+              value: "gl-003-unifiedsteam"
+            - name: OTEL_RESOURCE_ATTRIBUTES
+              value: "service.namespace=greenlang-steam,service.version=1.0.0,deployment.environment=production"
+
+            # ===========================================================================
+            # Environment Variables from Secrets
+            # ===========================================================================
+            # Database credentials
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: unifiedsteam-secrets
+                  key: database-url
+
+            # API secret key
+            - name: API_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: unifiedsteam-secrets
+                  key: api-secret-key
+
+            # Redis password
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: unifiedsteam-secrets
+                  key: redis-password
+
+            # Kafka credentials (if SASL enabled)
+            - name: KAFKA_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: unifiedsteam-secrets
+                  key: kafka-username
+                  optional: true
+            - name: KAFKA_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: unifiedsteam-secrets
+                  key: kafka-password
+                  optional: true
+
+            # OPC-UA credentials
+            - name: OPCUA_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: unifiedsteam-secrets
+                  key: opcua-username
+            - name: OPCUA_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: unifiedsteam-secrets
+                  key: opcua-password
+
+            # Encryption key
+            - name: ENCRYPTION_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: unifiedsteam-secrets
+                  key: encryption-key
+
+          # ===========================================================================
+          # Resource Limits and Requests
+          # ===========================================================================
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "1Gi"
+              ephemeral-storage: "1Gi"
+            limits:
+              cpu: "2000m"
+              memory: "4Gi"
+              ephemeral-storage: "5Gi"
+
+          # ===========================================================================
+          # Liveness Probe - Is the container running?
+          # ===========================================================================
+          livenessProbe:
+            httpGet:
+              path: /api/v1/health
+              port: http
+              httpHeaders:
+                - name: X-Health-Check
+                  value: "liveness"
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+            successThreshold: 1
+
+          # ===========================================================================
+          # Readiness Probe - Is the container ready to serve traffic?
+          # ===========================================================================
+          readinessProbe:
+            httpGet:
+              path: /api/v1/ready
+              port: http
+              httpHeaders:
+                - name: X-Health-Check
+                  value: "readiness"
+            initialDelaySeconds: 15
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+            successThreshold: 1
+
+          # ===========================================================================
+          # Startup Probe - For slow-starting containers
+          # ===========================================================================
+          startupProbe:
+            httpGet:
+              path: /api/v1/health
+              port: http
+              httpHeaders:
+                - name: X-Health-Check
+                  value: "startup"
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+            # Allow up to 150 seconds for startup (30 * 5s)
+            failureThreshold: 30
+
+          # ===========================================================================
+          # Volume Mounts
+          # ===========================================================================
+          volumeMounts:
+            # Configuration files
+            - name: config
+              mountPath: /app/config
+              readOnly: true
+            # Writable data directory
+            - name: data
+              mountPath: /app/data
+            # Logs directory (writable)
+            - name: logs
+              mountPath: /app/logs
+            # ML models (read-only)
+            - name: models
+              mountPath: /app/models
+              readOnly: true
+            # Temporary directory (required for read-only root filesystem)
+            - name: tmp
+              mountPath: /tmp
+            # Python cache (required for read-only root filesystem)
+            - name: python-cache
+              mountPath: /app/.cache
+            # TLS certificates
+            - name: tls-certs
+              mountPath: /app/certs
+              readOnly: true
+
+          # ===========================================================================
+          # Lifecycle Hooks
+          # ===========================================================================
+          lifecycle:
+            preStop:
+              exec:
+                # Graceful shutdown - give connections time to drain
+                command:
+                  - /bin/sh
+                  - -c
+                  - |
+                    echo "PreStop hook: Starting graceful shutdown..."
+                    sleep 5
+                    echo "PreStop hook: Shutdown complete"
+
+      # =============================================================================
+      # Volumes
+      # =============================================================================
+      volumes:
+        # ConfigMap for application configuration
+        - name: config
+          configMap:
+            name: unifiedsteam-config
+            defaultMode: 0444
+
+        # Persistent volume for data
+        - name: data
+          persistentVolumeClaim:
+            claimName: unifiedsteam-data
+
+        # EmptyDir for logs (ephemeral)
+        - name: logs
+          emptyDir:
+            sizeLimit: "1Gi"
+
+        # Persistent volume for ML models
+        - name: models
+          persistentVolumeClaim:
+            claimName: unifiedsteam-models
+            readOnly: true
+
+        # Temporary directory for read-only root filesystem
+        - name: tmp
+          emptyDir:
+            sizeLimit: "500Mi"
+
+        # Python cache directory
+        - name: python-cache
+          emptyDir:
+            sizeLimit: "256Mi"
+
+        # TLS certificates from Secret
+        - name: tls-certs
+          secret:
+            secretName: unifiedsteam-tls
+            defaultMode: 0400
+            optional: true
+
+      # =============================================================================
+      # Pod Anti-Affinity (High Availability)
+      # =============================================================================
+      affinity:
+        # Spread pods across different nodes
+        podAntiAffinity:
+          # Prefer to schedule on different nodes (soft constraint)
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app.kubernetes.io/name
+                      operator: In
+                      values:
+                        - unifiedsteam
+                topologyKey: kubernetes.io/hostname
+
+          # Require scheduling on different availability zones (hard constraint)
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: app.kubernetes.io/name
+                    operator: In
+                    values:
+                      - unifiedsteam
+              topologyKey: topology.kubernetes.io/zone
+              # Allow multiple pods per zone but not more than 2
+              # namespaceSelector: {} # All namespaces
+
+        # Prefer nodes labeled for compute workloads
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 50
+              preference:
+                matchExpressions:
+                  - key: node-type
+                    operator: In
+                    values:
+                      - compute
+                      - general
+            - weight: 30
+              preference:
+                matchExpressions:
+                  - key: workload-type
+                    operator: In
+                    values:
+                      - steam-optimization
+                      - industrial
+
+      # =============================================================================
+      # Topology Spread Constraints (Multi-Zone Distribution)
+      # =============================================================================
+      topologySpreadConstraints:
+        # Spread across availability zones
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: unifiedsteam
+
+        # Spread across nodes within each zone
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: unifiedsteam
+
+      # =============================================================================
+      # Tolerations (for dedicated nodes)
+      # =============================================================================
+      tolerations:
+        - key: "dedicated"
+          operator: "Equal"
+          value: "greenlang"
+          effect: "NoSchedule"
+        - key: "workload"
+          operator: "Equal"
+          value: "steam-optimization"
+          effect: "NoSchedule"
+
+      # =============================================================================
+      # Image Pull Secrets
+      # =============================================================================
+      imagePullSecrets:
+        - name: regcred
+
+---
+# =============================================================================
+# ServiceAccount for the application
+# =============================================================================
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: unifiedsteam-sa
+  namespace: greenlang-steam
+  labels:
+    app.kubernetes.io/name: unifiedsteam
+    app.kubernetes.io/component: serviceaccount
+    app.kubernetes.io/part-of: greenlang
+  annotations:
+    # AWS IAM Role for Service Accounts (if using EKS)
+    # eks.amazonaws.com/role-arn: arn:aws:iam::123456789012:role/unifiedsteam-role
+    # GCP Workload Identity (if using GKE)
+    # iam.gke.io/gcp-service-account: unifiedsteam@project-id.iam.gserviceaccount.com
+automountServiceAccountToken: true
+
+---
+# =============================================================================
+# RBAC - Role for application permissions
+# =============================================================================
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: unifiedsteam-role
+  namespace: greenlang-steam
+  labels:
+    app.kubernetes.io/name: unifiedsteam
+    app.kubernetes.io/component: rbac
+rules:
+  # Allow reading ConfigMaps
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["get", "list", "watch"]
+  # Allow reading Secrets (for dynamic secret rotation)
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get", "list", "watch"]
+  # Allow reading own Pod info
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list"]
+
+---
+# =============================================================================
+# RBAC - RoleBinding
+# =============================================================================
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: unifiedsteam-rolebinding
+  namespace: greenlang-steam
+  labels:
+    app.kubernetes.io/name: unifiedsteam
+    app.kubernetes.io/component: rbac
+subjects:
+  - kind: ServiceAccount
+    name: unifiedsteam-sa
+    namespace: greenlang-steam
+roleRef:
+  kind: Role
+  name: unifiedsteam-role
+  apiGroup: rbac.authorization.k8s.io
+
+---
+# =============================================================================
+# PersistentVolumeClaim for data storage
+# =============================================================================
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: unifiedsteam-data
+  namespace: greenlang-steam
+  labels:
+    app.kubernetes.io/name: unifiedsteam
+    app.kubernetes.io/component: storage
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 20Gi
+  storageClassName: standard
+  # For production, use a more resilient storage class
+  # storageClassName: gp3  # AWS EBS gp3
+  # storageClassName: pd-ssd  # GCP SSD persistent disk
+
+---
+# =============================================================================
+# PersistentVolumeClaim for ML models (ReadOnlyMany for shared access)
+# =============================================================================
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: unifiedsteam-models
+  namespace: greenlang-steam
+  labels:
+    app.kubernetes.io/name: unifiedsteam
+    app.kubernetes.io/component: storage
+spec:
+  accessModes:
+    - ReadOnlyMany
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: standard

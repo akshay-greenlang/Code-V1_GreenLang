@@ -25,6 +25,14 @@ class TieBreakReasons:
     uncertainty_penalty: int = 0
     recency_penalty: int = 0
     license_penalty: int = 0          # 0 preferred class, 10 connector-only
+    # Wave 3 (gold-eval): activity-text alignment penalty. 0 when the
+    # factor's id/fuel_type/tags carry every query token, 20 when the
+    # record looks semantically unrelated. Weighted heavily (x2) vs. the
+    # other 10 signals so that a semantic miss can outrank a one-notch
+    # geography or vintage advantage — the gold-eval showed the tie-
+    # break was picking electricity factors for freight queries because
+    # all the other signals were tied at 0.
+    activity_match_penalty: int = 0
     notes: List[str] = field(default_factory=list)
 
     def score(self) -> int:
@@ -40,6 +48,7 @@ class TieBreakReasons:
             + self.uncertainty_penalty
             + self.recency_penalty
             + self.license_penalty
+            + self.activity_match_penalty
         )
 
     def one_liner(self) -> str:
@@ -165,12 +174,53 @@ def score_license(redistribution_class: Optional[str]) -> int:
     return mapping.get(str(redistribution_class), 5)
 
 
+def score_activity_match(
+    record: Any,
+    activity_tokens: Optional[List[str]],
+) -> int:
+    """Penalty for poor alignment between the activity text and the factor.
+
+    0  — every query token appears in the factor's id/fuel/tags blob
+    4  — at least one token matches
+    12 — no tokens match but we have a token list (means the record is
+         semantically unrelated to the request)
+    0  — no tokens at all (pure geography resolution)
+
+    The asymmetric scale keeps the penalty competitive with the
+    ``geography_distance`` signal (0-10) — a semantic miss must
+    decisively lose to a semantic hit even when geography and source
+    authority are tied.
+    """
+    if not activity_tokens:
+        return 0
+    blob_parts: List[str] = []
+    for attr in ("factor_id", "fuel_type", "unit", "notes"):
+        val = getattr(record, attr, None)
+        if val:
+            blob_parts.append(str(val).lower())
+    tags = getattr(record, "tags", None) or []
+    for t in tags:
+        blob_parts.append(str(t).lower())
+    blob = " ".join(blob_parts)
+    if not blob:
+        return 12
+    hits = sum(1 for tok in activity_tokens if tok and tok in blob)
+    if hits == 0:
+        return 12
+    # Proportional reward: 0 penalty when all tokens match, ramping up
+    # to 4 when only one matches. Cap at 4 so that activity mismatch
+    # never dominates a vintage-mismatch gap of 10.
+    miss_ratio = 1.0 - (hits / max(1, len(activity_tokens)))
+    return int(round(miss_ratio * 4))
+
+
 def build_tiebreak(
     record: Any,
     *,
     request_geo: Optional[str],
     request_date: date,
     request_granularity: Optional[str] = None,
+    activity_tokens: Optional[List[str]] = None,
 ) -> TieBreakReasons:
     tb = TieBreakReasons()
     tb.geography_distance = score_geography(
@@ -185,6 +235,7 @@ def build_tiebreak(
     )
     tb.verification_penalty = score_verification(record)
     tb.license_penalty = score_license(getattr(record, "redistribution_class", None))
+    tb.activity_match_penalty = score_activity_match(record, activity_tokens)
 
     # Uncertainty: lower 95% CI is better.
     ci = getattr(record, "uncertainty_95ci", None)

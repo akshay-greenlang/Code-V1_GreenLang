@@ -139,3 +139,128 @@ spec:
             summary: "factors-api tenant mismatch detected"
             description: "A request was observed where the X-GreenLang-Tier header disagrees with the JWT claim. Possible credential replay or middleware bug. Page the security on-call."
             runbook_url: "https://github.com/greenlang/greenlang/blob/main/docs/deployment/FACTORS-API-DEPLOY.md#incident-tenant-leak"
+
+    # -----------------------------------------------------------------------
+    # DEP2 — Factors-specific resolve / entitlement / signing metrics
+    # -----------------------------------------------------------------------
+    # Emitted by greenlang/factors/factors_app.py (prometheus_client). The
+    # metric families below were added during DEP2 and reference the CTO
+    # Master ToDo rows for "resolve p95", "entitlement denials spike",
+    # "signed-receipt failures", "source-watch health", "cannot resolve
+    # safely". Runbook section IDs map 1:1 to the alert name slug.
+    # -----------------------------------------------------------------------
+    - name: factors-api.resolve
+      interval: 30s
+      rules:
+        # p95 latency of /v1/resolve exceeds the SLO (500ms) for 5m.
+        - alert: FactorsResolveP95High
+          expr: |
+            histogram_quantile(
+              0.95,
+              sum by (le, family) (
+                rate(factors_resolve_latency_seconds_bucket[5m])
+              )
+            ) > 0.5
+          for: 5m
+          labels:
+            severity: warning
+            service: factors-api
+            subsystem: resolve
+            slo: resolve-latency-p95
+          annotations:
+            summary: "factors resolve p95 > 500ms ({{ $labels.family }})"
+            description: "Resolve p95 for family={{ $labels.family }} is {{ $value | humanizeDuration }} (SLO 500ms). Check pgvector latency, embedding-model calls, and fallback_rank distribution."
+            runbook_url: "https://github.com/greenlang/greenlang/blob/main/deployment/runbooks/factors_incidents.md#resolve-latency"
+
+        # Resolve error-rate (outcome!=success) exceeds 1% of total for 5m.
+        - alert: FactorsResolveErrorRateHigh
+          expr: |
+            (
+              sum(rate(factors_resolve_requests_total{outcome!="success"}[5m]))
+              /
+              clamp_min(sum(rate(factors_resolve_requests_total[5m])), 1e-9)
+            ) > 0.01
+          for: 5m
+          labels:
+            severity: critical
+            service: factors-api
+            subsystem: resolve
+            slo: resolve-error-rate
+            pagerduty_service: greenlang-factors
+          annotations:
+            summary: "factors resolve error-rate > 1%"
+            description: "Resolve error-rate is {{ $value | humanizePercentage }} over 5m. Inspect outcome labels and per-family breakdown; check DB, method packs, and recent deploys."
+            runbook_url: "https://github.com/greenlang/greenlang/blob/main/deployment/runbooks/factors_incidents.md#bad-release"
+
+        # Methodology gap signal — cannot_resolve_safely indicates we've hit
+        # a request where no fallback tier is allowed (e.g. strict method
+        # profile + no matching factor). >5/min sustained => pack gap.
+        - alert: FactorsCannotResolveSafelySpike
+          expr: |
+            sum(rate(factors_cannot_resolve_safely_total[5m])) * 60 > 5
+          for: 10m
+          labels:
+            severity: warning
+            service: factors-api
+            subsystem: resolve
+          annotations:
+            summary: "factors cannot_resolve_safely spike ({{ $value | humanize }}/min)"
+            description: "Cannot-resolve-safely events exceeded 5/min for 10m. Indicates methodology gap in pack={{ $labels.pack_id }} / profile={{ $labels.method_profile }}. Engage methodology lead."
+            runbook_url: "https://github.com/greenlang/greenlang/blob/main/deployment/runbooks/factors_incidents.md#wrong-factor"
+
+    - name: factors-api.entitlements
+      interval: 30s
+      rules:
+        # Spike of entitlement denials — could indicate probing / stolen key
+        # or a botched tier migration. 10/min over 10m is the trigger.
+        - alert: FactorsEntitlementDenialsSpike
+          expr: |
+            sum(rate(factors_entitlement_denials_total[5m])) * 60 > 10
+          for: 10m
+          labels:
+            severity: warning
+            service: factors-api
+            subsystem: entitlements
+          annotations:
+            summary: "factors entitlement denials > 10/min"
+            description: "Entitlement denials are {{ $value | humanize }}/min over 10m. Class={{ $labels.class }}, tier={{ $labels.tier }}. Check for credential probing or tier-migration bug."
+            runbook_url: "https://github.com/greenlang/greenlang/blob/main/deployment/runbooks/factors_incidents.md#api-outage"
+
+    - name: factors-api.signing-receipts
+      interval: 30s
+      rules:
+        # ANY signed-receipt failure is a critical audit-trail bug.
+        # 1-minute window catches a single failure; the base rule above
+        # (FactorsSigningFailures) covers a different metric (5m window)
+        # so both fire in parallel without de-duplicating.
+        - alert: FactorsSignedReceiptFailures
+          expr: |
+            increase(factors_signed_receipt_failures_total[1m]) > 0
+          for: 0m
+          labels:
+            severity: critical
+            service: factors-api
+            subsystem: signing
+            pagerduty_service: greenlang-factors
+          annotations:
+            summary: "factors signed-receipt failure detected ({{ $labels.reason }})"
+            description: "A signed-receipt failure occurred in the last minute (reason={{ $labels.reason }}). Do NOT disable signing — investigate key-mount, Vault health, and signing.py logs."
+            runbook_url: "https://github.com/greenlang/greenlang/blob/main/deployment/runbooks/factors_incidents.md#signed-receipt-verification-failure"
+
+    - name: factors-api.source-watch
+      interval: 60s
+      rules:
+        # Three consecutive failures for any source_id indicates the watch
+        # is down for that source — data can drift silently without this.
+        - alert: FactorsSourceWatchDown
+          expr: |
+            sum by (source_id) (increase(factors_source_watch_failures_total[30m])) >= 3
+          for: 15m
+          labels:
+            severity: warning
+            service: factors-api
+            subsystem: source-watch
+          annotations:
+            summary: "factors source-watch down for {{ $labels.source_id }}"
+            description: "{{ $labels.source_id }} has logged 3+ watch failures in the last 30m. Check the source URL, auth creds in Vault, and network egress."
+            runbook_url: "https://github.com/greenlang/greenlang/blob/main/deployment/runbooks/factors_incidents.md#source-license-issue"

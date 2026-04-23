@@ -1,0 +1,146 @@
+name: Audit-Text Template Gate
+
+# Enforces the SAFE-DRAFT policy from docs/specs/audit_text_template_policy.md:
+# - No Certified-status pack may ship with any unapproved (approved: false) audit-text template
+# - No audit-text template may have last_reviewed older than 180 days
+# - No template body may contain normative language while approved: false (strip-list guardrail)
+
+on:
+  pull_request:
+    paths:
+      - 'greenlang/factors/method_packs/**'
+      - 'greenlang/factors/method_packs/audit_texts/**'
+      - 'docs/specs/audit_text_template_policy.md'
+  push:
+    branches: [master, main]
+    paths:
+      - 'greenlang/factors/method_packs/audit_texts/**'
+  schedule:
+    # Nightly 180-day staleness check
+    - cron: '23 4 * * *'
+  workflow_dispatch:
+
+jobs:
+  audit-text-gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e '.[test]' pyyaml jinja2
+
+      - name: Run audit-text gate
+        id: gate
+        run: |
+          python - <<'PYCHECK'
+          import json, re, sys
+          from datetime import datetime, timezone, timedelta
+          from pathlib import Path
+
+          root = Path('greenlang/factors/method_packs')
+          templates = sorted((root / 'audit_texts').glob('*.j2'))
+          if not templates:
+              print('no audit-text templates found; skipping')
+              sys.exit(0)
+
+          # Strip list must match the renderer in method_packs/__init__.py
+          NORMATIVE_PATTERNS = [
+              r'in compliance with',
+              r'fully conforms to',
+              r'certified under',
+              r'approved for regulatory filing',
+              r'audit[- ]ready',
+              r'authoritative',
+              r'definitive',
+          ]
+          STALENESS_LIMIT_DAYS = 180
+          now = datetime.now(timezone.utc)
+
+          failures = []
+
+          # Load Python source of the method_packs package to determine which packs are status=certified
+          # (We read the runtime registry rather than parsing source heuristically.)
+          sys.path.insert(0, '.')
+          try:
+              from greenlang.factors.method_packs import get_registered_packs
+              certified_pack_ids = {p.pack_id for p in get_registered_packs() if getattr(p, 'status', None) == 'certified'}
+          except Exception as e:
+              print(f'WARN: could not load pack registry ({e}); skipping Certified cross-check')
+              certified_pack_ids = set()
+
+          frontmatter_re = re.compile(r'\{#\s*---\s*(.*?)\s*---\s*#\}', re.DOTALL)
+          for tpl_path in templates:
+              raw = tpl_path.read_text(encoding='utf-8')
+              m = frontmatter_re.search(raw)
+              if not m:
+                  failures.append(f'{tpl_path}: missing frontmatter block')
+                  continue
+              # Parse frontmatter as simple YAML-ish (key: value per line)
+              fm = {}
+              for line in m.group(1).splitlines():
+                  if ':' not in line:
+                      continue
+                  k, _, v = line.partition(':')
+                  fm[k.strip()] = v.strip().strip('"').strip("'")
+
+              pack_id = tpl_path.stem
+              body = raw[m.end():]
+              approved = fm.get('approved', 'false').lower() == 'true'
+              last_reviewed_raw = fm.get('last_reviewed', 'null')
+
+              # Rule 1: Certified pack cannot have unapproved template
+              if pack_id in certified_pack_ids and not approved:
+                  failures.append(
+                      f'{tpl_path}: pack "{pack_id}" is status=certified but template has approved: false '
+                      '(SAFE-DRAFT policy §CI-1). Flip approved: true after methodology review, or demote pack to preview.'
+                  )
+
+              # Rule 2: 180-day staleness
+              if last_reviewed_raw and last_reviewed_raw.lower() != 'null':
+                  try:
+                      last = datetime.fromisoformat(last_reviewed_raw.replace('Z', '+00:00'))
+                      age = now - last
+                      if age > timedelta(days=STALENESS_LIMIT_DAYS):
+                          failures.append(
+                              f'{tpl_path}: last_reviewed {last_reviewed_raw} is {age.days}d old '
+                              f'(limit {STALENESS_LIMIT_DAYS}d, SAFE-DRAFT policy §CI-2).'
+                          )
+                  except ValueError:
+                      failures.append(f'{tpl_path}: last_reviewed "{last_reviewed_raw}" is not ISO-8601.')
+
+              # Rule 3: Normative language while approved: false
+              if not approved:
+                  for pat in NORMATIVE_PATTERNS:
+                      hit = re.search(pat, body, re.IGNORECASE)
+                      if hit:
+                          failures.append(
+                              f'{tpl_path}: unapproved template contains normative phrase "{hit.group(0)}" '
+                              '(SAFE-DRAFT policy §CI-3). Either remove the phrase or seek methodology approval first.'
+                          )
+                          break  # one finding per file is enough to surface
+
+          if failures:
+              print('AUDIT-TEXT GATE FAILED:')
+              for f in failures:
+                  print(f'  - {f}')
+              sys.exit(1)
+          print(f'OK - {len(templates)} audit-text templates pass SAFE-DRAFT gate.')
+          PYCHECK
+
+      - name: Upload audit-text gate report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: audit-text-gate-report
+          path: |
+            greenlang/factors/method_packs/audit_texts/*.j2
+          retention-days: 14

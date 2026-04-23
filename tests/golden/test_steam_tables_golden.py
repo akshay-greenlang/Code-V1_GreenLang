@@ -20,7 +20,7 @@ import pytest
 from decimal import Decimal
 import hashlib
 
-from greenlang.calculations.steam_tables import (
+from greenlang.calculation.physics.steam_tables import (
     IAPWSIF97,
     IAPWSIF97Constants,
     SteamProperties,

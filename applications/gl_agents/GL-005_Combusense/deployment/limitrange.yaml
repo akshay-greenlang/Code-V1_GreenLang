@@ -1,0 +1,118 @@
+# GL-005 CombustionControlAgent - LimitRange
+# Sets default resource requests/limits and constraints for containers
+# Ensures all containers have appropriate resource allocation
+
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: gl-005-limit-range
+  namespace: greenlang
+  labels:
+    app: gl-005-combustion-control
+    agent: "GL-005"
+  annotations:
+    description: "LimitRange for greenlang namespace (includes GL-005)"
+
+spec:
+  limits:
+    # Container-level limits
+    - type: Container
+      # Default values (if not specified in pod spec)
+      default:
+        cpu: "2000m"      # Default limit: 2 CPU
+        memory: "2Gi"     # Default limit: 2Gi memory
+
+      # Default requests (if not specified in pod spec)
+      defaultRequest:
+        cpu: "1000m"      # Default request: 1 CPU
+        memory: "1Gi"     # Default request: 1Gi memory
+
+      # Minimum allowed
+      min:
+        cpu: "100m"       # Min: 100 millicores
+        memory: "128Mi"   # Min: 128Mi
+
+      # Maximum allowed
+      max:
+        cpu: "4000m"      # Max: 4 CPU
+        memory: "8Gi"     # Max: 8Gi memory
+
+      # Max limit/request ratio (prevent over-provisioning)
+      maxLimitRequestRatio:
+        cpu: "4"          # Limit can be max 4x request
+        memory: "4"       # Limit can be max 4x request
+
+    # Pod-level limits
+    - type: Pod
+      # Maximum resources per pod
+      max:
+        cpu: "8000m"      # Max: 8 CPU per pod
+        memory: "16Gi"    # Max: 16Gi per pod
+
+      # Minimum resources per pod
+      min:
+        cpu: "100m"       # Min: 100 millicores per pod
+        memory: "128Mi"   # Min: 128Mi per pod
+
+    # PersistentVolumeClaim limits
+    - type: PersistentVolumeClaim
+      # Maximum storage per PVC
+      max:
+        storage: "10Gi"   # Max: 10Gi per PVC
+
+      # Minimum storage per PVC
+      min:
+        storage: "1Gi"    # Min: 1Gi per PVC
+
+---
+# Notes on LimitRange for real-time control:
+#
+# 1. **Why these values?**
+#    - Default: 1 CPU / 1Gi (reasonable starting point)
+#    - Limit: 2 CPU / 2Gi (production GL-005 requirements)
+#    - Max: 4 CPU / 8Gi (allows for burst capacity if needed)
+#    - Min: 100m / 128Mi (prevents tiny, inefficient pods)
+#
+# 2. **Default vs Limit vs Request:**
+#    - Request: Guaranteed resources (scheduler uses this)
+#    - Limit: Maximum allowed (OOM kill if exceeded)
+#    - Default: Applied if pod spec doesn't specify
+#
+# 3. **LimitRange vs ResourceQuota:**
+#    - LimitRange: Per-container/pod constraints
+#    - ResourceQuota: Namespace-wide total limits
+#    - Use both for comprehensive resource management
+#
+# 4. **Real-time control considerations:**
+#    - Set higher defaults for control systems (predictable performance)
+#    - Limit max ratio to prevent over-provisioning
+#    - Ensure min is sufficient for basic functionality
+#
+# 5. **Monitoring LimitRange:**
+#    kubectl get limitrange -n greenlang
+#    kubectl describe limitrange gl-005-limit-range -n greenlang
+#
+# 6. **Testing LimitRange:**
+#    # Deploy pod without resources specified
+#    # Should get defaults from LimitRange
+#    kubectl run test-pod --image=nginx -n greenlang
+#    kubectl get pod test-pod -n greenlang -o yaml | grep -A 5 resources
+#
+# 7. **Common issues:**
+#    - Pod rejected: Requests exceed max
+#    - Pod slow: Requests too low (under min)
+#    - OOM killed: Limit too low for actual usage
+#
+# 8. **Best practices:**
+#    - Set defaults based on 50th percentile usage
+#    - Set limits based on 95th percentile usage
+#    - Review and adjust based on actual metrics
+#    - Consider different LimitRanges for different namespaces
+#
+# 9. **Environment-specific tuning:**
+#    - Dev: Lower defaults (save costs)
+#      default.cpu: "500m", default.memory: "512Mi"
+#    - Staging: 50% of production
+#      default.cpu: "500m", default.memory: "512Mi"
+#    - Production: Full resources (as defined above)
+#      default.cpu: "1000m", default.memory: "1Gi"

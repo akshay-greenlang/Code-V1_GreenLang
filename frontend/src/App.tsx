@@ -4,14 +4,21 @@ import { ShellLayout } from "./components/ShellLayout";
 import { AdminGate } from "./lib/auth/AdminGate";
 import { AdminPage } from "./pages/AdminPage";
 import { FactorsApprovalQueue } from "./pages/FactorsApprovalQueue";
+import { FactorsAuditBundleExport } from "./pages/FactorsAuditBundleExport";
+import { FactorsBatchJobs } from "./pages/FactorsBatchJobs";
 import { FactorsCatalogStatus } from "./pages/FactorsCatalogStatus";
+import { FactorsCoverageDashboard } from "./pages/FactorsCoverageDashboard";
 import { FactorsDiffViewer } from "./pages/FactorsDiffViewer";
+import { FactorsEntitlementsAdmin } from "./pages/FactorsEntitlementsAdmin";
 import { FactorsExplorer } from "./pages/FactorsExplorer";
 import { FactorsImpactSimulator } from "./pages/FactorsImpactSimulator";
 import { FactorsMappingWorkbench } from "./pages/FactorsMappingWorkbench";
+import { FactorsMethodPackManager } from "./pages/FactorsMethodPackManager";
 import { FactorsOverrideManager } from "./pages/FactorsOverrideManager";
 import { FactorsQADashboard } from "./pages/FactorsQADashboard";
+import { FactorsReleaseNotes } from "./pages/FactorsReleaseNotes";
 import { FactorsSourceConsole } from "./pages/FactorsSourceConsole";
+import { FactorsWebhookRegistry } from "./pages/FactorsWebhookRegistry";
 import { GovernancePage } from "./pages/GovernancePage";
 import { LoginPage } from "./pages/LoginPage";
 import { OemBranding } from "./pages/OemBranding";
@@ -41,6 +48,10 @@ export default function App() {
         {/* Public Factors dashboards: no auth required (Track B-2). */}
         <Route path="/factors/status" element={<FactorsCatalogStatus />} />
         <Route path="/factors/qa" element={<FactorsQADashboard />} />
+        {/* O8 — public coverage dashboard (no auth, per master to-do). */}
+        <Route path="/factors/coverage" element={<FactorsCoverageDashboard />} />
+        {/* O9 — release notes, public so prospects can see the changelog. */}
+        <Route path="/factors/release-notes" element={<FactorsReleaseNotes />} />
         {/* Operator console (Track B-5): admin-gated via AdminGate. */}
         <Route path="/factors/explorer" element={<AdminGate><FactorsExplorer /></AdminGate>} />
         <Route path="/factors/sources" element={<AdminGate><FactorsSourceConsole /></AdminGate>} />
@@ -49,6 +60,12 @@ export default function App() {
         <Route path="/factors/approvals" element={<AdminGate><FactorsApprovalQueue /></AdminGate>} />
         <Route path="/factors/overrides" element={<AdminGate><FactorsOverrideManager /></AdminGate>} />
         <Route path="/factors/impact" element={<AdminGate><FactorsImpactSimulator /></AdminGate>} />
+        {/* O5 / O6 / O7 / O10 / O11 — admin-only operator surfaces. */}
+        <Route path="/factors/method-packs" element={<AdminGate><FactorsMethodPackManager /></AdminGate>} />
+        <Route path="/factors/entitlements" element={<AdminGate><FactorsEntitlementsAdmin /></AdminGate>} />
+        <Route path="/factors/audit-bundles" element={<AdminGate><FactorsAuditBundleExport /></AdminGate>} />
+        <Route path="/factors/webhooks" element={<AdminGate><FactorsWebhookRegistry /></AdminGate>} />
+        <Route path="/factors/batch" element={<AdminGate><FactorsBatchJobs /></AdminGate>} />
         {/* Login lands here when AdminGate sees no token. */}
         <Route path="/login" element={<LoginPage />} />
         {/* Track C-5 OEM white-label onboarding */}

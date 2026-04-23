@@ -1,0 +1,22 @@
+{{/*
+GreenLang Agent Helm Chart - ConfigMap Template
+*/}}
+{{- if .Values.configMap.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "greenlang-agent.configMapName" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "greenlang-agent.labels" . | nindent 4 }}
+data:
+  # Agent Configuration
+  AGENT_ID: {{ .Values.agent.id | quote }}
+  AGENT_NAME: {{ .Values.agent.name | quote }}
+  AGENT_GROUP: {{ .Values.agent.group | quote }}
+
+  # ConfigMap data from values
+  {{- range $key, $value := .Values.configMap.data }}
+  {{ $key }}: {{ $value | quote }}
+  {{- end }}
+{{- end }}

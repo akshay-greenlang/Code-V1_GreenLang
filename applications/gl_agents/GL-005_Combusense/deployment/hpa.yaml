@@ -1,0 +1,125 @@
+# GL-005 CombustionControlAgent - Horizontal Pod Autoscaler
+# Automatically scales pods based on CPU, memory, and custom metrics
+# Real-time control system: 3-15 replicas, aggressive scaling for low latency
+
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: gl-005-combustion-control-hpa
+  namespace: greenlang
+  labels:
+    app: gl-005-combustion-control
+    agent: "GL-005"
+    version: "1.0.0"
+  annotations:
+    description: "HPA for GL-005 CombustionControlAgent - Real-time control system"
+    sla.uptime: "99.9%"
+    sla.latency: "<100ms"
+
+spec:
+  # Target the GL-005 deployment
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: gl-005-combustion-control
+
+  # Min and max replicas (3-15 for HA and load handling)
+  minReplicas: 3   # Maintain minimum 3 pods for HA
+  maxReplicas: 15  # Scale up to max 15 pods for high load
+
+  # Metrics for scaling decisions
+  metrics:
+    # Scale on CPU utilization
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70  # Target 70% average CPU
+
+    # Scale on memory utilization
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80  # Target 80% average memory
+
+    # Custom metric: Control cycles per second (if available)
+    # Requires Prometheus Adapter or custom metrics API
+    # - type: Pods
+    #   pods:
+    #     metric:
+    #       name: control_cycles_per_second
+    #     target:
+    #       type: AverageValue
+    #       averageValue: "1000"  # Scale if control cycles > 1000/s
+
+    # Custom metric: Request latency (P95)
+    # - type: Pods
+    #   pods:
+    #     metric:
+    #       name: http_request_duration_p95
+    #     target:
+    #       type: AverageValue
+    #       averageValue: "100m"  # Scale if P95 latency > 100ms
+
+  # Scaling behavior (fine-tuned for real-time control)
+  behavior:
+    # Scale up aggressively (respond quickly to load)
+    scaleUp:
+      stabilizationWindowSeconds: 30   # Wait 30s before next scale-up
+      policies:
+        - type: Percent
+          value: 50                     # Increase by 50%
+          periodSeconds: 60
+        - type: Pods
+          value: 2                      # Or add 2 pods
+          periodSeconds: 60
+      selectPolicy: Max                 # Use whichever scales up more
+
+    # Scale down conservatively (avoid thrashing)
+    scaleDown:
+      stabilizationWindowSeconds: 300   # Wait 5 minutes before scale-down
+      policies:
+        - type: Percent
+          value: 25                     # Reduce by 25%
+          periodSeconds: 60
+        - type: Pods
+          value: 1                      # Or remove 1 pod
+          periodSeconds: 120
+      selectPolicy: Min                 # Use whichever scales down less
+
+---
+# Notes on HPA tuning for real-time control systems:
+#
+# 1. **Why 3-15 replicas?**
+#    - Min 3: High availability (tolerate 1 pod failure)
+#    - Max 15: Handle peak load while controlling costs
+#
+# 2. **Why aggressive scale-up?**
+#    - Real-time control requires low latency
+#    - Better to over-provision than risk control failures
+#    - Scale up in 50% increments or +2 pods (whichever is more)
+#
+# 3. **Why conservative scale-down?**
+#    - Avoid thrashing (rapid scale up/down cycles)
+#    - 5-minute stabilization window prevents premature scale-down
+#    - Gradual reduction (25% or -1 pod)
+#
+# 4. **Custom metrics (recommended for production)**
+#    - control_cycles_per_second: Direct measure of control loop load
+#    - http_request_duration_p95: Ensure latency SLA (<100ms)
+#    - active_control_sessions: Number of active control loops
+#
+# 5. **Monitoring HPA status:**
+#    kubectl get hpa -n greenlang
+#    kubectl describe hpa gl-005-combustion-control-hpa -n greenlang
+#
+# 6. **Testing HPA:**
+#    # Generate load
+#    kubectl run -i --tty load-generator --rm --image=busybox --restart=Never -- \
+#      /bin/sh -c "while sleep 0.01; do wget -q -O- http://gl-005-combustion-control/api/v1/optimize; done"
+#
+#    # Watch scaling
+#    kubectl get hpa -n greenlang --watch

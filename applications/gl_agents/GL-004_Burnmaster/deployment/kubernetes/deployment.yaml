@@ -1,0 +1,421 @@
+# GL-004 BURNMASTER - Kubernetes Deployment
+# ==========================================
+# Production-ready deployment configuration
+
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: greenlang
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: namespace
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/warn: restricted
+
+---
+# ServiceAccount for GL-004 BURNMASTER
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: gl004-burnmaster-sa
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: gl004-burnmaster
+    app.kubernetes.io/component: service-account
+automountServiceAccountToken: false
+
+---
+# Role for GL-004 BURNMASTER
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: gl004-burnmaster-role
+  namespace: greenlang
+rules:
+  - apiGroups: [""]
+    resources: ["configmaps", "secrets"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list"]
+
+---
+# RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: gl004-burnmaster-rolebinding
+  namespace: greenlang
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: gl004-burnmaster-role
+subjects:
+  - kind: ServiceAccount
+    name: gl004-burnmaster-sa
+    namespace: greenlang
+
+---
+# PodDisruptionBudget for high availability
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: gl004-burnmaster-pdb
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: gl004-burnmaster
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: gl004-burnmaster
+
+---
+# Main Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gl004-burnmaster
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: gl004-burnmaster
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/component: agent
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/managed-by: kubectl
+  annotations:
+    deployment.kubernetes.io/revision: "1"
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9090"
+    prometheus.io/path: "/metrics"
+spec:
+  replicas: 3
+  revisionHistoryLimit: 10
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: gl004-burnmaster
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: gl004-burnmaster
+        app.kubernetes.io/version: "1.0.0"
+        app.kubernetes.io/component: agent
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+        prometheus.io/path: "/metrics"
+        checksum/config: "{{ include (print $.Template.BasePath \"/configmap.yaml\") . | sha256sum }}"
+    spec:
+      serviceAccountName: gl004-burnmaster-sa
+      automountServiceAccountToken: false
+
+      # Security context for the pod
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+
+      # Pod anti-affinity for high availability
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app.kubernetes.io/name: gl004-burnmaster
+                topologyKey: kubernetes.io/hostname
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 50
+              preference:
+                matchExpressions:
+                  - key: node-type
+                    operator: In
+                    values:
+                      - compute-optimized
+
+      # Topology spread for zone distribution
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: gl004-burnmaster
+
+      # Tolerations
+      tolerations:
+        - key: "dedicated"
+          operator: "Equal"
+          value: "greenlang"
+          effect: "NoSchedule"
+
+      # Init container for configuration validation
+      initContainers:
+        - name: config-validator
+          image: gcr.io/greenlang/gl-004-burnmaster:1.0.0
+          command: ["python", "-m", "gl004_burnmaster.validate_config"]
+          env:
+            - name: CONFIG_PATH
+              value: /app/config/config.yaml
+          volumeMounts:
+            - name: config-volume
+              mountPath: /app/config
+              readOnly: true
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+          resources:
+            limits:
+              cpu: "100m"
+              memory: "128Mi"
+            requests:
+              cpu: "50m"
+              memory: "64Mi"
+
+      containers:
+        - name: gl004-burnmaster
+          image: gcr.io/greenlang/gl-004-burnmaster:1.0.0
+          imagePullPolicy: Always
+
+          # Security context for container
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+            - name: grpc
+              containerPort: 50051
+              protocol: TCP
+            - name: metrics
+              containerPort: 9090
+              protocol: TCP
+
+          # Environment variables from ConfigMap and Secrets
+          envFrom:
+            - configMapRef:
+                name: gl004-burnmaster-config
+            - secretRef:
+                name: gl004-burnmaster-secrets
+
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: OTEL_RESOURCE_ATTRIBUTES
+              value: "service.name=gl004-burnmaster,service.namespace=$(POD_NAMESPACE),k8s.pod.name=$(POD_NAME)"
+
+          # Resource limits and requests
+          resources:
+            limits:
+              cpu: "2000m"
+              memory: "4Gi"
+              ephemeral-storage: "2Gi"
+            requests:
+              cpu: "500m"
+              memory: "1Gi"
+              ephemeral-storage: "1Gi"
+
+          # Liveness probe
+          livenessProbe:
+            httpGet:
+              path: /health/live
+              port: http
+              scheme: HTTP
+            initialDelaySeconds: 60
+            periodSeconds: 15
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 3
+
+          # Readiness probe
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: http
+              scheme: HTTP
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 3
+
+          # Startup probe for slow-starting containers
+          startupProbe:
+            httpGet:
+              path: /health/startup
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 30
+
+          # Volume mounts
+          volumeMounts:
+            - name: config-volume
+              mountPath: /app/config
+              readOnly: true
+            - name: secrets-volume
+              mountPath: /app/secrets
+              readOnly: true
+            - name: tmp-volume
+              mountPath: /tmp
+            - name: cache-volume
+              mountPath: /app/cache
+            - name: logs-volume
+              mountPath: /app/logs
+
+          # Lifecycle hooks
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                  - /bin/sh
+                  - -c
+                  - "sleep 15 && kill -SIGTERM 1"
+
+      # Volumes
+      volumes:
+        - name: config-volume
+          configMap:
+            name: gl004-burnmaster-config
+        - name: secrets-volume
+          secret:
+            secretName: gl004-burnmaster-secrets
+            defaultMode: 0400
+        - name: tmp-volume
+          emptyDir:
+            sizeLimit: 500Mi
+        - name: cache-volume
+          emptyDir:
+            sizeLimit: 1Gi
+        - name: logs-volume
+          emptyDir:
+            sizeLimit: 2Gi
+
+      # Termination grace period
+      terminationGracePeriodSeconds: 60
+
+      # DNS config for faster resolution
+      dnsPolicy: ClusterFirst
+      dnsConfig:
+        options:
+          - name: ndots
+            value: "2"
+          - name: single-request-reopen
+
+---
+# Horizontal Pod Autoscaler
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: gl004-burnmaster-hpa
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: gl004-burnmaster
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: gl004-burnmaster
+  minReplicas: 3
+  maxReplicas: 20
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+    - type: Pods
+      pods:
+        metric:
+          name: kafka_consumer_lag
+        target:
+          type: AverageValue
+          averageValue: "1000"
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Percent
+          value: 10
+          periodSeconds: 60
+        - type: Pods
+          value: 2
+          periodSeconds: 60
+      selectPolicy: Min
+    scaleUp:
+      stabilizationWindowSeconds: 0
+      policies:
+        - type: Percent
+          value: 100
+          periodSeconds: 15
+        - type: Pods
+          value: 4
+          periodSeconds: 15
+      selectPolicy: Max
+
+---
+# Vertical Pod Autoscaler (optional)
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: gl004-burnmaster-vpa
+  namespace: greenlang
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: gl004-burnmaster
+  updatePolicy:
+    updateMode: "Off"  # Recommendation only, manual application
+  resourcePolicy:
+    containerPolicies:
+      - containerName: gl004-burnmaster
+        minAllowed:
+          cpu: "250m"
+          memory: "512Mi"
+        maxAllowed:
+          cpu: "4000m"
+          memory: "8Gi"
+        controlledResources: ["cpu", "memory"]

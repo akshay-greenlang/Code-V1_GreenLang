@@ -1,0 +1,273 @@
+# GreenLang Agent ConfigMap Template
+# Template Version: 1.0.0
+# Customize: Replace ${VARIABLE} placeholders with actual values
+#
+# Purpose: Store non-sensitive configuration data
+
+---
+# Main Application Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ${AGENT_ID}-config
+  namespace: ${NAMESPACE}
+  labels:
+    app: ${AGENT_ID}
+    app.kubernetes.io/name: ${AGENT_ID}
+    app.kubernetes.io/component: config
+spec:
+data:
+  # Application Settings
+  APP_NAME: "${AGENT_NAME}"
+  APP_VERSION: "${VERSION}"
+  ENVIRONMENT: "${ENVIRONMENT}"
+
+  # Server Configuration
+  SERVER_HOST: "0.0.0.0"
+  SERVER_PORT: "8000"
+  SERVER_WORKERS: "4"
+  SERVER_TIMEOUT: "30"
+  SERVER_GRACEFUL_TIMEOUT: "30"
+
+  # Logging Configuration
+  LOG_LEVEL: "INFO"
+  LOG_FORMAT: "json"
+  LOG_OUTPUT: "stdout"
+  LOG_INCLUDE_TIMESTAMP: "true"
+  LOG_INCLUDE_CALLER: "true"
+
+  # Feature Flags
+  feature-flags: |
+    {
+      "enable_metrics": true,
+      "enable_tracing": true,
+      "enable_profiling": false,
+      "enable_debug_endpoints": false,
+      "enable_rate_limiting": true,
+      "enable_circuit_breaker": true,
+      "enable_retry": true,
+      "enable_caching": true
+    }
+
+  # Rate Limiting Configuration
+  RATE_LIMIT_ENABLED: "true"
+  RATE_LIMIT_REQUESTS_PER_MINUTE: "100"
+  RATE_LIMIT_BURST: "20"
+  RATE_LIMIT_STRATEGY: "sliding_window"
+
+  # Circuit Breaker Configuration
+  CIRCUIT_BREAKER_ENABLED: "true"
+  CIRCUIT_BREAKER_FAILURE_THRESHOLD: "5"
+  CIRCUIT_BREAKER_SUCCESS_THRESHOLD: "3"
+  CIRCUIT_BREAKER_TIMEOUT: "30"
+
+  # Retry Configuration
+  RETRY_MAX_ATTEMPTS: "3"
+  RETRY_INITIAL_BACKOFF: "100"
+  RETRY_MAX_BACKOFF: "5000"
+  RETRY_MULTIPLIER: "2"
+
+  # Cache Configuration
+  CACHE_ENABLED: "true"
+  CACHE_DEFAULT_TTL: "300"
+  CACHE_MAX_SIZE: "1000"
+
+  # Metrics Configuration
+  METRICS_ENABLED: "true"
+  METRICS_PORT: "9090"
+  METRICS_PATH: "/metrics"
+  METRICS_NAMESPACE: "greenlang"
+  METRICS_SUBSYSTEM: "${AGENT_ID}"
+
+  # Tracing Configuration (OpenTelemetry)
+  OTEL_ENABLED: "true"
+  OTEL_SERVICE_NAME: "${AGENT_ID}"
+  OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector.monitoring:4317"
+  OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
+  OTEL_TRACES_SAMPLER: "parentbased_traceidratio"
+  OTEL_TRACES_SAMPLER_ARG: "0.1"
+
+  # Health Check Configuration
+  HEALTH_CHECK_ENABLED: "true"
+  HEALTH_CHECK_PATH: "/api/v1/health"
+  READINESS_CHECK_PATH: "/api/v1/ready"
+  LIVENESS_INCLUDE_DETAILS: "false"
+
+  # CORS Configuration
+  CORS_ENABLED: "true"
+  CORS_ALLOWED_ORIGINS: "https://*.greenlang.io"
+  CORS_ALLOWED_METHODS: "GET,POST,PUT,DELETE,OPTIONS"
+  CORS_ALLOWED_HEADERS: "Authorization,Content-Type,X-Request-ID"
+  CORS_MAX_AGE: "3600"
+
+---
+# Nginx/Proxy Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ${AGENT_ID}-nginx-config
+  namespace: ${NAMESPACE}
+  labels:
+    app: ${AGENT_ID}
+data:
+  nginx.conf: |
+    worker_processes auto;
+    error_log /var/log/nginx/error.log warn;
+    pid /tmp/nginx.pid;
+
+    events {
+        worker_connections 1024;
+        use epoll;
+        multi_accept on;
+    }
+
+    http {
+        include /etc/nginx/mime.types;
+        default_type application/octet-stream;
+
+        log_format json_combined escape=json
+            '{'
+            '"time":"$time_iso8601",'
+            '"remote_addr":"$remote_addr",'
+            '"request_method":"$request_method",'
+            '"request_uri":"$request_uri",'
+            '"status":$status,'
+            '"body_bytes_sent":$body_bytes_sent,'
+            '"request_time":$request_time,'
+            '"upstream_response_time":"$upstream_response_time",'
+            '"http_referrer":"$http_referer",'
+            '"http_user_agent":"$http_user_agent",'
+            '"request_id":"$request_id"'
+            '}';
+
+        access_log /var/log/nginx/access.log json_combined;
+
+        sendfile on;
+        tcp_nopush on;
+        tcp_nodelay on;
+        keepalive_timeout 65;
+        types_hash_max_size 2048;
+
+        # Gzip compression
+        gzip on;
+        gzip_vary on;
+        gzip_proxied any;
+        gzip_comp_level 6;
+        gzip_types text/plain text/css text/xml application/json application/javascript;
+
+        upstream backend {
+            server 127.0.0.1:8000;
+            keepalive 32;
+        }
+
+        server {
+            listen 80;
+            server_name _;
+
+            location /health {
+                access_log off;
+                return 200 "OK\n";
+                add_header Content-Type text/plain;
+            }
+
+            location / {
+                proxy_pass http://backend;
+                proxy_http_version 1.1;
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto $scheme;
+                proxy_set_header X-Request-ID $request_id;
+                proxy_set_header Connection "";
+
+                proxy_connect_timeout 30s;
+                proxy_send_timeout 60s;
+                proxy_read_timeout 60s;
+            }
+        }
+    }
+
+---
+# Fluent Bit Logging Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ${AGENT_ID}-fluent-bit-config
+  namespace: ${NAMESPACE}
+  labels:
+    app: ${AGENT_ID}
+data:
+  fluent-bit.conf: |
+    [SERVICE]
+        Flush        1
+        Log_Level    info
+        Daemon       off
+        Parsers_File parsers.conf
+
+    [INPUT]
+        Name              tail
+        Path              /var/log/containers/${AGENT_ID}*.log
+        Parser            docker
+        Tag               kube.*
+        Refresh_Interval  5
+        Mem_Buf_Limit     50MB
+        Skip_Long_Lines   On
+
+    [FILTER]
+        Name         kubernetes
+        Match        kube.*
+        Kube_URL     https://kubernetes.default.svc:443
+        Kube_CA_File /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+        Kube_Token_File /var/run/secrets/kubernetes.io/serviceaccount/token
+        Labels       On
+        Annotations  Off
+
+    [OUTPUT]
+        Name            es
+        Match           *
+        Host            elasticsearch.logging
+        Port            9200
+        Index           greenlang-${AGENT_ID}
+        Logstash_Format On
+        Logstash_Prefix greenlang-${AGENT_ID}
+        Retry_Limit     5
+
+  parsers.conf: |
+    [PARSER]
+        Name        docker
+        Format      json
+        Time_Key    time
+        Time_Format %Y-%m-%dT%H:%M:%S.%L
+        Time_Keep   On
+
+    [PARSER]
+        Name        json
+        Format      json
+        Time_Key    timestamp
+        Time_Format %Y-%m-%dT%H:%M:%S.%LZ
+
+---
+# Environment-Specific Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ${AGENT_ID}-env-config
+  namespace: ${NAMESPACE}
+  labels:
+    app: ${AGENT_ID}
+    environment: ${ENVIRONMENT}
+data:
+  # Development
+  DEV_DATABASE_POOL_SIZE: "5"
+  DEV_REDIS_POOL_SIZE: "5"
+  DEV_LOG_LEVEL: "DEBUG"
+
+  # Staging
+  STAGING_DATABASE_POOL_SIZE: "10"
+  STAGING_REDIS_POOL_SIZE: "10"
+  STAGING_LOG_LEVEL: "INFO"
+
+  # Production
+  PROD_DATABASE_POOL_SIZE: "20"
+  PROD_REDIS_POOL_SIZE: "20"
+  PROD_LOG_LEVEL: "INFO"

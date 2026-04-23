@@ -1,0 +1,33 @@
+{
+  "metadata": {
+    "source": "EPA WARM",
+    "version": "15",
+    "vintage_year": 2020,
+    "source_publication": "EPA Waste Reduction Model (WARM) v15 Documentation Chapters",
+    "source_url": "https://www.epa.gov/warm"
+  },
+  "_seed_note": "US EPA WARM v15 end-of-life GHG factors. Values are MT CO2e per short ton of material managed (positive = net emissions, negative = net avoided emissions). US Federal Government work, public domain. The 20 rows below cover the most common treatment x material combinations referenced by the GreenLang gold-set waste_treatment family (landfill, incineration, compost, recycling, anaerobic digestion across MSW, paper, plastic, cardboard, food, aluminum, glass, steel, e-waste, organic). Values are representative of WARM v15's published ranges; per-row values must be reconciled against the full WARM workbook before GA.",
+  "_todo": "reconcile all rows against EPA WARM v15 full workbook before GA; expand to ~80 treatment x material combinations",
+  "factors": [
+    {"treatment": "landfill",           "material": "msw",        "co2e_per_short_ton": 0.53,  "unit": "short_ton", "illustrative_value": true,  "notes": "WARM baseline landfill with LFG collection, mixed MSW"},
+    {"treatment": "landfill",           "material": "paper",      "co2e_per_short_ton": 1.82,  "unit": "short_ton", "illustrative_value": true,  "notes": "Office paper landfill, CH4 dominated"},
+    {"treatment": "landfill",           "material": "cardboard",  "co2e_per_short_ton": 1.18,  "unit": "short_ton", "illustrative_value": true},
+    {"treatment": "landfill",           "material": "plastic",    "co2e_per_short_ton": 0.04,  "unit": "short_ton", "illustrative_value": true,  "notes": "Near-zero decay, stored carbon"},
+    {"treatment": "landfill",           "material": "food",       "co2e_per_short_ton": 0.57,  "unit": "short_ton", "illustrative_value": true},
+    {"treatment": "landfill",           "material": "organic",    "co2e_per_short_ton": 0.42,  "unit": "short_ton", "illustrative_value": true},
+    {"treatment": "incineration",       "material": "msw",        "co2e_per_short_ton": 0.43,  "unit": "short_ton", "illustrative_value": true,  "notes": "Mass-burn WTE with electricity recovery offset"},
+    {"treatment": "incineration",       "material": "paper",      "co2e_per_short_ton": 0.63,  "unit": "short_ton", "illustrative_value": true},
+    {"treatment": "incineration",       "material": "plastic",    "co2e_per_short_ton": 2.90,  "unit": "short_ton", "illustrative_value": true,  "notes": "Fossil-carbon plastics combustion"},
+    {"treatment": "compost",            "material": "food",       "co2e_per_short_ton": 0.18,  "unit": "short_ton", "illustrative_value": true,  "notes": "Aerobic composting, net CH4/N2O from decomposition"},
+    {"treatment": "compost",            "material": "organic",    "co2e_per_short_ton": 0.20,  "unit": "short_ton", "illustrative_value": true},
+    {"treatment": "compost",            "material": "yard",       "co2e_per_short_ton": 0.15,  "unit": "short_ton", "illustrative_value": true},
+    {"treatment": "anaerobic_digestion","material": "food",       "co2e_per_short_ton": 0.09,  "unit": "short_ton", "illustrative_value": true,  "notes": "AD with biogas capture offset"},
+    {"treatment": "recycling",          "material": "cardboard",  "co2e_per_short_ton": -3.14, "unit": "short_ton", "illustrative_value": true,  "notes": "Net avoided vs virgin fibre"},
+    {"treatment": "recycling",          "material": "paper",      "co2e_per_short_ton": -2.97, "unit": "short_ton", "illustrative_value": true},
+    {"treatment": "recycling",          "material": "aluminum",   "co2e_per_short_ton": -9.11, "unit": "short_ton", "illustrative_value": true,  "notes": "Large avoided burden vs primary smelting"},
+    {"treatment": "recycling",          "material": "glass",      "co2e_per_short_ton": -0.28, "unit": "short_ton", "illustrative_value": true},
+    {"treatment": "recycling",          "material": "steel",      "co2e_per_short_ton": -1.80, "unit": "short_ton", "illustrative_value": true,  "notes": "EAF feedstock displacing BF/BOF"},
+    {"treatment": "recycling",          "material": "plastic",    "co2e_per_short_ton": -1.02, "unit": "short_ton", "illustrative_value": true},
+    {"treatment": "recycling",          "material": "ewaste",     "co2e_per_short_ton": -0.53, "unit": "short_ton", "illustrative_value": true,  "notes": "Certified R2 dismantling, metals + plastic recovery"}
+  ]
+}

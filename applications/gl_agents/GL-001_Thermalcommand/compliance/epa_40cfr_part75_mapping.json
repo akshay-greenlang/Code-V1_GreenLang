@@ -1,0 +1,277 @@
+{
+  "metadata": {
+    "regulation": "EPA 40 CFR Part 75",
+    "title": "Continuous Emission Monitoring",
+    "version": "2024.1",
+    "last_updated": "2024-01-15",
+    "agent": "GL-001_ThermalCommand",
+    "maintained_by": "GreenLang Framework"
+  },
+  "subparts": {
+    "subpart_A": {
+      "title": "General Provisions",
+      "sections": {
+        "75.1": {
+          "title": "Purpose and scope",
+          "description": "Establishes requirements for continuous emission monitoring of SO2, NOx, CO2, and volumetric flow"
+        },
+        "75.2": {
+          "title": "Applicability",
+          "description": "Applies to affected units under Acid Rain Program"
+        },
+        "75.4": {
+          "title": "Compliance dates",
+          "description": "Initial certification deadlines and ongoing requirements"
+        }
+      }
+    },
+    "subpart_B": {
+      "title": "Monitoring Provisions",
+      "sections": {
+        "75.10": {
+          "title": "General operating requirements",
+          "requirements": [
+            "Maintain continuous monitoring capability",
+            "Report emissions data hourly",
+            "Quality assure all data"
+          ]
+        },
+        "75.11": {
+          "title": "SO2 monitoring requirements",
+          "calculation": "SO2 mass = K × Cs × Qh",
+          "parameters": {
+            "K": {
+              "value": "1.660E-7",
+              "units": "(lb/scf)/ppm",
+              "description": "Conversion constant for SO2"
+            },
+            "Cs": {
+              "description": "SO2 concentration in ppm"
+            },
+            "Qh": {
+              "description": "Stack gas volumetric flow rate in scfh"
+            }
+          }
+        },
+        "75.12": {
+          "title": "NOx monitoring requirements",
+          "calculation": "NOx mass = K × Cn × Qh",
+          "parameters": {
+            "K": {
+              "value": "1.194E-7",
+              "units": "(lb/scf)/ppm",
+              "description": "Conversion constant for NOx as NO2"
+            },
+            "Cn": {
+              "description": "NOx concentration in ppm"
+            },
+            "Qh": {
+              "description": "Stack gas volumetric flow rate in scfh"
+            }
+          }
+        },
+        "75.13": {
+          "title": "CO2 monitoring requirements",
+          "methods": [
+            "Direct CEMS measurement",
+            "O2-based calculation (Appendix F)",
+            "Fuel-based calculation (Appendix G)"
+          ]
+        }
+      }
+    },
+    "subpart_C": {
+      "title": "Certification and Recertification",
+      "sections": {
+        "75.20": {
+          "title": "Initial certification and recertification",
+          "tests_required": [
+            "7-day calibration error test",
+            "Linearity check",
+            "RATA (Relative Accuracy Test Audit)",
+            "Bias test",
+            "Cycle time test"
+          ]
+        }
+      }
+    },
+    "subpart_D": {
+      "title": "Missing Data Substitution",
+      "sections": {
+        "75.30": {
+          "title": "General provisions",
+          "description": "Requirements for substituting data when monitors are unavailable"
+        },
+        "75.31": {
+          "title": "Initial missing data procedures",
+          "lookback_hours": 2160,
+          "description": "Use of historical data for substitution"
+        },
+        "75.33": {
+          "title": "Standard missing data procedures",
+          "categories": {
+            "0-24_hours": "Use average of pre/post values",
+            "24-168_hours": "Use 90th percentile from lookback",
+            ">168_hours": "Use maximum potential concentration"
+          }
+        }
+      }
+    }
+  },
+  "appendices": {
+    "appendix_A": {
+      "title": "Specifications and Test Procedures",
+      "performance_specifications": {
+        "SO2": {
+          "calibration_drift": "2.5% of span",
+          "linearity": "5.0% of reference value",
+          "RATA": "10.0% relative accuracy"
+        },
+        "NOx": {
+          "calibration_drift": "2.5% of span",
+          "linearity": "5.0% of reference value",
+          "RATA": "10.0% relative accuracy"
+        },
+        "flow": {
+          "calibration_drift": "3.0% of span",
+          "RATA": "10.0% relative accuracy"
+        }
+      }
+    },
+    "appendix_B": {
+      "title": "Quality Assurance Procedures",
+      "daily_calibrations": {
+        "frequency": "Every 24 operating hours",
+        "zero_drift_limit": "2.5% of span",
+        "high_drift_limit": "2.5% of span"
+      },
+      "quarterly_audits": {
+        "linearity_check": "Once per quarter",
+        "flow_rata": "Once per year minimum"
+      }
+    },
+    "appendix_D": {
+      "title": "Fuel-Based Methodology for CO2",
+      "emission_factors": {
+        "natural_gas": {
+          "value": 53.06,
+          "units": "kg CO2/MMBtu"
+        },
+        "fuel_oil_2": {
+          "value": 73.96,
+          "units": "kg CO2/MMBtu"
+        },
+        "coal_bituminous": {
+          "value": 93.28,
+          "units": "kg CO2/MMBtu"
+        }
+      }
+    },
+    "appendix_F": {
+      "title": "Calculation of CO2 Emissions Using O2",
+      "formula": "CO2 = K × Fc × Qh × (100 - %H2O) / (100 - %H2O - %CO2)",
+      "parameters": {
+        "K": "Conversion constant",
+        "Fc": "Carbon-based F-factor",
+        "Qh": "Volumetric flow rate"
+      }
+    }
+  },
+  "calculation_mappings": {
+    "so2_mass_emission": {
+      "agent_function": "calculate_so2_mass_rate",
+      "regulation_section": "75.11",
+      "inputs": ["so2_ppm", "flow_scfh"],
+      "output_units": "lb/hr",
+      "formula": "SO2_lb_hr = 1.660E-7 × SO2_ppm × Qh_scfh"
+    },
+    "nox_mass_emission": {
+      "agent_function": "calculate_nox_mass_rate",
+      "regulation_section": "75.12",
+      "inputs": ["nox_ppm", "flow_scfh"],
+      "output_units": "lb/hr",
+      "formula": "NOx_lb_hr = 1.194E-7 × NOx_ppm × Qh_scfh"
+    },
+    "so2_emission_rate": {
+      "agent_function": "calculate_so2_lb_mmbtu",
+      "regulation_section": "75.11",
+      "inputs": ["so2_lb_hr", "heat_input_mmbtu_hr"],
+      "output_units": "lb/MMBtu",
+      "formula": "SO2_lb_MMBtu = SO2_lb_hr / Heat_Input_MMBtu_hr"
+    },
+    "nox_emission_rate": {
+      "agent_function": "calculate_nox_lb_mmbtu",
+      "regulation_section": "75.12",
+      "inputs": ["nox_lb_hr", "heat_input_mmbtu_hr"],
+      "output_units": "lb/MMBtu",
+      "formula": "NOx_lb_MMBtu = NOx_lb_hr / Heat_Input_MMBtu_hr"
+    },
+    "co2_fuel_based": {
+      "agent_function": "calculate_co2_fuel_based",
+      "regulation_section": "Appendix D",
+      "inputs": ["fuel_type", "fuel_quantity", "hhv"],
+      "output_units": "tons/hr",
+      "formula": "CO2_tons_hr = Fuel_qty × HHV × EF × 0.0005"
+    },
+    "heat_input": {
+      "agent_function": "calculate_heat_input",
+      "regulation_section": "75.16",
+      "inputs": ["fuel_flow", "hhv"],
+      "output_units": "MMBtu/hr",
+      "formula": "HI = Fuel_flow × HHV / 1E6"
+    },
+    "data_availability": {
+      "agent_function": "calculate_data_availability",
+      "regulation_section": "75.32",
+      "inputs": ["valid_hours", "total_hours"],
+      "output_units": "percent",
+      "threshold": 90.0,
+      "formula": "Availability = (Valid_hours / Total_hours) × 100"
+    }
+  },
+  "qa_test_mappings": {
+    "daily_calibration": {
+      "agent_function": "validate_daily_calibration",
+      "regulation_section": "Appendix B",
+      "pass_criteria": {
+        "zero_drift": "≤2.5% of span",
+        "upscale_drift": "≤2.5% of span"
+      }
+    },
+    "linearity_check": {
+      "agent_function": "validate_linearity",
+      "regulation_section": "Appendix A",
+      "pass_criteria": {
+        "deviation": "≤5.0% of reference"
+      }
+    },
+    "rata": {
+      "agent_function": "validate_rata",
+      "regulation_section": "75.20",
+      "pass_criteria": {
+        "relative_accuracy": "≤10.0%",
+        "bias": "Optional adjustment if >7.5%"
+      }
+    }
+  },
+  "reporting_requirements": {
+    "quarterly_report": {
+      "deadline": "30 days after quarter end",
+      "format": "EDR (Electronic Data Reporting)",
+      "contents": [
+        "Hourly emissions data",
+        "QA/QC test results",
+        "Substitute data summary",
+        "Operating time summary"
+      ]
+    },
+    "annual_report": {
+      "deadline": "March 1 following calendar year",
+      "contents": [
+        "Annual emissions totals",
+        "Heat input summary",
+        "Compliance status"
+      ]
+    }
+  }
+}

@@ -4,6 +4,81 @@ All notable changes to the GreenLang Factors SDKs (Python + TypeScript)
 are documented here. Semantic Versioning applies. The Python and
 TypeScript SDKs share a version number.
 
+## [1.2.0] -- 2026-04-23
+
+Wave 2 / Wave 2a / Wave 2.5 envelope surface. The server-side contract
+was tightened in Wave 2a (signed-receipt key renames) and extended in
+Wave 2.5 (`audit_text` narrative). This SDK release exposes every new
+field as a typed attribute while keeping a one-release back-compat
+reader for the deprecated key names.
+
+### Added
+
+- **Typed envelope models** on `ResolvedFactor`:
+  - `SignedReceipt` (Wave 2a) — canonical fields `receipt_id`,
+    `signature`, `verification_key_hint`, `alg`, `payload_hash`.
+  - `ChosenFactor` — resolver-selected factor with `release_version`
+    (distinct from `factor_version`).
+  - `SourceDescriptor` — nested source block.
+  - `QualityEnvelope` — surfaces the new `composite_fqs_0_100` (0-100).
+  - `UncertaintyEnvelope` — superset of the old `Uncertainty`.
+  - `LicensingEnvelope` — full upstream-license chain + redistribution
+    class.
+  - `DeprecationStatus` — structured replacement for the pre-Wave-2
+    plain-string deprecation flag.
+- **`audit_text` + `audit_text_draft`** fields on `ResolvedFactor`
+  (Wave 2.5). `audit_text_draft=True` indicates the narrative came from
+  an unapproved template and should not be shipped into regulatory
+  reports without human review.
+- **`FactorCannotResolveSafelyError`** (Python + TS) — new SDK-level
+  exception mapped from 422 responses with
+  `error_code === "factor_cannot_resolve_safely"`. Exposes `pack_id`,
+  `method_profile`, `evaluated_candidates_count`.
+- **CLI: `greenlang-factors resolve` surfaces `audit_text`** — printed
+  as a 200-char preview before the JSON body. Use `--show-full-audit`
+  to print the full narrative.
+- **CLI: `greenlang-factors explain --pretty`** groups the 16 envelope
+  fields (chosen factor / method / source+licensing / quality+uncertainty
+  / status / audit) above the raw JSON dump.
+- **CLI: `greenlang-factors verify-receipt --key <path>`** reads an HMAC
+  secret from a file (so secrets do not need to sit in shell history).
+- **TS SDK: `FactorsClient.verifyReceipt()`** (already existed) now
+  returns `alg` alongside `algorithm` on the summary, plus `receipt_id`
+  and `verification_key_hint` when the receipt carries them.
+
+### Changed
+
+- Signed receipt JSON key names updated. The SDK reads new keys first
+  and falls back to the deprecated aliases with a `DeprecationWarning`
+  (Python) / `console.warn` (TS). See **Deprecated** below.
+- `ResolvedFactor.deprecation_status` is now typed as
+  `str | DeprecationStatus | None` (Python) / `string | DeprecationStatus | null`
+  (TS) so Wave 2 structured values parse without a client-side migration.
+- `VerifiedReceipt` (TS) / the Python `verify_receipt` summary dict now
+  include `alg` (canonical) alongside `algorithm` (back-compat).
+
+### Deprecated
+
+- `_signed_receipt` top-level response key — use `signed_receipt`. The
+  SDK reads both for one release; the fallback is removed in **v2.0.0**.
+- `algorithm` field inside a receipt — use `alg`. Reader fallback removed
+  in **v2.0.0**.
+- `signed_over` field inside a receipt — use `payload_hash`. The SDK
+  accepts both the pre-Wave-2a string form and the legacy
+  `{body_hash, ...}` envelope; both removed in **v2.0.0**.
+
+### Version bump
+
+- Python: `greenlang/factors/sdk/python/__init__.py :: __version__` -> `1.2.0`.
+- TypeScript: `package.json :: version` -> `1.2.0`.
+- Both SDKs verify against the canonical Wave 2a demo response.
+
+### Tested against
+
+- Server: factors-api with Wave 2 + Wave 2a + Wave 2.5 envelope patches.
+- Python: 3.10, 3.11, 3.12, 3.13.
+- Node: 18, 20, 22.
+
 ## [1.0.0] -- 2026-05-01 (planned)
 
 **General Availability** of the GreenLang Factors SDK against the FY27

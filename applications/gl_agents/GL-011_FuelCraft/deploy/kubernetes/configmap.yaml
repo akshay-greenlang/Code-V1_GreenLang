@@ -1,0 +1,40 @@
+# GL-011 FuelCraft ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gl-011-fuelcraft-config
+  namespace: greenlang
+  labels:
+    app: gl-011-fuelcraft
+    agent-id: GL-011
+    codename: FUELCRAFT
+data:
+  ENVIRONMENT: "production"
+  LOG_LEVEL: "INFO"
+  
+  # Fuel Optimization Parameters
+  FUEL_BLENDING_OPTIMIZATION: "true"
+  MULTI_FUEL_CAPABILITY: "true"
+  HEATING_VALUE_TRACKING: "true"
+  FUEL_INVENTORY_MANAGEMENT: "true"
+  
+  # Economic Parameters
+  NATURAL_GAS_COST_PER_MMBTU: "8.0"
+  FUEL_OIL_COST_PER_GAL: "3.5"
+  ELECTRICITY_COST_PER_KWH: "0.12"
+  OPTIMIZATION_HORIZON_HOURS: "24"
+  
+  # Quality Parameters
+  FUEL_ANALYSIS_FREQUENCY_HOURS: "8"
+  BTU_VARIANCE_THRESHOLD_PERCENT: "5"
+  SULFUR_CONTENT_LIMIT_PERCENT: "0.5"
+  
+  # Feature Flags
+  FEATURE_FUEL_SWITCHING: "true"
+  FEATURE_COST_OPTIMIZATION: "true"
+  FEATURE_BLEND_OPTIMIZATION: "true"
+  FEATURE_PROCUREMENT_INTEGRATION: "false"
+  
+  # API Configuration
+  API_RATE_LIMIT: "1000"
+  API_TIMEOUT_SECONDS: "30"

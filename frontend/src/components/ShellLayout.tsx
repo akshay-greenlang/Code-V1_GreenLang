@@ -43,6 +43,14 @@ const links = [
   { label: "Approvals", to: "/factors/approvals" },
   { label: "Overrides", to: "/factors/overrides" },
   { label: "Impact", to: "/factors/impact" },
+  // W4-D — 7 new Factors operator surfaces (O5–O11).
+  { label: "Method Packs", to: "/factors/method-packs" },
+  { label: "Entitlements", to: "/factors/entitlements" },
+  { label: "Audit Bundles", to: "/factors/audit-bundles" },
+  { label: "Coverage", to: "/factors/coverage" },
+  { label: "Release Notes", to: "/factors/release-notes" },
+  { label: "Webhooks", to: "/factors/webhooks" },
+  { label: "Batch Jobs", to: "/factors/batch" },
   // Track C-5 OEM white-label section
   { label: "OEM Signup", to: "/oem/signup" },
   { label: "OEM Branding", to: "/oem/branding" },

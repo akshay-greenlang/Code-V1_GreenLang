@@ -1,0 +1,3117 @@
+{
+  "source_id": "ipcc_refrigerants_promoted",
+  "source_version": "ar5_ar6_100yr",
+  "ingested_at": "2026-04-23T18:26:53+00:00",
+  "license_class": "public_international",
+  "license_name": "IPCC-Guideline",
+  "redistribution_class": "open",
+  "attribution_text": "IPCC AR5 Working Group I Chapter 8 and AR6 Working Group I Chapter 7 \u2014 100-year GWP values for halogenated gases.",
+  "factor_status_default": "certified",
+  "factor_count": 32,
+  "factors": [
+    {
+      "factor_id": "EF:IPCC:r_22:GLOBAL:ipcc_ar5_100:v1",
+      "fuel_type": "refrigerant_r_22",
+      "unit": "kg",
+      "geography": "GLOBAL",
+      "geography_level": "global",
+      "vectors": {
+        "CO2": 1760.0,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR5_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 265
+      },
+      "scope": "1",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "IPCC",
+        "source_publication": "IPCC AR5 WGI \u2014 100-year GWP values for halogenated gases",
+        "source_year": 2013,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.ipcc.ch/",
+        "version": "ar5_100yr"
+      },
+      "valid_from": "2013-01-01",
+      "uncertainty_95ci": 0.1,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "IPCC-Guideline",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "ipcc",
+        "refrigerant",
+        "gwp_basis_ipcc_ar5_100",
+        "r_22",
+        "hcfc"
+      ],
+      "notes": "R-22 (HCFC-22 / CHClF2) \u2014 100-year GWP per IPCC AR5: 1760.0 kgCO2e/kg; HCFC; fugitive emission accounting (GHG Protocol Scope 1, refrigerant leak/service/EOL disposal); HCFC, phase-out under Montreal Protocol",
+      "factor_family": "refrigerant_gwp",
+      "activity_tags": [
+        "fugitive_emission",
+        "refrigerant",
+        "scope1"
+      ],
+      "sector_tags": [
+        "refrigeration",
+        "hvac"
+      ],
+      "source_id": "ipcc_refrigerants_promoted",
+      "source_release": "ipcc_ar5_100",
+      "release_version": "ipcc-ar5",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "ISO_14064",
+        "IPCC_AR5",
+        "IPCC_AR6"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_international",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "IPCC AR5 Working Group I Chapter 8 and AR6 Working Group I Chapter 7 \u2014 100-year GWP values for halogenated gases.",
+        "alternates_considered": [
+          "EF:IPCC:r_32:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_134a:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_410a:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_404a:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_507:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_1234yf:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_1234ze:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_452a:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_513a:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_448a:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_407f:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_23:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:sf6:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:nf3:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:cf4:GLOBAL:ipcc_ar5_100:v1"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:IPCC:r_22:GLOBAL:ipcc_ar6_100:v1",
+      "fuel_type": "refrigerant_r_22",
+      "unit": "kg",
+      "geography": "GLOBAL",
+      "geography_level": "global",
+      "vectors": {
+        "CO2": 1780.0,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 27,
+        "N2O_gwp": 273
+      },
+      "scope": "1",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "IPCC",
+        "source_publication": "IPCC AR6 WGI \u2014 100-year GWP values for halogenated gases",
+        "source_year": 2021,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.ipcc.ch/",
+        "version": "ar6_100yr"
+      },
+      "valid_from": "2021-01-01",
+      "uncertainty_95ci": 0.1,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "IPCC-Guideline",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "ipcc",
+        "refrigerant",
+        "gwp_basis_ipcc_ar6_100",
+        "r_22",
+        "hcfc"
+      ],
+      "notes": "R-22 (HCFC-22 / CHClF2) \u2014 100-year GWP per IPCC AR6: 1780.0 kgCO2e/kg; HCFC; fugitive emission accounting (GHG Protocol Scope 1, refrigerant leak/service/EOL disposal); HCFC, phase-out under Montreal Protocol",
+      "factor_family": "refrigerant_gwp",
+      "activity_tags": [
+        "fugitive_emission",
+        "refrigerant",
+        "scope1"
+      ],
+      "sector_tags": [
+        "refrigeration",
+        "hvac"
+      ],
+      "source_id": "ipcc_refrigerants_promoted",
+      "source_release": "ipcc_ar6_100",
+      "release_version": "ipcc-ar6",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "ISO_14064",
+        "IPCC_AR5",
+        "IPCC_AR6"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_international",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "IPCC AR5 Working Group I Chapter 8 and AR6 Working Group I Chapter 7 \u2014 100-year GWP values for halogenated gases.",
+        "alternates_considered": [
+          "EF:IPCC:r_32:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_134a:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_410a:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_404a:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_507:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_1234yf:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_1234ze:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_452a:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_513a:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_448a:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_407f:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_23:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:sf6:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:nf3:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:cf4:GLOBAL:ipcc_ar6_100:v1"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:IPCC:r_32:GLOBAL:ipcc_ar5_100:v1",
+      "fuel_type": "refrigerant_r_32",
+      "unit": "kg",
+      "geography": "GLOBAL",
+      "geography_level": "global",
+      "vectors": {
+        "CO2": 677.0,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR5_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 265
+      },
+      "scope": "1",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "IPCC",
+        "source_publication": "IPCC AR5 WGI \u2014 100-year GWP values for halogenated gases",
+        "source_year": 2013,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.ipcc.ch/",
+        "version": "ar5_100yr"
+      },
+      "valid_from": "2013-01-01",
+      "uncertainty_95ci": 0.1,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "IPCC-Guideline",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "ipcc",
+        "refrigerant",
+        "gwp_basis_ipcc_ar5_100",
+        "r_32",
+        "hfc"
+      ],
+      "notes": "R-32 (HFC-32 / CH2F2) \u2014 100-year GWP per IPCC AR5: 677.0 kgCO2e/kg; HFC; fugitive emission accounting (GHG Protocol Scope 1, refrigerant leak/service/EOL disposal)",
+      "factor_family": "refrigerant_gwp",
+      "activity_tags": [
+        "fugitive_emission",
+        "refrigerant",
+        "scope1"
+      ],
+      "sector_tags": [
+        "refrigeration",
+        "hvac"
+      ],
+      "source_id": "ipcc_refrigerants_promoted",
+      "source_release": "ipcc_ar5_100",
+      "release_version": "ipcc-ar5",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "ISO_14064",
+        "IPCC_AR5",
+        "IPCC_AR6"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_international",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "IPCC AR5 Working Group I Chapter 8 and AR6 Working Group I Chapter 7 \u2014 100-year GWP values for halogenated gases.",
+        "alternates_considered": [
+          "EF:IPCC:r_22:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_134a:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_410a:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_404a:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_507:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_1234yf:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_1234ze:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_452a:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_513a:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_448a:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_407f:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_23:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:sf6:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:nf3:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:cf4:GLOBAL:ipcc_ar5_100:v1"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:IPCC:r_32:GLOBAL:ipcc_ar6_100:v1",
+      "fuel_type": "refrigerant_r_32",
+      "unit": "kg",
+      "geography": "GLOBAL",
+      "geography_level": "global",
+      "vectors": {
+        "CO2": 771.0,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 27,
+        "N2O_gwp": 273
+      },
+      "scope": "1",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "IPCC",
+        "source_publication": "IPCC AR6 WGI \u2014 100-year GWP values for halogenated gases",
+        "source_year": 2021,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.ipcc.ch/",
+        "version": "ar6_100yr"
+      },
+      "valid_from": "2021-01-01",
+      "uncertainty_95ci": 0.1,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "IPCC-Guideline",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "ipcc",
+        "refrigerant",
+        "gwp_basis_ipcc_ar6_100",
+        "r_32",
+        "hfc"
+      ],
+      "notes": "R-32 (HFC-32 / CH2F2) \u2014 100-year GWP per IPCC AR6: 771.0 kgCO2e/kg; HFC; fugitive emission accounting (GHG Protocol Scope 1, refrigerant leak/service/EOL disposal)",
+      "factor_family": "refrigerant_gwp",
+      "activity_tags": [
+        "fugitive_emission",
+        "refrigerant",
+        "scope1"
+      ],
+      "sector_tags": [
+        "refrigeration",
+        "hvac"
+      ],
+      "source_id": "ipcc_refrigerants_promoted",
+      "source_release": "ipcc_ar6_100",
+      "release_version": "ipcc-ar6",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "ISO_14064",
+        "IPCC_AR5",
+        "IPCC_AR6"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_international",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "IPCC AR5 Working Group I Chapter 8 and AR6 Working Group I Chapter 7 \u2014 100-year GWP values for halogenated gases.",
+        "alternates_considered": [
+          "EF:IPCC:r_22:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_134a:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_410a:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_404a:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_507:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_1234yf:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_1234ze:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_452a:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_513a:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_448a:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_407f:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_23:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:sf6:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:nf3:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:cf4:GLOBAL:ipcc_ar6_100:v1"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:IPCC:r_134a:GLOBAL:ipcc_ar5_100:v1",
+      "fuel_type": "refrigerant_r_134a",
+      "unit": "kg",
+      "geography": "GLOBAL",
+      "geography_level": "global",
+      "vectors": {
+        "CO2": 1300.0,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR5_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 265
+      },
+      "scope": "1",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "IPCC",
+        "source_publication": "IPCC AR5 WGI \u2014 100-year GWP values for halogenated gases",
+        "source_year": 2013,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.ipcc.ch/",
+        "version": "ar5_100yr"
+      },
+      "valid_from": "2013-01-01",
+      "uncertainty_95ci": 0.1,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "IPCC-Guideline",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "ipcc",
+        "refrigerant",
+        "gwp_basis_ipcc_ar5_100",
+        "r_134a",
+        "hfc"
+      ],
+      "notes": "R-134a (HFC-134a / CH2FCF3) \u2014 100-year GWP per IPCC AR5: 1300.0 kgCO2e/kg; HFC; fugitive emission accounting (GHG Protocol Scope 1, refrigerant leak/service/EOL disposal)",
+      "factor_family": "refrigerant_gwp",
+      "activity_tags": [
+        "fugitive_emission",
+        "refrigerant",
+        "scope1"
+      ],
+      "sector_tags": [
+        "refrigeration",
+        "hvac"
+      ],
+      "source_id": "ipcc_refrigerants_promoted",
+      "source_release": "ipcc_ar5_100",
+      "release_version": "ipcc-ar5",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "ISO_14064",
+        "IPCC_AR5",
+        "IPCC_AR6"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_international",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "IPCC AR5 Working Group I Chapter 8 and AR6 Working Group I Chapter 7 \u2014 100-year GWP values for halogenated gases.",
+        "alternates_considered": [
+          "EF:IPCC:r_22:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_32:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_410a:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_404a:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_507:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_1234yf:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_1234ze:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_452a:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_513a:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_448a:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_407f:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_23:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:sf6:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:nf3:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:cf4:GLOBAL:ipcc_ar5_100:v1"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:IPCC:r_134a:GLOBAL:ipcc_ar6_100:v1",
+      "fuel_type": "refrigerant_r_134a",
+      "unit": "kg",
+      "geography": "GLOBAL",
+      "geography_level": "global",
+      "vectors": {
+        "CO2": 1530.0,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 27,
+        "N2O_gwp": 273
+      },
+      "scope": "1",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "IPCC",
+        "source_publication": "IPCC AR6 WGI \u2014 100-year GWP values for halogenated gases",
+        "source_year": 2021,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.ipcc.ch/",
+        "version": "ar6_100yr"
+      },
+      "valid_from": "2021-01-01",
+      "uncertainty_95ci": 0.1,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "IPCC-Guideline",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "ipcc",
+        "refrigerant",
+        "gwp_basis_ipcc_ar6_100",
+        "r_134a",
+        "hfc"
+      ],
+      "notes": "R-134a (HFC-134a / CH2FCF3) \u2014 100-year GWP per IPCC AR6: 1530.0 kgCO2e/kg; HFC; fugitive emission accounting (GHG Protocol Scope 1, refrigerant leak/service/EOL disposal)",
+      "factor_family": "refrigerant_gwp",
+      "activity_tags": [
+        "fugitive_emission",
+        "refrigerant",
+        "scope1"
+      ],
+      "sector_tags": [
+        "refrigeration",
+        "hvac"
+      ],
+      "source_id": "ipcc_refrigerants_promoted",
+      "source_release": "ipcc_ar6_100",
+      "release_version": "ipcc-ar6",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "ISO_14064",
+        "IPCC_AR5",
+        "IPCC_AR6"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_international",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "IPCC AR5 Working Group I Chapter 8 and AR6 Working Group I Chapter 7 \u2014 100-year GWP values for halogenated gases.",
+        "alternates_considered": [
+          "EF:IPCC:r_22:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_32:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_410a:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_404a:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_507:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_1234yf:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_1234ze:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_452a:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_513a:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_448a:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_407f:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_23:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:sf6:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:nf3:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:cf4:GLOBAL:ipcc_ar6_100:v1"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:IPCC:r_410a:GLOBAL:ipcc_ar5_100:v1",
+      "fuel_type": "refrigerant_r_410a",
+      "unit": "kg",
+      "geography": "GLOBAL",
+      "geography_level": "global",
+      "vectors": {
+        "CO2": 1924.0,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR5_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 265
+      },
+      "scope": "1",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "IPCC",
+        "source_publication": "IPCC AR5 WGI \u2014 100-year GWP values for halogenated gases",
+        "source_year": 2013,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.ipcc.ch/",
+        "version": "ar5_100yr"
+      },
+      "valid_from": "2013-01-01",
+      "uncertainty_95ci": 0.1,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "IPCC-Guideline",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "ipcc",
+        "refrigerant",
+        "gwp_basis_ipcc_ar5_100",
+        "r_410a",
+        "hfc_blend"
+      ],
+      "notes": "R-410A (Blend 50/50 HFC-32/125) \u2014 100-year GWP per IPCC AR5: 1924.0 kgCO2e/kg; HFC_BLEND; fugitive emission accounting (GHG Protocol Scope 1, refrigerant leak/service/EOL disposal)",
+      "factor_family": "refrigerant_gwp",
+      "activity_tags": [
+        "fugitive_emission",
+        "refrigerant",
+        "scope1"
+      ],
+      "sector_tags": [
+        "refrigeration",
+        "hvac"
+      ],
+      "source_id": "ipcc_refrigerants_promoted",
+      "source_release": "ipcc_ar5_100",
+      "release_version": "ipcc-ar5",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "ISO_14064",
+        "IPCC_AR5",
+        "IPCC_AR6"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_international",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "IPCC AR5 Working Group I Chapter 8 and AR6 Working Group I Chapter 7 \u2014 100-year GWP values for halogenated gases.",
+        "alternates_considered": [
+          "EF:IPCC:r_22:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_32:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_134a:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_404a:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_507:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_1234yf:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_1234ze:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_452a:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_513a:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_448a:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_407f:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_23:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:sf6:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:nf3:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:cf4:GLOBAL:ipcc_ar5_100:v1"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:IPCC:r_410a:GLOBAL:ipcc_ar6_100:v1",
+      "fuel_type": "refrigerant_r_410a",
+      "unit": "kg",
+      "geography": "GLOBAL",
+      "geography_level": "global",
+      "vectors": {
+        "CO2": 2256.0,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 27,
+        "N2O_gwp": 273
+      },
+      "scope": "1",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "IPCC",
+        "source_publication": "IPCC AR6 WGI \u2014 100-year GWP values for halogenated gases",
+        "source_year": 2021,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.ipcc.ch/",
+        "version": "ar6_100yr"
+      },
+      "valid_from": "2021-01-01",
+      "uncertainty_95ci": 0.1,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "IPCC-Guideline",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "ipcc",
+        "refrigerant",
+        "gwp_basis_ipcc_ar6_100",
+        "r_410a",
+        "hfc_blend"
+      ],
+      "notes": "R-410A (Blend 50/50 HFC-32/125) \u2014 100-year GWP per IPCC AR6: 2256.0 kgCO2e/kg; HFC_BLEND; fugitive emission accounting (GHG Protocol Scope 1, refrigerant leak/service/EOL disposal)",
+      "factor_family": "refrigerant_gwp",
+      "activity_tags": [
+        "fugitive_emission",
+        "refrigerant",
+        "scope1"
+      ],
+      "sector_tags": [
+        "refrigeration",
+        "hvac"
+      ],
+      "source_id": "ipcc_refrigerants_promoted",
+      "source_release": "ipcc_ar6_100",
+      "release_version": "ipcc-ar6",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "ISO_14064",
+        "IPCC_AR5",
+        "IPCC_AR6"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_international",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "IPCC AR5 Working Group I Chapter 8 and AR6 Working Group I Chapter 7 \u2014 100-year GWP values for halogenated gases.",
+        "alternates_considered": [
+          "EF:IPCC:r_22:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_32:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_134a:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_404a:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_507:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_1234yf:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_1234ze:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_452a:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_513a:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_448a:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_407f:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_23:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:sf6:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:nf3:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:cf4:GLOBAL:ipcc_ar6_100:v1"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:IPCC:r_404a:GLOBAL:ipcc_ar5_100:v1",
+      "fuel_type": "refrigerant_r_404a",
+      "unit": "kg",
+      "geography": "GLOBAL",
+      "geography_level": "global",
+      "vectors": {
+        "CO2": 3922.0,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR5_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 265
+      },
+      "scope": "1",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "IPCC",
+        "source_publication": "IPCC AR5 WGI \u2014 100-year GWP values for halogenated gases",
+        "source_year": 2013,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.ipcc.ch/",
+        "version": "ar5_100yr"
+      },
+      "valid_from": "2013-01-01",
+      "uncertainty_95ci": 0.1,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "IPCC-Guideline",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "ipcc",
+        "refrigerant",
+        "gwp_basis_ipcc_ar5_100",
+        "r_404a",
+        "hfc_blend"
+      ],
+      "notes": "R-404A (Blend HFC-125/143a/134a) \u2014 100-year GWP per IPCC AR5: 3922.0 kgCO2e/kg; HFC_BLEND; fugitive emission accounting (GHG Protocol Scope 1, refrigerant leak/service/EOL disposal)",
+      "factor_family": "refrigerant_gwp",
+      "activity_tags": [
+        "fugitive_emission",
+        "refrigerant",
+        "scope1"
+      ],
+      "sector_tags": [
+        "refrigeration",
+        "hvac"
+      ],
+      "source_id": "ipcc_refrigerants_promoted",
+      "source_release": "ipcc_ar5_100",
+      "release_version": "ipcc-ar5",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "ISO_14064",
+        "IPCC_AR5",
+        "IPCC_AR6"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_international",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "IPCC AR5 Working Group I Chapter 8 and AR6 Working Group I Chapter 7 \u2014 100-year GWP values for halogenated gases.",
+        "alternates_considered": [
+          "EF:IPCC:r_22:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_32:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_134a:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_410a:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_507:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_1234yf:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_1234ze:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_452a:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_513a:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_448a:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_407f:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_23:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:sf6:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:nf3:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:cf4:GLOBAL:ipcc_ar5_100:v1"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:IPCC:r_404a:GLOBAL:ipcc_ar6_100:v1",
+      "fuel_type": "refrigerant_r_404a",
+      "unit": "kg",
+      "geography": "GLOBAL",
+      "geography_level": "global",
+      "vectors": {
+        "CO2": 4728.0,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 27,
+        "N2O_gwp": 273
+      },
+      "scope": "1",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "IPCC",
+        "source_publication": "IPCC AR6 WGI \u2014 100-year GWP values for halogenated gases",
+        "source_year": 2021,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.ipcc.ch/",
+        "version": "ar6_100yr"
+      },
+      "valid_from": "2021-01-01",
+      "uncertainty_95ci": 0.1,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "IPCC-Guideline",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "ipcc",
+        "refrigerant",
+        "gwp_basis_ipcc_ar6_100",
+        "r_404a",
+        "hfc_blend"
+      ],
+      "notes": "R-404A (Blend HFC-125/143a/134a) \u2014 100-year GWP per IPCC AR6: 4728.0 kgCO2e/kg; HFC_BLEND; fugitive emission accounting (GHG Protocol Scope 1, refrigerant leak/service/EOL disposal)",
+      "factor_family": "refrigerant_gwp",
+      "activity_tags": [
+        "fugitive_emission",
+        "refrigerant",
+        "scope1"
+      ],
+      "sector_tags": [
+        "refrigeration",
+        "hvac"
+      ],
+      "source_id": "ipcc_refrigerants_promoted",
+      "source_release": "ipcc_ar6_100",
+      "release_version": "ipcc-ar6",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "ISO_14064",
+        "IPCC_AR5",
+        "IPCC_AR6"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_international",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "IPCC AR5 Working Group I Chapter 8 and AR6 Working Group I Chapter 7 \u2014 100-year GWP values for halogenated gases.",
+        "alternates_considered": [
+          "EF:IPCC:r_22:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_32:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_134a:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_410a:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_507:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_1234yf:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_1234ze:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_452a:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_513a:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_448a:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_407f:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_23:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:sf6:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:nf3:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:cf4:GLOBAL:ipcc_ar6_100:v1"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:IPCC:r_507:GLOBAL:ipcc_ar5_100:v1",
+      "fuel_type": "refrigerant_r_507",
+      "unit": "kg",
+      "geography": "GLOBAL",
+      "geography_level": "global",
+      "vectors": {
+        "CO2": 3985.0,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR5_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 265
+      },
+      "scope": "1",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "IPCC",
+        "source_publication": "IPCC AR5 WGI \u2014 100-year GWP values for halogenated gases",
+        "source_year": 2013,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.ipcc.ch/",
+        "version": "ar5_100yr"
+      },
+      "valid_from": "2013-01-01",
+      "uncertainty_95ci": 0.1,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "IPCC-Guideline",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "ipcc",
+        "refrigerant",
+        "gwp_basis_ipcc_ar5_100",
+        "r_507",
+        "hfc_blend"
+      ],
+      "notes": "R-507A (Blend HFC-125/143a) \u2014 100-year GWP per IPCC AR5: 3985.0 kgCO2e/kg; HFC_BLEND; fugitive emission accounting (GHG Protocol Scope 1, refrigerant leak/service/EOL disposal)",
+      "factor_family": "refrigerant_gwp",
+      "activity_tags": [
+        "fugitive_emission",
+        "refrigerant",
+        "scope1"
+      ],
+      "sector_tags": [
+        "refrigeration",
+        "hvac"
+      ],
+      "source_id": "ipcc_refrigerants_promoted",
+      "source_release": "ipcc_ar5_100",
+      "release_version": "ipcc-ar5",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "ISO_14064",
+        "IPCC_AR5",
+        "IPCC_AR6"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_international",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "IPCC AR5 Working Group I Chapter 8 and AR6 Working Group I Chapter 7 \u2014 100-year GWP values for halogenated gases.",
+        "alternates_considered": [
+          "EF:IPCC:r_22:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_32:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_134a:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_410a:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_404a:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_1234yf:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_1234ze:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_452a:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_513a:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_448a:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_407f:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_23:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:sf6:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:nf3:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:cf4:GLOBAL:ipcc_ar5_100:v1"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:IPCC:r_507:GLOBAL:ipcc_ar6_100:v1",
+      "fuel_type": "refrigerant_r_507",
+      "unit": "kg",
+      "geography": "GLOBAL",
+      "geography_level": "global",
+      "vectors": {
+        "CO2": 4758.0,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 27,
+        "N2O_gwp": 273
+      },
+      "scope": "1",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "IPCC",
+        "source_publication": "IPCC AR6 WGI \u2014 100-year GWP values for halogenated gases",
+        "source_year": 2021,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.ipcc.ch/",
+        "version": "ar6_100yr"
+      },
+      "valid_from": "2021-01-01",
+      "uncertainty_95ci": 0.1,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "IPCC-Guideline",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "ipcc",
+        "refrigerant",
+        "gwp_basis_ipcc_ar6_100",
+        "r_507",
+        "hfc_blend"
+      ],
+      "notes": "R-507A (Blend HFC-125/143a) \u2014 100-year GWP per IPCC AR6: 4758.0 kgCO2e/kg; HFC_BLEND; fugitive emission accounting (GHG Protocol Scope 1, refrigerant leak/service/EOL disposal)",
+      "factor_family": "refrigerant_gwp",
+      "activity_tags": [
+        "fugitive_emission",
+        "refrigerant",
+        "scope1"
+      ],
+      "sector_tags": [
+        "refrigeration",
+        "hvac"
+      ],
+      "source_id": "ipcc_refrigerants_promoted",
+      "source_release": "ipcc_ar6_100",
+      "release_version": "ipcc-ar6",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "ISO_14064",
+        "IPCC_AR5",
+        "IPCC_AR6"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_international",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "IPCC AR5 Working Group I Chapter 8 and AR6 Working Group I Chapter 7 \u2014 100-year GWP values for halogenated gases.",
+        "alternates_considered": [
+          "EF:IPCC:r_22:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_32:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_134a:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_410a:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_404a:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_1234yf:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_1234ze:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_452a:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_513a:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_448a:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_407f:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_23:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:sf6:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:nf3:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:cf4:GLOBAL:ipcc_ar6_100:v1"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:IPCC:r_1234yf:GLOBAL:ipcc_ar5_100:v1",
+      "fuel_type": "refrigerant_r_1234yf",
+      "unit": "kg",
+      "geography": "GLOBAL",
+      "geography_level": "global",
+      "vectors": {
+        "CO2": 4.0,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR5_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 265
+      },
+      "scope": "1",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "IPCC",
+        "source_publication": "IPCC AR5 WGI \u2014 100-year GWP values for halogenated gases",
+        "source_year": 2013,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.ipcc.ch/",
+        "version": "ar5_100yr"
+      },
+      "valid_from": "2013-01-01",
+      "uncertainty_95ci": 0.1,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "IPCC-Guideline",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "ipcc",
+        "refrigerant",
+        "gwp_basis_ipcc_ar5_100",
+        "r_1234yf",
+        "hfo"
+      ],
+      "notes": "R-1234yf (HFO-1234yf) \u2014 100-year GWP per IPCC AR5: 4.0 kgCO2e/kg; HFO; fugitive emission accounting (GHG Protocol Scope 1, refrigerant leak/service/EOL disposal)",
+      "factor_family": "refrigerant_gwp",
+      "activity_tags": [
+        "fugitive_emission",
+        "refrigerant",
+        "scope1"
+      ],
+      "sector_tags": [
+        "refrigeration",
+        "hvac"
+      ],
+      "source_id": "ipcc_refrigerants_promoted",
+      "source_release": "ipcc_ar5_100",
+      "release_version": "ipcc-ar5",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "ISO_14064",
+        "IPCC_AR5",
+        "IPCC_AR6"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_international",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "IPCC AR5 Working Group I Chapter 8 and AR6 Working Group I Chapter 7 \u2014 100-year GWP values for halogenated gases.",
+        "alternates_considered": [
+          "EF:IPCC:r_22:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_32:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_134a:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_410a:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_404a:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_507:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_1234ze:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_452a:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_513a:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_448a:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_407f:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_23:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:sf6:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:nf3:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:cf4:GLOBAL:ipcc_ar5_100:v1"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:IPCC:r_1234yf:GLOBAL:ipcc_ar6_100:v1",
+      "fuel_type": "refrigerant_r_1234yf",
+      "unit": "kg",
+      "geography": "GLOBAL",
+      "geography_level": "global",
+      "vectors": {
+        "CO2": 0.501,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 27,
+        "N2O_gwp": 273
+      },
+      "scope": "1",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "IPCC",
+        "source_publication": "IPCC AR6 WGI \u2014 100-year GWP values for halogenated gases",
+        "source_year": 2021,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.ipcc.ch/",
+        "version": "ar6_100yr"
+      },
+      "valid_from": "2021-01-01",
+      "uncertainty_95ci": 0.1,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "IPCC-Guideline",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "ipcc",
+        "refrigerant",
+        "gwp_basis_ipcc_ar6_100",
+        "r_1234yf",
+        "hfo"
+      ],
+      "notes": "R-1234yf (HFO-1234yf) \u2014 100-year GWP per IPCC AR6: 0.501 kgCO2e/kg; HFO; fugitive emission accounting (GHG Protocol Scope 1, refrigerant leak/service/EOL disposal)",
+      "factor_family": "refrigerant_gwp",
+      "activity_tags": [
+        "fugitive_emission",
+        "refrigerant",
+        "scope1"
+      ],
+      "sector_tags": [
+        "refrigeration",
+        "hvac"
+      ],
+      "source_id": "ipcc_refrigerants_promoted",
+      "source_release": "ipcc_ar6_100",
+      "release_version": "ipcc-ar6",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "ISO_14064",
+        "IPCC_AR5",
+        "IPCC_AR6"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_international",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "IPCC AR5 Working Group I Chapter 8 and AR6 Working Group I Chapter 7 \u2014 100-year GWP values for halogenated gases.",
+        "alternates_considered": [
+          "EF:IPCC:r_22:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_32:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_134a:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_410a:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_404a:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_507:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_1234ze:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_452a:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_513a:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_448a:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_407f:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_23:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:sf6:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:nf3:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:cf4:GLOBAL:ipcc_ar6_100:v1"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:IPCC:r_1234ze:GLOBAL:ipcc_ar5_100:v1",
+      "fuel_type": "refrigerant_r_1234ze",
+      "unit": "kg",
+      "geography": "GLOBAL",
+      "geography_level": "global",
+      "vectors": {
+        "CO2": 7.0,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR5_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 265
+      },
+      "scope": "1",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "IPCC",
+        "source_publication": "IPCC AR5 WGI \u2014 100-year GWP values for halogenated gases",
+        "source_year": 2013,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.ipcc.ch/",
+        "version": "ar5_100yr"
+      },
+      "valid_from": "2013-01-01",
+      "uncertainty_95ci": 0.1,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "IPCC-Guideline",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "ipcc",
+        "refrigerant",
+        "gwp_basis_ipcc_ar5_100",
+        "r_1234ze",
+        "hfo"
+      ],
+      "notes": "R-1234ze (HFO-1234ze(E)) \u2014 100-year GWP per IPCC AR5: 7.0 kgCO2e/kg; HFO; fugitive emission accounting (GHG Protocol Scope 1, refrigerant leak/service/EOL disposal)",
+      "factor_family": "refrigerant_gwp",
+      "activity_tags": [
+        "fugitive_emission",
+        "refrigerant",
+        "scope1"
+      ],
+      "sector_tags": [
+        "refrigeration",
+        "hvac"
+      ],
+      "source_id": "ipcc_refrigerants_promoted",
+      "source_release": "ipcc_ar5_100",
+      "release_version": "ipcc-ar5",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "ISO_14064",
+        "IPCC_AR5",
+        "IPCC_AR6"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_international",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "IPCC AR5 Working Group I Chapter 8 and AR6 Working Group I Chapter 7 \u2014 100-year GWP values for halogenated gases.",
+        "alternates_considered": [
+          "EF:IPCC:r_22:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_32:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_134a:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_410a:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_404a:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_507:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_1234yf:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_452a:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_513a:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_448a:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_407f:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_23:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:sf6:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:nf3:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:cf4:GLOBAL:ipcc_ar5_100:v1"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:IPCC:r_1234ze:GLOBAL:ipcc_ar6_100:v1",
+      "fuel_type": "refrigerant_r_1234ze",
+      "unit": "kg",
+      "geography": "GLOBAL",
+      "geography_level": "global",
+      "vectors": {
+        "CO2": 1.37,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 27,
+        "N2O_gwp": 273
+      },
+      "scope": "1",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "IPCC",
+        "source_publication": "IPCC AR6 WGI \u2014 100-year GWP values for halogenated gases",
+        "source_year": 2021,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.ipcc.ch/",
+        "version": "ar6_100yr"
+      },
+      "valid_from": "2021-01-01",
+      "uncertainty_95ci": 0.1,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "IPCC-Guideline",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "ipcc",
+        "refrigerant",
+        "gwp_basis_ipcc_ar6_100",
+        "r_1234ze",
+        "hfo"
+      ],
+      "notes": "R-1234ze (HFO-1234ze(E)) \u2014 100-year GWP per IPCC AR6: 1.37 kgCO2e/kg; HFO; fugitive emission accounting (GHG Protocol Scope 1, refrigerant leak/service/EOL disposal)",
+      "factor_family": "refrigerant_gwp",
+      "activity_tags": [
+        "fugitive_emission",
+        "refrigerant",
+        "scope1"
+      ],
+      "sector_tags": [
+        "refrigeration",
+        "hvac"
+      ],
+      "source_id": "ipcc_refrigerants_promoted",
+      "source_release": "ipcc_ar6_100",
+      "release_version": "ipcc-ar6",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "ISO_14064",
+        "IPCC_AR5",
+        "IPCC_AR6"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_international",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "IPCC AR5 Working Group I Chapter 8 and AR6 Working Group I Chapter 7 \u2014 100-year GWP values for halogenated gases.",
+        "alternates_considered": [
+          "EF:IPCC:r_22:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_32:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_134a:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_410a:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_404a:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_507:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_1234yf:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_452a:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_513a:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_448a:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_407f:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_23:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:sf6:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:nf3:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:cf4:GLOBAL:ipcc_ar6_100:v1"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:IPCC:r_452a:GLOBAL:ipcc_ar5_100:v1",
+      "fuel_type": "refrigerant_r_452a",
+      "unit": "kg",
+      "geography": "GLOBAL",
+      "geography_level": "global",
+      "vectors": {
+        "CO2": 2141.0,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR5_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 265
+      },
+      "scope": "1",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "IPCC",
+        "source_publication": "IPCC AR5 WGI \u2014 100-year GWP values for halogenated gases",
+        "source_year": 2013,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.ipcc.ch/",
+        "version": "ar5_100yr"
+      },
+      "valid_from": "2013-01-01",
+      "uncertainty_95ci": 0.1,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "IPCC-Guideline",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "ipcc",
+        "refrigerant",
+        "gwp_basis_ipcc_ar5_100",
+        "r_452a",
+        "hfc_hfo_blend"
+      ],
+      "notes": "R-452A (Blend HFC/HFO) \u2014 100-year GWP per IPCC AR5: 2141.0 kgCO2e/kg; HFC_HFO_BLEND; fugitive emission accounting (GHG Protocol Scope 1, refrigerant leak/service/EOL disposal)",
+      "factor_family": "refrigerant_gwp",
+      "activity_tags": [
+        "fugitive_emission",
+        "refrigerant",
+        "scope1"
+      ],
+      "sector_tags": [
+        "refrigeration",
+        "hvac"
+      ],
+      "source_id": "ipcc_refrigerants_promoted",
+      "source_release": "ipcc_ar5_100",
+      "release_version": "ipcc-ar5",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "ISO_14064",
+        "IPCC_AR5",
+        "IPCC_AR6"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_international",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "IPCC AR5 Working Group I Chapter 8 and AR6 Working Group I Chapter 7 \u2014 100-year GWP values for halogenated gases.",
+        "alternates_considered": [
+          "EF:IPCC:r_22:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_32:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_134a:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_410a:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_404a:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_507:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_1234yf:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_1234ze:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_513a:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_448a:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_407f:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_23:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:sf6:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:nf3:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:cf4:GLOBAL:ipcc_ar5_100:v1"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:IPCC:r_452a:GLOBAL:ipcc_ar6_100:v1",
+      "fuel_type": "refrigerant_r_452a",
+      "unit": "kg",
+      "geography": "GLOBAL",
+      "geography_level": "global",
+      "vectors": {
+        "CO2": 2292.0,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 27,
+        "N2O_gwp": 273
+      },
+      "scope": "1",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "IPCC",
+        "source_publication": "IPCC AR6 WGI \u2014 100-year GWP values for halogenated gases",
+        "source_year": 2021,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.ipcc.ch/",
+        "version": "ar6_100yr"
+      },
+      "valid_from": "2021-01-01",
+      "uncertainty_95ci": 0.1,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "IPCC-Guideline",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "ipcc",
+        "refrigerant",
+        "gwp_basis_ipcc_ar6_100",
+        "r_452a",
+        "hfc_hfo_blend"
+      ],
+      "notes": "R-452A (Blend HFC/HFO) \u2014 100-year GWP per IPCC AR6: 2292.0 kgCO2e/kg; HFC_HFO_BLEND; fugitive emission accounting (GHG Protocol Scope 1, refrigerant leak/service/EOL disposal)",
+      "factor_family": "refrigerant_gwp",
+      "activity_tags": [
+        "fugitive_emission",
+        "refrigerant",
+        "scope1"
+      ],
+      "sector_tags": [
+        "refrigeration",
+        "hvac"
+      ],
+      "source_id": "ipcc_refrigerants_promoted",
+      "source_release": "ipcc_ar6_100",
+      "release_version": "ipcc-ar6",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "ISO_14064",
+        "IPCC_AR5",
+        "IPCC_AR6"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_international",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "IPCC AR5 Working Group I Chapter 8 and AR6 Working Group I Chapter 7 \u2014 100-year GWP values for halogenated gases.",
+        "alternates_considered": [
+          "EF:IPCC:r_22:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_32:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_134a:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_410a:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_404a:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_507:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_1234yf:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_1234ze:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_513a:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_448a:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_407f:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_23:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:sf6:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:nf3:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:cf4:GLOBAL:ipcc_ar6_100:v1"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:IPCC:r_513a:GLOBAL:ipcc_ar5_100:v1",
+      "fuel_type": "refrigerant_r_513a",
+      "unit": "kg",
+      "geography": "GLOBAL",
+      "geography_level": "global",
+      "vectors": {
+        "CO2": 631.0,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR5_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 265
+      },
+      "scope": "1",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "IPCC",
+        "source_publication": "IPCC AR5 WGI \u2014 100-year GWP values for halogenated gases",
+        "source_year": 2013,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.ipcc.ch/",
+        "version": "ar5_100yr"
+      },
+      "valid_from": "2013-01-01",
+      "uncertainty_95ci": 0.1,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "IPCC-Guideline",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "ipcc",
+        "refrigerant",
+        "gwp_basis_ipcc_ar5_100",
+        "r_513a",
+        "hfc_hfo_blend"
+      ],
+      "notes": "R-513A (Blend HFO-1234yf/134a) \u2014 100-year GWP per IPCC AR5: 631.0 kgCO2e/kg; HFC_HFO_BLEND; fugitive emission accounting (GHG Protocol Scope 1, refrigerant leak/service/EOL disposal)",
+      "factor_family": "refrigerant_gwp",
+      "activity_tags": [
+        "fugitive_emission",
+        "refrigerant",
+        "scope1"
+      ],
+      "sector_tags": [
+        "refrigeration",
+        "hvac"
+      ],
+      "source_id": "ipcc_refrigerants_promoted",
+      "source_release": "ipcc_ar5_100",
+      "release_version": "ipcc-ar5",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "ISO_14064",
+        "IPCC_AR5",
+        "IPCC_AR6"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_international",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "IPCC AR5 Working Group I Chapter 8 and AR6 Working Group I Chapter 7 \u2014 100-year GWP values for halogenated gases.",
+        "alternates_considered": [
+          "EF:IPCC:r_22:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_32:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_134a:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_410a:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_404a:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_507:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_1234yf:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_1234ze:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_452a:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_448a:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_407f:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_23:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:sf6:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:nf3:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:cf4:GLOBAL:ipcc_ar5_100:v1"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:IPCC:r_513a:GLOBAL:ipcc_ar6_100:v1",
+      "fuel_type": "refrigerant_r_513a",
+      "unit": "kg",
+      "geography": "GLOBAL",
+      "geography_level": "global",
+      "vectors": {
+        "CO2": 742.0,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 27,
+        "N2O_gwp": 273
+      },
+      "scope": "1",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "IPCC",
+        "source_publication": "IPCC AR6 WGI \u2014 100-year GWP values for halogenated gases",
+        "source_year": 2021,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.ipcc.ch/",
+        "version": "ar6_100yr"
+      },
+      "valid_from": "2021-01-01",
+      "uncertainty_95ci": 0.1,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "IPCC-Guideline",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "ipcc",
+        "refrigerant",
+        "gwp_basis_ipcc_ar6_100",
+        "r_513a",
+        "hfc_hfo_blend"
+      ],
+      "notes": "R-513A (Blend HFO-1234yf/134a) \u2014 100-year GWP per IPCC AR6: 742.0 kgCO2e/kg; HFC_HFO_BLEND; fugitive emission accounting (GHG Protocol Scope 1, refrigerant leak/service/EOL disposal)",
+      "factor_family": "refrigerant_gwp",
+      "activity_tags": [
+        "fugitive_emission",
+        "refrigerant",
+        "scope1"
+      ],
+      "sector_tags": [
+        "refrigeration",
+        "hvac"
+      ],
+      "source_id": "ipcc_refrigerants_promoted",
+      "source_release": "ipcc_ar6_100",
+      "release_version": "ipcc-ar6",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "ISO_14064",
+        "IPCC_AR5",
+        "IPCC_AR6"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_international",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "IPCC AR5 Working Group I Chapter 8 and AR6 Working Group I Chapter 7 \u2014 100-year GWP values for halogenated gases.",
+        "alternates_considered": [
+          "EF:IPCC:r_22:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_32:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_134a:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_410a:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_404a:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_507:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_1234yf:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_1234ze:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_452a:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_448a:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_407f:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_23:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:sf6:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:nf3:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:cf4:GLOBAL:ipcc_ar6_100:v1"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:IPCC:r_448a:GLOBAL:ipcc_ar5_100:v1",
+      "fuel_type": "refrigerant_r_448a",
+      "unit": "kg",
+      "geography": "GLOBAL",
+      "geography_level": "global",
+      "vectors": {
+        "CO2": 1387.0,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR5_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 265
+      },
+      "scope": "1",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "IPCC",
+        "source_publication": "IPCC AR5 WGI \u2014 100-year GWP values for halogenated gases",
+        "source_year": 2013,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.ipcc.ch/",
+        "version": "ar5_100yr"
+      },
+      "valid_from": "2013-01-01",
+      "uncertainty_95ci": 0.1,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "IPCC-Guideline",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "ipcc",
+        "refrigerant",
+        "gwp_basis_ipcc_ar5_100",
+        "r_448a",
+        "hfc_hfo_blend"
+      ],
+      "notes": "R-448A (Blend HFC/HFO) \u2014 100-year GWP per IPCC AR5: 1387.0 kgCO2e/kg; HFC_HFO_BLEND; fugitive emission accounting (GHG Protocol Scope 1, refrigerant leak/service/EOL disposal)",
+      "factor_family": "refrigerant_gwp",
+      "activity_tags": [
+        "fugitive_emission",
+        "refrigerant",
+        "scope1"
+      ],
+      "sector_tags": [
+        "refrigeration",
+        "hvac"
+      ],
+      "source_id": "ipcc_refrigerants_promoted",
+      "source_release": "ipcc_ar5_100",
+      "release_version": "ipcc-ar5",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "ISO_14064",
+        "IPCC_AR5",
+        "IPCC_AR6"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_international",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "IPCC AR5 Working Group I Chapter 8 and AR6 Working Group I Chapter 7 \u2014 100-year GWP values for halogenated gases.",
+        "alternates_considered": [
+          "EF:IPCC:r_22:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_32:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_134a:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_410a:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_404a:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_507:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_1234yf:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_1234ze:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_452a:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_513a:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_407f:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_23:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:sf6:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:nf3:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:cf4:GLOBAL:ipcc_ar5_100:v1"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:IPCC:r_448a:GLOBAL:ipcc_ar6_100:v1",
+      "fuel_type": "refrigerant_r_448a",
+      "unit": "kg",
+      "geography": "GLOBAL",
+      "geography_level": "global",
+      "vectors": {
+        "CO2": 1526.0,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 27,
+        "N2O_gwp": 273
+      },
+      "scope": "1",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "IPCC",
+        "source_publication": "IPCC AR6 WGI \u2014 100-year GWP values for halogenated gases",
+        "source_year": 2021,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.ipcc.ch/",
+        "version": "ar6_100yr"
+      },
+      "valid_from": "2021-01-01",
+      "uncertainty_95ci": 0.1,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "IPCC-Guideline",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "ipcc",
+        "refrigerant",
+        "gwp_basis_ipcc_ar6_100",
+        "r_448a",
+        "hfc_hfo_blend"
+      ],
+      "notes": "R-448A (Blend HFC/HFO) \u2014 100-year GWP per IPCC AR6: 1526.0 kgCO2e/kg; HFC_HFO_BLEND; fugitive emission accounting (GHG Protocol Scope 1, refrigerant leak/service/EOL disposal)",
+      "factor_family": "refrigerant_gwp",
+      "activity_tags": [
+        "fugitive_emission",
+        "refrigerant",
+        "scope1"
+      ],
+      "sector_tags": [
+        "refrigeration",
+        "hvac"
+      ],
+      "source_id": "ipcc_refrigerants_promoted",
+      "source_release": "ipcc_ar6_100",
+      "release_version": "ipcc-ar6",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "ISO_14064",
+        "IPCC_AR5",
+        "IPCC_AR6"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_international",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "IPCC AR5 Working Group I Chapter 8 and AR6 Working Group I Chapter 7 \u2014 100-year GWP values for halogenated gases.",
+        "alternates_considered": [
+          "EF:IPCC:r_22:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_32:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_134a:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_410a:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_404a:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_507:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_1234yf:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_1234ze:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_452a:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_513a:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_407f:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_23:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:sf6:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:nf3:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:cf4:GLOBAL:ipcc_ar6_100:v1"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:IPCC:r_407f:GLOBAL:ipcc_ar5_100:v1",
+      "fuel_type": "refrigerant_r_407f",
+      "unit": "kg",
+      "geography": "GLOBAL",
+      "geography_level": "global",
+      "vectors": {
+        "CO2": 1825.0,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR5_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 265
+      },
+      "scope": "1",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "IPCC",
+        "source_publication": "IPCC AR5 WGI \u2014 100-year GWP values for halogenated gases",
+        "source_year": 2013,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.ipcc.ch/",
+        "version": "ar5_100yr"
+      },
+      "valid_from": "2013-01-01",
+      "uncertainty_95ci": 0.1,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "IPCC-Guideline",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "ipcc",
+        "refrigerant",
+        "gwp_basis_ipcc_ar5_100",
+        "r_407f",
+        "hfc_blend"
+      ],
+      "notes": "R-407F (Blend HFC-32/125/134a) \u2014 100-year GWP per IPCC AR5: 1825.0 kgCO2e/kg; HFC_BLEND; fugitive emission accounting (GHG Protocol Scope 1, refrigerant leak/service/EOL disposal)",
+      "factor_family": "refrigerant_gwp",
+      "activity_tags": [
+        "fugitive_emission",
+        "refrigerant",
+        "scope1"
+      ],
+      "sector_tags": [
+        "refrigeration",
+        "hvac"
+      ],
+      "source_id": "ipcc_refrigerants_promoted",
+      "source_release": "ipcc_ar5_100",
+      "release_version": "ipcc-ar5",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "ISO_14064",
+        "IPCC_AR5",
+        "IPCC_AR6"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_international",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "IPCC AR5 Working Group I Chapter 8 and AR6 Working Group I Chapter 7 \u2014 100-year GWP values for halogenated gases.",
+        "alternates_considered": [
+          "EF:IPCC:r_22:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_32:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_134a:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_410a:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_404a:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_507:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_1234yf:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_1234ze:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_452a:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_513a:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_448a:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_23:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:sf6:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:nf3:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:cf4:GLOBAL:ipcc_ar5_100:v1"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:IPCC:r_407f:GLOBAL:ipcc_ar6_100:v1",
+      "fuel_type": "refrigerant_r_407f",
+      "unit": "kg",
+      "geography": "GLOBAL",
+      "geography_level": "global",
+      "vectors": {
+        "CO2": 2088.0,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 27,
+        "N2O_gwp": 273
+      },
+      "scope": "1",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "IPCC",
+        "source_publication": "IPCC AR6 WGI \u2014 100-year GWP values for halogenated gases",
+        "source_year": 2021,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.ipcc.ch/",
+        "version": "ar6_100yr"
+      },
+      "valid_from": "2021-01-01",
+      "uncertainty_95ci": 0.1,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "IPCC-Guideline",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "ipcc",
+        "refrigerant",
+        "gwp_basis_ipcc_ar6_100",
+        "r_407f",
+        "hfc_blend"
+      ],
+      "notes": "R-407F (Blend HFC-32/125/134a) \u2014 100-year GWP per IPCC AR6: 2088.0 kgCO2e/kg; HFC_BLEND; fugitive emission accounting (GHG Protocol Scope 1, refrigerant leak/service/EOL disposal)",
+      "factor_family": "refrigerant_gwp",
+      "activity_tags": [
+        "fugitive_emission",
+        "refrigerant",
+        "scope1"
+      ],
+      "sector_tags": [
+        "refrigeration",
+        "hvac"
+      ],
+      "source_id": "ipcc_refrigerants_promoted",
+      "source_release": "ipcc_ar6_100",
+      "release_version": "ipcc-ar6",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "ISO_14064",
+        "IPCC_AR5",
+        "IPCC_AR6"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_international",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "IPCC AR5 Working Group I Chapter 8 and AR6 Working Group I Chapter 7 \u2014 100-year GWP values for halogenated gases.",
+        "alternates_considered": [
+          "EF:IPCC:r_22:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_32:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_134a:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_410a:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_404a:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_507:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_1234yf:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_1234ze:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_452a:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_513a:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_448a:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_23:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:sf6:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:nf3:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:cf4:GLOBAL:ipcc_ar6_100:v1"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:IPCC:r_23:GLOBAL:ipcc_ar5_100:v1",
+      "fuel_type": "refrigerant_r_23",
+      "unit": "kg",
+      "geography": "GLOBAL",
+      "geography_level": "global",
+      "vectors": {
+        "CO2": 12400.0,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR5_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 265
+      },
+      "scope": "1",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "IPCC",
+        "source_publication": "IPCC AR5 WGI \u2014 100-year GWP values for halogenated gases",
+        "source_year": 2013,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.ipcc.ch/",
+        "version": "ar5_100yr"
+      },
+      "valid_from": "2013-01-01",
+      "uncertainty_95ci": 0.1,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "IPCC-Guideline",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "ipcc",
+        "refrigerant",
+        "gwp_basis_ipcc_ar5_100",
+        "r_23",
+        "hfc"
+      ],
+      "notes": "R-23 (HFC-23 / CHF3) \u2014 100-year GWP per IPCC AR5: 12400.0 kgCO2e/kg; HFC; fugitive emission accounting (GHG Protocol Scope 1, refrigerant leak/service/EOL disposal)",
+      "factor_family": "refrigerant_gwp",
+      "activity_tags": [
+        "fugitive_emission",
+        "refrigerant",
+        "scope1"
+      ],
+      "sector_tags": [
+        "refrigeration",
+        "hvac"
+      ],
+      "source_id": "ipcc_refrigerants_promoted",
+      "source_release": "ipcc_ar5_100",
+      "release_version": "ipcc-ar5",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "ISO_14064",
+        "IPCC_AR5",
+        "IPCC_AR6"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_international",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "IPCC AR5 Working Group I Chapter 8 and AR6 Working Group I Chapter 7 \u2014 100-year GWP values for halogenated gases.",
+        "alternates_considered": [
+          "EF:IPCC:r_22:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_32:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_134a:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_410a:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_404a:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_507:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_1234yf:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_1234ze:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_452a:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_513a:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_448a:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_407f:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:sf6:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:nf3:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:cf4:GLOBAL:ipcc_ar5_100:v1"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:IPCC:r_23:GLOBAL:ipcc_ar6_100:v1",
+      "fuel_type": "refrigerant_r_23",
+      "unit": "kg",
+      "geography": "GLOBAL",
+      "geography_level": "global",
+      "vectors": {
+        "CO2": 14600.0,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 27,
+        "N2O_gwp": 273
+      },
+      "scope": "1",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "IPCC",
+        "source_publication": "IPCC AR6 WGI \u2014 100-year GWP values for halogenated gases",
+        "source_year": 2021,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.ipcc.ch/",
+        "version": "ar6_100yr"
+      },
+      "valid_from": "2021-01-01",
+      "uncertainty_95ci": 0.1,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "IPCC-Guideline",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "ipcc",
+        "refrigerant",
+        "gwp_basis_ipcc_ar6_100",
+        "r_23",
+        "hfc"
+      ],
+      "notes": "R-23 (HFC-23 / CHF3) \u2014 100-year GWP per IPCC AR6: 14600.0 kgCO2e/kg; HFC; fugitive emission accounting (GHG Protocol Scope 1, refrigerant leak/service/EOL disposal)",
+      "factor_family": "refrigerant_gwp",
+      "activity_tags": [
+        "fugitive_emission",
+        "refrigerant",
+        "scope1"
+      ],
+      "sector_tags": [
+        "refrigeration",
+        "hvac"
+      ],
+      "source_id": "ipcc_refrigerants_promoted",
+      "source_release": "ipcc_ar6_100",
+      "release_version": "ipcc-ar6",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "ISO_14064",
+        "IPCC_AR5",
+        "IPCC_AR6"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_international",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "IPCC AR5 Working Group I Chapter 8 and AR6 Working Group I Chapter 7 \u2014 100-year GWP values for halogenated gases.",
+        "alternates_considered": [
+          "EF:IPCC:r_22:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_32:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_134a:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_410a:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_404a:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_507:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_1234yf:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_1234ze:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_452a:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_513a:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_448a:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_407f:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:sf6:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:nf3:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:cf4:GLOBAL:ipcc_ar6_100:v1"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:IPCC:sf6:GLOBAL:ipcc_ar5_100:v1",
+      "fuel_type": "refrigerant_sf6",
+      "unit": "kg",
+      "geography": "GLOBAL",
+      "geography_level": "global",
+      "vectors": {
+        "CO2": 23500.0,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR5_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 265
+      },
+      "scope": "1",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "IPCC",
+        "source_publication": "IPCC AR5 WGI \u2014 100-year GWP values for halogenated gases",
+        "source_year": 2013,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.ipcc.ch/",
+        "version": "ar5_100yr"
+      },
+      "valid_from": "2013-01-01",
+      "uncertainty_95ci": 0.1,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "IPCC-Guideline",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "ipcc",
+        "refrigerant",
+        "gwp_basis_ipcc_ar5_100",
+        "sf6",
+        "sf6"
+      ],
+      "notes": "SF6 (Sulfur hexafluoride) \u2014 100-year GWP per IPCC AR5: 23500.0 kgCO2e/kg; SF6; fugitive emission accounting (GHG Protocol Scope 1, refrigerant leak/service/EOL disposal)",
+      "factor_family": "refrigerant_gwp",
+      "activity_tags": [
+        "fugitive_emission",
+        "refrigerant",
+        "scope1"
+      ],
+      "sector_tags": [
+        "refrigeration",
+        "hvac"
+      ],
+      "source_id": "ipcc_refrigerants_promoted",
+      "source_release": "ipcc_ar5_100",
+      "release_version": "ipcc-ar5",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "ISO_14064",
+        "IPCC_AR5",
+        "IPCC_AR6"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_international",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "IPCC AR5 Working Group I Chapter 8 and AR6 Working Group I Chapter 7 \u2014 100-year GWP values for halogenated gases.",
+        "alternates_considered": [
+          "EF:IPCC:r_22:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_32:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_134a:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_410a:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_404a:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_507:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_1234yf:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_1234ze:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_452a:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_513a:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_448a:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_407f:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_23:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:nf3:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:cf4:GLOBAL:ipcc_ar5_100:v1"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:IPCC:sf6:GLOBAL:ipcc_ar6_100:v1",
+      "fuel_type": "refrigerant_sf6",
+      "unit": "kg",
+      "geography": "GLOBAL",
+      "geography_level": "global",
+      "vectors": {
+        "CO2": 24300.0,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 27,
+        "N2O_gwp": 273
+      },
+      "scope": "1",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "IPCC",
+        "source_publication": "IPCC AR6 WGI \u2014 100-year GWP values for halogenated gases",
+        "source_year": 2021,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.ipcc.ch/",
+        "version": "ar6_100yr"
+      },
+      "valid_from": "2021-01-01",
+      "uncertainty_95ci": 0.1,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "IPCC-Guideline",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "ipcc",
+        "refrigerant",
+        "gwp_basis_ipcc_ar6_100",
+        "sf6",
+        "sf6"
+      ],
+      "notes": "SF6 (Sulfur hexafluoride) \u2014 100-year GWP per IPCC AR6: 24300.0 kgCO2e/kg; SF6; fugitive emission accounting (GHG Protocol Scope 1, refrigerant leak/service/EOL disposal)",
+      "factor_family": "refrigerant_gwp",
+      "activity_tags": [
+        "fugitive_emission",
+        "refrigerant",
+        "scope1"
+      ],
+      "sector_tags": [
+        "refrigeration",
+        "hvac"
+      ],
+      "source_id": "ipcc_refrigerants_promoted",
+      "source_release": "ipcc_ar6_100",
+      "release_version": "ipcc-ar6",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "ISO_14064",
+        "IPCC_AR5",
+        "IPCC_AR6"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_international",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "IPCC AR5 Working Group I Chapter 8 and AR6 Working Group I Chapter 7 \u2014 100-year GWP values for halogenated gases.",
+        "alternates_considered": [
+          "EF:IPCC:r_22:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_32:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_134a:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_410a:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_404a:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_507:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_1234yf:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_1234ze:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_452a:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_513a:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_448a:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_407f:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_23:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:nf3:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:cf4:GLOBAL:ipcc_ar6_100:v1"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:IPCC:nf3:GLOBAL:ipcc_ar5_100:v1",
+      "fuel_type": "refrigerant_nf3",
+      "unit": "kg",
+      "geography": "GLOBAL",
+      "geography_level": "global",
+      "vectors": {
+        "CO2": 16100.0,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR5_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 265
+      },
+      "scope": "1",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "IPCC",
+        "source_publication": "IPCC AR5 WGI \u2014 100-year GWP values for halogenated gases",
+        "source_year": 2013,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.ipcc.ch/",
+        "version": "ar5_100yr"
+      },
+      "valid_from": "2013-01-01",
+      "uncertainty_95ci": 0.1,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "IPCC-Guideline",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "ipcc",
+        "refrigerant",
+        "gwp_basis_ipcc_ar5_100",
+        "nf3",
+        "nf3"
+      ],
+      "notes": "NF3 (Nitrogen trifluoride) \u2014 100-year GWP per IPCC AR5: 16100.0 kgCO2e/kg; NF3; fugitive emission accounting (GHG Protocol Scope 1, refrigerant leak/service/EOL disposal)",
+      "factor_family": "refrigerant_gwp",
+      "activity_tags": [
+        "fugitive_emission",
+        "refrigerant",
+        "scope1"
+      ],
+      "sector_tags": [
+        "refrigeration",
+        "hvac"
+      ],
+      "source_id": "ipcc_refrigerants_promoted",
+      "source_release": "ipcc_ar5_100",
+      "release_version": "ipcc-ar5",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "ISO_14064",
+        "IPCC_AR5",
+        "IPCC_AR6"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_international",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "IPCC AR5 Working Group I Chapter 8 and AR6 Working Group I Chapter 7 \u2014 100-year GWP values for halogenated gases.",
+        "alternates_considered": [
+          "EF:IPCC:r_22:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_32:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_134a:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_410a:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_404a:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_507:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_1234yf:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_1234ze:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_452a:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_513a:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_448a:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_407f:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_23:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:sf6:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:cf4:GLOBAL:ipcc_ar5_100:v1"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:IPCC:nf3:GLOBAL:ipcc_ar6_100:v1",
+      "fuel_type": "refrigerant_nf3",
+      "unit": "kg",
+      "geography": "GLOBAL",
+      "geography_level": "global",
+      "vectors": {
+        "CO2": 17400.0,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 27,
+        "N2O_gwp": 273
+      },
+      "scope": "1",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "IPCC",
+        "source_publication": "IPCC AR6 WGI \u2014 100-year GWP values for halogenated gases",
+        "source_year": 2021,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.ipcc.ch/",
+        "version": "ar6_100yr"
+      },
+      "valid_from": "2021-01-01",
+      "uncertainty_95ci": 0.1,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "IPCC-Guideline",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "ipcc",
+        "refrigerant",
+        "gwp_basis_ipcc_ar6_100",
+        "nf3",
+        "nf3"
+      ],
+      "notes": "NF3 (Nitrogen trifluoride) \u2014 100-year GWP per IPCC AR6: 17400.0 kgCO2e/kg; NF3; fugitive emission accounting (GHG Protocol Scope 1, refrigerant leak/service/EOL disposal)",
+      "factor_family": "refrigerant_gwp",
+      "activity_tags": [
+        "fugitive_emission",
+        "refrigerant",
+        "scope1"
+      ],
+      "sector_tags": [
+        "refrigeration",
+        "hvac"
+      ],
+      "source_id": "ipcc_refrigerants_promoted",
+      "source_release": "ipcc_ar6_100",
+      "release_version": "ipcc-ar6",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "ISO_14064",
+        "IPCC_AR5",
+        "IPCC_AR6"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_international",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "IPCC AR5 Working Group I Chapter 8 and AR6 Working Group I Chapter 7 \u2014 100-year GWP values for halogenated gases.",
+        "alternates_considered": [
+          "EF:IPCC:r_22:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_32:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_134a:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_410a:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_404a:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_507:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_1234yf:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_1234ze:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_452a:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_513a:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_448a:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_407f:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_23:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:sf6:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:cf4:GLOBAL:ipcc_ar6_100:v1"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:IPCC:cf4:GLOBAL:ipcc_ar5_100:v1",
+      "fuel_type": "refrigerant_cf4",
+      "unit": "kg",
+      "geography": "GLOBAL",
+      "geography_level": "global",
+      "vectors": {
+        "CO2": 6630.0,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR5_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 265
+      },
+      "scope": "1",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "IPCC",
+        "source_publication": "IPCC AR5 WGI \u2014 100-year GWP values for halogenated gases",
+        "source_year": 2013,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.ipcc.ch/",
+        "version": "ar5_100yr"
+      },
+      "valid_from": "2013-01-01",
+      "uncertainty_95ci": 0.1,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "IPCC-Guideline",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "ipcc",
+        "refrigerant",
+        "gwp_basis_ipcc_ar5_100",
+        "cf4",
+        "pfc"
+      ],
+      "notes": "CF4 (PFC-14 / Tetrafluoromethane) \u2014 100-year GWP per IPCC AR5: 6630.0 kgCO2e/kg; PFC; fugitive emission accounting (GHG Protocol Scope 1, refrigerant leak/service/EOL disposal)",
+      "factor_family": "refrigerant_gwp",
+      "activity_tags": [
+        "fugitive_emission",
+        "refrigerant",
+        "scope1"
+      ],
+      "sector_tags": [
+        "refrigeration",
+        "hvac"
+      ],
+      "source_id": "ipcc_refrigerants_promoted",
+      "source_release": "ipcc_ar5_100",
+      "release_version": "ipcc-ar5",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "ISO_14064",
+        "IPCC_AR5",
+        "IPCC_AR6"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_international",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "IPCC AR5 Working Group I Chapter 8 and AR6 Working Group I Chapter 7 \u2014 100-year GWP values for halogenated gases.",
+        "alternates_considered": [
+          "EF:IPCC:r_22:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_32:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_134a:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_410a:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_404a:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_507:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_1234yf:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_1234ze:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_452a:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_513a:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_448a:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_407f:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:r_23:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:sf6:GLOBAL:ipcc_ar5_100:v1",
+          "EF:IPCC:nf3:GLOBAL:ipcc_ar5_100:v1"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:IPCC:cf4:GLOBAL:ipcc_ar6_100:v1",
+      "fuel_type": "refrigerant_cf4",
+      "unit": "kg",
+      "geography": "GLOBAL",
+      "geography_level": "global",
+      "vectors": {
+        "CO2": 7380.0,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 27,
+        "N2O_gwp": 273
+      },
+      "scope": "1",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "IPCC",
+        "source_publication": "IPCC AR6 WGI \u2014 100-year GWP values for halogenated gases",
+        "source_year": 2021,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.ipcc.ch/",
+        "version": "ar6_100yr"
+      },
+      "valid_from": "2021-01-01",
+      "uncertainty_95ci": 0.1,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 5,
+        "representativeness": 5,
+        "methodological": 5
+      },
+      "license_info": {
+        "license": "IPCC-Guideline",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "ipcc",
+        "refrigerant",
+        "gwp_basis_ipcc_ar6_100",
+        "cf4",
+        "pfc"
+      ],
+      "notes": "CF4 (PFC-14 / Tetrafluoromethane) \u2014 100-year GWP per IPCC AR6: 7380.0 kgCO2e/kg; PFC; fugitive emission accounting (GHG Protocol Scope 1, refrigerant leak/service/EOL disposal)",
+      "factor_family": "refrigerant_gwp",
+      "activity_tags": [
+        "fugitive_emission",
+        "refrigerant",
+        "scope1"
+      ],
+      "sector_tags": [
+        "refrigeration",
+        "hvac"
+      ],
+      "source_id": "ipcc_refrigerants_promoted",
+      "source_release": "ipcc_ar6_100",
+      "release_version": "ipcc-ar6",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "IPCC_2006",
+        "ISO_14064",
+        "IPCC_AR5",
+        "IPCC_AR6"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_international",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "IPCC AR5 Working Group I Chapter 8 and AR6 Working Group I Chapter 7 \u2014 100-year GWP values for halogenated gases.",
+        "alternates_considered": [
+          "EF:IPCC:r_22:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_32:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_134a:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_410a:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_404a:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_507:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_1234yf:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_1234ze:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_452a:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_513a:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_448a:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_407f:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:r_23:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:sf6:GLOBAL:ipcc_ar6_100:v1",
+          "EF:IPCC:nf3:GLOBAL:ipcc_ar6_100:v1"
+        ]
+      }
+    }
+  ]
+}

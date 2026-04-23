@@ -1,0 +1,1993 @@
+{
+  "source_id": "epa_warm",
+  "source_version": "15",
+  "ingested_at": "2026-04-23T18:26:53+00:00",
+  "license_class": "public_us_government",
+  "license_name": "US-Public-Domain",
+  "redistribution_class": "open",
+  "attribution_text": "U.S. Environmental Protection Agency \u2014 Waste Reduction Model (WARM) v15.",
+  "factor_status_default": "certified",
+  "factor_count": 20,
+  "factors": [
+    {
+      "factor_id": "EF:EPA:waste_landfill_msw:US:v15:v1",
+      "fuel_type": "waste_msw",
+      "unit": "tonnes",
+      "geography": "US",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 0.5842248273505404,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR5_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 265
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "US EPA",
+        "source_publication": "EPA Waste Reduction Model (WARM) v15 Documentation Chapters",
+        "source_year": 2020,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.epa.gov/warm",
+        "version": "v15"
+      },
+      "valid_from": "2020-01-01",
+      "uncertainty_95ci": 0.25,
+      "dqs": {
+        "temporal": 4,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 3,
+        "methodological": 3
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "epa_warm",
+        "waste",
+        "treatment_landfill",
+        "material_msw",
+        "scope3_cat5",
+        "illustrative"
+      ],
+      "notes": "EPA WARM v15 end-of-life factor: landfill msw; illustrative_value=true; TODO: reconcile against full WARM v15 workbook before GA; WARM baseline landfill with LFG collection, mixed MSW",
+      "biogenic_flag": false,
+      "factor_family": "waste_treatment",
+      "activity_tags": [
+        "waste_landfill",
+        "end_of_life"
+      ],
+      "sector_tags": [
+        "waste_management"
+      ],
+      "source_id": "epa_warm",
+      "source_release": "v15",
+      "release_version": "warm-v15",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "GHG_Protocol_Scope3",
+        "EPA_WARM"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. Environmental Protection Agency \u2014 Waste Reduction Model (WARM) v15.",
+        "alternates_considered": [
+          "EF:EPA:waste_landfill_paper:US:v15:v1",
+          "EF:EPA:waste_landfill_cardboard:US:v15:v1",
+          "EF:EPA:waste_landfill_plastic:US:v15:v1",
+          "EF:EPA:waste_landfill_food:US:v15:v1",
+          "EF:EPA:waste_landfill_organic:US:v15:v1",
+          "EF:EPA:waste_incineration_msw:US:v15:v1",
+          "EF:EPA:waste_incineration_paper:US:v15:v1",
+          "EF:EPA:waste_incineration_plastic:US:v15:v1",
+          "EF:EPA:waste_compost_food:US:v15:v1",
+          "EF:EPA:waste_compost_organic:US:v15:v1",
+          "EF:EPA:waste_compost_yard:US:v15:v1",
+          "EF:EPA:waste_anaerobic_digestion_food:US:v15:v1",
+          "EF:EPA:waste_recycling_cardboard:US:v15:v1",
+          "EF:EPA:waste_recycling_paper:US:v15:v1",
+          "EF:EPA:waste_recycling_aluminum:US:v15:v1",
+          "EF:EPA:waste_recycling_glass:US:v15:v1",
+          "EF:EPA:waste_recycling_steel:US:v15:v1",
+          "EF:EPA:waste_recycling_plastic:US:v15:v1",
+          "EF:EPA:waste_recycling_ewaste:US:v15:v1"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:EPA:waste_landfill_paper:US:v15:v1",
+      "fuel_type": "waste_paper",
+      "unit": "tonnes",
+      "geography": "US",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 2.0062060109018556,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR5_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 265
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "US EPA",
+        "source_publication": "EPA Waste Reduction Model (WARM) v15 Documentation Chapters",
+        "source_year": 2020,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.epa.gov/warm",
+        "version": "v15"
+      },
+      "valid_from": "2020-01-01",
+      "uncertainty_95ci": 0.25,
+      "dqs": {
+        "temporal": 4,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 3,
+        "methodological": 3
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "epa_warm",
+        "waste",
+        "treatment_landfill",
+        "material_paper",
+        "scope3_cat5",
+        "illustrative"
+      ],
+      "notes": "EPA WARM v15 end-of-life factor: landfill paper; illustrative_value=true; TODO: reconcile against full WARM v15 workbook before GA; Office paper landfill, CH4 dominated",
+      "biogenic_flag": false,
+      "factor_family": "waste_treatment",
+      "activity_tags": [
+        "waste_landfill",
+        "end_of_life"
+      ],
+      "sector_tags": [
+        "waste_management"
+      ],
+      "source_id": "epa_warm",
+      "source_release": "v15",
+      "release_version": "warm-v15",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "GHG_Protocol_Scope3",
+        "EPA_WARM"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. Environmental Protection Agency \u2014 Waste Reduction Model (WARM) v15.",
+        "alternates_considered": [
+          "EF:EPA:waste_landfill_msw:US:v15:v1",
+          "EF:EPA:waste_landfill_cardboard:US:v15:v1",
+          "EF:EPA:waste_landfill_plastic:US:v15:v1",
+          "EF:EPA:waste_landfill_food:US:v15:v1",
+          "EF:EPA:waste_landfill_organic:US:v15:v1",
+          "EF:EPA:waste_incineration_msw:US:v15:v1",
+          "EF:EPA:waste_incineration_paper:US:v15:v1",
+          "EF:EPA:waste_incineration_plastic:US:v15:v1",
+          "EF:EPA:waste_compost_food:US:v15:v1",
+          "EF:EPA:waste_compost_organic:US:v15:v1",
+          "EF:EPA:waste_compost_yard:US:v15:v1",
+          "EF:EPA:waste_anaerobic_digestion_food:US:v15:v1",
+          "EF:EPA:waste_recycling_cardboard:US:v15:v1",
+          "EF:EPA:waste_recycling_paper:US:v15:v1",
+          "EF:EPA:waste_recycling_aluminum:US:v15:v1",
+          "EF:EPA:waste_recycling_glass:US:v15:v1",
+          "EF:EPA:waste_recycling_steel:US:v15:v1",
+          "EF:EPA:waste_recycling_plastic:US:v15:v1",
+          "EF:EPA:waste_recycling_ewaste:US:v15:v1"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:EPA:waste_landfill_cardboard:US:v15:v1",
+      "fuel_type": "waste_cardboard",
+      "unit": "tonnes",
+      "geography": "US",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 1.300726974101203,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR5_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 265
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "US EPA",
+        "source_publication": "EPA Waste Reduction Model (WARM) v15 Documentation Chapters",
+        "source_year": 2020,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.epa.gov/warm",
+        "version": "v15"
+      },
+      "valid_from": "2020-01-01",
+      "uncertainty_95ci": 0.25,
+      "dqs": {
+        "temporal": 4,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 3,
+        "methodological": 3
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "epa_warm",
+        "waste",
+        "treatment_landfill",
+        "material_cardboard",
+        "scope3_cat5",
+        "illustrative"
+      ],
+      "notes": "EPA WARM v15 end-of-life factor: landfill cardboard; illustrative_value=true; TODO: reconcile against full WARM v15 workbook before GA",
+      "biogenic_flag": false,
+      "factor_family": "waste_treatment",
+      "activity_tags": [
+        "waste_landfill",
+        "end_of_life"
+      ],
+      "sector_tags": [
+        "waste_management"
+      ],
+      "source_id": "epa_warm",
+      "source_release": "v15",
+      "release_version": "warm-v15",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "GHG_Protocol_Scope3",
+        "EPA_WARM"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. Environmental Protection Agency \u2014 Waste Reduction Model (WARM) v15.",
+        "alternates_considered": [
+          "EF:EPA:waste_landfill_msw:US:v15:v1",
+          "EF:EPA:waste_landfill_paper:US:v15:v1",
+          "EF:EPA:waste_landfill_plastic:US:v15:v1",
+          "EF:EPA:waste_landfill_food:US:v15:v1",
+          "EF:EPA:waste_landfill_organic:US:v15:v1",
+          "EF:EPA:waste_incineration_msw:US:v15:v1",
+          "EF:EPA:waste_incineration_paper:US:v15:v1",
+          "EF:EPA:waste_incineration_plastic:US:v15:v1",
+          "EF:EPA:waste_compost_food:US:v15:v1",
+          "EF:EPA:waste_compost_organic:US:v15:v1",
+          "EF:EPA:waste_compost_yard:US:v15:v1",
+          "EF:EPA:waste_anaerobic_digestion_food:US:v15:v1",
+          "EF:EPA:waste_recycling_cardboard:US:v15:v1",
+          "EF:EPA:waste_recycling_paper:US:v15:v1",
+          "EF:EPA:waste_recycling_aluminum:US:v15:v1",
+          "EF:EPA:waste_recycling_glass:US:v15:v1",
+          "EF:EPA:waste_recycling_steel:US:v15:v1",
+          "EF:EPA:waste_recycling_plastic:US:v15:v1",
+          "EF:EPA:waste_recycling_ewaste:US:v15:v1"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:EPA:waste_landfill_plastic:US:v15:v1",
+      "fuel_type": "waste_plastic",
+      "unit": "tonnes",
+      "geography": "US",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 0.04409243980004079,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR5_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 265
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "US EPA",
+        "source_publication": "EPA Waste Reduction Model (WARM) v15 Documentation Chapters",
+        "source_year": 2020,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.epa.gov/warm",
+        "version": "v15"
+      },
+      "valid_from": "2020-01-01",
+      "uncertainty_95ci": 0.25,
+      "dqs": {
+        "temporal": 4,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 3,
+        "methodological": 3
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "epa_warm",
+        "waste",
+        "treatment_landfill",
+        "material_plastic",
+        "scope3_cat5",
+        "illustrative"
+      ],
+      "notes": "EPA WARM v15 end-of-life factor: landfill plastic; illustrative_value=true; TODO: reconcile against full WARM v15 workbook before GA; Near-zero decay, stored carbon",
+      "biogenic_flag": false,
+      "factor_family": "waste_treatment",
+      "activity_tags": [
+        "waste_landfill",
+        "end_of_life"
+      ],
+      "sector_tags": [
+        "waste_management"
+      ],
+      "source_id": "epa_warm",
+      "source_release": "v15",
+      "release_version": "warm-v15",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "GHG_Protocol_Scope3",
+        "EPA_WARM"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. Environmental Protection Agency \u2014 Waste Reduction Model (WARM) v15.",
+        "alternates_considered": [
+          "EF:EPA:waste_landfill_msw:US:v15:v1",
+          "EF:EPA:waste_landfill_paper:US:v15:v1",
+          "EF:EPA:waste_landfill_cardboard:US:v15:v1",
+          "EF:EPA:waste_landfill_food:US:v15:v1",
+          "EF:EPA:waste_landfill_organic:US:v15:v1",
+          "EF:EPA:waste_incineration_msw:US:v15:v1",
+          "EF:EPA:waste_incineration_paper:US:v15:v1",
+          "EF:EPA:waste_incineration_plastic:US:v15:v1",
+          "EF:EPA:waste_compost_food:US:v15:v1",
+          "EF:EPA:waste_compost_organic:US:v15:v1",
+          "EF:EPA:waste_compost_yard:US:v15:v1",
+          "EF:EPA:waste_anaerobic_digestion_food:US:v15:v1",
+          "EF:EPA:waste_recycling_cardboard:US:v15:v1",
+          "EF:EPA:waste_recycling_paper:US:v15:v1",
+          "EF:EPA:waste_recycling_aluminum:US:v15:v1",
+          "EF:EPA:waste_recycling_glass:US:v15:v1",
+          "EF:EPA:waste_recycling_steel:US:v15:v1",
+          "EF:EPA:waste_recycling_plastic:US:v15:v1",
+          "EF:EPA:waste_recycling_ewaste:US:v15:v1"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:EPA:waste_landfill_food:US:v15:v1",
+      "fuel_type": "waste_food",
+      "unit": "tonnes",
+      "geography": "US",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 0.6283172671505811,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR5_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 265
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "US EPA",
+        "source_publication": "EPA Waste Reduction Model (WARM) v15 Documentation Chapters",
+        "source_year": 2020,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.epa.gov/warm",
+        "version": "v15"
+      },
+      "valid_from": "2020-01-01",
+      "uncertainty_95ci": 0.25,
+      "dqs": {
+        "temporal": 4,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 3,
+        "methodological": 3
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "epa_warm",
+        "waste",
+        "treatment_landfill",
+        "material_food",
+        "scope3_cat5",
+        "illustrative"
+      ],
+      "notes": "EPA WARM v15 end-of-life factor: landfill food; illustrative_value=true; TODO: reconcile against full WARM v15 workbook before GA",
+      "biogenic_flag": false,
+      "factor_family": "waste_treatment",
+      "activity_tags": [
+        "waste_landfill",
+        "end_of_life"
+      ],
+      "sector_tags": [
+        "waste_management"
+      ],
+      "source_id": "epa_warm",
+      "source_release": "v15",
+      "release_version": "warm-v15",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "GHG_Protocol_Scope3",
+        "EPA_WARM"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. Environmental Protection Agency \u2014 Waste Reduction Model (WARM) v15.",
+        "alternates_considered": [
+          "EF:EPA:waste_landfill_msw:US:v15:v1",
+          "EF:EPA:waste_landfill_paper:US:v15:v1",
+          "EF:EPA:waste_landfill_cardboard:US:v15:v1",
+          "EF:EPA:waste_landfill_plastic:US:v15:v1",
+          "EF:EPA:waste_landfill_organic:US:v15:v1",
+          "EF:EPA:waste_incineration_msw:US:v15:v1",
+          "EF:EPA:waste_incineration_paper:US:v15:v1",
+          "EF:EPA:waste_incineration_plastic:US:v15:v1",
+          "EF:EPA:waste_compost_food:US:v15:v1",
+          "EF:EPA:waste_compost_organic:US:v15:v1",
+          "EF:EPA:waste_compost_yard:US:v15:v1",
+          "EF:EPA:waste_anaerobic_digestion_food:US:v15:v1",
+          "EF:EPA:waste_recycling_cardboard:US:v15:v1",
+          "EF:EPA:waste_recycling_paper:US:v15:v1",
+          "EF:EPA:waste_recycling_aluminum:US:v15:v1",
+          "EF:EPA:waste_recycling_glass:US:v15:v1",
+          "EF:EPA:waste_recycling_steel:US:v15:v1",
+          "EF:EPA:waste_recycling_plastic:US:v15:v1",
+          "EF:EPA:waste_recycling_ewaste:US:v15:v1"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:EPA:waste_landfill_organic:US:v15:v1",
+      "fuel_type": "waste_organic",
+      "unit": "tonnes",
+      "geography": "US",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 0.4629706179004282,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR5_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 265
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "US EPA",
+        "source_publication": "EPA Waste Reduction Model (WARM) v15 Documentation Chapters",
+        "source_year": 2020,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.epa.gov/warm",
+        "version": "v15"
+      },
+      "valid_from": "2020-01-01",
+      "uncertainty_95ci": 0.25,
+      "dqs": {
+        "temporal": 4,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 3,
+        "methodological": 3
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "epa_warm",
+        "waste",
+        "treatment_landfill",
+        "material_organic",
+        "scope3_cat5",
+        "illustrative"
+      ],
+      "notes": "EPA WARM v15 end-of-life factor: landfill organic; illustrative_value=true; TODO: reconcile against full WARM v15 workbook before GA",
+      "biogenic_flag": false,
+      "factor_family": "waste_treatment",
+      "activity_tags": [
+        "waste_landfill",
+        "end_of_life"
+      ],
+      "sector_tags": [
+        "waste_management"
+      ],
+      "source_id": "epa_warm",
+      "source_release": "v15",
+      "release_version": "warm-v15",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "GHG_Protocol_Scope3",
+        "EPA_WARM"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. Environmental Protection Agency \u2014 Waste Reduction Model (WARM) v15.",
+        "alternates_considered": [
+          "EF:EPA:waste_landfill_msw:US:v15:v1",
+          "EF:EPA:waste_landfill_paper:US:v15:v1",
+          "EF:EPA:waste_landfill_cardboard:US:v15:v1",
+          "EF:EPA:waste_landfill_plastic:US:v15:v1",
+          "EF:EPA:waste_landfill_food:US:v15:v1",
+          "EF:EPA:waste_incineration_msw:US:v15:v1",
+          "EF:EPA:waste_incineration_paper:US:v15:v1",
+          "EF:EPA:waste_incineration_plastic:US:v15:v1",
+          "EF:EPA:waste_compost_food:US:v15:v1",
+          "EF:EPA:waste_compost_organic:US:v15:v1",
+          "EF:EPA:waste_compost_yard:US:v15:v1",
+          "EF:EPA:waste_anaerobic_digestion_food:US:v15:v1",
+          "EF:EPA:waste_recycling_cardboard:US:v15:v1",
+          "EF:EPA:waste_recycling_paper:US:v15:v1",
+          "EF:EPA:waste_recycling_aluminum:US:v15:v1",
+          "EF:EPA:waste_recycling_glass:US:v15:v1",
+          "EF:EPA:waste_recycling_steel:US:v15:v1",
+          "EF:EPA:waste_recycling_plastic:US:v15:v1",
+          "EF:EPA:waste_recycling_ewaste:US:v15:v1"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:EPA:waste_incineration_msw:US:v15:v1",
+      "fuel_type": "waste_msw",
+      "unit": "tonnes",
+      "geography": "US",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 0.4739937278504384,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR5_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 265
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "US EPA",
+        "source_publication": "EPA Waste Reduction Model (WARM) v15 Documentation Chapters",
+        "source_year": 2020,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.epa.gov/warm",
+        "version": "v15"
+      },
+      "valid_from": "2020-01-01",
+      "uncertainty_95ci": 0.25,
+      "dqs": {
+        "temporal": 4,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 3,
+        "methodological": 3
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "epa_warm",
+        "waste",
+        "treatment_incineration",
+        "material_msw",
+        "scope3_cat5",
+        "illustrative"
+      ],
+      "notes": "EPA WARM v15 end-of-life factor: incineration msw; illustrative_value=true; TODO: reconcile against full WARM v15 workbook before GA; Mass-burn WTE with electricity recovery offset",
+      "biogenic_flag": false,
+      "factor_family": "waste_treatment",
+      "activity_tags": [
+        "waste_incineration",
+        "end_of_life"
+      ],
+      "sector_tags": [
+        "waste_management"
+      ],
+      "source_id": "epa_warm",
+      "source_release": "v15",
+      "release_version": "warm-v15",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "GHG_Protocol_Scope3",
+        "EPA_WARM"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. Environmental Protection Agency \u2014 Waste Reduction Model (WARM) v15.",
+        "alternates_considered": [
+          "EF:EPA:waste_landfill_msw:US:v15:v1",
+          "EF:EPA:waste_landfill_paper:US:v15:v1",
+          "EF:EPA:waste_landfill_cardboard:US:v15:v1",
+          "EF:EPA:waste_landfill_plastic:US:v15:v1",
+          "EF:EPA:waste_landfill_food:US:v15:v1",
+          "EF:EPA:waste_landfill_organic:US:v15:v1",
+          "EF:EPA:waste_incineration_paper:US:v15:v1",
+          "EF:EPA:waste_incineration_plastic:US:v15:v1",
+          "EF:EPA:waste_compost_food:US:v15:v1",
+          "EF:EPA:waste_compost_organic:US:v15:v1",
+          "EF:EPA:waste_compost_yard:US:v15:v1",
+          "EF:EPA:waste_anaerobic_digestion_food:US:v15:v1",
+          "EF:EPA:waste_recycling_cardboard:US:v15:v1",
+          "EF:EPA:waste_recycling_paper:US:v15:v1",
+          "EF:EPA:waste_recycling_aluminum:US:v15:v1",
+          "EF:EPA:waste_recycling_glass:US:v15:v1",
+          "EF:EPA:waste_recycling_steel:US:v15:v1",
+          "EF:EPA:waste_recycling_plastic:US:v15:v1",
+          "EF:EPA:waste_recycling_ewaste:US:v15:v1"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:EPA:waste_incineration_paper:US:v15:v1",
+      "fuel_type": "waste_paper",
+      "unit": "tonnes",
+      "geography": "US",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 0.6944559268506424,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR5_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 265
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "US EPA",
+        "source_publication": "EPA Waste Reduction Model (WARM) v15 Documentation Chapters",
+        "source_year": 2020,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.epa.gov/warm",
+        "version": "v15"
+      },
+      "valid_from": "2020-01-01",
+      "uncertainty_95ci": 0.25,
+      "dqs": {
+        "temporal": 4,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 3,
+        "methodological": 3
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "epa_warm",
+        "waste",
+        "treatment_incineration",
+        "material_paper",
+        "scope3_cat5",
+        "illustrative"
+      ],
+      "notes": "EPA WARM v15 end-of-life factor: incineration paper; illustrative_value=true; TODO: reconcile against full WARM v15 workbook before GA",
+      "biogenic_flag": false,
+      "factor_family": "waste_treatment",
+      "activity_tags": [
+        "waste_incineration",
+        "end_of_life"
+      ],
+      "sector_tags": [
+        "waste_management"
+      ],
+      "source_id": "epa_warm",
+      "source_release": "v15",
+      "release_version": "warm-v15",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "GHG_Protocol_Scope3",
+        "EPA_WARM"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. Environmental Protection Agency \u2014 Waste Reduction Model (WARM) v15.",
+        "alternates_considered": [
+          "EF:EPA:waste_landfill_msw:US:v15:v1",
+          "EF:EPA:waste_landfill_paper:US:v15:v1",
+          "EF:EPA:waste_landfill_cardboard:US:v15:v1",
+          "EF:EPA:waste_landfill_plastic:US:v15:v1",
+          "EF:EPA:waste_landfill_food:US:v15:v1",
+          "EF:EPA:waste_landfill_organic:US:v15:v1",
+          "EF:EPA:waste_incineration_msw:US:v15:v1",
+          "EF:EPA:waste_incineration_plastic:US:v15:v1",
+          "EF:EPA:waste_compost_food:US:v15:v1",
+          "EF:EPA:waste_compost_organic:US:v15:v1",
+          "EF:EPA:waste_compost_yard:US:v15:v1",
+          "EF:EPA:waste_anaerobic_digestion_food:US:v15:v1",
+          "EF:EPA:waste_recycling_cardboard:US:v15:v1",
+          "EF:EPA:waste_recycling_paper:US:v15:v1",
+          "EF:EPA:waste_recycling_aluminum:US:v15:v1",
+          "EF:EPA:waste_recycling_glass:US:v15:v1",
+          "EF:EPA:waste_recycling_steel:US:v15:v1",
+          "EF:EPA:waste_recycling_plastic:US:v15:v1",
+          "EF:EPA:waste_recycling_ewaste:US:v15:v1"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:EPA:waste_incineration_plastic:US:v15:v1",
+      "fuel_type": "waste_plastic",
+      "unit": "tonnes",
+      "geography": "US",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 3.1967018855029568,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR5_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 265
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "US EPA",
+        "source_publication": "EPA Waste Reduction Model (WARM) v15 Documentation Chapters",
+        "source_year": 2020,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.epa.gov/warm",
+        "version": "v15"
+      },
+      "valid_from": "2020-01-01",
+      "uncertainty_95ci": 0.25,
+      "dqs": {
+        "temporal": 4,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 3,
+        "methodological": 3
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "epa_warm",
+        "waste",
+        "treatment_incineration",
+        "material_plastic",
+        "scope3_cat5",
+        "illustrative"
+      ],
+      "notes": "EPA WARM v15 end-of-life factor: incineration plastic; illustrative_value=true; TODO: reconcile against full WARM v15 workbook before GA; Fossil-carbon plastics combustion",
+      "biogenic_flag": false,
+      "factor_family": "waste_treatment",
+      "activity_tags": [
+        "waste_incineration",
+        "end_of_life"
+      ],
+      "sector_tags": [
+        "waste_management"
+      ],
+      "source_id": "epa_warm",
+      "source_release": "v15",
+      "release_version": "warm-v15",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "GHG_Protocol_Scope3",
+        "EPA_WARM"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. Environmental Protection Agency \u2014 Waste Reduction Model (WARM) v15.",
+        "alternates_considered": [
+          "EF:EPA:waste_landfill_msw:US:v15:v1",
+          "EF:EPA:waste_landfill_paper:US:v15:v1",
+          "EF:EPA:waste_landfill_cardboard:US:v15:v1",
+          "EF:EPA:waste_landfill_plastic:US:v15:v1",
+          "EF:EPA:waste_landfill_food:US:v15:v1",
+          "EF:EPA:waste_landfill_organic:US:v15:v1",
+          "EF:EPA:waste_incineration_msw:US:v15:v1",
+          "EF:EPA:waste_incineration_paper:US:v15:v1",
+          "EF:EPA:waste_compost_food:US:v15:v1",
+          "EF:EPA:waste_compost_organic:US:v15:v1",
+          "EF:EPA:waste_compost_yard:US:v15:v1",
+          "EF:EPA:waste_anaerobic_digestion_food:US:v15:v1",
+          "EF:EPA:waste_recycling_cardboard:US:v15:v1",
+          "EF:EPA:waste_recycling_paper:US:v15:v1",
+          "EF:EPA:waste_recycling_aluminum:US:v15:v1",
+          "EF:EPA:waste_recycling_glass:US:v15:v1",
+          "EF:EPA:waste_recycling_steel:US:v15:v1",
+          "EF:EPA:waste_recycling_plastic:US:v15:v1",
+          "EF:EPA:waste_recycling_ewaste:US:v15:v1"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:EPA:waste_compost_food:US:v15:v1",
+      "fuel_type": "waste_food",
+      "unit": "tonnes",
+      "geography": "US",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 0.19841597910018352,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR5_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 265
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "US EPA",
+        "source_publication": "EPA Waste Reduction Model (WARM) v15 Documentation Chapters",
+        "source_year": 2020,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.epa.gov/warm",
+        "version": "v15"
+      },
+      "valid_from": "2020-01-01",
+      "uncertainty_95ci": 0.25,
+      "dqs": {
+        "temporal": 4,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 3,
+        "methodological": 3
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "epa_warm",
+        "waste",
+        "treatment_compost",
+        "material_food",
+        "scope3_cat5",
+        "illustrative"
+      ],
+      "notes": "EPA WARM v15 end-of-life factor: compost food; illustrative_value=true; TODO: reconcile against full WARM v15 workbook before GA; Aerobic composting, net CH4/N2O from decomposition",
+      "biogenic_flag": true,
+      "factor_family": "waste_treatment",
+      "activity_tags": [
+        "waste_compost",
+        "end_of_life"
+      ],
+      "sector_tags": [
+        "waste_management"
+      ],
+      "source_id": "epa_warm",
+      "source_release": "v15",
+      "release_version": "warm-v15",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "GHG_Protocol_Scope3",
+        "EPA_WARM"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. Environmental Protection Agency \u2014 Waste Reduction Model (WARM) v15.",
+        "alternates_considered": [
+          "EF:EPA:waste_landfill_msw:US:v15:v1",
+          "EF:EPA:waste_landfill_paper:US:v15:v1",
+          "EF:EPA:waste_landfill_cardboard:US:v15:v1",
+          "EF:EPA:waste_landfill_plastic:US:v15:v1",
+          "EF:EPA:waste_landfill_food:US:v15:v1",
+          "EF:EPA:waste_landfill_organic:US:v15:v1",
+          "EF:EPA:waste_incineration_msw:US:v15:v1",
+          "EF:EPA:waste_incineration_paper:US:v15:v1",
+          "EF:EPA:waste_incineration_plastic:US:v15:v1",
+          "EF:EPA:waste_compost_organic:US:v15:v1",
+          "EF:EPA:waste_compost_yard:US:v15:v1",
+          "EF:EPA:waste_anaerobic_digestion_food:US:v15:v1",
+          "EF:EPA:waste_recycling_cardboard:US:v15:v1",
+          "EF:EPA:waste_recycling_paper:US:v15:v1",
+          "EF:EPA:waste_recycling_aluminum:US:v15:v1",
+          "EF:EPA:waste_recycling_glass:US:v15:v1",
+          "EF:EPA:waste_recycling_steel:US:v15:v1",
+          "EF:EPA:waste_recycling_plastic:US:v15:v1",
+          "EF:EPA:waste_recycling_ewaste:US:v15:v1"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:EPA:waste_compost_organic:US:v15:v1",
+      "fuel_type": "waste_organic",
+      "unit": "tonnes",
+      "geography": "US",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 0.22046219900020395,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR5_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 265
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "US EPA",
+        "source_publication": "EPA Waste Reduction Model (WARM) v15 Documentation Chapters",
+        "source_year": 2020,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.epa.gov/warm",
+        "version": "v15"
+      },
+      "valid_from": "2020-01-01",
+      "uncertainty_95ci": 0.25,
+      "dqs": {
+        "temporal": 4,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 3,
+        "methodological": 3
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "epa_warm",
+        "waste",
+        "treatment_compost",
+        "material_organic",
+        "scope3_cat5",
+        "illustrative"
+      ],
+      "notes": "EPA WARM v15 end-of-life factor: compost organic; illustrative_value=true; TODO: reconcile against full WARM v15 workbook before GA",
+      "biogenic_flag": true,
+      "factor_family": "waste_treatment",
+      "activity_tags": [
+        "waste_compost",
+        "end_of_life"
+      ],
+      "sector_tags": [
+        "waste_management"
+      ],
+      "source_id": "epa_warm",
+      "source_release": "v15",
+      "release_version": "warm-v15",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "GHG_Protocol_Scope3",
+        "EPA_WARM"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. Environmental Protection Agency \u2014 Waste Reduction Model (WARM) v15.",
+        "alternates_considered": [
+          "EF:EPA:waste_landfill_msw:US:v15:v1",
+          "EF:EPA:waste_landfill_paper:US:v15:v1",
+          "EF:EPA:waste_landfill_cardboard:US:v15:v1",
+          "EF:EPA:waste_landfill_plastic:US:v15:v1",
+          "EF:EPA:waste_landfill_food:US:v15:v1",
+          "EF:EPA:waste_landfill_organic:US:v15:v1",
+          "EF:EPA:waste_incineration_msw:US:v15:v1",
+          "EF:EPA:waste_incineration_paper:US:v15:v1",
+          "EF:EPA:waste_incineration_plastic:US:v15:v1",
+          "EF:EPA:waste_compost_food:US:v15:v1",
+          "EF:EPA:waste_compost_yard:US:v15:v1",
+          "EF:EPA:waste_anaerobic_digestion_food:US:v15:v1",
+          "EF:EPA:waste_recycling_cardboard:US:v15:v1",
+          "EF:EPA:waste_recycling_paper:US:v15:v1",
+          "EF:EPA:waste_recycling_aluminum:US:v15:v1",
+          "EF:EPA:waste_recycling_glass:US:v15:v1",
+          "EF:EPA:waste_recycling_steel:US:v15:v1",
+          "EF:EPA:waste_recycling_plastic:US:v15:v1",
+          "EF:EPA:waste_recycling_ewaste:US:v15:v1"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:EPA:waste_compost_yard:US:v15:v1",
+      "fuel_type": "waste_yard",
+      "unit": "tonnes",
+      "geography": "US",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 0.16534664925015294,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR5_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 265
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "US EPA",
+        "source_publication": "EPA Waste Reduction Model (WARM) v15 Documentation Chapters",
+        "source_year": 2020,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.epa.gov/warm",
+        "version": "v15"
+      },
+      "valid_from": "2020-01-01",
+      "uncertainty_95ci": 0.25,
+      "dqs": {
+        "temporal": 4,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 3,
+        "methodological": 3
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "epa_warm",
+        "waste",
+        "treatment_compost",
+        "material_yard",
+        "scope3_cat5",
+        "illustrative"
+      ],
+      "notes": "EPA WARM v15 end-of-life factor: compost yard; illustrative_value=true; TODO: reconcile against full WARM v15 workbook before GA",
+      "biogenic_flag": true,
+      "factor_family": "waste_treatment",
+      "activity_tags": [
+        "waste_compost",
+        "end_of_life"
+      ],
+      "sector_tags": [
+        "waste_management"
+      ],
+      "source_id": "epa_warm",
+      "source_release": "v15",
+      "release_version": "warm-v15",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "GHG_Protocol_Scope3",
+        "EPA_WARM"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. Environmental Protection Agency \u2014 Waste Reduction Model (WARM) v15.",
+        "alternates_considered": [
+          "EF:EPA:waste_landfill_msw:US:v15:v1",
+          "EF:EPA:waste_landfill_paper:US:v15:v1",
+          "EF:EPA:waste_landfill_cardboard:US:v15:v1",
+          "EF:EPA:waste_landfill_plastic:US:v15:v1",
+          "EF:EPA:waste_landfill_food:US:v15:v1",
+          "EF:EPA:waste_landfill_organic:US:v15:v1",
+          "EF:EPA:waste_incineration_msw:US:v15:v1",
+          "EF:EPA:waste_incineration_paper:US:v15:v1",
+          "EF:EPA:waste_incineration_plastic:US:v15:v1",
+          "EF:EPA:waste_compost_food:US:v15:v1",
+          "EF:EPA:waste_compost_organic:US:v15:v1",
+          "EF:EPA:waste_anaerobic_digestion_food:US:v15:v1",
+          "EF:EPA:waste_recycling_cardboard:US:v15:v1",
+          "EF:EPA:waste_recycling_paper:US:v15:v1",
+          "EF:EPA:waste_recycling_aluminum:US:v15:v1",
+          "EF:EPA:waste_recycling_glass:US:v15:v1",
+          "EF:EPA:waste_recycling_steel:US:v15:v1",
+          "EF:EPA:waste_recycling_plastic:US:v15:v1",
+          "EF:EPA:waste_recycling_ewaste:US:v15:v1"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:EPA:waste_anaerobic_digestion_food:US:v15:v1",
+      "fuel_type": "waste_food",
+      "unit": "tonnes",
+      "geography": "US",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 0.09920798955009176,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR5_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 265
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "US EPA",
+        "source_publication": "EPA Waste Reduction Model (WARM) v15 Documentation Chapters",
+        "source_year": 2020,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.epa.gov/warm",
+        "version": "v15"
+      },
+      "valid_from": "2020-01-01",
+      "uncertainty_95ci": 0.25,
+      "dqs": {
+        "temporal": 4,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 3,
+        "methodological": 3
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "epa_warm",
+        "waste",
+        "treatment_anaerobic_digestion",
+        "material_food",
+        "scope3_cat5",
+        "illustrative"
+      ],
+      "notes": "EPA WARM v15 end-of-life factor: anaerobic_digestion food; illustrative_value=true; TODO: reconcile against full WARM v15 workbook before GA; AD with biogas capture offset",
+      "biogenic_flag": true,
+      "factor_family": "waste_treatment",
+      "activity_tags": [
+        "waste_anaerobic_digestion",
+        "end_of_life"
+      ],
+      "sector_tags": [
+        "waste_management"
+      ],
+      "source_id": "epa_warm",
+      "source_release": "v15",
+      "release_version": "warm-v15",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "GHG_Protocol_Scope3",
+        "EPA_WARM"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. Environmental Protection Agency \u2014 Waste Reduction Model (WARM) v15.",
+        "alternates_considered": [
+          "EF:EPA:waste_landfill_msw:US:v15:v1",
+          "EF:EPA:waste_landfill_paper:US:v15:v1",
+          "EF:EPA:waste_landfill_cardboard:US:v15:v1",
+          "EF:EPA:waste_landfill_plastic:US:v15:v1",
+          "EF:EPA:waste_landfill_food:US:v15:v1",
+          "EF:EPA:waste_landfill_organic:US:v15:v1",
+          "EF:EPA:waste_incineration_msw:US:v15:v1",
+          "EF:EPA:waste_incineration_paper:US:v15:v1",
+          "EF:EPA:waste_incineration_plastic:US:v15:v1",
+          "EF:EPA:waste_compost_food:US:v15:v1",
+          "EF:EPA:waste_compost_organic:US:v15:v1",
+          "EF:EPA:waste_compost_yard:US:v15:v1",
+          "EF:EPA:waste_recycling_cardboard:US:v15:v1",
+          "EF:EPA:waste_recycling_paper:US:v15:v1",
+          "EF:EPA:waste_recycling_aluminum:US:v15:v1",
+          "EF:EPA:waste_recycling_glass:US:v15:v1",
+          "EF:EPA:waste_recycling_steel:US:v15:v1",
+          "EF:EPA:waste_recycling_plastic:US:v15:v1",
+          "EF:EPA:waste_recycling_ewaste:US:v15:v1"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:EPA:waste_recycling_cardboard:US:v15:v1",
+      "fuel_type": "waste_cardboard",
+      "unit": "tonnes",
+      "geography": "US",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": -3.461256524303202,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR5_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 265
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "US EPA",
+        "source_publication": "EPA Waste Reduction Model (WARM) v15 Documentation Chapters",
+        "source_year": 2020,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.epa.gov/warm",
+        "version": "v15"
+      },
+      "valid_from": "2020-01-01",
+      "uncertainty_95ci": 0.25,
+      "dqs": {
+        "temporal": 4,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 3,
+        "methodological": 3
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "epa_warm",
+        "waste",
+        "treatment_recycling",
+        "material_cardboard",
+        "scope3_cat5",
+        "illustrative"
+      ],
+      "notes": "EPA WARM v15 end-of-life factor: recycling cardboard; illustrative_value=true; TODO: reconcile against full WARM v15 workbook before GA; Net avoided vs virgin fibre",
+      "biogenic_flag": false,
+      "factor_family": "waste_treatment",
+      "activity_tags": [
+        "waste_recycling",
+        "end_of_life"
+      ],
+      "sector_tags": [
+        "waste_management"
+      ],
+      "source_id": "epa_warm",
+      "source_release": "v15",
+      "release_version": "warm-v15",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "GHG_Protocol_Scope3",
+        "EPA_WARM"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. Environmental Protection Agency \u2014 Waste Reduction Model (WARM) v15.",
+        "alternates_considered": [
+          "EF:EPA:waste_landfill_msw:US:v15:v1",
+          "EF:EPA:waste_landfill_paper:US:v15:v1",
+          "EF:EPA:waste_landfill_cardboard:US:v15:v1",
+          "EF:EPA:waste_landfill_plastic:US:v15:v1",
+          "EF:EPA:waste_landfill_food:US:v15:v1",
+          "EF:EPA:waste_landfill_organic:US:v15:v1",
+          "EF:EPA:waste_incineration_msw:US:v15:v1",
+          "EF:EPA:waste_incineration_paper:US:v15:v1",
+          "EF:EPA:waste_incineration_plastic:US:v15:v1",
+          "EF:EPA:waste_compost_food:US:v15:v1",
+          "EF:EPA:waste_compost_organic:US:v15:v1",
+          "EF:EPA:waste_compost_yard:US:v15:v1",
+          "EF:EPA:waste_anaerobic_digestion_food:US:v15:v1",
+          "EF:EPA:waste_recycling_paper:US:v15:v1",
+          "EF:EPA:waste_recycling_aluminum:US:v15:v1",
+          "EF:EPA:waste_recycling_glass:US:v15:v1",
+          "EF:EPA:waste_recycling_steel:US:v15:v1",
+          "EF:EPA:waste_recycling_plastic:US:v15:v1",
+          "EF:EPA:waste_recycling_ewaste:US:v15:v1"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:EPA:waste_recycling_paper:US:v15:v1",
+      "fuel_type": "waste_paper",
+      "unit": "tonnes",
+      "geography": "US",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": -3.2738636551530287,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR5_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 265
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "US EPA",
+        "source_publication": "EPA Waste Reduction Model (WARM) v15 Documentation Chapters",
+        "source_year": 2020,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.epa.gov/warm",
+        "version": "v15"
+      },
+      "valid_from": "2020-01-01",
+      "uncertainty_95ci": 0.25,
+      "dqs": {
+        "temporal": 4,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 3,
+        "methodological": 3
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "epa_warm",
+        "waste",
+        "treatment_recycling",
+        "material_paper",
+        "scope3_cat5",
+        "illustrative"
+      ],
+      "notes": "EPA WARM v15 end-of-life factor: recycling paper; illustrative_value=true; TODO: reconcile against full WARM v15 workbook before GA",
+      "biogenic_flag": false,
+      "factor_family": "waste_treatment",
+      "activity_tags": [
+        "waste_recycling",
+        "end_of_life"
+      ],
+      "sector_tags": [
+        "waste_management"
+      ],
+      "source_id": "epa_warm",
+      "source_release": "v15",
+      "release_version": "warm-v15",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "GHG_Protocol_Scope3",
+        "EPA_WARM"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. Environmental Protection Agency \u2014 Waste Reduction Model (WARM) v15.",
+        "alternates_considered": [
+          "EF:EPA:waste_landfill_msw:US:v15:v1",
+          "EF:EPA:waste_landfill_paper:US:v15:v1",
+          "EF:EPA:waste_landfill_cardboard:US:v15:v1",
+          "EF:EPA:waste_landfill_plastic:US:v15:v1",
+          "EF:EPA:waste_landfill_food:US:v15:v1",
+          "EF:EPA:waste_landfill_organic:US:v15:v1",
+          "EF:EPA:waste_incineration_msw:US:v15:v1",
+          "EF:EPA:waste_incineration_paper:US:v15:v1",
+          "EF:EPA:waste_incineration_plastic:US:v15:v1",
+          "EF:EPA:waste_compost_food:US:v15:v1",
+          "EF:EPA:waste_compost_organic:US:v15:v1",
+          "EF:EPA:waste_compost_yard:US:v15:v1",
+          "EF:EPA:waste_anaerobic_digestion_food:US:v15:v1",
+          "EF:EPA:waste_recycling_cardboard:US:v15:v1",
+          "EF:EPA:waste_recycling_aluminum:US:v15:v1",
+          "EF:EPA:waste_recycling_glass:US:v15:v1",
+          "EF:EPA:waste_recycling_steel:US:v15:v1",
+          "EF:EPA:waste_recycling_plastic:US:v15:v1",
+          "EF:EPA:waste_recycling_ewaste:US:v15:v1"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:EPA:waste_recycling_aluminum:US:v15:v1",
+      "fuel_type": "waste_aluminum",
+      "unit": "tonnes",
+      "geography": "US",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": -10.042053164459288,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR5_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 265
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "US EPA",
+        "source_publication": "EPA Waste Reduction Model (WARM) v15 Documentation Chapters",
+        "source_year": 2020,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.epa.gov/warm",
+        "version": "v15"
+      },
+      "valid_from": "2020-01-01",
+      "uncertainty_95ci": 0.25,
+      "dqs": {
+        "temporal": 4,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 3,
+        "methodological": 3
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "epa_warm",
+        "waste",
+        "treatment_recycling",
+        "material_aluminum",
+        "scope3_cat5",
+        "illustrative"
+      ],
+      "notes": "EPA WARM v15 end-of-life factor: recycling aluminum; illustrative_value=true; TODO: reconcile against full WARM v15 workbook before GA; Large avoided burden vs primary smelting",
+      "biogenic_flag": false,
+      "factor_family": "waste_treatment",
+      "activity_tags": [
+        "waste_recycling",
+        "end_of_life"
+      ],
+      "sector_tags": [
+        "waste_management"
+      ],
+      "source_id": "epa_warm",
+      "source_release": "v15",
+      "release_version": "warm-v15",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "GHG_Protocol_Scope3",
+        "EPA_WARM"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. Environmental Protection Agency \u2014 Waste Reduction Model (WARM) v15.",
+        "alternates_considered": [
+          "EF:EPA:waste_landfill_msw:US:v15:v1",
+          "EF:EPA:waste_landfill_paper:US:v15:v1",
+          "EF:EPA:waste_landfill_cardboard:US:v15:v1",
+          "EF:EPA:waste_landfill_plastic:US:v15:v1",
+          "EF:EPA:waste_landfill_food:US:v15:v1",
+          "EF:EPA:waste_landfill_organic:US:v15:v1",
+          "EF:EPA:waste_incineration_msw:US:v15:v1",
+          "EF:EPA:waste_incineration_paper:US:v15:v1",
+          "EF:EPA:waste_incineration_plastic:US:v15:v1",
+          "EF:EPA:waste_compost_food:US:v15:v1",
+          "EF:EPA:waste_compost_organic:US:v15:v1",
+          "EF:EPA:waste_compost_yard:US:v15:v1",
+          "EF:EPA:waste_anaerobic_digestion_food:US:v15:v1",
+          "EF:EPA:waste_recycling_cardboard:US:v15:v1",
+          "EF:EPA:waste_recycling_paper:US:v15:v1",
+          "EF:EPA:waste_recycling_glass:US:v15:v1",
+          "EF:EPA:waste_recycling_steel:US:v15:v1",
+          "EF:EPA:waste_recycling_plastic:US:v15:v1",
+          "EF:EPA:waste_recycling_ewaste:US:v15:v1"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:EPA:waste_recycling_glass:US:v15:v1",
+      "fuel_type": "waste_glass",
+      "unit": "tonnes",
+      "geography": "US",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": -0.3086470786002855,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR5_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 265
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "US EPA",
+        "source_publication": "EPA Waste Reduction Model (WARM) v15 Documentation Chapters",
+        "source_year": 2020,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.epa.gov/warm",
+        "version": "v15"
+      },
+      "valid_from": "2020-01-01",
+      "uncertainty_95ci": 0.25,
+      "dqs": {
+        "temporal": 4,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 3,
+        "methodological": 3
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "epa_warm",
+        "waste",
+        "treatment_recycling",
+        "material_glass",
+        "scope3_cat5",
+        "illustrative"
+      ],
+      "notes": "EPA WARM v15 end-of-life factor: recycling glass; illustrative_value=true; TODO: reconcile against full WARM v15 workbook before GA",
+      "biogenic_flag": false,
+      "factor_family": "waste_treatment",
+      "activity_tags": [
+        "waste_recycling",
+        "end_of_life"
+      ],
+      "sector_tags": [
+        "waste_management"
+      ],
+      "source_id": "epa_warm",
+      "source_release": "v15",
+      "release_version": "warm-v15",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "GHG_Protocol_Scope3",
+        "EPA_WARM"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. Environmental Protection Agency \u2014 Waste Reduction Model (WARM) v15.",
+        "alternates_considered": [
+          "EF:EPA:waste_landfill_msw:US:v15:v1",
+          "EF:EPA:waste_landfill_paper:US:v15:v1",
+          "EF:EPA:waste_landfill_cardboard:US:v15:v1",
+          "EF:EPA:waste_landfill_plastic:US:v15:v1",
+          "EF:EPA:waste_landfill_food:US:v15:v1",
+          "EF:EPA:waste_landfill_organic:US:v15:v1",
+          "EF:EPA:waste_incineration_msw:US:v15:v1",
+          "EF:EPA:waste_incineration_paper:US:v15:v1",
+          "EF:EPA:waste_incineration_plastic:US:v15:v1",
+          "EF:EPA:waste_compost_food:US:v15:v1",
+          "EF:EPA:waste_compost_organic:US:v15:v1",
+          "EF:EPA:waste_compost_yard:US:v15:v1",
+          "EF:EPA:waste_anaerobic_digestion_food:US:v15:v1",
+          "EF:EPA:waste_recycling_cardboard:US:v15:v1",
+          "EF:EPA:waste_recycling_paper:US:v15:v1",
+          "EF:EPA:waste_recycling_aluminum:US:v15:v1",
+          "EF:EPA:waste_recycling_steel:US:v15:v1",
+          "EF:EPA:waste_recycling_plastic:US:v15:v1",
+          "EF:EPA:waste_recycling_ewaste:US:v15:v1"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:EPA:waste_recycling_steel:US:v15:v1",
+      "fuel_type": "waste_steel",
+      "unit": "tonnes",
+      "geography": "US",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": -1.9841597910018354,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR5_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 265
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "US EPA",
+        "source_publication": "EPA Waste Reduction Model (WARM) v15 Documentation Chapters",
+        "source_year": 2020,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.epa.gov/warm",
+        "version": "v15"
+      },
+      "valid_from": "2020-01-01",
+      "uncertainty_95ci": 0.25,
+      "dqs": {
+        "temporal": 4,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 3,
+        "methodological": 3
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "epa_warm",
+        "waste",
+        "treatment_recycling",
+        "material_steel",
+        "scope3_cat5",
+        "illustrative"
+      ],
+      "notes": "EPA WARM v15 end-of-life factor: recycling steel; illustrative_value=true; TODO: reconcile against full WARM v15 workbook before GA; EAF feedstock displacing BF/BOF",
+      "biogenic_flag": false,
+      "factor_family": "waste_treatment",
+      "activity_tags": [
+        "waste_recycling",
+        "end_of_life"
+      ],
+      "sector_tags": [
+        "waste_management"
+      ],
+      "source_id": "epa_warm",
+      "source_release": "v15",
+      "release_version": "warm-v15",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "GHG_Protocol_Scope3",
+        "EPA_WARM"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. Environmental Protection Agency \u2014 Waste Reduction Model (WARM) v15.",
+        "alternates_considered": [
+          "EF:EPA:waste_landfill_msw:US:v15:v1",
+          "EF:EPA:waste_landfill_paper:US:v15:v1",
+          "EF:EPA:waste_landfill_cardboard:US:v15:v1",
+          "EF:EPA:waste_landfill_plastic:US:v15:v1",
+          "EF:EPA:waste_landfill_food:US:v15:v1",
+          "EF:EPA:waste_landfill_organic:US:v15:v1",
+          "EF:EPA:waste_incineration_msw:US:v15:v1",
+          "EF:EPA:waste_incineration_paper:US:v15:v1",
+          "EF:EPA:waste_incineration_plastic:US:v15:v1",
+          "EF:EPA:waste_compost_food:US:v15:v1",
+          "EF:EPA:waste_compost_organic:US:v15:v1",
+          "EF:EPA:waste_compost_yard:US:v15:v1",
+          "EF:EPA:waste_anaerobic_digestion_food:US:v15:v1",
+          "EF:EPA:waste_recycling_cardboard:US:v15:v1",
+          "EF:EPA:waste_recycling_paper:US:v15:v1",
+          "EF:EPA:waste_recycling_aluminum:US:v15:v1",
+          "EF:EPA:waste_recycling_glass:US:v15:v1",
+          "EF:EPA:waste_recycling_plastic:US:v15:v1",
+          "EF:EPA:waste_recycling_ewaste:US:v15:v1"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:EPA:waste_recycling_plastic:US:v15:v1",
+      "fuel_type": "waste_plastic",
+      "unit": "tonnes",
+      "geography": "US",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": -1.1243572149010401,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR5_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 265
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "US EPA",
+        "source_publication": "EPA Waste Reduction Model (WARM) v15 Documentation Chapters",
+        "source_year": 2020,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.epa.gov/warm",
+        "version": "v15"
+      },
+      "valid_from": "2020-01-01",
+      "uncertainty_95ci": 0.25,
+      "dqs": {
+        "temporal": 4,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 3,
+        "methodological": 3
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "epa_warm",
+        "waste",
+        "treatment_recycling",
+        "material_plastic",
+        "scope3_cat5",
+        "illustrative"
+      ],
+      "notes": "EPA WARM v15 end-of-life factor: recycling plastic; illustrative_value=true; TODO: reconcile against full WARM v15 workbook before GA",
+      "biogenic_flag": false,
+      "factor_family": "waste_treatment",
+      "activity_tags": [
+        "waste_recycling",
+        "end_of_life"
+      ],
+      "sector_tags": [
+        "waste_management"
+      ],
+      "source_id": "epa_warm",
+      "source_release": "v15",
+      "release_version": "warm-v15",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "GHG_Protocol_Scope3",
+        "EPA_WARM"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. Environmental Protection Agency \u2014 Waste Reduction Model (WARM) v15.",
+        "alternates_considered": [
+          "EF:EPA:waste_landfill_msw:US:v15:v1",
+          "EF:EPA:waste_landfill_paper:US:v15:v1",
+          "EF:EPA:waste_landfill_cardboard:US:v15:v1",
+          "EF:EPA:waste_landfill_plastic:US:v15:v1",
+          "EF:EPA:waste_landfill_food:US:v15:v1",
+          "EF:EPA:waste_landfill_organic:US:v15:v1",
+          "EF:EPA:waste_incineration_msw:US:v15:v1",
+          "EF:EPA:waste_incineration_paper:US:v15:v1",
+          "EF:EPA:waste_incineration_plastic:US:v15:v1",
+          "EF:EPA:waste_compost_food:US:v15:v1",
+          "EF:EPA:waste_compost_organic:US:v15:v1",
+          "EF:EPA:waste_compost_yard:US:v15:v1",
+          "EF:EPA:waste_anaerobic_digestion_food:US:v15:v1",
+          "EF:EPA:waste_recycling_cardboard:US:v15:v1",
+          "EF:EPA:waste_recycling_paper:US:v15:v1",
+          "EF:EPA:waste_recycling_aluminum:US:v15:v1",
+          "EF:EPA:waste_recycling_glass:US:v15:v1",
+          "EF:EPA:waste_recycling_steel:US:v15:v1",
+          "EF:EPA:waste_recycling_ewaste:US:v15:v1"
+        ]
+      }
+    },
+    {
+      "factor_id": "EF:EPA:waste_recycling_ewaste:US:v15:v1",
+      "fuel_type": "waste_ewaste",
+      "unit": "tonnes",
+      "geography": "US",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": -0.5842248273505404,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR5_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 265
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "US EPA",
+        "source_publication": "EPA Waste Reduction Model (WARM) v15 Documentation Chapters",
+        "source_year": 2020,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.epa.gov/warm",
+        "version": "v15"
+      },
+      "valid_from": "2020-01-01",
+      "uncertainty_95ci": 0.25,
+      "dqs": {
+        "temporal": 4,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 3,
+        "methodological": 3
+      },
+      "license_info": {
+        "license": "US-Public-Domain",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "epa_warm",
+        "waste",
+        "treatment_recycling",
+        "material_ewaste",
+        "scope3_cat5",
+        "illustrative"
+      ],
+      "notes": "EPA WARM v15 end-of-life factor: recycling ewaste; illustrative_value=true; TODO: reconcile against full WARM v15 workbook before GA; Certified R2 dismantling, metals + plastic recovery",
+      "biogenic_flag": false,
+      "factor_family": "waste_treatment",
+      "activity_tags": [
+        "waste_recycling",
+        "end_of_life"
+      ],
+      "sector_tags": [
+        "waste_management"
+      ],
+      "source_id": "epa_warm",
+      "source_release": "v15",
+      "release_version": "warm-v15",
+      "created_at": "2026-04-23T18:26:53+00:00",
+      "updated_at": "2026-04-23T18:26:53+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "GHG_Protocol_Scope3",
+        "EPA_WARM"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_us_government",
+      "redistribution_class": "open",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:53+00:00",
+        "attribution_text": "U.S. Environmental Protection Agency \u2014 Waste Reduction Model (WARM) v15.",
+        "alternates_considered": [
+          "EF:EPA:waste_landfill_msw:US:v15:v1",
+          "EF:EPA:waste_landfill_paper:US:v15:v1",
+          "EF:EPA:waste_landfill_cardboard:US:v15:v1",
+          "EF:EPA:waste_landfill_plastic:US:v15:v1",
+          "EF:EPA:waste_landfill_food:US:v15:v1",
+          "EF:EPA:waste_landfill_organic:US:v15:v1",
+          "EF:EPA:waste_incineration_msw:US:v15:v1",
+          "EF:EPA:waste_incineration_paper:US:v15:v1",
+          "EF:EPA:waste_incineration_plastic:US:v15:v1",
+          "EF:EPA:waste_compost_food:US:v15:v1",
+          "EF:EPA:waste_compost_organic:US:v15:v1",
+          "EF:EPA:waste_compost_yard:US:v15:v1",
+          "EF:EPA:waste_anaerobic_digestion_food:US:v15:v1",
+          "EF:EPA:waste_recycling_cardboard:US:v15:v1",
+          "EF:EPA:waste_recycling_paper:US:v15:v1",
+          "EF:EPA:waste_recycling_aluminum:US:v15:v1",
+          "EF:EPA:waste_recycling_glass:US:v15:v1",
+          "EF:EPA:waste_recycling_steel:US:v15:v1",
+          "EF:EPA:waste_recycling_plastic:US:v15:v1"
+        ]
+      }
+    }
+  ]
+}

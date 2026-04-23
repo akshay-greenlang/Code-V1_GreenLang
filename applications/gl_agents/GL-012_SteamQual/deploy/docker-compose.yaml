@@ -1,0 +1,370 @@
+# =============================================================================
+# GL-012 STEAMQUAL - Docker Compose Development Configuration
+# =============================================================================
+# Complete development environment for steam quality monitoring and control agent.
+#
+# Services:
+#   - steamqual: Main API application
+#   - timescaledb: Time-series database for steam quality data
+#   - redis: Caching and steam property cache
+#   - prometheus: Metrics collection
+#   - grafana: Steam quality dashboards
+#
+# Standards Compliance:
+#   - ASME PTC 19.11: Steam and Water Sampling
+#   - IAPWS-IF97: Steam Property Calculations
+#   - ISO 9001: Quality Management
+#
+# Usage:
+#   docker-compose up -d              # Start all services
+#   docker-compose logs -f steamqual  # View logs
+#   docker-compose down -v            # Stop and cleanup
+#   docker-compose --profile dev up   # Include dev tools
+#
+# Author: GL-DevOpsEngineer
+# Version: 1.0.0
+# Date: December 2025
+# =============================================================================
+
+version: '3.9'
+
+x-common-env: &common-env
+  GL_AGENT_ID: GL-012
+  GL_AGENT_NAME: STEAMQUAL
+  GL_LOG_LEVEL: DEBUG
+  GL_ENABLE_METRICS: "true"
+  GL_ENABLE_TRACING: "true"
+  GL_DETERMINISTIC_MODE: "true"
+  TZ: UTC
+
+x-healthcheck-defaults: &healthcheck-defaults
+  interval: 30s
+  timeout: 10s
+  retries: 3
+  start_period: 15s
+
+services:
+  # ===========================================================================
+  # STEAMQUAL API Service
+  # ===========================================================================
+  steamqual:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+      target: production
+      args:
+        APP_VERSION: ${APP_VERSION:-1.0.0-dev}
+        BUILD_DATE: ${BUILD_DATE:-}
+        VCS_REF: ${VCS_REF:-dev}
+    image: gl-012-steamqual:${APP_VERSION:-latest}
+    container_name: gl-012-steamqual
+    hostname: steamqual
+    restart: unless-stopped
+
+    environment:
+      <<: *common-env
+      APP_ENV: development
+      API_HOST: 0.0.0.0
+      API_PORT: 8080
+      API_WORKERS: 2
+      # Database
+      DATABASE_URL: postgresql://steamqual:steamqual_dev@timescaledb:5432/steamqual
+      # Redis
+      REDIS_URL: redis://redis:6379/0
+      STEAM_TABLE_CACHE_ENABLED: "true"
+      STEAM_TABLE_CACHE_SIZE: 10000
+      # IAPWS-IF97 Configuration
+      IAPWS_PRECISION: high
+      STEAM_QUALITY_MIN: "0.0"
+      STEAM_QUALITY_MAX: "1.0"
+      STEAM_QUALITY_PRECISION: "0.001"
+      # Prometheus
+      PROMETHEUS_MULTIPROC_DIR: /tmp/prometheus
+      METRICS_ENABLED: "true"
+      METRICS_PORT: 9090
+      # OpenTelemetry
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4317
+      OTEL_SERVICE_NAME: gl-012-steamqual
+      # Secrets (use Docker secrets in production)
+      API_KEY: ${API_KEY:-dev-api-key-not-for-production}
+
+    ports:
+      - "8080:8080"   # API
+      - "9090:9090"   # Metrics
+
+    volumes:
+      - ../logs:/app/logs:rw
+      - ../data:/app/data:rw
+      - steamqual-cache:/app/cache:rw
+      - steam-tables:/app/steam_tables:rw
+
+    depends_on:
+      timescaledb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+    healthcheck:
+      <<: *healthcheck-defaults
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+
+    networks:
+      - steamqual-network
+
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+    logging:
+      driver: json-file
+      options:
+        max-size: "100m"
+        max-file: "5"
+        labels: "service,environment"
+
+  # ===========================================================================
+  # TimescaleDB - Time-Series PostgreSQL
+  # ===========================================================================
+  timescaledb:
+    image: timescale/timescaledb:latest-pg15
+    container_name: gl-012-timescaledb
+    hostname: timescaledb
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_DB: steamqual
+      POSTGRES_USER: steamqual
+      POSTGRES_PASSWORD: steamqual_dev
+      PGDATA: /var/lib/postgresql/data/pgdata
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - timescale-data:/var/lib/postgresql/data
+      - ./sql/init_steamqual.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+
+    healthcheck:
+      <<: *healthcheck-defaults
+      test: ["CMD-SHELL", "pg_isready -U steamqual -d steamqual"]
+
+    networks:
+      - steamqual-network
+
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+
+  # ===========================================================================
+  # Redis Cache
+  # ===========================================================================
+  redis:
+    image: redis:7-alpine
+    container_name: gl-012-redis
+    hostname: redis
+    restart: unless-stopped
+
+    command: >
+      redis-server
+      --appendonly yes
+      --maxmemory 512mb
+      --maxmemory-policy allkeys-lru
+      --save 60 1000
+      --loglevel notice
+
+    ports:
+      - "6379:6379"
+
+    volumes:
+      - redis-data:/data
+
+    healthcheck:
+      <<: *healthcheck-defaults
+      test: ["CMD", "redis-cli", "ping"]
+
+    networks:
+      - steamqual-network
+
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+
+  # ===========================================================================
+  # Prometheus Metrics
+  # ===========================================================================
+  prometheus:
+    image: prom/prometheus:v2.47.0
+    container_name: gl-012-prometheus
+    hostname: prometheus
+    restart: unless-stopped
+
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=30d'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+      - '--web.enable-lifecycle'
+
+    ports:
+      - "9091:9090"
+
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./prometheus/alerts.yml:/etc/prometheus/alerts.yml:ro
+      - prometheus-data:/prometheus
+
+    networks:
+      - steamqual-network
+
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+
+  # ===========================================================================
+  # Grafana Dashboards
+  # ===========================================================================
+  grafana:
+    image: grafana/grafana:10.2.0
+    container_name: gl-012-grafana
+    hostname: grafana
+    restart: unless-stopped
+
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: steamqual_dev
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_SERVER_ROOT_URL: http://localhost:3000
+      GF_INSTALL_PLUGINS: grafana-piechart-panel,grafana-clock-panel
+
+    ports:
+      - "3000:3000"
+
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+
+    depends_on:
+      - prometheus
+      - timescaledb
+
+    networks:
+      - steamqual-network
+
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+
+  # ===========================================================================
+  # Development Tools (Optional - use --profile dev)
+  # ===========================================================================
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: gl-012-pgadmin
+    hostname: pgadmin
+    restart: unless-stopped
+    profiles:
+      - dev
+
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@greenlang.io
+      PGADMIN_DEFAULT_PASSWORD: steamqual_dev
+      PGADMIN_LISTEN_PORT: 5050
+
+    ports:
+      - "5050:5050"
+
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+
+    depends_on:
+      - timescaledb
+
+    networks:
+      - steamqual-network
+
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: gl-012-redis-commander
+    hostname: redis-commander
+    restart: unless-stopped
+    profiles:
+      - dev
+
+    environment:
+      REDIS_HOSTS: local:redis:6379
+
+    ports:
+      - "8081:8081"
+
+    depends_on:
+      - redis
+
+    networks:
+      - steamqual-network
+
+  # ===========================================================================
+  # Jaeger Tracing (Optional - use --profile tracing)
+  # ===========================================================================
+  jaeger:
+    image: jaegertracing/all-in-one:1.51
+    container_name: gl-012-jaeger
+    hostname: jaeger
+    restart: unless-stopped
+    profiles:
+      - tracing
+
+    environment:
+      COLLECTOR_OTLP_ENABLED: "true"
+
+    ports:
+      - "16686:16686"  # Jaeger UI
+      - "4317:4317"    # OTLP gRPC
+      - "4318:4318"    # OTLP HTTP
+
+    networks:
+      - steamqual-network
+
+# ===========================================================================
+# Networks
+# ===========================================================================
+networks:
+  steamqual-network:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.30.0.0/16
+
+# ===========================================================================
+# Volumes
+# ===========================================================================
+volumes:
+  timescale-data:
+    driver: local
+  redis-data:
+    driver: local
+  prometheus-data:
+    driver: local
+  grafana-data:
+    driver: local
+  steamqual-cache:
+    driver: local
+  steam-tables:
+    driver: local
+  pgadmin-data:
+    driver: local

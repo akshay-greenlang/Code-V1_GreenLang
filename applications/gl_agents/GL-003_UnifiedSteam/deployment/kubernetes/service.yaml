@@ -1,0 +1,222 @@
+# GL-003 UNIFIEDSTEAM - Kubernetes Services
+# Steam System Optimization Agent
+
+# ==============================================================================
+# ClusterIP Service - Internal access
+# ==============================================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: unifiedsteam
+  namespace: greenlang-steam
+  labels:
+    app.kubernetes.io/name: unifiedsteam
+    app.kubernetes.io/component: service
+    app.kubernetes.io/part-of: greenlang
+    agent-id: gl-003
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9090"
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: unifiedsteam
+    app.kubernetes.io/instance: unifiedsteam-production
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+      protocol: TCP
+    - name: grpc
+      port: 50051
+      targetPort: grpc
+      protocol: TCP
+    - name: metrics
+      port: 9090
+      targetPort: metrics
+      protocol: TCP
+  sessionAffinity: None
+---
+# ==============================================================================
+# Headless Service - For StatefulSet/direct pod discovery
+# ==============================================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: unifiedsteam-headless
+  namespace: greenlang-steam
+  labels:
+    app.kubernetes.io/name: unifiedsteam
+    app.kubernetes.io/component: service-headless
+spec:
+  type: ClusterIP
+  clusterIP: None
+  selector:
+    app.kubernetes.io/name: unifiedsteam
+    app.kubernetes.io/instance: unifiedsteam-production
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http
+    - name: grpc
+      port: 50051
+      targetPort: grpc
+---
+# ==============================================================================
+# LoadBalancer Service - External access (optional - for non-ingress setups)
+# ==============================================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: unifiedsteam-external
+  namespace: greenlang-steam
+  labels:
+    app.kubernetes.io/name: unifiedsteam
+    app.kubernetes.io/component: service-external
+  annotations:
+    # AWS NLB annotations (if using AWS)
+    service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+    service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
+    # GCP annotations (if using GCP)
+    cloud.google.com/neg: '{"ingress": true}'
+spec:
+  type: LoadBalancer
+  selector:
+    app.kubernetes.io/name: unifiedsteam
+    app.kubernetes.io/instance: unifiedsteam-production
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+      protocol: TCP
+    - name: https
+      port: 443
+      targetPort: http
+      protocol: TCP
+    - name: grpc
+      port: 50051
+      targetPort: grpc
+      protocol: TCP
+  # Preserve client IP
+  externalTrafficPolicy: Local
+  # Health check configuration
+  healthCheckNodePort: 30080
+---
+# ==============================================================================
+# Ingress - HTTP/HTTPS routing
+# ==============================================================================
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: unifiedsteam-ingress
+  namespace: greenlang-steam
+  labels:
+    app.kubernetes.io/name: unifiedsteam
+    app.kubernetes.io/component: ingress
+  annotations:
+    # Ingress class
+    kubernetes.io/ingress.class: "nginx"
+
+    # TLS configuration
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+
+    # Rate limiting
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+    nginx.ingress.kubernetes.io/rate-limit-window: "1m"
+
+    # Timeouts
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "30"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+
+    # Body size for large requests
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+
+    # CORS configuration
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, PUT, DELETE, OPTIONS"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "*"
+
+    # WebSocket support
+    nginx.ingress.kubernetes.io/proxy-http-version: "1.1"
+    nginx.ingress.kubernetes.io/upstream-hash-by: "$request_uri"
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - steam.greenlang.io
+        - api.steam.greenlang.io
+      secretName: unifiedsteam-tls
+  rules:
+    - host: steam.greenlang.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: unifiedsteam
+                port:
+                  name: http
+    - host: api.steam.greenlang.io
+      http:
+        paths:
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: unifiedsteam
+                port:
+                  name: http
+          - path: /graphql
+            pathType: Prefix
+            backend:
+              service:
+                name: unifiedsteam
+                port:
+                  name: http
+          - path: /health
+            pathType: Prefix
+            backend:
+              service:
+                name: unifiedsteam
+                port:
+                  name: http
+---
+# ==============================================================================
+# gRPC Ingress (separate for protocol-specific configuration)
+# ==============================================================================
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: unifiedsteam-grpc-ingress
+  namespace: greenlang-steam
+  labels:
+    app.kubernetes.io/name: unifiedsteam
+    app.kubernetes.io/component: ingress-grpc
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    # gRPC-specific annotations
+    nginx.ingress.kubernetes.io/backend-protocol: "GRPC"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - grpc.steam.greenlang.io
+      secretName: unifiedsteam-grpc-tls
+  rules:
+    - host: grpc.steam.greenlang.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: unifiedsteam
+                port:
+                  name: grpc

@@ -1,0 +1,144 @@
+---
+# =============================================================================
+# Argo Rollouts - factors-api canary (DEP11)
+# =============================================================================
+# Progressive rollout: 10% -> 25% -> 50% -> 100% with analysis templates that
+# automatically roll back on:
+#   * p95 latency regression > 50% vs baseline
+#   * 5xx error-rate > 1%
+#   * SLO burn > 6.0 over 1h (fast burn)
+# Gates between steps are 5 min of analysis each.
+#
+# Install Argo Rollouts controller in the cluster first:
+#   kubectl create ns argo-rollouts
+#   kubectl apply -n argo-rollouts -f \
+#     https://github.com/argoproj/argo-rollouts/releases/latest/download/install.yaml
+#
+# Promote a new image:
+#   kubectl argo rollouts set image factors-api \
+#     factors-api=ghcr.io/greenlang/factors-api:<new-tag> -n factors-production
+#
+# Abort a rollout:
+#   kubectl argo rollouts abort factors-api -n factors-production
+#
+# Rollback to the previous revision:
+#   kubectl argo rollouts undo factors-api -n factors-production
+# =============================================================================
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: factors-api
+  namespace: factors-production
+  labels:
+    app.kubernetes.io/name: factors-api
+spec:
+  replicas: 5
+  strategy:
+    canary:
+      canaryService: factors-api-canary
+      stableService: factors-api-stable
+      trafficRouting:
+        nginx:
+          stableIngress: factors-api
+      steps:
+        - setWeight: 10
+        - pause: { duration: 5m }
+        - analysis:
+            templates:
+              - templateName: factors-canary-latency
+              - templateName: factors-canary-error-rate
+        - setWeight: 25
+        - pause: { duration: 5m }
+        - analysis:
+            templates:
+              - templateName: factors-canary-latency
+              - templateName: factors-canary-error-rate
+        - setWeight: 50
+        - pause: { duration: 10m }
+        - analysis:
+            templates:
+              - templateName: factors-canary-latency
+              - templateName: factors-canary-error-rate
+              - templateName: factors-canary-fast-burn
+        - setWeight: 100
+      abortScaleDownDelaySeconds: 30
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: factors-api
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: factors-api
+    spec:
+      containers:
+        - name: factors-api
+          image: ghcr.io/greenlang/factors-api:v1.0-certified
+          ports:
+            - containerPort: 8080
+---
+apiVersion: argoproj.io/v1alpha1
+kind: AnalysisTemplate
+metadata:
+  name: factors-canary-latency
+  namespace: factors-production
+spec:
+  metrics:
+    - name: canary-p95-vs-baseline
+      interval: 30s
+      count: 10
+      successCondition: result <= 1.5
+      provider:
+        prometheus:
+          address: http://prometheus-server.observability.svc.cluster.local:9090
+          query: |
+            (
+              histogram_quantile(0.95, sum by (le) (
+                rate(factors_http_request_duration_seconds_bucket{version="canary"}[2m])
+              ))
+              /
+              histogram_quantile(0.95, sum by (le) (
+                rate(factors_http_request_duration_seconds_bucket{version="stable"}[2m])
+              ))
+            )
+---
+apiVersion: argoproj.io/v1alpha1
+kind: AnalysisTemplate
+metadata:
+  name: factors-canary-error-rate
+  namespace: factors-production
+spec:
+  metrics:
+    - name: canary-error-rate
+      interval: 30s
+      count: 10
+      successCondition: result < 0.01
+      provider:
+        prometheus:
+          address: http://prometheus-server.observability.svc.cluster.local:9090
+          query: |
+            sum(rate(factors_http_requests_total{code=~"5..",version="canary"}[2m]))
+            /
+            sum(rate(factors_http_requests_total{version="canary"}[2m]))
+---
+apiVersion: argoproj.io/v1alpha1
+kind: AnalysisTemplate
+metadata:
+  name: factors-canary-fast-burn
+  namespace: factors-production
+spec:
+  metrics:
+    - name: fast-burn
+      interval: 1m
+      count: 5
+      successCondition: result < 6.0
+      provider:
+        prometheus:
+          address: http://prometheus-server.observability.svc.cluster.local:9090
+          query: |
+            (
+              sum(rate(factors_http_requests_total{code=~"5..",env="production"}[1h]))
+              /
+              sum(rate(factors_http_requests_total{env="production"}[1h]))
+            )
+            /
+            0.001

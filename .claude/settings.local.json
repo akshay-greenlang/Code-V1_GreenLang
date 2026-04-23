@@ -451,7 +451,11 @@
       "Bash(node frontend/node_modules/typescript/bin/tsc --noEmit --jsx react-jsx --target es2020 --module esnext --moduleResolution node --skipLibCheck --allowSyntheticDefaultImports --esModuleInterop --noResolve frontend/packages/factors-explorer/src/components/pricing/ThreeLabelLegend.tsx)",
       "Bash(node frontend/node_modules/typescript/bin/tsc --noEmit --jsx react-jsx --target es2020 --module esnext --moduleResolution node --skipLibCheck --allowSyntheticDefaultImports --esModuleInterop --noResolve frontend/packages/factors-explorer/src/components/pricing/FAQSection.tsx)",
       "Bash(node frontend/node_modules/typescript/bin/tsc --noEmit --jsx react-jsx --target es2020 --module esnext --moduleResolution node --skipLibCheck --allowSyntheticDefaultImports --esModuleInterop --noResolve frontend/packages/factors-explorer/src/routes/pricing.tsx)",
-      "Bash(node frontend/node_modules/typescript/bin/tsc --noEmit --jsx react-jsx --target es2020 --module esnext --moduleResolution node --skipLibCheck --allowSyntheticDefaultImports --esModuleInterop --noResolve frontend/packages/factors-explorer/src/__tests__/pricing.test.tsx)"
+      "Bash(node frontend/node_modules/typescript/bin/tsc --noEmit --jsx react-jsx --target es2020 --module esnext --moduleResolution node --skipLibCheck --allowSyntheticDefaultImports --esModuleInterop --noResolve frontend/packages/factors-explorer/src/__tests__/pricing.test.tsx)",
+      "Bash(npm --version)",
+      "Bash(npm run *)",
+      "Bash(cp greenlang/factors/catalog_repository.py /tmp/new_catalog_repo.py)",
+      "Bash(cp /tmp/orig_catalog_repo.py greenlang/factors/catalog_repository.py)"
     ],
     "deny": [],
     "ask": []

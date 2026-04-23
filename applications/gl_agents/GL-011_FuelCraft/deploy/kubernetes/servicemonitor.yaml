@@ -1,0 +1,177 @@
+# GL-011 FUELCRAFT - ServiceMonitor for Prometheus
+# Configures Prometheus Operator to scrape metrics from FuelCraft pods
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: gl-011-fuelcraft-monitor
+  namespace: gl-agents
+  labels:
+    app: gl-011-fuelcraft
+    app.kubernetes.io/name: gl-011-fuelcraft
+    app.kubernetes.io/component: monitoring
+    component: optimization
+    tier: fuel-management
+    compliance: tcfd
+    # Label for Prometheus Operator discovery
+    release: prometheus
+spec:
+  selector:
+    matchLabels:
+      app: gl-011-fuelcraft
+      component: optimization
+  namespaceSelector:
+    matchNames:
+      - gl-agents
+  endpoints:
+    - port: metrics
+      path: /metrics
+      interval: 15s
+      scrapeTimeout: 10s
+      scheme: http
+      # Metric relabeling for consistent naming
+      metricRelabelings:
+        # Add agent identifier to all metrics
+        - sourceLabels: [__name__]
+          targetLabel: gl_agent
+          replacement: "gl-011-fuelcraft"
+        # Add domain label
+        - sourceLabels: [__name__]
+          targetLabel: domain
+          replacement: "fuel-management"
+      # Target relabeling
+      relabelings:
+        - sourceLabels: [__meta_kubernetes_pod_name]
+          targetLabel: pod
+        - sourceLabels: [__meta_kubernetes_pod_node_name]
+          targetLabel: node
+        - sourceLabels: [__meta_kubernetes_namespace]
+          targetLabel: namespace
+---
+# PrometheusRule for alerting
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: gl-011-fuelcraft-alerts
+  namespace: gl-agents
+  labels:
+    app: gl-011-fuelcraft
+    app.kubernetes.io/name: gl-011-fuelcraft
+    component: optimization
+    tier: fuel-management
+    # Label for Prometheus Operator discovery
+    release: prometheus
+spec:
+  groups:
+    - name: gl-011-fuelcraft.rules
+      interval: 30s
+      rules:
+        # High error rate alert
+        - alert: FuelCraftHighErrorRate
+          expr: |
+            sum(rate(gl011_fuelcraft_http_requests_total{status=~"5.."}[5m]))
+            /
+            sum(rate(gl011_fuelcraft_http_requests_total[5m])) > 0.05
+          for: 5m
+          labels:
+            severity: warning
+            agent: gl-011-fuelcraft
+            domain: fuel-management
+          annotations:
+            summary: "High error rate detected in GL-011 FuelCraft"
+            description: "Error rate is {{ $value | humanizePercentage }} over the last 5 minutes"
+
+        # Optimization timeout alert
+        - alert: FuelCraftOptimizationTimeout
+          expr: |
+            histogram_quantile(0.99,
+              sum(rate(gl011_fuelcraft_optimization_duration_seconds_bucket[5m])) by (le)
+            ) > 300
+          for: 10m
+          labels:
+            severity: warning
+            agent: gl-011-fuelcraft
+            domain: fuel-management
+          annotations:
+            summary: "Optimization jobs taking too long in GL-011 FuelCraft"
+            description: "P99 optimization duration is {{ $value | humanizeDuration }}"
+
+        # Kafka consumer lag alert
+        - alert: FuelCraftKafkaConsumerLag
+          expr: |
+            gl011_fuelcraft_kafka_consumer_lag > 1000
+          for: 5m
+          labels:
+            severity: warning
+            agent: gl-011-fuelcraft
+            domain: fuel-management
+          annotations:
+            summary: "Kafka consumer lag detected in GL-011 FuelCraft"
+            description: "Consumer lag is {{ $value }} messages"
+
+        # Circuit breaker open alert
+        - alert: FuelCraftCircuitBreakerOpen
+          expr: |
+            gl011_fuelcraft_circuit_breaker_state{state="open"} == 1
+          for: 2m
+          labels:
+            severity: critical
+            agent: gl-011-fuelcraft
+            domain: fuel-management
+          annotations:
+            summary: "Circuit breaker OPEN in GL-011 FuelCraft"
+            description: "Circuit breaker {{ $labels.name }} has been open for 2+ minutes"
+
+        # ERP connection failure alert
+        - alert: FuelCraftERPConnectionFailure
+          expr: |
+            gl011_fuelcraft_erp_connection_state{state="error"} == 1
+          for: 5m
+          labels:
+            severity: critical
+            agent: gl-011-fuelcraft
+            domain: fuel-management
+          annotations:
+            summary: "ERP connection failure in GL-011 FuelCraft"
+            description: "ERP connection has been in error state for 5+ minutes"
+
+        # OPC-UA connection failure alert
+        - alert: FuelCraftOPCUAConnectionFailure
+          expr: |
+            gl011_fuelcraft_opcua_connection_state{state="disconnected"} == 1
+          for: 5m
+          labels:
+            severity: critical
+            agent: gl-011-fuelcraft
+            domain: fuel-management
+          annotations:
+            summary: "OPC-UA connection failure in GL-011 FuelCraft"
+            description: "OPC-UA connection has been disconnected for 5+ minutes"
+
+        # Pod restart alert
+        - alert: FuelCraftPodRestarting
+          expr: |
+            increase(kube_pod_container_status_restarts_total{pod=~"gl-011-fuelcraft.*"}[1h]) > 3
+          for: 5m
+          labels:
+            severity: warning
+            agent: gl-011-fuelcraft
+            domain: fuel-management
+          annotations:
+            summary: "GL-011 FuelCraft pod restarting frequently"
+            description: "Pod {{ $labels.pod }} has restarted {{ $value }} times in the last hour"
+
+        # Memory pressure alert
+        - alert: FuelCraftMemoryPressure
+          expr: |
+            container_memory_usage_bytes{pod=~"gl-011-fuelcraft.*"}
+            /
+            container_spec_memory_limit_bytes{pod=~"gl-011-fuelcraft.*"} > 0.9
+          for: 10m
+          labels:
+            severity: warning
+            agent: gl-011-fuelcraft
+            domain: fuel-management
+          annotations:
+            summary: "High memory usage in GL-011 FuelCraft"
+            description: "Pod {{ $labels.pod }} is using {{ $value | humanizePercentage }} of memory limit"

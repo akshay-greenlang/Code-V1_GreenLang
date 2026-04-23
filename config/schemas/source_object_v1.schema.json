@@ -1,0 +1,204 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.greenlang.io/factors/source_object_v1.schema.json",
+  "title": "GreenLang Factor Source Object v1.0",
+  "description": "Canonical metadata record for an upstream source that produces one or more GreenLang factor records. A single Source row MUST exist for every distinct combination of (authority, dataset_version). Factor records reference the source via (source_id, source_version). Frozen v1.0 — 2026-04-22 (FR8).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "source_id",
+    "authority",
+    "title",
+    "publisher",
+    "jurisdiction",
+    "dataset_version",
+    "publication_date",
+    "validity_period",
+    "ingestion_date",
+    "source_type",
+    "redistribution_class",
+    "verification_status",
+    "citation_text"
+  ],
+  "properties": {
+    "source_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+      "description": "Stable unique identifier of the source (e.g., 'EPA_eGRID', 'DEFRA_GHG_CF', 'IEA_EF', 'SFC_GLEC_Framework'). Used as the join key from factor_record.source_id. For customer-private overlays MUST be of the form 'tenant:<uuid>'."
+    },
+    "authority": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "description": "Legal / institutional authority that sanctions the data (e.g., 'US Environmental Protection Agency', 'UK Department for Environment, Food & Rural Affairs', 'International Energy Agency', 'Smart Freight Centre', 'IPCC WGI')."
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512,
+      "description": "Full publication title as it appears on the source document (e.g., 'eGRID2024 Summary Tables', 'UK Government GHG Conversion Factors for Company Reporting 2024')."
+    },
+    "publisher": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "description": "Publishing body of the title (may differ from authority, e.g., authority=US EPA, publisher=US EPA Office of Atmospheric Protection)."
+    },
+    "jurisdiction": {
+      "$ref": "#/$defs/jurisdiction",
+      "description": "Geographic scope the source covers. Use 'XX' for global / international standards."
+    },
+    "dataset_version": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "description": "Version / release tag of this source dataset (e.g., '2024.1', 'v9.0', 'AR6-2021'). Referenced by factor_record.source_version. Pinning MUST be exact for reproducibility (non-negotiable #5)."
+    },
+    "publication_date": {
+      "type": "string",
+      "format": "date",
+      "description": "ISO 8601 date the dataset was published by the authority."
+    },
+    "validity_period": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["from"],
+      "properties": {
+        "from": {
+          "type": "string",
+          "format": "date",
+          "description": "First calendar date this source dataset applies to."
+        },
+        "to": {
+          "type": ["string", "null"],
+          "format": "date",
+          "description": "Last calendar date this source applies to. Use null or '9999-12-31' for open-ended. MUST be >= from when non-null."
+        }
+      },
+      "description": "Validity window of the source dataset. Individual factor records may carry a narrower window, but MUST fall inside this envelope."
+    },
+    "ingestion_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "RFC 3339 timestamp when GreenLang first ingested this source version into the catalog."
+    },
+    "source_type": {
+      "type": "string",
+      "enum": [
+        "government",
+        "standard_setter",
+        "industry_body",
+        "licensed_commercial",
+        "customer_provided"
+      ],
+      "description": "Nature of the authority. Combined with redistribution_class it determines the SKU tier the source is billed under."
+    },
+    "redistribution_class": {
+      "type": "string",
+      "enum": [
+        "open",
+        "licensed_embedded",
+        "customer_private",
+        "oem_redistributable"
+      ],
+      "description": "License class for the factor data derived from this source. 'open' = freely redistributable; 'licensed_embedded' = licensed but we may serve to our customers under our license; 'customer_private' = tenant-only overlay, never cross-tenant (non-negotiable #4); 'oem_redistributable' = customer can resell under our OEM agreement."
+    },
+    "verification_status": {
+      "type": "string",
+      "enum": [
+        "unverified",
+        "internal_review",
+        "external_verified",
+        "regulator_approved"
+      ],
+      "description": "Independent verification level of the SOURCE (not of individual records). 'regulator_approved' means the authority itself is a regulator (e.g., EPA, EEA) and the data carries statutory weight."
+    },
+    "citation_text": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2048,
+      "description": "Human-readable citation string surfaced by the /explain endpoint and in PDF/HTML reports. APA-ish style recommended: 'US EPA (2024). eGRID2024 Summary Tables. Retrieved 2026-04-10 from https://www.epa.gov/egrid'."
+    },
+    "change_log_uri": {
+      "type": ["string", "null"],
+      "format": "uri",
+      "description": "URI to the authority's change log / release notes for this dataset_version. Used by the Annual Refresh workflow to detect mid-year patches."
+    },
+    "legal_notes": {
+      "type": ["string", "null"],
+      "maxLength": 4096,
+      "description": "Free-text legal notices (e.g., 'Subject to GLEC Framework commercial sublicense; embed attribution in any derived output')."
+    },
+    "license_name": {
+      "type": ["string", "null"],
+      "maxLength": 128,
+      "description": "SPDX identifier or proprietary license name (e.g., 'CC-BY-4.0', 'OGL-UK-3.0', 'US-Gov-PD', 'SFC-GLEC-Commercial')."
+    },
+    "license_url": {
+      "type": ["string", "null"],
+      "format": "uri",
+      "description": "Canonical URL of the license terms."
+    },
+    "attribution_required": {
+      "type": "boolean",
+      "default": false,
+      "description": "When true, any downstream output derived from this source MUST carry the citation_text."
+    },
+    "attribution_text": {
+      "type": ["string", "null"],
+      "maxLength": 1024,
+      "description": "Prescribed attribution line to embed when attribution_required is true."
+    },
+    "retrieval_uri": {
+      "type": ["string", "null"],
+      "format": "uri",
+      "description": "Authoritative URL from which this dataset_version was retrieved."
+    },
+    "raw_payload_hash": {
+      "type": ["string", "null"],
+      "pattern": "^[a-f0-9]{64}$",
+      "description": "SHA-256 hex of the originally-downloaded payload, for tamper-evidence."
+    },
+    "contact_email": {
+      "type": ["string", "null"],
+      "format": "email",
+      "description": "Authority contact for factual disputes."
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 64
+      },
+      "uniqueItems": true,
+      "default": [],
+      "description": "Free-form tags for search/filter (e.g., 'scope2', 'grid', 'annual_refresh')."
+    }
+  },
+  "$defs": {
+    "jurisdiction": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["country"],
+      "properties": {
+        "country": {
+          "type": "string",
+          "pattern": "^[A-Z]{2}$",
+          "description": "ISO 3166-1 alpha-2 code. Use 'XX' for global / unspecified."
+        },
+        "region": {
+          "type": ["string", "null"],
+          "maxLength": 64,
+          "description": "ISO 3166-2 sub-national code."
+        },
+        "grid_region": {
+          "type": ["string", "null"],
+          "maxLength": 64,
+          "description": "Grid sub-region, only populated for electricity sources."
+        }
+      }
+    }
+  }
+}

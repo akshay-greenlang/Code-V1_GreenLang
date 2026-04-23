@@ -1,0 +1,177 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "gl-015-insulscan"
+version = "1.0.0"
+description = "GL-015 INSULSCAN - Insulation Scanning & Thermal Assessment Agent for process heat applications"
+readme = "README.md"
+license = {text = "Proprietary"}
+requires-python = ">=3.10"
+authors = [
+    {name = "GreenLang AI Workforce", email = "agents@greenlang.ai"},
+]
+keywords = [
+    "insulation",
+    "thermal-analysis",
+    "heat-loss",
+    "process-heat",
+    "energy-efficiency",
+    "predictive-maintenance",
+    "thermal-imaging",
+    "greenlang",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Manufacturing",
+    "Intended Audience :: Science/Research",
+    "License :: Other/Proprietary License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Physics",
+    "Topic :: Scientific/Engineering :: Information Analysis",
+    "Typing :: Typed",
+]
+dependencies = [
+    "pydantic>=2.0.0",
+    "numpy>=1.24.0",
+    "scipy>=1.10.0",
+    "fastapi>=0.100.0",
+    "uvicorn[standard]>=0.22.0",
+    "httpx>=0.24.0",
+    "aiokafka>=0.8.0",
+    "asyncua>=1.0.0",
+    "prometheus-client>=0.17.0",
+    "structlog>=23.1.0",
+    "python-json-logger>=2.0.0",
+]
+
+[project.optional-dependencies]
+ml = [
+    "scikit-learn>=1.3.0",
+    "shap>=0.42.0",
+    "lime>=0.2.0",
+]
+thermal-imaging = [
+    "opencv-python>=4.8.0",
+    "pillow>=10.0.0",
+]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-asyncio>=0.21.0",
+    "pytest-cov>=4.1.0",
+    "hypothesis>=6.82.0",
+    "mypy>=1.5.0",
+    "ruff>=0.0.280",
+    "black>=23.7.0",
+]
+docs = [
+    "mkdocs>=1.5.0",
+    "mkdocs-material>=9.1.0",
+    "mkdocstrings[python]>=0.22.0",
+]
+all = [
+    "gl-015-insulscan[ml,thermal-imaging,dev,docs]",
+]
+
+[project.urls]
+Homepage = "https://greenlang.ai/agents/gl-015-insulscan"
+Documentation = "https://docs.greenlang.ai/agents/gl-015-insulscan"
+Repository = "https://github.com/greenlang/gl-015-insulscan"
+Issues = "https://github.com/greenlang/gl-015-insulscan/issues"
+
+[project.scripts]
+insulscan = "gl_015_insulscan.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["gl_015_insulscan"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+addopts = [
+    "-v",
+    "--strict-markers",
+    "--cov=gl_015_insulscan",
+    "--cov-report=term-missing",
+    "--cov-report=xml",
+    "--cov-fail-under=85",
+]
+markers = [
+    "unit: Unit tests",
+    "integration: Integration tests",
+    "property: Property-based tests",
+    "chaos: Chaos/resilience tests",
+    "golden: Golden file tests",
+    "slow: Slow tests",
+]
+
+[tool.mypy]
+python_version = "3.10"
+strict = true
+warn_return_any = true
+warn_unused_ignores = true
+disallow_untyped_defs = true
+plugins = ["pydantic.mypy"]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 100
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes
+    "I",    # isort
+    "C",    # flake8-comprehensions
+    "B",    # flake8-bugbear
+    "UP",   # pyupgrade
+    "S",    # flake8-bandit
+    "A",    # flake8-builtins
+    "C4",   # flake8-comprehensions
+    "DTZ",  # flake8-datetimez
+    "T10",  # flake8-debugger
+    "ISC",  # flake8-implicit-str-concat
+    "ICN",  # flake8-import-conventions
+    "PIE",  # flake8-pie
+    "PT",   # flake8-pytest-style
+    "Q",    # flake8-quotes
+    "RSE",  # flake8-raise
+    "RET",  # flake8-return
+    "SIM",  # flake8-simplify
+    "TID",  # flake8-tidy-imports
+    "ARG",  # flake8-unused-arguments
+    "ERA",  # eradicate
+    "PL",   # pylint
+    "TRY",  # tryceratops
+    "RUF",  # ruff-specific
+]
+ignore = [
+    "E501",   # line too long (handled by black)
+    "S101",   # assert used (OK in tests)
+    "PLR0913", # too many arguments
+]
+
+[tool.ruff.per-file-ignores]
+"tests/**/*.py" = ["S101", "ARG001", "PLR2004"]
+
+[tool.black]
+line-length = 100
+target-version = ["py310", "py311", "py312"]
+
+[tool.coverage.run]
+branch = true
+source = ["gl_015_insulscan"]
+omit = ["*/tests/*", "*/__pycache__/*"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise NotImplementedError",
+    "if TYPE_CHECKING:",
+    "if __name__ == .__main__.:",
+]

@@ -1,0 +1,4744 @@
+{
+  "source_id": "japan_meti_electric_emission_factors",
+  "source_version": "FY2022.1",
+  "ingested_at": "2026-04-23T18:26:52+00:00",
+  "license_class": "open",
+  "license_name": "Japan-Government-Public-Use",
+  "redistribution_class": "open",
+  "attribution_text": "Electric Utility Emission Factors, Japan METI & MOEJ (annual).",
+  "factor_status_default": "certified",
+  "factor_count": 27,
+  "factors": [
+    {
+      "factor_id": "EF:JP:residual_mix:hokkaido:fy2022:meti-fy2022-v1",
+      "fuel_type": "electricity",
+      "unit": "kWh",
+      "geography": "JP",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": "0.6446277777777777",
+        "CH4": "0.0002337301587301587",
+        "N2O": "0.000011986161986161985",
+        "HFCs": null,
+        "PFCs": null,
+        "SF6": null,
+        "NF3": null,
+        "biogenic_CO2": null
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273,
+        "HFCs_gwp": null,
+        "PFCs_gwp": null,
+        "SF6_gwp": null,
+        "NF3_gwp": null
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "Japan Ministry of Economy, Trade and Industry (METI) / Ministry of the Environment (MOEJ)",
+        "source_publication": "Electric Utility Emission Factors",
+        "source_year": 2023,
+        "methodology": "hybrid",
+        "source_url": "https://ghg-santeikohyo.env.go.jp/calc",
+        "source_doi": null,
+        "methodology_description": null,
+        "version": "v1",
+        "supersedes": null
+      },
+      "valid_from": "2022-04-01",
+      "uncertainty_95ci": 0.09,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 3,
+        "representativeness": 5,
+        "methodological": 4,
+        "weights": {
+          "temporal": 0.2,
+          "geographical": 0.2,
+          "technological": 0.2,
+          "representativeness": 0.2,
+          "methodological": 0.2
+        }
+      },
+      "license_info": {
+        "license": "Japan Government Open Data \u2014 public use with attribution",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true,
+        "license_url": null,
+        "license_text": null,
+        "restrictions": []
+      },
+      "region_hint": "Hokkaido",
+      "gwp_20yr": null,
+      "valid_to": "2023-03-31",
+      "heating_value_basis": null,
+      "reference_temperature_c": null,
+      "pressure_bar": null,
+      "moisture_content_pct": null,
+      "ash_content_pct": null,
+      "biogenic_flag": false,
+      "compliance_frameworks": [
+        "GHG_Protocol_Scope2_MarketBased",
+        "TCFD",
+        "IFRS_S2",
+        "Japan_SSBJ"
+      ],
+      "created_at": "2026-04-23T23:56:52.800528",
+      "updated_at": "2026-04-23T23:56:52.800528",
+      "created_by": "greenlang_system",
+      "notes": null,
+      "tags": [
+        "meti",
+        "japan",
+        "residual_mix",
+        "hokkaido",
+        "fy2022"
+      ],
+      "factor_status": "certified",
+      "source_id": "japan_meti_electric_emission_factors",
+      "source_release": "METI-FY2022-v1",
+      "source_record_id": "meti:Hokkaido:FY2022",
+      "release_version": "METI-FY2022-v1",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "Electric Utility Emission Factors, Japan METI & MOEJ (annual).",
+        "alternates_considered": [
+          "EF:JP:residual_mix:tohoku:fy2022:meti-fy2022-v1",
+          "EF:JP:residual_mix:tokyo:fy2022:meti-fy2022-v1",
+          "EF:JP:residual_mix:chubu:fy2022:meti-fy2022-v1",
+          "EF:JP:residual_mix:hokuriku:fy2022:meti-fy2022-v1",
+          "EF:JP:residual_mix:kansai:fy2022:meti-fy2022-v1",
+          "EF:JP:residual_mix:chugoku:fy2022:meti-fy2022-v1",
+          "EF:JP:residual_mix:shikoku:fy2022:meti-fy2022-v1",
+          "EF:JP:residual_mix:kyushu:fy2022:meti-fy2022-v1",
+          "EF:JP:residual_mix:okinawa:fy2022:meti-fy2022-v1"
+        ]
+      },
+      "replacement_factor_id": null,
+      "license_class": "open",
+      "activity_tags": [
+        "purchased_electricity",
+        "market_based",
+        "residual_mix"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "factor_family": "residual_mix",
+      "factor_name": "Japan METI residual mix \u2014 Hokkaido FY2022",
+      "method_profile": "corporate_scope2_market_based",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "jurisdiction": {
+        "country": "JP",
+        "region": "Hokkaido",
+        "grid_region": "Hokkaido"
+      },
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "sub_category": "residual_mix",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ]
+      },
+      "parameters": {
+        "scope_applicability": [
+          "scope2"
+        ],
+        "electricity_basis": "residual_mix",
+        "residual_mix_applicable": true,
+        "supplier_specific": false,
+        "transmission_loss_included": false,
+        "biogenic_share": null,
+        "uncertainty_low": null,
+        "uncertainty_high": null
+      },
+      "verification": {
+        "status": "regulator_approved",
+        "verified_by": "Japan METI / MOEJ",
+        "verified_at": null,
+        "verification_reference": null
+      },
+      "explainability": {
+        "assumptions": [
+          "METI publishes Basic (\u57fa\u790e\u6392\u51fa\u4fc2\u6570) and Adjusted (\u8abf\u6574\u5f8c\u6392\u51fa\u4fc2\u6570) factors.  The residual mix is derived by netting non-fossil-certificate surrenders (J-Credit, Green Value Certification, Non-Fossil Value Trading System) from the Basic factor.",
+          "Non-fossil certificate share assumed = 0.100.",
+          "Formula: residual = basic_factor / (1 - non_fossil_share).",
+          "Adjusted factor reported by METI is UTILITY-level, not system-level; the residual here is system-wide so values will differ from the adjusted factor.",
+          "Gas speciation split uses IPCC 2006 defaults (CO2 98.5%, CH4 1.0%, N2O 0.5%).",
+          "Apply to Scope 2 market-based reporting when no supplier-specific contract or non-fossil certificate applies."
+        ],
+        "fallback_rank": 5,
+        "rationale": "Japan METI residual mix for Hokkaido, FY2022. Basic factor 0.589 kgCO2/kWh, non-fossil share 10.0% -> residual 0.654 kgCO2/kWh."
+      },
+      "primary_data_flag": "secondary",
+      "uncertainty_distribution": "normal",
+      "redistribution_class": "open",
+      "raw_record_ref": null,
+      "change_log": [],
+      "next_review_date": null,
+      "use_phase": null
+    },
+    {
+      "factor_id": "EF:JP:residual_mix:tohoku:fy2022:meti-fy2022-v1",
+      "fuel_type": "electricity",
+      "unit": "kWh",
+      "geography": "JP",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": "0.5342176470588236",
+        "CH4": "0.00019369747899159666",
+        "N2O": "0.00000993320405085111",
+        "HFCs": null,
+        "PFCs": null,
+        "SF6": null,
+        "NF3": null,
+        "biogenic_CO2": null
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273,
+        "HFCs_gwp": null,
+        "PFCs_gwp": null,
+        "SF6_gwp": null,
+        "NF3_gwp": null
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "Japan Ministry of Economy, Trade and Industry (METI) / Ministry of the Environment (MOEJ)",
+        "source_publication": "Electric Utility Emission Factors",
+        "source_year": 2023,
+        "methodology": "hybrid",
+        "source_url": "https://ghg-santeikohyo.env.go.jp/calc",
+        "source_doi": null,
+        "methodology_description": null,
+        "version": "v1",
+        "supersedes": null
+      },
+      "valid_from": "2022-04-01",
+      "uncertainty_95ci": 0.09,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 3,
+        "representativeness": 5,
+        "methodological": 4,
+        "weights": {
+          "temporal": 0.2,
+          "geographical": 0.2,
+          "technological": 0.2,
+          "representativeness": 0.2,
+          "methodological": 0.2
+        }
+      },
+      "license_info": {
+        "license": "Japan Government Open Data \u2014 public use with attribution",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true,
+        "license_url": null,
+        "license_text": null,
+        "restrictions": []
+      },
+      "region_hint": "Tohoku",
+      "gwp_20yr": null,
+      "valid_to": "2023-03-31",
+      "heating_value_basis": null,
+      "reference_temperature_c": null,
+      "pressure_bar": null,
+      "moisture_content_pct": null,
+      "ash_content_pct": null,
+      "biogenic_flag": false,
+      "compliance_frameworks": [
+        "GHG_Protocol_Scope2_MarketBased",
+        "TCFD",
+        "IFRS_S2",
+        "Japan_SSBJ"
+      ],
+      "created_at": "2026-04-23T23:56:52.800528",
+      "updated_at": "2026-04-23T23:56:52.800528",
+      "created_by": "greenlang_system",
+      "notes": null,
+      "tags": [
+        "meti",
+        "japan",
+        "residual_mix",
+        "tohoku",
+        "fy2022"
+      ],
+      "factor_status": "certified",
+      "source_id": "japan_meti_electric_emission_factors",
+      "source_release": "METI-FY2022-v1",
+      "source_record_id": "meti:Tohoku:FY2022",
+      "release_version": "METI-FY2022-v1",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "Electric Utility Emission Factors, Japan METI & MOEJ (annual).",
+        "alternates_considered": [
+          "EF:JP:residual_mix:hokkaido:fy2022:meti-fy2022-v1",
+          "EF:JP:residual_mix:tokyo:fy2022:meti-fy2022-v1",
+          "EF:JP:residual_mix:chubu:fy2022:meti-fy2022-v1",
+          "EF:JP:residual_mix:hokuriku:fy2022:meti-fy2022-v1",
+          "EF:JP:residual_mix:kansai:fy2022:meti-fy2022-v1",
+          "EF:JP:residual_mix:chugoku:fy2022:meti-fy2022-v1",
+          "EF:JP:residual_mix:shikoku:fy2022:meti-fy2022-v1",
+          "EF:JP:residual_mix:kyushu:fy2022:meti-fy2022-v1",
+          "EF:JP:residual_mix:okinawa:fy2022:meti-fy2022-v1"
+        ]
+      },
+      "replacement_factor_id": null,
+      "license_class": "open",
+      "activity_tags": [
+        "purchased_electricity",
+        "market_based",
+        "residual_mix"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "factor_family": "residual_mix",
+      "factor_name": "Japan METI residual mix \u2014 Tohoku FY2022",
+      "method_profile": "corporate_scope2_market_based",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "jurisdiction": {
+        "country": "JP",
+        "region": "Tohoku",
+        "grid_region": "Tohoku"
+      },
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "sub_category": "residual_mix",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ]
+      },
+      "parameters": {
+        "scope_applicability": [
+          "scope2"
+        ],
+        "electricity_basis": "residual_mix",
+        "residual_mix_applicable": true,
+        "supplier_specific": false,
+        "transmission_loss_included": false,
+        "biogenic_share": null,
+        "uncertainty_low": null,
+        "uncertainty_high": null
+      },
+      "verification": {
+        "status": "regulator_approved",
+        "verified_by": "Japan METI / MOEJ",
+        "verified_at": null,
+        "verification_reference": null
+      },
+      "explainability": {
+        "assumptions": [
+          "METI publishes Basic (\u57fa\u790e\u6392\u51fa\u4fc2\u6570) and Adjusted (\u8abf\u6574\u5f8c\u6392\u51fa\u4fc2\u6570) factors.  The residual mix is derived by netting non-fossil-certificate surrenders (J-Credit, Green Value Certification, Non-Fossil Value Trading System) from the Basic factor.",
+          "Non-fossil certificate share assumed = 0.150.",
+          "Formula: residual = basic_factor / (1 - non_fossil_share).",
+          "Adjusted factor reported by METI is UTILITY-level, not system-level; the residual here is system-wide so values will differ from the adjusted factor.",
+          "Gas speciation split uses IPCC 2006 defaults (CO2 98.5%, CH4 1.0%, N2O 0.5%).",
+          "Apply to Scope 2 market-based reporting when no supplier-specific contract or non-fossil certificate applies."
+        ],
+        "fallback_rank": 5,
+        "rationale": "Japan METI residual mix for Tohoku, FY2022. Basic factor 0.461 kgCO2/kWh, non-fossil share 15.0% -> residual 0.542 kgCO2/kWh."
+      },
+      "primary_data_flag": "secondary",
+      "uncertainty_distribution": "normal",
+      "redistribution_class": "open",
+      "raw_record_ref": null,
+      "change_log": [],
+      "next_review_date": null,
+      "use_phase": null
+    },
+    {
+      "factor_id": "EF:JP:residual_mix:tokyo:fy2022:meti-fy2022-v1",
+      "fuel_type": "electricity",
+      "unit": "kWh",
+      "geography": "JP",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": "0.5333414634146341",
+        "CH4": "0.00019337979094076653",
+        "N2O": "0.000009916912355936745",
+        "HFCs": null,
+        "PFCs": null,
+        "SF6": null,
+        "NF3": null,
+        "biogenic_CO2": null
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273,
+        "HFCs_gwp": null,
+        "PFCs_gwp": null,
+        "SF6_gwp": null,
+        "NF3_gwp": null
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "Japan Ministry of Economy, Trade and Industry (METI) / Ministry of the Environment (MOEJ)",
+        "source_publication": "Electric Utility Emission Factors",
+        "source_year": 2023,
+        "methodology": "hybrid",
+        "source_url": "https://ghg-santeikohyo.env.go.jp/calc",
+        "source_doi": null,
+        "methodology_description": null,
+        "version": "v1",
+        "supersedes": null
+      },
+      "valid_from": "2022-04-01",
+      "uncertainty_95ci": 0.09,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 3,
+        "representativeness": 5,
+        "methodological": 4,
+        "weights": {
+          "temporal": 0.2,
+          "geographical": 0.2,
+          "technological": 0.2,
+          "representativeness": 0.2,
+          "methodological": 0.2
+        }
+      },
+      "license_info": {
+        "license": "Japan Government Open Data \u2014 public use with attribution",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true,
+        "license_url": null,
+        "license_text": null,
+        "restrictions": []
+      },
+      "region_hint": "Tokyo",
+      "gwp_20yr": null,
+      "valid_to": "2023-03-31",
+      "heating_value_basis": null,
+      "reference_temperature_c": null,
+      "pressure_bar": null,
+      "moisture_content_pct": null,
+      "ash_content_pct": null,
+      "biogenic_flag": false,
+      "compliance_frameworks": [
+        "GHG_Protocol_Scope2_MarketBased",
+        "TCFD",
+        "IFRS_S2",
+        "Japan_SSBJ"
+      ],
+      "created_at": "2026-04-23T23:56:52.801528",
+      "updated_at": "2026-04-23T23:56:52.801528",
+      "created_by": "greenlang_system",
+      "notes": null,
+      "tags": [
+        "meti",
+        "japan",
+        "residual_mix",
+        "tokyo",
+        "fy2022"
+      ],
+      "factor_status": "certified",
+      "source_id": "japan_meti_electric_emission_factors",
+      "source_release": "METI-FY2022-v1",
+      "source_record_id": "meti:Tokyo:FY2022",
+      "release_version": "METI-FY2022-v1",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "Electric Utility Emission Factors, Japan METI & MOEJ (annual).",
+        "alternates_considered": [
+          "EF:JP:residual_mix:hokkaido:fy2022:meti-fy2022-v1",
+          "EF:JP:residual_mix:tohoku:fy2022:meti-fy2022-v1",
+          "EF:JP:residual_mix:chubu:fy2022:meti-fy2022-v1",
+          "EF:JP:residual_mix:hokuriku:fy2022:meti-fy2022-v1",
+          "EF:JP:residual_mix:kansai:fy2022:meti-fy2022-v1",
+          "EF:JP:residual_mix:chugoku:fy2022:meti-fy2022-v1",
+          "EF:JP:residual_mix:shikoku:fy2022:meti-fy2022-v1",
+          "EF:JP:residual_mix:kyushu:fy2022:meti-fy2022-v1",
+          "EF:JP:residual_mix:okinawa:fy2022:meti-fy2022-v1"
+        ]
+      },
+      "replacement_factor_id": null,
+      "license_class": "open",
+      "activity_tags": [
+        "purchased_electricity",
+        "market_based",
+        "residual_mix"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "factor_family": "residual_mix",
+      "factor_name": "Japan METI residual mix \u2014 Tokyo FY2022",
+      "method_profile": "corporate_scope2_market_based",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "jurisdiction": {
+        "country": "JP",
+        "region": "Tokyo",
+        "grid_region": "Tokyo"
+      },
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "sub_category": "residual_mix",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ]
+      },
+      "parameters": {
+        "scope_applicability": [
+          "scope2"
+        ],
+        "electricity_basis": "residual_mix",
+        "residual_mix_applicable": true,
+        "supplier_specific": false,
+        "transmission_loss_included": false,
+        "biogenic_share": null,
+        "uncertainty_low": null,
+        "uncertainty_high": null
+      },
+      "verification": {
+        "status": "regulator_approved",
+        "verified_by": "Japan METI / MOEJ",
+        "verified_at": null,
+        "verification_reference": null
+      },
+      "explainability": {
+        "assumptions": [
+          "METI publishes Basic (\u57fa\u790e\u6392\u51fa\u4fc2\u6570) and Adjusted (\u8abf\u6574\u5f8c\u6392\u51fa\u4fc2\u6570) factors.  The residual mix is derived by netting non-fossil-certificate surrenders (J-Credit, Green Value Certification, Non-Fossil Value Trading System) from the Basic factor.",
+          "Non-fossil certificate share assumed = 0.180.",
+          "Formula: residual = basic_factor / (1 - non_fossil_share).",
+          "Adjusted factor reported by METI is UTILITY-level, not system-level; the residual here is system-wide so values will differ from the adjusted factor.",
+          "Gas speciation split uses IPCC 2006 defaults (CO2 98.5%, CH4 1.0%, N2O 0.5%).",
+          "Apply to Scope 2 market-based reporting when no supplier-specific contract or non-fossil certificate applies."
+        ],
+        "fallback_rank": 5,
+        "rationale": "Japan METI residual mix for Tokyo, FY2022. Basic factor 0.444 kgCO2/kWh, non-fossil share 18.0% -> residual 0.541 kgCO2/kWh."
+      },
+      "primary_data_flag": "secondary",
+      "uncertainty_distribution": "normal",
+      "redistribution_class": "open",
+      "raw_record_ref": null,
+      "change_log": [],
+      "next_review_date": null,
+      "use_phase": null
+    },
+    {
+      "factor_id": "EF:JP:residual_mix:chubu:fy2022:meti-fy2022-v1",
+      "fuel_type": "electricity",
+      "unit": "kWh",
+      "geography": "JP",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": "0.5594294871794872",
+        "CH4": "0.00020283882783882781",
+        "N2O": "0.00001040199117122194",
+        "HFCs": null,
+        "PFCs": null,
+        "SF6": null,
+        "NF3": null,
+        "biogenic_CO2": null
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273,
+        "HFCs_gwp": null,
+        "PFCs_gwp": null,
+        "SF6_gwp": null,
+        "NF3_gwp": null
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "Japan Ministry of Economy, Trade and Industry (METI) / Ministry of the Environment (MOEJ)",
+        "source_publication": "Electric Utility Emission Factors",
+        "source_year": 2023,
+        "methodology": "hybrid",
+        "source_url": "https://ghg-santeikohyo.env.go.jp/calc",
+        "source_doi": null,
+        "methodology_description": null,
+        "version": "v1",
+        "supersedes": null
+      },
+      "valid_from": "2022-04-01",
+      "uncertainty_95ci": 0.09,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 3,
+        "representativeness": 5,
+        "methodological": 4,
+        "weights": {
+          "temporal": 0.2,
+          "geographical": 0.2,
+          "technological": 0.2,
+          "representativeness": 0.2,
+          "methodological": 0.2
+        }
+      },
+      "license_info": {
+        "license": "Japan Government Open Data \u2014 public use with attribution",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true,
+        "license_url": null,
+        "license_text": null,
+        "restrictions": []
+      },
+      "region_hint": "Chubu",
+      "gwp_20yr": null,
+      "valid_to": "2023-03-31",
+      "heating_value_basis": null,
+      "reference_temperature_c": null,
+      "pressure_bar": null,
+      "moisture_content_pct": null,
+      "ash_content_pct": null,
+      "biogenic_flag": false,
+      "compliance_frameworks": [
+        "GHG_Protocol_Scope2_MarketBased",
+        "TCFD",
+        "IFRS_S2",
+        "Japan_SSBJ"
+      ],
+      "created_at": "2026-04-23T23:56:52.801528",
+      "updated_at": "2026-04-23T23:56:52.801528",
+      "created_by": "greenlang_system",
+      "notes": null,
+      "tags": [
+        "meti",
+        "japan",
+        "residual_mix",
+        "chubu",
+        "fy2022"
+      ],
+      "factor_status": "certified",
+      "source_id": "japan_meti_electric_emission_factors",
+      "source_release": "METI-FY2022-v1",
+      "source_record_id": "meti:Chubu:FY2022",
+      "release_version": "METI-FY2022-v1",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "Electric Utility Emission Factors, Japan METI & MOEJ (annual).",
+        "alternates_considered": [
+          "EF:JP:residual_mix:hokkaido:fy2022:meti-fy2022-v1",
+          "EF:JP:residual_mix:tohoku:fy2022:meti-fy2022-v1",
+          "EF:JP:residual_mix:tokyo:fy2022:meti-fy2022-v1",
+          "EF:JP:residual_mix:hokuriku:fy2022:meti-fy2022-v1",
+          "EF:JP:residual_mix:kansai:fy2022:meti-fy2022-v1",
+          "EF:JP:residual_mix:chugoku:fy2022:meti-fy2022-v1",
+          "EF:JP:residual_mix:shikoku:fy2022:meti-fy2022-v1",
+          "EF:JP:residual_mix:kyushu:fy2022:meti-fy2022-v1",
+          "EF:JP:residual_mix:okinawa:fy2022:meti-fy2022-v1"
+        ]
+      },
+      "replacement_factor_id": null,
+      "license_class": "open",
+      "activity_tags": [
+        "purchased_electricity",
+        "market_based",
+        "residual_mix"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "factor_family": "residual_mix",
+      "factor_name": "Japan METI residual mix \u2014 Chubu FY2022",
+      "method_profile": "corporate_scope2_market_based",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "jurisdiction": {
+        "country": "JP",
+        "region": "Chubu",
+        "grid_region": "Chubu"
+      },
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "sub_category": "residual_mix",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ]
+      },
+      "parameters": {
+        "scope_applicability": [
+          "scope2"
+        ],
+        "electricity_basis": "residual_mix",
+        "residual_mix_applicable": true,
+        "supplier_specific": false,
+        "transmission_loss_included": false,
+        "biogenic_share": null,
+        "uncertainty_low": null,
+        "uncertainty_high": null
+      },
+      "verification": {
+        "status": "regulator_approved",
+        "verified_by": "Japan METI / MOEJ",
+        "verified_at": null,
+        "verification_reference": null
+      },
+      "explainability": {
+        "assumptions": [
+          "METI publishes Basic (\u57fa\u790e\u6392\u51fa\u4fc2\u6570) and Adjusted (\u8abf\u6574\u5f8c\u6392\u51fa\u4fc2\u6570) factors.  The residual mix is derived by netting non-fossil-certificate surrenders (J-Credit, Green Value Certification, Non-Fossil Value Trading System) from the Basic factor.",
+          "Non-fossil certificate share assumed = 0.220.",
+          "Formula: residual = basic_factor / (1 - non_fossil_share).",
+          "Adjusted factor reported by METI is UTILITY-level, not system-level; the residual here is system-wide so values will differ from the adjusted factor.",
+          "Gas speciation split uses IPCC 2006 defaults (CO2 98.5%, CH4 1.0%, N2O 0.5%).",
+          "Apply to Scope 2 market-based reporting when no supplier-specific contract or non-fossil certificate applies."
+        ],
+        "fallback_rank": 5,
+        "rationale": "Japan METI residual mix for Chubu, FY2022. Basic factor 0.443 kgCO2/kWh, non-fossil share 22.0% -> residual 0.568 kgCO2/kWh."
+      },
+      "primary_data_flag": "secondary",
+      "uncertainty_distribution": "normal",
+      "redistribution_class": "open",
+      "raw_record_ref": null,
+      "change_log": [],
+      "next_review_date": null,
+      "use_phase": null
+    },
+    {
+      "factor_id": "EF:JP:residual_mix:hokuriku:fy2022:meti-fy2022-v1",
+      "fuel_type": "electricity",
+      "unit": "kWh",
+      "geography": "JP",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": "0.6238333333333334",
+        "CH4": "0.00022619047619047618",
+        "N2O": "0.000011599511599511598",
+        "HFCs": null,
+        "PFCs": null,
+        "SF6": null,
+        "NF3": null,
+        "biogenic_CO2": null
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273,
+        "HFCs_gwp": null,
+        "PFCs_gwp": null,
+        "SF6_gwp": null,
+        "NF3_gwp": null
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "Japan Ministry of Economy, Trade and Industry (METI) / Ministry of the Environment (MOEJ)",
+        "source_publication": "Electric Utility Emission Factors",
+        "source_year": 2023,
+        "methodology": "hybrid",
+        "source_url": "https://ghg-santeikohyo.env.go.jp/calc",
+        "source_doi": null,
+        "methodology_description": null,
+        "version": "v1",
+        "supersedes": null
+      },
+      "valid_from": "2022-04-01",
+      "uncertainty_95ci": 0.09,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 3,
+        "representativeness": 5,
+        "methodological": 4,
+        "weights": {
+          "temporal": 0.2,
+          "geographical": 0.2,
+          "technological": 0.2,
+          "representativeness": 0.2,
+          "methodological": 0.2
+        }
+      },
+      "license_info": {
+        "license": "Japan Government Open Data \u2014 public use with attribution",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true,
+        "license_url": null,
+        "license_text": null,
+        "restrictions": []
+      },
+      "region_hint": "Hokuriku",
+      "gwp_20yr": null,
+      "valid_to": "2023-03-31",
+      "heating_value_basis": null,
+      "reference_temperature_c": null,
+      "pressure_bar": null,
+      "moisture_content_pct": null,
+      "ash_content_pct": null,
+      "biogenic_flag": false,
+      "compliance_frameworks": [
+        "GHG_Protocol_Scope2_MarketBased",
+        "TCFD",
+        "IFRS_S2",
+        "Japan_SSBJ"
+      ],
+      "created_at": "2026-04-23T23:56:52.801528",
+      "updated_at": "2026-04-23T23:56:52.801528",
+      "created_by": "greenlang_system",
+      "notes": null,
+      "tags": [
+        "meti",
+        "japan",
+        "residual_mix",
+        "hokuriku",
+        "fy2022"
+      ],
+      "factor_status": "certified",
+      "source_id": "japan_meti_electric_emission_factors",
+      "source_release": "METI-FY2022-v1",
+      "source_record_id": "meti:Hokuriku:FY2022",
+      "release_version": "METI-FY2022-v1",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "Electric Utility Emission Factors, Japan METI & MOEJ (annual).",
+        "alternates_considered": [
+          "EF:JP:residual_mix:hokkaido:fy2022:meti-fy2022-v1",
+          "EF:JP:residual_mix:tohoku:fy2022:meti-fy2022-v1",
+          "EF:JP:residual_mix:tokyo:fy2022:meti-fy2022-v1",
+          "EF:JP:residual_mix:chubu:fy2022:meti-fy2022-v1",
+          "EF:JP:residual_mix:kansai:fy2022:meti-fy2022-v1",
+          "EF:JP:residual_mix:chugoku:fy2022:meti-fy2022-v1",
+          "EF:JP:residual_mix:shikoku:fy2022:meti-fy2022-v1",
+          "EF:JP:residual_mix:kyushu:fy2022:meti-fy2022-v1",
+          "EF:JP:residual_mix:okinawa:fy2022:meti-fy2022-v1"
+        ]
+      },
+      "replacement_factor_id": null,
+      "license_class": "open",
+      "activity_tags": [
+        "purchased_electricity",
+        "market_based",
+        "residual_mix"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "factor_family": "residual_mix",
+      "factor_name": "Japan METI residual mix \u2014 Hokuriku FY2022",
+      "method_profile": "corporate_scope2_market_based",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "jurisdiction": {
+        "country": "JP",
+        "region": "Hokuriku",
+        "grid_region": "Hokuriku"
+      },
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "sub_category": "residual_mix",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ]
+      },
+      "parameters": {
+        "scope_applicability": [
+          "scope2"
+        ],
+        "electricity_basis": "residual_mix",
+        "residual_mix_applicable": true,
+        "supplier_specific": false,
+        "transmission_loss_included": false,
+        "biogenic_share": null,
+        "uncertainty_low": null,
+        "uncertainty_high": null
+      },
+      "verification": {
+        "status": "regulator_approved",
+        "verified_by": "Japan METI / MOEJ",
+        "verified_at": null,
+        "verification_reference": null
+      },
+      "explainability": {
+        "assumptions": [
+          "METI publishes Basic (\u57fa\u790e\u6392\u51fa\u4fc2\u6570) and Adjusted (\u8abf\u6574\u5f8c\u6392\u51fa\u4fc2\u6570) factors.  The residual mix is derived by netting non-fossil-certificate surrenders (J-Credit, Green Value Certification, Non-Fossil Value Trading System) from the Basic factor.",
+          "Non-fossil certificate share assumed = 0.250.",
+          "Formula: residual = basic_factor / (1 - non_fossil_share).",
+          "Adjusted factor reported by METI is UTILITY-level, not system-level; the residual here is system-wide so values will differ from the adjusted factor.",
+          "Gas speciation split uses IPCC 2006 defaults (CO2 98.5%, CH4 1.0%, N2O 0.5%).",
+          "Apply to Scope 2 market-based reporting when no supplier-specific contract or non-fossil certificate applies."
+        ],
+        "fallback_rank": 5,
+        "rationale": "Japan METI residual mix for Hokuriku, FY2022. Basic factor 0.475 kgCO2/kWh, non-fossil share 25.0% -> residual 0.633 kgCO2/kWh."
+      },
+      "primary_data_flag": "secondary",
+      "uncertainty_distribution": "normal",
+      "redistribution_class": "open",
+      "raw_record_ref": null,
+      "change_log": [],
+      "next_review_date": null,
+      "use_phase": null
+    },
+    {
+      "factor_id": "EF:JP:residual_mix:kansai:fy2022:meti-fy2022-v1",
+      "fuel_type": "electricity",
+      "unit": "kWh",
+      "geography": "JP",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": "0.5689224137931034",
+        "CH4": "0.0002062807881773399",
+        "N2O": "0.000010578501957812302",
+        "HFCs": null,
+        "PFCs": null,
+        "SF6": null,
+        "NF3": null,
+        "biogenic_CO2": null
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273,
+        "HFCs_gwp": null,
+        "PFCs_gwp": null,
+        "SF6_gwp": null,
+        "NF3_gwp": null
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "Japan Ministry of Economy, Trade and Industry (METI) / Ministry of the Environment (MOEJ)",
+        "source_publication": "Electric Utility Emission Factors",
+        "source_year": 2023,
+        "methodology": "hybrid",
+        "source_url": "https://ghg-santeikohyo.env.go.jp/calc",
+        "source_doi": null,
+        "methodology_description": null,
+        "version": "v1",
+        "supersedes": null
+      },
+      "valid_from": "2022-04-01",
+      "uncertainty_95ci": 0.09,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 3,
+        "representativeness": 5,
+        "methodological": 4,
+        "weights": {
+          "temporal": 0.2,
+          "geographical": 0.2,
+          "technological": 0.2,
+          "representativeness": 0.2,
+          "methodological": 0.2
+        }
+      },
+      "license_info": {
+        "license": "Japan Government Open Data \u2014 public use with attribution",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true,
+        "license_url": null,
+        "license_text": null,
+        "restrictions": []
+      },
+      "region_hint": "Kansai",
+      "gwp_20yr": null,
+      "valid_to": "2023-03-31",
+      "heating_value_basis": null,
+      "reference_temperature_c": null,
+      "pressure_bar": null,
+      "moisture_content_pct": null,
+      "ash_content_pct": null,
+      "biogenic_flag": false,
+      "compliance_frameworks": [
+        "GHG_Protocol_Scope2_MarketBased",
+        "TCFD",
+        "IFRS_S2",
+        "Japan_SSBJ"
+      ],
+      "created_at": "2026-04-23T23:56:52.802597",
+      "updated_at": "2026-04-23T23:56:52.802597",
+      "created_by": "greenlang_system",
+      "notes": null,
+      "tags": [
+        "meti",
+        "japan",
+        "residual_mix",
+        "kansai",
+        "fy2022"
+      ],
+      "factor_status": "certified",
+      "source_id": "japan_meti_electric_emission_factors",
+      "source_release": "METI-FY2022-v1",
+      "source_record_id": "meti:Kansai:FY2022",
+      "release_version": "METI-FY2022-v1",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "Electric Utility Emission Factors, Japan METI & MOEJ (annual).",
+        "alternates_considered": [
+          "EF:JP:residual_mix:hokkaido:fy2022:meti-fy2022-v1",
+          "EF:JP:residual_mix:tohoku:fy2022:meti-fy2022-v1",
+          "EF:JP:residual_mix:tokyo:fy2022:meti-fy2022-v1",
+          "EF:JP:residual_mix:chubu:fy2022:meti-fy2022-v1",
+          "EF:JP:residual_mix:hokuriku:fy2022:meti-fy2022-v1",
+          "EF:JP:residual_mix:chugoku:fy2022:meti-fy2022-v1",
+          "EF:JP:residual_mix:shikoku:fy2022:meti-fy2022-v1",
+          "EF:JP:residual_mix:kyushu:fy2022:meti-fy2022-v1",
+          "EF:JP:residual_mix:okinawa:fy2022:meti-fy2022-v1"
+        ]
+      },
+      "replacement_factor_id": null,
+      "license_class": "open",
+      "activity_tags": [
+        "purchased_electricity",
+        "market_based",
+        "residual_mix"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "factor_family": "residual_mix",
+      "factor_name": "Japan METI residual mix \u2014 Kansai FY2022",
+      "method_profile": "corporate_scope2_market_based",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "jurisdiction": {
+        "country": "JP",
+        "region": "Kansai",
+        "grid_region": "Kansai"
+      },
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "sub_category": "residual_mix",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ]
+      },
+      "parameters": {
+        "scope_applicability": [
+          "scope2"
+        ],
+        "electricity_basis": "residual_mix",
+        "residual_mix_applicable": true,
+        "supplier_specific": false,
+        "transmission_loss_included": false,
+        "biogenic_share": null,
+        "uncertainty_low": null,
+        "uncertainty_high": null
+      },
+      "verification": {
+        "status": "regulator_approved",
+        "verified_by": "Japan METI / MOEJ",
+        "verified_at": null,
+        "verification_reference": null
+      },
+      "explainability": {
+        "assumptions": [
+          "METI publishes Basic (\u57fa\u790e\u6392\u51fa\u4fc2\u6570) and Adjusted (\u8abf\u6574\u5f8c\u6392\u51fa\u4fc2\u6570) factors.  The residual mix is derived by netting non-fossil-certificate surrenders (J-Credit, Green Value Certification, Non-Fossil Value Trading System) from the Basic factor.",
+          "Non-fossil certificate share assumed = 0.420.",
+          "Formula: residual = basic_factor / (1 - non_fossil_share).",
+          "Adjusted factor reported by METI is UTILITY-level, not system-level; the residual here is system-wide so values will differ from the adjusted factor.",
+          "Gas speciation split uses IPCC 2006 defaults (CO2 98.5%, CH4 1.0%, N2O 0.5%).",
+          "Apply to Scope 2 market-based reporting when no supplier-specific contract or non-fossil certificate applies."
+        ],
+        "fallback_rank": 5,
+        "rationale": "Japan METI residual mix for Kansai, FY2022. Basic factor 0.335 kgCO2/kWh, non-fossil share 42.0% -> residual 0.578 kgCO2/kWh."
+      },
+      "primary_data_flag": "secondary",
+      "uncertainty_distribution": "normal",
+      "redistribution_class": "open",
+      "raw_record_ref": null,
+      "change_log": [],
+      "next_review_date": null,
+      "use_phase": null
+    },
+    {
+      "factor_id": "EF:JP:residual_mix:chugoku:fy2022:meti-fy2022-v1",
+      "fuel_type": "electricity",
+      "unit": "kWh",
+      "geography": "JP",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": "0.6413444444444444",
+        "CH4": "0.00023253968253968252",
+        "N2O": "0.000011925111925111925",
+        "HFCs": null,
+        "PFCs": null,
+        "SF6": null,
+        "NF3": null,
+        "biogenic_CO2": null
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273,
+        "HFCs_gwp": null,
+        "PFCs_gwp": null,
+        "SF6_gwp": null,
+        "NF3_gwp": null
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "Japan Ministry of Economy, Trade and Industry (METI) / Ministry of the Environment (MOEJ)",
+        "source_publication": "Electric Utility Emission Factors",
+        "source_year": 2023,
+        "methodology": "hybrid",
+        "source_url": "https://ghg-santeikohyo.env.go.jp/calc",
+        "source_doi": null,
+        "methodology_description": null,
+        "version": "v1",
+        "supersedes": null
+      },
+      "valid_from": "2022-04-01",
+      "uncertainty_95ci": 0.09,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 3,
+        "representativeness": 5,
+        "methodological": 4,
+        "weights": {
+          "temporal": 0.2,
+          "geographical": 0.2,
+          "technological": 0.2,
+          "representativeness": 0.2,
+          "methodological": 0.2
+        }
+      },
+      "license_info": {
+        "license": "Japan Government Open Data \u2014 public use with attribution",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true,
+        "license_url": null,
+        "license_text": null,
+        "restrictions": []
+      },
+      "region_hint": "Chugoku",
+      "gwp_20yr": null,
+      "valid_to": "2023-03-31",
+      "heating_value_basis": null,
+      "reference_temperature_c": null,
+      "pressure_bar": null,
+      "moisture_content_pct": null,
+      "ash_content_pct": null,
+      "biogenic_flag": false,
+      "compliance_frameworks": [
+        "GHG_Protocol_Scope2_MarketBased",
+        "TCFD",
+        "IFRS_S2",
+        "Japan_SSBJ"
+      ],
+      "created_at": "2026-04-23T23:56:52.802597",
+      "updated_at": "2026-04-23T23:56:52.802597",
+      "created_by": "greenlang_system",
+      "notes": null,
+      "tags": [
+        "meti",
+        "japan",
+        "residual_mix",
+        "chugoku",
+        "fy2022"
+      ],
+      "factor_status": "certified",
+      "source_id": "japan_meti_electric_emission_factors",
+      "source_release": "METI-FY2022-v1",
+      "source_record_id": "meti:Chugoku:FY2022",
+      "release_version": "METI-FY2022-v1",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "Electric Utility Emission Factors, Japan METI & MOEJ (annual).",
+        "alternates_considered": [
+          "EF:JP:residual_mix:hokkaido:fy2022:meti-fy2022-v1",
+          "EF:JP:residual_mix:tohoku:fy2022:meti-fy2022-v1",
+          "EF:JP:residual_mix:tokyo:fy2022:meti-fy2022-v1",
+          "EF:JP:residual_mix:chubu:fy2022:meti-fy2022-v1",
+          "EF:JP:residual_mix:hokuriku:fy2022:meti-fy2022-v1",
+          "EF:JP:residual_mix:kansai:fy2022:meti-fy2022-v1",
+          "EF:JP:residual_mix:shikoku:fy2022:meti-fy2022-v1",
+          "EF:JP:residual_mix:kyushu:fy2022:meti-fy2022-v1",
+          "EF:JP:residual_mix:okinawa:fy2022:meti-fy2022-v1"
+        ]
+      },
+      "replacement_factor_id": null,
+      "license_class": "open",
+      "activity_tags": [
+        "purchased_electricity",
+        "market_based",
+        "residual_mix"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "factor_family": "residual_mix",
+      "factor_name": "Japan METI residual mix \u2014 Chugoku FY2022",
+      "method_profile": "corporate_scope2_market_based",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "jurisdiction": {
+        "country": "JP",
+        "region": "Chugoku",
+        "grid_region": "Chugoku"
+      },
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "sub_category": "residual_mix",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ]
+      },
+      "parameters": {
+        "scope_applicability": [
+          "scope2"
+        ],
+        "electricity_basis": "residual_mix",
+        "residual_mix_applicable": true,
+        "supplier_specific": false,
+        "transmission_loss_included": false,
+        "biogenic_share": null,
+        "uncertainty_low": null,
+        "uncertainty_high": null
+      },
+      "verification": {
+        "status": "regulator_approved",
+        "verified_by": "Japan METI / MOEJ",
+        "verified_at": null,
+        "verification_reference": null
+      },
+      "explainability": {
+        "assumptions": [
+          "METI publishes Basic (\u57fa\u790e\u6392\u51fa\u4fc2\u6570) and Adjusted (\u8abf\u6574\u5f8c\u6392\u51fa\u4fc2\u6570) factors.  The residual mix is derived by netting non-fossil-certificate surrenders (J-Credit, Green Value Certification, Non-Fossil Value Trading System) from the Basic factor.",
+          "Non-fossil certificate share assumed = 0.100.",
+          "Formula: residual = basic_factor / (1 - non_fossil_share).",
+          "Adjusted factor reported by METI is UTILITY-level, not system-level; the residual here is system-wide so values will differ from the adjusted factor.",
+          "Gas speciation split uses IPCC 2006 defaults (CO2 98.5%, CH4 1.0%, N2O 0.5%).",
+          "Apply to Scope 2 market-based reporting when no supplier-specific contract or non-fossil certificate applies."
+        ],
+        "fallback_rank": 5,
+        "rationale": "Japan METI residual mix for Chugoku, FY2022. Basic factor 0.586 kgCO2/kWh, non-fossil share 10.0% -> residual 0.651 kgCO2/kWh."
+      },
+      "primary_data_flag": "secondary",
+      "uncertainty_distribution": "normal",
+      "redistribution_class": "open",
+      "raw_record_ref": null,
+      "change_log": [],
+      "next_review_date": null,
+      "use_phase": null
+    },
+    {
+      "factor_id": "EF:JP:residual_mix:shikoku:fy2022:meti-fy2022-v1",
+      "fuel_type": "electricity",
+      "unit": "kWh",
+      "geography": "JP",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": "0.7148285714285715",
+        "CH4": "0.0002591836734693878",
+        "N2O": "0.000013291470434327578",
+        "HFCs": null,
+        "PFCs": null,
+        "SF6": null,
+        "NF3": null,
+        "biogenic_CO2": null
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273,
+        "HFCs_gwp": null,
+        "PFCs_gwp": null,
+        "SF6_gwp": null,
+        "NF3_gwp": null
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "Japan Ministry of Economy, Trade and Industry (METI) / Ministry of the Environment (MOEJ)",
+        "source_publication": "Electric Utility Emission Factors",
+        "source_year": 2023,
+        "methodology": "hybrid",
+        "source_url": "https://ghg-santeikohyo.env.go.jp/calc",
+        "source_doi": null,
+        "methodology_description": null,
+        "version": "v1",
+        "supersedes": null
+      },
+      "valid_from": "2022-04-01",
+      "uncertainty_95ci": 0.09,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 3,
+        "representativeness": 5,
+        "methodological": 4,
+        "weights": {
+          "temporal": 0.2,
+          "geographical": 0.2,
+          "technological": 0.2,
+          "representativeness": 0.2,
+          "methodological": 0.2
+        }
+      },
+      "license_info": {
+        "license": "Japan Government Open Data \u2014 public use with attribution",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true,
+        "license_url": null,
+        "license_text": null,
+        "restrictions": []
+      },
+      "region_hint": "Shikoku",
+      "gwp_20yr": null,
+      "valid_to": "2023-03-31",
+      "heating_value_basis": null,
+      "reference_temperature_c": null,
+      "pressure_bar": null,
+      "moisture_content_pct": null,
+      "ash_content_pct": null,
+      "biogenic_flag": false,
+      "compliance_frameworks": [
+        "GHG_Protocol_Scope2_MarketBased",
+        "TCFD",
+        "IFRS_S2",
+        "Japan_SSBJ"
+      ],
+      "created_at": "2026-04-23T23:56:52.802597",
+      "updated_at": "2026-04-23T23:56:52.802597",
+      "created_by": "greenlang_system",
+      "notes": null,
+      "tags": [
+        "meti",
+        "japan",
+        "residual_mix",
+        "shikoku",
+        "fy2022"
+      ],
+      "factor_status": "certified",
+      "source_id": "japan_meti_electric_emission_factors",
+      "source_release": "METI-FY2022-v1",
+      "source_record_id": "meti:Shikoku:FY2022",
+      "release_version": "METI-FY2022-v1",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "Electric Utility Emission Factors, Japan METI & MOEJ (annual).",
+        "alternates_considered": [
+          "EF:JP:residual_mix:hokkaido:fy2022:meti-fy2022-v1",
+          "EF:JP:residual_mix:tohoku:fy2022:meti-fy2022-v1",
+          "EF:JP:residual_mix:tokyo:fy2022:meti-fy2022-v1",
+          "EF:JP:residual_mix:chubu:fy2022:meti-fy2022-v1",
+          "EF:JP:residual_mix:hokuriku:fy2022:meti-fy2022-v1",
+          "EF:JP:residual_mix:kansai:fy2022:meti-fy2022-v1",
+          "EF:JP:residual_mix:chugoku:fy2022:meti-fy2022-v1",
+          "EF:JP:residual_mix:kyushu:fy2022:meti-fy2022-v1",
+          "EF:JP:residual_mix:okinawa:fy2022:meti-fy2022-v1"
+        ]
+      },
+      "replacement_factor_id": null,
+      "license_class": "open",
+      "activity_tags": [
+        "purchased_electricity",
+        "market_based",
+        "residual_mix"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "factor_family": "residual_mix",
+      "factor_name": "Japan METI residual mix \u2014 Shikoku FY2022",
+      "method_profile": "corporate_scope2_market_based",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "jurisdiction": {
+        "country": "JP",
+        "region": "Shikoku",
+        "grid_region": "Shikoku"
+      },
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "sub_category": "residual_mix",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ]
+      },
+      "parameters": {
+        "scope_applicability": [
+          "scope2"
+        ],
+        "electricity_basis": "residual_mix",
+        "residual_mix_applicable": true,
+        "supplier_specific": false,
+        "transmission_loss_included": false,
+        "biogenic_share": null,
+        "uncertainty_low": null,
+        "uncertainty_high": null
+      },
+      "verification": {
+        "status": "regulator_approved",
+        "verified_by": "Japan METI / MOEJ",
+        "verified_at": null,
+        "verification_reference": null
+      },
+      "explainability": {
+        "assumptions": [
+          "METI publishes Basic (\u57fa\u790e\u6392\u51fa\u4fc2\u6570) and Adjusted (\u8abf\u6574\u5f8c\u6392\u51fa\u4fc2\u6570) factors.  The residual mix is derived by netting non-fossil-certificate surrenders (J-Credit, Green Value Certification, Non-Fossil Value Trading System) from the Basic factor.",
+          "Non-fossil certificate share assumed = 0.300.",
+          "Formula: residual = basic_factor / (1 - non_fossil_share).",
+          "Adjusted factor reported by METI is UTILITY-level, not system-level; the residual here is system-wide so values will differ from the adjusted factor.",
+          "Gas speciation split uses IPCC 2006 defaults (CO2 98.5%, CH4 1.0%, N2O 0.5%).",
+          "Apply to Scope 2 market-based reporting when no supplier-specific contract or non-fossil certificate applies."
+        ],
+        "fallback_rank": 5,
+        "rationale": "Japan METI residual mix for Shikoku, FY2022. Basic factor 0.508 kgCO2/kWh, non-fossil share 30.0% -> residual 0.726 kgCO2/kWh."
+      },
+      "primary_data_flag": "secondary",
+      "uncertainty_distribution": "normal",
+      "redistribution_class": "open",
+      "raw_record_ref": null,
+      "change_log": [],
+      "next_review_date": null,
+      "use_phase": null
+    },
+    {
+      "factor_id": "EF:JP:residual_mix:kyushu:fy2022:meti-fy2022-v1",
+      "fuel_type": "electricity",
+      "unit": "kWh",
+      "geography": "JP",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": "0.563296875",
+        "CH4": "0.00020424107142857144",
+        "N2O": "0.000010473901098901101",
+        "HFCs": null,
+        "PFCs": null,
+        "SF6": null,
+        "NF3": null,
+        "biogenic_CO2": null
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273,
+        "HFCs_gwp": null,
+        "PFCs_gwp": null,
+        "SF6_gwp": null,
+        "NF3_gwp": null
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "Japan Ministry of Economy, Trade and Industry (METI) / Ministry of the Environment (MOEJ)",
+        "source_publication": "Electric Utility Emission Factors",
+        "source_year": 2023,
+        "methodology": "hybrid",
+        "source_url": "https://ghg-santeikohyo.env.go.jp/calc",
+        "source_doi": null,
+        "methodology_description": null,
+        "version": "v1",
+        "supersedes": null
+      },
+      "valid_from": "2022-04-01",
+      "uncertainty_95ci": 0.09,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 3,
+        "representativeness": 5,
+        "methodological": 4,
+        "weights": {
+          "temporal": 0.2,
+          "geographical": 0.2,
+          "technological": 0.2,
+          "representativeness": 0.2,
+          "methodological": 0.2
+        }
+      },
+      "license_info": {
+        "license": "Japan Government Open Data \u2014 public use with attribution",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true,
+        "license_url": null,
+        "license_text": null,
+        "restrictions": []
+      },
+      "region_hint": "Kyushu",
+      "gwp_20yr": null,
+      "valid_to": "2023-03-31",
+      "heating_value_basis": null,
+      "reference_temperature_c": null,
+      "pressure_bar": null,
+      "moisture_content_pct": null,
+      "ash_content_pct": null,
+      "biogenic_flag": false,
+      "compliance_frameworks": [
+        "GHG_Protocol_Scope2_MarketBased",
+        "TCFD",
+        "IFRS_S2",
+        "Japan_SSBJ"
+      ],
+      "created_at": "2026-04-23T23:56:52.802597",
+      "updated_at": "2026-04-23T23:56:52.802597",
+      "created_by": "greenlang_system",
+      "notes": null,
+      "tags": [
+        "meti",
+        "japan",
+        "residual_mix",
+        "kyushu",
+        "fy2022"
+      ],
+      "factor_status": "certified",
+      "source_id": "japan_meti_electric_emission_factors",
+      "source_release": "METI-FY2022-v1",
+      "source_record_id": "meti:Kyushu:FY2022",
+      "release_version": "METI-FY2022-v1",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "Electric Utility Emission Factors, Japan METI & MOEJ (annual).",
+        "alternates_considered": [
+          "EF:JP:residual_mix:hokkaido:fy2022:meti-fy2022-v1",
+          "EF:JP:residual_mix:tohoku:fy2022:meti-fy2022-v1",
+          "EF:JP:residual_mix:tokyo:fy2022:meti-fy2022-v1",
+          "EF:JP:residual_mix:chubu:fy2022:meti-fy2022-v1",
+          "EF:JP:residual_mix:hokuriku:fy2022:meti-fy2022-v1",
+          "EF:JP:residual_mix:kansai:fy2022:meti-fy2022-v1",
+          "EF:JP:residual_mix:chugoku:fy2022:meti-fy2022-v1",
+          "EF:JP:residual_mix:shikoku:fy2022:meti-fy2022-v1",
+          "EF:JP:residual_mix:okinawa:fy2022:meti-fy2022-v1"
+        ]
+      },
+      "replacement_factor_id": null,
+      "license_class": "open",
+      "activity_tags": [
+        "purchased_electricity",
+        "market_based",
+        "residual_mix"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "factor_family": "residual_mix",
+      "factor_name": "Japan METI residual mix \u2014 Kyushu FY2022",
+      "method_profile": "corporate_scope2_market_based",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "jurisdiction": {
+        "country": "JP",
+        "region": "Kyushu",
+        "grid_region": "Kyushu"
+      },
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "sub_category": "residual_mix",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ]
+      },
+      "parameters": {
+        "scope_applicability": [
+          "scope2"
+        ],
+        "electricity_basis": "residual_mix",
+        "residual_mix_applicable": true,
+        "supplier_specific": false,
+        "transmission_loss_included": false,
+        "biogenic_share": null,
+        "uncertainty_low": null,
+        "uncertainty_high": null
+      },
+      "verification": {
+        "status": "regulator_approved",
+        "verified_by": "Japan METI / MOEJ",
+        "verified_at": null,
+        "verification_reference": null
+      },
+      "explainability": {
+        "assumptions": [
+          "METI publishes Basic (\u57fa\u790e\u6392\u51fa\u4fc2\u6570) and Adjusted (\u8abf\u6574\u5f8c\u6392\u51fa\u4fc2\u6570) factors.  The residual mix is derived by netting non-fossil-certificate surrenders (J-Credit, Green Value Certification, Non-Fossil Value Trading System) from the Basic factor.",
+          "Non-fossil certificate share assumed = 0.360.",
+          "Formula: residual = basic_factor / (1 - non_fossil_share).",
+          "Adjusted factor reported by METI is UTILITY-level, not system-level; the residual here is system-wide so values will differ from the adjusted factor.",
+          "Gas speciation split uses IPCC 2006 defaults (CO2 98.5%, CH4 1.0%, N2O 0.5%).",
+          "Apply to Scope 2 market-based reporting when no supplier-specific contract or non-fossil certificate applies."
+        ],
+        "fallback_rank": 5,
+        "rationale": "Japan METI residual mix for Kyushu, FY2022. Basic factor 0.366 kgCO2/kWh, non-fossil share 36.0% -> residual 0.572 kgCO2/kWh."
+      },
+      "primary_data_flag": "secondary",
+      "uncertainty_distribution": "normal",
+      "redistribution_class": "open",
+      "raw_record_ref": null,
+      "change_log": [],
+      "next_review_date": null,
+      "use_phase": null
+    },
+    {
+      "factor_id": "EF:JP:residual_mix:okinawa:fy2022:meti-fy2022-v1",
+      "fuel_type": "electricity",
+      "unit": "kWh",
+      "geography": "JP",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": "0.7025663265306122",
+        "CH4": "0.00025473760932944605",
+        "N2O": "0.0000130634671450998",
+        "HFCs": null,
+        "PFCs": null,
+        "SF6": null,
+        "NF3": null,
+        "biogenic_CO2": null
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273,
+        "HFCs_gwp": null,
+        "PFCs_gwp": null,
+        "SF6_gwp": null,
+        "NF3_gwp": null
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "Japan Ministry of Economy, Trade and Industry (METI) / Ministry of the Environment (MOEJ)",
+        "source_publication": "Electric Utility Emission Factors",
+        "source_year": 2023,
+        "methodology": "hybrid",
+        "source_url": "https://ghg-santeikohyo.env.go.jp/calc",
+        "source_doi": null,
+        "methodology_description": null,
+        "version": "v1",
+        "supersedes": null
+      },
+      "valid_from": "2022-04-01",
+      "uncertainty_95ci": 0.09,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 3,
+        "representativeness": 5,
+        "methodological": 4,
+        "weights": {
+          "temporal": 0.2,
+          "geographical": 0.2,
+          "technological": 0.2,
+          "representativeness": 0.2,
+          "methodological": 0.2
+        }
+      },
+      "license_info": {
+        "license": "Japan Government Open Data \u2014 public use with attribution",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true,
+        "license_url": null,
+        "license_text": null,
+        "restrictions": []
+      },
+      "region_hint": "Okinawa",
+      "gwp_20yr": null,
+      "valid_to": "2023-03-31",
+      "heating_value_basis": null,
+      "reference_temperature_c": null,
+      "pressure_bar": null,
+      "moisture_content_pct": null,
+      "ash_content_pct": null,
+      "biogenic_flag": false,
+      "compliance_frameworks": [
+        "GHG_Protocol_Scope2_MarketBased",
+        "TCFD",
+        "IFRS_S2",
+        "Japan_SSBJ"
+      ],
+      "created_at": "2026-04-23T23:56:52.803641",
+      "updated_at": "2026-04-23T23:56:52.803641",
+      "created_by": "greenlang_system",
+      "notes": null,
+      "tags": [
+        "meti",
+        "japan",
+        "residual_mix",
+        "okinawa",
+        "fy2022"
+      ],
+      "factor_status": "certified",
+      "source_id": "japan_meti_electric_emission_factors",
+      "source_release": "METI-FY2022-v1",
+      "source_record_id": "meti:Okinawa:FY2022",
+      "release_version": "METI-FY2022-v1",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "Electric Utility Emission Factors, Japan METI & MOEJ (annual).",
+        "alternates_considered": [
+          "EF:JP:residual_mix:hokkaido:fy2022:meti-fy2022-v1",
+          "EF:JP:residual_mix:tohoku:fy2022:meti-fy2022-v1",
+          "EF:JP:residual_mix:tokyo:fy2022:meti-fy2022-v1",
+          "EF:JP:residual_mix:chubu:fy2022:meti-fy2022-v1",
+          "EF:JP:residual_mix:hokuriku:fy2022:meti-fy2022-v1",
+          "EF:JP:residual_mix:kansai:fy2022:meti-fy2022-v1",
+          "EF:JP:residual_mix:chugoku:fy2022:meti-fy2022-v1",
+          "EF:JP:residual_mix:shikoku:fy2022:meti-fy2022-v1",
+          "EF:JP:residual_mix:kyushu:fy2022:meti-fy2022-v1"
+        ]
+      },
+      "replacement_factor_id": null,
+      "license_class": "open",
+      "activity_tags": [
+        "purchased_electricity",
+        "market_based",
+        "residual_mix"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "factor_family": "residual_mix",
+      "factor_name": "Japan METI residual mix \u2014 Okinawa FY2022",
+      "method_profile": "corporate_scope2_market_based",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "jurisdiction": {
+        "country": "JP",
+        "region": "Okinawa",
+        "grid_region": "Okinawa"
+      },
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "sub_category": "residual_mix",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ]
+      },
+      "parameters": {
+        "scope_applicability": [
+          "scope2"
+        ],
+        "electricity_basis": "residual_mix",
+        "residual_mix_applicable": true,
+        "supplier_specific": false,
+        "transmission_loss_included": false,
+        "biogenic_share": null,
+        "uncertainty_low": null,
+        "uncertainty_high": null
+      },
+      "verification": {
+        "status": "regulator_approved",
+        "verified_by": "Japan METI / MOEJ",
+        "verified_at": null,
+        "verification_reference": null
+      },
+      "explainability": {
+        "assumptions": [
+          "METI publishes Basic (\u57fa\u790e\u6392\u51fa\u4fc2\u6570) and Adjusted (\u8abf\u6574\u5f8c\u6392\u51fa\u4fc2\u6570) factors.  The residual mix is derived by netting non-fossil-certificate surrenders (J-Credit, Green Value Certification, Non-Fossil Value Trading System) from the Basic factor.",
+          "Non-fossil certificate share assumed = 0.020.",
+          "Formula: residual = basic_factor / (1 - non_fossil_share).",
+          "Adjusted factor reported by METI is UTILITY-level, not system-level; the residual here is system-wide so values will differ from the adjusted factor.",
+          "Gas speciation split uses IPCC 2006 defaults (CO2 98.5%, CH4 1.0%, N2O 0.5%).",
+          "Apply to Scope 2 market-based reporting when no supplier-specific contract or non-fossil certificate applies."
+        ],
+        "fallback_rank": 5,
+        "rationale": "Japan METI residual mix for Okinawa, FY2022. Basic factor 0.699 kgCO2/kWh, non-fossil share 2.0% -> residual 0.713 kgCO2/kWh."
+      },
+      "primary_data_flag": "secondary",
+      "uncertainty_distribution": "normal",
+      "redistribution_class": "open",
+      "raw_record_ref": null,
+      "change_log": [],
+      "next_review_date": null,
+      "use_phase": null
+    },
+    {
+      "factor_id": "EF:JP:residual_mix:hokkaido:fy2021:meti-fy2021-v1",
+      "fuel_type": "electricity",
+      "unit": "kWh",
+      "geography": "JP",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": "0.642391304347826",
+        "CH4": "0.00023291925465838506",
+        "N2O": "0.000011944577161968464",
+        "HFCs": null,
+        "PFCs": null,
+        "SF6": null,
+        "NF3": null,
+        "biogenic_CO2": null
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273,
+        "HFCs_gwp": null,
+        "PFCs_gwp": null,
+        "SF6_gwp": null,
+        "NF3_gwp": null
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "Japan Ministry of Economy, Trade and Industry (METI) / Ministry of the Environment (MOEJ)",
+        "source_publication": "Electric Utility Emission Factors",
+        "source_year": 2022,
+        "methodology": "hybrid",
+        "source_url": "https://ghg-santeikohyo.env.go.jp/calc",
+        "source_doi": null,
+        "methodology_description": null,
+        "version": "v1",
+        "supersedes": null
+      },
+      "valid_from": "2021-04-01",
+      "uncertainty_95ci": 0.09,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 3,
+        "representativeness": 5,
+        "methodological": 4,
+        "weights": {
+          "temporal": 0.2,
+          "geographical": 0.2,
+          "technological": 0.2,
+          "representativeness": 0.2,
+          "methodological": 0.2
+        }
+      },
+      "license_info": {
+        "license": "Japan Government Open Data \u2014 public use with attribution",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true,
+        "license_url": null,
+        "license_text": null,
+        "restrictions": []
+      },
+      "region_hint": "Hokkaido",
+      "gwp_20yr": null,
+      "valid_to": "2022-03-31",
+      "heating_value_basis": null,
+      "reference_temperature_c": null,
+      "pressure_bar": null,
+      "moisture_content_pct": null,
+      "ash_content_pct": null,
+      "biogenic_flag": false,
+      "compliance_frameworks": [
+        "GHG_Protocol_Scope2_MarketBased",
+        "TCFD",
+        "IFRS_S2",
+        "Japan_SSBJ"
+      ],
+      "created_at": "2026-04-23T23:56:52.803641",
+      "updated_at": "2026-04-23T23:56:52.803641",
+      "created_by": "greenlang_system",
+      "notes": null,
+      "tags": [
+        "meti",
+        "japan",
+        "residual_mix",
+        "hokkaido",
+        "fy2021"
+      ],
+      "factor_status": "certified",
+      "source_id": "japan_meti_electric_emission_factors",
+      "source_release": "METI-FY2021-v1",
+      "source_record_id": "meti:Hokkaido:FY2021",
+      "release_version": "METI-FY2021-v1",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "Electric Utility Emission Factors, Japan METI & MOEJ (annual).",
+        "alternates_considered": [
+          "EF:JP:residual_mix:tohoku:fy2021:meti-fy2021-v1",
+          "EF:JP:residual_mix:tokyo:fy2021:meti-fy2021-v1",
+          "EF:JP:residual_mix:chubu:fy2021:meti-fy2021-v1",
+          "EF:JP:residual_mix:kansai:fy2021:meti-fy2021-v1",
+          "EF:JP:residual_mix:kyushu:fy2021:meti-fy2021-v1",
+          "EF:JP:residual_mix:hokuriku:fy2021:meti-fy2021-v1",
+          "EF:JP:residual_mix:chugoku:fy2021:meti-fy2021-v1",
+          "EF:JP:residual_mix:shikoku:fy2021:meti-fy2021-v1",
+          "EF:JP:residual_mix:okinawa:fy2021:meti-fy2021-v1"
+        ]
+      },
+      "replacement_factor_id": null,
+      "license_class": "open",
+      "activity_tags": [
+        "purchased_electricity",
+        "market_based",
+        "residual_mix"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "factor_family": "residual_mix",
+      "factor_name": "Japan METI residual mix \u2014 Hokkaido FY2021",
+      "method_profile": "corporate_scope2_market_based",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "jurisdiction": {
+        "country": "JP",
+        "region": "Hokkaido",
+        "grid_region": "Hokkaido"
+      },
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "sub_category": "residual_mix",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ]
+      },
+      "parameters": {
+        "scope_applicability": [
+          "scope2"
+        ],
+        "electricity_basis": "residual_mix",
+        "residual_mix_applicable": true,
+        "supplier_specific": false,
+        "transmission_loss_included": false,
+        "biogenic_share": null,
+        "uncertainty_low": null,
+        "uncertainty_high": null
+      },
+      "verification": {
+        "status": "regulator_approved",
+        "verified_by": "Japan METI / MOEJ",
+        "verified_at": null,
+        "verification_reference": null
+      },
+      "explainability": {
+        "assumptions": [
+          "METI publishes Basic (\u57fa\u790e\u6392\u51fa\u4fc2\u6570) and Adjusted (\u8abf\u6574\u5f8c\u6392\u51fa\u4fc2\u6570) factors.  The residual mix is derived by netting non-fossil-certificate surrenders (J-Credit, Green Value Certification, Non-Fossil Value Trading System) from the Basic factor.",
+          "Non-fossil certificate share assumed = 0.080.",
+          "Formula: residual = basic_factor / (1 - non_fossil_share).",
+          "Adjusted factor reported by METI is UTILITY-level, not system-level; the residual here is system-wide so values will differ from the adjusted factor.",
+          "Gas speciation split uses IPCC 2006 defaults (CO2 98.5%, CH4 1.0%, N2O 0.5%).",
+          "Apply to Scope 2 market-based reporting when no supplier-specific contract or non-fossil certificate applies."
+        ],
+        "fallback_rank": 5,
+        "rationale": "Japan METI residual mix for Hokkaido, FY2021. Basic factor 0.600 kgCO2/kWh, non-fossil share 8.0% -> residual 0.652 kgCO2/kWh."
+      },
+      "primary_data_flag": "secondary",
+      "uncertainty_distribution": "normal",
+      "redistribution_class": "open",
+      "raw_record_ref": null,
+      "change_log": [],
+      "next_review_date": null,
+      "use_phase": null
+    },
+    {
+      "factor_id": "EF:JP:residual_mix:tohoku:fy2021:meti-fy2021-v1",
+      "fuel_type": "electricity",
+      "unit": "kWh",
+      "geography": "JP",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": "0.5321264367816092",
+        "CH4": "0.00019293924466338262",
+        "N2O": "0.000009894320239147826",
+        "HFCs": null,
+        "PFCs": null,
+        "SF6": null,
+        "NF3": null,
+        "biogenic_CO2": null
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273,
+        "HFCs_gwp": null,
+        "PFCs_gwp": null,
+        "SF6_gwp": null,
+        "NF3_gwp": null
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "Japan Ministry of Economy, Trade and Industry (METI) / Ministry of the Environment (MOEJ)",
+        "source_publication": "Electric Utility Emission Factors",
+        "source_year": 2022,
+        "methodology": "hybrid",
+        "source_url": "https://ghg-santeikohyo.env.go.jp/calc",
+        "source_doi": null,
+        "methodology_description": null,
+        "version": "v1",
+        "supersedes": null
+      },
+      "valid_from": "2021-04-01",
+      "uncertainty_95ci": 0.09,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 3,
+        "representativeness": 5,
+        "methodological": 4,
+        "weights": {
+          "temporal": 0.2,
+          "geographical": 0.2,
+          "technological": 0.2,
+          "representativeness": 0.2,
+          "methodological": 0.2
+        }
+      },
+      "license_info": {
+        "license": "Japan Government Open Data \u2014 public use with attribution",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true,
+        "license_url": null,
+        "license_text": null,
+        "restrictions": []
+      },
+      "region_hint": "Tohoku",
+      "gwp_20yr": null,
+      "valid_to": "2022-03-31",
+      "heating_value_basis": null,
+      "reference_temperature_c": null,
+      "pressure_bar": null,
+      "moisture_content_pct": null,
+      "ash_content_pct": null,
+      "biogenic_flag": false,
+      "compliance_frameworks": [
+        "GHG_Protocol_Scope2_MarketBased",
+        "TCFD",
+        "IFRS_S2",
+        "Japan_SSBJ"
+      ],
+      "created_at": "2026-04-23T23:56:52.803641",
+      "updated_at": "2026-04-23T23:56:52.803641",
+      "created_by": "greenlang_system",
+      "notes": null,
+      "tags": [
+        "meti",
+        "japan",
+        "residual_mix",
+        "tohoku",
+        "fy2021"
+      ],
+      "factor_status": "certified",
+      "source_id": "japan_meti_electric_emission_factors",
+      "source_release": "METI-FY2021-v1",
+      "source_record_id": "meti:Tohoku:FY2021",
+      "release_version": "METI-FY2021-v1",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "Electric Utility Emission Factors, Japan METI & MOEJ (annual).",
+        "alternates_considered": [
+          "EF:JP:residual_mix:hokkaido:fy2021:meti-fy2021-v1",
+          "EF:JP:residual_mix:tokyo:fy2021:meti-fy2021-v1",
+          "EF:JP:residual_mix:chubu:fy2021:meti-fy2021-v1",
+          "EF:JP:residual_mix:kansai:fy2021:meti-fy2021-v1",
+          "EF:JP:residual_mix:kyushu:fy2021:meti-fy2021-v1",
+          "EF:JP:residual_mix:hokuriku:fy2021:meti-fy2021-v1",
+          "EF:JP:residual_mix:chugoku:fy2021:meti-fy2021-v1",
+          "EF:JP:residual_mix:shikoku:fy2021:meti-fy2021-v1",
+          "EF:JP:residual_mix:okinawa:fy2021:meti-fy2021-v1"
+        ]
+      },
+      "replacement_factor_id": null,
+      "license_class": "open",
+      "activity_tags": [
+        "purchased_electricity",
+        "market_based",
+        "residual_mix"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "factor_family": "residual_mix",
+      "factor_name": "Japan METI residual mix \u2014 Tohoku FY2021",
+      "method_profile": "corporate_scope2_market_based",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "jurisdiction": {
+        "country": "JP",
+        "region": "Tohoku",
+        "grid_region": "Tohoku"
+      },
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "sub_category": "residual_mix",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ]
+      },
+      "parameters": {
+        "scope_applicability": [
+          "scope2"
+        ],
+        "electricity_basis": "residual_mix",
+        "residual_mix_applicable": true,
+        "supplier_specific": false,
+        "transmission_loss_included": false,
+        "biogenic_share": null,
+        "uncertainty_low": null,
+        "uncertainty_high": null
+      },
+      "verification": {
+        "status": "regulator_approved",
+        "verified_by": "Japan METI / MOEJ",
+        "verified_at": null,
+        "verification_reference": null
+      },
+      "explainability": {
+        "assumptions": [
+          "METI publishes Basic (\u57fa\u790e\u6392\u51fa\u4fc2\u6570) and Adjusted (\u8abf\u6574\u5f8c\u6392\u51fa\u4fc2\u6570) factors.  The residual mix is derived by netting non-fossil-certificate surrenders (J-Credit, Green Value Certification, Non-Fossil Value Trading System) from the Basic factor.",
+          "Non-fossil certificate share assumed = 0.130.",
+          "Formula: residual = basic_factor / (1 - non_fossil_share).",
+          "Adjusted factor reported by METI is UTILITY-level, not system-level; the residual here is system-wide so values will differ from the adjusted factor.",
+          "Gas speciation split uses IPCC 2006 defaults (CO2 98.5%, CH4 1.0%, N2O 0.5%).",
+          "Apply to Scope 2 market-based reporting when no supplier-specific contract or non-fossil certificate applies."
+        ],
+        "fallback_rank": 5,
+        "rationale": "Japan METI residual mix for Tohoku, FY2021. Basic factor 0.470 kgCO2/kWh, non-fossil share 13.0% -> residual 0.540 kgCO2/kWh."
+      },
+      "primary_data_flag": "secondary",
+      "uncertainty_distribution": "normal",
+      "redistribution_class": "open",
+      "raw_record_ref": null,
+      "change_log": [],
+      "next_review_date": null,
+      "use_phase": null
+    },
+    {
+      "factor_id": "EF:JP:residual_mix:tokyo:fy2021:meti-fy2021-v1",
+      "fuel_type": "electricity",
+      "unit": "kWh",
+      "geography": "JP",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": "0.5335416666666667",
+        "CH4": "0.00019345238095238099",
+        "N2O": "0.000009920634920634922",
+        "HFCs": null,
+        "PFCs": null,
+        "SF6": null,
+        "NF3": null,
+        "biogenic_CO2": null
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273,
+        "HFCs_gwp": null,
+        "PFCs_gwp": null,
+        "SF6_gwp": null,
+        "NF3_gwp": null
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "Japan Ministry of Economy, Trade and Industry (METI) / Ministry of the Environment (MOEJ)",
+        "source_publication": "Electric Utility Emission Factors",
+        "source_year": 2022,
+        "methodology": "hybrid",
+        "source_url": "https://ghg-santeikohyo.env.go.jp/calc",
+        "source_doi": null,
+        "methodology_description": null,
+        "version": "v1",
+        "supersedes": null
+      },
+      "valid_from": "2021-04-01",
+      "uncertainty_95ci": 0.09,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 3,
+        "representativeness": 5,
+        "methodological": 4,
+        "weights": {
+          "temporal": 0.2,
+          "geographical": 0.2,
+          "technological": 0.2,
+          "representativeness": 0.2,
+          "methodological": 0.2
+        }
+      },
+      "license_info": {
+        "license": "Japan Government Open Data \u2014 public use with attribution",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true,
+        "license_url": null,
+        "license_text": null,
+        "restrictions": []
+      },
+      "region_hint": "Tokyo",
+      "gwp_20yr": null,
+      "valid_to": "2022-03-31",
+      "heating_value_basis": null,
+      "reference_temperature_c": null,
+      "pressure_bar": null,
+      "moisture_content_pct": null,
+      "ash_content_pct": null,
+      "biogenic_flag": false,
+      "compliance_frameworks": [
+        "GHG_Protocol_Scope2_MarketBased",
+        "TCFD",
+        "IFRS_S2",
+        "Japan_SSBJ"
+      ],
+      "created_at": "2026-04-23T23:56:52.803641",
+      "updated_at": "2026-04-23T23:56:52.803641",
+      "created_by": "greenlang_system",
+      "notes": null,
+      "tags": [
+        "meti",
+        "japan",
+        "residual_mix",
+        "tokyo",
+        "fy2021"
+      ],
+      "factor_status": "certified",
+      "source_id": "japan_meti_electric_emission_factors",
+      "source_release": "METI-FY2021-v1",
+      "source_record_id": "meti:Tokyo:FY2021",
+      "release_version": "METI-FY2021-v1",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "Electric Utility Emission Factors, Japan METI & MOEJ (annual).",
+        "alternates_considered": [
+          "EF:JP:residual_mix:hokkaido:fy2021:meti-fy2021-v1",
+          "EF:JP:residual_mix:tohoku:fy2021:meti-fy2021-v1",
+          "EF:JP:residual_mix:chubu:fy2021:meti-fy2021-v1",
+          "EF:JP:residual_mix:kansai:fy2021:meti-fy2021-v1",
+          "EF:JP:residual_mix:kyushu:fy2021:meti-fy2021-v1",
+          "EF:JP:residual_mix:hokuriku:fy2021:meti-fy2021-v1",
+          "EF:JP:residual_mix:chugoku:fy2021:meti-fy2021-v1",
+          "EF:JP:residual_mix:shikoku:fy2021:meti-fy2021-v1",
+          "EF:JP:residual_mix:okinawa:fy2021:meti-fy2021-v1"
+        ]
+      },
+      "replacement_factor_id": null,
+      "license_class": "open",
+      "activity_tags": [
+        "purchased_electricity",
+        "market_based",
+        "residual_mix"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "factor_family": "residual_mix",
+      "factor_name": "Japan METI residual mix \u2014 Tokyo FY2021",
+      "method_profile": "corporate_scope2_market_based",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "jurisdiction": {
+        "country": "JP",
+        "region": "Tokyo",
+        "grid_region": "Tokyo"
+      },
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "sub_category": "residual_mix",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ]
+      },
+      "parameters": {
+        "scope_applicability": [
+          "scope2"
+        ],
+        "electricity_basis": "residual_mix",
+        "residual_mix_applicable": true,
+        "supplier_specific": false,
+        "transmission_loss_included": false,
+        "biogenic_share": null,
+        "uncertainty_low": null,
+        "uncertainty_high": null
+      },
+      "verification": {
+        "status": "regulator_approved",
+        "verified_by": "Japan METI / MOEJ",
+        "verified_at": null,
+        "verification_reference": null
+      },
+      "explainability": {
+        "assumptions": [
+          "METI publishes Basic (\u57fa\u790e\u6392\u51fa\u4fc2\u6570) and Adjusted (\u8abf\u6574\u5f8c\u6392\u51fa\u4fc2\u6570) factors.  The residual mix is derived by netting non-fossil-certificate surrenders (J-Credit, Green Value Certification, Non-Fossil Value Trading System) from the Basic factor.",
+          "Non-fossil certificate share assumed = 0.160.",
+          "Formula: residual = basic_factor / (1 - non_fossil_share).",
+          "Adjusted factor reported by METI is UTILITY-level, not system-level; the residual here is system-wide so values will differ from the adjusted factor.",
+          "Gas speciation split uses IPCC 2006 defaults (CO2 98.5%, CH4 1.0%, N2O 0.5%).",
+          "Apply to Scope 2 market-based reporting when no supplier-specific contract or non-fossil certificate applies."
+        ],
+        "fallback_rank": 5,
+        "rationale": "Japan METI residual mix for Tokyo, FY2021. Basic factor 0.455 kgCO2/kWh, non-fossil share 16.0% -> residual 0.542 kgCO2/kWh."
+      },
+      "primary_data_flag": "secondary",
+      "uncertainty_distribution": "normal",
+      "redistribution_class": "open",
+      "raw_record_ref": null,
+      "change_log": [],
+      "next_review_date": null,
+      "use_phase": null
+    },
+    {
+      "factor_id": "EF:JP:residual_mix:chubu:fy2021:meti-fy2021-v1",
+      "fuel_type": "electricity",
+      "unit": "kWh",
+      "geography": "JP",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": "0.5540625",
+        "CH4": "0.00020089285714285714",
+        "N2O": "0.000010302197802197802",
+        "HFCs": null,
+        "PFCs": null,
+        "SF6": null,
+        "NF3": null,
+        "biogenic_CO2": null
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273,
+        "HFCs_gwp": null,
+        "PFCs_gwp": null,
+        "SF6_gwp": null,
+        "NF3_gwp": null
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "Japan Ministry of Economy, Trade and Industry (METI) / Ministry of the Environment (MOEJ)",
+        "source_publication": "Electric Utility Emission Factors",
+        "source_year": 2022,
+        "methodology": "hybrid",
+        "source_url": "https://ghg-santeikohyo.env.go.jp/calc",
+        "source_doi": null,
+        "methodology_description": null,
+        "version": "v1",
+        "supersedes": null
+      },
+      "valid_from": "2021-04-01",
+      "uncertainty_95ci": 0.09,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 3,
+        "representativeness": 5,
+        "methodological": 4,
+        "weights": {
+          "temporal": 0.2,
+          "geographical": 0.2,
+          "technological": 0.2,
+          "representativeness": 0.2,
+          "methodological": 0.2
+        }
+      },
+      "license_info": {
+        "license": "Japan Government Open Data \u2014 public use with attribution",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true,
+        "license_url": null,
+        "license_text": null,
+        "restrictions": []
+      },
+      "region_hint": "Chubu",
+      "gwp_20yr": null,
+      "valid_to": "2022-03-31",
+      "heating_value_basis": null,
+      "reference_temperature_c": null,
+      "pressure_bar": null,
+      "moisture_content_pct": null,
+      "ash_content_pct": null,
+      "biogenic_flag": false,
+      "compliance_frameworks": [
+        "GHG_Protocol_Scope2_MarketBased",
+        "TCFD",
+        "IFRS_S2",
+        "Japan_SSBJ"
+      ],
+      "created_at": "2026-04-23T23:56:52.804636",
+      "updated_at": "2026-04-23T23:56:52.804636",
+      "created_by": "greenlang_system",
+      "notes": null,
+      "tags": [
+        "meti",
+        "japan",
+        "residual_mix",
+        "chubu",
+        "fy2021"
+      ],
+      "factor_status": "certified",
+      "source_id": "japan_meti_electric_emission_factors",
+      "source_release": "METI-FY2021-v1",
+      "source_record_id": "meti:Chubu:FY2021",
+      "release_version": "METI-FY2021-v1",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "Electric Utility Emission Factors, Japan METI & MOEJ (annual).",
+        "alternates_considered": [
+          "EF:JP:residual_mix:hokkaido:fy2021:meti-fy2021-v1",
+          "EF:JP:residual_mix:tohoku:fy2021:meti-fy2021-v1",
+          "EF:JP:residual_mix:tokyo:fy2021:meti-fy2021-v1",
+          "EF:JP:residual_mix:kansai:fy2021:meti-fy2021-v1",
+          "EF:JP:residual_mix:kyushu:fy2021:meti-fy2021-v1",
+          "EF:JP:residual_mix:hokuriku:fy2021:meti-fy2021-v1",
+          "EF:JP:residual_mix:chugoku:fy2021:meti-fy2021-v1",
+          "EF:JP:residual_mix:shikoku:fy2021:meti-fy2021-v1",
+          "EF:JP:residual_mix:okinawa:fy2021:meti-fy2021-v1"
+        ]
+      },
+      "replacement_factor_id": null,
+      "license_class": "open",
+      "activity_tags": [
+        "purchased_electricity",
+        "market_based",
+        "residual_mix"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "factor_family": "residual_mix",
+      "factor_name": "Japan METI residual mix \u2014 Chubu FY2021",
+      "method_profile": "corporate_scope2_market_based",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "jurisdiction": {
+        "country": "JP",
+        "region": "Chubu",
+        "grid_region": "Chubu"
+      },
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "sub_category": "residual_mix",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ]
+      },
+      "parameters": {
+        "scope_applicability": [
+          "scope2"
+        ],
+        "electricity_basis": "residual_mix",
+        "residual_mix_applicable": true,
+        "supplier_specific": false,
+        "transmission_loss_included": false,
+        "biogenic_share": null,
+        "uncertainty_low": null,
+        "uncertainty_high": null
+      },
+      "verification": {
+        "status": "regulator_approved",
+        "verified_by": "Japan METI / MOEJ",
+        "verified_at": null,
+        "verification_reference": null
+      },
+      "explainability": {
+        "assumptions": [
+          "METI publishes Basic (\u57fa\u790e\u6392\u51fa\u4fc2\u6570) and Adjusted (\u8abf\u6574\u5f8c\u6392\u51fa\u4fc2\u6570) factors.  The residual mix is derived by netting non-fossil-certificate surrenders (J-Credit, Green Value Certification, Non-Fossil Value Trading System) from the Basic factor.",
+          "Non-fossil certificate share assumed = 0.200.",
+          "Formula: residual = basic_factor / (1 - non_fossil_share).",
+          "Adjusted factor reported by METI is UTILITY-level, not system-level; the residual here is system-wide so values will differ from the adjusted factor.",
+          "Gas speciation split uses IPCC 2006 defaults (CO2 98.5%, CH4 1.0%, N2O 0.5%).",
+          "Apply to Scope 2 market-based reporting when no supplier-specific contract or non-fossil certificate applies."
+        ],
+        "fallback_rank": 5,
+        "rationale": "Japan METI residual mix for Chubu, FY2021. Basic factor 0.450 kgCO2/kWh, non-fossil share 20.0% -> residual 0.562 kgCO2/kWh."
+      },
+      "primary_data_flag": "secondary",
+      "uncertainty_distribution": "normal",
+      "redistribution_class": "open",
+      "raw_record_ref": null,
+      "change_log": [],
+      "next_review_date": null,
+      "use_phase": null
+    },
+    {
+      "factor_id": "EF:JP:residual_mix:kansai:fy2021:meti-fy2021-v1",
+      "fuel_type": "electricity",
+      "unit": "kWh",
+      "geography": "JP",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": "0.5712999999999999",
+        "CH4": "0.00020714285714285713",
+        "N2O": "0.000010622710622710621",
+        "HFCs": null,
+        "PFCs": null,
+        "SF6": null,
+        "NF3": null,
+        "biogenic_CO2": null
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273,
+        "HFCs_gwp": null,
+        "PFCs_gwp": null,
+        "SF6_gwp": null,
+        "NF3_gwp": null
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "Japan Ministry of Economy, Trade and Industry (METI) / Ministry of the Environment (MOEJ)",
+        "source_publication": "Electric Utility Emission Factors",
+        "source_year": 2022,
+        "methodology": "hybrid",
+        "source_url": "https://ghg-santeikohyo.env.go.jp/calc",
+        "source_doi": null,
+        "methodology_description": null,
+        "version": "v1",
+        "supersedes": null
+      },
+      "valid_from": "2021-04-01",
+      "uncertainty_95ci": 0.09,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 3,
+        "representativeness": 5,
+        "methodological": 4,
+        "weights": {
+          "temporal": 0.2,
+          "geographical": 0.2,
+          "technological": 0.2,
+          "representativeness": 0.2,
+          "methodological": 0.2
+        }
+      },
+      "license_info": {
+        "license": "Japan Government Open Data \u2014 public use with attribution",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true,
+        "license_url": null,
+        "license_text": null,
+        "restrictions": []
+      },
+      "region_hint": "Kansai",
+      "gwp_20yr": null,
+      "valid_to": "2022-03-31",
+      "heating_value_basis": null,
+      "reference_temperature_c": null,
+      "pressure_bar": null,
+      "moisture_content_pct": null,
+      "ash_content_pct": null,
+      "biogenic_flag": false,
+      "compliance_frameworks": [
+        "GHG_Protocol_Scope2_MarketBased",
+        "TCFD",
+        "IFRS_S2",
+        "Japan_SSBJ"
+      ],
+      "created_at": "2026-04-23T23:56:52.804636",
+      "updated_at": "2026-04-23T23:56:52.804636",
+      "created_by": "greenlang_system",
+      "notes": null,
+      "tags": [
+        "meti",
+        "japan",
+        "residual_mix",
+        "kansai",
+        "fy2021"
+      ],
+      "factor_status": "certified",
+      "source_id": "japan_meti_electric_emission_factors",
+      "source_release": "METI-FY2021-v1",
+      "source_record_id": "meti:Kansai:FY2021",
+      "release_version": "METI-FY2021-v1",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "Electric Utility Emission Factors, Japan METI & MOEJ (annual).",
+        "alternates_considered": [
+          "EF:JP:residual_mix:hokkaido:fy2021:meti-fy2021-v1",
+          "EF:JP:residual_mix:tohoku:fy2021:meti-fy2021-v1",
+          "EF:JP:residual_mix:tokyo:fy2021:meti-fy2021-v1",
+          "EF:JP:residual_mix:chubu:fy2021:meti-fy2021-v1",
+          "EF:JP:residual_mix:kyushu:fy2021:meti-fy2021-v1",
+          "EF:JP:residual_mix:hokuriku:fy2021:meti-fy2021-v1",
+          "EF:JP:residual_mix:chugoku:fy2021:meti-fy2021-v1",
+          "EF:JP:residual_mix:shikoku:fy2021:meti-fy2021-v1",
+          "EF:JP:residual_mix:okinawa:fy2021:meti-fy2021-v1"
+        ]
+      },
+      "replacement_factor_id": null,
+      "license_class": "open",
+      "activity_tags": [
+        "purchased_electricity",
+        "market_based",
+        "residual_mix"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "factor_family": "residual_mix",
+      "factor_name": "Japan METI residual mix \u2014 Kansai FY2021",
+      "method_profile": "corporate_scope2_market_based",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "jurisdiction": {
+        "country": "JP",
+        "region": "Kansai",
+        "grid_region": "Kansai"
+      },
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "sub_category": "residual_mix",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ]
+      },
+      "parameters": {
+        "scope_applicability": [
+          "scope2"
+        ],
+        "electricity_basis": "residual_mix",
+        "residual_mix_applicable": true,
+        "supplier_specific": false,
+        "transmission_loss_included": false,
+        "biogenic_share": null,
+        "uncertainty_low": null,
+        "uncertainty_high": null
+      },
+      "verification": {
+        "status": "regulator_approved",
+        "verified_by": "Japan METI / MOEJ",
+        "verified_at": null,
+        "verification_reference": null
+      },
+      "explainability": {
+        "assumptions": [
+          "METI publishes Basic (\u57fa\u790e\u6392\u51fa\u4fc2\u6570) and Adjusted (\u8abf\u6574\u5f8c\u6392\u51fa\u4fc2\u6570) factors.  The residual mix is derived by netting non-fossil-certificate surrenders (J-Credit, Green Value Certification, Non-Fossil Value Trading System) from the Basic factor.",
+          "Non-fossil certificate share assumed = 0.400.",
+          "Formula: residual = basic_factor / (1 - non_fossil_share).",
+          "Adjusted factor reported by METI is UTILITY-level, not system-level; the residual here is system-wide so values will differ from the adjusted factor.",
+          "Gas speciation split uses IPCC 2006 defaults (CO2 98.5%, CH4 1.0%, N2O 0.5%).",
+          "Apply to Scope 2 market-based reporting when no supplier-specific contract or non-fossil certificate applies."
+        ],
+        "fallback_rank": 5,
+        "rationale": "Japan METI residual mix for Kansai, FY2021. Basic factor 0.348 kgCO2/kWh, non-fossil share 40.0% -> residual 0.580 kgCO2/kWh."
+      },
+      "primary_data_flag": "secondary",
+      "uncertainty_distribution": "normal",
+      "redistribution_class": "open",
+      "raw_record_ref": null,
+      "change_log": [],
+      "next_review_date": null,
+      "use_phase": null
+    },
+    {
+      "factor_id": "EF:JP:residual_mix:kyushu:fy2021:meti-fy2021-v1",
+      "fuel_type": "electricity",
+      "unit": "kWh",
+      "geography": "JP",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": "0.5581666666666667",
+        "CH4": "0.00020238095238095242",
+        "N2O": "0.00001037851037851038",
+        "HFCs": null,
+        "PFCs": null,
+        "SF6": null,
+        "NF3": null,
+        "biogenic_CO2": null
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273,
+        "HFCs_gwp": null,
+        "PFCs_gwp": null,
+        "SF6_gwp": null,
+        "NF3_gwp": null
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "Japan Ministry of Economy, Trade and Industry (METI) / Ministry of the Environment (MOEJ)",
+        "source_publication": "Electric Utility Emission Factors",
+        "source_year": 2022,
+        "methodology": "hybrid",
+        "source_url": "https://ghg-santeikohyo.env.go.jp/calc",
+        "source_doi": null,
+        "methodology_description": null,
+        "version": "v1",
+        "supersedes": null
+      },
+      "valid_from": "2021-04-01",
+      "uncertainty_95ci": 0.09,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 3,
+        "representativeness": 5,
+        "methodological": 4,
+        "weights": {
+          "temporal": 0.2,
+          "geographical": 0.2,
+          "technological": 0.2,
+          "representativeness": 0.2,
+          "methodological": 0.2
+        }
+      },
+      "license_info": {
+        "license": "Japan Government Open Data \u2014 public use with attribution",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true,
+        "license_url": null,
+        "license_text": null,
+        "restrictions": []
+      },
+      "region_hint": "Kyushu",
+      "gwp_20yr": null,
+      "valid_to": "2022-03-31",
+      "heating_value_basis": null,
+      "reference_temperature_c": null,
+      "pressure_bar": null,
+      "moisture_content_pct": null,
+      "ash_content_pct": null,
+      "biogenic_flag": false,
+      "compliance_frameworks": [
+        "GHG_Protocol_Scope2_MarketBased",
+        "TCFD",
+        "IFRS_S2",
+        "Japan_SSBJ"
+      ],
+      "created_at": "2026-04-23T23:56:52.805531",
+      "updated_at": "2026-04-23T23:56:52.805531",
+      "created_by": "greenlang_system",
+      "notes": null,
+      "tags": [
+        "meti",
+        "japan",
+        "residual_mix",
+        "kyushu",
+        "fy2021"
+      ],
+      "factor_status": "certified",
+      "source_id": "japan_meti_electric_emission_factors",
+      "source_release": "METI-FY2021-v1",
+      "source_record_id": "meti:Kyushu:FY2021",
+      "release_version": "METI-FY2021-v1",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "Electric Utility Emission Factors, Japan METI & MOEJ (annual).",
+        "alternates_considered": [
+          "EF:JP:residual_mix:hokkaido:fy2021:meti-fy2021-v1",
+          "EF:JP:residual_mix:tohoku:fy2021:meti-fy2021-v1",
+          "EF:JP:residual_mix:tokyo:fy2021:meti-fy2021-v1",
+          "EF:JP:residual_mix:chubu:fy2021:meti-fy2021-v1",
+          "EF:JP:residual_mix:kansai:fy2021:meti-fy2021-v1",
+          "EF:JP:residual_mix:hokuriku:fy2021:meti-fy2021-v1",
+          "EF:JP:residual_mix:chugoku:fy2021:meti-fy2021-v1",
+          "EF:JP:residual_mix:shikoku:fy2021:meti-fy2021-v1",
+          "EF:JP:residual_mix:okinawa:fy2021:meti-fy2021-v1"
+        ]
+      },
+      "replacement_factor_id": null,
+      "license_class": "open",
+      "activity_tags": [
+        "purchased_electricity",
+        "market_based",
+        "residual_mix"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "factor_family": "residual_mix",
+      "factor_name": "Japan METI residual mix \u2014 Kyushu FY2021",
+      "method_profile": "corporate_scope2_market_based",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "jurisdiction": {
+        "country": "JP",
+        "region": "Kyushu",
+        "grid_region": "Kyushu"
+      },
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "sub_category": "residual_mix",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ]
+      },
+      "parameters": {
+        "scope_applicability": [
+          "scope2"
+        ],
+        "electricity_basis": "residual_mix",
+        "residual_mix_applicable": true,
+        "supplier_specific": false,
+        "transmission_loss_included": false,
+        "biogenic_share": null,
+        "uncertainty_low": null,
+        "uncertainty_high": null
+      },
+      "verification": {
+        "status": "regulator_approved",
+        "verified_by": "Japan METI / MOEJ",
+        "verified_at": null,
+        "verification_reference": null
+      },
+      "explainability": {
+        "assumptions": [
+          "METI publishes Basic (\u57fa\u790e\u6392\u51fa\u4fc2\u6570) and Adjusted (\u8abf\u6574\u5f8c\u6392\u51fa\u4fc2\u6570) factors.  The residual mix is derived by netting non-fossil-certificate surrenders (J-Credit, Green Value Certification, Non-Fossil Value Trading System) from the Basic factor.",
+          "Non-fossil certificate share assumed = 0.340.",
+          "Formula: residual = basic_factor / (1 - non_fossil_share).",
+          "Adjusted factor reported by METI is UTILITY-level, not system-level; the residual here is system-wide so values will differ from the adjusted factor.",
+          "Gas speciation split uses IPCC 2006 defaults (CO2 98.5%, CH4 1.0%, N2O 0.5%).",
+          "Apply to Scope 2 market-based reporting when no supplier-specific contract or non-fossil certificate applies."
+        ],
+        "fallback_rank": 5,
+        "rationale": "Japan METI residual mix for Kyushu, FY2021. Basic factor 0.374 kgCO2/kWh, non-fossil share 34.0% -> residual 0.567 kgCO2/kWh."
+      },
+      "primary_data_flag": "secondary",
+      "uncertainty_distribution": "normal",
+      "redistribution_class": "open",
+      "raw_record_ref": null,
+      "change_log": [],
+      "next_review_date": null,
+      "use_phase": null
+    },
+    {
+      "factor_id": "EF:JP:residual_mix:hokuriku:fy2021:meti-fy2021-v1",
+      "fuel_type": "electricity",
+      "unit": "kWh",
+      "geography": "JP",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": "0.6285855263157893",
+        "CH4": "0.00022791353383458645",
+        "N2O": "0.000011687873529978793",
+        "HFCs": null,
+        "PFCs": null,
+        "SF6": null,
+        "NF3": null,
+        "biogenic_CO2": null
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273,
+        "HFCs_gwp": null,
+        "PFCs_gwp": null,
+        "SF6_gwp": null,
+        "NF3_gwp": null
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "Japan Ministry of Economy, Trade and Industry (METI) / Ministry of the Environment (MOEJ)",
+        "source_publication": "Electric Utility Emission Factors",
+        "source_year": 2022,
+        "methodology": "hybrid",
+        "source_url": "https://ghg-santeikohyo.env.go.jp/calc",
+        "source_doi": null,
+        "methodology_description": null,
+        "version": "v1",
+        "supersedes": null
+      },
+      "valid_from": "2021-04-01",
+      "uncertainty_95ci": 0.09,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 3,
+        "representativeness": 5,
+        "methodological": 4,
+        "weights": {
+          "temporal": 0.2,
+          "geographical": 0.2,
+          "technological": 0.2,
+          "representativeness": 0.2,
+          "methodological": 0.2
+        }
+      },
+      "license_info": {
+        "license": "Japan Government Open Data \u2014 public use with attribution",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true,
+        "license_url": null,
+        "license_text": null,
+        "restrictions": []
+      },
+      "region_hint": "Hokuriku",
+      "gwp_20yr": null,
+      "valid_to": "2022-03-31",
+      "heating_value_basis": null,
+      "reference_temperature_c": null,
+      "pressure_bar": null,
+      "moisture_content_pct": null,
+      "ash_content_pct": null,
+      "biogenic_flag": false,
+      "compliance_frameworks": [
+        "GHG_Protocol_Scope2_MarketBased",
+        "TCFD",
+        "IFRS_S2",
+        "Japan_SSBJ"
+      ],
+      "created_at": "2026-04-23T23:56:52.805531",
+      "updated_at": "2026-04-23T23:56:52.805531",
+      "created_by": "greenlang_system",
+      "notes": null,
+      "tags": [
+        "meti",
+        "japan",
+        "residual_mix",
+        "hokuriku",
+        "fy2021"
+      ],
+      "factor_status": "certified",
+      "source_id": "japan_meti_electric_emission_factors",
+      "source_release": "METI-FY2021-v1",
+      "source_record_id": "meti:Hokuriku:FY2021",
+      "release_version": "METI-FY2021-v1",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "Electric Utility Emission Factors, Japan METI & MOEJ (annual).",
+        "alternates_considered": [
+          "EF:JP:residual_mix:hokkaido:fy2021:meti-fy2021-v1",
+          "EF:JP:residual_mix:tohoku:fy2021:meti-fy2021-v1",
+          "EF:JP:residual_mix:tokyo:fy2021:meti-fy2021-v1",
+          "EF:JP:residual_mix:chubu:fy2021:meti-fy2021-v1",
+          "EF:JP:residual_mix:kansai:fy2021:meti-fy2021-v1",
+          "EF:JP:residual_mix:kyushu:fy2021:meti-fy2021-v1",
+          "EF:JP:residual_mix:chugoku:fy2021:meti-fy2021-v1",
+          "EF:JP:residual_mix:shikoku:fy2021:meti-fy2021-v1",
+          "EF:JP:residual_mix:okinawa:fy2021:meti-fy2021-v1"
+        ]
+      },
+      "replacement_factor_id": null,
+      "license_class": "open",
+      "activity_tags": [
+        "purchased_electricity",
+        "market_based",
+        "residual_mix"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "factor_family": "residual_mix",
+      "factor_name": "Japan METI residual mix \u2014 Hokuriku FY2021",
+      "method_profile": "corporate_scope2_market_based",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "jurisdiction": {
+        "country": "JP",
+        "region": "Hokuriku",
+        "grid_region": "Hokuriku"
+      },
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "sub_category": "residual_mix",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ]
+      },
+      "parameters": {
+        "scope_applicability": [
+          "scope2"
+        ],
+        "electricity_basis": "residual_mix",
+        "residual_mix_applicable": true,
+        "supplier_specific": false,
+        "transmission_loss_included": false,
+        "biogenic_share": null,
+        "uncertainty_low": null,
+        "uncertainty_high": null
+      },
+      "verification": {
+        "status": "regulator_approved",
+        "verified_by": "Japan METI / MOEJ",
+        "verified_at": null,
+        "verification_reference": null
+      },
+      "explainability": {
+        "assumptions": [
+          "METI publishes Basic (\u57fa\u790e\u6392\u51fa\u4fc2\u6570) and Adjusted (\u8abf\u6574\u5f8c\u6392\u51fa\u4fc2\u6570) factors.  The residual mix is derived by netting non-fossil-certificate surrenders (J-Credit, Green Value Certification, Non-Fossil Value Trading System) from the Basic factor.",
+          "Non-fossil certificate share assumed = 0.240.",
+          "Formula: residual = basic_factor / (1 - non_fossil_share).",
+          "Adjusted factor reported by METI is UTILITY-level, not system-level; the residual here is system-wide so values will differ from the adjusted factor.",
+          "Gas speciation split uses IPCC 2006 defaults (CO2 98.5%, CH4 1.0%, N2O 0.5%).",
+          "Apply to Scope 2 market-based reporting when no supplier-specific contract or non-fossil certificate applies."
+        ],
+        "fallback_rank": 5,
+        "rationale": "Japan METI residual mix for Hokuriku, FY2021. Basic factor 0.485 kgCO2/kWh, non-fossil share 24.0% -> residual 0.638 kgCO2/kWh."
+      },
+      "primary_data_flag": "secondary",
+      "uncertainty_distribution": "normal",
+      "redistribution_class": "open",
+      "raw_record_ref": null,
+      "change_log": [],
+      "next_review_date": null,
+      "use_phase": null
+    },
+    {
+      "factor_id": "EF:JP:residual_mix:chugoku:fy2021:meti-fy2021-v1",
+      "fuel_type": "electricity",
+      "unit": "kWh",
+      "geography": "JP",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": "0.6472857142857142",
+        "CH4": "0.00023469387755102041",
+        "N2O": "0.000012035583464154894",
+        "HFCs": null,
+        "PFCs": null,
+        "SF6": null,
+        "NF3": null,
+        "biogenic_CO2": null
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273,
+        "HFCs_gwp": null,
+        "PFCs_gwp": null,
+        "SF6_gwp": null,
+        "NF3_gwp": null
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "Japan Ministry of Economy, Trade and Industry (METI) / Ministry of the Environment (MOEJ)",
+        "source_publication": "Electric Utility Emission Factors",
+        "source_year": 2022,
+        "methodology": "hybrid",
+        "source_url": "https://ghg-santeikohyo.env.go.jp/calc",
+        "source_doi": null,
+        "methodology_description": null,
+        "version": "v1",
+        "supersedes": null
+      },
+      "valid_from": "2021-04-01",
+      "uncertainty_95ci": 0.09,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 3,
+        "representativeness": 5,
+        "methodological": 4,
+        "weights": {
+          "temporal": 0.2,
+          "geographical": 0.2,
+          "technological": 0.2,
+          "representativeness": 0.2,
+          "methodological": 0.2
+        }
+      },
+      "license_info": {
+        "license": "Japan Government Open Data \u2014 public use with attribution",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true,
+        "license_url": null,
+        "license_text": null,
+        "restrictions": []
+      },
+      "region_hint": "Chugoku",
+      "gwp_20yr": null,
+      "valid_to": "2022-03-31",
+      "heating_value_basis": null,
+      "reference_temperature_c": null,
+      "pressure_bar": null,
+      "moisture_content_pct": null,
+      "ash_content_pct": null,
+      "biogenic_flag": false,
+      "compliance_frameworks": [
+        "GHG_Protocol_Scope2_MarketBased",
+        "TCFD",
+        "IFRS_S2",
+        "Japan_SSBJ"
+      ],
+      "created_at": "2026-04-23T23:56:52.805531",
+      "updated_at": "2026-04-23T23:56:52.805531",
+      "created_by": "greenlang_system",
+      "notes": null,
+      "tags": [
+        "meti",
+        "japan",
+        "residual_mix",
+        "chugoku",
+        "fy2021"
+      ],
+      "factor_status": "certified",
+      "source_id": "japan_meti_electric_emission_factors",
+      "source_release": "METI-FY2021-v1",
+      "source_record_id": "meti:Chugoku:FY2021",
+      "release_version": "METI-FY2021-v1",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "Electric Utility Emission Factors, Japan METI & MOEJ (annual).",
+        "alternates_considered": [
+          "EF:JP:residual_mix:hokkaido:fy2021:meti-fy2021-v1",
+          "EF:JP:residual_mix:tohoku:fy2021:meti-fy2021-v1",
+          "EF:JP:residual_mix:tokyo:fy2021:meti-fy2021-v1",
+          "EF:JP:residual_mix:chubu:fy2021:meti-fy2021-v1",
+          "EF:JP:residual_mix:kansai:fy2021:meti-fy2021-v1",
+          "EF:JP:residual_mix:kyushu:fy2021:meti-fy2021-v1",
+          "EF:JP:residual_mix:hokuriku:fy2021:meti-fy2021-v1",
+          "EF:JP:residual_mix:shikoku:fy2021:meti-fy2021-v1",
+          "EF:JP:residual_mix:okinawa:fy2021:meti-fy2021-v1"
+        ]
+      },
+      "replacement_factor_id": null,
+      "license_class": "open",
+      "activity_tags": [
+        "purchased_electricity",
+        "market_based",
+        "residual_mix"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "factor_family": "residual_mix",
+      "factor_name": "Japan METI residual mix \u2014 Chugoku FY2021",
+      "method_profile": "corporate_scope2_market_based",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "jurisdiction": {
+        "country": "JP",
+        "region": "Chugoku",
+        "grid_region": "Chugoku"
+      },
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "sub_category": "residual_mix",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ]
+      },
+      "parameters": {
+        "scope_applicability": [
+          "scope2"
+        ],
+        "electricity_basis": "residual_mix",
+        "residual_mix_applicable": true,
+        "supplier_specific": false,
+        "transmission_loss_included": false,
+        "biogenic_share": null,
+        "uncertainty_low": null,
+        "uncertainty_high": null
+      },
+      "verification": {
+        "status": "regulator_approved",
+        "verified_by": "Japan METI / MOEJ",
+        "verified_at": null,
+        "verification_reference": null
+      },
+      "explainability": {
+        "assumptions": [
+          "METI publishes Basic (\u57fa\u790e\u6392\u51fa\u4fc2\u6570) and Adjusted (\u8abf\u6574\u5f8c\u6392\u51fa\u4fc2\u6570) factors.  The residual mix is derived by netting non-fossil-certificate surrenders (J-Credit, Green Value Certification, Non-Fossil Value Trading System) from the Basic factor.",
+          "Non-fossil certificate share assumed = 0.090.",
+          "Formula: residual = basic_factor / (1 - non_fossil_share).",
+          "Adjusted factor reported by METI is UTILITY-level, not system-level; the residual here is system-wide so values will differ from the adjusted factor.",
+          "Gas speciation split uses IPCC 2006 defaults (CO2 98.5%, CH4 1.0%, N2O 0.5%).",
+          "Apply to Scope 2 market-based reporting when no supplier-specific contract or non-fossil certificate applies."
+        ],
+        "fallback_rank": 5,
+        "rationale": "Japan METI residual mix for Chugoku, FY2021. Basic factor 0.598 kgCO2/kWh, non-fossil share 9.0% -> residual 0.657 kgCO2/kWh."
+      },
+      "primary_data_flag": "secondary",
+      "uncertainty_distribution": "normal",
+      "redistribution_class": "open",
+      "raw_record_ref": null,
+      "change_log": [],
+      "next_review_date": null,
+      "use_phase": null
+    },
+    {
+      "factor_id": "EF:JP:residual_mix:shikoku:fy2021:meti-fy2021-v1",
+      "fuel_type": "electricity",
+      "unit": "kWh",
+      "geography": "JP",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": "0.7141250000000001",
+        "CH4": "0.00025892857142857146",
+        "N2O": "0.000013278388278388281",
+        "HFCs": null,
+        "PFCs": null,
+        "SF6": null,
+        "NF3": null,
+        "biogenic_CO2": null
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273,
+        "HFCs_gwp": null,
+        "PFCs_gwp": null,
+        "SF6_gwp": null,
+        "NF3_gwp": null
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "Japan Ministry of Economy, Trade and Industry (METI) / Ministry of the Environment (MOEJ)",
+        "source_publication": "Electric Utility Emission Factors",
+        "source_year": 2022,
+        "methodology": "hybrid",
+        "source_url": "https://ghg-santeikohyo.env.go.jp/calc",
+        "source_doi": null,
+        "methodology_description": null,
+        "version": "v1",
+        "supersedes": null
+      },
+      "valid_from": "2021-04-01",
+      "uncertainty_95ci": 0.09,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 3,
+        "representativeness": 5,
+        "methodological": 4,
+        "weights": {
+          "temporal": 0.2,
+          "geographical": 0.2,
+          "technological": 0.2,
+          "representativeness": 0.2,
+          "methodological": 0.2
+        }
+      },
+      "license_info": {
+        "license": "Japan Government Open Data \u2014 public use with attribution",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true,
+        "license_url": null,
+        "license_text": null,
+        "restrictions": []
+      },
+      "region_hint": "Shikoku",
+      "gwp_20yr": null,
+      "valid_to": "2022-03-31",
+      "heating_value_basis": null,
+      "reference_temperature_c": null,
+      "pressure_bar": null,
+      "moisture_content_pct": null,
+      "ash_content_pct": null,
+      "biogenic_flag": false,
+      "compliance_frameworks": [
+        "GHG_Protocol_Scope2_MarketBased",
+        "TCFD",
+        "IFRS_S2",
+        "Japan_SSBJ"
+      ],
+      "created_at": "2026-04-23T23:56:52.806644",
+      "updated_at": "2026-04-23T23:56:52.806644",
+      "created_by": "greenlang_system",
+      "notes": null,
+      "tags": [
+        "meti",
+        "japan",
+        "residual_mix",
+        "shikoku",
+        "fy2021"
+      ],
+      "factor_status": "certified",
+      "source_id": "japan_meti_electric_emission_factors",
+      "source_release": "METI-FY2021-v1",
+      "source_record_id": "meti:Shikoku:FY2021",
+      "release_version": "METI-FY2021-v1",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "Electric Utility Emission Factors, Japan METI & MOEJ (annual).",
+        "alternates_considered": [
+          "EF:JP:residual_mix:hokkaido:fy2021:meti-fy2021-v1",
+          "EF:JP:residual_mix:tohoku:fy2021:meti-fy2021-v1",
+          "EF:JP:residual_mix:tokyo:fy2021:meti-fy2021-v1",
+          "EF:JP:residual_mix:chubu:fy2021:meti-fy2021-v1",
+          "EF:JP:residual_mix:kansai:fy2021:meti-fy2021-v1",
+          "EF:JP:residual_mix:kyushu:fy2021:meti-fy2021-v1",
+          "EF:JP:residual_mix:hokuriku:fy2021:meti-fy2021-v1",
+          "EF:JP:residual_mix:chugoku:fy2021:meti-fy2021-v1",
+          "EF:JP:residual_mix:okinawa:fy2021:meti-fy2021-v1"
+        ]
+      },
+      "replacement_factor_id": null,
+      "license_class": "open",
+      "activity_tags": [
+        "purchased_electricity",
+        "market_based",
+        "residual_mix"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "factor_family": "residual_mix",
+      "factor_name": "Japan METI residual mix \u2014 Shikoku FY2021",
+      "method_profile": "corporate_scope2_market_based",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "jurisdiction": {
+        "country": "JP",
+        "region": "Shikoku",
+        "grid_region": "Shikoku"
+      },
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "sub_category": "residual_mix",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ]
+      },
+      "parameters": {
+        "scope_applicability": [
+          "scope2"
+        ],
+        "electricity_basis": "residual_mix",
+        "residual_mix_applicable": true,
+        "supplier_specific": false,
+        "transmission_loss_included": false,
+        "biogenic_share": null,
+        "uncertainty_low": null,
+        "uncertainty_high": null
+      },
+      "verification": {
+        "status": "regulator_approved",
+        "verified_by": "Japan METI / MOEJ",
+        "verified_at": null,
+        "verification_reference": null
+      },
+      "explainability": {
+        "assumptions": [
+          "METI publishes Basic (\u57fa\u790e\u6392\u51fa\u4fc2\u6570) and Adjusted (\u8abf\u6574\u5f8c\u6392\u51fa\u4fc2\u6570) factors.  The residual mix is derived by netting non-fossil-certificate surrenders (J-Credit, Green Value Certification, Non-Fossil Value Trading System) from the Basic factor.",
+          "Non-fossil certificate share assumed = 0.280.",
+          "Formula: residual = basic_factor / (1 - non_fossil_share).",
+          "Adjusted factor reported by METI is UTILITY-level, not system-level; the residual here is system-wide so values will differ from the adjusted factor.",
+          "Gas speciation split uses IPCC 2006 defaults (CO2 98.5%, CH4 1.0%, N2O 0.5%).",
+          "Apply to Scope 2 market-based reporting when no supplier-specific contract or non-fossil certificate applies."
+        ],
+        "fallback_rank": 5,
+        "rationale": "Japan METI residual mix for Shikoku, FY2021. Basic factor 0.522 kgCO2/kWh, non-fossil share 28.0% -> residual 0.725 kgCO2/kWh."
+      },
+      "primary_data_flag": "secondary",
+      "uncertainty_distribution": "normal",
+      "redistribution_class": "open",
+      "raw_record_ref": null,
+      "change_log": [],
+      "next_review_date": null,
+      "use_phase": null
+    },
+    {
+      "factor_id": "EF:JP:residual_mix:okinawa:fy2021:meti-fy2021-v1",
+      "fuel_type": "electricity",
+      "unit": "kWh",
+      "geography": "JP",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": "0.7156326530612244",
+        "CH4": "0.0002594752186588921",
+        "N2O": "0.000013306421469686775",
+        "HFCs": null,
+        "PFCs": null,
+        "SF6": null,
+        "NF3": null,
+        "biogenic_CO2": null
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273,
+        "HFCs_gwp": null,
+        "PFCs_gwp": null,
+        "SF6_gwp": null,
+        "NF3_gwp": null
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "Japan Ministry of Economy, Trade and Industry (METI) / Ministry of the Environment (MOEJ)",
+        "source_publication": "Electric Utility Emission Factors",
+        "source_year": 2022,
+        "methodology": "hybrid",
+        "source_url": "https://ghg-santeikohyo.env.go.jp/calc",
+        "source_doi": null,
+        "methodology_description": null,
+        "version": "v1",
+        "supersedes": null
+      },
+      "valid_from": "2021-04-01",
+      "uncertainty_95ci": 0.09,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 3,
+        "representativeness": 5,
+        "methodological": 4,
+        "weights": {
+          "temporal": 0.2,
+          "geographical": 0.2,
+          "technological": 0.2,
+          "representativeness": 0.2,
+          "methodological": 0.2
+        }
+      },
+      "license_info": {
+        "license": "Japan Government Open Data \u2014 public use with attribution",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true,
+        "license_url": null,
+        "license_text": null,
+        "restrictions": []
+      },
+      "region_hint": "Okinawa",
+      "gwp_20yr": null,
+      "valid_to": "2022-03-31",
+      "heating_value_basis": null,
+      "reference_temperature_c": null,
+      "pressure_bar": null,
+      "moisture_content_pct": null,
+      "ash_content_pct": null,
+      "biogenic_flag": false,
+      "compliance_frameworks": [
+        "GHG_Protocol_Scope2_MarketBased",
+        "TCFD",
+        "IFRS_S2",
+        "Japan_SSBJ"
+      ],
+      "created_at": "2026-04-23T23:56:52.806644",
+      "updated_at": "2026-04-23T23:56:52.806644",
+      "created_by": "greenlang_system",
+      "notes": null,
+      "tags": [
+        "meti",
+        "japan",
+        "residual_mix",
+        "okinawa",
+        "fy2021"
+      ],
+      "factor_status": "certified",
+      "source_id": "japan_meti_electric_emission_factors",
+      "source_release": "METI-FY2021-v1",
+      "source_record_id": "meti:Okinawa:FY2021",
+      "release_version": "METI-FY2021-v1",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "Electric Utility Emission Factors, Japan METI & MOEJ (annual).",
+        "alternates_considered": [
+          "EF:JP:residual_mix:hokkaido:fy2021:meti-fy2021-v1",
+          "EF:JP:residual_mix:tohoku:fy2021:meti-fy2021-v1",
+          "EF:JP:residual_mix:tokyo:fy2021:meti-fy2021-v1",
+          "EF:JP:residual_mix:chubu:fy2021:meti-fy2021-v1",
+          "EF:JP:residual_mix:kansai:fy2021:meti-fy2021-v1",
+          "EF:JP:residual_mix:kyushu:fy2021:meti-fy2021-v1",
+          "EF:JP:residual_mix:hokuriku:fy2021:meti-fy2021-v1",
+          "EF:JP:residual_mix:chugoku:fy2021:meti-fy2021-v1",
+          "EF:JP:residual_mix:shikoku:fy2021:meti-fy2021-v1"
+        ]
+      },
+      "replacement_factor_id": null,
+      "license_class": "open",
+      "activity_tags": [
+        "purchased_electricity",
+        "market_based",
+        "residual_mix"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "factor_family": "residual_mix",
+      "factor_name": "Japan METI residual mix \u2014 Okinawa FY2021",
+      "method_profile": "corporate_scope2_market_based",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "jurisdiction": {
+        "country": "JP",
+        "region": "Okinawa",
+        "grid_region": "Okinawa"
+      },
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "sub_category": "residual_mix",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ]
+      },
+      "parameters": {
+        "scope_applicability": [
+          "scope2"
+        ],
+        "electricity_basis": "residual_mix",
+        "residual_mix_applicable": true,
+        "supplier_specific": false,
+        "transmission_loss_included": false,
+        "biogenic_share": null,
+        "uncertainty_low": null,
+        "uncertainty_high": null
+      },
+      "verification": {
+        "status": "regulator_approved",
+        "verified_by": "Japan METI / MOEJ",
+        "verified_at": null,
+        "verification_reference": null
+      },
+      "explainability": {
+        "assumptions": [
+          "METI publishes Basic (\u57fa\u790e\u6392\u51fa\u4fc2\u6570) and Adjusted (\u8abf\u6574\u5f8c\u6392\u51fa\u4fc2\u6570) factors.  The residual mix is derived by netting non-fossil-certificate surrenders (J-Credit, Green Value Certification, Non-Fossil Value Trading System) from the Basic factor.",
+          "Non-fossil certificate share assumed = 0.020.",
+          "Formula: residual = basic_factor / (1 - non_fossil_share).",
+          "Adjusted factor reported by METI is UTILITY-level, not system-level; the residual here is system-wide so values will differ from the adjusted factor.",
+          "Gas speciation split uses IPCC 2006 defaults (CO2 98.5%, CH4 1.0%, N2O 0.5%).",
+          "Apply to Scope 2 market-based reporting when no supplier-specific contract or non-fossil certificate applies."
+        ],
+        "fallback_rank": 5,
+        "rationale": "Japan METI residual mix for Okinawa, FY2021. Basic factor 0.712 kgCO2/kWh, non-fossil share 2.0% -> residual 0.727 kgCO2/kWh."
+      },
+      "primary_data_flag": "secondary",
+      "uncertainty_distribution": "normal",
+      "redistribution_class": "open",
+      "raw_record_ref": null,
+      "change_log": [],
+      "next_review_date": null,
+      "use_phase": null
+    },
+    {
+      "factor_id": "EF:JP:residual_mix:hokkaido:fy2020:meti-fy2020-v1",
+      "fuel_type": "electricity",
+      "unit": "kWh",
+      "geography": "JP",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": "0.6517765957446808",
+        "CH4": "0.00023632218844984806",
+        "N2O": "0.000012119086587171695",
+        "HFCs": null,
+        "PFCs": null,
+        "SF6": null,
+        "NF3": null,
+        "biogenic_CO2": null
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273,
+        "HFCs_gwp": null,
+        "PFCs_gwp": null,
+        "SF6_gwp": null,
+        "NF3_gwp": null
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "Japan Ministry of Economy, Trade and Industry (METI) / Ministry of the Environment (MOEJ)",
+        "source_publication": "Electric Utility Emission Factors",
+        "source_year": 2021,
+        "methodology": "hybrid",
+        "source_url": "https://ghg-santeikohyo.env.go.jp/calc",
+        "source_doi": null,
+        "methodology_description": null,
+        "version": "v1",
+        "supersedes": null
+      },
+      "valid_from": "2020-04-01",
+      "uncertainty_95ci": 0.09,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 3,
+        "representativeness": 5,
+        "methodological": 4,
+        "weights": {
+          "temporal": 0.2,
+          "geographical": 0.2,
+          "technological": 0.2,
+          "representativeness": 0.2,
+          "methodological": 0.2
+        }
+      },
+      "license_info": {
+        "license": "Japan Government Open Data \u2014 public use with attribution",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true,
+        "license_url": null,
+        "license_text": null,
+        "restrictions": []
+      },
+      "region_hint": "Hokkaido",
+      "gwp_20yr": null,
+      "valid_to": "2021-03-31",
+      "heating_value_basis": null,
+      "reference_temperature_c": null,
+      "pressure_bar": null,
+      "moisture_content_pct": null,
+      "ash_content_pct": null,
+      "biogenic_flag": false,
+      "compliance_frameworks": [
+        "GHG_Protocol_Scope2_MarketBased",
+        "TCFD",
+        "IFRS_S2",
+        "Japan_SSBJ"
+      ],
+      "created_at": "2026-04-23T23:56:52.806644",
+      "updated_at": "2026-04-23T23:56:52.806644",
+      "created_by": "greenlang_system",
+      "notes": null,
+      "tags": [
+        "meti",
+        "japan",
+        "residual_mix",
+        "hokkaido",
+        "fy2020"
+      ],
+      "factor_status": "certified",
+      "source_id": "japan_meti_electric_emission_factors",
+      "source_release": "METI-FY2020-v1",
+      "source_record_id": "meti:Hokkaido:FY2020",
+      "release_version": "METI-FY2020-v1",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "Electric Utility Emission Factors, Japan METI & MOEJ (annual).",
+        "alternates_considered": [
+          "EF:JP:residual_mix:tohoku:fy2020:meti-fy2020-v1",
+          "EF:JP:residual_mix:tokyo:fy2020:meti-fy2020-v1",
+          "EF:JP:residual_mix:chubu:fy2020:meti-fy2020-v1",
+          "EF:JP:residual_mix:kansai:fy2020:meti-fy2020-v1",
+          "EF:JP:residual_mix:chugoku:fy2020:meti-fy2020-v1",
+          "EF:JP:residual_mix:kyushu:fy2020:meti-fy2020-v1"
+        ]
+      },
+      "replacement_factor_id": null,
+      "license_class": "open",
+      "activity_tags": [
+        "purchased_electricity",
+        "market_based",
+        "residual_mix"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "factor_family": "residual_mix",
+      "factor_name": "Japan METI residual mix \u2014 Hokkaido FY2020",
+      "method_profile": "corporate_scope2_market_based",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "jurisdiction": {
+        "country": "JP",
+        "region": "Hokkaido",
+        "grid_region": "Hokkaido"
+      },
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "sub_category": "residual_mix",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ]
+      },
+      "parameters": {
+        "scope_applicability": [
+          "scope2"
+        ],
+        "electricity_basis": "residual_mix",
+        "residual_mix_applicable": true,
+        "supplier_specific": false,
+        "transmission_loss_included": false,
+        "biogenic_share": null,
+        "uncertainty_low": null,
+        "uncertainty_high": null
+      },
+      "verification": {
+        "status": "regulator_approved",
+        "verified_by": "Japan METI / MOEJ",
+        "verified_at": null,
+        "verification_reference": null
+      },
+      "explainability": {
+        "assumptions": [
+          "METI publishes Basic (\u57fa\u790e\u6392\u51fa\u4fc2\u6570) and Adjusted (\u8abf\u6574\u5f8c\u6392\u51fa\u4fc2\u6570) factors.  The residual mix is derived by netting non-fossil-certificate surrenders (J-Credit, Green Value Certification, Non-Fossil Value Trading System) from the Basic factor.",
+          "Non-fossil certificate share assumed = 0.060.",
+          "Formula: residual = basic_factor / (1 - non_fossil_share).",
+          "Adjusted factor reported by METI is UTILITY-level, not system-level; the residual here is system-wide so values will differ from the adjusted factor.",
+          "Gas speciation split uses IPCC 2006 defaults (CO2 98.5%, CH4 1.0%, N2O 0.5%).",
+          "Apply to Scope 2 market-based reporting when no supplier-specific contract or non-fossil certificate applies."
+        ],
+        "fallback_rank": 5,
+        "rationale": "Japan METI residual mix for Hokkaido, FY2020. Basic factor 0.622 kgCO2/kWh, non-fossil share 6.0% -> residual 0.662 kgCO2/kWh."
+      },
+      "primary_data_flag": "secondary",
+      "uncertainty_distribution": "normal",
+      "redistribution_class": "open",
+      "raw_record_ref": null,
+      "change_log": [],
+      "next_review_date": null,
+      "use_phase": null
+    },
+    {
+      "factor_id": "EF:JP:residual_mix:tohoku:fy2020:meti-fy2020-v1",
+      "fuel_type": "electricity",
+      "unit": "kWh",
+      "geography": "JP",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": "0.5389831460674157",
+        "CH4": "0.00019542536115569822",
+        "N2O": "0.00001002181339259991",
+        "HFCs": null,
+        "PFCs": null,
+        "SF6": null,
+        "NF3": null,
+        "biogenic_CO2": null
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273,
+        "HFCs_gwp": null,
+        "PFCs_gwp": null,
+        "SF6_gwp": null,
+        "NF3_gwp": null
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "Japan Ministry of Economy, Trade and Industry (METI) / Ministry of the Environment (MOEJ)",
+        "source_publication": "Electric Utility Emission Factors",
+        "source_year": 2021,
+        "methodology": "hybrid",
+        "source_url": "https://ghg-santeikohyo.env.go.jp/calc",
+        "source_doi": null,
+        "methodology_description": null,
+        "version": "v1",
+        "supersedes": null
+      },
+      "valid_from": "2020-04-01",
+      "uncertainty_95ci": 0.09,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 3,
+        "representativeness": 5,
+        "methodological": 4,
+        "weights": {
+          "temporal": 0.2,
+          "geographical": 0.2,
+          "technological": 0.2,
+          "representativeness": 0.2,
+          "methodological": 0.2
+        }
+      },
+      "license_info": {
+        "license": "Japan Government Open Data \u2014 public use with attribution",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true,
+        "license_url": null,
+        "license_text": null,
+        "restrictions": []
+      },
+      "region_hint": "Tohoku",
+      "gwp_20yr": null,
+      "valid_to": "2021-03-31",
+      "heating_value_basis": null,
+      "reference_temperature_c": null,
+      "pressure_bar": null,
+      "moisture_content_pct": null,
+      "ash_content_pct": null,
+      "biogenic_flag": false,
+      "compliance_frameworks": [
+        "GHG_Protocol_Scope2_MarketBased",
+        "TCFD",
+        "IFRS_S2",
+        "Japan_SSBJ"
+      ],
+      "created_at": "2026-04-23T23:56:52.806644",
+      "updated_at": "2026-04-23T23:56:52.806644",
+      "created_by": "greenlang_system",
+      "notes": null,
+      "tags": [
+        "meti",
+        "japan",
+        "residual_mix",
+        "tohoku",
+        "fy2020"
+      ],
+      "factor_status": "certified",
+      "source_id": "japan_meti_electric_emission_factors",
+      "source_release": "METI-FY2020-v1",
+      "source_record_id": "meti:Tohoku:FY2020",
+      "release_version": "METI-FY2020-v1",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "Electric Utility Emission Factors, Japan METI & MOEJ (annual).",
+        "alternates_considered": [
+          "EF:JP:residual_mix:hokkaido:fy2020:meti-fy2020-v1",
+          "EF:JP:residual_mix:tokyo:fy2020:meti-fy2020-v1",
+          "EF:JP:residual_mix:chubu:fy2020:meti-fy2020-v1",
+          "EF:JP:residual_mix:kansai:fy2020:meti-fy2020-v1",
+          "EF:JP:residual_mix:chugoku:fy2020:meti-fy2020-v1",
+          "EF:JP:residual_mix:kyushu:fy2020:meti-fy2020-v1"
+        ]
+      },
+      "replacement_factor_id": null,
+      "license_class": "open",
+      "activity_tags": [
+        "purchased_electricity",
+        "market_based",
+        "residual_mix"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "factor_family": "residual_mix",
+      "factor_name": "Japan METI residual mix \u2014 Tohoku FY2020",
+      "method_profile": "corporate_scope2_market_based",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "jurisdiction": {
+        "country": "JP",
+        "region": "Tohoku",
+        "grid_region": "Tohoku"
+      },
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "sub_category": "residual_mix",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ]
+      },
+      "parameters": {
+        "scope_applicability": [
+          "scope2"
+        ],
+        "electricity_basis": "residual_mix",
+        "residual_mix_applicable": true,
+        "supplier_specific": false,
+        "transmission_loss_included": false,
+        "biogenic_share": null,
+        "uncertainty_low": null,
+        "uncertainty_high": null
+      },
+      "verification": {
+        "status": "regulator_approved",
+        "verified_by": "Japan METI / MOEJ",
+        "verified_at": null,
+        "verification_reference": null
+      },
+      "explainability": {
+        "assumptions": [
+          "METI publishes Basic (\u57fa\u790e\u6392\u51fa\u4fc2\u6570) and Adjusted (\u8abf\u6574\u5f8c\u6392\u51fa\u4fc2\u6570) factors.  The residual mix is derived by netting non-fossil-certificate surrenders (J-Credit, Green Value Certification, Non-Fossil Value Trading System) from the Basic factor.",
+          "Non-fossil certificate share assumed = 0.110.",
+          "Formula: residual = basic_factor / (1 - non_fossil_share).",
+          "Adjusted factor reported by METI is UTILITY-level, not system-level; the residual here is system-wide so values will differ from the adjusted factor.",
+          "Gas speciation split uses IPCC 2006 defaults (CO2 98.5%, CH4 1.0%, N2O 0.5%).",
+          "Apply to Scope 2 market-based reporting when no supplier-specific contract or non-fossil certificate applies."
+        ],
+        "fallback_rank": 5,
+        "rationale": "Japan METI residual mix for Tohoku, FY2020. Basic factor 0.487 kgCO2/kWh, non-fossil share 11.0% -> residual 0.547 kgCO2/kWh."
+      },
+      "primary_data_flag": "secondary",
+      "uncertainty_distribution": "normal",
+      "redistribution_class": "open",
+      "raw_record_ref": null,
+      "change_log": [],
+      "next_review_date": null,
+      "use_phase": null
+    },
+    {
+      "factor_id": "EF:JP:residual_mix:tokyo:fy2020:meti-fy2020-v1",
+      "fuel_type": "electricity",
+      "unit": "kWh",
+      "geography": "JP",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": "0.5360232558139535",
+        "CH4": "0.00019435215946843855",
+        "N2O": "0.000009966777408637874",
+        "HFCs": null,
+        "PFCs": null,
+        "SF6": null,
+        "NF3": null,
+        "biogenic_CO2": null
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273,
+        "HFCs_gwp": null,
+        "PFCs_gwp": null,
+        "SF6_gwp": null,
+        "NF3_gwp": null
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "Japan Ministry of Economy, Trade and Industry (METI) / Ministry of the Environment (MOEJ)",
+        "source_publication": "Electric Utility Emission Factors",
+        "source_year": 2021,
+        "methodology": "hybrid",
+        "source_url": "https://ghg-santeikohyo.env.go.jp/calc",
+        "source_doi": null,
+        "methodology_description": null,
+        "version": "v1",
+        "supersedes": null
+      },
+      "valid_from": "2020-04-01",
+      "uncertainty_95ci": 0.09,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 3,
+        "representativeness": 5,
+        "methodological": 4,
+        "weights": {
+          "temporal": 0.2,
+          "geographical": 0.2,
+          "technological": 0.2,
+          "representativeness": 0.2,
+          "methodological": 0.2
+        }
+      },
+      "license_info": {
+        "license": "Japan Government Open Data \u2014 public use with attribution",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true,
+        "license_url": null,
+        "license_text": null,
+        "restrictions": []
+      },
+      "region_hint": "Tokyo",
+      "gwp_20yr": null,
+      "valid_to": "2021-03-31",
+      "heating_value_basis": null,
+      "reference_temperature_c": null,
+      "pressure_bar": null,
+      "moisture_content_pct": null,
+      "ash_content_pct": null,
+      "biogenic_flag": false,
+      "compliance_frameworks": [
+        "GHG_Protocol_Scope2_MarketBased",
+        "TCFD",
+        "IFRS_S2",
+        "Japan_SSBJ"
+      ],
+      "created_at": "2026-04-23T23:56:52.807615",
+      "updated_at": "2026-04-23T23:56:52.807615",
+      "created_by": "greenlang_system",
+      "notes": null,
+      "tags": [
+        "meti",
+        "japan",
+        "residual_mix",
+        "tokyo",
+        "fy2020"
+      ],
+      "factor_status": "certified",
+      "source_id": "japan_meti_electric_emission_factors",
+      "source_release": "METI-FY2020-v1",
+      "source_record_id": "meti:Tokyo:FY2020",
+      "release_version": "METI-FY2020-v1",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "Electric Utility Emission Factors, Japan METI & MOEJ (annual).",
+        "alternates_considered": [
+          "EF:JP:residual_mix:hokkaido:fy2020:meti-fy2020-v1",
+          "EF:JP:residual_mix:tohoku:fy2020:meti-fy2020-v1",
+          "EF:JP:residual_mix:chubu:fy2020:meti-fy2020-v1",
+          "EF:JP:residual_mix:kansai:fy2020:meti-fy2020-v1",
+          "EF:JP:residual_mix:chugoku:fy2020:meti-fy2020-v1",
+          "EF:JP:residual_mix:kyushu:fy2020:meti-fy2020-v1"
+        ]
+      },
+      "replacement_factor_id": null,
+      "license_class": "open",
+      "activity_tags": [
+        "purchased_electricity",
+        "market_based",
+        "residual_mix"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "factor_family": "residual_mix",
+      "factor_name": "Japan METI residual mix \u2014 Tokyo FY2020",
+      "method_profile": "corporate_scope2_market_based",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "jurisdiction": {
+        "country": "JP",
+        "region": "Tokyo",
+        "grid_region": "Tokyo"
+      },
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "sub_category": "residual_mix",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ]
+      },
+      "parameters": {
+        "scope_applicability": [
+          "scope2"
+        ],
+        "electricity_basis": "residual_mix",
+        "residual_mix_applicable": true,
+        "supplier_specific": false,
+        "transmission_loss_included": false,
+        "biogenic_share": null,
+        "uncertainty_low": null,
+        "uncertainty_high": null
+      },
+      "verification": {
+        "status": "regulator_approved",
+        "verified_by": "Japan METI / MOEJ",
+        "verified_at": null,
+        "verification_reference": null
+      },
+      "explainability": {
+        "assumptions": [
+          "METI publishes Basic (\u57fa\u790e\u6392\u51fa\u4fc2\u6570) and Adjusted (\u8abf\u6574\u5f8c\u6392\u51fa\u4fc2\u6570) factors.  The residual mix is derived by netting non-fossil-certificate surrenders (J-Credit, Green Value Certification, Non-Fossil Value Trading System) from the Basic factor.",
+          "Non-fossil certificate share assumed = 0.140.",
+          "Formula: residual = basic_factor / (1 - non_fossil_share).",
+          "Adjusted factor reported by METI is UTILITY-level, not system-level; the residual here is system-wide so values will differ from the adjusted factor.",
+          "Gas speciation split uses IPCC 2006 defaults (CO2 98.5%, CH4 1.0%, N2O 0.5%).",
+          "Apply to Scope 2 market-based reporting when no supplier-specific contract or non-fossil certificate applies."
+        ],
+        "fallback_rank": 5,
+        "rationale": "Japan METI residual mix for Tokyo, FY2020. Basic factor 0.468 kgCO2/kWh, non-fossil share 14.0% -> residual 0.544 kgCO2/kWh."
+      },
+      "primary_data_flag": "secondary",
+      "uncertainty_distribution": "normal",
+      "redistribution_class": "open",
+      "raw_record_ref": null,
+      "change_log": [],
+      "next_review_date": null,
+      "use_phase": null
+    },
+    {
+      "factor_id": "EF:JP:residual_mix:chubu:fy2020:meti-fy2020-v1",
+      "fuel_type": "electricity",
+      "unit": "kWh",
+      "geography": "JP",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": "0.5549634146341463",
+        "CH4": "0.00020121951219512194",
+        "N2O": "0.000010318949343339587",
+        "HFCs": null,
+        "PFCs": null,
+        "SF6": null,
+        "NF3": null,
+        "biogenic_CO2": null
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273,
+        "HFCs_gwp": null,
+        "PFCs_gwp": null,
+        "SF6_gwp": null,
+        "NF3_gwp": null
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "Japan Ministry of Economy, Trade and Industry (METI) / Ministry of the Environment (MOEJ)",
+        "source_publication": "Electric Utility Emission Factors",
+        "source_year": 2021,
+        "methodology": "hybrid",
+        "source_url": "https://ghg-santeikohyo.env.go.jp/calc",
+        "source_doi": null,
+        "methodology_description": null,
+        "version": "v1",
+        "supersedes": null
+      },
+      "valid_from": "2020-04-01",
+      "uncertainty_95ci": 0.09,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 3,
+        "representativeness": 5,
+        "methodological": 4,
+        "weights": {
+          "temporal": 0.2,
+          "geographical": 0.2,
+          "technological": 0.2,
+          "representativeness": 0.2,
+          "methodological": 0.2
+        }
+      },
+      "license_info": {
+        "license": "Japan Government Open Data \u2014 public use with attribution",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true,
+        "license_url": null,
+        "license_text": null,
+        "restrictions": []
+      },
+      "region_hint": "Chubu",
+      "gwp_20yr": null,
+      "valid_to": "2021-03-31",
+      "heating_value_basis": null,
+      "reference_temperature_c": null,
+      "pressure_bar": null,
+      "moisture_content_pct": null,
+      "ash_content_pct": null,
+      "biogenic_flag": false,
+      "compliance_frameworks": [
+        "GHG_Protocol_Scope2_MarketBased",
+        "TCFD",
+        "IFRS_S2",
+        "Japan_SSBJ"
+      ],
+      "created_at": "2026-04-23T23:56:52.807615",
+      "updated_at": "2026-04-23T23:56:52.807615",
+      "created_by": "greenlang_system",
+      "notes": null,
+      "tags": [
+        "meti",
+        "japan",
+        "residual_mix",
+        "chubu",
+        "fy2020"
+      ],
+      "factor_status": "certified",
+      "source_id": "japan_meti_electric_emission_factors",
+      "source_release": "METI-FY2020-v1",
+      "source_record_id": "meti:Chubu:FY2020",
+      "release_version": "METI-FY2020-v1",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "Electric Utility Emission Factors, Japan METI & MOEJ (annual).",
+        "alternates_considered": [
+          "EF:JP:residual_mix:hokkaido:fy2020:meti-fy2020-v1",
+          "EF:JP:residual_mix:tohoku:fy2020:meti-fy2020-v1",
+          "EF:JP:residual_mix:tokyo:fy2020:meti-fy2020-v1",
+          "EF:JP:residual_mix:kansai:fy2020:meti-fy2020-v1",
+          "EF:JP:residual_mix:chugoku:fy2020:meti-fy2020-v1",
+          "EF:JP:residual_mix:kyushu:fy2020:meti-fy2020-v1"
+        ]
+      },
+      "replacement_factor_id": null,
+      "license_class": "open",
+      "activity_tags": [
+        "purchased_electricity",
+        "market_based",
+        "residual_mix"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "factor_family": "residual_mix",
+      "factor_name": "Japan METI residual mix \u2014 Chubu FY2020",
+      "method_profile": "corporate_scope2_market_based",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "jurisdiction": {
+        "country": "JP",
+        "region": "Chubu",
+        "grid_region": "Chubu"
+      },
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "sub_category": "residual_mix",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ]
+      },
+      "parameters": {
+        "scope_applicability": [
+          "scope2"
+        ],
+        "electricity_basis": "residual_mix",
+        "residual_mix_applicable": true,
+        "supplier_specific": false,
+        "transmission_loss_included": false,
+        "biogenic_share": null,
+        "uncertainty_low": null,
+        "uncertainty_high": null
+      },
+      "verification": {
+        "status": "regulator_approved",
+        "verified_by": "Japan METI / MOEJ",
+        "verified_at": null,
+        "verification_reference": null
+      },
+      "explainability": {
+        "assumptions": [
+          "METI publishes Basic (\u57fa\u790e\u6392\u51fa\u4fc2\u6570) and Adjusted (\u8abf\u6574\u5f8c\u6392\u51fa\u4fc2\u6570) factors.  The residual mix is derived by netting non-fossil-certificate surrenders (J-Credit, Green Value Certification, Non-Fossil Value Trading System) from the Basic factor.",
+          "Non-fossil certificate share assumed = 0.180.",
+          "Formula: residual = basic_factor / (1 - non_fossil_share).",
+          "Adjusted factor reported by METI is UTILITY-level, not system-level; the residual here is system-wide so values will differ from the adjusted factor.",
+          "Gas speciation split uses IPCC 2006 defaults (CO2 98.5%, CH4 1.0%, N2O 0.5%).",
+          "Apply to Scope 2 market-based reporting when no supplier-specific contract or non-fossil certificate applies."
+        ],
+        "fallback_rank": 5,
+        "rationale": "Japan METI residual mix for Chubu, FY2020. Basic factor 0.462 kgCO2/kWh, non-fossil share 18.0% -> residual 0.563 kgCO2/kWh."
+      },
+      "primary_data_flag": "secondary",
+      "uncertainty_distribution": "normal",
+      "redistribution_class": "open",
+      "raw_record_ref": null,
+      "change_log": [],
+      "next_review_date": null,
+      "use_phase": null
+    },
+    {
+      "factor_id": "EF:JP:residual_mix:kansai:fy2020:meti-fy2020-v1",
+      "fuel_type": "electricity",
+      "unit": "kWh",
+      "geography": "JP",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": "0.5751129032258064",
+        "CH4": "0.00020852534562211983",
+        "N2O": "0.000010693607467801016",
+        "HFCs": null,
+        "PFCs": null,
+        "SF6": null,
+        "NF3": null,
+        "biogenic_CO2": null
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273,
+        "HFCs_gwp": null,
+        "PFCs_gwp": null,
+        "SF6_gwp": null,
+        "NF3_gwp": null
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "Japan Ministry of Economy, Trade and Industry (METI) / Ministry of the Environment (MOEJ)",
+        "source_publication": "Electric Utility Emission Factors",
+        "source_year": 2021,
+        "methodology": "hybrid",
+        "source_url": "https://ghg-santeikohyo.env.go.jp/calc",
+        "source_doi": null,
+        "methodology_description": null,
+        "version": "v1",
+        "supersedes": null
+      },
+      "valid_from": "2020-04-01",
+      "uncertainty_95ci": 0.09,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 3,
+        "representativeness": 5,
+        "methodological": 4,
+        "weights": {
+          "temporal": 0.2,
+          "geographical": 0.2,
+          "technological": 0.2,
+          "representativeness": 0.2,
+          "methodological": 0.2
+        }
+      },
+      "license_info": {
+        "license": "Japan Government Open Data \u2014 public use with attribution",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true,
+        "license_url": null,
+        "license_text": null,
+        "restrictions": []
+      },
+      "region_hint": "Kansai",
+      "gwp_20yr": null,
+      "valid_to": "2021-03-31",
+      "heating_value_basis": null,
+      "reference_temperature_c": null,
+      "pressure_bar": null,
+      "moisture_content_pct": null,
+      "ash_content_pct": null,
+      "biogenic_flag": false,
+      "compliance_frameworks": [
+        "GHG_Protocol_Scope2_MarketBased",
+        "TCFD",
+        "IFRS_S2",
+        "Japan_SSBJ"
+      ],
+      "created_at": "2026-04-23T23:56:52.807615",
+      "updated_at": "2026-04-23T23:56:52.807615",
+      "created_by": "greenlang_system",
+      "notes": null,
+      "tags": [
+        "meti",
+        "japan",
+        "residual_mix",
+        "kansai",
+        "fy2020"
+      ],
+      "factor_status": "certified",
+      "source_id": "japan_meti_electric_emission_factors",
+      "source_release": "METI-FY2020-v1",
+      "source_record_id": "meti:Kansai:FY2020",
+      "release_version": "METI-FY2020-v1",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "Electric Utility Emission Factors, Japan METI & MOEJ (annual).",
+        "alternates_considered": [
+          "EF:JP:residual_mix:hokkaido:fy2020:meti-fy2020-v1",
+          "EF:JP:residual_mix:tohoku:fy2020:meti-fy2020-v1",
+          "EF:JP:residual_mix:tokyo:fy2020:meti-fy2020-v1",
+          "EF:JP:residual_mix:chubu:fy2020:meti-fy2020-v1",
+          "EF:JP:residual_mix:chugoku:fy2020:meti-fy2020-v1",
+          "EF:JP:residual_mix:kyushu:fy2020:meti-fy2020-v1"
+        ]
+      },
+      "replacement_factor_id": null,
+      "license_class": "open",
+      "activity_tags": [
+        "purchased_electricity",
+        "market_based",
+        "residual_mix"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "factor_family": "residual_mix",
+      "factor_name": "Japan METI residual mix \u2014 Kansai FY2020",
+      "method_profile": "corporate_scope2_market_based",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "jurisdiction": {
+        "country": "JP",
+        "region": "Kansai",
+        "grid_region": "Kansai"
+      },
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "sub_category": "residual_mix",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ]
+      },
+      "parameters": {
+        "scope_applicability": [
+          "scope2"
+        ],
+        "electricity_basis": "residual_mix",
+        "residual_mix_applicable": true,
+        "supplier_specific": false,
+        "transmission_loss_included": false,
+        "biogenic_share": null,
+        "uncertainty_low": null,
+        "uncertainty_high": null
+      },
+      "verification": {
+        "status": "regulator_approved",
+        "verified_by": "Japan METI / MOEJ",
+        "verified_at": null,
+        "verification_reference": null
+      },
+      "explainability": {
+        "assumptions": [
+          "METI publishes Basic (\u57fa\u790e\u6392\u51fa\u4fc2\u6570) and Adjusted (\u8abf\u6574\u5f8c\u6392\u51fa\u4fc2\u6570) factors.  The residual mix is derived by netting non-fossil-certificate surrenders (J-Credit, Green Value Certification, Non-Fossil Value Trading System) from the Basic factor.",
+          "Non-fossil certificate share assumed = 0.380.",
+          "Formula: residual = basic_factor / (1 - non_fossil_share).",
+          "Adjusted factor reported by METI is UTILITY-level, not system-level; the residual here is system-wide so values will differ from the adjusted factor.",
+          "Gas speciation split uses IPCC 2006 defaults (CO2 98.5%, CH4 1.0%, N2O 0.5%).",
+          "Apply to Scope 2 market-based reporting when no supplier-specific contract or non-fossil certificate applies."
+        ],
+        "fallback_rank": 5,
+        "rationale": "Japan METI residual mix for Kansai, FY2020. Basic factor 0.362 kgCO2/kWh, non-fossil share 38.0% -> residual 0.584 kgCO2/kWh."
+      },
+      "primary_data_flag": "secondary",
+      "uncertainty_distribution": "normal",
+      "redistribution_class": "open",
+      "raw_record_ref": null,
+      "change_log": [],
+      "next_review_date": null,
+      "use_phase": null
+    },
+    {
+      "factor_id": "EF:JP:residual_mix:chugoku:fy2020:meti-fy2020-v1",
+      "fuel_type": "electricity",
+      "unit": "kWh",
+      "geography": "JP",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": "0.6584510869565217",
+        "CH4": "0.00023874223602484473",
+        "N2O": "0.000012243191591017678",
+        "HFCs": null,
+        "PFCs": null,
+        "SF6": null,
+        "NF3": null,
+        "biogenic_CO2": null
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273,
+        "HFCs_gwp": null,
+        "PFCs_gwp": null,
+        "SF6_gwp": null,
+        "NF3_gwp": null
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "Japan Ministry of Economy, Trade and Industry (METI) / Ministry of the Environment (MOEJ)",
+        "source_publication": "Electric Utility Emission Factors",
+        "source_year": 2021,
+        "methodology": "hybrid",
+        "source_url": "https://ghg-santeikohyo.env.go.jp/calc",
+        "source_doi": null,
+        "methodology_description": null,
+        "version": "v1",
+        "supersedes": null
+      },
+      "valid_from": "2020-04-01",
+      "uncertainty_95ci": 0.09,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 3,
+        "representativeness": 5,
+        "methodological": 4,
+        "weights": {
+          "temporal": 0.2,
+          "geographical": 0.2,
+          "technological": 0.2,
+          "representativeness": 0.2,
+          "methodological": 0.2
+        }
+      },
+      "license_info": {
+        "license": "Japan Government Open Data \u2014 public use with attribution",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true,
+        "license_url": null,
+        "license_text": null,
+        "restrictions": []
+      },
+      "region_hint": "Chugoku",
+      "gwp_20yr": null,
+      "valid_to": "2021-03-31",
+      "heating_value_basis": null,
+      "reference_temperature_c": null,
+      "pressure_bar": null,
+      "moisture_content_pct": null,
+      "ash_content_pct": null,
+      "biogenic_flag": false,
+      "compliance_frameworks": [
+        "GHG_Protocol_Scope2_MarketBased",
+        "TCFD",
+        "IFRS_S2",
+        "Japan_SSBJ"
+      ],
+      "created_at": "2026-04-23T23:56:52.808644",
+      "updated_at": "2026-04-23T23:56:52.808644",
+      "created_by": "greenlang_system",
+      "notes": null,
+      "tags": [
+        "meti",
+        "japan",
+        "residual_mix",
+        "chugoku",
+        "fy2020"
+      ],
+      "factor_status": "certified",
+      "source_id": "japan_meti_electric_emission_factors",
+      "source_release": "METI-FY2020-v1",
+      "source_record_id": "meti:Chugoku:FY2020",
+      "release_version": "METI-FY2020-v1",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "Electric Utility Emission Factors, Japan METI & MOEJ (annual).",
+        "alternates_considered": [
+          "EF:JP:residual_mix:hokkaido:fy2020:meti-fy2020-v1",
+          "EF:JP:residual_mix:tohoku:fy2020:meti-fy2020-v1",
+          "EF:JP:residual_mix:tokyo:fy2020:meti-fy2020-v1",
+          "EF:JP:residual_mix:chubu:fy2020:meti-fy2020-v1",
+          "EF:JP:residual_mix:kansai:fy2020:meti-fy2020-v1",
+          "EF:JP:residual_mix:kyushu:fy2020:meti-fy2020-v1"
+        ]
+      },
+      "replacement_factor_id": null,
+      "license_class": "open",
+      "activity_tags": [
+        "purchased_electricity",
+        "market_based",
+        "residual_mix"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "factor_family": "residual_mix",
+      "factor_name": "Japan METI residual mix \u2014 Chugoku FY2020",
+      "method_profile": "corporate_scope2_market_based",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "jurisdiction": {
+        "country": "JP",
+        "region": "Chugoku",
+        "grid_region": "Chugoku"
+      },
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "sub_category": "residual_mix",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ]
+      },
+      "parameters": {
+        "scope_applicability": [
+          "scope2"
+        ],
+        "electricity_basis": "residual_mix",
+        "residual_mix_applicable": true,
+        "supplier_specific": false,
+        "transmission_loss_included": false,
+        "biogenic_share": null,
+        "uncertainty_low": null,
+        "uncertainty_high": null
+      },
+      "verification": {
+        "status": "regulator_approved",
+        "verified_by": "Japan METI / MOEJ",
+        "verified_at": null,
+        "verification_reference": null
+      },
+      "explainability": {
+        "assumptions": [
+          "METI publishes Basic (\u57fa\u790e\u6392\u51fa\u4fc2\u6570) and Adjusted (\u8abf\u6574\u5f8c\u6392\u51fa\u4fc2\u6570) factors.  The residual mix is derived by netting non-fossil-certificate surrenders (J-Credit, Green Value Certification, Non-Fossil Value Trading System) from the Basic factor.",
+          "Non-fossil certificate share assumed = 0.080.",
+          "Formula: residual = basic_factor / (1 - non_fossil_share).",
+          "Adjusted factor reported by METI is UTILITY-level, not system-level; the residual here is system-wide so values will differ from the adjusted factor.",
+          "Gas speciation split uses IPCC 2006 defaults (CO2 98.5%, CH4 1.0%, N2O 0.5%).",
+          "Apply to Scope 2 market-based reporting when no supplier-specific contract or non-fossil certificate applies."
+        ],
+        "fallback_rank": 5,
+        "rationale": "Japan METI residual mix for Chugoku, FY2020. Basic factor 0.615 kgCO2/kWh, non-fossil share 8.0% -> residual 0.668 kgCO2/kWh."
+      },
+      "primary_data_flag": "secondary",
+      "uncertainty_distribution": "normal",
+      "redistribution_class": "open",
+      "raw_record_ref": null,
+      "change_log": [],
+      "next_review_date": null,
+      "use_phase": null
+    },
+    {
+      "factor_id": "EF:JP:residual_mix:kyushu:fy2020:meti-fy2020-v1",
+      "fuel_type": "electricity",
+      "unit": "kWh",
+      "geography": "JP",
+      "geography_level": "grid_zone",
+      "vectors": {
+        "CO2": "0.5660074626865672",
+        "CH4": "0.00020522388059701497",
+        "N2O": "0.00001052430156907769",
+        "HFCs": null,
+        "PFCs": null,
+        "SF6": null,
+        "NF3": null,
+        "biogenic_CO2": null
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273,
+        "HFCs_gwp": null,
+        "PFCs_gwp": null,
+        "SF6_gwp": null,
+        "NF3_gwp": null
+      },
+      "scope": "2",
+      "boundary": "combustion",
+      "provenance": {
+        "source_org": "Japan Ministry of Economy, Trade and Industry (METI) / Ministry of the Environment (MOEJ)",
+        "source_publication": "Electric Utility Emission Factors",
+        "source_year": 2021,
+        "methodology": "hybrid",
+        "source_url": "https://ghg-santeikohyo.env.go.jp/calc",
+        "source_doi": null,
+        "methodology_description": null,
+        "version": "v1",
+        "supersedes": null
+      },
+      "valid_from": "2020-04-01",
+      "uncertainty_95ci": 0.09,
+      "dqs": {
+        "temporal": 5,
+        "geographical": 5,
+        "technological": 3,
+        "representativeness": 5,
+        "methodological": 4,
+        "weights": {
+          "temporal": 0.2,
+          "geographical": 0.2,
+          "technological": 0.2,
+          "representativeness": 0.2,
+          "methodological": 0.2
+        }
+      },
+      "license_info": {
+        "license": "Japan Government Open Data \u2014 public use with attribution",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true,
+        "license_url": null,
+        "license_text": null,
+        "restrictions": []
+      },
+      "region_hint": "Kyushu",
+      "gwp_20yr": null,
+      "valid_to": "2021-03-31",
+      "heating_value_basis": null,
+      "reference_temperature_c": null,
+      "pressure_bar": null,
+      "moisture_content_pct": null,
+      "ash_content_pct": null,
+      "biogenic_flag": false,
+      "compliance_frameworks": [
+        "GHG_Protocol_Scope2_MarketBased",
+        "TCFD",
+        "IFRS_S2",
+        "Japan_SSBJ"
+      ],
+      "created_at": "2026-04-23T23:56:52.808644",
+      "updated_at": "2026-04-23T23:56:52.808644",
+      "created_by": "greenlang_system",
+      "notes": null,
+      "tags": [
+        "meti",
+        "japan",
+        "residual_mix",
+        "kyushu",
+        "fy2020"
+      ],
+      "factor_status": "certified",
+      "source_id": "japan_meti_electric_emission_factors",
+      "source_release": "METI-FY2020-v1",
+      "source_record_id": "meti:Kyushu:FY2020",
+      "release_version": "METI-FY2020-v1",
+      "validation_flags": {
+        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "attribution_text": "Electric Utility Emission Factors, Japan METI & MOEJ (annual).",
+        "alternates_considered": [
+          "EF:JP:residual_mix:hokkaido:fy2020:meti-fy2020-v1",
+          "EF:JP:residual_mix:tohoku:fy2020:meti-fy2020-v1",
+          "EF:JP:residual_mix:tokyo:fy2020:meti-fy2020-v1",
+          "EF:JP:residual_mix:chubu:fy2020:meti-fy2020-v1",
+          "EF:JP:residual_mix:kansai:fy2020:meti-fy2020-v1",
+          "EF:JP:residual_mix:chugoku:fy2020:meti-fy2020-v1"
+        ]
+      },
+      "replacement_factor_id": null,
+      "license_class": "open",
+      "activity_tags": [
+        "purchased_electricity",
+        "market_based",
+        "residual_mix"
+      ],
+      "sector_tags": [
+        "power_sector",
+        "utility"
+      ],
+      "factor_family": "residual_mix",
+      "factor_name": "Japan METI residual mix \u2014 Kyushu FY2020",
+      "method_profile": "corporate_scope2_market_based",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "jurisdiction": {
+        "country": "JP",
+        "region": "Kyushu",
+        "grid_region": "Kyushu"
+      },
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "sub_category": "residual_mix",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ]
+      },
+      "parameters": {
+        "scope_applicability": [
+          "scope2"
+        ],
+        "electricity_basis": "residual_mix",
+        "residual_mix_applicable": true,
+        "supplier_specific": false,
+        "transmission_loss_included": false,
+        "biogenic_share": null,
+        "uncertainty_low": null,
+        "uncertainty_high": null
+      },
+      "verification": {
+        "status": "regulator_approved",
+        "verified_by": "Japan METI / MOEJ",
+        "verified_at": null,
+        "verification_reference": null
+      },
+      "explainability": {
+        "assumptions": [
+          "METI publishes Basic (\u57fa\u790e\u6392\u51fa\u4fc2\u6570) and Adjusted (\u8abf\u6574\u5f8c\u6392\u51fa\u4fc2\u6570) factors.  The residual mix is derived by netting non-fossil-certificate surrenders (J-Credit, Green Value Certification, Non-Fossil Value Trading System) from the Basic factor.",
+          "Non-fossil certificate share assumed = 0.330.",
+          "Formula: residual = basic_factor / (1 - non_fossil_share).",
+          "Adjusted factor reported by METI is UTILITY-level, not system-level; the residual here is system-wide so values will differ from the adjusted factor.",
+          "Gas speciation split uses IPCC 2006 defaults (CO2 98.5%, CH4 1.0%, N2O 0.5%).",
+          "Apply to Scope 2 market-based reporting when no supplier-specific contract or non-fossil certificate applies."
+        ],
+        "fallback_rank": 5,
+        "rationale": "Japan METI residual mix for Kyushu, FY2020. Basic factor 0.385 kgCO2/kWh, non-fossil share 33.0% -> residual 0.575 kgCO2/kWh."
+      },
+      "primary_data_flag": "secondary",
+      "uncertainty_distribution": "normal",
+      "redistribution_class": "open",
+      "raw_record_ref": null,
+      "change_log": [],
+      "next_review_date": null,
+      "use_phase": null
+    }
+  ]
+}

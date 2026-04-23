@@ -1,0 +1,108 @@
+================================================================================
+  GL-003 UNIFIEDSTEAM - Steam System Optimization Agent
+================================================================================
+
+Thank you for installing {{ .Chart.Name }}!
+
+Release: {{ .Release.Name }}
+Namespace: {{ .Release.Namespace }}
+Version: {{ .Chart.AppVersion }}
+
+--------------------------------------------------------------------------------
+  ACCESS INFORMATION
+--------------------------------------------------------------------------------
+
+{{- if .Values.ingress.enabled }}
+HTTP/GraphQL API:
+{{- range $host := .Values.ingress.hosts }}
+  {{- range .paths }}
+  - https://{{ $host.host }}{{ .path }}
+  {{- end }}
+{{- end }}
+{{- end }}
+
+{{- if .Values.grpcIngress.enabled }}
+gRPC API:
+{{- range $host := .Values.grpcIngress.hosts }}
+  - grpc://{{ $host.host }}:443
+{{- end }}
+{{- end }}
+
+Internal Service (ClusterIP):
+  - HTTP: {{ include "unifiedsteam.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.service.http.port }}
+  - gRPC: {{ include "unifiedsteam.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.service.grpc.port }}
+  - Metrics: {{ include "unifiedsteam.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.service.metrics.port }}
+
+--------------------------------------------------------------------------------
+  QUICK START
+--------------------------------------------------------------------------------
+
+1. Check deployment status:
+   kubectl get pods -n {{ .Release.Namespace }} -l app.kubernetes.io/name={{ include "unifiedsteam.name" . }}
+
+2. View logs:
+   kubectl logs -n {{ .Release.Namespace }} -l app.kubernetes.io/name={{ include "unifiedsteam.name" . }} -f
+
+3. Access API documentation:
+   kubectl port-forward -n {{ .Release.Namespace }} svc/{{ include "unifiedsteam.fullname" . }} 8080:{{ .Values.service.http.port }}
+   Then open: http://localhost:8080/docs
+
+4. Access Prometheus metrics:
+   kubectl port-forward -n {{ .Release.Namespace }} svc/{{ include "unifiedsteam.fullname" . }} 9090:{{ .Values.service.metrics.port }}
+   Then open: http://localhost:9090/metrics
+
+5. Test health endpoint:
+   kubectl exec -n {{ .Release.Namespace }} -it deploy/{{ include "unifiedsteam.fullname" . }} -- curl http://localhost:{{ .Values.containerPorts.http }}/health
+
+--------------------------------------------------------------------------------
+  CONFIGURATION
+--------------------------------------------------------------------------------
+
+Current configuration:
+  - Environment: {{ .Values.global.environment }}
+  - Replicas: {{ .Values.replicaCount }}
+  - Autoscaling: {{ .Values.autoscaling.enabled }}
+  {{- if .Values.autoscaling.enabled }}
+  - Min/Max Replicas: {{ .Values.autoscaling.minReplicas }}/{{ .Values.autoscaling.maxReplicas }}
+  {{- end }}
+
+Feature Flags:
+  - Real-time Optimization: {{ .Values.config.features.enableRealTimeOptimization }}
+  - Predictive Maintenance: {{ .Values.config.features.enablePredictiveMaintenance }}
+  - Causal Analysis: {{ .Values.config.features.enableCausalAnalysis }}
+  - Explainability: {{ .Values.config.features.enableExplainability }}
+  - Automatic Control: {{ .Values.config.features.enableAutomaticControl }}
+
+--------------------------------------------------------------------------------
+  INTEGRATIONS
+--------------------------------------------------------------------------------
+
+Kafka:
+{{- if .Values.kafka.enabled }}
+  Using embedded Kafka (Bitnami chart)
+{{- else }}
+  External brokers: {{ .Values.config.kafka.brokers }}
+{{- end }}
+
+Redis:
+{{- if .Values.redis.enabled }}
+  Using embedded Redis (Bitnami chart)
+{{- else }}
+  External host: {{ .Values.config.redis.host }}:{{ .Values.config.redis.port }}
+{{- end }}
+
+OPC-UA:
+  Endpoint: {{ .Values.config.opcua.endpoint }}
+
+OpenTelemetry:
+  Endpoint: {{ .Values.config.otel.endpoint }}
+
+--------------------------------------------------------------------------------
+  SUPPORT
+--------------------------------------------------------------------------------
+
+Documentation: https://docs.greenlang.io/agents/gl-003
+Issues: https://github.com/greenlang/gl-003-unifiedsteam/issues
+Contact: support@greenlang.io
+
+================================================================================

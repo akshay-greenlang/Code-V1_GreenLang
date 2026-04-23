@@ -1,0 +1,32 @@
+{
+  "_seed_note": "Japan METI / MOEJ published utility basic emission factors (FY2022 data, published 2024). Public government publication. Non-fossil certificate surrender share approximated from 電力調査統計 for residual-mix derivation.",
+  "rows": [
+    {"utility_area": "Hokkaido",  "fiscal_year": "2022", "basic_factor_kg_co2_per_kwh": 0.589, "non_fossil_certificate_share": 0.10, "version": "METI-FY2022-v1"},
+    {"utility_area": "Tohoku",    "fiscal_year": "2022", "basic_factor_kg_co2_per_kwh": 0.461, "non_fossil_certificate_share": 0.15, "version": "METI-FY2022-v1"},
+    {"utility_area": "Tokyo",     "fiscal_year": "2022", "basic_factor_kg_co2_per_kwh": 0.444, "non_fossil_certificate_share": 0.18, "version": "METI-FY2022-v1"},
+    {"utility_area": "Chubu",     "fiscal_year": "2022", "basic_factor_kg_co2_per_kwh": 0.443, "non_fossil_certificate_share": 0.22, "version": "METI-FY2022-v1"},
+    {"utility_area": "Hokuriku",  "fiscal_year": "2022", "basic_factor_kg_co2_per_kwh": 0.475, "non_fossil_certificate_share": 0.25, "version": "METI-FY2022-v1"},
+    {"utility_area": "Kansai",    "fiscal_year": "2022", "basic_factor_kg_co2_per_kwh": 0.335, "non_fossil_certificate_share": 0.42, "version": "METI-FY2022-v1"},
+    {"utility_area": "Chugoku",   "fiscal_year": "2022", "basic_factor_kg_co2_per_kwh": 0.586, "non_fossil_certificate_share": 0.10, "version": "METI-FY2022-v1"},
+    {"utility_area": "Shikoku",   "fiscal_year": "2022", "basic_factor_kg_co2_per_kwh": 0.508, "non_fossil_certificate_share": 0.30, "version": "METI-FY2022-v1"},
+    {"utility_area": "Kyushu",    "fiscal_year": "2022", "basic_factor_kg_co2_per_kwh": 0.366, "non_fossil_certificate_share": 0.36, "version": "METI-FY2022-v1"},
+    {"utility_area": "Okinawa",   "fiscal_year": "2022", "basic_factor_kg_co2_per_kwh": 0.699, "non_fossil_certificate_share": 0.02, "version": "METI-FY2022-v1"},
+    {"utility_area": "Hokkaido",  "fiscal_year": "2021", "basic_factor_kg_co2_per_kwh": 0.600, "non_fossil_certificate_share": 0.08, "version": "METI-FY2021-v1"},
+    {"utility_area": "Tohoku",    "fiscal_year": "2021", "basic_factor_kg_co2_per_kwh": 0.470, "non_fossil_certificate_share": 0.13, "version": "METI-FY2021-v1"},
+    {"utility_area": "Tokyo",     "fiscal_year": "2021", "basic_factor_kg_co2_per_kwh": 0.455, "non_fossil_certificate_share": 0.16, "version": "METI-FY2021-v1"},
+    {"utility_area": "Chubu",     "fiscal_year": "2021", "basic_factor_kg_co2_per_kwh": 0.450, "non_fossil_certificate_share": 0.20, "version": "METI-FY2021-v1"},
+    {"utility_area": "Kansai",    "fiscal_year": "2021", "basic_factor_kg_co2_per_kwh": 0.348, "non_fossil_certificate_share": 0.40, "version": "METI-FY2021-v1"},
+    {"utility_area": "Kyushu",    "fiscal_year": "2021", "basic_factor_kg_co2_per_kwh": 0.374, "non_fossil_certificate_share": 0.34, "version": "METI-FY2021-v1"},
+    {"utility_area": "Hokuriku",  "fiscal_year": "2021", "basic_factor_kg_co2_per_kwh": 0.485, "non_fossil_certificate_share": 0.24, "version": "METI-FY2021-v1"},
+    {"utility_area": "Chugoku",   "fiscal_year": "2021", "basic_factor_kg_co2_per_kwh": 0.598, "non_fossil_certificate_share": 0.09, "version": "METI-FY2021-v1"},
+    {"utility_area": "Shikoku",   "fiscal_year": "2021", "basic_factor_kg_co2_per_kwh": 0.522, "non_fossil_certificate_share": 0.28, "version": "METI-FY2021-v1"},
+    {"utility_area": "Okinawa",   "fiscal_year": "2021", "basic_factor_kg_co2_per_kwh": 0.712, "non_fossil_certificate_share": 0.02, "version": "METI-FY2021-v1"},
+    {"utility_area": "Hokkaido",  "fiscal_year": "2020", "basic_factor_kg_co2_per_kwh": 0.622, "non_fossil_certificate_share": 0.06, "version": "METI-FY2020-v1"},
+    {"utility_area": "Tohoku",    "fiscal_year": "2020", "basic_factor_kg_co2_per_kwh": 0.487, "non_fossil_certificate_share": 0.11, "version": "METI-FY2020-v1"},
+    {"utility_area": "Tokyo",     "fiscal_year": "2020", "basic_factor_kg_co2_per_kwh": 0.468, "non_fossil_certificate_share": 0.14, "version": "METI-FY2020-v1"},
+    {"utility_area": "Chubu",     "fiscal_year": "2020", "basic_factor_kg_co2_per_kwh": 0.462, "non_fossil_certificate_share": 0.18, "version": "METI-FY2020-v1"},
+    {"utility_area": "Kansai",    "fiscal_year": "2020", "basic_factor_kg_co2_per_kwh": 0.362, "non_fossil_certificate_share": 0.38, "version": "METI-FY2020-v1"},
+    {"utility_area": "Chugoku",   "fiscal_year": "2020", "basic_factor_kg_co2_per_kwh": 0.615, "non_fossil_certificate_share": 0.08, "version": "METI-FY2020-v1"},
+    {"utility_area": "Kyushu",    "fiscal_year": "2020", "basic_factor_kg_co2_per_kwh": 0.385, "non_fossil_certificate_share": 0.33, "version": "METI-FY2020-v1"}
+  ]
+}

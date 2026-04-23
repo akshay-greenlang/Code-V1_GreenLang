@@ -1,0 +1,2120 @@
+{
+  "attribution_text": "NGER state-level residual emission factors, Australian Clean Energy Regulator and DCCEEW, CC BY 4.0.",
+  "factor_count": 26,
+  "factor_status_default": "certified",
+  "factors": [
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351",
+          "ANZSIC:D2611"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "DCCEEW does NOT officially publish a residual mix.  This factor is derived by netting LGC-surrendered MWh (assumed zero-emission per GHG Protocol Scope 2 market-based convention) from the published NGA grid-average factor.",
+          "LGC-surrendered share assumed = 0.240; formula: residual = grid_avg / (1 - lgc_share).",
+          "Gas speciation split uses NGA default shares (CO2 98.0%, CH4 1.5%, N2O 0.5%) unless overridden.",
+          "Apply to Scope 2 market-based reporting only when no supplier-specific contract (GreenPower, LGC) applies.",
+          "STC (small-scale) certificates are NOT netted: they are already excluded from the published NGA grid average."
+        ],
+        "audit_text": "Derived Australian residual mix for NSW, FY 2023-24. Grid average 0.680 kgCO2e/kWh - LGC share 24.0% = residual 0.895 kgCO2e/kWh.",
+        "fallback_rank": 5,
+        "rationale": "Derived Australian residual mix for NSW, FY 2023-24. Grid average 0.680 kgCO2e/kWh - LGC share 24.0% = residual 0.895 kgCO2e/kWh.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:AU:residual_mix:nsw:2023_24:nga-2024-v1",
+      "factor_name": "Australian NGA residual mix \u2014 NSW FY2023-24",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "AU",
+        "grid_region": "NSW",
+        "region": "NSW"
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "CC-BY-4.0",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.775288Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.00047932330827067665,
+        "co2": 0.8768421052631579,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 1.638712165027955e-05,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 86.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 4
+      },
+      "source_id": "australia_nga_factors",
+      "source_version": "NGA-2024-v1",
+      "status": "certified",
+      "valid_from": "2023-07-01",
+      "valid_to": "2024-06-30"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351",
+          "ANZSIC:D2611"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "DCCEEW does NOT officially publish a residual mix.  This factor is derived by netting LGC-surrendered MWh (assumed zero-emission per GHG Protocol Scope 2 market-based convention) from the published NGA grid-average factor.",
+          "LGC-surrendered share assumed = 0.200; formula: residual = grid_avg / (1 - lgc_share).",
+          "Gas speciation split uses NGA default shares (CO2 98.0%, CH4 1.5%, N2O 0.5%) unless overridden.",
+          "Apply to Scope 2 market-based reporting only when no supplier-specific contract (GreenPower, LGC) applies.",
+          "STC (small-scale) certificates are NOT netted: they are already excluded from the published NGA grid average."
+        ],
+        "audit_text": "Derived Australian residual mix for QLD, FY 2023-24. Grid average 0.730 kgCO2e/kWh - LGC share 20.0% = residual 0.912 kgCO2e/kWh.",
+        "fallback_rank": 5,
+        "rationale": "Derived Australian residual mix for QLD, FY 2023-24. Grid average 0.730 kgCO2e/kWh - LGC share 20.0% = residual 0.912 kgCO2e/kWh.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:AU:residual_mix:qld:2023_24:nga-2024-v1",
+      "factor_name": "Australian NGA residual mix \u2014 QLD FY2023-24",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "AU",
+        "grid_region": "QLD",
+        "region": "QLD"
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "CC-BY-4.0",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.775288Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0004888392857142857,
+        "co2": 0.89425,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 1.671245421245421e-05,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 86.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 4
+      },
+      "source_id": "australia_nga_factors",
+      "source_version": "NGA-2024-v1",
+      "status": "certified",
+      "valid_from": "2023-07-01",
+      "valid_to": "2024-06-30"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351",
+          "ANZSIC:D2611"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "DCCEEW does NOT officially publish a residual mix.  This factor is derived by netting LGC-surrendered MWh (assumed zero-emission per GHG Protocol Scope 2 market-based convention) from the published NGA grid-average factor.",
+          "LGC-surrendered share assumed = 0.280; formula: residual = grid_avg / (1 - lgc_share).",
+          "Gas speciation split uses NGA default shares (CO2 98.0%, CH4 1.5%, N2O 0.5%) unless overridden.",
+          "Apply to Scope 2 market-based reporting only when no supplier-specific contract (GreenPower, LGC) applies.",
+          "STC (small-scale) certificates are NOT netted: they are already excluded from the published NGA grid average."
+        ],
+        "audit_text": "Derived Australian residual mix for VIC, FY 2023-24. Grid average 0.850 kgCO2e/kWh - LGC share 28.0% = residual 1.181 kgCO2e/kWh.",
+        "fallback_rank": 5,
+        "rationale": "Derived Australian residual mix for VIC, FY 2023-24. Grid average 0.850 kgCO2e/kWh - LGC share 28.0% = residual 1.181 kgCO2e/kWh.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:AU:residual_mix:vic:2023_24:nga-2024-v1",
+      "factor_name": "Australian NGA residual mix \u2014 VIC FY2023-24",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "AU",
+        "grid_region": "VIC",
+        "region": "VIC"
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "CC-BY-4.0",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.776285Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0006324404761904762,
+        "co2": 1.1569444444444446,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 2.162189662189662e-05,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 86.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 4
+      },
+      "source_id": "australia_nga_factors",
+      "source_version": "NGA-2024-v1",
+      "status": "certified",
+      "valid_from": "2023-07-01",
+      "valid_to": "2024-06-30"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351",
+          "ANZSIC:D2611"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "DCCEEW does NOT officially publish a residual mix.  This factor is derived by netting LGC-surrendered MWh (assumed zero-emission per GHG Protocol Scope 2 market-based convention) from the published NGA grid-average factor.",
+          "LGC-surrendered share assumed = 0.550; formula: residual = grid_avg / (1 - lgc_share).",
+          "Gas speciation split uses NGA default shares (CO2 98.0%, CH4 1.5%, N2O 0.5%) unless overridden.",
+          "Apply to Scope 2 market-based reporting only when no supplier-specific contract (GreenPower, LGC) applies.",
+          "STC (small-scale) certificates are NOT netted: they are already excluded from the published NGA grid average."
+        ],
+        "audit_text": "Derived Australian residual mix for SA, FY 2023-24. Grid average 0.250 kgCO2e/kWh - LGC share 55.0% = residual 0.556 kgCO2e/kWh.",
+        "fallback_rank": 5,
+        "rationale": "Derived Australian residual mix for SA, FY 2023-24. Grid average 0.250 kgCO2e/kWh - LGC share 55.0% = residual 0.556 kgCO2e/kWh.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:AU:residual_mix:sa:2023_24:nga-2024-v1",
+      "factor_name": "Australian NGA residual mix \u2014 SA FY2023-24",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "AU",
+        "grid_region": "SA",
+        "region": "SA"
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "CC-BY-4.0",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.776285Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0002976190476190476,
+        "co2": 0.5444444444444445,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 1.0175010175010176e-05,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 86.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 4
+      },
+      "source_id": "australia_nga_factors",
+      "source_version": "NGA-2024-v1",
+      "status": "certified",
+      "valid_from": "2023-07-01",
+      "valid_to": "2024-06-30"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351",
+          "ANZSIC:D2611"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "DCCEEW does NOT officially publish a residual mix.  This factor is derived by netting LGC-surrendered MWh (assumed zero-emission per GHG Protocol Scope 2 market-based convention) from the published NGA grid-average factor.",
+          "LGC-surrendered share assumed = 0.850; formula: residual = grid_avg / (1 - lgc_share).",
+          "Gas speciation split uses NGA default shares (CO2 98.0%, CH4 1.5%, N2O 0.5%) unless overridden.",
+          "Apply to Scope 2 market-based reporting only when no supplier-specific contract (GreenPower, LGC) applies.",
+          "STC (small-scale) certificates are NOT netted: they are already excluded from the published NGA grid average."
+        ],
+        "audit_text": "Derived Australian residual mix for TAS, FY 2023-24. Grid average 0.170 kgCO2e/kWh - LGC share 85.0% = residual 1.133 kgCO2e/kWh.",
+        "fallback_rank": 5,
+        "rationale": "Derived Australian residual mix for TAS, FY 2023-24. Grid average 0.170 kgCO2e/kWh - LGC share 85.0% = residual 1.133 kgCO2e/kWh.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:AU:residual_mix:tas:2023_24:nga-2024-v1",
+      "factor_name": "Australian NGA residual mix \u2014 TAS FY2023-24",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "AU",
+        "grid_region": "TAS",
+        "region": "TAS"
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "CC-BY-4.0",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.776285Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0006071428571428571,
+        "co2": 1.1106666666666667,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 2.0757020757020754e-05,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 86.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 4
+      },
+      "source_id": "australia_nga_factors",
+      "source_version": "NGA-2024-v1",
+      "status": "certified",
+      "valid_from": "2023-07-01",
+      "valid_to": "2024-06-30"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351",
+          "ANZSIC:D2611"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "DCCEEW does NOT officially publish a residual mix.  This factor is derived by netting LGC-surrendered MWh (assumed zero-emission per GHG Protocol Scope 2 market-based convention) from the published NGA grid-average factor.",
+          "LGC-surrendered share assumed = 0.220; formula: residual = grid_avg / (1 - lgc_share).",
+          "Gas speciation split uses NGA default shares (CO2 98.0%, CH4 1.5%, N2O 0.5%) unless overridden.",
+          "Apply to Scope 2 market-based reporting only when no supplier-specific contract (GreenPower, LGC) applies.",
+          "STC (small-scale) certificates are NOT netted: they are already excluded from the published NGA grid average."
+        ],
+        "audit_text": "Derived Australian residual mix for WA, FY 2023-24. Grid average 0.510 kgCO2e/kWh - LGC share 22.0% = residual 0.654 kgCO2e/kWh.",
+        "fallback_rank": 5,
+        "rationale": "Derived Australian residual mix for WA, FY 2023-24. Grid average 0.510 kgCO2e/kWh - LGC share 22.0% = residual 0.654 kgCO2e/kWh.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:AU:residual_mix:wa:2023_24:nga-2024-v1",
+      "factor_name": "Australian NGA residual mix \u2014 WA FY2023-24",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "AU",
+        "grid_region": "WA",
+        "region": "WA"
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "CC-BY-4.0",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.777282Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.00035027472527472523,
+        "co2": 0.6407692307692308,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 1.1975204282896591e-05,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 86.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 4
+      },
+      "source_id": "australia_nga_factors",
+      "source_version": "NGA-2024-v1",
+      "status": "certified",
+      "valid_from": "2023-07-01",
+      "valid_to": "2024-06-30"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351",
+          "ANZSIC:D2611"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "DCCEEW does NOT officially publish a residual mix.  This factor is derived by netting LGC-surrendered MWh (assumed zero-emission per GHG Protocol Scope 2 market-based convention) from the published NGA grid-average factor.",
+          "LGC-surrendered share assumed = 0.050; formula: residual = grid_avg / (1 - lgc_share).",
+          "Gas speciation split uses NGA default shares (CO2 98.0%, CH4 1.5%, N2O 0.5%) unless overridden.",
+          "Apply to Scope 2 market-based reporting only when no supplier-specific contract (GreenPower, LGC) applies.",
+          "STC (small-scale) certificates are NOT netted: they are already excluded from the published NGA grid average."
+        ],
+        "audit_text": "Derived Australian residual mix for NT, FY 2023-24. Grid average 0.560 kgCO2e/kWh - LGC share 5.0% = residual 0.589 kgCO2e/kWh.",
+        "fallback_rank": 5,
+        "rationale": "Derived Australian residual mix for NT, FY 2023-24. Grid average 0.560 kgCO2e/kWh - LGC share 5.0% = residual 0.589 kgCO2e/kWh.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:AU:residual_mix:nt:2023_24:nga-2024-v1",
+      "factor_name": "Australian NGA residual mix \u2014 NT FY2023-24",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "AU",
+        "grid_region": "NT",
+        "region": "NT"
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "CC-BY-4.0",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.777282Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0003157894736842106,
+        "co2": 0.5776842105263158,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 1.0796221322537115e-05,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 86.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 4
+      },
+      "source_id": "australia_nga_factors",
+      "source_version": "NGA-2024-v1",
+      "status": "certified",
+      "valid_from": "2023-07-01",
+      "valid_to": "2024-06-30"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351",
+          "ANZSIC:D2611"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "DCCEEW does NOT officially publish a residual mix.  This factor is derived by netting LGC-surrendered MWh (assumed zero-emission per GHG Protocol Scope 2 market-based convention) from the published NGA grid-average factor.",
+          "LGC-surrendered share assumed = 0.220; formula: residual = grid_avg / (1 - lgc_share).",
+          "Gas speciation split uses NGA default shares (CO2 98.0%, CH4 1.5%, N2O 0.5%) unless overridden.",
+          "Apply to Scope 2 market-based reporting only when no supplier-specific contract (GreenPower, LGC) applies.",
+          "STC (small-scale) certificates are NOT netted: they are already excluded from the published NGA grid average."
+        ],
+        "audit_text": "Derived Australian residual mix for NSW, FY 2022-23. Grid average 0.710 kgCO2e/kWh - LGC share 22.0% = residual 0.910 kgCO2e/kWh.",
+        "fallback_rank": 5,
+        "rationale": "Derived Australian residual mix for NSW, FY 2022-23. Grid average 0.710 kgCO2e/kWh - LGC share 22.0% = residual 0.910 kgCO2e/kWh.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:AU:residual_mix:nsw:2022_23:nga-2023-v1",
+      "factor_name": "Australian NGA residual mix \u2014 NSW FY2022-23",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "AU",
+        "grid_region": "NSW",
+        "region": "NSW"
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "CC-BY-4.0",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.777282Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.00048763736263736254,
+        "co2": 0.8920512820512819,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 1.6671362825208978e-05,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 86.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 4
+      },
+      "source_id": "australia_nga_factors",
+      "source_version": "NGA-2023-v1",
+      "status": "certified",
+      "valid_from": "2022-07-01",
+      "valid_to": "2023-06-30"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351",
+          "ANZSIC:D2611"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "DCCEEW does NOT officially publish a residual mix.  This factor is derived by netting LGC-surrendered MWh (assumed zero-emission per GHG Protocol Scope 2 market-based convention) from the published NGA grid-average factor.",
+          "LGC-surrendered share assumed = 0.180; formula: residual = grid_avg / (1 - lgc_share).",
+          "Gas speciation split uses NGA default shares (CO2 98.0%, CH4 1.5%, N2O 0.5%) unless overridden.",
+          "Apply to Scope 2 market-based reporting only when no supplier-specific contract (GreenPower, LGC) applies.",
+          "STC (small-scale) certificates are NOT netted: they are already excluded from the published NGA grid average."
+        ],
+        "audit_text": "Derived Australian residual mix for QLD, FY 2022-23. Grid average 0.750 kgCO2e/kWh - LGC share 18.0% = residual 0.915 kgCO2e/kWh.",
+        "fallback_rank": 5,
+        "rationale": "Derived Australian residual mix for QLD, FY 2022-23. Grid average 0.750 kgCO2e/kWh - LGC share 18.0% = residual 0.915 kgCO2e/kWh.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:AU:residual_mix:qld:2022_23:nga-2023-v1",
+      "factor_name": "Australian NGA residual mix \u2014 QLD FY2022-23",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "AU",
+        "grid_region": "QLD",
+        "region": "QLD"
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "CC-BY-4.0",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.777282Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0004899825783972125,
+        "co2": 0.896341463414634,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 1.6751541141785044e-05,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 86.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 4
+      },
+      "source_id": "australia_nga_factors",
+      "source_version": "NGA-2023-v1",
+      "status": "certified",
+      "valid_from": "2022-07-01",
+      "valid_to": "2023-06-30"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351",
+          "ANZSIC:D2611"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "DCCEEW does NOT officially publish a residual mix.  This factor is derived by netting LGC-surrendered MWh (assumed zero-emission per GHG Protocol Scope 2 market-based convention) from the published NGA grid-average factor.",
+          "LGC-surrendered share assumed = 0.260; formula: residual = grid_avg / (1 - lgc_share).",
+          "Gas speciation split uses NGA default shares (CO2 98.0%, CH4 1.5%, N2O 0.5%) unless overridden.",
+          "Apply to Scope 2 market-based reporting only when no supplier-specific contract (GreenPower, LGC) applies.",
+          "STC (small-scale) certificates are NOT netted: they are already excluded from the published NGA grid average."
+        ],
+        "audit_text": "Derived Australian residual mix for VIC, FY 2022-23. Grid average 0.880 kgCO2e/kWh - LGC share 26.0% = residual 1.189 kgCO2e/kWh.",
+        "fallback_rank": 5,
+        "rationale": "Derived Australian residual mix for VIC, FY 2022-23. Grid average 0.880 kgCO2e/kWh - LGC share 26.0% = residual 1.189 kgCO2e/kWh.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:AU:residual_mix:vic:2022_23:nga-2023-v1",
+      "factor_name": "Australian NGA residual mix \u2014 VIC FY2022-23",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "AU",
+        "grid_region": "VIC",
+        "region": "VIC"
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "CC-BY-4.0",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.778299Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0006370656370656371,
+        "co2": 1.1654054054054055,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 2.1780021780021784e-05,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 86.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 4
+      },
+      "source_id": "australia_nga_factors",
+      "source_version": "NGA-2023-v1",
+      "status": "certified",
+      "valid_from": "2022-07-01",
+      "valid_to": "2023-06-30"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351",
+          "ANZSIC:D2611"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "DCCEEW does NOT officially publish a residual mix.  This factor is derived by netting LGC-surrendered MWh (assumed zero-emission per GHG Protocol Scope 2 market-based convention) from the published NGA grid-average factor.",
+          "LGC-surrendered share assumed = 0.520; formula: residual = grid_avg / (1 - lgc_share).",
+          "Gas speciation split uses NGA default shares (CO2 98.0%, CH4 1.5%, N2O 0.5%) unless overridden.",
+          "Apply to Scope 2 market-based reporting only when no supplier-specific contract (GreenPower, LGC) applies.",
+          "STC (small-scale) certificates are NOT netted: they are already excluded from the published NGA grid average."
+        ],
+        "audit_text": "Derived Australian residual mix for SA, FY 2022-23. Grid average 0.280 kgCO2e/kWh - LGC share 52.0% = residual 0.583 kgCO2e/kWh.",
+        "fallback_rank": 5,
+        "rationale": "Derived Australian residual mix for SA, FY 2022-23. Grid average 0.280 kgCO2e/kWh - LGC share 52.0% = residual 0.583 kgCO2e/kWh.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:AU:residual_mix:sa:2022_23:nga-2023-v1",
+      "factor_name": "Australian NGA residual mix \u2014 SA FY2022-23",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "AU",
+        "grid_region": "SA",
+        "region": "SA"
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "CC-BY-4.0",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.778299Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0003125,
+        "co2": 0.5716666666666667,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 1.0683760683760684e-05,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 86.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 4
+      },
+      "source_id": "australia_nga_factors",
+      "source_version": "NGA-2023-v1",
+      "status": "certified",
+      "valid_from": "2022-07-01",
+      "valid_to": "2023-06-30"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351",
+          "ANZSIC:D2611"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "DCCEEW does NOT officially publish a residual mix.  This factor is derived by netting LGC-surrendered MWh (assumed zero-emission per GHG Protocol Scope 2 market-based convention) from the published NGA grid-average factor.",
+          "LGC-surrendered share assumed = 0.820; formula: residual = grid_avg / (1 - lgc_share).",
+          "Gas speciation split uses NGA default shares (CO2 98.0%, CH4 1.5%, N2O 0.5%) unless overridden.",
+          "Apply to Scope 2 market-based reporting only when no supplier-specific contract (GreenPower, LGC) applies.",
+          "STC (small-scale) certificates are NOT netted: they are already excluded from the published NGA grid average."
+        ],
+        "audit_text": "Derived Australian residual mix for TAS, FY 2022-23. Grid average 0.190 kgCO2e/kWh - LGC share 82.0% = residual 1.056 kgCO2e/kWh.",
+        "fallback_rank": 5,
+        "rationale": "Derived Australian residual mix for TAS, FY 2022-23. Grid average 0.190 kgCO2e/kWh - LGC share 82.0% = residual 1.056 kgCO2e/kWh.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:AU:residual_mix:tas:2022_23:nga-2023-v1",
+      "factor_name": "Australian NGA residual mix \u2014 TAS FY2022-23",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "AU",
+        "grid_region": "TAS",
+        "region": "TAS"
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "CC-BY-4.0",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.778299Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0005654761904761904,
+        "co2": 1.0344444444444443,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 1.933251933251933e-05,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 86.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 4
+      },
+      "source_id": "australia_nga_factors",
+      "source_version": "NGA-2023-v1",
+      "status": "certified",
+      "valid_from": "2022-07-01",
+      "valid_to": "2023-06-30"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351",
+          "ANZSIC:D2611"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "DCCEEW does NOT officially publish a residual mix.  This factor is derived by netting LGC-surrendered MWh (assumed zero-emission per GHG Protocol Scope 2 market-based convention) from the published NGA grid-average factor.",
+          "LGC-surrendered share assumed = 0.200; formula: residual = grid_avg / (1 - lgc_share).",
+          "Gas speciation split uses NGA default shares (CO2 98.0%, CH4 1.5%, N2O 0.5%) unless overridden.",
+          "Apply to Scope 2 market-based reporting only when no supplier-specific contract (GreenPower, LGC) applies.",
+          "STC (small-scale) certificates are NOT netted: they are already excluded from the published NGA grid average."
+        ],
+        "audit_text": "Derived Australian residual mix for WA, FY 2022-23. Grid average 0.550 kgCO2e/kWh - LGC share 20.0% = residual 0.688 kgCO2e/kWh.",
+        "fallback_rank": 5,
+        "rationale": "Derived Australian residual mix for WA, FY 2022-23. Grid average 0.550 kgCO2e/kWh - LGC share 20.0% = residual 0.688 kgCO2e/kWh.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:AU:residual_mix:wa:2022_23:nga-2023-v1",
+      "factor_name": "Australian NGA residual mix \u2014 WA FY2022-23",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "AU",
+        "grid_region": "WA",
+        "region": "WA"
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "CC-BY-4.0",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.778299Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0003683035714285714,
+        "co2": 0.67375,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 1.2591575091575092e-05,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 86.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 4
+      },
+      "source_id": "australia_nga_factors",
+      "source_version": "NGA-2023-v1",
+      "status": "certified",
+      "valid_from": "2022-07-01",
+      "valid_to": "2023-06-30"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351",
+          "ANZSIC:D2611"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "DCCEEW does NOT officially publish a residual mix.  This factor is derived by netting LGC-surrendered MWh (assumed zero-emission per GHG Protocol Scope 2 market-based convention) from the published NGA grid-average factor.",
+          "LGC-surrendered share assumed = 0.040; formula: residual = grid_avg / (1 - lgc_share).",
+          "Gas speciation split uses NGA default shares (CO2 98.0%, CH4 1.5%, N2O 0.5%) unless overridden.",
+          "Apply to Scope 2 market-based reporting only when no supplier-specific contract (GreenPower, LGC) applies.",
+          "STC (small-scale) certificates are NOT netted: they are already excluded from the published NGA grid average."
+        ],
+        "audit_text": "Derived Australian residual mix for NT, FY 2022-23. Grid average 0.580 kgCO2e/kWh - LGC share 4.0% = residual 0.604 kgCO2e/kWh.",
+        "fallback_rank": 5,
+        "rationale": "Derived Australian residual mix for NT, FY 2022-23. Grid average 0.580 kgCO2e/kWh - LGC share 4.0% = residual 0.604 kgCO2e/kWh.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:AU:residual_mix:nt:2022_23:nga-2023-v1",
+      "factor_name": "Australian NGA residual mix \u2014 NT FY2022-23",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "AU",
+        "grid_region": "NT",
+        "region": "NT"
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "CC-BY-4.0",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.779300Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.00032366071428571426,
+        "co2": 0.5920833333333333,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 1.1065323565323565e-05,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 86.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 4
+      },
+      "source_id": "australia_nga_factors",
+      "source_version": "NGA-2023-v1",
+      "status": "certified",
+      "valid_from": "2022-07-01",
+      "valid_to": "2023-06-30"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351",
+          "ANZSIC:D2611"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "DCCEEW does NOT officially publish a residual mix.  This factor is derived by netting LGC-surrendered MWh (assumed zero-emission per GHG Protocol Scope 2 market-based convention) from the published NGA grid-average factor.",
+          "LGC-surrendered share assumed = 0.200; formula: residual = grid_avg / (1 - lgc_share).",
+          "Gas speciation split uses NGA default shares (CO2 98.0%, CH4 1.5%, N2O 0.5%) unless overridden.",
+          "Apply to Scope 2 market-based reporting only when no supplier-specific contract (GreenPower, LGC) applies.",
+          "STC (small-scale) certificates are NOT netted: they are already excluded from the published NGA grid average."
+        ],
+        "audit_text": "Derived Australian residual mix for NSW, FY 2021-22. Grid average 0.730 kgCO2e/kWh - LGC share 20.0% = residual 0.912 kgCO2e/kWh.",
+        "fallback_rank": 5,
+        "rationale": "Derived Australian residual mix for NSW, FY 2021-22. Grid average 0.730 kgCO2e/kWh - LGC share 20.0% = residual 0.912 kgCO2e/kWh.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:AU:residual_mix:nsw:2021_22:nga-2022-v1",
+      "factor_name": "Australian NGA residual mix \u2014 NSW FY2021-22",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "AU",
+        "grid_region": "NSW",
+        "region": "NSW"
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "CC-BY-4.0",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.779300Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0004888392857142857,
+        "co2": 0.89425,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 1.671245421245421e-05,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 86.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 4
+      },
+      "source_id": "australia_nga_factors",
+      "source_version": "NGA-2022-v1",
+      "status": "certified",
+      "valid_from": "2021-07-01",
+      "valid_to": "2022-06-30"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351",
+          "ANZSIC:D2611"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "DCCEEW does NOT officially publish a residual mix.  This factor is derived by netting LGC-surrendered MWh (assumed zero-emission per GHG Protocol Scope 2 market-based convention) from the published NGA grid-average factor.",
+          "LGC-surrendered share assumed = 0.160; formula: residual = grid_avg / (1 - lgc_share).",
+          "Gas speciation split uses NGA default shares (CO2 98.0%, CH4 1.5%, N2O 0.5%) unless overridden.",
+          "Apply to Scope 2 market-based reporting only when no supplier-specific contract (GreenPower, LGC) applies.",
+          "STC (small-scale) certificates are NOT netted: they are already excluded from the published NGA grid average."
+        ],
+        "audit_text": "Derived Australian residual mix for QLD, FY 2021-22. Grid average 0.780 kgCO2e/kWh - LGC share 16.0% = residual 0.929 kgCO2e/kWh.",
+        "fallback_rank": 5,
+        "rationale": "Derived Australian residual mix for QLD, FY 2021-22. Grid average 0.780 kgCO2e/kWh - LGC share 16.0% = residual 0.929 kgCO2e/kWh.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:AU:residual_mix:qld:2021_22:nga-2022-v1",
+      "factor_name": "Australian NGA residual mix \u2014 QLD FY2021-22",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "AU",
+        "grid_region": "QLD",
+        "region": "QLD"
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "CC-BY-4.0",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.779300Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0004974489795918367,
+        "co2": 0.91,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 1.7006802721088435e-05,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 86.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 4
+      },
+      "source_id": "australia_nga_factors",
+      "source_version": "NGA-2022-v1",
+      "status": "certified",
+      "valid_from": "2021-07-01",
+      "valid_to": "2022-06-30"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351",
+          "ANZSIC:D2611"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "DCCEEW does NOT officially publish a residual mix.  This factor is derived by netting LGC-surrendered MWh (assumed zero-emission per GHG Protocol Scope 2 market-based convention) from the published NGA grid-average factor.",
+          "LGC-surrendered share assumed = 0.250; formula: residual = grid_avg / (1 - lgc_share).",
+          "Gas speciation split uses NGA default shares (CO2 98.0%, CH4 1.5%, N2O 0.5%) unless overridden.",
+          "Apply to Scope 2 market-based reporting only when no supplier-specific contract (GreenPower, LGC) applies.",
+          "STC (small-scale) certificates are NOT netted: they are already excluded from the published NGA grid average."
+        ],
+        "audit_text": "Derived Australian residual mix for VIC, FY 2021-22. Grid average 0.910 kgCO2e/kWh - LGC share 25.0% = residual 1.213 kgCO2e/kWh.",
+        "fallback_rank": 5,
+        "rationale": "Derived Australian residual mix for VIC, FY 2021-22. Grid average 0.910 kgCO2e/kWh - LGC share 25.0% = residual 1.213 kgCO2e/kWh.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:AU:residual_mix:vic:2021_22:nga-2022-v1",
+      "factor_name": "Australian NGA residual mix \u2014 VIC FY2021-22",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "AU",
+        "grid_region": "VIC",
+        "region": "VIC"
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "CC-BY-4.0",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.779300Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0006500000000000001,
+        "co2": 1.1890666666666667,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 2.2222222222222223e-05,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 86.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 4
+      },
+      "source_id": "australia_nga_factors",
+      "source_version": "NGA-2022-v1",
+      "status": "certified",
+      "valid_from": "2021-07-01",
+      "valid_to": "2022-06-30"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351",
+          "ANZSIC:D2611"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "DCCEEW does NOT officially publish a residual mix.  This factor is derived by netting LGC-surrendered MWh (assumed zero-emission per GHG Protocol Scope 2 market-based convention) from the published NGA grid-average factor.",
+          "LGC-surrendered share assumed = 0.500; formula: residual = grid_avg / (1 - lgc_share).",
+          "Gas speciation split uses NGA default shares (CO2 98.0%, CH4 1.5%, N2O 0.5%) unless overridden.",
+          "Apply to Scope 2 market-based reporting only when no supplier-specific contract (GreenPower, LGC) applies.",
+          "STC (small-scale) certificates are NOT netted: they are already excluded from the published NGA grid average."
+        ],
+        "audit_text": "Derived Australian residual mix for SA, FY 2021-22. Grid average 0.300 kgCO2e/kWh - LGC share 50.0% = residual 0.600 kgCO2e/kWh.",
+        "fallback_rank": 5,
+        "rationale": "Derived Australian residual mix for SA, FY 2021-22. Grid average 0.300 kgCO2e/kWh - LGC share 50.0% = residual 0.600 kgCO2e/kWh.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:AU:residual_mix:sa:2021_22:nga-2022-v1",
+      "factor_name": "Australian NGA residual mix \u2014 SA FY2021-22",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "AU",
+        "grid_region": "SA",
+        "region": "SA"
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "CC-BY-4.0",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.780298Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0003214285714285714,
+        "co2": 0.588,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 1.0989010989010989e-05,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 86.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 4
+      },
+      "source_id": "australia_nga_factors",
+      "source_version": "NGA-2022-v1",
+      "status": "certified",
+      "valid_from": "2021-07-01",
+      "valid_to": "2022-06-30"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351",
+          "ANZSIC:D2611"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "DCCEEW does NOT officially publish a residual mix.  This factor is derived by netting LGC-surrendered MWh (assumed zero-emission per GHG Protocol Scope 2 market-based convention) from the published NGA grid-average factor.",
+          "LGC-surrendered share assumed = 0.810; formula: residual = grid_avg / (1 - lgc_share).",
+          "Gas speciation split uses NGA default shares (CO2 98.0%, CH4 1.5%, N2O 0.5%) unless overridden.",
+          "Apply to Scope 2 market-based reporting only when no supplier-specific contract (GreenPower, LGC) applies.",
+          "STC (small-scale) certificates are NOT netted: they are already excluded from the published NGA grid average."
+        ],
+        "audit_text": "Derived Australian residual mix for TAS, FY 2021-22. Grid average 0.200 kgCO2e/kWh - LGC share 81.0% = residual 1.053 kgCO2e/kWh.",
+        "fallback_rank": 5,
+        "rationale": "Derived Australian residual mix for TAS, FY 2021-22. Grid average 0.200 kgCO2e/kWh - LGC share 81.0% = residual 1.053 kgCO2e/kWh.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:AU:residual_mix:tas:2021_22:nga-2022-v1",
+      "factor_name": "Australian NGA residual mix \u2014 TAS FY2021-22",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "AU",
+        "grid_region": "TAS",
+        "region": "TAS"
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "CC-BY-4.0",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.780298Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0005639097744360904,
+        "co2": 1.0315789473684214,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 1.9278966647387705e-05,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 86.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 4
+      },
+      "source_id": "australia_nga_factors",
+      "source_version": "NGA-2022-v1",
+      "status": "certified",
+      "valid_from": "2021-07-01",
+      "valid_to": "2022-06-30"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351",
+          "ANZSIC:D2611"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "DCCEEW does NOT officially publish a residual mix.  This factor is derived by netting LGC-surrendered MWh (assumed zero-emission per GHG Protocol Scope 2 market-based convention) from the published NGA grid-average factor.",
+          "LGC-surrendered share assumed = 0.180; formula: residual = grid_avg / (1 - lgc_share).",
+          "Gas speciation split uses NGA default shares (CO2 98.0%, CH4 1.5%, N2O 0.5%) unless overridden.",
+          "Apply to Scope 2 market-based reporting only when no supplier-specific contract (GreenPower, LGC) applies.",
+          "STC (small-scale) certificates are NOT netted: they are already excluded from the published NGA grid average."
+        ],
+        "audit_text": "Derived Australian residual mix for WA, FY 2021-22. Grid average 0.580 kgCO2e/kWh - LGC share 18.0% = residual 0.707 kgCO2e/kWh.",
+        "fallback_rank": 5,
+        "rationale": "Derived Australian residual mix for WA, FY 2021-22. Grid average 0.580 kgCO2e/kWh - LGC share 18.0% = residual 0.707 kgCO2e/kWh.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:AU:residual_mix:wa:2021_22:nga-2022-v1",
+      "factor_name": "Australian NGA residual mix \u2014 WA FY2021-22",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "AU",
+        "grid_region": "WA",
+        "region": "WA"
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "CC-BY-4.0",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.780298Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0003789198606271776,
+        "co2": 0.6931707317073169,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 1.2954525149647097e-05,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 86.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 4
+      },
+      "source_id": "australia_nga_factors",
+      "source_version": "NGA-2022-v1",
+      "status": "certified",
+      "valid_from": "2021-07-01",
+      "valid_to": "2022-06-30"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351",
+          "ANZSIC:D2611"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "DCCEEW does NOT officially publish a residual mix.  This factor is derived by netting LGC-surrendered MWh (assumed zero-emission per GHG Protocol Scope 2 market-based convention) from the published NGA grid-average factor.",
+          "LGC-surrendered share assumed = 0.030; formula: residual = grid_avg / (1 - lgc_share).",
+          "Gas speciation split uses NGA default shares (CO2 98.0%, CH4 1.5%, N2O 0.5%) unless overridden.",
+          "Apply to Scope 2 market-based reporting only when no supplier-specific contract (GreenPower, LGC) applies.",
+          "STC (small-scale) certificates are NOT netted: they are already excluded from the published NGA grid average."
+        ],
+        "audit_text": "Derived Australian residual mix for NT, FY 2021-22. Grid average 0.610 kgCO2e/kWh - LGC share 3.0% = residual 0.629 kgCO2e/kWh.",
+        "fallback_rank": 5,
+        "rationale": "Derived Australian residual mix for NT, FY 2021-22. Grid average 0.610 kgCO2e/kWh - LGC share 3.0% = residual 0.629 kgCO2e/kWh.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:AU:residual_mix:nt:2021_22:nga-2022-v1",
+      "factor_name": "Australian NGA residual mix \u2014 NT FY2021-22",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "AU",
+        "grid_region": "NT",
+        "region": "NT"
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "CC-BY-4.0",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.780298Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0003368924889543446,
+        "co2": 0.6162886597938144,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 1.1517691930063064e-05,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 86.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 4
+      },
+      "source_id": "australia_nga_factors",
+      "source_version": "NGA-2022-v1",
+      "status": "certified",
+      "valid_from": "2021-07-01",
+      "valid_to": "2022-06-30"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351",
+          "ANZSIC:D2611"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "DCCEEW does NOT officially publish a residual mix.  This factor is derived by netting LGC-surrendered MWh (assumed zero-emission per GHG Protocol Scope 2 market-based convention) from the published NGA grid-average factor.",
+          "LGC-surrendered share assumed = 0.270; formula: residual = grid_avg / (1 - lgc_share).",
+          "Gas speciation split uses NGA default shares (CO2 98.0%, CH4 1.5%, N2O 0.5%) unless overridden.",
+          "Apply to Scope 2 market-based reporting only when no supplier-specific contract (GreenPower, LGC) applies.",
+          "STC (small-scale) certificates are NOT netted: they are already excluded from the published NGA grid average."
+        ],
+        "audit_text": "Derived Australian residual mix for NSW, FY 2024-25. Grid average 0.650 kgCO2e/kWh - LGC share 27.0% = residual 0.890 kgCO2e/kWh.",
+        "fallback_rank": 5,
+        "rationale": "Derived Australian residual mix for NSW, FY 2024-25. Grid average 0.650 kgCO2e/kWh - LGC share 27.0% = residual 0.890 kgCO2e/kWh.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:AU:residual_mix:nsw:2024_25:nga-2025-v1",
+      "factor_name": "Australian NGA residual mix \u2014 NSW FY2024-25",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "AU",
+        "grid_region": "NSW",
+        "region": "NSW"
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "CC-BY-4.0",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.781282Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.00047700587084148726,
+        "co2": 0.8726027397260274,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 1.6307893020221788e-05,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 86.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 4
+      },
+      "source_id": "australia_nga_factors",
+      "source_version": "NGA-2025-v1",
+      "status": "certified",
+      "valid_from": "2024-07-01",
+      "valid_to": "2025-06-30"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351",
+          "ANZSIC:D2611"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "DCCEEW does NOT officially publish a residual mix.  This factor is derived by netting LGC-surrendered MWh (assumed zero-emission per GHG Protocol Scope 2 market-based convention) from the published NGA grid-average factor.",
+          "LGC-surrendered share assumed = 0.240; formula: residual = grid_avg / (1 - lgc_share).",
+          "Gas speciation split uses NGA default shares (CO2 98.0%, CH4 1.5%, N2O 0.5%) unless overridden.",
+          "Apply to Scope 2 market-based reporting only when no supplier-specific contract (GreenPower, LGC) applies.",
+          "STC (small-scale) certificates are NOT netted: they are already excluded from the published NGA grid average."
+        ],
+        "audit_text": "Derived Australian residual mix for QLD, FY 2024-25. Grid average 0.690 kgCO2e/kWh - LGC share 24.0% = residual 0.908 kgCO2e/kWh.",
+        "fallback_rank": 5,
+        "rationale": "Derived Australian residual mix for QLD, FY 2024-25. Grid average 0.690 kgCO2e/kWh - LGC share 24.0% = residual 0.908 kgCO2e/kWh.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:AU:residual_mix:qld:2024_25:nga-2025-v1",
+      "factor_name": "Australian NGA residual mix \u2014 QLD FY2024-25",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "AU",
+        "grid_region": "QLD",
+        "region": "QLD"
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "CC-BY-4.0",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.781282Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0004863721804511278,
+        "co2": 0.889736842105263,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 1.6628108733371893e-05,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 86.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 4
+      },
+      "source_id": "australia_nga_factors",
+      "source_version": "NGA-2025-v1",
+      "status": "certified",
+      "valid_from": "2024-07-01",
+      "valid_to": "2025-06-30"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351",
+          "ANZSIC:D2611"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "DCCEEW does NOT officially publish a residual mix.  This factor is derived by netting LGC-surrendered MWh (assumed zero-emission per GHG Protocol Scope 2 market-based convention) from the published NGA grid-average factor.",
+          "LGC-surrendered share assumed = 0.300; formula: residual = grid_avg / (1 - lgc_share).",
+          "Gas speciation split uses NGA default shares (CO2 98.0%, CH4 1.5%, N2O 0.5%) unless overridden.",
+          "Apply to Scope 2 market-based reporting only when no supplier-specific contract (GreenPower, LGC) applies.",
+          "STC (small-scale) certificates are NOT netted: they are already excluded from the published NGA grid average."
+        ],
+        "audit_text": "Derived Australian residual mix for VIC, FY 2024-25. Grid average 0.810 kgCO2e/kWh - LGC share 30.0% = residual 1.157 kgCO2e/kWh.",
+        "fallback_rank": 5,
+        "rationale": "Derived Australian residual mix for VIC, FY 2024-25. Grid average 0.810 kgCO2e/kWh - LGC share 30.0% = residual 1.157 kgCO2e/kWh.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:AU:residual_mix:vic:2024_25:nga-2025-v1",
+      "factor_name": "Australian NGA residual mix \u2014 VIC FY2024-25",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "AU",
+        "grid_region": "VIC",
+        "region": "VIC"
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "CC-BY-4.0",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.781282Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0006198979591836736,
+        "co2": 1.1340000000000001,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 2.1193092621664053e-05,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 86.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 4
+      },
+      "source_id": "australia_nga_factors",
+      "source_version": "NGA-2025-v1",
+      "status": "certified",
+      "valid_from": "2024-07-01",
+      "valid_to": "2025-06-30"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351",
+          "ANZSIC:D2611"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "DCCEEW does NOT officially publish a residual mix.  This factor is derived by netting LGC-surrendered MWh (assumed zero-emission per GHG Protocol Scope 2 market-based convention) from the published NGA grid-average factor.",
+          "LGC-surrendered share assumed = 0.580; formula: residual = grid_avg / (1 - lgc_share).",
+          "Gas speciation split uses NGA default shares (CO2 98.0%, CH4 1.5%, N2O 0.5%) unless overridden.",
+          "Apply to Scope 2 market-based reporting only when no supplier-specific contract (GreenPower, LGC) applies.",
+          "STC (small-scale) certificates are NOT netted: they are already excluded from the published NGA grid average."
+        ],
+        "audit_text": "Derived Australian residual mix for SA, FY 2024-25. Grid average 0.220 kgCO2e/kWh - LGC share 58.0% = residual 0.524 kgCO2e/kWh.",
+        "fallback_rank": 5,
+        "rationale": "Derived Australian residual mix for SA, FY 2024-25. Grid average 0.220 kgCO2e/kWh - LGC share 58.0% = residual 0.524 kgCO2e/kWh.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:AU:residual_mix:sa:2024_25:nga-2025-v1",
+      "factor_name": "Australian NGA residual mix \u2014 SA FY2024-25",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "AU",
+        "grid_region": "SA",
+        "region": "SA"
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "CC-BY-4.0",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.781282Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.00028061224489795913,
+        "co2": 0.5133333333333332,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 9.593581022152448e-06,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 86.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 4
+      },
+      "source_id": "australia_nga_factors",
+      "source_version": "NGA-2025-v1",
+      "status": "certified",
+      "valid_from": "2024-07-01",
+      "valid_to": "2025-06-30"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351",
+          "ANZSIC:D2611"
+        ],
+        "sub_category": "residual_mix"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "DCCEEW does NOT officially publish a residual mix.  This factor is derived by netting LGC-surrendered MWh (assumed zero-emission per GHG Protocol Scope 2 market-based convention) from the published NGA grid-average factor.",
+          "LGC-surrendered share assumed = 0.880; formula: residual = grid_avg / (1 - lgc_share).",
+          "Gas speciation split uses NGA default shares (CO2 98.0%, CH4 1.5%, N2O 0.5%) unless overridden.",
+          "Apply to Scope 2 market-based reporting only when no supplier-specific contract (GreenPower, LGC) applies.",
+          "STC (small-scale) certificates are NOT netted: they are already excluded from the published NGA grid average."
+        ],
+        "audit_text": "Derived Australian residual mix for TAS, FY 2024-25. Grid average 0.150 kgCO2e/kWh - LGC share 88.0% = residual 1.250 kgCO2e/kWh.",
+        "fallback_rank": 5,
+        "rationale": "Derived Australian residual mix for TAS, FY 2024-25. Grid average 0.150 kgCO2e/kWh - LGC share 88.0% = residual 1.250 kgCO2e/kWh.",
+        "replacement_pointer": null
+      },
+      "factor_family": "residual_mix",
+      "factor_id": "EF:AU:residual_mix:tas:2024_25:nga-2025-v1",
+      "factor_name": "Australian NGA residual mix \u2014 TAS FY2024-25",
+      "factor_version": "1.0.0",
+      "formula_type": "residual_mix",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "AU",
+        "grid_region": "TAS",
+        "region": "TAS"
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "CC-BY-4.0",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.782286Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_market_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0006696428571428571,
+        "co2": 1.225,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 2.2893772893772894e-05,
+        "unit": "kg"
+      },
+      "parameters": {},
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 86.0,
+        "geographic_score": 5,
+        "technology_score": 3,
+        "temporal_score": 5,
+        "verification_score": 4
+      },
+      "source_id": "australia_nga_factors",
+      "source_version": "NGA-2025-v1",
+      "status": "certified",
+      "valid_from": "2024-07-01",
+      "valid_to": "2025-06-30"
+    }
+  ],
+  "ingested_at": "2026-04-23T18:26:52+00:00",
+  "license_class": "open",
+  "license_name": "CC-BY-4.0",
+  "redistribution_class": "open",
+  "schema_version": "factor_record_v1",
+  "source_id": "australia_nga_factors",
+  "source_version": "2024.1"
+}

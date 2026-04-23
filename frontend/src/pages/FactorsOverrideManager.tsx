@@ -59,8 +59,35 @@ const EMPTY_FORM: CreateForm = {
   rationale: "",
 };
 
+/**
+ * W4-D — Cross-tenant blindness: the caller's tenant id is read from the
+ * JWT (best-effort local parse) OR from localStorage `gl.auth.tenant`.
+ * When present, the tenant filter is locked to that value so the UI
+ * cannot leak other tenants' overrides even if the backend mistakenly
+ * permits it.
+ */
+function readCallerTenant(): string | null {
+  try {
+    const explicit = window.localStorage.getItem("gl.auth.tenant");
+    if (explicit && explicit.trim().length > 0) return explicit.trim();
+    const token = window.localStorage.getItem("gl.auth.token");
+    if (!token) return null;
+    const parts = token.split(".");
+    if (parts.length < 2) return null;
+    const payload = parts[1];
+    const pad = (4 - (payload.length % 4)) % 4;
+    const b64 = payload.replace(/-/g, "+").replace(/_/g, "/") + "=".repeat(pad);
+    const json = typeof atob === "function" ? atob(b64) : Buffer.from(b64, "base64").toString("utf-8");
+    const claims = JSON.parse(json) as { tenant_id?: string; tenant?: string };
+    return claims.tenant_id ?? claims.tenant ?? null;
+  } catch {
+    return null;
+  }
+}
+
 export function FactorsOverrideManager() {
-  const [tenantFilter, setTenantFilter] = useState("");
+  const callerTenant = readCallerTenant();
+  const [tenantFilter, setTenantFilter] = useState(callerTenant ?? "");
   const [overrides, setOverrides] = useState<OverrideRecord[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -143,12 +170,25 @@ export function FactorsOverrideManager() {
           <Stack direction={{ xs: "column", md: "row" }} spacing={2} alignItems="center">
             <TextField
               fullWidth
-              label="Filter by tenant ID (optional)"
+              label={callerTenant ? "Tenant (locked — cross-tenant blindness)" : "Filter by tenant ID"}
               value={tenantFilter}
-              onChange={(e) => setTenantFilter(e.target.value)}
+              onChange={(e) => {
+                // Cross-tenant blindness: operators cannot type another
+                // tenant id when the UI resolved a caller tenant from
+                // the session.
+                if (callerTenant) return;
+                setTenantFilter(e.target.value);
+              }}
               onKeyDown={(e) => {
                 if (e.key === "Enter") void load();
               }}
+              InputProps={{ readOnly: Boolean(callerTenant) }}
+              data-testid="override-tenant-filter"
+              helperText={
+                callerTenant
+                  ? `Tenant ${callerTenant} — locked by session for cross-tenant blindness.`
+                  : undefined
+              }
             />
             <Button variant="outlined" onClick={() => void load()} disabled={loading}>
               {loading ? "Loading…" : "Load"}

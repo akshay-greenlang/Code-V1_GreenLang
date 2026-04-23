@@ -1,0 +1,2804 @@
+{
+  "attribution_text": "Carbon Credit Trading Scheme baseline emission intensities, Bureau of Energy Efficiency (BEE), MoEFCC, Government of India, G.S.R. 443(E) dated 28 June 2023.",
+  "factor_count": 30,
+  "factor_status_default": "certified",
+  "factors": [
+    {
+      "activity_schema": {
+        "category": "ccts_baseline_intensity",
+        "classification_codes": [
+          "NIC:2394",
+          "ISIC:C2394"
+        ],
+        "sub_category": "cement"
+      },
+      "denominator": {
+        "unit": "tonne_cement",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "India CCTS baseline intensity published by the Bureau of Energy Efficiency per the Energy Conservation (Amendment) Act, 2022 and MoEFCC Carbon Credit Trading Scheme notification G.S.R. 443(E).",
+          "Applies to obligated entities in the cement manufacturing sector; non-obligated entities may use the baseline as a sectoral reference.",
+          "Compliance cycle: CCTS-1. Target year: 2025-26.",
+          "Baseline values are subject to triennial BEE revision."
+        ],
+        "audit_text": "India CCTS CCTS-1 baseline for Cement manufacturing, FY 2025-26. Notification reference: BEE/CCTS/cement/2024.",
+        "fallback_rank": 5,
+        "rationale": "India CCTS CCTS-1 baseline for Cement manufacturing, FY 2025-26. Notification reference: BEE/CCTS/cement/2024.",
+        "replacement_pointer": null
+      },
+      "factor_family": "combustion",
+      "factor_id": "EF:IN:ccts:cement:2025-26:CCTS-1",
+      "factor_name": "India CCTS baseline \u2014 Cement manufacturing, FY 2025-26",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "IN",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "Government of India \u2014 public notification (attribution required)",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.699269Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "eu_cbam",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 672.0,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "HHV": null,
+        "LHV": null,
+        "ash_share": null,
+        "biogenic_carbon_share": null,
+        "density": null,
+        "fossil_carbon_share": null,
+        "fuel_code": "cement_output",
+        "moisture_share": null,
+        "oxidation_factor": null,
+        "scope_applicability": [],
+        "sulfur_share": null,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 90.0,
+        "geographic_score": 5,
+        "technology_score": 4,
+        "temporal_score": 5,
+        "verification_score": 4
+      },
+      "source_id": "india_ccts_baselines",
+      "source_version": "BEE/CCTS/cement/2024",
+      "status": "certified",
+      "valid_from": "2025-04-01",
+      "valid_to": "2026-03-31"
+    },
+    {
+      "activity_schema": {
+        "category": "ccts_baseline_intensity",
+        "classification_codes": [
+          "NIC:2410",
+          "ISIC:C2410"
+        ],
+        "sub_category": "iron_and_steel"
+      },
+      "denominator": {
+        "unit": "tonne_crude_steel",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "India CCTS baseline intensity published by the Bureau of Energy Efficiency per the Energy Conservation (Amendment) Act, 2022 and MoEFCC Carbon Credit Trading Scheme notification G.S.R. 443(E).",
+          "Applies to obligated entities in the iron and steel manufacturing sector; non-obligated entities may use the baseline as a sectoral reference.",
+          "Compliance cycle: CCTS-1. Target year: 2025-26.",
+          "Baseline values are subject to triennial BEE revision."
+        ],
+        "audit_text": "India CCTS CCTS-1 baseline for Iron and steel manufacturing, FY 2025-26. Notification reference: BEE/CCTS/steel/2024.",
+        "fallback_rank": 5,
+        "rationale": "India CCTS CCTS-1 baseline for Iron and steel manufacturing, FY 2025-26. Notification reference: BEE/CCTS/steel/2024.",
+        "replacement_pointer": null
+      },
+      "factor_family": "combustion",
+      "factor_id": "EF:IN:ccts:iron_and_steel:2025-26:CCTS-1",
+      "factor_name": "India CCTS baseline \u2014 Iron and steel manufacturing, FY 2025-26",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "IN",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "Government of India \u2014 public notification (attribution required)",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.699269Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "eu_cbam",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 2380.0,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "HHV": null,
+        "LHV": null,
+        "ash_share": null,
+        "biogenic_carbon_share": null,
+        "density": null,
+        "fossil_carbon_share": null,
+        "fuel_code": "iron_and_steel_output",
+        "moisture_share": null,
+        "oxidation_factor": null,
+        "scope_applicability": [],
+        "sulfur_share": null,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 90.0,
+        "geographic_score": 5,
+        "technology_score": 4,
+        "temporal_score": 5,
+        "verification_score": 4
+      },
+      "source_id": "india_ccts_baselines",
+      "source_version": "BEE/CCTS/steel/2024",
+      "status": "certified",
+      "valid_from": "2025-04-01",
+      "valid_to": "2026-03-31"
+    },
+    {
+      "activity_schema": {
+        "category": "ccts_baseline_intensity",
+        "classification_codes": [
+          "NIC:2420",
+          "ISIC:C2420"
+        ],
+        "sub_category": "aluminum"
+      },
+      "denominator": {
+        "unit": "tonne_aluminum",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "India CCTS baseline intensity published by the Bureau of Energy Efficiency per the Energy Conservation (Amendment) Act, 2022 and MoEFCC Carbon Credit Trading Scheme notification G.S.R. 443(E).",
+          "Applies to obligated entities in the primary aluminum smelting sector; non-obligated entities may use the baseline as a sectoral reference.",
+          "Compliance cycle: CCTS-1. Target year: 2025-26.",
+          "Baseline values are subject to triennial BEE revision."
+        ],
+        "audit_text": "India CCTS CCTS-1 baseline for Primary aluminum smelting, FY 2025-26. Notification reference: BEE/CCTS/aluminum/2024.",
+        "fallback_rank": 5,
+        "rationale": "India CCTS CCTS-1 baseline for Primary aluminum smelting, FY 2025-26. Notification reference: BEE/CCTS/aluminum/2024.",
+        "replacement_pointer": null
+      },
+      "factor_family": "combustion",
+      "factor_id": "EF:IN:ccts:aluminum:2025-26:CCTS-1",
+      "factor_name": "India CCTS baseline \u2014 Primary aluminum smelting, FY 2025-26",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "IN",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "Government of India \u2014 public notification (attribution required)",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.699269Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "eu_cbam",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 15800.0,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "HHV": null,
+        "LHV": null,
+        "ash_share": null,
+        "biogenic_carbon_share": null,
+        "density": null,
+        "fossil_carbon_share": null,
+        "fuel_code": "aluminum_output",
+        "moisture_share": null,
+        "oxidation_factor": null,
+        "scope_applicability": [],
+        "sulfur_share": null,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 90.0,
+        "geographic_score": 5,
+        "technology_score": 4,
+        "temporal_score": 5,
+        "verification_score": 4
+      },
+      "source_id": "india_ccts_baselines",
+      "source_version": "BEE/CCTS/aluminum/2024",
+      "status": "certified",
+      "valid_from": "2025-04-01",
+      "valid_to": "2026-03-31"
+    },
+    {
+      "activity_schema": {
+        "category": "ccts_baseline_intensity",
+        "classification_codes": [
+          "NIC:1701",
+          "ISIC:C1701"
+        ],
+        "sub_category": "pulp_and_paper"
+      },
+      "denominator": {
+        "unit": "tonne_paper",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "India CCTS baseline intensity published by the Bureau of Energy Efficiency per the Energy Conservation (Amendment) Act, 2022 and MoEFCC Carbon Credit Trading Scheme notification G.S.R. 443(E).",
+          "Applies to obligated entities in the pulp and paper manufacturing sector; non-obligated entities may use the baseline as a sectoral reference.",
+          "Compliance cycle: CCTS-1. Target year: 2025-26.",
+          "Baseline values are subject to triennial BEE revision."
+        ],
+        "audit_text": "India CCTS CCTS-1 baseline for Pulp and paper manufacturing, FY 2025-26. Notification reference: BEE/CCTS/paper/2024.",
+        "fallback_rank": 5,
+        "rationale": "India CCTS CCTS-1 baseline for Pulp and paper manufacturing, FY 2025-26. Notification reference: BEE/CCTS/paper/2024.",
+        "replacement_pointer": null
+      },
+      "factor_family": "combustion",
+      "factor_id": "EF:IN:ccts:pulp_and_paper:2025-26:CCTS-1",
+      "factor_name": "India CCTS baseline \u2014 Pulp and paper manufacturing, FY 2025-26",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "IN",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "Government of India \u2014 public notification (attribution required)",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.700268Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "eu_cbam",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 1120.0,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "HHV": null,
+        "LHV": null,
+        "ash_share": null,
+        "biogenic_carbon_share": null,
+        "density": null,
+        "fossil_carbon_share": null,
+        "fuel_code": "pulp_and_paper_output",
+        "moisture_share": null,
+        "oxidation_factor": null,
+        "scope_applicability": [],
+        "sulfur_share": null,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 90.0,
+        "geographic_score": 5,
+        "technology_score": 4,
+        "temporal_score": 5,
+        "verification_score": 4
+      },
+      "source_id": "india_ccts_baselines",
+      "source_version": "BEE/CCTS/paper/2024",
+      "status": "certified",
+      "valid_from": "2025-04-01",
+      "valid_to": "2026-03-31"
+    },
+    {
+      "activity_schema": {
+        "category": "ccts_baseline_intensity",
+        "classification_codes": [
+          "NIC:2011",
+          "ISIC:C2011"
+        ],
+        "sub_category": "petrochemicals"
+      },
+      "denominator": {
+        "unit": "tonne_product",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "India CCTS baseline intensity published by the Bureau of Energy Efficiency per the Energy Conservation (Amendment) Act, 2022 and MoEFCC Carbon Credit Trading Scheme notification G.S.R. 443(E).",
+          "Applies to obligated entities in the petrochemicals manufacturing sector; non-obligated entities may use the baseline as a sectoral reference.",
+          "Compliance cycle: CCTS-1. Target year: 2025-26.",
+          "Baseline values are subject to triennial BEE revision."
+        ],
+        "audit_text": "India CCTS CCTS-1 baseline for Petrochemicals manufacturing, FY 2025-26. Notification reference: BEE/CCTS/petrochem/2024.",
+        "fallback_rank": 5,
+        "rationale": "India CCTS CCTS-1 baseline for Petrochemicals manufacturing, FY 2025-26. Notification reference: BEE/CCTS/petrochem/2024.",
+        "replacement_pointer": null
+      },
+      "factor_family": "combustion",
+      "factor_id": "EF:IN:ccts:petrochemicals:2025-26:CCTS-1",
+      "factor_name": "India CCTS baseline \u2014 Petrochemicals manufacturing, FY 2025-26",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "IN",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "Government of India \u2014 public notification (attribution required)",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.700268Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "eu_cbam",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 750.0,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "HHV": null,
+        "LHV": null,
+        "ash_share": null,
+        "biogenic_carbon_share": null,
+        "density": null,
+        "fossil_carbon_share": null,
+        "fuel_code": "petrochemicals_output",
+        "moisture_share": null,
+        "oxidation_factor": null,
+        "scope_applicability": [],
+        "sulfur_share": null,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 90.0,
+        "geographic_score": 5,
+        "technology_score": 4,
+        "temporal_score": 5,
+        "verification_score": 4
+      },
+      "source_id": "india_ccts_baselines",
+      "source_version": "BEE/CCTS/petrochem/2024",
+      "status": "certified",
+      "valid_from": "2025-04-01",
+      "valid_to": "2026-03-31"
+    },
+    {
+      "activity_schema": {
+        "category": "ccts_baseline_intensity",
+        "classification_codes": [
+          "NIC:2012",
+          "ISIC:C2012"
+        ],
+        "sub_category": "fertilizer"
+      },
+      "denominator": {
+        "unit": "tonne_nutrient",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "India CCTS baseline intensity published by the Bureau of Energy Efficiency per the Energy Conservation (Amendment) Act, 2022 and MoEFCC Carbon Credit Trading Scheme notification G.S.R. 443(E).",
+          "Applies to obligated entities in the fertilizer manufacturing sector; non-obligated entities may use the baseline as a sectoral reference.",
+          "Compliance cycle: CCTS-1. Target year: 2025-26.",
+          "Baseline values are subject to triennial BEE revision."
+        ],
+        "audit_text": "India CCTS CCTS-1 baseline for Fertilizer manufacturing, FY 2025-26. Notification reference: BEE/CCTS/fertilizer/2024.",
+        "fallback_rank": 5,
+        "rationale": "India CCTS CCTS-1 baseline for Fertilizer manufacturing, FY 2025-26. Notification reference: BEE/CCTS/fertilizer/2024.",
+        "replacement_pointer": null
+      },
+      "factor_family": "combustion",
+      "factor_id": "EF:IN:ccts:fertilizer:2025-26:CCTS-1",
+      "factor_name": "India CCTS baseline \u2014 Fertilizer manufacturing, FY 2025-26",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "IN",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "Government of India \u2014 public notification (attribution required)",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.700268Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "eu_cbam",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 2650.0,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "HHV": null,
+        "LHV": null,
+        "ash_share": null,
+        "biogenic_carbon_share": null,
+        "density": null,
+        "fossil_carbon_share": null,
+        "fuel_code": "fertilizer_output",
+        "moisture_share": null,
+        "oxidation_factor": null,
+        "scope_applicability": [],
+        "sulfur_share": null,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 90.0,
+        "geographic_score": 5,
+        "technology_score": 4,
+        "temporal_score": 5,
+        "verification_score": 4
+      },
+      "source_id": "india_ccts_baselines",
+      "source_version": "BEE/CCTS/fertilizer/2024",
+      "status": "certified",
+      "valid_from": "2025-04-01",
+      "valid_to": "2026-03-31"
+    },
+    {
+      "activity_schema": {
+        "category": "ccts_baseline_intensity",
+        "classification_codes": [
+          "NIC:2011",
+          "ISIC:C2011"
+        ],
+        "sub_category": "chlor_alkali"
+      },
+      "denominator": {
+        "unit": "tonne_caustic_soda",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "India CCTS baseline intensity published by the Bureau of Energy Efficiency per the Energy Conservation (Amendment) Act, 2022 and MoEFCC Carbon Credit Trading Scheme notification G.S.R. 443(E).",
+          "Applies to obligated entities in the chlor-alkali manufacturing sector; non-obligated entities may use the baseline as a sectoral reference.",
+          "Compliance cycle: CCTS-1. Target year: 2025-26.",
+          "Baseline values are subject to triennial BEE revision."
+        ],
+        "audit_text": "India CCTS CCTS-1 baseline for Chlor-alkali manufacturing, FY 2025-26. Notification reference: BEE/CCTS/chlor_alkali/2024.",
+        "fallback_rank": 5,
+        "rationale": "India CCTS CCTS-1 baseline for Chlor-alkali manufacturing, FY 2025-26. Notification reference: BEE/CCTS/chlor_alkali/2024.",
+        "replacement_pointer": null
+      },
+      "factor_family": "combustion",
+      "factor_id": "EF:IN:ccts:chlor_alkali:2025-26:CCTS-1",
+      "factor_name": "India CCTS baseline \u2014 Chlor-alkali manufacturing, FY 2025-26",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "IN",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "Government of India \u2014 public notification (attribution required)",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.701367Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "eu_cbam",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 1850.0,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "HHV": null,
+        "LHV": null,
+        "ash_share": null,
+        "biogenic_carbon_share": null,
+        "density": null,
+        "fossil_carbon_share": null,
+        "fuel_code": "chlor_alkali_output",
+        "moisture_share": null,
+        "oxidation_factor": null,
+        "scope_applicability": [],
+        "sulfur_share": null,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 90.0,
+        "geographic_score": 5,
+        "technology_score": 4,
+        "temporal_score": 5,
+        "verification_score": 4
+      },
+      "source_id": "india_ccts_baselines",
+      "source_version": "BEE/CCTS/chlor_alkali/2024",
+      "status": "certified",
+      "valid_from": "2025-04-01",
+      "valid_to": "2026-03-31"
+    },
+    {
+      "activity_schema": {
+        "category": "ccts_baseline_intensity",
+        "classification_codes": [
+          "NIC:1313",
+          "ISIC:C1313"
+        ],
+        "sub_category": "textile"
+      },
+      "denominator": {
+        "unit": "tonne_textile",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "India CCTS baseline intensity published by the Bureau of Energy Efficiency per the Energy Conservation (Amendment) Act, 2022 and MoEFCC Carbon Credit Trading Scheme notification G.S.R. 443(E).",
+          "Applies to obligated entities in the textile wet processing / man-made fibres sector; non-obligated entities may use the baseline as a sectoral reference.",
+          "Compliance cycle: CCTS-1. Target year: 2025-26.",
+          "Baseline values are subject to triennial BEE revision."
+        ],
+        "audit_text": "India CCTS CCTS-1 baseline for Textile wet processing / man-made fibres, FY 2025-26. Notification reference: BEE/CCTS/textile/2024.",
+        "fallback_rank": 5,
+        "rationale": "India CCTS CCTS-1 baseline for Textile wet processing / man-made fibres, FY 2025-26. Notification reference: BEE/CCTS/textile/2024.",
+        "replacement_pointer": null
+      },
+      "factor_family": "combustion",
+      "factor_id": "EF:IN:ccts:textile:2025-26:CCTS-1",
+      "factor_name": "India CCTS baseline \u2014 Textile wet processing / man-made fibres, FY 2025-26",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "IN",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "Government of India \u2014 public notification (attribution required)",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.701367Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "eu_cbam",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 1420.0,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "HHV": null,
+        "LHV": null,
+        "ash_share": null,
+        "biogenic_carbon_share": null,
+        "density": null,
+        "fossil_carbon_share": null,
+        "fuel_code": "textile_output",
+        "moisture_share": null,
+        "oxidation_factor": null,
+        "scope_applicability": [],
+        "sulfur_share": null,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 90.0,
+        "geographic_score": 5,
+        "technology_score": 4,
+        "temporal_score": 5,
+        "verification_score": 4
+      },
+      "source_id": "india_ccts_baselines",
+      "source_version": "BEE/CCTS/textile/2024",
+      "status": "certified",
+      "valid_from": "2025-04-01",
+      "valid_to": "2026-03-31"
+    },
+    {
+      "activity_schema": {
+        "category": "ccts_baseline_intensity",
+        "classification_codes": [
+          "NIC:2394",
+          "ISIC:C2394"
+        ],
+        "sub_category": "cement"
+      },
+      "denominator": {
+        "unit": "tonne_cement",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "India CCTS baseline intensity published by the Bureau of Energy Efficiency per the Energy Conservation (Amendment) Act, 2022 and MoEFCC Carbon Credit Trading Scheme notification G.S.R. 443(E).",
+          "Applies to obligated entities in the cement manufacturing sector; non-obligated entities may use the baseline as a sectoral reference.",
+          "Compliance cycle: CCTS-1. Target year: 2026-27.",
+          "Baseline values are subject to triennial BEE revision."
+        ],
+        "audit_text": "India CCTS CCTS-1 baseline for Cement manufacturing, FY 2026-27. Notification reference: BEE/CCTS/cement/2025.",
+        "fallback_rank": 5,
+        "rationale": "India CCTS CCTS-1 baseline for Cement manufacturing, FY 2026-27. Notification reference: BEE/CCTS/cement/2025.",
+        "replacement_pointer": null
+      },
+      "factor_family": "combustion",
+      "factor_id": "EF:IN:ccts:cement:2026-27:CCTS-1",
+      "factor_name": "India CCTS baseline \u2014 Cement manufacturing, FY 2026-27",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "IN",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "Government of India \u2014 public notification (attribution required)",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.701367Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "eu_cbam",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 650.0,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "HHV": null,
+        "LHV": null,
+        "ash_share": null,
+        "biogenic_carbon_share": null,
+        "density": null,
+        "fossil_carbon_share": null,
+        "fuel_code": "cement_output",
+        "moisture_share": null,
+        "oxidation_factor": null,
+        "scope_applicability": [],
+        "sulfur_share": null,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 90.0,
+        "geographic_score": 5,
+        "technology_score": 4,
+        "temporal_score": 5,
+        "verification_score": 4
+      },
+      "source_id": "india_ccts_baselines",
+      "source_version": "BEE/CCTS/cement/2025",
+      "status": "certified",
+      "valid_from": "2026-04-01",
+      "valid_to": "2027-03-31"
+    },
+    {
+      "activity_schema": {
+        "category": "ccts_baseline_intensity",
+        "classification_codes": [
+          "NIC:2410",
+          "ISIC:C2410"
+        ],
+        "sub_category": "iron_and_steel"
+      },
+      "denominator": {
+        "unit": "tonne_crude_steel",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "India CCTS baseline intensity published by the Bureau of Energy Efficiency per the Energy Conservation (Amendment) Act, 2022 and MoEFCC Carbon Credit Trading Scheme notification G.S.R. 443(E).",
+          "Applies to obligated entities in the iron and steel manufacturing sector; non-obligated entities may use the baseline as a sectoral reference.",
+          "Compliance cycle: CCTS-1. Target year: 2026-27.",
+          "Baseline values are subject to triennial BEE revision."
+        ],
+        "audit_text": "India CCTS CCTS-1 baseline for Iron and steel manufacturing, FY 2026-27. Notification reference: BEE/CCTS/steel/2025.",
+        "fallback_rank": 5,
+        "rationale": "India CCTS CCTS-1 baseline for Iron and steel manufacturing, FY 2026-27. Notification reference: BEE/CCTS/steel/2025.",
+        "replacement_pointer": null
+      },
+      "factor_family": "combustion",
+      "factor_id": "EF:IN:ccts:iron_and_steel:2026-27:CCTS-1",
+      "factor_name": "India CCTS baseline \u2014 Iron and steel manufacturing, FY 2026-27",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "IN",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "Government of India \u2014 public notification (attribution required)",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.702271Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "eu_cbam",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 2300.0,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "HHV": null,
+        "LHV": null,
+        "ash_share": null,
+        "biogenic_carbon_share": null,
+        "density": null,
+        "fossil_carbon_share": null,
+        "fuel_code": "iron_and_steel_output",
+        "moisture_share": null,
+        "oxidation_factor": null,
+        "scope_applicability": [],
+        "sulfur_share": null,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 90.0,
+        "geographic_score": 5,
+        "technology_score": 4,
+        "temporal_score": 5,
+        "verification_score": 4
+      },
+      "source_id": "india_ccts_baselines",
+      "source_version": "BEE/CCTS/steel/2025",
+      "status": "certified",
+      "valid_from": "2026-04-01",
+      "valid_to": "2027-03-31"
+    },
+    {
+      "activity_schema": {
+        "category": "ccts_baseline_intensity",
+        "classification_codes": [
+          "NIC:2420",
+          "ISIC:C2420"
+        ],
+        "sub_category": "aluminum"
+      },
+      "denominator": {
+        "unit": "tonne_aluminum",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "India CCTS baseline intensity published by the Bureau of Energy Efficiency per the Energy Conservation (Amendment) Act, 2022 and MoEFCC Carbon Credit Trading Scheme notification G.S.R. 443(E).",
+          "Applies to obligated entities in the primary aluminum smelting sector; non-obligated entities may use the baseline as a sectoral reference.",
+          "Compliance cycle: CCTS-1. Target year: 2026-27.",
+          "Baseline values are subject to triennial BEE revision."
+        ],
+        "audit_text": "India CCTS CCTS-1 baseline for Primary aluminum smelting, FY 2026-27. Notification reference: BEE/CCTS/aluminum/2025.",
+        "fallback_rank": 5,
+        "rationale": "India CCTS CCTS-1 baseline for Primary aluminum smelting, FY 2026-27. Notification reference: BEE/CCTS/aluminum/2025.",
+        "replacement_pointer": null
+      },
+      "factor_family": "combustion",
+      "factor_id": "EF:IN:ccts:aluminum:2026-27:CCTS-1",
+      "factor_name": "India CCTS baseline \u2014 Primary aluminum smelting, FY 2026-27",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "IN",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "Government of India \u2014 public notification (attribution required)",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.702271Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "eu_cbam",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 15450.0,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "HHV": null,
+        "LHV": null,
+        "ash_share": null,
+        "biogenic_carbon_share": null,
+        "density": null,
+        "fossil_carbon_share": null,
+        "fuel_code": "aluminum_output",
+        "moisture_share": null,
+        "oxidation_factor": null,
+        "scope_applicability": [],
+        "sulfur_share": null,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 90.0,
+        "geographic_score": 5,
+        "technology_score": 4,
+        "temporal_score": 5,
+        "verification_score": 4
+      },
+      "source_id": "india_ccts_baselines",
+      "source_version": "BEE/CCTS/aluminum/2025",
+      "status": "certified",
+      "valid_from": "2026-04-01",
+      "valid_to": "2027-03-31"
+    },
+    {
+      "activity_schema": {
+        "category": "ccts_baseline_intensity",
+        "classification_codes": [
+          "NIC:1701",
+          "ISIC:C1701"
+        ],
+        "sub_category": "pulp_and_paper"
+      },
+      "denominator": {
+        "unit": "tonne_paper",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "India CCTS baseline intensity published by the Bureau of Energy Efficiency per the Energy Conservation (Amendment) Act, 2022 and MoEFCC Carbon Credit Trading Scheme notification G.S.R. 443(E).",
+          "Applies to obligated entities in the pulp and paper manufacturing sector; non-obligated entities may use the baseline as a sectoral reference.",
+          "Compliance cycle: CCTS-1. Target year: 2026-27.",
+          "Baseline values are subject to triennial BEE revision."
+        ],
+        "audit_text": "India CCTS CCTS-1 baseline for Pulp and paper manufacturing, FY 2026-27. Notification reference: BEE/CCTS/paper/2025.",
+        "fallback_rank": 5,
+        "rationale": "India CCTS CCTS-1 baseline for Pulp and paper manufacturing, FY 2026-27. Notification reference: BEE/CCTS/paper/2025.",
+        "replacement_pointer": null
+      },
+      "factor_family": "combustion",
+      "factor_id": "EF:IN:ccts:pulp_and_paper:2026-27:CCTS-1",
+      "factor_name": "India CCTS baseline \u2014 Pulp and paper manufacturing, FY 2026-27",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "IN",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "Government of India \u2014 public notification (attribution required)",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.702271Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "eu_cbam",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 1080.0,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "HHV": null,
+        "LHV": null,
+        "ash_share": null,
+        "biogenic_carbon_share": null,
+        "density": null,
+        "fossil_carbon_share": null,
+        "fuel_code": "pulp_and_paper_output",
+        "moisture_share": null,
+        "oxidation_factor": null,
+        "scope_applicability": [],
+        "sulfur_share": null,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 90.0,
+        "geographic_score": 5,
+        "technology_score": 4,
+        "temporal_score": 5,
+        "verification_score": 4
+      },
+      "source_id": "india_ccts_baselines",
+      "source_version": "BEE/CCTS/paper/2025",
+      "status": "certified",
+      "valid_from": "2026-04-01",
+      "valid_to": "2027-03-31"
+    },
+    {
+      "activity_schema": {
+        "category": "ccts_baseline_intensity",
+        "classification_codes": [
+          "NIC:2012",
+          "ISIC:C2012"
+        ],
+        "sub_category": "fertilizer"
+      },
+      "denominator": {
+        "unit": "tonne_nutrient",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "India CCTS baseline intensity published by the Bureau of Energy Efficiency per the Energy Conservation (Amendment) Act, 2022 and MoEFCC Carbon Credit Trading Scheme notification G.S.R. 443(E).",
+          "Applies to obligated entities in the fertilizer manufacturing sector; non-obligated entities may use the baseline as a sectoral reference.",
+          "Compliance cycle: CCTS-1. Target year: 2026-27.",
+          "Baseline values are subject to triennial BEE revision."
+        ],
+        "audit_text": "India CCTS CCTS-1 baseline for Fertilizer manufacturing, FY 2026-27. Notification reference: BEE/CCTS/fertilizer/2025.",
+        "fallback_rank": 5,
+        "rationale": "India CCTS CCTS-1 baseline for Fertilizer manufacturing, FY 2026-27. Notification reference: BEE/CCTS/fertilizer/2025.",
+        "replacement_pointer": null
+      },
+      "factor_family": "combustion",
+      "factor_id": "EF:IN:ccts:fertilizer:2026-27:CCTS-1",
+      "factor_name": "India CCTS baseline \u2014 Fertilizer manufacturing, FY 2026-27",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "IN",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "Government of India \u2014 public notification (attribution required)",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.702271Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "eu_cbam",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 2580.0,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "HHV": null,
+        "LHV": null,
+        "ash_share": null,
+        "biogenic_carbon_share": null,
+        "density": null,
+        "fossil_carbon_share": null,
+        "fuel_code": "fertilizer_output",
+        "moisture_share": null,
+        "oxidation_factor": null,
+        "scope_applicability": [],
+        "sulfur_share": null,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 90.0,
+        "geographic_score": 5,
+        "technology_score": 4,
+        "temporal_score": 5,
+        "verification_score": 4
+      },
+      "source_id": "india_ccts_baselines",
+      "source_version": "BEE/CCTS/fertilizer/2025",
+      "status": "certified",
+      "valid_from": "2026-04-01",
+      "valid_to": "2027-03-31"
+    },
+    {
+      "activity_schema": {
+        "category": "ccts_baseline_intensity",
+        "classification_codes": [
+          "NIC:1313",
+          "ISIC:C1313"
+        ],
+        "sub_category": "textile"
+      },
+      "denominator": {
+        "unit": "tonne_textile",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "India CCTS baseline intensity published by the Bureau of Energy Efficiency per the Energy Conservation (Amendment) Act, 2022 and MoEFCC Carbon Credit Trading Scheme notification G.S.R. 443(E).",
+          "Applies to obligated entities in the textile wet processing / man-made fibres sector; non-obligated entities may use the baseline as a sectoral reference.",
+          "Compliance cycle: CCTS-1. Target year: 2026-27.",
+          "Baseline values are subject to triennial BEE revision."
+        ],
+        "audit_text": "India CCTS CCTS-1 baseline for Textile wet processing / man-made fibres, FY 2026-27. Notification reference: BEE/CCTS/textile/2025.",
+        "fallback_rank": 5,
+        "rationale": "India CCTS CCTS-1 baseline for Textile wet processing / man-made fibres, FY 2026-27. Notification reference: BEE/CCTS/textile/2025.",
+        "replacement_pointer": null
+      },
+      "factor_family": "combustion",
+      "factor_id": "EF:IN:ccts:textile:2026-27:CCTS-1",
+      "factor_name": "India CCTS baseline \u2014 Textile wet processing / man-made fibres, FY 2026-27",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "IN",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "Government of India \u2014 public notification (attribution required)",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.702271Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "eu_cbam",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 1380.0,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "HHV": null,
+        "LHV": null,
+        "ash_share": null,
+        "biogenic_carbon_share": null,
+        "density": null,
+        "fossil_carbon_share": null,
+        "fuel_code": "textile_output",
+        "moisture_share": null,
+        "oxidation_factor": null,
+        "scope_applicability": [],
+        "sulfur_share": null,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 90.0,
+        "geographic_score": 5,
+        "technology_score": 4,
+        "temporal_score": 5,
+        "verification_score": 4
+      },
+      "source_id": "india_ccts_baselines",
+      "source_version": "BEE/CCTS/textile/2025",
+      "status": "certified",
+      "valid_from": "2026-04-01",
+      "valid_to": "2027-03-31"
+    },
+    {
+      "activity_schema": {
+        "category": "ccts_baseline_intensity",
+        "classification_codes": [
+          "NIC:2394",
+          "ISIC:C2394"
+        ],
+        "sub_category": "portland_cement"
+      },
+      "denominator": {
+        "unit": "tonne_cement",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "India CCTS baseline intensity published by the Bureau of Energy Efficiency per the Energy Conservation (Amendment) Act, 2022 and MoEFCC Carbon Credit Trading Scheme notification G.S.R. 443(E).",
+          "Applies to obligated entities in the cement manufacturing sector; non-obligated entities may use the baseline as a sectoral reference.",
+          "Compliance cycle: CCTS-1. Target year: 2025-26.",
+          "Baseline values are subject to triennial BEE revision."
+        ],
+        "audit_text": "India CCTS CCTS-1 baseline for Cement manufacturing, FY 2025-26. Notification reference: BEE/CCTS/cement/portland/2024.",
+        "fallback_rank": 5,
+        "rationale": "India CCTS CCTS-1 baseline for Cement manufacturing, FY 2025-26. Notification reference: BEE/CCTS/cement/portland/2024.",
+        "replacement_pointer": null
+      },
+      "factor_family": "combustion",
+      "factor_id": "EF:IN:ccts:cement:portland_cement:2025-26:CCTS-1",
+      "factor_name": "India CCTS baseline \u2014 Cement manufacturing (portland_cement), FY 2025-26",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "IN",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "Government of India \u2014 public notification (attribution required)",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.703327Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "eu_cbam",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 720.0,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "HHV": null,
+        "LHV": null,
+        "ash_share": null,
+        "biogenic_carbon_share": null,
+        "density": null,
+        "fossil_carbon_share": null,
+        "fuel_code": "cement_output",
+        "moisture_share": null,
+        "oxidation_factor": null,
+        "scope_applicability": [],
+        "sulfur_share": null,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 90.0,
+        "geographic_score": 5,
+        "technology_score": 4,
+        "temporal_score": 5,
+        "verification_score": 4
+      },
+      "source_id": "india_ccts_baselines",
+      "source_version": "BEE/CCTS/cement/portland/2024",
+      "status": "certified",
+      "valid_from": "2025-04-01",
+      "valid_to": "2026-03-31"
+    },
+    {
+      "activity_schema": {
+        "category": "ccts_baseline_intensity",
+        "classification_codes": [
+          "NIC:2394",
+          "ISIC:C2394"
+        ],
+        "sub_category": "composite"
+      },
+      "denominator": {
+        "unit": "tonne_cement",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "India CCTS baseline intensity published by the Bureau of Energy Efficiency per the Energy Conservation (Amendment) Act, 2022 and MoEFCC Carbon Credit Trading Scheme notification G.S.R. 443(E).",
+          "Applies to obligated entities in the cement manufacturing sector; non-obligated entities may use the baseline as a sectoral reference.",
+          "Compliance cycle: CCTS-1. Target year: 2025-26.",
+          "Baseline values are subject to triennial BEE revision."
+        ],
+        "audit_text": "India CCTS CCTS-1 baseline for Cement manufacturing, FY 2025-26. Notification reference: BEE/CCTS/cement/composite/2024.",
+        "fallback_rank": 5,
+        "rationale": "India CCTS CCTS-1 baseline for Cement manufacturing, FY 2025-26. Notification reference: BEE/CCTS/cement/composite/2024.",
+        "replacement_pointer": null
+      },
+      "factor_family": "combustion",
+      "factor_id": "EF:IN:ccts:cement:composite:2025-26:CCTS-1",
+      "factor_name": "India CCTS baseline \u2014 Cement manufacturing (composite), FY 2025-26",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "IN",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "Government of India \u2014 public notification (attribution required)",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.703327Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "eu_cbam",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 560.0,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "HHV": null,
+        "LHV": null,
+        "ash_share": null,
+        "biogenic_carbon_share": null,
+        "density": null,
+        "fossil_carbon_share": null,
+        "fuel_code": "cement_output",
+        "moisture_share": null,
+        "oxidation_factor": null,
+        "scope_applicability": [],
+        "sulfur_share": null,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 90.0,
+        "geographic_score": 5,
+        "technology_score": 4,
+        "temporal_score": 5,
+        "verification_score": 4
+      },
+      "source_id": "india_ccts_baselines",
+      "source_version": "BEE/CCTS/cement/composite/2024",
+      "status": "certified",
+      "valid_from": "2025-04-01",
+      "valid_to": "2026-03-31"
+    },
+    {
+      "activity_schema": {
+        "category": "ccts_baseline_intensity",
+        "classification_codes": [
+          "NIC:2410",
+          "ISIC:C2410"
+        ],
+        "sub_category": "bof_route"
+      },
+      "denominator": {
+        "unit": "tonne_crude_steel",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "India CCTS baseline intensity published by the Bureau of Energy Efficiency per the Energy Conservation (Amendment) Act, 2022 and MoEFCC Carbon Credit Trading Scheme notification G.S.R. 443(E).",
+          "Applies to obligated entities in the iron and steel manufacturing sector; non-obligated entities may use the baseline as a sectoral reference.",
+          "Compliance cycle: CCTS-1. Target year: 2025-26.",
+          "Baseline values are subject to triennial BEE revision."
+        ],
+        "audit_text": "India CCTS CCTS-1 baseline for Iron and steel manufacturing, FY 2025-26. Notification reference: BEE/CCTS/steel/bof/2024.",
+        "fallback_rank": 5,
+        "rationale": "India CCTS CCTS-1 baseline for Iron and steel manufacturing, FY 2025-26. Notification reference: BEE/CCTS/steel/bof/2024.",
+        "replacement_pointer": null
+      },
+      "factor_family": "combustion",
+      "factor_id": "EF:IN:ccts:iron_and_steel:bof_route:2025-26:CCTS-1",
+      "factor_name": "India CCTS baseline \u2014 Iron and steel manufacturing (bof_route), FY 2025-26",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "IN",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "Government of India \u2014 public notification (attribution required)",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.703327Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "eu_cbam",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 2550.0,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "HHV": null,
+        "LHV": null,
+        "ash_share": null,
+        "biogenic_carbon_share": null,
+        "density": null,
+        "fossil_carbon_share": null,
+        "fuel_code": "iron_and_steel_output",
+        "moisture_share": null,
+        "oxidation_factor": null,
+        "scope_applicability": [],
+        "sulfur_share": null,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 90.0,
+        "geographic_score": 5,
+        "technology_score": 4,
+        "temporal_score": 5,
+        "verification_score": 4
+      },
+      "source_id": "india_ccts_baselines",
+      "source_version": "BEE/CCTS/steel/bof/2024",
+      "status": "certified",
+      "valid_from": "2025-04-01",
+      "valid_to": "2026-03-31"
+    },
+    {
+      "activity_schema": {
+        "category": "ccts_baseline_intensity",
+        "classification_codes": [
+          "NIC:2410",
+          "ISIC:C2410"
+        ],
+        "sub_category": "eaf_route"
+      },
+      "denominator": {
+        "unit": "tonne_crude_steel",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "India CCTS baseline intensity published by the Bureau of Energy Efficiency per the Energy Conservation (Amendment) Act, 2022 and MoEFCC Carbon Credit Trading Scheme notification G.S.R. 443(E).",
+          "Applies to obligated entities in the iron and steel manufacturing sector; non-obligated entities may use the baseline as a sectoral reference.",
+          "Compliance cycle: CCTS-1. Target year: 2025-26.",
+          "Baseline values are subject to triennial BEE revision."
+        ],
+        "audit_text": "India CCTS CCTS-1 baseline for Iron and steel manufacturing, FY 2025-26. Notification reference: BEE/CCTS/steel/eaf/2024.",
+        "fallback_rank": 5,
+        "rationale": "India CCTS CCTS-1 baseline for Iron and steel manufacturing, FY 2025-26. Notification reference: BEE/CCTS/steel/eaf/2024.",
+        "replacement_pointer": null
+      },
+      "factor_family": "combustion",
+      "factor_id": "EF:IN:ccts:iron_and_steel:eaf_route:2025-26:CCTS-1",
+      "factor_name": "India CCTS baseline \u2014 Iron and steel manufacturing (eaf_route), FY 2025-26",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "IN",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "Government of India \u2014 public notification (attribution required)",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.703327Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "eu_cbam",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 1950.0,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "HHV": null,
+        "LHV": null,
+        "ash_share": null,
+        "biogenic_carbon_share": null,
+        "density": null,
+        "fossil_carbon_share": null,
+        "fuel_code": "iron_and_steel_output",
+        "moisture_share": null,
+        "oxidation_factor": null,
+        "scope_applicability": [],
+        "sulfur_share": null,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 90.0,
+        "geographic_score": 5,
+        "technology_score": 4,
+        "temporal_score": 5,
+        "verification_score": 4
+      },
+      "source_id": "india_ccts_baselines",
+      "source_version": "BEE/CCTS/steel/eaf/2024",
+      "status": "certified",
+      "valid_from": "2025-04-01",
+      "valid_to": "2026-03-31"
+    },
+    {
+      "activity_schema": {
+        "category": "ccts_baseline_intensity",
+        "classification_codes": [
+          "NIC:2420",
+          "ISIC:C2420"
+        ],
+        "sub_category": "prebake"
+      },
+      "denominator": {
+        "unit": "tonne_aluminum",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "India CCTS baseline intensity published by the Bureau of Energy Efficiency per the Energy Conservation (Amendment) Act, 2022 and MoEFCC Carbon Credit Trading Scheme notification G.S.R. 443(E).",
+          "Applies to obligated entities in the primary aluminum smelting sector; non-obligated entities may use the baseline as a sectoral reference.",
+          "Compliance cycle: CCTS-1. Target year: 2025-26.",
+          "Baseline values are subject to triennial BEE revision."
+        ],
+        "audit_text": "India CCTS CCTS-1 baseline for Primary aluminum smelting, FY 2025-26. Notification reference: BEE/CCTS/aluminum/prebake/2024.",
+        "fallback_rank": 5,
+        "rationale": "India CCTS CCTS-1 baseline for Primary aluminum smelting, FY 2025-26. Notification reference: BEE/CCTS/aluminum/prebake/2024.",
+        "replacement_pointer": null
+      },
+      "factor_family": "combustion",
+      "factor_id": "EF:IN:ccts:aluminum:prebake:2025-26:CCTS-1",
+      "factor_name": "India CCTS baseline \u2014 Primary aluminum smelting (prebake), FY 2025-26",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "IN",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "Government of India \u2014 public notification (attribution required)",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.704370Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "eu_cbam",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 15600.0,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "HHV": null,
+        "LHV": null,
+        "ash_share": null,
+        "biogenic_carbon_share": null,
+        "density": null,
+        "fossil_carbon_share": null,
+        "fuel_code": "aluminum_output",
+        "moisture_share": null,
+        "oxidation_factor": null,
+        "scope_applicability": [],
+        "sulfur_share": null,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 90.0,
+        "geographic_score": 5,
+        "technology_score": 4,
+        "temporal_score": 5,
+        "verification_score": 4
+      },
+      "source_id": "india_ccts_baselines",
+      "source_version": "BEE/CCTS/aluminum/prebake/2024",
+      "status": "certified",
+      "valid_from": "2025-04-01",
+      "valid_to": "2026-03-31"
+    },
+    {
+      "activity_schema": {
+        "category": "ccts_baseline_intensity",
+        "classification_codes": [
+          "NIC:2420",
+          "ISIC:C2420"
+        ],
+        "sub_category": "soderberg"
+      },
+      "denominator": {
+        "unit": "tonne_aluminum",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "India CCTS baseline intensity published by the Bureau of Energy Efficiency per the Energy Conservation (Amendment) Act, 2022 and MoEFCC Carbon Credit Trading Scheme notification G.S.R. 443(E).",
+          "Applies to obligated entities in the primary aluminum smelting sector; non-obligated entities may use the baseline as a sectoral reference.",
+          "Compliance cycle: CCTS-1. Target year: 2025-26.",
+          "Baseline values are subject to triennial BEE revision."
+        ],
+        "audit_text": "India CCTS CCTS-1 baseline for Primary aluminum smelting, FY 2025-26. Notification reference: BEE/CCTS/aluminum/soderberg/2024.",
+        "fallback_rank": 5,
+        "rationale": "India CCTS CCTS-1 baseline for Primary aluminum smelting, FY 2025-26. Notification reference: BEE/CCTS/aluminum/soderberg/2024.",
+        "replacement_pointer": null
+      },
+      "factor_family": "combustion",
+      "factor_id": "EF:IN:ccts:aluminum:soderberg:2025-26:CCTS-1",
+      "factor_name": "India CCTS baseline \u2014 Primary aluminum smelting (soderberg), FY 2025-26",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "IN",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "Government of India \u2014 public notification (attribution required)",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.704370Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "eu_cbam",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 16400.0,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "HHV": null,
+        "LHV": null,
+        "ash_share": null,
+        "biogenic_carbon_share": null,
+        "density": null,
+        "fossil_carbon_share": null,
+        "fuel_code": "aluminum_output",
+        "moisture_share": null,
+        "oxidation_factor": null,
+        "scope_applicability": [],
+        "sulfur_share": null,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 90.0,
+        "geographic_score": 5,
+        "technology_score": 4,
+        "temporal_score": 5,
+        "verification_score": 4
+      },
+      "source_id": "india_ccts_baselines",
+      "source_version": "BEE/CCTS/aluminum/soderberg/2024",
+      "status": "certified",
+      "valid_from": "2025-04-01",
+      "valid_to": "2026-03-31"
+    },
+    {
+      "activity_schema": {
+        "category": "ccts_baseline_intensity",
+        "classification_codes": [
+          "NIC:2011",
+          "ISIC:C2011"
+        ],
+        "sub_category": "naphtha_cracker"
+      },
+      "denominator": {
+        "unit": "tonne_product",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "India CCTS baseline intensity published by the Bureau of Energy Efficiency per the Energy Conservation (Amendment) Act, 2022 and MoEFCC Carbon Credit Trading Scheme notification G.S.R. 443(E).",
+          "Applies to obligated entities in the petrochemicals manufacturing sector; non-obligated entities may use the baseline as a sectoral reference.",
+          "Compliance cycle: CCTS-1. Target year: 2025-26.",
+          "Baseline values are subject to triennial BEE revision."
+        ],
+        "audit_text": "India CCTS CCTS-1 baseline for Petrochemicals manufacturing, FY 2025-26. Notification reference: BEE/CCTS/petrochem/naphtha/2024.",
+        "fallback_rank": 5,
+        "rationale": "India CCTS CCTS-1 baseline for Petrochemicals manufacturing, FY 2025-26. Notification reference: BEE/CCTS/petrochem/naphtha/2024.",
+        "replacement_pointer": null
+      },
+      "factor_family": "combustion",
+      "factor_id": "EF:IN:ccts:petrochemicals:naphtha_cracker:2025-26:CCTS-1",
+      "factor_name": "India CCTS baseline \u2014 Petrochemicals manufacturing (naphtha_cracker), FY 2025-26",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "IN",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "Government of India \u2014 public notification (attribution required)",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.704370Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "eu_cbam",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 950.0,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "HHV": null,
+        "LHV": null,
+        "ash_share": null,
+        "biogenic_carbon_share": null,
+        "density": null,
+        "fossil_carbon_share": null,
+        "fuel_code": "petrochemicals_output",
+        "moisture_share": null,
+        "oxidation_factor": null,
+        "scope_applicability": [],
+        "sulfur_share": null,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 90.0,
+        "geographic_score": 5,
+        "technology_score": 4,
+        "temporal_score": 5,
+        "verification_score": 4
+      },
+      "source_id": "india_ccts_baselines",
+      "source_version": "BEE/CCTS/petrochem/naphtha/2024",
+      "status": "certified",
+      "valid_from": "2025-04-01",
+      "valid_to": "2026-03-31"
+    },
+    {
+      "activity_schema": {
+        "category": "ccts_baseline_intensity",
+        "classification_codes": [
+          "NIC:2011",
+          "ISIC:C2011"
+        ],
+        "sub_category": "ethylene"
+      },
+      "denominator": {
+        "unit": "tonne_product",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "India CCTS baseline intensity published by the Bureau of Energy Efficiency per the Energy Conservation (Amendment) Act, 2022 and MoEFCC Carbon Credit Trading Scheme notification G.S.R. 443(E).",
+          "Applies to obligated entities in the petrochemicals manufacturing sector; non-obligated entities may use the baseline as a sectoral reference.",
+          "Compliance cycle: CCTS-1. Target year: 2025-26.",
+          "Baseline values are subject to triennial BEE revision."
+        ],
+        "audit_text": "India CCTS CCTS-1 baseline for Petrochemicals manufacturing, FY 2025-26. Notification reference: BEE/CCTS/petrochem/ethylene/2024.",
+        "fallback_rank": 5,
+        "rationale": "India CCTS CCTS-1 baseline for Petrochemicals manufacturing, FY 2025-26. Notification reference: BEE/CCTS/petrochem/ethylene/2024.",
+        "replacement_pointer": null
+      },
+      "factor_family": "combustion",
+      "factor_id": "EF:IN:ccts:petrochemicals:ethylene:2025-26:CCTS-1",
+      "factor_name": "India CCTS baseline \u2014 Petrochemicals manufacturing (ethylene), FY 2025-26",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "IN",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "Government of India \u2014 public notification (attribution required)",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.704370Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "eu_cbam",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 1200.0,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "HHV": null,
+        "LHV": null,
+        "ash_share": null,
+        "biogenic_carbon_share": null,
+        "density": null,
+        "fossil_carbon_share": null,
+        "fuel_code": "petrochemicals_output",
+        "moisture_share": null,
+        "oxidation_factor": null,
+        "scope_applicability": [],
+        "sulfur_share": null,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 90.0,
+        "geographic_score": 5,
+        "technology_score": 4,
+        "temporal_score": 5,
+        "verification_score": 4
+      },
+      "source_id": "india_ccts_baselines",
+      "source_version": "BEE/CCTS/petrochem/ethylene/2024",
+      "status": "certified",
+      "valid_from": "2025-04-01",
+      "valid_to": "2026-03-31"
+    },
+    {
+      "activity_schema": {
+        "category": "ccts_baseline_intensity",
+        "classification_codes": [
+          "NIC:2012",
+          "ISIC:C2012"
+        ],
+        "sub_category": "ammonia_urea"
+      },
+      "denominator": {
+        "unit": "tonne_nutrient",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "India CCTS baseline intensity published by the Bureau of Energy Efficiency per the Energy Conservation (Amendment) Act, 2022 and MoEFCC Carbon Credit Trading Scheme notification G.S.R. 443(E).",
+          "Applies to obligated entities in the fertilizer manufacturing sector; non-obligated entities may use the baseline as a sectoral reference.",
+          "Compliance cycle: CCTS-1. Target year: 2025-26.",
+          "Baseline values are subject to triennial BEE revision."
+        ],
+        "audit_text": "India CCTS CCTS-1 baseline for Fertilizer manufacturing, FY 2025-26. Notification reference: BEE/CCTS/fertilizer/urea/2024.",
+        "fallback_rank": 5,
+        "rationale": "India CCTS CCTS-1 baseline for Fertilizer manufacturing, FY 2025-26. Notification reference: BEE/CCTS/fertilizer/urea/2024.",
+        "replacement_pointer": null
+      },
+      "factor_family": "combustion",
+      "factor_id": "EF:IN:ccts:fertilizer:ammonia_urea:2025-26:CCTS-1",
+      "factor_name": "India CCTS baseline \u2014 Fertilizer manufacturing (ammonia_urea), FY 2025-26",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "IN",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "Government of India \u2014 public notification (attribution required)",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.705377Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "eu_cbam",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 2750.0,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "HHV": null,
+        "LHV": null,
+        "ash_share": null,
+        "biogenic_carbon_share": null,
+        "density": null,
+        "fossil_carbon_share": null,
+        "fuel_code": "fertilizer_output",
+        "moisture_share": null,
+        "oxidation_factor": null,
+        "scope_applicability": [],
+        "sulfur_share": null,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 90.0,
+        "geographic_score": 5,
+        "technology_score": 4,
+        "temporal_score": 5,
+        "verification_score": 4
+      },
+      "source_id": "india_ccts_baselines",
+      "source_version": "BEE/CCTS/fertilizer/urea/2024",
+      "status": "certified",
+      "valid_from": "2025-04-01",
+      "valid_to": "2026-03-31"
+    },
+    {
+      "activity_schema": {
+        "category": "ccts_baseline_intensity",
+        "classification_codes": [
+          "NIC:2012",
+          "ISIC:C2012"
+        ],
+        "sub_category": "complex_fert"
+      },
+      "denominator": {
+        "unit": "tonne_nutrient",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "India CCTS baseline intensity published by the Bureau of Energy Efficiency per the Energy Conservation (Amendment) Act, 2022 and MoEFCC Carbon Credit Trading Scheme notification G.S.R. 443(E).",
+          "Applies to obligated entities in the fertilizer manufacturing sector; non-obligated entities may use the baseline as a sectoral reference.",
+          "Compliance cycle: CCTS-1. Target year: 2025-26.",
+          "Baseline values are subject to triennial BEE revision."
+        ],
+        "audit_text": "India CCTS CCTS-1 baseline for Fertilizer manufacturing, FY 2025-26. Notification reference: BEE/CCTS/fertilizer/complex/2024.",
+        "fallback_rank": 5,
+        "rationale": "India CCTS CCTS-1 baseline for Fertilizer manufacturing, FY 2025-26. Notification reference: BEE/CCTS/fertilizer/complex/2024.",
+        "replacement_pointer": null
+      },
+      "factor_family": "combustion",
+      "factor_id": "EF:IN:ccts:fertilizer:complex_fert:2025-26:CCTS-1",
+      "factor_name": "India CCTS baseline \u2014 Fertilizer manufacturing (complex_fert), FY 2025-26",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "IN",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "Government of India \u2014 public notification (attribution required)",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.705377Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "eu_cbam",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 1950.0,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "HHV": null,
+        "LHV": null,
+        "ash_share": null,
+        "biogenic_carbon_share": null,
+        "density": null,
+        "fossil_carbon_share": null,
+        "fuel_code": "fertilizer_output",
+        "moisture_share": null,
+        "oxidation_factor": null,
+        "scope_applicability": [],
+        "sulfur_share": null,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 90.0,
+        "geographic_score": 5,
+        "technology_score": 4,
+        "temporal_score": 5,
+        "verification_score": 4
+      },
+      "source_id": "india_ccts_baselines",
+      "source_version": "BEE/CCTS/fertilizer/complex/2024",
+      "status": "certified",
+      "valid_from": "2025-04-01",
+      "valid_to": "2026-03-31"
+    },
+    {
+      "activity_schema": {
+        "category": "ccts_baseline_intensity",
+        "classification_codes": [
+          "NIC:2011",
+          "ISIC:C2011"
+        ],
+        "sub_category": "diaphragm"
+      },
+      "denominator": {
+        "unit": "tonne_caustic_soda",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "India CCTS baseline intensity published by the Bureau of Energy Efficiency per the Energy Conservation (Amendment) Act, 2022 and MoEFCC Carbon Credit Trading Scheme notification G.S.R. 443(E).",
+          "Applies to obligated entities in the chlor-alkali manufacturing sector; non-obligated entities may use the baseline as a sectoral reference.",
+          "Compliance cycle: CCTS-1. Target year: 2025-26.",
+          "Baseline values are subject to triennial BEE revision."
+        ],
+        "audit_text": "India CCTS CCTS-1 baseline for Chlor-alkali manufacturing, FY 2025-26. Notification reference: BEE/CCTS/chlor_alkali/diaphragm/2024.",
+        "fallback_rank": 5,
+        "rationale": "India CCTS CCTS-1 baseline for Chlor-alkali manufacturing, FY 2025-26. Notification reference: BEE/CCTS/chlor_alkali/diaphragm/2024.",
+        "replacement_pointer": null
+      },
+      "factor_family": "combustion",
+      "factor_id": "EF:IN:ccts:chlor_alkali:diaphragm:2025-26:CCTS-1",
+      "factor_name": "India CCTS baseline \u2014 Chlor-alkali manufacturing (diaphragm), FY 2025-26",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "IN",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "Government of India \u2014 public notification (attribution required)",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.705377Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "eu_cbam",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 2100.0,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "HHV": null,
+        "LHV": null,
+        "ash_share": null,
+        "biogenic_carbon_share": null,
+        "density": null,
+        "fossil_carbon_share": null,
+        "fuel_code": "chlor_alkali_output",
+        "moisture_share": null,
+        "oxidation_factor": null,
+        "scope_applicability": [],
+        "sulfur_share": null,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 90.0,
+        "geographic_score": 5,
+        "technology_score": 4,
+        "temporal_score": 5,
+        "verification_score": 4
+      },
+      "source_id": "india_ccts_baselines",
+      "source_version": "BEE/CCTS/chlor_alkali/diaphragm/2024",
+      "status": "certified",
+      "valid_from": "2025-04-01",
+      "valid_to": "2026-03-31"
+    },
+    {
+      "activity_schema": {
+        "category": "ccts_baseline_intensity",
+        "classification_codes": [
+          "NIC:2011",
+          "ISIC:C2011"
+        ],
+        "sub_category": "membrane"
+      },
+      "denominator": {
+        "unit": "tonne_caustic_soda",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "India CCTS baseline intensity published by the Bureau of Energy Efficiency per the Energy Conservation (Amendment) Act, 2022 and MoEFCC Carbon Credit Trading Scheme notification G.S.R. 443(E).",
+          "Applies to obligated entities in the chlor-alkali manufacturing sector; non-obligated entities may use the baseline as a sectoral reference.",
+          "Compliance cycle: CCTS-1. Target year: 2025-26.",
+          "Baseline values are subject to triennial BEE revision."
+        ],
+        "audit_text": "India CCTS CCTS-1 baseline for Chlor-alkali manufacturing, FY 2025-26. Notification reference: BEE/CCTS/chlor_alkali/membrane/2024.",
+        "fallback_rank": 5,
+        "rationale": "India CCTS CCTS-1 baseline for Chlor-alkali manufacturing, FY 2025-26. Notification reference: BEE/CCTS/chlor_alkali/membrane/2024.",
+        "replacement_pointer": null
+      },
+      "factor_family": "combustion",
+      "factor_id": "EF:IN:ccts:chlor_alkali:membrane:2025-26:CCTS-1",
+      "factor_name": "India CCTS baseline \u2014 Chlor-alkali manufacturing (membrane), FY 2025-26",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "IN",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "Government of India \u2014 public notification (attribution required)",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.705377Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "eu_cbam",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 1600.0,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "HHV": null,
+        "LHV": null,
+        "ash_share": null,
+        "biogenic_carbon_share": null,
+        "density": null,
+        "fossil_carbon_share": null,
+        "fuel_code": "chlor_alkali_output",
+        "moisture_share": null,
+        "oxidation_factor": null,
+        "scope_applicability": [],
+        "sulfur_share": null,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 90.0,
+        "geographic_score": 5,
+        "technology_score": 4,
+        "temporal_score": 5,
+        "verification_score": 4
+      },
+      "source_id": "india_ccts_baselines",
+      "source_version": "BEE/CCTS/chlor_alkali/membrane/2024",
+      "status": "certified",
+      "valid_from": "2025-04-01",
+      "valid_to": "2026-03-31"
+    },
+    {
+      "activity_schema": {
+        "category": "ccts_baseline_intensity",
+        "classification_codes": [
+          "NIC:1313",
+          "ISIC:C1313"
+        ],
+        "sub_category": "wet_processing"
+      },
+      "denominator": {
+        "unit": "tonne_textile",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "India CCTS baseline intensity published by the Bureau of Energy Efficiency per the Energy Conservation (Amendment) Act, 2022 and MoEFCC Carbon Credit Trading Scheme notification G.S.R. 443(E).",
+          "Applies to obligated entities in the textile wet processing / man-made fibres sector; non-obligated entities may use the baseline as a sectoral reference.",
+          "Compliance cycle: CCTS-1. Target year: 2025-26.",
+          "Baseline values are subject to triennial BEE revision."
+        ],
+        "audit_text": "India CCTS CCTS-1 baseline for Textile wet processing / man-made fibres, FY 2025-26. Notification reference: BEE/CCTS/textile/wet/2024.",
+        "fallback_rank": 5,
+        "rationale": "India CCTS CCTS-1 baseline for Textile wet processing / man-made fibres, FY 2025-26. Notification reference: BEE/CCTS/textile/wet/2024.",
+        "replacement_pointer": null
+      },
+      "factor_family": "combustion",
+      "factor_id": "EF:IN:ccts:textile:wet_processing:2025-26:CCTS-1",
+      "factor_name": "India CCTS baseline \u2014 Textile wet processing / man-made fibres (wet_processing), FY 2025-26",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "IN",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "Government of India \u2014 public notification (attribution required)",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.706368Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "eu_cbam",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 1700.0,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "HHV": null,
+        "LHV": null,
+        "ash_share": null,
+        "biogenic_carbon_share": null,
+        "density": null,
+        "fossil_carbon_share": null,
+        "fuel_code": "textile_output",
+        "moisture_share": null,
+        "oxidation_factor": null,
+        "scope_applicability": [],
+        "sulfur_share": null,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 90.0,
+        "geographic_score": 5,
+        "technology_score": 4,
+        "temporal_score": 5,
+        "verification_score": 4
+      },
+      "source_id": "india_ccts_baselines",
+      "source_version": "BEE/CCTS/textile/wet/2024",
+      "status": "certified",
+      "valid_from": "2025-04-01",
+      "valid_to": "2026-03-31"
+    },
+    {
+      "activity_schema": {
+        "category": "ccts_baseline_intensity",
+        "classification_codes": [
+          "NIC:1313",
+          "ISIC:C1313"
+        ],
+        "sub_category": "man_made_fibre"
+      },
+      "denominator": {
+        "unit": "tonne_textile",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "India CCTS baseline intensity published by the Bureau of Energy Efficiency per the Energy Conservation (Amendment) Act, 2022 and MoEFCC Carbon Credit Trading Scheme notification G.S.R. 443(E).",
+          "Applies to obligated entities in the textile wet processing / man-made fibres sector; non-obligated entities may use the baseline as a sectoral reference.",
+          "Compliance cycle: CCTS-1. Target year: 2025-26.",
+          "Baseline values are subject to triennial BEE revision."
+        ],
+        "audit_text": "India CCTS CCTS-1 baseline for Textile wet processing / man-made fibres, FY 2025-26. Notification reference: BEE/CCTS/textile/fibre/2024.",
+        "fallback_rank": 5,
+        "rationale": "India CCTS CCTS-1 baseline for Textile wet processing / man-made fibres, FY 2025-26. Notification reference: BEE/CCTS/textile/fibre/2024.",
+        "replacement_pointer": null
+      },
+      "factor_family": "combustion",
+      "factor_id": "EF:IN:ccts:textile:man_made_fibre:2025-26:CCTS-1",
+      "factor_name": "India CCTS baseline \u2014 Textile wet processing / man-made fibres (man_made_fibre), FY 2025-26",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "IN",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "Government of India \u2014 public notification (attribution required)",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.706368Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "eu_cbam",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 1250.0,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "HHV": null,
+        "LHV": null,
+        "ash_share": null,
+        "biogenic_carbon_share": null,
+        "density": null,
+        "fossil_carbon_share": null,
+        "fuel_code": "textile_output",
+        "moisture_share": null,
+        "oxidation_factor": null,
+        "scope_applicability": [],
+        "sulfur_share": null,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 90.0,
+        "geographic_score": 5,
+        "technology_score": 4,
+        "temporal_score": 5,
+        "verification_score": 4
+      },
+      "source_id": "india_ccts_baselines",
+      "source_version": "BEE/CCTS/textile/fibre/2024",
+      "status": "certified",
+      "valid_from": "2025-04-01",
+      "valid_to": "2026-03-31"
+    },
+    {
+      "activity_schema": {
+        "category": "ccts_baseline_intensity",
+        "classification_codes": [
+          "NIC:1701",
+          "ISIC:C1701"
+        ],
+        "sub_category": "kraft_virgin"
+      },
+      "denominator": {
+        "unit": "tonne_paper",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "India CCTS baseline intensity published by the Bureau of Energy Efficiency per the Energy Conservation (Amendment) Act, 2022 and MoEFCC Carbon Credit Trading Scheme notification G.S.R. 443(E).",
+          "Applies to obligated entities in the pulp and paper manufacturing sector; non-obligated entities may use the baseline as a sectoral reference.",
+          "Compliance cycle: CCTS-1. Target year: 2025-26.",
+          "Baseline values are subject to triennial BEE revision."
+        ],
+        "audit_text": "India CCTS CCTS-1 baseline for Pulp and paper manufacturing, FY 2025-26. Notification reference: BEE/CCTS/paper/kraft/2024.",
+        "fallback_rank": 5,
+        "rationale": "India CCTS CCTS-1 baseline for Pulp and paper manufacturing, FY 2025-26. Notification reference: BEE/CCTS/paper/kraft/2024.",
+        "replacement_pointer": null
+      },
+      "factor_family": "combustion",
+      "factor_id": "EF:IN:ccts:pulp_and_paper:kraft_virgin:2025-26:CCTS-1",
+      "factor_name": "India CCTS baseline \u2014 Pulp and paper manufacturing (kraft_virgin), FY 2025-26",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "IN",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "Government of India \u2014 public notification (attribution required)",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.706368Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "eu_cbam",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 1200.0,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "HHV": null,
+        "LHV": null,
+        "ash_share": null,
+        "biogenic_carbon_share": null,
+        "density": null,
+        "fossil_carbon_share": null,
+        "fuel_code": "pulp_and_paper_output",
+        "moisture_share": null,
+        "oxidation_factor": null,
+        "scope_applicability": [],
+        "sulfur_share": null,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 90.0,
+        "geographic_score": 5,
+        "technology_score": 4,
+        "temporal_score": 5,
+        "verification_score": 4
+      },
+      "source_id": "india_ccts_baselines",
+      "source_version": "BEE/CCTS/paper/kraft/2024",
+      "status": "certified",
+      "valid_from": "2025-04-01",
+      "valid_to": "2026-03-31"
+    },
+    {
+      "activity_schema": {
+        "category": "ccts_baseline_intensity",
+        "classification_codes": [
+          "NIC:1701",
+          "ISIC:C1701"
+        ],
+        "sub_category": "recycled"
+      },
+      "denominator": {
+        "unit": "tonne_paper",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "India CCTS baseline intensity published by the Bureau of Energy Efficiency per the Energy Conservation (Amendment) Act, 2022 and MoEFCC Carbon Credit Trading Scheme notification G.S.R. 443(E).",
+          "Applies to obligated entities in the pulp and paper manufacturing sector; non-obligated entities may use the baseline as a sectoral reference.",
+          "Compliance cycle: CCTS-1. Target year: 2025-26.",
+          "Baseline values are subject to triennial BEE revision."
+        ],
+        "audit_text": "India CCTS CCTS-1 baseline for Pulp and paper manufacturing, FY 2025-26. Notification reference: BEE/CCTS/paper/recycled/2024.",
+        "fallback_rank": 5,
+        "rationale": "India CCTS CCTS-1 baseline for Pulp and paper manufacturing, FY 2025-26. Notification reference: BEE/CCTS/paper/recycled/2024.",
+        "replacement_pointer": null
+      },
+      "factor_family": "combustion",
+      "factor_id": "EF:IN:ccts:pulp_and_paper:recycled:2025-26:CCTS-1",
+      "factor_name": "India CCTS baseline \u2014 Pulp and paper manufacturing (recycled), FY 2025-26",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "IN",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "Government of India \u2014 public notification (attribution required)",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.706368Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "eu_cbam",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 750.0,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "HHV": null,
+        "LHV": null,
+        "ash_share": null,
+        "biogenic_carbon_share": null,
+        "density": null,
+        "fossil_carbon_share": null,
+        "fuel_code": "pulp_and_paper_output",
+        "moisture_share": null,
+        "oxidation_factor": null,
+        "scope_applicability": [],
+        "sulfur_share": null,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 4,
+        "composite_fqs": 90.0,
+        "geographic_score": 5,
+        "technology_score": 4,
+        "temporal_score": 5,
+        "verification_score": 4
+      },
+      "source_id": "india_ccts_baselines",
+      "source_version": "BEE/CCTS/paper/recycled/2024",
+      "status": "certified",
+      "valid_from": "2025-04-01",
+      "valid_to": "2026-03-31"
+    }
+  ],
+  "ingested_at": "2026-04-23T18:26:52+00:00",
+  "license_class": "public_in_government",
+  "license_name": "India-Public-Information",
+  "redistribution_class": "open",
+  "schema_version": "factor_record_v1",
+  "source_id": "india_ccts_baselines",
+  "source_version": "2024.1"
+}

@@ -1,0 +1,119 @@
+{
+  "metadata": {"source": "European Commission", "version": "2024", "source_publication": "EU CBAM Implementing Regulation 2023/1773 default values",
+               "source_url": "https://taxation-customs.ec.europa.eu/carbon-border-adjustment-mechanism_en"},
+  "_seed_note": "EU CBAM default embedded emissions (direct + indirect). Values in tCO2/tonne product (parser multiplies with unit ‘kg_product’). EU publication redistributable under Decision 2011/833/EU with attribution.",
+  "products": {
+    "iron_steel": {
+      "categories": [
+        {"name": "crude_steel_bof", "unit": "kg_product"},
+        {"name": "crude_steel_eaf", "unit": "kg_product"},
+        {"name": "hot_rolled_coil", "unit": "kg_product"},
+        {"name": "cold_rolled_coil", "unit": "kg_product"},
+        {"name": "wire_rod",         "unit": "kg_product"},
+        {"name": "rebar",            "unit": "kg_product"},
+        {"name": "pig_iron",         "unit": "kg_product"}
+      ],
+      "by_country": {
+        "CN": {"direct_emissions_factor": 2.20, "indirect_emissions_factor": 0.60},
+        "IN": {"direct_emissions_factor": 2.55, "indirect_emissions_factor": 0.65},
+        "TR": {"direct_emissions_factor": 1.85, "indirect_emissions_factor": 0.30},
+        "RU": {"direct_emissions_factor": 2.10, "indirect_emissions_factor": 0.55},
+        "UA": {"direct_emissions_factor": 2.10, "indirect_emissions_factor": 0.55},
+        "BR": {"direct_emissions_factor": 1.75, "indirect_emissions_factor": 0.15},
+        "KR": {"direct_emissions_factor": 1.95, "indirect_emissions_factor": 0.35},
+        "JP": {"direct_emissions_factor": 1.98, "indirect_emissions_factor": 0.30},
+        "US": {"direct_emissions_factor": 1.60, "indirect_emissions_factor": 0.28},
+        "DEFAULT": {"direct_emissions_factor": 2.05, "indirect_emissions_factor": 0.45}
+      }
+    },
+    "aluminum": {
+      "categories": [
+        {"name": "unwrought_aluminum", "unit": "kg_product"},
+        {"name": "wrought_aluminum",   "unit": "kg_product"},
+        {"name": "aluminum_foil",      "unit": "kg_product"}
+      ],
+      "by_country": {
+        "CN": {"direct_emissions_factor": 2.40, "indirect_emissions_factor": 12.50},
+        "IN": {"direct_emissions_factor": 2.65, "indirect_emissions_factor": 15.40},
+        "RU": {"direct_emissions_factor": 1.85, "indirect_emissions_factor": 1.10},
+        "AE": {"direct_emissions_factor": 2.10, "indirect_emissions_factor": 7.20},
+        "AU": {"direct_emissions_factor": 2.05, "indirect_emissions_factor": 11.80},
+        "IS": {"direct_emissions_factor": 1.70, "indirect_emissions_factor": 0.05},
+        "NO": {"direct_emissions_factor": 1.85, "indirect_emissions_factor": 0.10},
+        "CA": {"direct_emissions_factor": 1.75, "indirect_emissions_factor": 0.25},
+        "US": {"direct_emissions_factor": 2.10, "indirect_emissions_factor": 4.30},
+        "DEFAULT": {"direct_emissions_factor": 2.15, "indirect_emissions_factor": 8.10}
+      }
+    },
+    "cement": {
+      "categories": [
+        {"name": "cement_clinker",     "unit": "kg_product"},
+        {"name": "portland_cement",    "unit": "kg_product"},
+        {"name": "aluminous_cement",   "unit": "kg_product"},
+        {"name": "calcined_clays",     "unit": "kg_product"}
+      ],
+      "by_country": {
+        "CN": {"direct_emissions_factor": 0.72, "indirect_emissions_factor": 0.12},
+        "IN": {"direct_emissions_factor": 0.68, "indirect_emissions_factor": 0.10},
+        "EG": {"direct_emissions_factor": 0.75, "indirect_emissions_factor": 0.08},
+        "TR": {"direct_emissions_factor": 0.65, "indirect_emissions_factor": 0.06},
+        "VN": {"direct_emissions_factor": 0.70, "indirect_emissions_factor": 0.10},
+        "US": {"direct_emissions_factor": 0.60, "indirect_emissions_factor": 0.05},
+        "DEFAULT": {"direct_emissions_factor": 0.69, "indirect_emissions_factor": 0.09},
+        "ID": {"direct_emissions_factor": 0.73, "indirect_emissions_factor": 0.11},
+        "TH": {"direct_emissions_factor": 0.67, "indirect_emissions_factor": 0.08},
+        "PH": {"direct_emissions_factor": 0.71, "indirect_emissions_factor": 0.09},
+        "BR": {"direct_emissions_factor": 0.62, "indirect_emissions_factor": 0.05}
+      }
+    },
+    "fertilizer": {
+      "categories": [
+        {"name": "ammonia",       "unit": "kg_product"},
+        {"name": "urea",          "unit": "kg_product"},
+        {"name": "nitric_acid",   "unit": "kg_product"},
+        {"name": "ammonium_nitrate","unit":"kg_product"},
+        {"name": "complex_fertilizer","unit": "kg_product"}
+      ],
+      "by_country": {
+        "RU": {"direct_emissions_factor": 1.90, "indirect_emissions_factor": 0.30},
+        "TR": {"direct_emissions_factor": 1.80, "indirect_emissions_factor": 0.25},
+        "DZ": {"direct_emissions_factor": 1.70, "indirect_emissions_factor": 0.20},
+        "EG": {"direct_emissions_factor": 1.75, "indirect_emissions_factor": 0.25},
+        "TT": {"direct_emissions_factor": 1.65, "indirect_emissions_factor": 0.18},
+        "QA": {"direct_emissions_factor": 1.55, "indirect_emissions_factor": 0.15},
+        "IN": {"direct_emissions_factor": 2.10, "indirect_emissions_factor": 0.60},
+        "CN": {"direct_emissions_factor": 2.30, "indirect_emissions_factor": 0.55},
+        "US": {"direct_emissions_factor": 1.60, "indirect_emissions_factor": 0.20},
+        "DEFAULT": {"direct_emissions_factor": 1.85, "indirect_emissions_factor": 0.30}
+      }
+    },
+    "hydrogen": {
+      "categories": [
+        {"name": "hydrogen_smr_natural_gas", "unit": "kg_product"},
+        {"name": "hydrogen_electrolysis_grid","unit":"kg_product"},
+        {"name": "hydrogen_electrolysis_renewable","unit":"kg_product"}
+      ],
+      "by_country": {
+        "RU": {"direct_emissions_factor": 9.50,  "indirect_emissions_factor": 0.50},
+        "SA": {"direct_emissions_factor": 8.90,  "indirect_emissions_factor": 0.40},
+        "US": {"direct_emissions_factor": 9.40,  "indirect_emissions_factor": 0.50},
+        "CN": {"direct_emissions_factor": 10.20, "indirect_emissions_factor": 2.70},
+        "DEFAULT": {"direct_emissions_factor": 9.60, "indirect_emissions_factor": 0.85}
+      }
+    },
+    "electricity": {
+      "categories": [
+        {"name": "grid_electricity", "unit": "kwh"}
+      ],
+      "by_country": {
+        "CN": {"direct_emissions_factor": 0.55, "indirect_emissions_factor": 0.0},
+        "IN": {"direct_emissions_factor": 0.72, "indirect_emissions_factor": 0.0},
+        "TR": {"direct_emissions_factor": 0.37, "indirect_emissions_factor": 0.0},
+        "RU": {"direct_emissions_factor": 0.36, "indirect_emissions_factor": 0.0},
+        "UA": {"direct_emissions_factor": 0.38, "indirect_emissions_factor": 0.0},
+        "NO": {"direct_emissions_factor": 0.02, "indirect_emissions_factor": 0.0},
+        "DEFAULT": {"direct_emissions_factor": 0.49, "indirect_emissions_factor": 0.0}
+      }
+    }
+  }
+}

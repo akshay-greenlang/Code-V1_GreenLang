@@ -1,0 +1,121 @@
+# =============================================================================
+# GL-002 FLAMEGUARD BoilerEfficiencyOptimizer - HashiCorp Vault Configuration
+# =============================================================================
+#
+# This configuration file defines the Vault setup for the FLAMEGUARD
+# BoilerEfficiencyOptimizer including authentication, secret paths, and policies.
+#
+# Author: GreenLang Security Engineering
+# Version: 1.0.0
+# =============================================================================
+
+vault:
+  addr: "https://vault.greenlang.local:8200"
+  namespace: "greenlang"
+  tls:
+    ca_cert: "/etc/vault/certs/ca.crt"
+    client_cert: "/etc/vault/certs/client.crt"
+    client_key: "/etc/vault/certs/client.key"
+    skip_verify: false
+
+auth:
+  method: "kubernetes"
+  kubernetes:
+    mount_path: "auth/kubernetes"
+    role: "gl-002-flameguard"
+    jwt_path: "/var/run/secrets/kubernetes.io/serviceaccount/token"
+
+secrets_engines:
+  kv:
+    mount_path: "secret"
+    version: 2
+  database:
+    mount_path: "database"
+    default_ttl: "1h"
+    max_ttl: "24h"
+  pki:
+    mount_path: "pki"
+    default_ttl: "720h"
+
+secret_paths:
+  base: "greenlang/agents/GL-002"
+
+  database:
+    postgres_main: "database/postgres-main"
+    timescale: "database/timescale"
+    historian: "database/historian"
+
+  api_keys:
+    weather: "api-keys/weather"
+    erp: "api-keys/erp"
+    energy_market: "api-keys/energy-market"
+
+  auth:
+    jwt_secret: "auth/jwt"
+    api_key: "auth/api-key"
+
+  integrations:
+    scada: "integrations/scada"
+    historian: "integrations/historian"
+    cems: "integrations/cems"
+    kafka: "integrations/kafka"
+    mqtt: "integrations/mqtt"
+    opcua: "integrations/opcua"
+    bms: "integrations/bms"  # Burner Management System
+
+  encryption:
+    default: "encryption-keys/default"
+    audit: "encryption-keys/audit"
+
+cache:
+  enabled: true
+  ttl_seconds: 300
+  max_size: 1000
+
+connection:
+  timeout_seconds: 30
+  max_retries: 3
+  retry_delay_seconds: 1.0
+
+fallback:
+  enabled: true
+  env_prefix: "GL_002_SECRET_"
+  warn_on_fallback: true
+
+---
+# Vault Policy (for documentation)
+# vault policy write gl-002-flameguard policy.hcl
+#
+# path "secret/data/greenlang/agents/GL-002/*" {
+#   capabilities = ["read", "list"]
+# }
+#
+# path "database/creds/gl-002-*" {
+#   capabilities = ["read"]
+# }
+#
+# path "pki/issue/gl-002-flameguard" {
+#   capabilities = ["create", "update"]
+# }
+
+---
+development:
+  vault:
+    addr: "http://localhost:8200"
+    tls:
+      skip_verify: true
+  auth:
+    method: "token"
+  fallback:
+    enabled: true
+
+production:
+  vault:
+    addr: "https://vault.greenlang.local:8200"
+    namespace: "greenlang-prod"
+  auth:
+    method: "kubernetes"
+    kubernetes:
+      role: "gl-002-flameguard-prod"
+  fallback:
+    enabled: false

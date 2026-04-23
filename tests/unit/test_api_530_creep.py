@@ -20,7 +20,7 @@ from decimal import Decimal
 from datetime import datetime, timedelta
 import math
 
-from greenlang.calculations.api.api_530_creep import (
+from greenlang.calculation.physics.api.api_530_creep import (
     CreepLifeAssessor,
     CreepLifeResult,
     CreepAccumulationResult,

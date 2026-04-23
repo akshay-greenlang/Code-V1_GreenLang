@@ -1,0 +1,3358 @@
+{
+  "attribution_text": "CO2 Baseline Database for the Indian Power Sector, Central Electricity Authority (Government of India), CDM v20.0.",
+  "factor_count": 38,
+  "factor_status_default": "certified",
+  "factors": [
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "grid_average"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for purchased grid electricity in India when supplier-specific factor is unavailable.",
+          "CEA methodology excludes captive-generation and auxiliary consumption.",
+          "Based on generation-weighted grid mix for the given financial year."
+        ],
+        "audit_text": "India CEA CO2 baseline v20.0 for All-India composite grid, FY 2023-24.",
+        "fallback_rank": 5,
+        "rationale": "India CEA CO2 baseline v20.0 for All-India composite grid, FY 2023-24.",
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:IN:all_india:2023-24:cea-v20.0",
+      "factor_name": "India grid electricity \u2014 All-India composite grid, 2023-24",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "IN",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "Government of India \u2014 public use with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.671359Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_location_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.716,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 91.0,
+        "geographic_score": 4,
+        "technology_score": 4,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "india_cea_co2_baseline",
+      "source_version": "v20.0",
+      "status": "certified",
+      "valid_from": "2023-04-01",
+      "valid_to": "2024-03-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "grid_average"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for purchased grid electricity in India when supplier-specific factor is unavailable.",
+          "CEA methodology excludes captive-generation and auxiliary consumption.",
+          "Based on generation-weighted grid mix for the given financial year."
+        ],
+        "audit_text": "India CEA CO2 baseline v20.0 for Northern + Eastern + Western + North-Eastern regional grids, FY 2023-24.",
+        "fallback_rank": 5,
+        "rationale": "India CEA CO2 baseline v20.0 for Northern + Eastern + Western + North-Eastern regional grids, FY 2023-24.",
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:IN:newne:2023-24:cea-v20.0",
+      "factor_name": "India grid electricity \u2014 Northern + Eastern + Western + North-Eastern regional grids, 2023-24",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "IN",
+        "grid_region": "NEWNE",
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "Government of India \u2014 public use with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.672351Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_location_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.818,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 96.0,
+        "geographic_score": 5,
+        "technology_score": 4,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "india_cea_co2_baseline",
+      "source_version": "v20.0",
+      "status": "certified",
+      "valid_from": "2023-04-01",
+      "valid_to": "2024-03-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "grid_average"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for purchased grid electricity in India when supplier-specific factor is unavailable.",
+          "CEA methodology excludes captive-generation and auxiliary consumption.",
+          "Based on generation-weighted grid mix for the given financial year."
+        ],
+        "audit_text": "India CEA CO2 baseline v20.0 for Southern regional grid, FY 2023-24.",
+        "fallback_rank": 5,
+        "rationale": "India CEA CO2 baseline v20.0 for Southern regional grid, FY 2023-24.",
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:IN:s:2023-24:cea-v20.0",
+      "factor_name": "India grid electricity \u2014 Southern regional grid, 2023-24",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "IN",
+        "grid_region": "S",
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "Government of India \u2014 public use with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.672351Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_location_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.548,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 96.0,
+        "geographic_score": 5,
+        "technology_score": 4,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "india_cea_co2_baseline",
+      "source_version": "v20.0",
+      "status": "certified",
+      "valid_from": "2023-04-01",
+      "valid_to": "2024-03-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "grid_average"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for purchased grid electricity in India when supplier-specific factor is unavailable.",
+          "CEA methodology excludes captive-generation and auxiliary consumption.",
+          "Based on generation-weighted grid mix for the given financial year."
+        ],
+        "audit_text": "India CEA CO2 baseline v20.0 for North-Eastern regional grid (standalone), FY 2023-24.",
+        "fallback_rank": 5,
+        "rationale": "India CEA CO2 baseline v20.0 for North-Eastern regional grid (standalone), FY 2023-24.",
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:IN:ner:2023-24:cea-v20.0",
+      "factor_name": "India grid electricity \u2014 North-Eastern regional grid (standalone), 2023-24",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "IN",
+        "grid_region": "NER",
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "Government of India \u2014 public use with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.672351Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_location_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.184,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 96.0,
+        "geographic_score": 5,
+        "technology_score": 4,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "india_cea_co2_baseline",
+      "source_version": "v20.0",
+      "status": "certified",
+      "valid_from": "2023-04-01",
+      "valid_to": "2024-03-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "grid_average"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for purchased grid electricity in India when supplier-specific factor is unavailable.",
+          "CEA methodology excludes captive-generation and auxiliary consumption.",
+          "Based on generation-weighted grid mix for the given financial year."
+        ],
+        "audit_text": "India CEA CO2 baseline v20.0 for Northern regional grid, FY 2023-24.",
+        "fallback_rank": 5,
+        "rationale": "India CEA CO2 baseline v20.0 for Northern regional grid, FY 2023-24.",
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:IN:n:2023-24:cea-v20.0",
+      "factor_name": "India grid electricity \u2014 Northern regional grid, 2023-24",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "IN",
+        "grid_region": "N",
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "Government of India \u2014 public use with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.672351Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_location_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.672,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 96.0,
+        "geographic_score": 5,
+        "technology_score": 4,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "india_cea_co2_baseline",
+      "source_version": "v20.0",
+      "status": "certified",
+      "valid_from": "2023-04-01",
+      "valid_to": "2024-03-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "grid_average"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for purchased grid electricity in India when supplier-specific factor is unavailable.",
+          "CEA methodology excludes captive-generation and auxiliary consumption.",
+          "Based on generation-weighted grid mix for the given financial year."
+        ],
+        "audit_text": "India CEA CO2 baseline v20.0 for Eastern regional grid, FY 2023-24.",
+        "fallback_rank": 5,
+        "rationale": "India CEA CO2 baseline v20.0 for Eastern regional grid, FY 2023-24.",
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:IN:e:2023-24:cea-v20.0",
+      "factor_name": "India grid electricity \u2014 Eastern regional grid, 2023-24",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "IN",
+        "grid_region": "E",
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "Government of India \u2014 public use with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.673297Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_location_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.956,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 96.0,
+        "geographic_score": 5,
+        "technology_score": 4,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "india_cea_co2_baseline",
+      "source_version": "v20.0",
+      "status": "certified",
+      "valid_from": "2023-04-01",
+      "valid_to": "2024-03-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "grid_average"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for purchased grid electricity in India when supplier-specific factor is unavailable.",
+          "CEA methodology excludes captive-generation and auxiliary consumption.",
+          "Based on generation-weighted grid mix for the given financial year."
+        ],
+        "audit_text": "India CEA CO2 baseline v20.0 for Western regional grid, FY 2023-24.",
+        "fallback_rank": 5,
+        "rationale": "India CEA CO2 baseline v20.0 for Western regional grid, FY 2023-24.",
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:IN:w:2023-24:cea-v20.0",
+      "factor_name": "India grid electricity \u2014 Western regional grid, 2023-24",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "IN",
+        "grid_region": "W",
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "Government of India \u2014 public use with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.673297Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_location_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.834,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 96.0,
+        "geographic_score": 5,
+        "technology_score": 4,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "india_cea_co2_baseline",
+      "source_version": "v20.0",
+      "status": "certified",
+      "valid_from": "2023-04-01",
+      "valid_to": "2024-03-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "grid_average"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for purchased grid electricity in India when supplier-specific factor is unavailable.",
+          "CEA methodology excludes captive-generation and auxiliary consumption.",
+          "Based on generation-weighted grid mix for the given financial year."
+        ],
+        "audit_text": "India CEA CO2 baseline v19.0 for All-India composite grid, FY 2022-23.",
+        "fallback_rank": 5,
+        "rationale": "India CEA CO2 baseline v19.0 for All-India composite grid, FY 2022-23.",
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:IN:all_india:2022-23:cea-v19.0",
+      "factor_name": "India grid electricity \u2014 All-India composite grid, 2022-23",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "IN",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "Government of India \u2014 public use with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.673297Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_location_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.727,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 91.0,
+        "geographic_score": 4,
+        "technology_score": 4,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "india_cea_co2_baseline",
+      "source_version": "v19.0",
+      "status": "certified",
+      "valid_from": "2022-04-01",
+      "valid_to": "2023-03-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "grid_average"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for purchased grid electricity in India when supplier-specific factor is unavailable.",
+          "CEA methodology excludes captive-generation and auxiliary consumption.",
+          "Based on generation-weighted grid mix for the given financial year."
+        ],
+        "audit_text": "India CEA CO2 baseline v19.0 for Northern + Eastern + Western + North-Eastern regional grids, FY 2022-23.",
+        "fallback_rank": 5,
+        "rationale": "India CEA CO2 baseline v19.0 for Northern + Eastern + Western + North-Eastern regional grids, FY 2022-23.",
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:IN:newne:2022-23:cea-v19.0",
+      "factor_name": "India grid electricity \u2014 Northern + Eastern + Western + North-Eastern regional grids, 2022-23",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "IN",
+        "grid_region": "NEWNE",
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "Government of India \u2014 public use with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.673297Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_location_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.835,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 96.0,
+        "geographic_score": 5,
+        "technology_score": 4,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "india_cea_co2_baseline",
+      "source_version": "v19.0",
+      "status": "certified",
+      "valid_from": "2022-04-01",
+      "valid_to": "2023-03-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "grid_average"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for purchased grid electricity in India when supplier-specific factor is unavailable.",
+          "CEA methodology excludes captive-generation and auxiliary consumption.",
+          "Based on generation-weighted grid mix for the given financial year."
+        ],
+        "audit_text": "India CEA CO2 baseline v19.0 for Southern regional grid, FY 2022-23.",
+        "fallback_rank": 5,
+        "rationale": "India CEA CO2 baseline v19.0 for Southern regional grid, FY 2022-23.",
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:IN:s:2022-23:cea-v19.0",
+      "factor_name": "India grid electricity \u2014 Southern regional grid, 2022-23",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "IN",
+        "grid_region": "S",
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "Government of India \u2014 public use with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.674296Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_location_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.548,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 96.0,
+        "geographic_score": 5,
+        "technology_score": 4,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "india_cea_co2_baseline",
+      "source_version": "v19.0",
+      "status": "certified",
+      "valid_from": "2022-04-01",
+      "valid_to": "2023-03-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "grid_average"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for purchased grid electricity in India when supplier-specific factor is unavailable.",
+          "CEA methodology excludes captive-generation and auxiliary consumption.",
+          "Based on generation-weighted grid mix for the given financial year."
+        ],
+        "audit_text": "India CEA CO2 baseline v19.0 for North-Eastern regional grid (standalone), FY 2022-23.",
+        "fallback_rank": 5,
+        "rationale": "India CEA CO2 baseline v19.0 for North-Eastern regional grid (standalone), FY 2022-23.",
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:IN:ner:2022-23:cea-v19.0",
+      "factor_name": "India grid electricity \u2014 North-Eastern regional grid (standalone), 2022-23",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "IN",
+        "grid_region": "NER",
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "Government of India \u2014 public use with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.674296Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_location_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.201,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 96.0,
+        "geographic_score": 5,
+        "technology_score": 4,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "india_cea_co2_baseline",
+      "source_version": "v19.0",
+      "status": "certified",
+      "valid_from": "2022-04-01",
+      "valid_to": "2023-03-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "grid_average"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for purchased grid electricity in India when supplier-specific factor is unavailable.",
+          "CEA methodology excludes captive-generation and auxiliary consumption.",
+          "Based on generation-weighted grid mix for the given financial year."
+        ],
+        "audit_text": "India CEA CO2 baseline v18.0 for All-India composite grid, FY 2021-22.",
+        "fallback_rank": 5,
+        "rationale": "India CEA CO2 baseline v18.0 for All-India composite grid, FY 2021-22.",
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:IN:all_india:2021-22:cea-v18.0",
+      "factor_name": "India grid electricity \u2014 All-India composite grid, 2021-22",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "IN",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "Government of India \u2014 public use with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.674296Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_location_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.723,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 91.0,
+        "geographic_score": 4,
+        "technology_score": 4,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "india_cea_co2_baseline",
+      "source_version": "v18.0",
+      "status": "certified",
+      "valid_from": "2021-04-01",
+      "valid_to": "2022-03-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "grid_average"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for purchased grid electricity in India when supplier-specific factor is unavailable.",
+          "CEA methodology excludes captive-generation and auxiliary consumption.",
+          "Based on generation-weighted grid mix for the given financial year."
+        ],
+        "audit_text": "India CEA CO2 baseline v17.0 for All-India composite grid, FY 2020-21.",
+        "fallback_rank": 5,
+        "rationale": "India CEA CO2 baseline v17.0 for All-India composite grid, FY 2020-21.",
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:IN:all_india:2020-21:cea-v17.0",
+      "factor_name": "India grid electricity \u2014 All-India composite grid, 2020-21",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "IN",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "Government of India \u2014 public use with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.674296Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_location_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.71,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 91.0,
+        "geographic_score": 4,
+        "technology_score": 4,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "india_cea_co2_baseline",
+      "source_version": "v17.0",
+      "status": "certified",
+      "valid_from": "2020-04-01",
+      "valid_to": "2021-03-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "grid_average"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for purchased grid electricity in India when supplier-specific factor is unavailable.",
+          "CEA methodology excludes captive-generation and auxiliary consumption.",
+          "Based on generation-weighted grid mix for the given financial year."
+        ],
+        "audit_text": "India CEA CO2 baseline v21.0 for Northern + Eastern + Western + North-Eastern regional grids, FY 2024-25.",
+        "fallback_rank": 5,
+        "rationale": "India CEA CO2 baseline v21.0 for Northern + Eastern + Western + North-Eastern regional grids, FY 2024-25.",
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:IN:newne:2024-25:cea-v21.0",
+      "factor_name": "India grid electricity \u2014 Northern + Eastern + Western + North-Eastern regional grids, 2024-25",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "IN",
+        "grid_region": "NEWNE",
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "Government of India \u2014 public use with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.675362Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_location_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.795,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 96.0,
+        "geographic_score": 5,
+        "technology_score": 4,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "india_cea_co2_baseline",
+      "source_version": "v21.0",
+      "status": "certified",
+      "valid_from": "2024-04-01",
+      "valid_to": "2025-03-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "grid_average"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for purchased grid electricity in India when supplier-specific factor is unavailable.",
+          "CEA methodology excludes captive-generation and auxiliary consumption.",
+          "Based on generation-weighted grid mix for the given financial year."
+        ],
+        "audit_text": "India CEA CO2 baseline v21.0 for Southern regional grid, FY 2024-25.",
+        "fallback_rank": 5,
+        "rationale": "India CEA CO2 baseline v21.0 for Southern regional grid, FY 2024-25.",
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:IN:s:2024-25:cea-v21.0",
+      "factor_name": "India grid electricity \u2014 Southern regional grid, 2024-25",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "IN",
+        "grid_region": "S",
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "Government of India \u2014 public use with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.675362Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_location_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.52,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 96.0,
+        "geographic_score": 5,
+        "technology_score": 4,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "india_cea_co2_baseline",
+      "source_version": "v21.0",
+      "status": "certified",
+      "valid_from": "2024-04-01",
+      "valid_to": "2025-03-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "grid_average"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for purchased grid electricity in India when supplier-specific factor is unavailable.",
+          "CEA methodology excludes captive-generation and auxiliary consumption.",
+          "Based on generation-weighted grid mix for the given financial year."
+        ],
+        "audit_text": "India CEA CO2 baseline v21.0 for North-Eastern regional grid (standalone), FY 2024-25.",
+        "fallback_rank": 5,
+        "rationale": "India CEA CO2 baseline v21.0 for North-Eastern regional grid (standalone), FY 2024-25.",
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:IN:ner:2024-25:cea-v21.0",
+      "factor_name": "India grid electricity \u2014 North-Eastern regional grid (standalone), 2024-25",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "IN",
+        "grid_region": "NER",
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "Government of India \u2014 public use with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.675362Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_location_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.17,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 96.0,
+        "geographic_score": 5,
+        "technology_score": 4,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "india_cea_co2_baseline",
+      "source_version": "v21.0",
+      "status": "certified",
+      "valid_from": "2024-04-01",
+      "valid_to": "2025-03-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "grid_average"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for purchased grid electricity in India when supplier-specific factor is unavailable.",
+          "CEA methodology excludes captive-generation and auxiliary consumption.",
+          "Based on generation-weighted grid mix for the given financial year."
+        ],
+        "audit_text": "India CEA CO2 baseline v21.0 for All-India composite grid, FY 2024-25.",
+        "fallback_rank": 5,
+        "rationale": "India CEA CO2 baseline v21.0 for All-India composite grid, FY 2024-25.",
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:IN:all_india:2024-25:cea-v21.0",
+      "factor_name": "India grid electricity \u2014 All-India composite grid, 2024-25",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "IN",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "Government of India \u2014 public use with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.675362Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_location_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.695,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 91.0,
+        "geographic_score": 4,
+        "technology_score": 4,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "india_cea_co2_baseline",
+      "source_version": "v21.0",
+      "status": "certified",
+      "valid_from": "2024-04-01",
+      "valid_to": "2025-03-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "grid_average"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for purchased grid electricity in India when supplier-specific factor is unavailable.",
+          "CEA methodology excludes captive-generation and auxiliary consumption.",
+          "Based on generation-weighted grid mix for the given financial year."
+        ],
+        "audit_text": "India CEA CO2 baseline v22.0 for All-India composite grid, FY 2025-26.",
+        "fallback_rank": 5,
+        "rationale": "India CEA CO2 baseline v22.0 for All-India composite grid, FY 2025-26.",
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:IN:all_india:2025-26:cea-v22.0",
+      "factor_name": "India grid electricity \u2014 All-India composite grid, 2025-26",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "IN",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "Government of India \u2014 public use with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.676361Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_location_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.68,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 91.0,
+        "geographic_score": 4,
+        "technology_score": 4,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "india_cea_co2_baseline",
+      "source_version": "v22.0",
+      "status": "certified",
+      "valid_from": "2025-04-01",
+      "valid_to": "2026-03-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "grid_average"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for purchased grid electricity in India when supplier-specific factor is unavailable.",
+          "CEA methodology excludes captive-generation and auxiliary consumption.",
+          "Based on generation-weighted grid mix for the given financial year."
+        ],
+        "audit_text": "India CEA CO2 baseline v22.0 for Northern + Eastern + Western + North-Eastern regional grids, FY 2025-26.",
+        "fallback_rank": 5,
+        "rationale": "India CEA CO2 baseline v22.0 for Northern + Eastern + Western + North-Eastern regional grids, FY 2025-26.",
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:IN:newne:2025-26:cea-v22.0",
+      "factor_name": "India grid electricity \u2014 Northern + Eastern + Western + North-Eastern regional grids, 2025-26",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "IN",
+        "grid_region": "NEWNE",
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "Government of India \u2014 public use with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.676361Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_location_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.775,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 96.0,
+        "geographic_score": 5,
+        "technology_score": 4,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "india_cea_co2_baseline",
+      "source_version": "v22.0",
+      "status": "certified",
+      "valid_from": "2025-04-01",
+      "valid_to": "2026-03-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "grid_average"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for purchased grid electricity in India when supplier-specific factor is unavailable.",
+          "CEA methodology excludes captive-generation and auxiliary consumption.",
+          "Based on generation-weighted grid mix for the given financial year."
+        ],
+        "audit_text": "India CEA CO2 baseline v22.0 for Southern regional grid, FY 2025-26.",
+        "fallback_rank": 5,
+        "rationale": "India CEA CO2 baseline v22.0 for Southern regional grid, FY 2025-26.",
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:IN:s:2025-26:cea-v22.0",
+      "factor_name": "India grid electricity \u2014 Southern regional grid, 2025-26",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "IN",
+        "grid_region": "S",
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "Government of India \u2014 public use with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.676361Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_location_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.505,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 96.0,
+        "geographic_score": 5,
+        "technology_score": 4,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "india_cea_co2_baseline",
+      "source_version": "v22.0",
+      "status": "certified",
+      "valid_from": "2025-04-01",
+      "valid_to": "2026-03-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "grid_average"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for purchased grid electricity in India when supplier-specific factor is unavailable.",
+          "CEA methodology excludes captive-generation and auxiliary consumption.",
+          "Based on generation-weighted grid mix for the given financial year."
+        ],
+        "audit_text": "India CEA CO2 baseline v23.0 for All-India composite grid, FY 2026-27.",
+        "fallback_rank": 5,
+        "rationale": "India CEA CO2 baseline v23.0 for All-India composite grid, FY 2026-27.",
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:IN:all_india:2026-27:cea-v23.0",
+      "factor_name": "India grid electricity \u2014 All-India composite grid, 2026-27",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "IN",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "Government of India \u2014 public use with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.676361Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_location_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.665,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 91.0,
+        "geographic_score": 4,
+        "technology_score": 4,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "india_cea_co2_baseline",
+      "source_version": "v23.0",
+      "status": "certified",
+      "valid_from": "2026-04-01",
+      "valid_to": "2027-03-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "grid_average"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for purchased grid electricity in India when supplier-specific factor is unavailable.",
+          "CEA methodology excludes captive-generation and auxiliary consumption.",
+          "Based on generation-weighted grid mix for the given financial year."
+        ],
+        "audit_text": "India CEA CO2 baseline v23.0 for Northern + Eastern + Western + North-Eastern regional grids, FY 2026-27.",
+        "fallback_rank": 5,
+        "rationale": "India CEA CO2 baseline v23.0 for Northern + Eastern + Western + North-Eastern regional grids, FY 2026-27.",
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:IN:newne:2026-27:cea-v23.0",
+      "factor_name": "India grid electricity \u2014 Northern + Eastern + Western + North-Eastern regional grids, 2026-27",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "IN",
+        "grid_region": "NEWNE",
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "Government of India \u2014 public use with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.677353Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_location_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.755,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 96.0,
+        "geographic_score": 5,
+        "technology_score": 4,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "india_cea_co2_baseline",
+      "source_version": "v23.0",
+      "status": "certified",
+      "valid_from": "2026-04-01",
+      "valid_to": "2027-03-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "grid_average"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for purchased grid electricity in India when supplier-specific factor is unavailable.",
+          "CEA methodology excludes captive-generation and auxiliary consumption.",
+          "Based on generation-weighted grid mix for the given financial year."
+        ],
+        "audit_text": "India CEA CO2 baseline v23.0 for Southern regional grid, FY 2026-27.",
+        "fallback_rank": 5,
+        "rationale": "India CEA CO2 baseline v23.0 for Southern regional grid, FY 2026-27.",
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:IN:s:2026-27:cea-v23.0",
+      "factor_name": "India grid electricity \u2014 Southern regional grid, 2026-27",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "IN",
+        "grid_region": "S",
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "Government of India \u2014 public use with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.677353Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_location_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.49,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 96.0,
+        "geographic_score": 5,
+        "technology_score": 4,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "india_cea_co2_baseline",
+      "source_version": "v23.0",
+      "status": "certified",
+      "valid_from": "2026-04-01",
+      "valid_to": "2027-03-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "grid_average"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for purchased grid electricity in India when supplier-specific factor is unavailable.",
+          "CEA methodology excludes captive-generation and auxiliary consumption.",
+          "Based on generation-weighted grid mix for the given financial year."
+        ],
+        "audit_text": "India CEA CO2 baseline v23.0 for North-Eastern regional grid (standalone), FY 2026-27.",
+        "fallback_rank": 5,
+        "rationale": "India CEA CO2 baseline v23.0 for North-Eastern regional grid (standalone), FY 2026-27.",
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:IN:ner:2026-27:cea-v23.0",
+      "factor_name": "India grid electricity \u2014 North-Eastern regional grid (standalone), 2026-27",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "IN",
+        "grid_region": "NER",
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "Government of India \u2014 public use with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.677353Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_location_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.16,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 96.0,
+        "geographic_score": 5,
+        "technology_score": 4,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "india_cea_co2_baseline",
+      "source_version": "v23.0",
+      "status": "certified",
+      "valid_from": "2026-04-01",
+      "valid_to": "2027-03-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "grid_average"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for purchased grid electricity in India when supplier-specific factor is unavailable.",
+          "CEA methodology excludes captive-generation and auxiliary consumption.",
+          "Based on generation-weighted grid mix for the given financial year."
+        ],
+        "audit_text": "India CEA CO2 baseline v23.0 for Northern regional grid, FY 2026-27.",
+        "fallback_rank": 5,
+        "rationale": "India CEA CO2 baseline v23.0 for Northern regional grid, FY 2026-27.",
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:IN:n:2026-27:cea-v23.0",
+      "factor_name": "India grid electricity \u2014 Northern regional grid, 2026-27",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "IN",
+        "grid_region": "N",
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "Government of India \u2014 public use with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.677353Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_location_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.64,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 96.0,
+        "geographic_score": 5,
+        "technology_score": 4,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "india_cea_co2_baseline",
+      "source_version": "v23.0",
+      "status": "certified",
+      "valid_from": "2026-04-01",
+      "valid_to": "2027-03-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "grid_average"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for purchased grid electricity in India when supplier-specific factor is unavailable.",
+          "CEA methodology excludes captive-generation and auxiliary consumption.",
+          "Based on generation-weighted grid mix for the given financial year."
+        ],
+        "audit_text": "India CEA CO2 baseline v23.0 for Eastern regional grid, FY 2026-27.",
+        "fallback_rank": 5,
+        "rationale": "India CEA CO2 baseline v23.0 for Eastern regional grid, FY 2026-27.",
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:IN:e:2026-27:cea-v23.0",
+      "factor_name": "India grid electricity \u2014 Eastern regional grid, 2026-27",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "IN",
+        "grid_region": "E",
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "Government of India \u2014 public use with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.678352Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_location_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.92,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 96.0,
+        "geographic_score": 5,
+        "technology_score": 4,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "india_cea_co2_baseline",
+      "source_version": "v23.0",
+      "status": "certified",
+      "valid_from": "2026-04-01",
+      "valid_to": "2027-03-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "grid_average"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for purchased grid electricity in India when supplier-specific factor is unavailable.",
+          "CEA methodology excludes captive-generation and auxiliary consumption.",
+          "Based on generation-weighted grid mix for the given financial year."
+        ],
+        "audit_text": "India CEA CO2 baseline v23.0 for Western regional grid, FY 2026-27.",
+        "fallback_rank": 5,
+        "rationale": "India CEA CO2 baseline v23.0 for Western regional grid, FY 2026-27.",
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:IN:w:2026-27:cea-v23.0",
+      "factor_name": "India grid electricity \u2014 Western regional grid, 2026-27",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "IN",
+        "grid_region": "W",
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "Government of India \u2014 public use with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.678352Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_location_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.8,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 96.0,
+        "geographic_score": 5,
+        "technology_score": 4,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "india_cea_co2_baseline",
+      "source_version": "v23.0",
+      "status": "certified",
+      "valid_from": "2026-04-01",
+      "valid_to": "2027-03-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "grid_average"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for purchased grid electricity in India when supplier-specific factor is unavailable.",
+          "CEA methodology excludes captive-generation and auxiliary consumption.",
+          "Based on generation-weighted grid mix for the given financial year."
+        ],
+        "audit_text": "India CEA CO2 baseline v16.0 for All-India composite grid, FY 2019-20.",
+        "fallback_rank": 5,
+        "rationale": "India CEA CO2 baseline v16.0 for All-India composite grid, FY 2019-20.",
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:IN:all_india:2019-20:cea-v16.0",
+      "factor_name": "India grid electricity \u2014 All-India composite grid, 2019-20",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "IN",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "Government of India \u2014 public use with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.678352Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_location_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.76,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 91.0,
+        "geographic_score": 4,
+        "technology_score": 4,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "india_cea_co2_baseline",
+      "source_version": "v16.0",
+      "status": "certified",
+      "valid_from": "2019-04-01",
+      "valid_to": "2020-03-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "grid_average"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for purchased grid electricity in India when supplier-specific factor is unavailable.",
+          "CEA methodology excludes captive-generation and auxiliary consumption.",
+          "Based on generation-weighted grid mix for the given financial year."
+        ],
+        "audit_text": "India CEA CO2 baseline v16.0 for Northern + Eastern + Western + North-Eastern regional grids, FY 2019-20.",
+        "fallback_rank": 5,
+        "rationale": "India CEA CO2 baseline v16.0 for Northern + Eastern + Western + North-Eastern regional grids, FY 2019-20.",
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:IN:newne:2019-20:cea-v16.0",
+      "factor_name": "India grid electricity \u2014 Northern + Eastern + Western + North-Eastern regional grids, 2019-20",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "IN",
+        "grid_region": "NEWNE",
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "Government of India \u2014 public use with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.678352Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_location_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.87,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 96.0,
+        "geographic_score": 5,
+        "technology_score": 4,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "india_cea_co2_baseline",
+      "source_version": "v16.0",
+      "status": "certified",
+      "valid_from": "2019-04-01",
+      "valid_to": "2020-03-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "grid_average"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for purchased grid electricity in India when supplier-specific factor is unavailable.",
+          "CEA methodology excludes captive-generation and auxiliary consumption.",
+          "Based on generation-weighted grid mix for the given financial year."
+        ],
+        "audit_text": "India CEA CO2 baseline v16.0 for Southern regional grid, FY 2019-20.",
+        "fallback_rank": 5,
+        "rationale": "India CEA CO2 baseline v16.0 for Southern regional grid, FY 2019-20.",
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:IN:s:2019-20:cea-v16.0",
+      "factor_name": "India grid electricity \u2014 Southern regional grid, 2019-20",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "IN",
+        "grid_region": "S",
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "Government of India \u2014 public use with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.679255Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_location_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.61,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 96.0,
+        "geographic_score": 5,
+        "technology_score": 4,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "india_cea_co2_baseline",
+      "source_version": "v16.0",
+      "status": "certified",
+      "valid_from": "2019-04-01",
+      "valid_to": "2020-03-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "grid_average"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for purchased grid electricity in India when supplier-specific factor is unavailable.",
+          "CEA methodology excludes captive-generation and auxiliary consumption.",
+          "Based on generation-weighted grid mix for the given financial year."
+        ],
+        "audit_text": "India CEA CO2 baseline v16.0 for North-Eastern regional grid (standalone), FY 2019-20.",
+        "fallback_rank": 5,
+        "rationale": "India CEA CO2 baseline v16.0 for North-Eastern regional grid (standalone), FY 2019-20.",
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:IN:ner:2019-20:cea-v16.0",
+      "factor_name": "India grid electricity \u2014 North-Eastern regional grid (standalone), 2019-20",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "IN",
+        "grid_region": "NER",
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "Government of India \u2014 public use with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.679255Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_location_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.22,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 96.0,
+        "geographic_score": 5,
+        "technology_score": 4,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "india_cea_co2_baseline",
+      "source_version": "v16.0",
+      "status": "certified",
+      "valid_from": "2019-04-01",
+      "valid_to": "2020-03-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "grid_average"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for purchased grid electricity in India when supplier-specific factor is unavailable.",
+          "CEA methodology excludes captive-generation and auxiliary consumption.",
+          "Based on generation-weighted grid mix for the given financial year."
+        ],
+        "audit_text": "India CEA CO2 baseline v15.0 for All-India composite grid, FY 2018-19.",
+        "fallback_rank": 5,
+        "rationale": "India CEA CO2 baseline v15.0 for All-India composite grid, FY 2018-19.",
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:IN:all_india:2018-19:cea-v15.0",
+      "factor_name": "India grid electricity \u2014 All-India composite grid, 2018-19",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "IN",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "Government of India \u2014 public use with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.679255Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_location_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.79,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 91.0,
+        "geographic_score": 4,
+        "technology_score": 4,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "india_cea_co2_baseline",
+      "source_version": "v15.0",
+      "status": "certified",
+      "valid_from": "2018-04-01",
+      "valid_to": "2019-03-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "grid_average"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for purchased grid electricity in India when supplier-specific factor is unavailable.",
+          "CEA methodology excludes captive-generation and auxiliary consumption.",
+          "Based on generation-weighted grid mix for the given financial year."
+        ],
+        "audit_text": "India CEA CO2 baseline v15.0 for Northern + Eastern + Western + North-Eastern regional grids, FY 2018-19.",
+        "fallback_rank": 5,
+        "rationale": "India CEA CO2 baseline v15.0 for Northern + Eastern + Western + North-Eastern regional grids, FY 2018-19.",
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:IN:newne:2018-19:cea-v15.0",
+      "factor_name": "India grid electricity \u2014 Northern + Eastern + Western + North-Eastern regional grids, 2018-19",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "IN",
+        "grid_region": "NEWNE",
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "Government of India \u2014 public use with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.679255Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_location_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.905,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 96.0,
+        "geographic_score": 5,
+        "technology_score": 4,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "india_cea_co2_baseline",
+      "source_version": "v15.0",
+      "status": "certified",
+      "valid_from": "2018-04-01",
+      "valid_to": "2019-03-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "grid_average"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for purchased grid electricity in India when supplier-specific factor is unavailable.",
+          "CEA methodology excludes captive-generation and auxiliary consumption.",
+          "Based on generation-weighted grid mix for the given financial year."
+        ],
+        "audit_text": "India CEA CO2 baseline v15.0 for Southern regional grid, FY 2018-19.",
+        "fallback_rank": 5,
+        "rationale": "India CEA CO2 baseline v15.0 for Southern regional grid, FY 2018-19.",
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:IN:s:2018-19:cea-v15.0",
+      "factor_name": "India grid electricity \u2014 Southern regional grid, 2018-19",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "IN",
+        "grid_region": "S",
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "Government of India \u2014 public use with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.679255Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_location_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.625,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 96.0,
+        "geographic_score": 5,
+        "technology_score": 4,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "india_cea_co2_baseline",
+      "source_version": "v15.0",
+      "status": "certified",
+      "valid_from": "2018-04-01",
+      "valid_to": "2019-03-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "grid_average"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for purchased grid electricity in India when supplier-specific factor is unavailable.",
+          "CEA methodology excludes captive-generation and auxiliary consumption.",
+          "Based on generation-weighted grid mix for the given financial year."
+        ],
+        "audit_text": "India CEA CO2 baseline v14.0 for All-India composite grid, FY 2017-18.",
+        "fallback_rank": 5,
+        "rationale": "India CEA CO2 baseline v14.0 for All-India composite grid, FY 2017-18.",
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:IN:all_india:2017-18:cea-v14.0",
+      "factor_name": "India grid electricity \u2014 All-India composite grid, 2017-18",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "IN",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "Government of India \u2014 public use with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.680357Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_location_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.81,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 91.0,
+        "geographic_score": 4,
+        "technology_score": 4,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "india_cea_co2_baseline",
+      "source_version": "v14.0",
+      "status": "certified",
+      "valid_from": "2017-04-01",
+      "valid_to": "2018-03-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "grid_average"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for purchased grid electricity in India when supplier-specific factor is unavailable.",
+          "CEA methodology excludes captive-generation and auxiliary consumption.",
+          "Based on generation-weighted grid mix for the given financial year."
+        ],
+        "audit_text": "India CEA CO2 baseline v21.0 for Northern + Eastern + Western + North-Eastern regional grids, FY 2024-25.",
+        "fallback_rank": 5,
+        "rationale": "India CEA CO2 baseline v21.0 for Northern + Eastern + Western + North-Eastern regional grids, FY 2024-25.",
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:IN:newne:2024-25:cea-v21.0",
+      "factor_name": "India grid electricity \u2014 Northern + Eastern + Western + North-Eastern regional grids, 2024-25",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "IN",
+        "grid_region": "NEWNE",
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "Government of India \u2014 public use with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.680357Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_location_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.795,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 96.0,
+        "geographic_score": 5,
+        "technology_score": 4,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "india_cea_co2_baseline",
+      "source_version": "v21.0",
+      "status": "certified",
+      "valid_from": "2024-04-01",
+      "valid_to": "2025-03-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "grid_average"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for purchased grid electricity in India when supplier-specific factor is unavailable.",
+          "CEA methodology excludes captive-generation and auxiliary consumption.",
+          "Based on generation-weighted grid mix for the given financial year."
+        ],
+        "audit_text": "India CEA CO2 baseline v21.0 for Southern regional grid, FY 2024-25.",
+        "fallback_rank": 5,
+        "rationale": "India CEA CO2 baseline v21.0 for Southern regional grid, FY 2024-25.",
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:IN:s:2024-25:cea-v21.0",
+      "factor_name": "India grid electricity \u2014 Southern regional grid, 2024-25",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "IN",
+        "grid_region": "S",
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "Government of India \u2014 public use with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.680357Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_location_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.548,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 96.0,
+        "geographic_score": 5,
+        "technology_score": 4,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "india_cea_co2_baseline",
+      "source_version": "v21.0",
+      "status": "certified",
+      "valid_from": "2024-04-01",
+      "valid_to": "2025-03-31"
+    },
+    {
+      "activity_schema": {
+        "category": "purchased_electricity",
+        "classification_codes": [
+          "NAICS:221112",
+          "ISIC:D351"
+        ],
+        "sub_category": "grid_average"
+      },
+      "denominator": {
+        "unit": "kWh",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [
+          "Use for purchased grid electricity in India when supplier-specific factor is unavailable.",
+          "CEA methodology excludes captive-generation and auxiliary consumption.",
+          "Based on generation-weighted grid mix for the given financial year."
+        ],
+        "audit_text": "India CEA CO2 baseline v21.0 for All-India composite grid, FY 2024-25.",
+        "fallback_rank": 5,
+        "rationale": "India CEA CO2 baseline v21.0 for All-India composite grid, FY 2024-25.",
+        "replacement_pointer": null
+      },
+      "factor_family": "electricity",
+      "factor_id": "EF:IN:all_india:2024-25:cea-v21.0",
+      "factor_name": "India grid electricity \u2014 All-India composite grid, 2024-25",
+      "factor_version": "1.0.0",
+      "formula_type": "direct_factor",
+      "gwp_set": "IPCC_AR6_100",
+      "jurisdiction": {
+        "country": "IN",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "Government of India \u2014 public use with attribution",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T23:56:52.680357Z",
+        "ingested_by": "greenlang_system",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope2_location_based",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.73,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "certificate_handling": null,
+        "electricity_basis": "location",
+        "residual_mix_applicable": false,
+        "scope_applicability": [],
+        "subregion_code": null,
+        "supplier_specific": false,
+        "td_loss_included": false,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 5,
+        "composite_fqs": 91.0,
+        "geographic_score": 4,
+        "technology_score": 4,
+        "temporal_score": 5,
+        "verification_score": 5
+      },
+      "source_id": "india_cea_co2_baseline",
+      "source_version": "v21.0",
+      "status": "certified",
+      "valid_from": "2024-04-01",
+      "valid_to": "2025-03-31"
+    }
+  ],
+  "ingested_at": "2026-04-23T18:26:52+00:00",
+  "license_class": "public_in_government",
+  "license_name": "India-Public-Information",
+  "redistribution_class": "open",
+  "schema_version": "factor_record_v1",
+  "source_id": "india_cea_co2_baseline",
+  "source_version": "20.0"
+}

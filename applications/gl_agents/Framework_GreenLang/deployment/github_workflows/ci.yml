@@ -1,0 +1,330 @@
+# GreenLang Agent CI Pipeline
+# Pull Request Checks: Lint, Test, Coverage, Security
+# Template Version: 1.0.0
+# Usage: Copy to .github/workflows/ci.yml and customize AGENT_NAME variable
+
+name: CI Pipeline
+
+on:
+  pull_request:
+    branches:
+      - main
+      - master
+      - develop
+  push:
+    branches:
+      - main
+      - master
+      - develop
+
+env:
+  # Customize these variables for each agent
+  AGENT_NAME: "GL-XXX_AgentName"
+  PYTHON_VERSION: "3.11"
+  MIN_COVERAGE: 80
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Code Quality Checks
+  # ---------------------------------------------------------------------------
+  lint:
+    name: Code Linting
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install linting dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install flake8 pylint black isort mypy
+
+      - name: Check code formatting with Black
+        run: |
+          black --check --diff .
+        continue-on-error: true
+
+      - name: Check import sorting with isort
+        run: |
+          isort --check-only --diff .
+        continue-on-error: true
+
+      - name: Lint with flake8
+        run: |
+          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=120 --statistics
+
+      - name: Lint with pylint
+        run: |
+          pylint --rcfile=.pylintrc --exit-zero --output-format=colorized .
+        continue-on-error: true
+
+      - name: Type check with mypy
+        run: |
+          mypy --ignore-missing-imports --no-error-summary .
+        continue-on-error: true
+
+  # ---------------------------------------------------------------------------
+  # Unit Tests with Coverage
+  # ---------------------------------------------------------------------------
+  test:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    needs: lint
+    strategy:
+      matrix:
+        python-version: ['3.10', '3.11', '3.12']
+
+    services:
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      postgres:
+        image: postgres:15-alpine
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: test_db
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-cov pytest-asyncio pytest-xdist httpx
+
+      - name: Run unit tests with coverage
+        run: |
+          pytest tests/ \
+            --cov=. \
+            --cov-report=xml \
+            --cov-report=html \
+            --cov-report=term-missing \
+            --cov-fail-under=${{ env.MIN_COVERAGE }} \
+            -v \
+            --tb=short \
+            -n auto
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/test_db
+          REDIS_URL: redis://localhost:6379/0
+          ENVIRONMENT: test
+
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v4
+        if: matrix.python-version == '3.11'
+        with:
+          file: ./coverage.xml
+          flags: unittests
+          name: ${{ env.AGENT_NAME }}-coverage
+          fail_ci_if_error: false
+
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@v4
+        if: matrix.python-version == '3.11'
+        with:
+          name: coverage-report
+          path: htmlcov/
+          retention-days: 7
+
+  # ---------------------------------------------------------------------------
+  # Integration Tests
+  # ---------------------------------------------------------------------------
+  integration-test:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-asyncio httpx
+
+      - name: Start services with Docker Compose
+        run: |
+          docker-compose -f docker-compose.test.yml up -d
+          sleep 10
+
+      - name: Run integration tests
+        run: |
+          pytest tests/integration/ -v --tb=short
+        env:
+          ENVIRONMENT: integration
+
+      - name: Cleanup
+        if: always()
+        run: |
+          docker-compose -f docker-compose.test.yml down -v
+
+  # ---------------------------------------------------------------------------
+  # Security Scanning (Quick)
+  # ---------------------------------------------------------------------------
+  security-quick:
+    name: Security Quick Scan
+    runs-on: ubuntu-latest
+    needs: lint
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install security tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install bandit safety
+
+      - name: Run Bandit security scan
+        run: |
+          bandit -r . -ll -ii -x tests/,venv/ --format json --output bandit-report.json || true
+          bandit -r . -ll -ii -x tests/,venv/ --format txt
+
+      - name: Check dependencies with Safety
+        run: |
+          pip install -r requirements.txt
+          safety check --full-report || true
+
+      - name: Upload Bandit report
+        uses: actions/upload-artifact@v4
+        with:
+          name: bandit-security-report
+          path: bandit-report.json
+          retention-days: 30
+
+  # ---------------------------------------------------------------------------
+  # Build Docker Image (Validation)
+  # ---------------------------------------------------------------------------
+  build:
+    name: Build Docker Image
+    runs-on: ubuntu-latest
+    needs: [test, security-quick]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image (no push)
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: false
+          tags: |
+            ${{ env.AGENT_NAME }}:${{ github.sha }}
+            ${{ env.AGENT_NAME }}:pr-${{ github.event.pull_request.number }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            VERSION=${{ github.sha }}
+            BUILD_DATE=${{ github.event.head_commit.timestamp }}
+
+      - name: Scan Docker image with Trivy
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.AGENT_NAME }}:${{ github.sha }}
+          format: 'table'
+          exit-code: '0'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
+
+  # ---------------------------------------------------------------------------
+  # Documentation Check
+  # ---------------------------------------------------------------------------
+  docs:
+    name: Documentation Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check README exists
+        run: |
+          if [ ! -f README.md ]; then
+            echo "::error::README.md is missing"
+            exit 1
+          fi
+
+      - name: Check API documentation
+        run: |
+          if [ ! -d docs/ ]; then
+            echo "::warning::docs/ directory is missing"
+          fi
+
+      - name: Validate OpenAPI spec (if exists)
+        run: |
+          if [ -f openapi.yaml ] || [ -f openapi.json ]; then
+            pip install openapi-spec-validator
+            openapi-spec-validator openapi.yaml || openapi-spec-validator openapi.json
+          fi
+
+  # ---------------------------------------------------------------------------
+  # Final Status Check
+  # ---------------------------------------------------------------------------
+  ci-status:
+    name: CI Status
+    runs-on: ubuntu-latest
+    needs: [lint, test, security-quick, build, docs]
+    if: always()
+
+    steps:
+      - name: Check CI Status
+        run: |
+          if [ "${{ needs.lint.result }}" = "failure" ] || \
+             [ "${{ needs.test.result }}" = "failure" ] || \
+             [ "${{ needs.build.result }}" = "failure" ]; then
+            echo "::error::CI pipeline failed"
+            exit 1
+          fi
+          echo "CI pipeline passed successfully"

@@ -1,0 +1,355 @@
+# GL-003 UNIFIEDSTEAM - Kubernetes Deployment
+# Steam System Optimization Agent
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: unifiedsteam
+  namespace: greenlang-steam
+  labels:
+    app.kubernetes.io/name: unifiedsteam
+    app.kubernetes.io/instance: unifiedsteam-production
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/component: api
+    app.kubernetes.io/part-of: greenlang
+    agent-id: gl-003
+    tier: steam-systems
+  annotations:
+    deployment.kubernetes.io/revision: "1"
+    kubernetes.io/change-cause: "Initial deployment of GL-003 UNIFIEDSTEAM"
+spec:
+  replicas: 3
+  revisionHistoryLimit: 10
+
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: unifiedsteam
+      app.kubernetes.io/instance: unifiedsteam-production
+
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: unifiedsteam
+        app.kubernetes.io/instance: unifiedsteam-production
+        app.kubernetes.io/version: "1.0.0"
+        agent-id: gl-003
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+        prometheus.io/path: "/metrics"
+        sidecar.istio.io/inject: "true"
+        # Force pod restart on config changes
+        checksum/config: "{{ .Values.configChecksum }}"
+
+    spec:
+      serviceAccountName: unifiedsteam-sa
+
+      # Pod security context
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+
+      # Graceful shutdown
+      terminationGracePeriodSeconds: 60
+
+      # DNS configuration
+      dnsPolicy: ClusterFirst
+
+      # Init containers for setup tasks
+      initContainers:
+        - name: wait-for-kafka
+          image: busybox:1.36
+          command: ['sh', '-c', 'until nc -z kafka.greenlang-steam.svc.cluster.local 9092; do echo waiting for kafka; sleep 2; done']
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+
+        - name: wait-for-redis
+          image: busybox:1.36
+          command: ['sh', '-c', 'until nc -z redis.greenlang-steam.svc.cluster.local 6379; do echo waiting for redis; sleep 2; done']
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+
+      containers:
+        - name: unifiedsteam
+          image: greenlang/gl-003-unifiedsteam:1.0.0
+          imagePullPolicy: IfNotPresent
+
+          # Container security context
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false
+            capabilities:
+              drop:
+                - ALL
+
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+            - name: grpc
+              containerPort: 50051
+              protocol: TCP
+            - name: metrics
+              containerPort: 9090
+              protocol: TCP
+
+          # Environment variables
+          env:
+            # Application configuration
+            - name: UNIFIEDSTEAM_ENV
+              value: "production"
+            - name: UNIFIEDSTEAM_LOG_LEVEL
+              valueFrom:
+                configMapKeyRef:
+                  name: unifiedsteam-config
+                  key: log-level
+
+            # Pod metadata
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+
+            # Kafka configuration
+            - name: KAFKA_BROKERS
+              valueFrom:
+                configMapKeyRef:
+                  name: unifiedsteam-config
+                  key: kafka-brokers
+            - name: KAFKA_CONSUMER_GROUP
+              valueFrom:
+                configMapKeyRef:
+                  name: unifiedsteam-config
+                  key: kafka-consumer-group
+
+            # OPC-UA configuration
+            - name: OPCUA_ENDPOINT
+              valueFrom:
+                configMapKeyRef:
+                  name: unifiedsteam-config
+                  key: opcua-endpoint
+
+            # Redis configuration
+            - name: REDIS_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: unifiedsteam-config
+                  key: redis-host
+            - name: REDIS_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: unifiedsteam-config
+                  key: redis-port
+
+            # Database secrets
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: unifiedsteam-secrets
+                  key: database-url
+
+            # API secrets
+            - name: API_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: unifiedsteam-secrets
+                  key: api-secret-key
+
+            # OpenTelemetry
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              valueFrom:
+                configMapKeyRef:
+                  name: unifiedsteam-config
+                  key: otel-endpoint
+            - name: OTEL_SERVICE_NAME
+              value: "gl-003-unifiedsteam"
+
+          # Resource limits
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "1Gi"
+            limits:
+              cpu: "2000m"
+              memory: "4Gi"
+
+          # Liveness probe - is the container running?
+          livenessProbe:
+            httpGet:
+              path: /health/live
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+            successThreshold: 1
+
+          # Readiness probe - is the container ready to serve traffic?
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+            successThreshold: 1
+
+          # Startup probe - for slow-starting containers
+          startupProbe:
+            httpGet:
+              path: /health/live
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 30  # Allow up to 150 seconds for startup
+
+          # Volume mounts
+          volumeMounts:
+            - name: config
+              mountPath: /app/config
+              readOnly: true
+            - name: data
+              mountPath: /app/data
+            - name: logs
+              mountPath: /app/logs
+            - name: models
+              mountPath: /app/models
+              readOnly: true
+            - name: tmp
+              mountPath: /tmp
+
+      # Volumes
+      volumes:
+        - name: config
+          configMap:
+            name: unifiedsteam-config
+        - name: data
+          persistentVolumeClaim:
+            claimName: unifiedsteam-data
+        - name: logs
+          emptyDir: {}
+        - name: models
+          persistentVolumeClaim:
+            claimName: unifiedsteam-models
+            readOnly: true
+        - name: tmp
+          emptyDir: {}
+
+      # Pod scheduling preferences
+      affinity:
+        # Spread pods across nodes
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app.kubernetes.io/name
+                      operator: In
+                      values:
+                        - unifiedsteam
+                topologyKey: kubernetes.io/hostname
+
+        # Prefer nodes with steam-processing label
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 50
+              preference:
+                matchExpressions:
+                  - key: node-type
+                    operator: In
+                    values:
+                      - compute
+
+      # Tolerations for dedicated nodes
+      tolerations:
+        - key: "dedicated"
+          operator: "Equal"
+          value: "greenlang"
+          effect: "NoSchedule"
+
+      # Topology spread constraints for HA
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: unifiedsteam
+---
+# ServiceAccount for the application
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: unifiedsteam-sa
+  namespace: greenlang-steam
+  labels:
+    app.kubernetes.io/name: unifiedsteam
+    app.kubernetes.io/component: serviceaccount
+automountServiceAccountToken: true
+---
+# PersistentVolumeClaim for data storage
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: unifiedsteam-data
+  namespace: greenlang-steam
+  labels:
+    app.kubernetes.io/name: unifiedsteam
+    app.kubernetes.io/component: storage
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 20Gi
+  storageClassName: standard
+---
+# PersistentVolumeClaim for ML models
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: unifiedsteam-models
+  namespace: greenlang-steam
+  labels:
+    app.kubernetes.io/name: unifiedsteam
+    app.kubernetes.io/component: storage
+spec:
+  accessModes:
+    - ReadOnlyMany
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: standard

@@ -1,6 +1,6 @@
 {
   "name": "@greenlang/factors",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "description": "GreenLang Factors API client - typed TypeScript / Node SDK for the global emission-factor catalog (search, resolve, edition pinning, signed-receipt verification).",
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",

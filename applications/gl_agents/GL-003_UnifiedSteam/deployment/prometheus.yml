@@ -1,0 +1,73 @@
+# GL-003 UNIFIEDSTEAM - Prometheus Configuration
+# Local Development Environment
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    monitor: 'unifiedsteam-dev'
+    environment: 'development'
+
+# Alerting configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: []
+
+# Rule files
+rule_files: []
+
+# Scrape configurations
+scrape_configs:
+  # ==============================================================================
+  # UnifiedSteam Application
+  # ==============================================================================
+  - job_name: 'unifiedsteam'
+    static_configs:
+      - targets: ['unifiedsteam:9090']
+        labels:
+          agent_id: 'gl-003'
+          tier: 'steam-systems'
+    metrics_path: /metrics
+    scrape_interval: 10s
+    scrape_timeout: 5s
+
+  # ==============================================================================
+  # Kafka Metrics (via JMX Exporter)
+  # ==============================================================================
+  - job_name: 'kafka'
+    static_configs:
+      - targets: ['kafka:9092']
+    scrape_interval: 15s
+
+  # ==============================================================================
+  # Redis Metrics
+  # ==============================================================================
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis:6379']
+    scrape_interval: 15s
+
+  # ==============================================================================
+  # PostgreSQL Metrics
+  # ==============================================================================
+  - job_name: 'postgres'
+    static_configs:
+      - targets: ['postgres:5432']
+    scrape_interval: 15s
+
+  # ==============================================================================
+  # Prometheus Self-Monitoring
+  # ==============================================================================
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+    scrape_interval: 30s
+
+  # ==============================================================================
+  # OpenTelemetry Collector
+  # ==============================================================================
+  - job_name: 'otel-collector'
+    static_configs:
+      - targets: ['otel-collector:8888']
+    scrape_interval: 15s

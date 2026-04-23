@@ -1,0 +1,417 @@
+# GL-015 INSULSCAN Network Policies
+# Insulation Scanning & Thermal Assessment Agent
+# Implements zero-trust network security with explicit allow rules
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: gl-015-insulscan-network-policy
+  namespace: greenlang
+  labels:
+    app: gl-015-insulscan
+    app.kubernetes.io/name: gl-015-insulscan
+    app.kubernetes.io/instance: gl-015-insulscan-production
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/component: network-security
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/managed-by: gitops
+    component: insulation-scanner
+    agent-id: GL-015
+    codename: INSULSCAN
+  annotations:
+    kubernetes.io/description: "Network policy for GL-015 INSULSCAN - implements zero-trust networking"
+spec:
+  # Apply to all GL-015 INSULSCAN pods
+  podSelector:
+    matchLabels:
+      app: gl-015-insulscan
+
+  # Control both ingress and egress
+  policyTypes:
+    - Ingress
+    - Egress
+
+  # =============================================================================
+  # INGRESS RULES
+  # =============================================================================
+  ingress:
+    # Allow traffic from API Gateway / Ingress Controller
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: ingress-nginx
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ingress-nginx
+        - namespaceSelector:
+            matchLabels:
+              name: api-gateway
+      ports:
+        - protocol: TCP
+          port: 8015  # HTTP API
+        - protocol: TCP
+          port: 50051  # gRPC
+
+    # Allow traffic from within greenlang namespace (inter-agent communication)
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: greenlang
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: greenlang
+        - podSelector: {}  # Any pod in the same namespace
+      ports:
+        - protocol: TCP
+          port: 8015  # HTTP API
+        - protocol: TCP
+          port: 50051  # gRPC
+        - protocol: TCP
+          port: 9090  # Metrics
+
+    # Allow traffic from monitoring namespace (Prometheus scraping)
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+      ports:
+        - protocol: TCP
+          port: 9090  # Metrics
+
+    # Allow traffic from observability namespace (OpenTelemetry, Jaeger)
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: observability
+      ports:
+        - protocol: TCP
+          port: 9090  # Metrics
+
+    # Allow traffic from Istio/service mesh sidecar
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: istio-system
+      ports:
+        - protocol: TCP
+          port: 8015
+        - protocol: TCP
+          port: 50051
+        - protocol: TCP
+          port: 9090
+
+  # =============================================================================
+  # EGRESS RULES
+  # =============================================================================
+  egress:
+    # Allow DNS resolution (required for all network operations)
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+
+    # Allow connections to PostgreSQL database
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: greenlang
+        - namespaceSelector:
+            matchLabels:
+              name: databases
+      ports:
+        - protocol: TCP
+          port: 5432  # PostgreSQL
+
+    # Allow connections to Redis
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: greenlang
+        - namespaceSelector:
+            matchLabels:
+              name: redis
+      ports:
+        - protocol: TCP
+          port: 6379  # Redis
+
+    # Allow connections to Kafka
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: kafka
+        - namespaceSelector:
+            matchLabels:
+              name: greenlang
+      ports:
+        - protocol: TCP
+          port: 9092  # Kafka plaintext
+        - protocol: TCP
+          port: 9093  # Kafka SSL
+        - protocol: TCP
+          port: 9094  # Kafka SASL
+
+    # Allow connections to OPC-UA servers (industrial control systems)
+    - to:
+        - namespaceSelector: {}
+        - ipBlock:
+            cidr: 10.0.0.0/8  # Internal network for OPC-UA servers
+            except:
+              - 10.0.0.0/24  # Except management network
+      ports:
+        - protocol: TCP
+          port: 4840  # OPC-UA default port
+        - protocol: TCP
+          port: 4843  # OPC-UA secure port
+
+    # Allow connections to CMMS service
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: greenlang
+        - namespaceSelector:
+            matchLabels:
+              name: cmms
+      ports:
+        - protocol: TCP
+          port: 8080
+        - protocol: TCP
+          port: 443
+
+    # Allow connections to ML inference service
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: greenlang
+        - namespaceSelector:
+            matchLabels:
+              name: ml-services
+      ports:
+        - protocol: TCP
+          port: 8080
+        - protocol: TCP
+          port: 8081
+
+    # Allow connections to other GreenLang agents (inter-agent communication)
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: greenlang
+      ports:
+        - protocol: TCP
+          port: 8000  # Common agent HTTP port
+        - protocol: TCP
+          port: 8001
+        - protocol: TCP
+          port: 8010
+        - protocol: TCP
+          port: 8011
+        - protocol: TCP
+          port: 8012
+        - protocol: TCP
+          port: 8013
+        - protocol: TCP
+          port: 8014
+        - protocol: TCP
+          port: 50051  # gRPC
+        - protocol: TCP
+          port: 50052
+
+    # Allow connections to OpenTelemetry collector
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+        - namespaceSelector:
+            matchLabels:
+              name: observability
+      ports:
+        - protocol: TCP
+          port: 4317  # OTLP gRPC
+        - protocol: TCP
+          port: 4318  # OTLP HTTP
+        - protocol: TCP
+          port: 14268  # Jaeger
+
+    # Allow connections to thermal camera RTSP streams
+    - to:
+        - ipBlock:
+            cidr: 10.0.0.0/8  # Internal network for cameras
+      ports:
+        - protocol: TCP
+          port: 554  # RTSP
+        - protocol: UDP
+          port: 554  # RTSP
+
+    # Allow HTTPS for external API calls (cloud services, notifications)
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except:
+              - 10.0.0.0/8
+              - 172.16.0.0/12
+              - 192.168.0.0/16
+      ports:
+        - protocol: TCP
+          port: 443  # HTTPS
+
+---
+# Deny all ingress by default for GL-015 namespace pods
+# This is applied first, then specific allows are added
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: gl-015-insulscan-deny-all-ingress
+  namespace: greenlang
+  labels:
+    app: gl-015-insulscan
+    app.kubernetes.io/name: gl-015-insulscan
+    app.kubernetes.io/component: network-security
+    agent-id: GL-015
+    codename: INSULSCAN
+    policy-type: deny-all
+  annotations:
+    kubernetes.io/description: "Default deny all ingress for GL-015 INSULSCAN - explicit allows required"
+spec:
+  podSelector:
+    matchLabels:
+      app: gl-015-insulscan
+  policyTypes:
+    - Ingress
+  ingress: []  # Empty = deny all
+
+---
+# Deny all egress by default for GL-015 namespace pods
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: gl-015-insulscan-deny-all-egress
+  namespace: greenlang
+  labels:
+    app: gl-015-insulscan
+    app.kubernetes.io/name: gl-015-insulscan
+    app.kubernetes.io/component: network-security
+    agent-id: GL-015
+    codename: INSULSCAN
+    policy-type: deny-all
+  annotations:
+    kubernetes.io/description: "Default deny all egress for GL-015 INSULSCAN - explicit allows required"
+spec:
+  podSelector:
+    matchLabels:
+      app: gl-015-insulscan
+  policyTypes:
+    - Egress
+  egress: []  # Empty = deny all
+
+---
+# Allow inter-pod communication within the deployment
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: gl-015-insulscan-allow-internal
+  namespace: greenlang
+  labels:
+    app: gl-015-insulscan
+    app.kubernetes.io/name: gl-015-insulscan
+    app.kubernetes.io/component: network-security
+    agent-id: GL-015
+    codename: INSULSCAN
+    policy-type: allow-internal
+  annotations:
+    kubernetes.io/description: "Allow internal communication between GL-015 INSULSCAN pods"
+spec:
+  podSelector:
+    matchLabels:
+      app: gl-015-insulscan
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: gl-015-insulscan
+      ports:
+        - protocol: TCP
+          port: 8015
+        - protocol: TCP
+          port: 50051
+        - protocol: TCP
+          port: 9090
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              app: gl-015-insulscan
+      ports:
+        - protocol: TCP
+          port: 8015
+        - protocol: TCP
+          port: 50051
+        - protocol: TCP
+          port: 9090
+
+---
+# Cilium Network Policy (alternative for Cilium CNI)
+# Provides more advanced L7 filtering capabilities
+# Uncomment if using Cilium as your CNI
+#
+# apiVersion: cilium.io/v2
+# kind: CiliumNetworkPolicy
+# metadata:
+#   name: gl-015-insulscan-cilium-policy
+#   namespace: greenlang
+#   labels:
+#     app: gl-015-insulscan
+#     agent-id: GL-015
+#     codename: INSULSCAN
+# spec:
+#   endpointSelector:
+#     matchLabels:
+#       app: gl-015-insulscan
+#   ingress:
+#     - fromEndpoints:
+#         - matchLabels:
+#             k8s:io.kubernetes.pod.namespace: ingress-nginx
+#       toPorts:
+#         - ports:
+#             - port: "8015"
+#               protocol: TCP
+#           rules:
+#             http:
+#               - method: "GET"
+#                 path: "/api/v1/health.*"
+#               - method: "POST"
+#                 path: "/api/v1/scans.*"
+#               - method: "GET"
+#                 path: "/api/v1/assessments.*"
+#     - fromEndpoints:
+#         - matchLabels:
+#             k8s:io.kubernetes.pod.namespace: monitoring
+#       toPorts:
+#         - ports:
+#             - port: "9090"
+#               protocol: TCP
+#           rules:
+#             http:
+#               - method: "GET"
+#                 path: "/metrics"
+#   egress:
+#     - toEndpoints:
+#         - matchLabels:
+#             k8s:io.kubernetes.pod.namespace: kafka
+#       toPorts:
+#         - ports:
+#             - port: "9092"
+#               protocol: TCP
+#     - toFQDNs:
+#         - matchPattern: "*.greenlang.local"
+#       toPorts:
+#         - ports:
+#             - port: "443"
+#               protocol: TCP

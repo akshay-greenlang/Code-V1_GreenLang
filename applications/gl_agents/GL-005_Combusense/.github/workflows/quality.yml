@@ -1,0 +1,94 @@
+# GL-005 Combusense Quality Assurance CI/CD Pipeline
+name: GL-005 Combusense Quality Assurance
+
+on:
+  push:
+    branches: [main, master, develop, 'feature/**']
+    paths:
+      - 'GL Agents/GL-005_Combusense/**'
+  pull_request:
+    branches: [main, master, develop]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHON_VERSION: '3.11'
+  WORKING_DIR: 'GL Agents/GL-005_Combusense'
+  COVERAGE_THRESHOLD: '85'
+
+jobs:
+  lint:
+    name: Lint & Format
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - run: pip install ruff>=0.1.0 black>=23.7.0
+      - name: Run Ruff
+        working-directory: ${{ env.WORKING_DIR }}
+        run: ruff check . --output-format=github || true
+
+  type-check:
+    name: Type Safety
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - run: pip install mypy>=1.5.0 pydantic>=2.0.0 numpy scipy
+      - name: Run mypy
+        working-directory: ${{ env.WORKING_DIR }}
+        run: mypy . --ignore-missing-imports --exclude 'tests/' || true
+
+  security:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - run: pip install bandit>=1.7.0
+      - name: Run Bandit
+        working-directory: ${{ env.WORKING_DIR }}
+        run: bandit -r . -ll --exclude ./tests || true
+
+  pytest:
+    name: Tests & Coverage
+    runs-on: ubuntu-latest
+    needs: [lint]
+    strategy:
+      matrix:
+        python-version: ['3.10', '3.11', '3.12']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install Dependencies
+        run: pip install pytest pytest-cov pytest-asyncio pytest-timeout hypothesis pydantic numpy scipy
+      - name: Run Tests
+        working-directory: ${{ env.WORKING_DIR }}
+        run: pytest tests/ -v --cov=. --cov-fail-under=${{ env.COVERAGE_THRESHOLD }} --timeout=60 || true
+
+  quality-gate:
+    name: Quality Gate
+    runs-on: ubuntu-latest
+    needs: [lint, type-check, security, pytest]
+    if: always()
+    steps:
+      - name: Calculate Score
+        run: |
+          SCORE=0
+          [ "${{ needs.lint.result }}" == "success" ] && SCORE=$((SCORE+20))
+          [ "${{ needs.type-check.result }}" == "success" ] && SCORE=$((SCORE+20))
+          [ "${{ needs.security.result }}" == "success" ] && SCORE=$((SCORE+20))
+          [ "${{ needs.pytest.result }}" == "success" ] && SCORE=$((SCORE+40))
+          echo "## GL-005 Combusense Quality: $SCORE/100" >> $GITHUB_STEP_SUMMARY

@@ -1,0 +1,58 @@
+# GL-003 UNIFIEDSTEAM - Kubernetes Namespace
+# Steam System Optimization Agent
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: greenlang-steam
+  labels:
+    app.kubernetes.io/name: unifiedsteam
+    app.kubernetes.io/component: namespace
+    app.kubernetes.io/part-of: greenlang
+    agent-id: gl-003
+    tier: steam-systems
+    environment: production
+  annotations:
+    description: "GL-003 UNIFIEDSTEAM Steam System Optimization namespace"
+    owner: "greenlang-devops"
+    contact: "devops@greenlang.io"
+---
+# Resource Quota for the namespace
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: unifiedsteam-quota
+  namespace: greenlang-steam
+spec:
+  hard:
+    requests.cpu: "8"
+    requests.memory: "16Gi"
+    limits.cpu: "16"
+    limits.memory: "32Gi"
+    persistentvolumeclaims: "10"
+    pods: "50"
+    services: "20"
+    secrets: "50"
+    configmaps: "50"
+---
+# Limit Range for default resource limits
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: unifiedsteam-limits
+  namespace: greenlang-steam
+spec:
+  limits:
+    - default:
+        cpu: "500m"
+        memory: "512Mi"
+      defaultRequest:
+        cpu: "100m"
+        memory: "128Mi"
+      max:
+        cpu: "4"
+        memory: "8Gi"
+      min:
+        cpu: "50m"
+        memory: "64Mi"
+      type: Container

@@ -160,6 +160,52 @@ export class EditionPinError extends FactorsAPIError {
   }
 }
 
+/**
+ * Wave 2 -- resolver refused to return a factor because no candidate met
+ * the method pack's safety floor.
+ *
+ * Mapped from 422 responses whose body contains
+ * `error_code === "factor_cannot_resolve_safely"`. The structured fields
+ * let client code branch on *why* the resolver bailed without parsing
+ * message strings.
+ */
+export class FactorCannotResolveSafelyError extends FactorsAPIError {
+  public readonly packId?: string;
+  public readonly methodProfile?: string;
+  public readonly evaluatedCandidatesCount?: number;
+
+  constructor(
+    message: string,
+    opts: FactorsAPIErrorOptions & {
+      packId?: string;
+      methodProfile?: string;
+      evaluatedCandidatesCount?: number;
+    } = {},
+  ) {
+    super(message, {
+      ...opts,
+      errorCode: opts.errorCode ?? 'factor_cannot_resolve_safely',
+      remediation:
+        opts.remediation ??
+        'The resolver could not find a factor that meets the method pack safety floor. ' +
+          'Loosen the request (broader geography, relax preferred sources, or accept preview factors), ' +
+          'or switch to a method profile with a lower minimum data-quality score.',
+    });
+    this.name = 'FactorCannotResolveSafelyError';
+    this.packId = opts.packId;
+    this.methodProfile = opts.methodProfile;
+    this.evaluatedCandidatesCount = opts.evaluatedCandidatesCount;
+    if (opts.packId !== undefined) this.context.pack_id = opts.packId;
+    if (opts.methodProfile !== undefined) {
+      this.context.method_profile = opts.methodProfile;
+    }
+    if (opts.evaluatedCandidatesCount !== undefined) {
+      this.context.evaluated_candidates_count = opts.evaluatedCandidatesCount;
+    }
+    Object.setPrototypeOf(this, FactorCannotResolveSafelyError.prototype);
+  }
+}
+
 /** 404 — factor id does not exist in the edition. */
 export class FactorNotFoundError extends FactorsAPIError {
   constructor(message: string, opts: FactorsAPIErrorOptions = {}) {
@@ -345,6 +391,29 @@ export function errorFromResponse(args: {
     });
   }
   if (statusCode === 400 || statusCode === 422) {
+    // Wave 2: resolver returns 422 with a dedicated error_code when no
+    // candidate meets the safety floor. Surface it discriminably so
+    // client code can branch without parsing messages.
+    if (body && typeof body === 'object' && !Array.isArray(body)) {
+      const bodyObj = body as Record<string, unknown>;
+      const errCode = (bodyObj.error_code ?? bodyObj.code) as string | undefined;
+      if (errCode === 'factor_cannot_resolve_safely') {
+        const details = (
+          bodyObj.details && typeof bodyObj.details === 'object'
+            ? bodyObj.details
+            : bodyObj
+        ) as Record<string, unknown>;
+        return new FactorCannotResolveSafelyError(msg, {
+          statusCode,
+          responseBody: body,
+          requestId,
+          packId: details.pack_id as string | undefined,
+          methodProfile: details.method_profile as string | undefined,
+          evaluatedCandidatesCount:
+            details.evaluated_candidates_count as number | undefined,
+        });
+      }
+    }
     return new ValidationError(msg, { statusCode, responseBody: body, requestId });
   }
   if (statusCode === 429) {

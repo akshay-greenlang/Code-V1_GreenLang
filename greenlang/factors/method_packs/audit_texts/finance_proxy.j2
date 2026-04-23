@@ -1,0 +1,38 @@
+{# ---
+approved: false
+approved_by: null
+approved_at: null
+methodology_lead: null
+standard_citation: "PCAF Global GHG Accounting and Reporting Standard for the Financial Industry - Part A (Financed Emissions), Part B (Facilitated Emissions), Part C (Insurance-Associated Emissions), 2024, Chapters 5-7; GHG Protocol Scope 3 Category 15 (Investments); IFRS S2 Climate-related Disclosures, paragraphs 29-33"
+--- #}
+Factor {{ factor.chosen_factor.name }} ({{ factor.chosen_factor.id }}) was
+selected under the Finance Proxy method profile
+({{ factor.method_pack }}), aligned with the PCAF Global GHG Accounting
+and Reporting Standard Part A / B / C (2024), GHG Protocol Scope 3
+Category 15 (Investments), and IFRS S2 §29-33. Source:
+{{ factor.source.authority }} dataset version {{ factor.source.version }},
+vintage {{ factor.source.vintage }}. GWP basis: {{ factor.gwp_basis }}.
+Fallback tier: {{ factor.fallback_rank }} ({{ factor.step_label }}) — the
+PCAF chain runs customer_specific -> supplier_specific -> sector_regional
+-> sector_global -> asset_class_default.
+
+Asset class: {{ factor.asset_class_v2 }}. Attribution formula:
+{{ factor.attribution_formula }} (numeric review: TODO methodology-review).
+Attribution factor: {{ factor.attribution_factor }}. Intensity basis:
+{{ factor.intensity_basis }}. Sector taxonomy: NACE
+{{ factor.nace_code }} / NAICS {{ factor.naics_code }} / ISIC
+{{ factor.isic_code }}. Data quality score:
+{{ factor.pcaf_dqs }}/5 -> composite FQS {{ factor.composite_fqs }}/100
+(proxy confidence class {{ factor.proxy_confidence_class }}).
+
+Per PCAF Ch. 5.9, uncertainty-band disclosure is required when DQS >= 4.
+Per PCAF methodology, fallback to the asset-class default (DQS 5) is
+methodology-defined and permitted at this pack's terminal tier; this is
+documented as an exception to the platform-wide RAISE_NO_SAFE_MATCH
+default. Biogenic CO2 is reported separately; market instruments are
+NOT applied at the financier level (they apply at the counterparty).
+
+{% if factor.fallback_trace -%}
+Fallback trace:
+{%- for step in factor.fallback_trace %} {{ step.rank }}->{{ step.label }}{% if not loop.last %};{% endif %}{% endfor %}.
+{%- endif %}

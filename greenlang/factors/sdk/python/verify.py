@@ -88,47 +88,108 @@ def _b64_decode(data: str) -> bytes:
     return base64.b64decode(s.encode("ascii"))
 
 
+#: Top-level response keys that may carry the signed receipt. Wave 2a
+#: canonicalised ``signed_receipt``; ``_signed_receipt`` is kept for one
+#: release so older servers still verify. ``receipt`` is the legacy
+#: pre-1.0 shape.
+_RECEIPT_KEY_CANDIDATES: tuple = ("signed_receipt", "_signed_receipt", "receipt")
+
+#: Deprecated receipt-key aliases -> canonical names. The verifier reads
+#: both; a DeprecationWarning fires if a fallback is taken.
+_LEGACY_RECEIPT_ALIASES: Dict[str, str] = {
+    "algorithm": "alg",
+    "signed_over": "payload_hash",
+}
+
+
+def _warn_deprecated_receipt_key(legacy: str, canonical: str) -> None:
+    import warnings
+
+    warnings.warn(
+        f"Signed receipt key {legacy!r} is deprecated; server should emit "
+        f"{canonical!r}. SDK fallback will be removed in v2.0.0.",
+        DeprecationWarning,
+        stacklevel=3,
+    )
+
+
+def _normalize_receipt(raw: Any) -> Optional[Dict[str, Any]]:
+    """Return a new receipt dict with Wave 2a canonical keys.
+
+    Reads ``alg`` then falls back to ``algorithm``; reads ``payload_hash``
+    then falls back to ``signed_over`` (either a string hex or the
+    legacy ``{body_hash, ...}`` envelope). Emits a DeprecationWarning on
+    every fallback read.
+    """
+    if not isinstance(raw, dict):
+        return None
+    out = dict(raw)
+    if "alg" not in out and "algorithm" in out:
+        _warn_deprecated_receipt_key("algorithm", "alg")
+        out["alg"] = out.get("algorithm")
+    if "payload_hash" not in out and "signed_over" in out:
+        _warn_deprecated_receipt_key("signed_over", "payload_hash")
+        so = out.get("signed_over")
+        if isinstance(so, dict):
+            out["payload_hash"] = so.get("body_hash") or so.get("payload_hash")
+        elif isinstance(so, str):
+            out["payload_hash"] = so
+    return out
+
+
 def _extract_receipt(response: Any) -> Optional[Dict[str, Any]]:
     """Locate the receipt block inside a parsed response payload.
 
-    Accepts the response in several conventional shapes:
-
-    * ``{"receipt": {...}, ...}`` -- inline receipt
-    * ``{"meta": {"receipt": {...}}, ...}`` -- meta envelope
-    * ``{"data": {...}, "receipt": {...}}`` -- envelope+receipt sibling
-    * ``Receipt``-like dict at the top level (has ``signature`` + ``algorithm``)
+    Wave 2a top-level key is ``signed_receipt``. ``_signed_receipt`` is
+    still accepted for one release; a DeprecationWarning fires on fallback.
+    Also accepts the legacy ``receipt`` sibling, ``meta.receipt`` envelope,
+    and a top-level receipt-shaped dict.
     """
     if response is None:
         return None
     if isinstance(response, dict):
-        if "receipt" in response and isinstance(response["receipt"], dict):
-            return response["receipt"]
+        # Canonical and legacy top-level keys, in preference order.
+        for key in _RECEIPT_KEY_CANDIDATES:
+            if key in response and isinstance(response[key], dict):
+                if key == "_signed_receipt":
+                    _warn_deprecated_receipt_key("_signed_receipt", "signed_receipt")
+                return _normalize_receipt(response[key])
         meta = response.get("meta")
-        if isinstance(meta, dict) and isinstance(meta.get("receipt"), dict):
-            return meta["receipt"]
-        # Top-level receipt-shaped dict
-        if "signature" in response and "algorithm" in response:
-            return response
+        if isinstance(meta, dict):
+            for key in _RECEIPT_KEY_CANDIDATES:
+                if key in meta and isinstance(meta[key], dict):
+                    if key == "_signed_receipt":
+                        _warn_deprecated_receipt_key(
+                            "_signed_receipt", "signed_receipt"
+                        )
+                    return _normalize_receipt(meta[key])
+        # Top-level receipt-shaped dict (either new or legacy).
+        if "signature" in response and ("alg" in response or "algorithm" in response):
+            return _normalize_receipt(response)
     return None
 
 
 def _extract_payload(response: Any) -> Any:
     """Strip the receipt block out of ``response`` before re-hashing.
 
-    The server hashes the *response without the receipt* so the receipt
-    can be inserted into the body without invalidating itself. We mirror
-    that on the client side.
+    Handles every receipt-placement variant (canonical ``signed_receipt``,
+    deprecated ``_signed_receipt``, legacy ``receipt`` sibling, and
+    ``meta.receipt``) so the re-hash matches what the server signed.
     """
     if isinstance(response, dict):
-        if "receipt" in response:
-            return {k: v for k, v in response.items() if k != "receipt"}
-        if isinstance(response.get("meta"), dict) and "receipt" in response["meta"]:
-            cleaned_meta = {
-                k: v for k, v in response["meta"].items() if k != "receipt"
-            }
-            cleaned = dict(response)
-            cleaned["meta"] = cleaned_meta
-            return cleaned
+        present = [k for k in _RECEIPT_KEY_CANDIDATES if k in response]
+        if present:
+            return {k: v for k, v in response.items() if k not in present}
+        meta = response.get("meta")
+        if isinstance(meta, dict):
+            meta_present = [k for k in _RECEIPT_KEY_CANDIDATES if k in meta]
+            if meta_present:
+                cleaned_meta = {
+                    k: v for k, v in meta.items() if k not in meta_present
+                }
+                cleaned = dict(response)
+                cleaned["meta"] = cleaned_meta
+                return cleaned
     return response
 
 
@@ -339,17 +400,25 @@ def verify_receipt(
             "since the receipt was issued."
         )
 
-    receipt_algorithm = (algorithm or receipt.get("algorithm") or "").lower().strip()
+    # Wave 2a: canonical field is ``alg``; legacy ``algorithm`` is still
+    # accepted (``_normalize_receipt`` copies it forward with a warning).
+    receipt_algorithm = (
+        algorithm or receipt.get("alg") or receipt.get("algorithm") or ""
+    ).lower().strip()
     if not receipt_algorithm:
         raise ReceiptVerificationError(
-            "Receipt is missing the algorithm field."
+            "Receipt is missing the algorithm field (expected 'alg')."
         )
 
     signature = str(receipt.get("signature") or "")
     if not signature:
         raise ReceiptVerificationError("Receipt is missing the signature field.")
 
-    key_id = str(receipt.get("key_id") or "")
+    key_id = str(
+        receipt.get("key_id")
+        or receipt.get("verification_key_hint")
+        or ""
+    )
     signed_at_str = str(receipt.get("signed_at") or "")
 
     if signed_at_str:
@@ -402,11 +471,16 @@ def verify_receipt(
         )
 
     # Optional: surface signed scope fields when present so the caller
-    # can confirm the receipt covers what they expect.
+    # can confirm the receipt covers what they expect. ``algorithm`` is
+    # retained for backwards compatibility; ``alg`` mirrors the Wave 2a
+    # canonical spelling.
     summary: Dict[str, Any] = {
         "verified": True,
         "algorithm": receipt_algorithm,
+        "alg": receipt_algorithm,
         "key_id": key_id,
+        "receipt_id": receipt.get("receipt_id"),
+        "verification_key_hint": receipt.get("verification_key_hint"),
         "signed_at": signed_at_str,
         "payload_hash": expected_hash,
         "edition_id": receipt.get("edition_id"),

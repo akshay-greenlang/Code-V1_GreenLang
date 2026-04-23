@@ -1,0 +1,850 @@
+# =============================================================================
+# GL-008 TRAPCATCHER - OpenAPI 3.0 Specification
+# =============================================================================
+# Complete REST API specification for steam trap monitoring and diagnostics.
+#
+# Standards:
+# - OpenAPI Specification 3.0.3
+# - RFC 7807 Problem Details for errors
+# - Semantic Versioning 2.0.0
+#
+# Author: GL-BackendDeveloper
+# Date: December 2025
+# Version: 1.0.0
+# =============================================================================
+
+openapi: 3.0.3
+
+info:
+  title: GL-008 TRAPCATCHER API
+  description: |
+    Steam Trap Monitoring and Diagnostic Agent API.
+
+    GL-008 TRAPCATCHER provides real-time monitoring, diagnostics, and
+    energy loss quantification for industrial steam trap populations.
+
+    ## Key Features
+
+    - **Zero-Hallucination**: All calculations use deterministic engineering formulas
+    - **Multimodal Diagnostics**: Combines acoustic, thermal, and contextual data
+    - **SHAP Explainability**: Every diagnosis includes feature attribution
+    - **Provenance Tracking**: SHA-256 hashes for complete audit trail
+
+    ## Standards Compliance
+
+    - ASME PTC 39: Steam Traps - Performance Test Codes
+    - ISO 7841: Automatic steam traps - Steam loss determination
+    - DOE Steam System Assessment Protocol
+
+    ## Authentication
+
+    All endpoints require API key authentication via Bearer token:
+
+    ```
+    Authorization: Bearer <api_key>
+    ```
+
+  version: 1.0.0
+  contact:
+    name: GreenLang Support
+    url: https://greenlang.io/support
+    email: support@greenlang.io
+  license:
+    name: Proprietary
+    url: https://greenlang.io/license
+
+servers:
+  - url: http://localhost:8008/api/v1
+    description: Local development server
+  - url: https://staging.trapcatcher.greenlang.io/api/v1
+    description: Staging environment
+  - url: https://trapcatcher.greenlang.io/api/v1
+    description: Production environment
+
+tags:
+  - name: Health
+    description: Health and status endpoints
+  - name: Diagnostics
+    description: Steam trap diagnostic endpoints
+  - name: Fleet
+    description: Fleet-wide analysis endpoints
+  - name: Metrics
+    description: Observability and metrics endpoints
+
+paths:
+  # ===========================================================================
+  # HEALTH ENDPOINTS
+  # ===========================================================================
+
+  /health:
+    get:
+      operationId: healthCheck
+      summary: Health check
+      description: |
+        Liveness probe for Kubernetes.
+        Returns basic health status of the TRAPCATCHER agent.
+      tags:
+        - Health
+      responses:
+        "200":
+          description: Agent is healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+              example:
+                status: healthy
+                timestamp: "2025-12-24T10:30:00Z"
+                agent_id: GL-008
+                version: "1.0.0"
+        "503":
+          description: Agent is unhealthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /status:
+    get:
+      operationId: getStatus
+      summary: Agent status and statistics
+      description: |
+        Returns detailed agent status including diagnostic counts,
+        component health, and operational statistics.
+      tags:
+        - Health
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Agent status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StatusResponse"
+              example:
+                agent_id: GL-008
+                agent_name: TRAPCATCHER
+                version: "1.0.0"
+                mode: monitoring
+                status: active
+                statistics:
+                  diagnostic_count: 15230
+                  alert_count: 142
+                components:
+                  classifier:
+                    status: healthy
+                    classifications: 15230
+                  explainer:
+                    status: healthy
+                    explanations: 14500
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /metrics:
+    get:
+      operationId: getMetrics
+      summary: Prometheus metrics
+      description: |
+        Exposes Prometheus-compatible metrics for monitoring and alerting.
+
+        Key metrics include:
+        - `trapcatcher_diagnoses_total`: Counter of diagnoses by trap type and condition
+        - `trapcatcher_diagnosis_duration_seconds`: Histogram of diagnosis latency
+        - `trapcatcher_energy_loss_kw`: Current energy loss gauge
+        - `trapcatcher_fleet_health_score`: Fleet health gauge (0-100)
+        - `trapcatcher_api_requests_total`: API request counter (RED pattern)
+        - `trapcatcher_errors_total`: Error counter by type
+      tags:
+        - Metrics
+      responses:
+        "200":
+          description: Prometheus metrics in OpenMetrics format
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: |
+                # HELP trapcatcher_diagnoses_total Total diagnoses performed
+                # TYPE trapcatcher_diagnoses_total counter
+                trapcatcher_diagnoses_total{trap_type="thermodynamic",condition="normal"} 1523
+                trapcatcher_diagnoses_total{trap_type="thermodynamic",condition="leaking"} 45
+                # HELP trapcatcher_diagnosis_duration_seconds Diagnosis latency
+                # TYPE trapcatcher_diagnosis_duration_seconds histogram
+                trapcatcher_diagnosis_duration_seconds_bucket{trap_type="thermodynamic",le="0.1"} 1200
+
+  # ===========================================================================
+  # DIAGNOSTIC ENDPOINTS
+  # ===========================================================================
+
+  /diagnose:
+    post:
+      operationId: diagnoseTrap
+      summary: Diagnose single steam trap
+      description: |
+        Performs comprehensive diagnostic on a single steam trap.
+
+        Uses multimodal analysis combining:
+        - Acoustic data (40% weight)
+        - Thermal data (40% weight)
+        - Contextual data (20% weight)
+
+        **Zero-Hallucination Guarantee**: All calculations use deterministic
+        engineering formulas from ASME PTC 39 and ISO 7841 standards.
+
+        The response includes:
+        - Classification with confidence score
+        - Energy loss quantification
+        - SHAP-compatible explainability
+        - Provenance hash for audit trail
+      tags:
+        - Diagnostics
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DiagnosticRequest"
+            examples:
+              thermodynamicTrap:
+                summary: Thermodynamic trap with acoustic and thermal data
+                value:
+                  trap_id: ST-001
+                  trap_type: thermodynamic
+                  acoustic_amplitude_db: 75.0
+                  acoustic_frequency_khz: 38.0
+                  inlet_temp_c: 185.0
+                  outlet_temp_c: 180.0
+                  pressure_bar_g: 10.0
+                  orifice_diameter_mm: 6.35
+                  trap_age_years: 3.5
+                  last_maintenance_days: 180
+                  location: "Building A, Steam Header 3"
+                  system: "Main Process Steam"
+                  include_explanation: true
+              thermostaticTrap:
+                summary: Thermostatic trap with minimal data
+                value:
+                  trap_id: ST-002
+                  trap_type: thermostatic
+                  inlet_temp_c: 150.0
+                  outlet_temp_c: 145.0
+                  pressure_bar_g: 5.0
+      responses:
+        "200":
+          description: Diagnostic result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DiagnosticResponse"
+              example:
+                trap_id: ST-001
+                timestamp: "2025-12-24T10:30:00Z"
+                condition: leaking
+                severity: moderate
+                confidence: 0.87
+                energy_loss_kw: 8.2
+                annual_cost_usd: 2450.00
+                annual_co2_kg: 4500.0
+                recommended_action: Schedule repair within 2 weeks
+                alert_level: warning
+                provenance_hash: "a1b2c3d4e5f6789..."
+                explanation:
+                  top_features:
+                    - feature: acoustic_amplitude_db
+                      value: 75.0
+                      contribution: 0.35
+                      direction: toward_failure
+                    - feature: temperature_differential_c
+                      value: 5.0
+                      contribution: 0.28
+                      direction: toward_failure
+                  evidence_chain:
+                    - step: 1
+                      observation: Elevated acoustic level (75 dB)
+                      inference: Steam passing through orifice
+                  counterfactual: If acoustic level were below 50 dB, diagnosis would be NORMAL
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "422":
+          $ref: "#/components/responses/BoundsViolation"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  # ===========================================================================
+  # FLEET ENDPOINTS
+  # ===========================================================================
+
+  /analyze/fleet:
+    post:
+      operationId: analyzeFleet
+      summary: Analyze fleet of steam traps
+      description: |
+        Performs fleet-wide analysis on multiple steam traps.
+
+        Returns individual diagnostics for each trap plus aggregated
+        fleet-level statistics including:
+        - Total energy loss
+        - Fleet health score
+        - Critical alerts count
+        - Cost and CO2 impact
+
+        Fleet analysis excludes individual SHAP explanations for
+        performance optimization. Use `/diagnose` endpoint for
+        detailed explanations on specific traps.
+      tags:
+        - Fleet
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FleetRequest"
+            example:
+              traps:
+                - trap_id: ST-001
+                  trap_type: thermodynamic
+                  acoustic_amplitude_db: 75.0
+                  inlet_temp_c: 185.0
+                  outlet_temp_c: 180.0
+                  pressure_bar_g: 10.0
+                - trap_id: ST-002
+                  trap_type: thermostatic
+                  inlet_temp_c: 150.0
+                  outlet_temp_c: 148.0
+                  pressure_bar_g: 5.0
+                - trap_id: ST-003
+                  trap_type: mechanical_float
+                  acoustic_amplitude_db: 45.0
+                  inlet_temp_c: 175.0
+                  outlet_temp_c: 172.0
+                  pressure_bar_g: 8.0
+      responses:
+        "200":
+          description: Fleet analysis result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FleetResponse"
+              example:
+                summary:
+                  total_traps: 150
+                  healthy_count: 120
+                  failed_count: 8
+                  leaking_count: 15
+                  unknown_count: 7
+                  total_energy_loss_kw: 125.5
+                  total_annual_cost_usd: 45000.00
+                  total_annual_co2_kg: 85200.0
+                  fleet_health_score: 82.5
+                  critical_alerts: 3
+                diagnostics:
+                  - trap_id: ST-001
+                    timestamp: "2025-12-24T10:30:00Z"
+                    condition: leaking
+                    severity: moderate
+                    confidence: 0.87
+                    energy_loss_kw: 8.2
+                    annual_cost_usd: 2450.00
+                    annual_co2_kg: 4500.0
+                    recommended_action: Schedule repair within 2 weeks
+                    alert_level: warning
+                    provenance_hash: "a1b2c3d4..."
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+# =============================================================================
+# COMPONENTS
+# =============================================================================
+
+components:
+  # ===========================================================================
+  # SECURITY SCHEMES
+  # ===========================================================================
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: API key authentication
+
+  # ===========================================================================
+  # SCHEMAS
+  # ===========================================================================
+
+  schemas:
+    # -------------------------------------------------------------------------
+    # REQUEST SCHEMAS
+    # -------------------------------------------------------------------------
+
+    DiagnosticRequest:
+      type: object
+      description: Request for single trap diagnostic
+      required:
+        - trap_id
+      properties:
+        trap_id:
+          type: string
+          description: Unique trap identifier
+          example: ST-001
+        trap_type:
+          type: string
+          description: Type of steam trap
+          enum:
+            - thermodynamic
+            - thermostatic
+            - mechanical_float
+            - mechanical_bucket
+            - orifice
+          default: thermodynamic
+          example: thermodynamic
+        acoustic_amplitude_db:
+          type: number
+          format: float
+          description: |
+            Peak acoustic amplitude in decibels.
+            Valid range: 0-120 dB (per ISO 7841 Annex B)
+          minimum: 0
+          maximum: 120
+          example: 75.0
+        acoustic_frequency_khz:
+          type: number
+          format: float
+          description: |
+            Dominant frequency in kilohertz.
+            Valid range: 20-100 kHz
+          minimum: 20
+          maximum: 100
+          example: 38.0
+        inlet_temp_c:
+          type: number
+          format: float
+          description: |
+            Inlet temperature in Celsius.
+            Valid range: 0-250C (extended for superheated steam)
+          minimum: 0
+          maximum: 250
+          example: 185.0
+        outlet_temp_c:
+          type: number
+          format: float
+          description: |
+            Outlet temperature in Celsius.
+            Valid range: 0-250C
+          minimum: 0
+          maximum: 250
+          example: 180.0
+        pressure_bar_g:
+          type: number
+          format: float
+          description: |
+            Operating pressure in bar gauge.
+            Valid range: 0-25 bar (per ASME PTC 39)
+          minimum: 0
+          maximum: 25
+          default: 10.0
+          example: 10.0
+        orifice_diameter_mm:
+          type: number
+          format: float
+          description: Orifice diameter in millimeters
+          minimum: 0.5
+          maximum: 50
+          default: 6.35
+          example: 6.35
+        trap_age_years:
+          type: number
+          format: float
+          description: Age of trap in years
+          minimum: 0
+          maximum: 50
+          default: 0
+          example: 3.5
+        last_maintenance_days:
+          type: integer
+          description: Days since last maintenance
+          minimum: 0
+          maximum: 3650
+          default: 0
+          example: 180
+        location:
+          type: string
+          description: Physical location description
+          example: "Building A, Steam Header 3"
+        system:
+          type: string
+          description: Steam system identifier
+          example: "Main Process Steam"
+        include_explanation:
+          type: boolean
+          description: Include SHAP explanation in response
+          default: true
+          example: true
+
+    FleetRequest:
+      type: object
+      description: Request for fleet-wide analysis
+      required:
+        - traps
+      properties:
+        traps:
+          type: array
+          description: List of traps to analyze
+          minItems: 1
+          maxItems: 10000
+          items:
+            $ref: "#/components/schemas/DiagnosticRequest"
+
+    # -------------------------------------------------------------------------
+    # RESPONSE SCHEMAS
+    # -------------------------------------------------------------------------
+
+    HealthResponse:
+      type: object
+      description: Health check response
+      properties:
+        status:
+          type: string
+          enum: [healthy, unhealthy]
+          example: healthy
+        timestamp:
+          type: string
+          format: date-time
+          example: "2025-12-24T10:30:00Z"
+        agent_id:
+          type: string
+          example: GL-008
+        version:
+          type: string
+          example: "1.0.0"
+
+    StatusResponse:
+      type: object
+      description: Agent status response
+      properties:
+        agent_id:
+          type: string
+          example: GL-008
+        agent_name:
+          type: string
+          example: TRAPCATCHER
+        version:
+          type: string
+          example: "1.0.0"
+        mode:
+          type: string
+          enum: [monitoring, survey, diagnostic, reporting]
+          example: monitoring
+        status:
+          type: string
+          enum: [active, idle, error]
+          example: active
+        statistics:
+          type: object
+          properties:
+            diagnostic_count:
+              type: integer
+              example: 15230
+            alert_count:
+              type: integer
+              example: 142
+        components:
+          type: object
+          additionalProperties:
+            type: object
+
+    DiagnosticResponse:
+      type: object
+      description: Diagnostic result for single trap
+      properties:
+        trap_id:
+          type: string
+          example: ST-001
+        timestamp:
+          type: string
+          format: date-time
+          example: "2025-12-24T10:30:00Z"
+        condition:
+          type: string
+          description: Classified trap condition
+          enum:
+            - operating_normal
+            - leaking
+            - blocked
+            - blowthrough
+            - failed_open
+            - failed_closed
+            - intermittent
+            - cold
+            - unknown
+          example: leaking
+        severity:
+          type: string
+          enum: [critical, high, moderate, low, none]
+          example: moderate
+        confidence:
+          type: number
+          format: float
+          description: Classification confidence (0-1)
+          minimum: 0
+          maximum: 1
+          example: 0.87
+        energy_loss_kw:
+          type: number
+          format: float
+          description: Estimated energy loss in kilowatts
+          example: 8.2
+        annual_cost_usd:
+          type: number
+          format: float
+          description: Annual cost of energy loss in USD
+          example: 2450.00
+        annual_co2_kg:
+          type: number
+          format: float
+          description: Annual CO2 emissions in kilograms
+          example: 4500.0
+        recommended_action:
+          type: string
+          description: Recommended maintenance action
+          example: Schedule repair within 2 weeks
+        alert_level:
+          type: string
+          enum: [critical, warning, info, none]
+          example: warning
+        provenance_hash:
+          type: string
+          description: SHA-256 hash for audit trail
+          example: "a1b2c3d4e5f6789..."
+        explanation:
+          $ref: "#/components/schemas/Explanation"
+
+    Explanation:
+      type: object
+      description: SHAP-compatible explanation
+      nullable: true
+      properties:
+        top_features:
+          type: array
+          items:
+            type: object
+            properties:
+              feature:
+                type: string
+                example: acoustic_amplitude_db
+              value:
+                type: number
+                example: 75.0
+              contribution:
+                type: number
+                description: Feature contribution to classification
+                example: 0.35
+              direction:
+                type: string
+                enum: [toward_failure, toward_normal]
+                example: toward_failure
+        evidence_chain:
+          type: array
+          items:
+            type: object
+            properties:
+              step:
+                type: integer
+                example: 1
+              observation:
+                type: string
+                example: Elevated acoustic level (75 dB)
+              inference:
+                type: string
+                example: Steam passing through orifice
+        counterfactual:
+          type: string
+          description: What would change the diagnosis
+          example: If acoustic level were below 50 dB, diagnosis would be NORMAL
+
+    FleetResponse:
+      type: object
+      description: Fleet analysis response
+      properties:
+        summary:
+          $ref: "#/components/schemas/FleetSummary"
+        diagnostics:
+          type: array
+          items:
+            $ref: "#/components/schemas/DiagnosticResponse"
+
+    FleetSummary:
+      type: object
+      description: Fleet-level summary statistics
+      properties:
+        total_traps:
+          type: integer
+          example: 150
+        healthy_count:
+          type: integer
+          example: 120
+        failed_count:
+          type: integer
+          example: 8
+        leaking_count:
+          type: integer
+          example: 15
+        unknown_count:
+          type: integer
+          example: 7
+        total_energy_loss_kw:
+          type: number
+          format: float
+          example: 125.5
+        total_annual_cost_usd:
+          type: number
+          format: float
+          example: 45000.00
+        total_annual_co2_kg:
+          type: number
+          format: float
+          example: 85200.0
+        fleet_health_score:
+          type: number
+          format: float
+          description: Overall fleet health (0-100)
+          minimum: 0
+          maximum: 100
+          example: 82.5
+        critical_alerts:
+          type: integer
+          example: 3
+
+    # -------------------------------------------------------------------------
+    # ERROR SCHEMAS (RFC 7807)
+    # -------------------------------------------------------------------------
+
+    ErrorResponse:
+      type: object
+      description: RFC 7807 Problem Details
+      properties:
+        type:
+          type: string
+          format: uri
+          description: Error type URI
+          example: https://greenlang.io/errors/validation
+        title:
+          type: string
+          description: Short error title
+          example: Validation Error
+        status:
+          type: integer
+          description: HTTP status code
+          example: 400
+        detail:
+          type: string
+          description: Detailed error message
+          example: pressure_bar=30.0 exceeds maximum 25.0 bar
+        instance:
+          type: string
+          format: uri
+          description: Request URI
+          example: /api/v1/diagnose
+        violations:
+          type: array
+          items:
+            $ref: "#/components/schemas/BoundsViolation"
+
+    BoundsViolation:
+      type: object
+      description: Physical bounds violation detail
+      properties:
+        parameter:
+          type: string
+          example: pressure_bar
+        value:
+          type: number
+          example: 30.0
+        min_bound:
+          type: number
+          example: 0.0
+        max_bound:
+          type: number
+          example: 25.0
+        unit:
+          type: string
+          example: bar
+        standard:
+          type: string
+          description: Standard reference
+          example: ASME PTC 39
+
+  # ===========================================================================
+  # RESPONSES
+  # ===========================================================================
+
+  responses:
+    ValidationError:
+      description: Input validation failed
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            type: https://greenlang.io/errors/validation
+            title: Validation Error
+            status: 400
+            detail: trap_id is required
+            instance: /api/v1/diagnose
+
+    BoundsViolation:
+      description: Physical bounds exceeded
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            type: https://greenlang.io/errors/bounds_violation
+            title: Bounds Violation
+            status: 422
+            detail: pressure_bar=30.0 bar exceeds maximum 25.0 bar
+            instance: /api/v1/diagnose
+            violations:
+              - parameter: pressure_bar
+                value: 30.0
+                min_bound: 0.0
+                max_bound: 25.0
+                unit: bar
+                standard: ASME PTC 39
+
+    Unauthorized:
+      description: Missing or invalid API key
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            type: https://greenlang.io/errors/unauthorized
+            title: Unauthorized
+            status: 401
+            detail: Missing or invalid API key
+            instance: /api/v1/diagnose
+
+    InternalError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            type: https://greenlang.io/errors/internal
+            title: Internal Server Error
+            status: 500
+            detail: An unexpected error occurred
+            instance: /api/v1/diagnose

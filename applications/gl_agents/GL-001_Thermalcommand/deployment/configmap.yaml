@@ -1,0 +1,95 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gl-001-config
+  namespace: greenlang
+  labels:
+    app: gl-001-thermalcommand
+    agent-id: GL-001
+data:
+  # Kafka Configuration
+  kafka.bootstrap.servers: "kafka-0.kafka-headless.greenlang.svc.cluster.local:9092,kafka-1.kafka-headless.greenlang.svc.cluster.local:9092,kafka-2.kafka-headless.greenlang.svc.cluster.local:9092"
+  kafka.consumer.group.id: "gl-001-thermalcommand"
+  kafka.auto.offset.reset: "earliest"
+  kafka.enable.auto.commit: "false"
+
+  # Topic Configuration
+  kafka.topic.telemetry: "gl001.telemetry.normalized"
+  kafka.topic.dispatch: "gl001.plan.dispatch"
+  kafka.topic.recommendations: "gl001.actions.recommendations"
+  kafka.topic.safety: "gl001.safety.events"
+  kafka.topic.maintenance: "gl001.maintenance.triggers"
+  kafka.topic.explainability: "gl001.explainability.reports"
+  kafka.topic.audit: "gl001.audit.log"
+
+  # OPC-UA Configuration
+  opcua.security.policy: "Basic256Sha256"
+  opcua.security.mode: "SignAndEncrypt"
+  opcua.session.timeout: "3600000"
+  opcua.subscription.interval: "1000"
+
+  # Optimization Configuration
+  optimization.solver.time.limit: "60"
+  optimization.gap.tolerance: "0.01"
+  optimization.warm.start.enabled: "true"
+
+  # Safety Configuration
+  safety.level: "SIL_3"
+  safety.emergency.shutdown.enabled: "true"
+  safety.watchdog.timeout.ms: "5000"
+  safety.heartbeat.interval.ms: "1000"
+
+  # Metrics Configuration
+  metrics.enabled: "true"
+  metrics.port: "9090"
+  metrics.collection.interval: "15"
+
+  # API Configuration
+  api.rest.port: "8000"
+  api.graphql.port: "8001"
+  api.grpc.port: "50051"
+  api.rate.limit.rpm: "1000"
+
+  # Audit Configuration
+  audit.enabled: "true"
+  audit.retention.days: "2555"  # 7 years
+  audit.hash.algorithm: "SHA-256"
+
+  # MLOps Configuration
+  mlops.enabled: "true"
+  mlops.explainability.enabled: "true"
+  mlops.uncertainty.quantification: "true"
+  mlops.drift.detection.enabled: "true"
+  mlops.shap.sample.size: "100"
+
+  # Tag Dictionary (subset)
+  tags.config: |
+    steam.headerA.pressure:
+      opcua_node_id: "ns=2;s=Steam.HeaderA.Pressure"
+      unit: "bar(g)"
+      type: "float"
+      min: 0
+      max: 50
+    steam.headerA.temperature:
+      opcua_node_id: "ns=2;s=Steam.HeaderA.Temperature"
+      unit: "C"
+      type: "float"
+      min: 0
+      max: 300
+    steam.headerA.flow_total:
+      opcua_node_id: "ns=2;s=Steam.HeaderA.FlowTotal"
+      unit: "t/h"
+      type: "float"
+      min: 0
+      max: 500
+    boiler.B1.fuel_flow:
+      opcua_node_id: "ns=2;s=Boiler.B1.FuelFlow"
+      unit: "kg/h"
+      type: "float"
+      min: 0
+      max: 10000
+    sis.permissive.dispatch_enabled:
+      opcua_node_id: "ns=2;s=SIS.Permissive.DispatchEnabled"
+      unit: "-"
+      type: "bool"
+      read_only: true

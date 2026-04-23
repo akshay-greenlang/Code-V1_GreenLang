@@ -1,0 +1,187 @@
+{
+  "standard": "ASME PTC 4.1-2013",
+  "title": "Fired Steam Generators",
+  "version": "2013",
+  "agent": "GL-002_FlameGuard",
+  "last_updated": "2025-12-27",
+  "section_mapping": {
+    "efficiency_calculation": {
+      "section": "5",
+      "title": "Efficiency Determination",
+      "subsections": {
+        "5.4": {
+          "title": "Direct Method",
+          "description": "Efficiency = Heat Output / Heat Input * 100",
+          "implementation": "calculators/efficiency_calculator.py::_calculate_direct",
+          "formula": "η = (m_steam * (h_steam - h_feedwater)) / (m_fuel * HHV) * 100",
+          "parameters": [
+            "steam_flow_klb_hr",
+            "steam_pressure_psig",
+            "steam_temperature_f",
+            "feedwater_temperature_f",
+            "fuel_flow_rate",
+            "fuel_type"
+          ]
+        },
+        "5.5": {
+          "title": "Indirect Method (Heat Loss)",
+          "description": "Efficiency = 100 - Sum of All Losses",
+          "implementation": "calculators/efficiency_calculator.py::_calculate_indirect",
+          "formula": "η = 100 - (L1 + L2 + L3 + L4 + L5 + L6 + L7 + L8 + L9)",
+          "losses": {
+            "5.5.1": {
+              "code": "L1",
+              "name": "Dry Flue Gas Loss",
+              "formula": "L1 = Cp_fg * (Tfg - Ta) * AFR / HHV * 100",
+              "field": "dry_flue_gas_loss_percent"
+            },
+            "5.5.2": {
+              "code": "L2",
+              "name": "Moisture in Fuel Loss",
+              "formula": "L2 = M_fuel * (hfg + Cp_v * (Tfg - 212)) / HHV * 100",
+              "field": "moisture_in_fuel_loss_percent"
+            },
+            "5.5.3": {
+              "code": "L3",
+              "name": "Hydrogen Combustion Moisture Loss",
+              "formula": "L3 = 9 * H2% * (hfg + Cp_v * (Tfg - 212)) / HHV * 100",
+              "field": "hydrogen_combustion_loss_percent"
+            },
+            "5.5.4": {
+              "code": "L4",
+              "name": "Moisture in Air Loss",
+              "formula": "L4 = W_air * Cp_v * (Tfg - Ta) / HHV * 100",
+              "field": "moisture_in_air_loss_percent"
+            },
+            "5.5.5": {
+              "code": "L5",
+              "name": "Unburned Carbon Loss",
+              "formula": "L5 = Ash% * UBC% * 14500 / HHV * 100",
+              "field": "unburned_carbon_loss_percent"
+            },
+            "5.5.6": {
+              "code": "L6",
+              "name": "CO Loss (Unburned Gas)",
+              "formula": "L6 = CO_ppm * AFR * 10100 / HHV * 100",
+              "field": "co_loss_percent"
+            },
+            "5.5.7": {
+              "code": "L7",
+              "name": "Radiation and Convection Loss",
+              "formula": "L7 = ABMA correlation: 1.5 / (Q^0.15)",
+              "field": "radiation_loss_percent"
+            },
+            "5.5.8": {
+              "code": "L8",
+              "name": "Blowdown Loss",
+              "formula": "L8 = BD% * (h_blowdown - h_makeup) / Qfuel * 100",
+              "field": "blowdown_loss_percent"
+            }
+          }
+        },
+        "5.6": {
+          "title": "Uncertainty Analysis",
+          "description": "Calculate and report measurement uncertainty",
+          "implementation": "calculators/efficiency_calculator.py",
+          "field": "uncertainty_percent",
+          "typical_value": "0.5-1.0%"
+        }
+      }
+    },
+    "fuel_analysis": {
+      "section": "6.2",
+      "title": "Fuel Analysis Requirements",
+      "implementation": "calculators/efficiency_calculator.py::FuelProperties",
+      "required_properties": [
+        "higher_heating_value_btu_lb",
+        "lower_heating_value_btu_lb",
+        "carbon_percent",
+        "hydrogen_percent",
+        "sulfur_percent",
+        "nitrogen_percent",
+        "oxygen_percent",
+        "moisture_percent",
+        "ash_percent",
+        "stoichiometric_air_ratio"
+      ]
+    },
+    "flue_gas_analysis": {
+      "section": "6.3",
+      "title": "Air and Flue Gas Analysis",
+      "parameters": {
+        "O2_percent": {
+          "description": "Oxygen in dry flue gas",
+          "typical_range": "2-6%",
+          "field": "flue_gas_o2_percent"
+        },
+        "CO2_percent": {
+          "description": "Carbon dioxide in dry flue gas",
+          "typical_range": "8-14%",
+          "field": "flue_gas_co2_percent"
+        },
+        "CO_ppm": {
+          "description": "Carbon monoxide in flue gas",
+          "alarm_limit": "200 ppm",
+          "field": "flue_gas_co_ppm"
+        },
+        "stack_temperature": {
+          "description": "Flue gas exit temperature",
+          "unit": "°F",
+          "field": "flue_gas_temperature_f"
+        }
+      }
+    },
+    "derived_values": {
+      "section": "Appendix",
+      "calculations": {
+        "excess_air": {
+          "formula": "EA = O2 / (21 - O2) * 100",
+          "implementation": "_o2_to_excess_air",
+          "field": "excess_air_percent"
+        },
+        "air_fuel_ratio": {
+          "formula": "AFR = Stoich_AFR * (1 + EA/100)",
+          "field": "air_fuel_ratio"
+        }
+      }
+    }
+  },
+  "provenance": {
+    "input_hash": {
+      "algorithm": "SHA-256",
+      "implementation": "_compute_hash",
+      "purpose": "Reproducibility verification"
+    },
+    "output_hash": {
+      "algorithm": "SHA-256",
+      "implementation": "_compute_hash",
+      "purpose": "Result integrity verification"
+    },
+    "formula_version": {
+      "value": "ASME_PTC_4.1_2013",
+      "purpose": "Regulatory traceability"
+    }
+  },
+  "test_coverage": {
+    "golden_tests": [
+      "tests/golden/test_asme_ptc4_1_efficiency.py",
+      "tests/golden/test_heat_balance.py",
+      "tests/golden/test_stack_loss.py"
+    ],
+    "reference_cases": [
+      {
+        "name": "Natural Gas Boiler Example",
+        "input": {
+          "steam_flow_klb_hr": 22.05,
+          "steam_pressure_psig": 150.0,
+          "feedwater_temperature_f": 221.0,
+          "fuel_flow_rate": 2205.0,
+          "flue_gas_temperature_f": 356.0,
+          "flue_gas_o2_percent": 3.0,
+          "fuel_type": "natural_gas"
+        },
+        "expected_efficiency_percent": "82.5 ± 0.5"
+      }
+    ]
+  }
+}

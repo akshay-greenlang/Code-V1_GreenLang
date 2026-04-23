@@ -1,0 +1,1714 @@
+{
+  "attribution_text": "U.S. Environmental Protection Agency \u2014 Waste Reduction Model (WARM) v15.",
+  "factor_count": 20,
+  "factor_status_default": "certified",
+  "factors": [
+    {
+      "activity_schema": {
+        "category": "waste_msw",
+        "classification_codes": [],
+        "sub_category": "waste_landfill"
+      },
+      "denominator": {
+        "unit": "tonnes",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "combustion",
+      "factor_id": "EF:EPA:waste_landfill_msw:US:v15:v1",
+      "factor_name": "waste_msw | tonnes | US",
+      "factor_version": "1.0.0",
+      "formula_type": "combustion",
+      "gwp_set": "IPCC_AR5_100",
+      "jurisdiction": {
+        "country": "US",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:53Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.5842248273505404,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "HHV": null,
+        "LHV": null,
+        "ash_share": null,
+        "biogenic_carbon_share": null,
+        "density": null,
+        "fossil_carbon_share": null,
+        "fuel_code": "waste_msw",
+        "moisture_share": null,
+        "oxidation_factor": null,
+        "scope_applicability": [],
+        "sulfur_share": null,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 3,
+        "composite_fqs": 70.0,
+        "geographic_score": 4,
+        "technology_score": 3,
+        "temporal_score": 4,
+        "verification_score": 3
+      },
+      "source_id": "epa_warm",
+      "source_version": "v15",
+      "status": "certified",
+      "valid_from": "2020-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "waste_paper",
+        "classification_codes": [],
+        "sub_category": "waste_landfill"
+      },
+      "denominator": {
+        "unit": "tonnes",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "combustion",
+      "factor_id": "EF:EPA:waste_landfill_paper:US:v15:v1",
+      "factor_name": "waste_paper | tonnes | US",
+      "factor_version": "1.0.0",
+      "formula_type": "combustion",
+      "gwp_set": "IPCC_AR5_100",
+      "jurisdiction": {
+        "country": "US",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:53Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 2.0062060109018556,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "HHV": null,
+        "LHV": null,
+        "ash_share": null,
+        "biogenic_carbon_share": null,
+        "density": null,
+        "fossil_carbon_share": null,
+        "fuel_code": "waste_paper",
+        "moisture_share": null,
+        "oxidation_factor": null,
+        "scope_applicability": [],
+        "sulfur_share": null,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 3,
+        "composite_fqs": 70.0,
+        "geographic_score": 4,
+        "technology_score": 3,
+        "temporal_score": 4,
+        "verification_score": 3
+      },
+      "source_id": "epa_warm",
+      "source_version": "v15",
+      "status": "certified",
+      "valid_from": "2020-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "waste_cardboard",
+        "classification_codes": [],
+        "sub_category": "waste_landfill"
+      },
+      "denominator": {
+        "unit": "tonnes",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "combustion",
+      "factor_id": "EF:EPA:waste_landfill_cardboard:US:v15:v1",
+      "factor_name": "waste_cardboard | tonnes | US",
+      "factor_version": "1.0.0",
+      "formula_type": "combustion",
+      "gwp_set": "IPCC_AR5_100",
+      "jurisdiction": {
+        "country": "US",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:53Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 1.300726974101203,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "HHV": null,
+        "LHV": null,
+        "ash_share": null,
+        "biogenic_carbon_share": null,
+        "density": null,
+        "fossil_carbon_share": null,
+        "fuel_code": "waste_cardboard",
+        "moisture_share": null,
+        "oxidation_factor": null,
+        "scope_applicability": [],
+        "sulfur_share": null,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 3,
+        "composite_fqs": 70.0,
+        "geographic_score": 4,
+        "technology_score": 3,
+        "temporal_score": 4,
+        "verification_score": 3
+      },
+      "source_id": "epa_warm",
+      "source_version": "v15",
+      "status": "certified",
+      "valid_from": "2020-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "waste_plastic",
+        "classification_codes": [],
+        "sub_category": "waste_landfill"
+      },
+      "denominator": {
+        "unit": "tonnes",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "combustion",
+      "factor_id": "EF:EPA:waste_landfill_plastic:US:v15:v1",
+      "factor_name": "waste_plastic | tonnes | US",
+      "factor_version": "1.0.0",
+      "formula_type": "combustion",
+      "gwp_set": "IPCC_AR5_100",
+      "jurisdiction": {
+        "country": "US",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:53Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.04409243980004079,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "HHV": null,
+        "LHV": null,
+        "ash_share": null,
+        "biogenic_carbon_share": null,
+        "density": null,
+        "fossil_carbon_share": null,
+        "fuel_code": "waste_plastic",
+        "moisture_share": null,
+        "oxidation_factor": null,
+        "scope_applicability": [],
+        "sulfur_share": null,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 3,
+        "composite_fqs": 70.0,
+        "geographic_score": 4,
+        "technology_score": 3,
+        "temporal_score": 4,
+        "verification_score": 3
+      },
+      "source_id": "epa_warm",
+      "source_version": "v15",
+      "status": "certified",
+      "valid_from": "2020-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "waste_food",
+        "classification_codes": [],
+        "sub_category": "waste_landfill"
+      },
+      "denominator": {
+        "unit": "tonnes",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "combustion",
+      "factor_id": "EF:EPA:waste_landfill_food:US:v15:v1",
+      "factor_name": "waste_food | tonnes | US",
+      "factor_version": "1.0.0",
+      "formula_type": "combustion",
+      "gwp_set": "IPCC_AR5_100",
+      "jurisdiction": {
+        "country": "US",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:53Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.6283172671505811,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "HHV": null,
+        "LHV": null,
+        "ash_share": null,
+        "biogenic_carbon_share": null,
+        "density": null,
+        "fossil_carbon_share": null,
+        "fuel_code": "waste_food",
+        "moisture_share": null,
+        "oxidation_factor": null,
+        "scope_applicability": [],
+        "sulfur_share": null,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 3,
+        "composite_fqs": 70.0,
+        "geographic_score": 4,
+        "technology_score": 3,
+        "temporal_score": 4,
+        "verification_score": 3
+      },
+      "source_id": "epa_warm",
+      "source_version": "v15",
+      "status": "certified",
+      "valid_from": "2020-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "waste_organic",
+        "classification_codes": [],
+        "sub_category": "waste_landfill"
+      },
+      "denominator": {
+        "unit": "tonnes",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "combustion",
+      "factor_id": "EF:EPA:waste_landfill_organic:US:v15:v1",
+      "factor_name": "waste_organic | tonnes | US",
+      "factor_version": "1.0.0",
+      "formula_type": "combustion",
+      "gwp_set": "IPCC_AR5_100",
+      "jurisdiction": {
+        "country": "US",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:53Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.4629706179004282,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "HHV": null,
+        "LHV": null,
+        "ash_share": null,
+        "biogenic_carbon_share": null,
+        "density": null,
+        "fossil_carbon_share": null,
+        "fuel_code": "waste_organic",
+        "moisture_share": null,
+        "oxidation_factor": null,
+        "scope_applicability": [],
+        "sulfur_share": null,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 3,
+        "composite_fqs": 70.0,
+        "geographic_score": 4,
+        "technology_score": 3,
+        "temporal_score": 4,
+        "verification_score": 3
+      },
+      "source_id": "epa_warm",
+      "source_version": "v15",
+      "status": "certified",
+      "valid_from": "2020-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "waste_msw",
+        "classification_codes": [],
+        "sub_category": "waste_incineration"
+      },
+      "denominator": {
+        "unit": "tonnes",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "combustion",
+      "factor_id": "EF:EPA:waste_incineration_msw:US:v15:v1",
+      "factor_name": "waste_msw | tonnes | US",
+      "factor_version": "1.0.0",
+      "formula_type": "combustion",
+      "gwp_set": "IPCC_AR5_100",
+      "jurisdiction": {
+        "country": "US",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:53Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.4739937278504384,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "HHV": null,
+        "LHV": null,
+        "ash_share": null,
+        "biogenic_carbon_share": null,
+        "density": null,
+        "fossil_carbon_share": null,
+        "fuel_code": "waste_msw",
+        "moisture_share": null,
+        "oxidation_factor": null,
+        "scope_applicability": [],
+        "sulfur_share": null,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 3,
+        "composite_fqs": 70.0,
+        "geographic_score": 4,
+        "technology_score": 3,
+        "temporal_score": 4,
+        "verification_score": 3
+      },
+      "source_id": "epa_warm",
+      "source_version": "v15",
+      "status": "certified",
+      "valid_from": "2020-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "waste_paper",
+        "classification_codes": [],
+        "sub_category": "waste_incineration"
+      },
+      "denominator": {
+        "unit": "tonnes",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "combustion",
+      "factor_id": "EF:EPA:waste_incineration_paper:US:v15:v1",
+      "factor_name": "waste_paper | tonnes | US",
+      "factor_version": "1.0.0",
+      "formula_type": "combustion",
+      "gwp_set": "IPCC_AR5_100",
+      "jurisdiction": {
+        "country": "US",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:53Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.6944559268506424,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "HHV": null,
+        "LHV": null,
+        "ash_share": null,
+        "biogenic_carbon_share": null,
+        "density": null,
+        "fossil_carbon_share": null,
+        "fuel_code": "waste_paper",
+        "moisture_share": null,
+        "oxidation_factor": null,
+        "scope_applicability": [],
+        "sulfur_share": null,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 3,
+        "composite_fqs": 70.0,
+        "geographic_score": 4,
+        "technology_score": 3,
+        "temporal_score": 4,
+        "verification_score": 3
+      },
+      "source_id": "epa_warm",
+      "source_version": "v15",
+      "status": "certified",
+      "valid_from": "2020-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "waste_plastic",
+        "classification_codes": [],
+        "sub_category": "waste_incineration"
+      },
+      "denominator": {
+        "unit": "tonnes",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "combustion",
+      "factor_id": "EF:EPA:waste_incineration_plastic:US:v15:v1",
+      "factor_name": "waste_plastic | tonnes | US",
+      "factor_version": "1.0.0",
+      "formula_type": "combustion",
+      "gwp_set": "IPCC_AR5_100",
+      "jurisdiction": {
+        "country": "US",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:53Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 3.1967018855029568,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "HHV": null,
+        "LHV": null,
+        "ash_share": null,
+        "biogenic_carbon_share": null,
+        "density": null,
+        "fossil_carbon_share": null,
+        "fuel_code": "waste_plastic",
+        "moisture_share": null,
+        "oxidation_factor": null,
+        "scope_applicability": [],
+        "sulfur_share": null,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 3,
+        "composite_fqs": 70.0,
+        "geographic_score": 4,
+        "technology_score": 3,
+        "temporal_score": 4,
+        "verification_score": 3
+      },
+      "source_id": "epa_warm",
+      "source_version": "v15",
+      "status": "certified",
+      "valid_from": "2020-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "waste_food",
+        "classification_codes": [],
+        "sub_category": "waste_compost"
+      },
+      "denominator": {
+        "unit": "tonnes",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "combustion",
+      "factor_id": "EF:EPA:waste_compost_food:US:v15:v1",
+      "factor_name": "waste_food | tonnes | US",
+      "factor_version": "1.0.0",
+      "formula_type": "combustion",
+      "gwp_set": "IPCC_AR5_100",
+      "jurisdiction": {
+        "country": "US",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:53Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.19841597910018352,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "HHV": null,
+        "LHV": null,
+        "ash_share": null,
+        "biogenic_carbon_share": 1.0,
+        "density": null,
+        "fossil_carbon_share": null,
+        "fuel_code": "waste_food",
+        "moisture_share": null,
+        "oxidation_factor": null,
+        "scope_applicability": [],
+        "sulfur_share": null,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 3,
+        "composite_fqs": 70.0,
+        "geographic_score": 4,
+        "technology_score": 3,
+        "temporal_score": 4,
+        "verification_score": 3
+      },
+      "source_id": "epa_warm",
+      "source_version": "v15",
+      "status": "certified",
+      "valid_from": "2020-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "waste_organic",
+        "classification_codes": [],
+        "sub_category": "waste_compost"
+      },
+      "denominator": {
+        "unit": "tonnes",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "combustion",
+      "factor_id": "EF:EPA:waste_compost_organic:US:v15:v1",
+      "factor_name": "waste_organic | tonnes | US",
+      "factor_version": "1.0.0",
+      "formula_type": "combustion",
+      "gwp_set": "IPCC_AR5_100",
+      "jurisdiction": {
+        "country": "US",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:53Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.22046219900020395,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "HHV": null,
+        "LHV": null,
+        "ash_share": null,
+        "biogenic_carbon_share": 1.0,
+        "density": null,
+        "fossil_carbon_share": null,
+        "fuel_code": "waste_organic",
+        "moisture_share": null,
+        "oxidation_factor": null,
+        "scope_applicability": [],
+        "sulfur_share": null,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 3,
+        "composite_fqs": 70.0,
+        "geographic_score": 4,
+        "technology_score": 3,
+        "temporal_score": 4,
+        "verification_score": 3
+      },
+      "source_id": "epa_warm",
+      "source_version": "v15",
+      "status": "certified",
+      "valid_from": "2020-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "waste_yard",
+        "classification_codes": [],
+        "sub_category": "waste_compost"
+      },
+      "denominator": {
+        "unit": "tonnes",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "combustion",
+      "factor_id": "EF:EPA:waste_compost_yard:US:v15:v1",
+      "factor_name": "waste_yard | tonnes | US",
+      "factor_version": "1.0.0",
+      "formula_type": "combustion",
+      "gwp_set": "IPCC_AR5_100",
+      "jurisdiction": {
+        "country": "US",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:53Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.16534664925015294,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "HHV": null,
+        "LHV": null,
+        "ash_share": null,
+        "biogenic_carbon_share": 1.0,
+        "density": null,
+        "fossil_carbon_share": null,
+        "fuel_code": "waste_yard",
+        "moisture_share": null,
+        "oxidation_factor": null,
+        "scope_applicability": [],
+        "sulfur_share": null,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 3,
+        "composite_fqs": 70.0,
+        "geographic_score": 4,
+        "technology_score": 3,
+        "temporal_score": 4,
+        "verification_score": 3
+      },
+      "source_id": "epa_warm",
+      "source_version": "v15",
+      "status": "certified",
+      "valid_from": "2020-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "waste_food",
+        "classification_codes": [],
+        "sub_category": "waste_anaerobic_digestion"
+      },
+      "denominator": {
+        "unit": "tonnes",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "combustion",
+      "factor_id": "EF:EPA:waste_anaerobic_digestion_food:US:v15:v1",
+      "factor_name": "waste_food | tonnes | US",
+      "factor_version": "1.0.0",
+      "formula_type": "combustion",
+      "gwp_set": "IPCC_AR5_100",
+      "jurisdiction": {
+        "country": "US",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:53Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": 0.09920798955009176,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "HHV": null,
+        "LHV": null,
+        "ash_share": null,
+        "biogenic_carbon_share": 1.0,
+        "density": null,
+        "fossil_carbon_share": null,
+        "fuel_code": "waste_food",
+        "moisture_share": null,
+        "oxidation_factor": null,
+        "scope_applicability": [],
+        "sulfur_share": null,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 3,
+        "composite_fqs": 70.0,
+        "geographic_score": 4,
+        "technology_score": 3,
+        "temporal_score": 4,
+        "verification_score": 3
+      },
+      "source_id": "epa_warm",
+      "source_version": "v15",
+      "status": "certified",
+      "valid_from": "2020-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "waste_cardboard",
+        "classification_codes": [],
+        "sub_category": "waste_recycling"
+      },
+      "denominator": {
+        "unit": "tonnes",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "combustion",
+      "factor_id": "EF:EPA:waste_recycling_cardboard:US:v15:v1",
+      "factor_name": "waste_cardboard | tonnes | US",
+      "factor_version": "1.0.0",
+      "formula_type": "combustion",
+      "gwp_set": "IPCC_AR5_100",
+      "jurisdiction": {
+        "country": "US",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:53Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": -3.461256524303202,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "HHV": null,
+        "LHV": null,
+        "ash_share": null,
+        "biogenic_carbon_share": null,
+        "density": null,
+        "fossil_carbon_share": null,
+        "fuel_code": "waste_cardboard",
+        "moisture_share": null,
+        "oxidation_factor": null,
+        "scope_applicability": [],
+        "sulfur_share": null,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 3,
+        "composite_fqs": 70.0,
+        "geographic_score": 4,
+        "technology_score": 3,
+        "temporal_score": 4,
+        "verification_score": 3
+      },
+      "source_id": "epa_warm",
+      "source_version": "v15",
+      "status": "certified",
+      "valid_from": "2020-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "waste_paper",
+        "classification_codes": [],
+        "sub_category": "waste_recycling"
+      },
+      "denominator": {
+        "unit": "tonnes",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "combustion",
+      "factor_id": "EF:EPA:waste_recycling_paper:US:v15:v1",
+      "factor_name": "waste_paper | tonnes | US",
+      "factor_version": "1.0.0",
+      "formula_type": "combustion",
+      "gwp_set": "IPCC_AR5_100",
+      "jurisdiction": {
+        "country": "US",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:53Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": -3.2738636551530287,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "HHV": null,
+        "LHV": null,
+        "ash_share": null,
+        "biogenic_carbon_share": null,
+        "density": null,
+        "fossil_carbon_share": null,
+        "fuel_code": "waste_paper",
+        "moisture_share": null,
+        "oxidation_factor": null,
+        "scope_applicability": [],
+        "sulfur_share": null,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 3,
+        "composite_fqs": 70.0,
+        "geographic_score": 4,
+        "technology_score": 3,
+        "temporal_score": 4,
+        "verification_score": 3
+      },
+      "source_id": "epa_warm",
+      "source_version": "v15",
+      "status": "certified",
+      "valid_from": "2020-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "waste_aluminum",
+        "classification_codes": [],
+        "sub_category": "waste_recycling"
+      },
+      "denominator": {
+        "unit": "tonnes",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "combustion",
+      "factor_id": "EF:EPA:waste_recycling_aluminum:US:v15:v1",
+      "factor_name": "waste_aluminum | tonnes | US",
+      "factor_version": "1.0.0",
+      "formula_type": "combustion",
+      "gwp_set": "IPCC_AR5_100",
+      "jurisdiction": {
+        "country": "US",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:53Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": -10.042053164459288,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "HHV": null,
+        "LHV": null,
+        "ash_share": null,
+        "biogenic_carbon_share": null,
+        "density": null,
+        "fossil_carbon_share": null,
+        "fuel_code": "waste_aluminum",
+        "moisture_share": null,
+        "oxidation_factor": null,
+        "scope_applicability": [],
+        "sulfur_share": null,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 3,
+        "composite_fqs": 70.0,
+        "geographic_score": 4,
+        "technology_score": 3,
+        "temporal_score": 4,
+        "verification_score": 3
+      },
+      "source_id": "epa_warm",
+      "source_version": "v15",
+      "status": "certified",
+      "valid_from": "2020-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "waste_glass",
+        "classification_codes": [],
+        "sub_category": "waste_recycling"
+      },
+      "denominator": {
+        "unit": "tonnes",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "combustion",
+      "factor_id": "EF:EPA:waste_recycling_glass:US:v15:v1",
+      "factor_name": "waste_glass | tonnes | US",
+      "factor_version": "1.0.0",
+      "formula_type": "combustion",
+      "gwp_set": "IPCC_AR5_100",
+      "jurisdiction": {
+        "country": "US",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:53Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": -0.3086470786002855,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "HHV": null,
+        "LHV": null,
+        "ash_share": null,
+        "biogenic_carbon_share": null,
+        "density": null,
+        "fossil_carbon_share": null,
+        "fuel_code": "waste_glass",
+        "moisture_share": null,
+        "oxidation_factor": null,
+        "scope_applicability": [],
+        "sulfur_share": null,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 3,
+        "composite_fqs": 70.0,
+        "geographic_score": 4,
+        "technology_score": 3,
+        "temporal_score": 4,
+        "verification_score": 3
+      },
+      "source_id": "epa_warm",
+      "source_version": "v15",
+      "status": "certified",
+      "valid_from": "2020-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "waste_steel",
+        "classification_codes": [],
+        "sub_category": "waste_recycling"
+      },
+      "denominator": {
+        "unit": "tonnes",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "combustion",
+      "factor_id": "EF:EPA:waste_recycling_steel:US:v15:v1",
+      "factor_name": "waste_steel | tonnes | US",
+      "factor_version": "1.0.0",
+      "formula_type": "combustion",
+      "gwp_set": "IPCC_AR5_100",
+      "jurisdiction": {
+        "country": "US",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:53Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": -1.9841597910018354,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "HHV": null,
+        "LHV": null,
+        "ash_share": null,
+        "biogenic_carbon_share": null,
+        "density": null,
+        "fossil_carbon_share": null,
+        "fuel_code": "waste_steel",
+        "moisture_share": null,
+        "oxidation_factor": null,
+        "scope_applicability": [],
+        "sulfur_share": null,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 3,
+        "composite_fqs": 70.0,
+        "geographic_score": 4,
+        "technology_score": 3,
+        "temporal_score": 4,
+        "verification_score": 3
+      },
+      "source_id": "epa_warm",
+      "source_version": "v15",
+      "status": "certified",
+      "valid_from": "2020-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "waste_plastic",
+        "classification_codes": [],
+        "sub_category": "waste_recycling"
+      },
+      "denominator": {
+        "unit": "tonnes",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "combustion",
+      "factor_id": "EF:EPA:waste_recycling_plastic:US:v15:v1",
+      "factor_name": "waste_plastic | tonnes | US",
+      "factor_version": "1.0.0",
+      "formula_type": "combustion",
+      "gwp_set": "IPCC_AR5_100",
+      "jurisdiction": {
+        "country": "US",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:53Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": -1.1243572149010401,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "HHV": null,
+        "LHV": null,
+        "ash_share": null,
+        "biogenic_carbon_share": null,
+        "density": null,
+        "fossil_carbon_share": null,
+        "fuel_code": "waste_plastic",
+        "moisture_share": null,
+        "oxidation_factor": null,
+        "scope_applicability": [],
+        "sulfur_share": null,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 3,
+        "composite_fqs": 70.0,
+        "geographic_score": 4,
+        "technology_score": 3,
+        "temporal_score": 4,
+        "verification_score": 3
+      },
+      "source_id": "epa_warm",
+      "source_version": "v15",
+      "status": "certified",
+      "valid_from": "2020-01-01",
+      "valid_to": "9999-12-31"
+    },
+    {
+      "activity_schema": {
+        "category": "waste_ewaste",
+        "classification_codes": [],
+        "sub_category": "waste_recycling"
+      },
+      "denominator": {
+        "unit": "tonnes",
+        "value": 1.0
+      },
+      "explainability": {
+        "assumptions": [],
+        "audit_text": null,
+        "fallback_rank": 7,
+        "rationale": null,
+        "replacement_pointer": null
+      },
+      "factor_family": "combustion",
+      "factor_id": "EF:EPA:waste_recycling_ewaste:US:v15:v1",
+      "factor_name": "waste_ewaste | tonnes | US",
+      "factor_version": "1.0.0",
+      "formula_type": "combustion",
+      "gwp_set": "IPCC_AR5_100",
+      "jurisdiction": {
+        "country": "US",
+        "grid_region": null,
+        "region": null
+      },
+      "licensing": {
+        "attribution_required": true,
+        "attribution_text": null,
+        "customer_entitlement_required": false,
+        "license_name": "US-Public-Domain",
+        "license_url": null,
+        "redistribution_class": "open",
+        "restrictions": []
+      },
+      "lineage": {
+        "approved_at": null,
+        "approved_by": null,
+        "change_reason": "Initial ingest",
+        "ingested_at": "2026-04-23T18:26:53Z",
+        "ingested_by": "greenlang_factors_etl",
+        "previous_factor_version": null,
+        "raw_record_ref": null
+      },
+      "method_profile": "corporate_scope1",
+      "numerator": {
+        "biogenic_co2": null,
+        "ch4": 0.0,
+        "co2": -0.5842248273505404,
+        "co2e": null,
+        "f_gases": {},
+        "n2o": 0.0,
+        "unit": "kg"
+      },
+      "parameters": {
+        "HHV": null,
+        "LHV": null,
+        "ash_share": null,
+        "biogenic_carbon_share": null,
+        "density": null,
+        "fossil_carbon_share": null,
+        "fuel_code": "waste_ewaste",
+        "moisture_share": null,
+        "oxidation_factor": null,
+        "scope_applicability": [],
+        "sulfur_share": null,
+        "uncertainty_high": null,
+        "uncertainty_low": null
+      },
+      "quality": {
+        "completeness_score": 3,
+        "composite_fqs": 70.0,
+        "geographic_score": 4,
+        "technology_score": 3,
+        "temporal_score": 4,
+        "verification_score": 3
+      },
+      "source_id": "epa_warm",
+      "source_version": "v15",
+      "status": "certified",
+      "valid_from": "2020-01-01",
+      "valid_to": "9999-12-31"
+    }
+  ],
+  "ingested_at": "2026-04-23T18:26:53+00:00",
+  "license_class": "public_us_government",
+  "license_name": "US-Public-Domain",
+  "redistribution_class": "open",
+  "schema_version": "factor_record_v1",
+  "source_id": "epa_warm",
+  "source_version": "15"
+}

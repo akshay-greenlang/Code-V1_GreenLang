@@ -1,0 +1,362 @@
+# =============================================================================
+# GL-001 ThermalCommand - HashiCorp Vault Configuration
+# =============================================================================
+#
+# This configuration file defines the Vault setup for the ThermalCommand
+# Orchestrator including authentication, secret paths, and policies.
+#
+# Environment-specific overrides should be placed in:
+#   - vault.dev.yaml     (development)
+#   - vault.staging.yaml (staging)
+#   - vault.prod.yaml    (production)
+#
+# Author: GreenLang Security Engineering
+# Version: 1.0.0
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# VAULT CONNECTION SETTINGS
+# -----------------------------------------------------------------------------
+vault:
+  # Vault server address
+  # Override with VAULT_ADDR environment variable
+  addr: "https://vault.greenlang.local:8200"
+
+  # Vault namespace (Enterprise feature)
+  # Leave empty for open-source Vault
+  namespace: "greenlang"
+
+  # TLS Configuration
+  tls:
+    # Path to CA certificate for Vault TLS verification
+    ca_cert: "/etc/vault/certs/ca.crt"
+
+    # Client certificate for mutual TLS (optional)
+    client_cert: "/etc/vault/certs/client.crt"
+    client_key: "/etc/vault/certs/client.key"
+
+    # Skip TLS verification (NEVER use in production)
+    skip_verify: false
+
+# -----------------------------------------------------------------------------
+# AUTHENTICATION CONFIGURATION
+# -----------------------------------------------------------------------------
+auth:
+  # Authentication method: token, approle, kubernetes
+  # Production should use kubernetes or approle
+  method: "kubernetes"
+
+  # Token authentication (for development only)
+  token:
+    # Token value (use VAULT_TOKEN env var instead)
+    value: ""
+
+  # AppRole authentication
+  approle:
+    # Auth mount path
+    mount_path: "auth/approle"
+
+    # Role ID (use VAULT_ROLE_ID env var)
+    role_id: ""
+
+    # Secret ID (use VAULT_SECRET_ID env var)
+    # Note: Secret ID should be obtained securely via wrapped response
+    secret_id: ""
+
+  # Kubernetes authentication (recommended for Kubernetes deployments)
+  kubernetes:
+    # Auth mount path
+    mount_path: "auth/kubernetes"
+
+    # Role name for this agent
+    role: "gl-001-thermalcommand"
+
+    # Path to Kubernetes service account JWT
+    jwt_path: "/var/run/secrets/kubernetes.io/serviceaccount/token"
+
+# -----------------------------------------------------------------------------
+# SECRETS ENGINE CONFIGURATION
+# -----------------------------------------------------------------------------
+secrets_engines:
+  # KV Secrets Engine v2 for static secrets
+  kv:
+    mount_path: "secret"
+    version: 2
+
+  # Database Secrets Engine for dynamic credentials
+  database:
+    mount_path: "database"
+    # Default lease TTL for database credentials
+    default_ttl: "1h"
+    max_ttl: "24h"
+
+  # PKI Secrets Engine for TLS certificates
+  pki:
+    mount_path: "pki"
+    # Default certificate TTL
+    default_ttl: "720h"  # 30 days
+    max_ttl: "8760h"     # 1 year
+
+  # Transit Secrets Engine for encryption
+  transit:
+    mount_path: "transit"
+    # Encryption key name for this agent
+    key_name: "gl-001-encryption-key"
+
+# -----------------------------------------------------------------------------
+# SECRET PATHS
+# -----------------------------------------------------------------------------
+# All paths are relative to: secret/data/greenlang/agents/GL-001/
+secret_paths:
+  # Base path for this agent's secrets
+  base: "greenlang/agents/GL-001"
+
+  # Database credentials
+  database:
+    # PostgreSQL main database
+    postgres_main: "database/postgres-main"
+    # TimescaleDB for time-series data
+    timescale: "database/timescale"
+    # Redis cache
+    redis: "database/redis"
+
+  # API Keys for external services
+  api_keys:
+    # Weather data provider
+    weather: "api-keys/weather"
+    # ERP system integration
+    erp: "api-keys/erp"
+    # CMMS integration
+    cmms: "api-keys/cmms"
+
+  # Authentication secrets
+  auth:
+    # JWT signing key
+    jwt_secret: "auth/jwt"
+    # API key for this agent's API
+    api_key: "auth/api-key"
+    # OAuth2 client credentials
+    oauth2: "auth/oauth2"
+
+  # Integration credentials
+  integrations:
+    # OPC-UA credentials
+    opcua: "integrations/opcua"
+    # Kafka credentials
+    kafka: "integrations/kafka"
+    # MQTT credentials
+    mqtt: "integrations/mqtt"
+    # gRPC mTLS certificates
+    grpc: "integrations/grpc"
+
+  # Encryption keys
+  encryption:
+    # Default encryption key for data at rest
+    default: "encryption-keys/default"
+    # Audit log encryption key
+    audit: "encryption-keys/audit"
+    # PII encryption key
+    pii: "encryption-keys/pii"
+
+  # TLS certificates
+  tls:
+    # Server certificate
+    server: "tls/server"
+    # Client certificate for mTLS
+    client: "tls/client"
+
+# -----------------------------------------------------------------------------
+# CACHING CONFIGURATION
+# -----------------------------------------------------------------------------
+cache:
+  # Enable secret caching
+  enabled: true
+
+  # Default cache TTL in seconds
+  ttl_seconds: 300  # 5 minutes
+
+  # Maximum cache size (number of secrets)
+  max_size: 1000
+
+  # Refresh secrets before they expire (percentage of TTL)
+  refresh_threshold: 0.75
+
+# -----------------------------------------------------------------------------
+# RETRY AND TIMEOUT CONFIGURATION
+# -----------------------------------------------------------------------------
+connection:
+  # Connection timeout in seconds
+  timeout_seconds: 30
+
+  # Maximum retry attempts
+  max_retries: 3
+
+  # Delay between retries (with exponential backoff)
+  retry_delay_seconds: 1.0
+
+  # Maximum retry delay
+  max_retry_delay_seconds: 30.0
+
+# -----------------------------------------------------------------------------
+# FALLBACK CONFIGURATION
+# -----------------------------------------------------------------------------
+fallback:
+  # Enable fallback to environment variables when Vault unavailable
+  # Should be disabled in production
+  enabled: true
+
+  # Environment variable prefix for fallback secrets
+  env_prefix: "GL_001_SECRET_"
+
+  # Log warning when using fallback
+  warn_on_fallback: true
+
+# -----------------------------------------------------------------------------
+# LEASE MANAGEMENT
+# -----------------------------------------------------------------------------
+lease:
+  # Enable automatic lease renewal
+  auto_renew: true
+
+  # Renew leases at this percentage of their TTL
+  renewal_threshold: 0.75
+
+  # Grace period before lease expiry to trigger renewal
+  grace_period_seconds: 60
+
+  # Maximum lease duration to request
+  max_lease_ttl: "24h"
+
+# -----------------------------------------------------------------------------
+# AUDIT CONFIGURATION
+# -----------------------------------------------------------------------------
+audit:
+  # Log secret access (path only, never values)
+  log_access: true
+
+  # Log cache hits/misses
+  log_cache_stats: true
+
+  # Log authentication events
+  log_auth_events: true
+
+  # Log lease renewals
+  log_lease_events: true
+
+---
+# =============================================================================
+# VAULT POLICY DOCUMENT
+# =============================================================================
+# This policy should be created in Vault for the GL-001 agent.
+# Apply with: vault policy write gl-001-thermalcommand policy.hcl
+# =============================================================================
+
+# policy.hcl content (for documentation):
+#
+# # GL-001 ThermalCommand Vault Policy
+# # Version: 1.0.0
+#
+# # KV v2 secrets - agent-specific path
+# path "secret/data/greenlang/agents/GL-001/*" {
+#   capabilities = ["read", "list"]
+# }
+#
+# path "secret/metadata/greenlang/agents/GL-001/*" {
+#   capabilities = ["read", "list"]
+# }
+#
+# # Database dynamic credentials
+# path "database/creds/gl-001-*" {
+#   capabilities = ["read"]
+# }
+#
+# # PKI certificate issuance
+# path "pki/issue/gl-001-thermalcommand" {
+#   capabilities = ["create", "update"]
+# }
+#
+# # Transit encryption/decryption
+# path "transit/encrypt/gl-001-encryption-key" {
+#   capabilities = ["update"]
+# }
+#
+# path "transit/decrypt/gl-001-encryption-key" {
+#   capabilities = ["update"]
+# }
+#
+# # Lease management
+# path "sys/leases/renew" {
+#   capabilities = ["update"]
+# }
+#
+# path "sys/leases/revoke" {
+#   capabilities = ["update"]
+# }
+#
+# # Token self-management
+# path "auth/token/renew-self" {
+#   capabilities = ["update"]
+# }
+#
+# path "auth/token/lookup-self" {
+#   capabilities = ["read"]
+# }
+
+---
+# =============================================================================
+# ENVIRONMENT-SPECIFIC OVERRIDES
+# =============================================================================
+
+# Development environment (vault.dev.yaml)
+development:
+  vault:
+    addr: "http://localhost:8200"
+    tls:
+      skip_verify: true  # OK for local development only
+
+  auth:
+    method: "token"
+    token:
+      # Use root token for development
+      value: "${VAULT_DEV_ROOT_TOKEN}"
+
+  fallback:
+    enabled: true
+    warn_on_fallback: false
+
+  cache:
+    ttl_seconds: 60  # Shorter TTL for development
+
+# Staging environment (vault.staging.yaml)
+staging:
+  vault:
+    addr: "https://vault.staging.greenlang.local:8200"
+
+  auth:
+    method: "kubernetes"
+    kubernetes:
+      role: "gl-001-thermalcommand-staging"
+
+  fallback:
+    enabled: true
+    warn_on_fallback: true
+
+# Production environment (vault.prod.yaml)
+production:
+  vault:
+    addr: "https://vault.greenlang.local:8200"
+    namespace: "greenlang-prod"
+
+  auth:
+    method: "kubernetes"
+    kubernetes:
+      role: "gl-001-thermalcommand-prod"
+
+  fallback:
+    enabled: false  # NEVER fallback in production
+
+  cache:
+    ttl_seconds: 600  # Longer TTL in production
+
+  connection:
+    max_retries: 5  # More retries in production

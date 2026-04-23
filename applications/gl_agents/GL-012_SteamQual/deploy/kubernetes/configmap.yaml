@@ -1,0 +1,42 @@
+# GL-012 SteamQual ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gl-012-steamqual-config
+  namespace: greenlang
+  labels:
+    app: gl-012-steamqual
+    agent-id: GL-012
+    codename: STEAMQUAL
+data:
+  ENVIRONMENT: "production"
+  LOG_LEVEL: "INFO"
+  
+  # Steam Quality Parameters
+  STEAM_DRYNESS_TARGET: "0.98"
+  SUPERHEAT_DEGREE_TARGET: "20.0"
+  TDS_LIMIT_PPM: "3500"
+  SILICA_LIMIT_PPM: "150"
+  PH_RANGE_MIN: "8.5"
+  PH_RANGE_MAX: "9.5"
+  
+  # Water Treatment Parameters
+  BLOWDOWN_OPTIMIZATION: "true"
+  CHEMICAL_DOSING_CONTROL: "true"
+  CONDENSATE_MONITORING: "true"
+  MAKEUP_WATER_TRACKING: "true"
+  
+  # Sampling Parameters
+  SAMPLING_INTERVAL_MINUTES: "15"
+  ONLINE_ANALYZER_INTEGRATION: "true"
+  LAB_RESULT_CORRELATION: "true"
+  
+  # Feature Flags
+  FEATURE_QUALITY_PREDICTION: "true"
+  FEATURE_TREATMENT_OPTIMIZATION: "true"
+  FEATURE_CORROSION_MONITORING: "true"
+  FEATURE_DEAERATOR_OPTIMIZATION: "true"
+  
+  # API Configuration
+  API_RATE_LIMIT: "1000"
+  API_TIMEOUT_SECONDS: "30"
