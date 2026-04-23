@@ -23,6 +23,7 @@ Example:
 
 from __future__ import annotations
 
+import hashlib
 import json
 import logging
 import os
@@ -33,6 +34,8 @@ from base64 import b64encode
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
 from urllib.parse import urlencode
+
+from greenlang.utilities.exceptions.integration import BillingProviderError
 
 logger = logging.getLogger(__name__)
 
@@ -276,6 +279,7 @@ class StripeBillingProvider(BillingProvider):
         method: str,
         path: str,
         data: Optional[Dict[str, Any]] = None,
+        idempotency_key: Optional[str] = None,
     ) -> Dict[str, Any]:
         """
         Make an authenticated request to the Stripe API.
@@ -284,6 +288,10 @@ class StripeBillingProvider(BillingProvider):
             method: HTTP method (GET, POST, DELETE).
             path: API path (e.g., "/customers").
             data: Form-encoded body data for POST requests.
+            idempotency_key: Optional value for the ``Idempotency-Key`` header.
+                When set Stripe returns the original response for any retry
+                using the same key (within a 24-hour window), preventing
+                duplicate side effects.
 
         Returns:
             Parsed JSON response dict.
@@ -304,6 +312,8 @@ class StripeBillingProvider(BillingProvider):
             "Authorization": f"Basic {auth}",
             "Content-Type": "application/x-www-form-urlencoded",
         }
+        if idempotency_key:
+            headers["Idempotency-Key"] = idempotency_key
 
         body = None
         if data:
@@ -463,6 +473,280 @@ class StripeBillingProvider(BillingProvider):
             "created_at": result.get("created"),
             "current_period_end": result.get("current_period_end"),
         }
+
+    # ------------------------------------------------------------------
+    # Checkout Session creation (FY27 Pricing Page customer flow)
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def _create_checkout_session_idempotency_key(
+        tenant_id: str,
+        sku_name: str,
+        premium_packs: Optional[List[str]] = None,
+    ) -> str:
+        """Build a stable idempotency key for ``create_checkout_session``.
+
+        The Pricing Page may double-fire the request on flaky networks or
+        eager retries. By giving Stripe the same idempotency key for the
+        same logical request we guarantee a single session is created and
+        identical responses are returned.
+
+        We deliberately do NOT include ``success_url`` / ``cancel_url`` —
+        the user might bounce between localhost and production while
+        debugging, but it's still the same purchase intent for the same
+        tenant + SKU + packs combo.
+
+        Args:
+            tenant_id: GreenLang tenant identifier.
+            sku_name: Tier SKU name (community, pro, platform, enterprise).
+            premium_packs: Optional list of premium pack SKU strings.
+
+        Returns:
+            A 64-char hex digest suitable for Stripe ``Idempotency-Key``.
+        """
+        packs_normalized = ",".join(sorted(premium_packs or []))
+        payload = f"{tenant_id}|{sku_name.lower()}|{packs_normalized}"
+        return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+    def create_checkout_session(
+        self,
+        sku_name: str,
+        tenant_id: str,
+        success_url: str,
+        cancel_url: str,
+        premium_packs: Optional[List[str]] = None,
+        customer_email: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        """Create a Stripe Checkout Session for the FY27 Pricing Page.
+
+        Resolves the tier SKU and any premium-pack add-ons via
+        :data:`greenlang.factors.billing.skus.CATALOG`, builds the
+        ``line_items`` array, and asks Stripe for a hosted Checkout
+        session.  The session ``client_reference_id`` is the GreenLang
+        tenant ID so the webhook handler can grant entitlements.
+
+        The webhook ``checkout.session.completed`` handler reads
+        ``metadata.sku_name`` and ``metadata.premium_packs`` to grant the
+        right tier + packs after payment succeeds — see
+        :func:`greenlang.factors.billing.webhook_handler._handle_checkout_completed`.
+
+        Args:
+            sku_name: Tier SKU name (e.g. ``"pro"``, ``"platform"``,
+                ``"enterprise"``). Case-insensitive; must resolve to a
+                tier in :data:`CATALOG`. Community is rejected (free
+                tier needs no checkout).
+            tenant_id: GreenLang tenant ID. Stored as Stripe
+                ``client_reference_id`` and in session metadata.
+            success_url: Absolute URL to redirect to on successful payment.
+                Must be HTTPS in production; Stripe rejects relative paths.
+            cancel_url: Absolute URL to redirect to if the user abandons.
+            premium_packs: Optional list of premium pack SKU strings (the
+                ``PremiumPack`` enum values, e.g. ``"electricity_premium"``).
+                Each pack adds an extra line item billed at the Pro/Consulting
+                monthly add-on rate.
+            customer_email: Optional pre-filled customer email; Stripe will
+                show it on the Checkout page and use it on the new Customer.
+
+        Returns:
+            ``{"session_id": <stripe session id>, "url": <hosted checkout url>}``.
+
+        Raises:
+            ValueError: If ``sku_name`` is unknown, if a ``premium_packs``
+                entry is unknown, or if a required Stripe price ID is not
+                configured for the resolved SKU.
+            BillingProviderError: If the Stripe API call fails.
+        """
+        # Lazy import to avoid a circular import: skus.py reads from
+        # entitlements which can pull in billing globals at module-load time.
+        from greenlang.factors.billing.skus import (
+            CATALOG,
+            PremiumPack,
+            Tier,
+            allowed_for,
+        )
+
+        # ---- Resolve tier SKU ------------------------------------------------
+        sku_lower = (sku_name or "").lower().strip()
+        try:
+            tier = Tier(sku_lower)
+        except ValueError as exc:
+            valid = ", ".join(t.value for t in Tier)
+            raise ValueError(
+                f"Unknown SKU '{sku_name}'. Valid SKU names: {valid}"
+            ) from exc
+
+        if tier == Tier.COMMUNITY:
+            # Community is free — no Stripe Checkout needed. The Pricing
+            # Page should never call us for the free tier; reject loudly.
+            raise ValueError(
+                "Community tier is free and does not require Stripe Checkout. "
+                "Provision the tenant directly without a checkout session."
+            )
+
+        tier_cfg = CATALOG.tier(tier)
+        tier_price_id = tier_cfg.stripe_price_monthly_id
+        if not tier_price_id:
+            raise ValueError(
+                f"No Stripe price ID configured for tier '{sku_lower}'. "
+                "Run the Stripe provisioning script before serving Checkout."
+            )
+
+        line_items: List[Dict[str, Any]] = [
+            {"price": tier_price_id, "quantity": 1},
+        ]
+
+        # ---- Resolve premium packs ------------------------------------------
+        packs_resolved: List[str] = []
+        for pack_str in premium_packs or []:
+            try:
+                pack = PremiumPack(str(pack_str).lower().strip())
+            except ValueError as exc:
+                valid_packs = ", ".join(p.value for p in PremiumPack)
+                raise ValueError(
+                    f"Unknown premium pack '{pack_str}'. "
+                    f"Valid packs: {valid_packs}"
+                ) from exc
+
+            if not allowed_for(tier, pack):
+                # Community can't buy packs; everything else can.
+                raise ValueError(
+                    f"Tier '{sku_lower}' is not allowed to purchase pack "
+                    f"'{pack.value}'."
+                )
+
+            pack_cfg = CATALOG.pack(pack)
+            pack_price_id = pack_cfg.stripe_price_monthly_id
+            if not pack_price_id:
+                raise ValueError(
+                    f"No Stripe price ID configured for pack '{pack.value}'."
+                )
+            line_items.append({"price": pack_price_id, "quantity": 1})
+            packs_resolved.append(pack.value)
+
+        # ---- No-op fallback when Stripe key is unset (dev mode) -------------
+        if not self.configured:
+            fake_session_id = (
+                "cs_test_noop_"
+                + self._create_checkout_session_idempotency_key(
+                    tenant_id, sku_lower, packs_resolved
+                )[:24]
+            )
+            logger.info(
+                "Stripe not configured; returning no-op Checkout session "
+                "tenant=%s sku=%s packs=%s",
+                tenant_id,
+                sku_lower,
+                packs_resolved,
+            )
+            return {
+                "session_id": fake_session_id,
+                "url": f"{success_url}?noop_session={fake_session_id}",
+            }
+
+        # ---- Build the Stripe params ----------------------------------------
+        params: Dict[str, Any] = {
+            "mode": "subscription",
+            "line_items": line_items,
+            "client_reference_id": tenant_id,
+            "success_url": success_url,
+            "cancel_url": cancel_url,
+            "allow_promotion_codes": "true",
+            "metadata": {
+                "tenant_id": tenant_id,
+                "sku_name": sku_lower,
+                "premium_packs": ",".join(packs_resolved),
+            },
+            # Mirror metadata onto the resulting subscription so the
+            # ``customer.subscription.created`` webhook can also see it
+            # without round-tripping through the session object.
+            "subscription_data": {
+                "metadata": {
+                    "tenant_id": tenant_id,
+                    "tier": sku_lower,
+                    "premium_packs": ",".join(packs_resolved),
+                },
+            },
+        }
+        if customer_email:
+            params["customer_email"] = customer_email
+
+        idempotency_key = self._create_checkout_session_idempotency_key(
+            tenant_id, sku_lower, packs_resolved
+        )
+
+        try:
+            result = self._stripe_request(
+                "POST",
+                "/checkout/sessions",
+                params,
+                idempotency_key=idempotency_key,
+            )
+        except StripeApiError as exc:
+            logger.error(
+                "Stripe checkout session creation failed: tenant=%s sku=%s "
+                "packs=%s status=%s",
+                tenant_id,
+                sku_lower,
+                packs_resolved,
+                exc.status_code,
+            )
+            # Suggest a retry-after of 30 seconds for transient (5xx) errors.
+            retry_after = 30 if exc.status_code >= 500 else None
+            raise BillingProviderError(
+                message=f"Stripe checkout session creation failed: {exc}",
+                provider="stripe",
+                operation="create_checkout_session",
+                status_code=exc.status_code,
+                retry_after_seconds=retry_after,
+                cause=exc,
+                context={
+                    "tenant_id": tenant_id,
+                    "sku_name": sku_lower,
+                    "premium_packs": packs_resolved,
+                },
+            ) from exc
+        except Exception as exc:  # noqa: BLE001 -- final safety net
+            logger.exception(
+                "Unexpected error creating Stripe checkout session "
+                "tenant=%s sku=%s",
+                tenant_id,
+                sku_lower,
+            )
+            raise BillingProviderError(
+                message=(
+                    "Unexpected error creating Stripe checkout session: "
+                    f"{exc}"
+                ),
+                provider="stripe",
+                operation="create_checkout_session",
+                cause=exc,
+                context={
+                    "tenant_id": tenant_id,
+                    "sku_name": sku_lower,
+                    "premium_packs": packs_resolved,
+                },
+            ) from exc
+
+        session_id = result.get("id")
+        session_url = result.get("url")
+        if not session_id or not session_url:
+            raise BillingProviderError(
+                message=(
+                    "Stripe checkout session response missing id/url: "
+                    f"{result}"
+                ),
+                provider="stripe",
+                operation="create_checkout_session",
+            )
+
+        logger.info(
+            "Created Stripe checkout session %s tenant=%s sku=%s packs=%s",
+            session_id,
+            tenant_id,
+            sku_lower,
+            packs_resolved,
+        )
+        return {"session_id": session_id, "url": session_url}
 
     def record_usage(
         self,

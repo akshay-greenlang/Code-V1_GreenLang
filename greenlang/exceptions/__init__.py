@@ -189,6 +189,7 @@ from greenlang.utilities.exceptions.integration import (
     ExternalServiceError,
     APIClientError,
     RateLimitError,
+    BillingProviderError,
 )
 
 from greenlang.utilities.exceptions.infrastructure import (
@@ -295,6 +296,7 @@ __all__ = [
     'ExternalServiceError',
     'APIClientError',
     'RateLimitError',
+    'BillingProviderError',
 
     # Infrastructure Exceptions
     'InfrastructureException',

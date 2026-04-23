@@ -170,6 +170,38 @@ except Exception as _sign_exc:  # noqa: BLE001
         "Signed-receipts middleware NOT installed: %s", _sign_exc
     )
 
+# ==================== BILLING ROUTER (FY27 Pricing Page checkout) ====================
+# /api/v1/billing/* is mounted OUTSIDE the signed-receipts protected prefix
+# (which is "/api/v1/factors") so checkout responses are not signed -- the
+# receipt is meaningful only for factor data, not billing handoffs.
+try:
+    from greenlang.integration.api.routes.billing import router as billing_router
+
+    app.include_router(billing_router)
+    logger.info(
+        "Billing router installed: POST /api/v1/billing/checkout (Pricing Page)"
+    )
+except Exception as _billing_exc:  # noqa: BLE001
+    # Never block app startup on the billing router; checkout failure should
+    # not take down the Factors API.
+    logger.error(
+        "Billing router NOT installed: %s", _billing_exc, exc_info=True
+    )
+
+# ==================== STRIPE WEBHOOK ROUTER (subscription lifecycle) ====================
+# Mount the existing webhook handler at /api/v1/billing/webhooks so the
+# checkout.session.completed event from the Pricing Page checkout reaches
+# _handle_checkout_completed and grants entitlements.
+try:
+    from greenlang.factors.billing.webhook_handler import router as stripe_webhook_router
+
+    app.include_router(stripe_webhook_router)
+    logger.info("Stripe webhook router installed: /api/v1/billing/webhooks")
+except Exception as _wh_exc:  # noqa: BLE001
+    logger.error(
+        "Stripe webhook router NOT installed: %s", _wh_exc, exc_info=True
+    )
+
 # ==================== GLOBAL STATE ====================
 
 # Emission factor database (initialized on startup)

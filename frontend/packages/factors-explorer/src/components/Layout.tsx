@@ -42,6 +42,7 @@ export function Layout() {
             <NavLink to="/sources">Sources</NavLink>
             <NavLink to="/method-packs">Method Packs</NavLink>
             <NavLink to="/editions">Editions</NavLink>
+            <NavLink to="/pricing">Pricing</NavLink>
             <a
               href="https://developer.greenlang.io/docs/factors"
               target="_blank"

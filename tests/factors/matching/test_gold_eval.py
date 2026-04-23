@@ -265,8 +265,11 @@ def _evaluate_case(
 @pytest.fixture(scope="module")
 def gold_entries() -> List[GoldEntry]:
     entries = _load_gold_entries()
-    assert 150 <= len(entries) <= 200, (
-        f"Gold set must have 150-200 entries, found {len(entries)}"
+    # CTO target for FY27 Certified edition gate is 300-500 curated examples
+    # (we ship the gold set publicly so the floor must reflect the production
+    # sample size, not an authoring placeholder).
+    assert 300 <= len(entries) <= 500, (
+        f"Gold set must have 300-500 entries, found {len(entries)}"
     )
     return entries
 
@@ -383,13 +386,16 @@ def test_slice_coverage_matches_target(gold_entries: List[GoldEntry]):
     for e in gold_entries:
         counts[e.slice_name] += 1
     expected_minimums = {
-        "electricity": 40,
-        "combustion": 30,
-        "freight": 25,
-        "material_cbam": 25,
-        "land": 15,
-        "product": 15,
-        "finance": 10,
+        # Per-slice budgets scaled for the FY27 350-example gold set.
+        # Electricity/combustion are largest because they cover the most
+        # jurisdictions and method-pack variants in production traffic.
+        "electricity": 60,
+        "combustion": 50,
+        "freight": 45,
+        "material_cbam": 45,
+        "land": 35,
+        "product": 35,
+        "finance": 30,
     }
     for s, minimum in expected_minimums.items():
         assert counts[s] >= minimum, (

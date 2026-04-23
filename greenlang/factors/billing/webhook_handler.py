@@ -440,22 +440,42 @@ def _handle_checkout_completed(event_data: Dict[str, Any]) -> Dict[str, str]:
     """Handle ``checkout.session.completed``.
 
     Self-serve sign-up path: Checkout succeeded and a subscription was
-    created. Stripe already sends ``customer.subscription.created`` for
-    the same sale, but we also process this event so the tenant_id from
-    Checkout ``client_reference_id`` gets associated with the customer.
+    created. Stripe also sends ``customer.subscription.created`` for the
+    same sale, but we process this event eagerly so:
+
+    * The ``tenant_id`` from ``client_reference_id`` is linked to the
+      Stripe customer immediately.
+    * The ``sku_name`` and ``premium_packs`` from the Checkout metadata
+      grant the right tier + packs without waiting for the subscription
+      event (which can arrive seconds later and out of order).
+
+    Idempotency: Stripe is allowed to retry a webhook delivery for up to
+    72 hours. We rebuild ``state`` from scratch from the metadata each
+    time, so a duplicate delivery is a no-op (same final state, same
+    listener notification — the persistence layer is responsible for
+    using ``subscription_id`` as the upsert key).
     """
     session = event_data
     customer_id = session.get("customer", "") or ""
     tenant_id = session.get("client_reference_id") or ""
     subscription_id = session.get("subscription", "") or ""
     mode = session.get("mode", "")
+    metadata = session.get("metadata") or {}
+    sku_name = (metadata.get("sku_name") or "").lower().strip()
+    premium_packs_raw = (metadata.get("premium_packs") or "").strip()
+    premium_packs: List[str] = [
+        p.strip().lower() for p in premium_packs_raw.split(",") if p.strip()
+    ]
 
     logger.info(
-        "Checkout completed: customer=%s tenant=%s subscription=%s mode=%s",
+        "Checkout completed: customer=%s tenant=%s subscription=%s mode=%s "
+        "sku=%s packs=%s",
         customer_id,
         tenant_id,
         subscription_id,
         mode,
+        sku_name,
+        premium_packs,
     )
 
     existing = dict(_subscription_state.get(customer_id) or {})
@@ -463,9 +483,55 @@ def _handle_checkout_completed(event_data: Dict[str, Any]) -> Dict[str, str]:
         existing["tenant_id"] = tenant_id
     if subscription_id:
         existing["subscription_id"] = subscription_id
-    existing.setdefault("status", "active")
-    existing.setdefault("tier", Tier.COMMUNITY.value)
-    existing.setdefault("packs", [])
+
+    # Resolve tier + packs from the Checkout metadata so entitlements are
+    # granted even if the ``customer.subscription.created`` event hasn't
+    # arrived yet (or is delayed by Stripe).
+    resolved_tier: Optional[Tier] = None
+    if sku_name:
+        try:
+            resolved_tier = Tier(sku_name)
+        except ValueError:
+            logger.warning(
+                "Checkout metadata.sku_name=%r is not a known Tier; "
+                "defaulting to community",
+                sku_name,
+            )
+            resolved_tier = None
+
+    if resolved_tier is not None:
+        existing["tier"] = resolved_tier.value
+        existing["entitlements"] = tier_entitlements(resolved_tier)
+        existing["status"] = "active"
+    else:
+        existing.setdefault("tier", Tier.COMMUNITY.value)
+        existing.setdefault("status", "active")
+
+    # Validate + merge premium packs from metadata. We accept only packs
+    # that exist in the catalog and that the tier is allowed to purchase.
+    if premium_packs:
+        valid_packs: List[str] = []
+        for pack_str in premium_packs:
+            try:
+                pack = PremiumPack(pack_str)
+            except ValueError:
+                logger.warning(
+                    "Checkout metadata.premium_packs entry %r is not a "
+                    "known PremiumPack; ignoring",
+                    pack_str,
+                )
+                continue
+            valid_packs.append(pack.value)
+        # Merge with any packs already attached (e.g. from a prior subscription
+        # event) without duplicates, preserving deterministic order.
+        merged = list(existing.get("packs") or [])
+        for pack_value in valid_packs:
+            if pack_value not in merged:
+                merged.append(pack_value)
+        existing["packs"] = merged
+    else:
+        existing.setdefault("packs", [])
+
     existing["checkout_completed_at"] = int(time.time())
     existing["updated_at"] = int(time.time())
     update_subscription_state(customer_id, existing)

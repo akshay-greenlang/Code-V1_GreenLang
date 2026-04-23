@@ -239,6 +239,67 @@ class RateLimitError(IntegrationException):
         super().__init__(message, agent_name=agent_name, context=context)
 
 
+class BillingProviderError(ExternalServiceError):
+    """Billing provider (Stripe / Chargebee / etc.) call failed.
+
+    Raised by the Stripe / billing layer when an outbound provider call
+    fails — checkout session creation, subscription update, invoice fetch,
+    etc.  Carries enough context for the caller to translate it into a
+    user-facing 502/503 with a retry hint.
+
+    Example:
+        >>> raise BillingProviderError(
+        ...     message="Stripe checkout session creation failed",
+        ...     provider="stripe",
+        ...     operation="create_checkout_session",
+        ...     status_code=503,
+        ...     retry_after_seconds=30,
+        ... )
+    """
+
+    def __init__(
+        self,
+        message: str,
+        provider: Optional[str] = "stripe",
+        operation: Optional[str] = None,
+        status_code: Optional[int] = None,
+        retry_after_seconds: Optional[int] = None,
+        cause: Optional[Exception] = None,
+        agent_name: Optional[str] = None,
+        context: Optional[Dict[str, Any]] = None,
+    ):
+        """Initialize billing provider error.
+
+        Args:
+            message: Human-readable error message.
+            provider: Billing provider name (default ``"stripe"``).
+            operation: Provider operation that failed
+                (e.g. ``"create_checkout_session"``).
+            status_code: HTTP status returned by the provider, if any.
+            retry_after_seconds: Suggested retry delay (Retry-After hint).
+            cause: Original exception, if wrapping one.
+            agent_name: Name of agent (optional).
+            context: Additional error context.
+        """
+        context = context or {}
+        if status_code is not None:
+            context["status_code"] = status_code
+        if retry_after_seconds is not None:
+            context["retry_after_seconds"] = retry_after_seconds
+        super().__init__(
+            message,
+            service_name=provider or "billing_provider",
+            operation=operation,
+            cause=cause,
+            agent_name=agent_name,
+            context=context,
+        )
+        self.provider = provider
+        self.operation = operation
+        self.status_code = status_code
+        self.retry_after_seconds = retry_after_seconds
+
+
 __all__ = [
     'IntegrationException',
     'EmissionFactorError',
@@ -246,4 +307,5 @@ __all__ = [
     'ExternalServiceError',
     'APIClientError',
     'RateLimitError',
+    'BillingProviderError',
 ]

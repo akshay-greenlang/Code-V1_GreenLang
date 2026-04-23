@@ -446,7 +446,12 @@
       "Read(//c/tmp/**)",
       "Bash(rm -f /tmp/test_ledger.sqlite /tmp/test_ledger_export.json python -m greenlang.cli.main ledger record emission e-001 calculate abc123 --sqlite /tmp/test_ledger.sqlite --metadata '{\"framework\":\"CBAM\"}')",
       "Bash(sed -n '140,160p' tests/factors/sdk/test_edition_pinning.py)",
-      "Bash(sed -n '170,195p' tests/factors/sdk/test_edition_pinning.py)"
+      "Bash(sed -n '170,195p' tests/factors/sdk/test_edition_pinning.py)",
+      "Bash(node frontend/node_modules/typescript/bin/tsc --noEmit --jsx react-jsx --target es2020 --module esnext --moduleResolution node --skipLibCheck --allowSyntheticDefaultImports --esModuleInterop --noResolve frontend/packages/factors-explorer/src/lib/billing.ts)",
+      "Bash(node frontend/node_modules/typescript/bin/tsc --noEmit --jsx react-jsx --target es2020 --module esnext --moduleResolution node --skipLibCheck --allowSyntheticDefaultImports --esModuleInterop --noResolve frontend/packages/factors-explorer/src/components/pricing/ThreeLabelLegend.tsx)",
+      "Bash(node frontend/node_modules/typescript/bin/tsc --noEmit --jsx react-jsx --target es2020 --module esnext --moduleResolution node --skipLibCheck --allowSyntheticDefaultImports --esModuleInterop --noResolve frontend/packages/factors-explorer/src/components/pricing/FAQSection.tsx)",
+      "Bash(node frontend/node_modules/typescript/bin/tsc --noEmit --jsx react-jsx --target es2020 --module esnext --moduleResolution node --skipLibCheck --allowSyntheticDefaultImports --esModuleInterop --noResolve frontend/packages/factors-explorer/src/routes/pricing.tsx)",
+      "Bash(node frontend/node_modules/typescript/bin/tsc --noEmit --jsx react-jsx --target es2020 --module esnext --moduleResolution node --skipLibCheck --allowSyntheticDefaultImports --esModuleInterop --noResolve frontend/packages/factors-explorer/src/__tests__/pricing.test.tsx)"
     ],
     "deny": [],
     "ask": []

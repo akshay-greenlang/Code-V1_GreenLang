@@ -17,6 +17,7 @@ import { Route as FactorsFactorIdRoute } from "./routes/factors.$factorId";
 import { Route as MethodPacksRoute } from "./routes/method-packs";
 import { Route as MethodPacksProfileRoute } from "./routes/method-packs.$profile";
 import { Route as EditionsRoute } from "./routes/editions";
+import { Route as PricingRoute } from "./routes/pricing";
 import { Route as VerifyRoute } from "./routes/(coming-soon)/verify";
 
 IndexRoute.update({ path: "/", getParentRoute: () => rootRoute } as any);
@@ -39,6 +40,7 @@ MethodPacksProfileRoute.update({
   getParentRoute: () => rootRoute,
 } as any);
 EditionsRoute.update({ path: "/editions", getParentRoute: () => rootRoute } as any);
+PricingRoute.update({ path: "/pricing", getParentRoute: () => rootRoute } as any);
 VerifyRoute.update({ path: "/verify", getParentRoute: () => rootRoute } as any);
 
 export const routeTree = rootRoute.addChildren([
@@ -50,6 +52,7 @@ export const routeTree = rootRoute.addChildren([
   MethodPacksRoute,
   MethodPacksProfileRoute,
   EditionsRoute,
+  PricingRoute,
   VerifyRoute,
 ]);
 /* prettier-ignore-end */
