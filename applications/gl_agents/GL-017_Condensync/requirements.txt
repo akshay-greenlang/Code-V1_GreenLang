@@ -73,7 +73,7 @@ tenacity==8.2.3                     # Retry logic with backoff
 # -----------------------------------------------------------------------------
 # Security
 # -----------------------------------------------------------------------------
-python-jose[cryptography]==3.3.0    # JWT handling
+python-jose[cryptography]==3.4.0    # JWT handling
 passlib[bcrypt]==1.7.4              # Password hashing
 cryptography==42.0.2                # Cryptographic primitives
 
