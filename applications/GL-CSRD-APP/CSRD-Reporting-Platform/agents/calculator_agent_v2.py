@@ -51,6 +51,14 @@ from greenlang.sdk.emission_factor_client import (
 )
 from greenlang.models.emission_factor import EmissionFactor, EmissionResult
 
+# CTO non-negotiable #6: every CSRD/ESRS factor lookup MUST flow through
+# ResolutionEngine.resolve(method_profile=...).  EmissionFactorClient is
+# retained as the candidate-source backing store; pack code never calls
+# its raw .get_factor() / .get_fuel_factor() entry points.
+from greenlang.data.canonical_v2 import MethodProfile
+from greenlang.factors.resolution.engine import ResolutionEngine, ResolutionError
+from greenlang.factors.resolution.request import ResolutionRequest
+
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
@@ -147,14 +155,70 @@ class FormulaEngineV2:
     - No AI, no estimation, no external APIs
     """
 
-    def __init__(self, ef_client: EmissionFactorClient):
+    def __init__(
+        self,
+        ef_client: EmissionFactorClient,
+        resolution_engine: Optional[ResolutionEngine] = None,
+        default_profile: MethodProfile = MethodProfile.CORPORATE_SCOPE1,
+    ):
         """
-        Initialize formula engine with EmissionFactorClient.
+        Initialize formula engine with EmissionFactorClient and a
+        ``ResolutionEngine`` (CTO non-negotiable #6).
 
         Args:
-            ef_client: EmissionFactorClient instance for database access
+            ef_client: EmissionFactorClient instance — used as the
+                candidate source for the engine, NOT called directly.
+            resolution_engine: Pre-built ``ResolutionEngine``.  When
+                omitted a default engine is built whose candidate
+                source delegates to ``ef_client.get_fuel_factor`` /
+                ``get_factor`` so existing tests continue to pass.
+            default_profile: Profile to bind every Scope 1 lookup to.
+                Callers can override per-formula via the ``method_profile``
+                key in ``formula_spec`` to use Scope 2 / 3.
         """
         self.ef_client = ef_client
+        self.default_profile = default_profile
+        self.resolution_engine: ResolutionEngine = (
+            resolution_engine
+            or self._build_default_engine(ef_client)
+        )
+
+    @staticmethod
+    def _build_default_engine(
+        ef_client: EmissionFactorClient,
+    ) -> ResolutionEngine:
+        """Build a default engine whose candidate source wraps the
+        legacy ``EmissionFactorClient`` lookup.
+
+        Production deployments should pass a fully-wired engine that
+        talks to the FactorCatalogRepository directly; this default
+        keeps the agent runnable in offline / test environments while
+        still binding every fetch to a method profile.
+        """
+
+        def _candidate_source(req: ResolutionRequest, label: str):
+            if label != "country_or_sector_average":
+                return []
+            extras = req.extras or {}
+            fuel_type = extras.get("fuel_type")
+            unit = extras.get("activity_unit")
+            if not fuel_type:
+                return []
+            try:
+                # Engine adapter — backs ResolutionEngine candidate
+                # source, NOT a direct policy-workflow call.
+                if unit:
+                    factor = ef_client.get_fuel_factor(fuel_type, unit=unit)  # noqa: NN6 — engine adapter
+                else:
+                    factor = ef_client.get_fuel_factor(fuel_type)  # noqa: NN6 — engine adapter
+            except (EmissionFactorNotFoundError, UnitNotAvailableError):
+                return []
+            except Exception as exc:  # pragma: no cover — defensive
+                logger.error("CSRD candidate source error: %s", exc)
+                return []
+            return [factor] if factor is not None else []
+
+        return ResolutionEngine(candidate_source=_candidate_source)
 
     def evaluate_formula(
         self,
@@ -276,25 +340,51 @@ class FormulaEngineV2:
         if not fuel_type:
             fuel_type = formula_spec.get("fuel_type", formula_spec.get("factor_id"))
 
-        # Lookup emission factor from database
+        # Resolve emission factor through ResolutionEngine
+        # (CTO non-negotiable #6 — every lookup is bound to a profile).
         ef_value = None
         try:
             if fuel_type:
-                # Try to get fuel factor
-                if activity_unit:
-                    factor = self.ef_client.get_fuel_factor(fuel_type, unit=activity_unit)
-                else:
-                    factor = self.ef_client.get_fuel_factor(fuel_type)
+                profile = self._profile_for(formula_spec)
+                request = ResolutionRequest(
+                    activity=f"{fuel_type} combustion",
+                    method_profile=profile,
+                    jurisdiction=region,
+                    extras={
+                        "fuel_type": fuel_type,
+                        "activity_unit": activity_unit,
+                    },
+                )
+                try:
+                    resolved = self.resolution_engine.resolve(request)
+                    ef_value, factor_name, source_uri, factor_id = (
+                        self._extract_resolved_factor_payload(
+                            resolved, activity_unit
+                        )
+                    )
+                    intermediate_steps.append(
+                        f"ResolutionEngine resolved {factor_id} via "
+                        f"step {resolved.fallback_rank} "
+                        f"({resolved.step_label}); profile={profile.value}"
+                    )
+                except ResolutionError as exc:
+                    # Cascade exhausted — surface the failure but keep
+                    # the existing semantics (return None) so callers
+                    # raise a CalculationError rather than silently
+                    # swapping to a raw lookup that bypasses the
+                    # profile.
+                    logger.warning(
+                        "CSRD ResolutionEngine cascade exhausted for %s: %s",
+                        fuel_type, exc,
+                    )
+                    intermediate_steps.append(f"ERROR: {exc}")
+                    return None, intermediate_steps, data_sources, None
 
-                ef_value = factor.get_factor_for_unit(activity_unit) if activity_unit else factor.emission_factor_kg_co2e
-                source_uri = factor.source.source_uri
-                data_sources.append(f"Emission Factor ({factor.name}): {ef_value} kg CO2e/{activity_unit or factor.unit}")
-                intermediate_steps.append(f"Looked up emission factor: {factor.factor_id} = {ef_value}")
-
-        except (EmissionFactorNotFoundError, UnitNotAvailableError) as e:
-            logger.warning(f"Emission factor lookup failed: {e}")
-            intermediate_steps.append(f"ERROR: {str(e)}")
-            return None, intermediate_steps, data_sources, None
+                if factor_name and ef_value is not None:
+                    data_sources.append(
+                        f"Emission Factor ({factor_name}): {ef_value} "
+                        f"kg CO2e/{activity_unit or 'unit'}"
+                    )
 
         except Exception as e:
             logger.error(f"Unexpected error during emission factor lookup: {e}")
@@ -314,6 +404,85 @@ class FormulaEngineV2:
             intermediate_steps.append(f"Convert to tCO2e: {result}")
 
         return round(result, 3), intermediate_steps, data_sources, source_uri
+
+    # ------------------------------------------------------------------
+    # ResolutionEngine helpers (CTO non-negotiable #6)
+    # ------------------------------------------------------------------
+
+    def _profile_for(self, formula_spec: Dict[str, Any]) -> MethodProfile:
+        """Pick the right ``MethodProfile`` for the formula.
+
+        Per-formula override comes from ``formula_spec['method_profile']``
+        (string).  Otherwise we map by the metric standard prefix:
+
+        - ``E1-1..E1-9``  → ``CORPORATE_SCOPE1`` (Scope 1 GHG)
+        - ``E1-10..E1-15`` → ``CORPORATE_SCOPE2_LOCATION`` (Scope 2 LB)
+        - ``E1-16+``       → ``CORPORATE_SCOPE3``
+        - everything else → ``self.default_profile``
+        """
+        override = formula_spec.get("method_profile")
+        if override:
+            try:
+                return MethodProfile(override)
+            except ValueError:
+                logger.warning(
+                    "Unknown method_profile override %r; "
+                    "falling back to default %s.",
+                    override, self.default_profile.value,
+                )
+        metric_code = str(formula_spec.get("metric_code") or "")
+        if metric_code.startswith("E1-"):
+            try:
+                idx = int(metric_code.split("-")[1])
+            except (IndexError, ValueError):
+                idx = 0
+            if 1 <= idx <= 9:
+                return MethodProfile.CORPORATE_SCOPE1
+            if 10 <= idx <= 15:
+                return MethodProfile.CORPORATE_SCOPE2_LOCATION
+            return MethodProfile.CORPORATE_SCOPE3
+        return self.default_profile
+
+    @staticmethod
+    def _extract_resolved_factor_payload(
+        resolved: Any,
+        activity_unit: Optional[str],
+    ) -> Tuple[Optional[float], Optional[str], Optional[str], Optional[str]]:
+        """Return ``(ef_value, factor_name, source_uri, factor_id)``.
+
+        Handles three candidate shapes:
+
+        1. The default engine produced from ``EmissionFactorClient``
+           returns the legacy ``EmissionFactor`` object verbatim — we
+           re-use its ``get_factor_for_unit`` helper.
+        2. A repository-backed engine returns a ``ResolvedFactor`` with
+           a structured ``gas_breakdown`` and ``source_id``.
+        3. Anything else falls through to ``None`` and the caller will
+           emit a CalculationError downstream.
+        """
+        # Shape 1 — legacy EmissionFactor proxied through the engine.
+        get_factor_for_unit = getattr(resolved, "get_factor_for_unit", None)
+        if callable(get_factor_for_unit):
+            ef_val = (
+                get_factor_for_unit(activity_unit) if activity_unit
+                else getattr(resolved, "emission_factor_kg_co2e", None)
+            )
+            source = getattr(resolved, "source", None)
+            return (
+                ef_val,
+                getattr(resolved, "name", None),
+                getattr(source, "source_uri", None) if source else None,
+                getattr(resolved, "factor_id", None),
+            )
+        # Shape 2 — ResolvedFactor.
+        gb = getattr(resolved, "gas_breakdown", None)
+        ef_val = getattr(gb, "co2e_total_kg", None) if gb else None
+        return (
+            ef_val,
+            getattr(resolved, "chosen_factor_name", None),
+            getattr(resolved, "source_id", None),
+            getattr(resolved, "chosen_factor_id", None),
+        )
 
     def _calc_division(
         self,

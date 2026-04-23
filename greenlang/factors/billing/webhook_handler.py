@@ -621,10 +621,80 @@ async def stripe_webhook(
     )
 
 
+# ---------------------------------------------------------------------------
+# Public dispatcher used by the v1 billing router
+# ---------------------------------------------------------------------------
+
+
+def handle(
+    *,
+    payload: bytes,
+    signature_header: str,
+    webhook_secret: str,
+    tolerance: int = 300,
+) -> Dict[str, Any]:
+    """Verify + dispatch a Stripe webhook envelope.
+
+    Used by :func:`greenlang.factors.billing.api.stripe_webhook` so the
+    HTTP layer can stay thin and the handler logic remains testable
+    without spinning up a FastAPI app.
+
+    Args:
+        payload: Raw request body bytes (must NOT have been re-serialised;
+            Stripe's HMAC is over the literal bytes on the wire).
+        signature_header: Value of the ``Stripe-Signature`` HTTP header.
+        webhook_secret: Stripe webhook signing secret. When empty the
+            payload is parsed without verification (development only).
+        tolerance: Maximum age of the event in seconds.
+
+    Returns:
+        ``{"status": "...", "event": "..."}`` describing the outcome.
+
+    Raises:
+        HTTPException: When signature verification fails. Allowed to
+            propagate so the FastAPI route returns a clean 400.
+    """
+    if webhook_secret:
+        event = verify_stripe_signature(
+            payload=payload,
+            sig_header=signature_header,
+            webhook_secret=webhook_secret,
+            tolerance=tolerance,
+        )
+    else:
+        logger.warning(
+            "STRIPE_WEBHOOK_SECRET is not configured; accepting webhook "
+            "without signature verification. Do NOT use in production."
+        )
+        try:
+            event = json.loads(payload.decode("utf-8"))
+        except (json.JSONDecodeError, UnicodeDecodeError) as exc:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Invalid JSON payload: {exc}",
+            ) from exc
+
+    event_type = event.get("type", "") or ""
+    event_data = event.get("data", {}).get("object", {}) or {}
+
+    logger.info(
+        "Dispatching Stripe webhook: type=%s id=%s",
+        event_type,
+        event.get("id"),
+    )
+
+    handler = _EVENT_HANDLERS.get(event_type)
+    if handler is None:
+        logger.info("Ignoring unhandled Stripe event type: %s", event_type)
+        return {"status": "ignored", "event": event_type}
+    return handler(event_data)
+
+
 __all__ = [
     "router",
     "verify_stripe_signature",
     "get_subscription_state",
     "update_subscription_state",
     "register_state_listener",
+    "handle",
 ]

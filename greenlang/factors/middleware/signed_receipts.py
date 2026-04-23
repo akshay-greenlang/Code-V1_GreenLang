@@ -379,3 +379,97 @@ __all__ = [
     "install_signing_middleware",
     "ALL_TIERS",
 ]
+
+
+# ---------------------------------------------------------------------------
+# Class-shape middleware (BaseHTTPMiddleware) for `app.add_middleware(...)`.
+# Mirrors install_signing_middleware but applies to /v1 by default and
+# also emits the canonical `X-GL-Signature` header alias requested by the
+# CTO (the existing X-GreenLang-Receipt-* names are kept for compatibility).
+# ---------------------------------------------------------------------------
+
+from starlette.middleware.base import BaseHTTPMiddleware as _BaseHTTPMiddleware
+from starlette.responses import Response as _StarletteResponse
+
+
+class SignedReceiptsMiddleware(_BaseHTTPMiddleware):
+    """Sign every 2xx JSON response on /v1 with HMAC or Ed25519 per tier.
+
+    Unlike :func:`install_signing_middleware` (which uses an inner
+    decorator), this is a Starlette ``BaseHTTPMiddleware`` subclass so it
+    composes cleanly with edition-pin / auth-metering / rate-limit /
+    licensing-guard middlewares via ``app.add_middleware``.
+    """
+
+    BYPASS = {"/v1/health", "/openapi.json", "/docs", "/redoc", "/metrics", "/"}
+
+    def __init__(self, app, *, protected_prefix: str = "/v1",
+                 tier_resolver: Optional[Callable[[Any], Optional[str]]] = None) -> None:
+        super().__init__(app)
+        self._prefix = protected_prefix
+        self._resolve_tier = tier_resolver or _default_tier_resolver
+
+    async def dispatch(self, request, call_next) -> _StarletteResponse:
+        path = request.url.path
+        if path in self.BYPASS or not path.startswith(self._prefix):
+            return await call_next(request)
+
+        response = await call_next(request)
+        if not (200 <= response.status_code < 300):
+            return response
+
+        tier = self._resolve_tier(request)
+        # Materialise the body so we sign exactly what the client sees.
+        body_chunks: list[bytes] = []
+        async for chunk in response.body_iterator:  # type: ignore[attr-defined]
+            body_chunks.append(chunk)
+        raw = b"".join(body_chunks)
+
+        edition_id = response.headers.get("X-GreenLang-Edition") or response.headers.get(
+            "X-Factors-Edition"
+        )
+        body_hash = _body_hash(raw)
+        signed_over = _build_signed_payload(
+            body_hash=body_hash, edition_id=edition_id,
+            path=path, method=request.method, status_code=response.status_code,
+        )
+        receipt = _sign_payload(signed_over, tier=tier)
+
+        new_headers = dict(response.headers)
+        if receipt is not None:
+            _attach_receipt_headers(new_headers, receipt=receipt, body_hash=body_hash)
+            # CTO-canonical alias
+            new_headers["X-GL-Signature"] = receipt.signature
+            new_headers["X-GL-Signature-Algorithm"] = receipt.algorithm
+            new_headers["X-GL-Signature-Key-Id"] = receipt.key_id
+
+        # Inject into JSON body (if applicable) so the client can verify
+        # offline using the SDK's verify_receipt() helper.
+        if (
+            receipt is not None
+            and not response.headers.get("X-GreenLang-Stream")
+        ):
+            body_json = _decode_json(raw)
+            if isinstance(body_json, dict):
+                signed_body = _inject_receipt_into_json(
+                    body_json, receipt=receipt, body_hash=body_hash,
+                    edition_id=edition_id, path=path,
+                    method=request.method, status_code=response.status_code,
+                )
+                raw = json.dumps(signed_body, default=str).encode("utf-8")
+                new_headers.pop("content-length", None)
+                new_headers.pop("Content-Length", None)
+                new_headers["content-length"] = str(len(raw))
+                return _StarletteResponse(
+                    content=raw, status_code=response.status_code,
+                    headers=new_headers, media_type="application/json",
+                )
+
+        return _StarletteResponse(
+            content=raw, status_code=response.status_code,
+            headers=new_headers, media_type=response.media_type,
+        )
+
+
+# Append the new symbol to __all__ for clean imports.
+__all__ = list(__all__) + ["SignedReceiptsMiddleware"]

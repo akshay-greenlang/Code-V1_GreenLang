@@ -1,10 +1,65 @@
-# Changelog — `greenlang-factors-sdk` / `@greenlang/factors-sdk`
+# Changelog -- `greenlang-factors` / `@greenlang/factors`
 
 All notable changes to the GreenLang Factors SDKs (Python + TypeScript)
 are documented here. Semantic Versioning applies. The Python and
 TypeScript SDKs share a version number.
 
-## [1.1.0] — 2026-04-20
+## [1.0.0] -- 2026-05-01 (planned)
+
+**General Availability** of the GreenLang Factors SDK against the FY27
+Factors launch (Track C-3 in `FY27_Factors_Launch_Checklist.md`). This
+is the first release published to PyPI as `greenlang-factors` (replacing
+the development pre-release name `greenlang-factors-sdk`) and to npm as
+`@greenlang/factors`.
+
+### Added
+
+- **Edition pinning helpers.** `pin_edition(edition_id)` returns a new
+  client pinned to the requested edition; `with_edition(edition_id)` is
+  a context manager alias. Both validate the edition-id format up-front
+  and raise `EditionPinError` on bad input. Server-side drift continues
+  to raise the existing `EditionMismatchError`.
+- **Offline signed-receipt verification.** New `verify_receipt(response)`
+  client method (and standalone `verify_receipt()` function in
+  `greenlang_factors.verify`) verifies HMAC-SHA256 and Ed25519 receipts
+  entirely offline. Ed25519 fetches the JWKS from
+  `https://api.greenlang.io/.well-known/jwks.json` (override via
+  `jwks_url=` or `GL_FACTORS_JWKS_URL`).
+- **`gl-factors verify-receipt <response.json>`** standalone CLI command
+  for auditors who want to verify a receipt without the SDK in scope.
+- **Typed exception hierarchy** expansion: `LicensingGapError`,
+  `EditionPinError`, and `EntitlementError` join the existing
+  `RateLimitError`, `EditionMismatchError`, and friends.
+- **Rate-limit-aware backoff** -- the transport already honoured
+  `Retry-After` on 429 responses; v1.0 surfaces `retry_after` on the
+  raised `RateLimitError` for caller-side back-off too.
+- **TypeScript SDK** `@greenlang/factors`: dual ESM + CJS, full surface
+  parity with the Python SDK including offline receipt verification via
+  `jose`.
+
+### Changed
+
+- **`requires-python` bumped to `>=3.10`** (was `>=3.9`). 3.9 reaches
+  EOL October 2026 and several typing features used internally are
+  cleaner under 3.10's `X | Y` syntax.
+- **PyPI distribution name renamed** from `greenlang-factors-sdk` to
+  `greenlang-factors` to match the npm package and the docs portal URL.
+  The import path stays `greenlang_factors`.
+- **Default `User-Agent`** now includes the SDK version so server-side
+  observability can attribute traffic to specific clients.
+
+### Removed
+
+- Nothing. This release is fully backward-compatible with the v1.1
+  pre-release that shipped to early-access customers in April 2026.
+
+### Tested against
+
+- Server: factors-api v1.0.0 (FY27 launch).
+- Python: 3.10, 3.11, 3.12, 3.13.
+- Node: 18, 20, 22.
+
+## [1.1.0] -- 2026-04-20
 
 First release cut against the **100 %-CTO-spec Factors platform** (F1–F10
 execution). This release focuses on SDK surface additions that expose the

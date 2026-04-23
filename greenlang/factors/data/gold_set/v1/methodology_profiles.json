@@ -1,0 +1,861 @@
+[
+  {
+    "case_id": "meth_scope1_us_001",
+    "activity": {
+      "description": "Stationary natural-gas boiler, US",
+      "quantity": 12500,
+      "unit": "MMBtu",
+      "metadata": {
+        "country": "US",
+        "year": 2026,
+        "scope": "scope1",
+        "fuel_type": "natural_gas"
+      }
+    },
+    "method_profile": "corporate_scope1",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "emissions",
+      "source_authority": "EPA",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 52.0,
+      "co2e_per_unit_max": 54.0,
+      "co2e_unit": "kgCO2e/MMBtu",
+      "must_include_assumptions": [
+        "scope 1",
+        "GHG Protocol",
+        "natural_gas"
+      ]
+    },
+    "tags": [
+      "methodology",
+      "scope1",
+      "us",
+      "natural_gas",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "meth_scope1_eu_002",
+    "activity": {
+      "description": "Mobile diesel HDV, EU",
+      "quantity": 9800,
+      "unit": "litre",
+      "metadata": {
+        "country": "EU",
+        "year": 2026,
+        "scope": "scope1",
+        "fuel_type": "diesel"
+      }
+    },
+    "method_profile": "corporate_scope1",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "emissions",
+      "source_authority": "IPCC",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 2.6,
+      "co2e_per_unit_max": 2.75,
+      "co2e_unit": "kgCO2e/litre",
+      "must_include_assumptions": [
+        "scope 1",
+        "GHG Protocol",
+        "diesel"
+      ]
+    },
+    "tags": [
+      "methodology",
+      "scope1",
+      "eu",
+      "diesel",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "meth_scope1_eu_003",
+    "activity": {
+      "description": "Process emissions cement kiln CO2, EU",
+      "quantity": 1100,
+      "unit": "tonne_clinker",
+      "metadata": {
+        "country": "EU",
+        "year": 2026,
+        "scope": "scope1",
+        "fuel_type": "process_co2"
+      }
+    },
+    "method_profile": "corporate_scope1",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "emissions",
+      "source_authority": "IPCC",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 460.0,
+      "co2e_per_unit_max": 540.0,
+      "co2e_unit": "kgCO2e/tonne_clinker",
+      "must_include_assumptions": [
+        "scope 1",
+        "GHG Protocol",
+        "process_co2"
+      ]
+    },
+    "tags": [
+      "methodology",
+      "scope1",
+      "eu",
+      "process_co2",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "meth_scope1_us_004",
+    "activity": {
+      "description": "Refrigerant R-410A leak, US",
+      "quantity": 6.0,
+      "unit": "kg",
+      "metadata": {
+        "country": "US",
+        "year": 2026,
+        "scope": "scope1",
+        "fuel_type": "refrigerant"
+      }
+    },
+    "method_profile": "corporate_scope1",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "refrigerant_gwp",
+      "source_authority": "IPCC",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 2240.0,
+      "co2e_per_unit_max": 2340.0,
+      "co2e_unit": "kgCO2e/kg",
+      "must_include_assumptions": [
+        "scope 1",
+        "GHG Protocol",
+        "refrigerant"
+      ]
+    },
+    "tags": [
+      "methodology",
+      "scope1",
+      "us",
+      "refrigerant",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "meth_scope1_in_005",
+    "activity": {
+      "description": "Stationary LPG, IN",
+      "quantity": 4500,
+      "unit": "kg",
+      "metadata": {
+        "country": "IN",
+        "year": 2026,
+        "scope": "scope1",
+        "fuel_type": "lpg"
+      }
+    },
+    "method_profile": "corporate_scope1",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "emissions",
+      "source_authority": "IPCC",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 2.95,
+      "co2e_per_unit_max": 3.1,
+      "co2e_unit": "kgCO2e/kg",
+      "must_include_assumptions": [
+        "scope 1",
+        "GHG Protocol",
+        "lpg"
+      ]
+    },
+    "tags": [
+      "methodology",
+      "scope1",
+      "in",
+      "lpg",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "meth_scope2_lb_in_001",
+    "activity": {
+      "description": "Purchased electricity, India southern grid, location-based",
+      "quantity": 9800,
+      "unit": "kWh",
+      "metadata": {
+        "country": "IN",
+        "year": 2026,
+        "scope": "scope2"
+      }
+    },
+    "method_profile": "corporate_scope2_location_based",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "grid_intensity",
+      "source_authority": "CEA",
+      "fallback_rank": 4,
+      "co2e_per_unit_min": 0.66,
+      "co2e_per_unit_max": 0.72,
+      "co2e_unit": "kgCO2e/kWh",
+      "must_include_assumptions": [
+        "scope 2 location-based",
+        "GHG Protocol",
+        "CEA"
+      ]
+    },
+    "tags": [
+      "methodology",
+      "scope2_lb",
+      "in",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "meth_scope2_lb_us_002",
+    "activity": {
+      "description": "Purchased electricity, US eGRID NWPP, location-based",
+      "quantity": 8000,
+      "unit": "kWh",
+      "metadata": {
+        "country": "US",
+        "year": 2026,
+        "scope": "scope2"
+      }
+    },
+    "method_profile": "corporate_scope2_location_based",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "grid_intensity",
+      "source_authority": "eGRID",
+      "fallback_rank": 4,
+      "co2e_per_unit_min": 0.26,
+      "co2e_per_unit_max": 0.34,
+      "co2e_unit": "kgCO2e/kWh",
+      "must_include_assumptions": [
+        "scope 2 location-based",
+        "GHG Protocol",
+        "eGRID"
+      ]
+    },
+    "tags": [
+      "methodology",
+      "scope2_lb",
+      "us",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "meth_scope2_lb_uk_003",
+    "activity": {
+      "description": "Purchased electricity, UK national grid 2026, location-based",
+      "quantity": 14000,
+      "unit": "kWh",
+      "metadata": {
+        "country": "UK",
+        "year": 2026,
+        "scope": "scope2"
+      }
+    },
+    "method_profile": "corporate_scope2_location_based",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "grid_intensity",
+      "source_authority": "DESNZ",
+      "fallback_rank": 4,
+      "co2e_per_unit_min": 0.18,
+      "co2e_per_unit_max": 0.22,
+      "co2e_unit": "kgCO2e/kWh",
+      "must_include_assumptions": [
+        "scope 2 location-based",
+        "GHG Protocol",
+        "DESNZ"
+      ]
+    },
+    "tags": [
+      "methodology",
+      "scope2_lb",
+      "uk",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "meth_scope2_mb_de_001",
+    "activity": {
+      "description": "Purchased electricity, EU residual mix DE, market-based",
+      "quantity": 16000,
+      "unit": "kWh",
+      "metadata": {
+        "country": "DE",
+        "year": 2026,
+        "scope": "scope2",
+        "instrument": null
+      }
+    },
+    "method_profile": "corporate_scope2_market_based",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "residual_mix",
+      "source_authority": "AIB",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 0.47,
+      "co2e_per_unit_max": 0.56,
+      "co2e_unit": "kgCO2e/kWh",
+      "must_include_assumptions": [
+        "scope 2 market-based",
+        "GHG Protocol"
+      ]
+    },
+    "tags": [
+      "methodology",
+      "scope2_mb",
+      "de",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "meth_scope2_mb_fr_002",
+    "activity": {
+      "description": "Purchased electricity, EU GO-backed FR, market-based",
+      "quantity": 8000,
+      "unit": "kWh",
+      "metadata": {
+        "country": "FR",
+        "year": 2026,
+        "scope": "scope2",
+        "instrument": "GO"
+      }
+    },
+    "method_profile": "corporate_scope2_market_based",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "grid_intensity",
+      "source_authority": "supplier",
+      "fallback_rank": 2,
+      "co2e_per_unit_min": 0.0,
+      "co2e_per_unit_max": 0.005,
+      "co2e_unit": "kgCO2e/kWh",
+      "must_include_assumptions": [
+        "scope 2 market-based",
+        "GHG Protocol"
+      ]
+    },
+    "tags": [
+      "methodology",
+      "scope2_mb",
+      "fr",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "meth_scope2_mb_us_003",
+    "activity": {
+      "description": "Purchased electricity, US REC-backed CAMX, market-based",
+      "quantity": 7800,
+      "unit": "kWh",
+      "metadata": {
+        "country": "US",
+        "year": 2026,
+        "scope": "scope2",
+        "instrument": "REC"
+      }
+    },
+    "method_profile": "corporate_scope2_market_based",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "grid_intensity",
+      "source_authority": "supplier",
+      "fallback_rank": 2,
+      "co2e_per_unit_min": 0.0,
+      "co2e_per_unit_max": 0.02,
+      "co2e_unit": "kgCO2e/kWh",
+      "must_include_assumptions": [
+        "scope 2 market-based",
+        "GHG Protocol"
+      ]
+    },
+    "tags": [
+      "methodology",
+      "scope2_mb",
+      "us",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "meth_scope3_eu_001",
+    "activity": {
+      "description": "Cat 1 purchased steel HRC, EU",
+      "quantity": 1400,
+      "unit": "tonne",
+      "metadata": {
+        "country": "EU",
+        "year": 2026,
+        "scope": "scope3"
+      }
+    },
+    "method_profile": "corporate_scope3",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "material_embodied",
+      "source_authority": "EPD",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 1800.0,
+      "co2e_per_unit_max": 2200.0,
+      "co2e_unit": "kgCO2e/tonne",
+      "must_include_assumptions": [
+        "scope 3",
+        "GHG Protocol"
+      ]
+    },
+    "tags": [
+      "methodology",
+      "scope3",
+      "eu",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "meth_scope3_eu_002",
+    "activity": {
+      "description": "Cat 4 upstream road freight, EU",
+      "quantity": 18000,
+      "unit": "tonne_km",
+      "metadata": {
+        "country": "EU",
+        "year": 2026,
+        "scope": "scope3"
+      }
+    },
+    "method_profile": "corporate_scope3",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "transport_lane",
+      "source_authority": "GLEC",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 0.08,
+      "co2e_per_unit_max": 0.11,
+      "co2e_unit": "kgCO2e/tonne_km",
+      "must_include_assumptions": [
+        "scope 3",
+        "GHG Protocol"
+      ]
+    },
+    "tags": [
+      "methodology",
+      "scope3",
+      "eu",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "meth_scope3_global_003",
+    "activity": {
+      "description": "Cat 6 business travel air long-haul",
+      "quantity": 14000,
+      "unit": "tonne_km",
+      "metadata": {
+        "country": "GLOBAL",
+        "year": 2026,
+        "scope": "scope3"
+      }
+    },
+    "method_profile": "corporate_scope3",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "transport_lane",
+      "source_authority": "DESNZ",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 0.45,
+      "co2e_per_unit_max": 0.7,
+      "co2e_unit": "kgCO2e/tonne_km",
+      "must_include_assumptions": [
+        "scope 3",
+        "GHG Protocol"
+      ]
+    },
+    "tags": [
+      "methodology",
+      "scope3",
+      "global",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "meth_pcf_eu_001",
+    "activity": {
+      "description": "Product carbon footprint: 1 kg cheese",
+      "quantity": 1.0,
+      "unit": "kg",
+      "metadata": {
+        "country": "EU",
+        "year": 2026,
+        "category": "product_carbon"
+      }
+    },
+    "method_profile": "product_carbon",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "material_embodied",
+      "source_authority": "EPD",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 8.0,
+      "co2e_per_unit_max": 12.0,
+      "co2e_unit": "kgCO2e/kg",
+      "must_include_assumptions": [
+        "ISO 14067 cradle-to-gate",
+        "product carbon",
+        "PACT"
+      ]
+    },
+    "tags": [
+      "methodology",
+      "product_carbon",
+      "eu",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "meth_pcf_global_002",
+    "activity": {
+      "description": "Product carbon footprint: 1 unit T-shirt cotton",
+      "quantity": 1.0,
+      "unit": "unit",
+      "metadata": {
+        "country": "GLOBAL",
+        "year": 2026,
+        "category": "product_carbon"
+      }
+    },
+    "method_profile": "product_carbon",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "material_embodied",
+      "source_authority": "EPD",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 3.0,
+      "co2e_per_unit_max": 8.0,
+      "co2e_unit": "kgCO2e/unit",
+      "must_include_assumptions": [
+        "GHG Protocol Product",
+        "product carbon",
+        "PACT"
+      ]
+    },
+    "tags": [
+      "methodology",
+      "product_carbon",
+      "global",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "meth_pcf_eu_003",
+    "activity": {
+      "description": "Product carbon footprint: 1 kg whey protein",
+      "quantity": 1.0,
+      "unit": "kg",
+      "metadata": {
+        "country": "EU",
+        "year": 2026,
+        "category": "product_carbon"
+      }
+    },
+    "method_profile": "product_carbon",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "material_embodied",
+      "source_authority": "EPD",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 12.0,
+      "co2e_per_unit_max": 18.0,
+      "co2e_unit": "kgCO2e/kg",
+      "must_include_assumptions": [
+        "ISO 14067",
+        "product carbon",
+        "PACT"
+      ]
+    },
+    "tags": [
+      "methodology",
+      "product_carbon",
+      "eu",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "meth_freight_eu_001",
+    "activity": {
+      "description": "ISO 14083 road lane, EU 40t artic",
+      "quantity": 21000,
+      "unit": "tonne_km",
+      "metadata": {
+        "country": "EU",
+        "year": 2026,
+        "scope": "scope3"
+      }
+    },
+    "method_profile": "freight_iso_14083",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "transport_lane",
+      "source_authority": "GLEC",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 0.08,
+      "co2e_per_unit_max": 0.11,
+      "co2e_unit": "kgCO2e/tonne_km",
+      "must_include_assumptions": [
+        "ISO 14083",
+        "GLEC",
+        "well-to-wheel"
+      ]
+    },
+    "tags": [
+      "methodology",
+      "freight_iso_14083",
+      "eu",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "meth_freight_global_002",
+    "activity": {
+      "description": "ISO 14083 sea lane, container deepsea",
+      "quantity": 130000000,
+      "unit": "tonne_km",
+      "metadata": {
+        "country": "GLOBAL",
+        "year": 2026,
+        "scope": "scope3"
+      }
+    },
+    "method_profile": "freight_iso_14083",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "transport_lane",
+      "source_authority": "GLEC",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 0.007,
+      "co2e_per_unit_max": 0.012,
+      "co2e_unit": "kgCO2e/tonne_km",
+      "must_include_assumptions": [
+        "ISO 14083",
+        "GLEC",
+        "well-to-wheel"
+      ]
+    },
+    "tags": [
+      "methodology",
+      "freight_iso_14083",
+      "global",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "meth_freight_global_003",
+    "activity": {
+      "description": "ISO 14083 air lane, wide-body long-haul",
+      "quantity": 855000,
+      "unit": "tonne_km",
+      "metadata": {
+        "country": "GLOBAL",
+        "year": 2026,
+        "scope": "scope3"
+      }
+    },
+    "method_profile": "freight_iso_14083",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "transport_lane",
+      "source_authority": "GLEC",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 0.45,
+      "co2e_per_unit_max": 0.8,
+      "co2e_unit": "kgCO2e/tonne_km",
+      "must_include_assumptions": [
+        "ISO 14083",
+        "GLEC",
+        "well-to-wheel"
+      ]
+    },
+    "tags": [
+      "methodology",
+      "freight_iso_14083",
+      "global",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "meth_pcaf_001",
+    "activity": {
+      "description": "PCAF listed equity, manufacturing",
+      "quantity": 50000000,
+      "unit": "USD",
+      "metadata": {
+        "country": "GLOBAL",
+        "year": 2026,
+        "scope": "scope3"
+      }
+    },
+    "method_profile": "finance_proxy",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "finance_proxy",
+      "source_authority": "PCAF",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 0.1,
+      "co2e_per_unit_max": 0.4,
+      "co2e_unit": "kgCO2e/USD",
+      "must_include_assumptions": [
+        "PCAF",
+        "Global Standard v2",
+        "scope 1+2 attribution"
+      ]
+    },
+    "tags": [
+      "methodology",
+      "pcaf",
+      "finance_proxy",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "meth_pcaf_002",
+    "activity": {
+      "description": "PCAF business loan, agriculture",
+      "quantity": 12000000,
+      "unit": "USD",
+      "metadata": {
+        "country": "GLOBAL",
+        "year": 2026,
+        "scope": "scope3"
+      }
+    },
+    "method_profile": "finance_proxy",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "finance_proxy",
+      "source_authority": "PCAF",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 0.15,
+      "co2e_per_unit_max": 0.55,
+      "co2e_unit": "kgCO2e/USD",
+      "must_include_assumptions": [
+        "PCAF",
+        "Global Standard v2",
+        "scope 1+2 attribution"
+      ]
+    },
+    "tags": [
+      "methodology",
+      "pcaf",
+      "finance_proxy",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "meth_pcaf_003",
+    "activity": {
+      "description": "PCAF mortgage, residential building",
+      "quantity": 850000,
+      "unit": "USD",
+      "metadata": {
+        "country": "GLOBAL",
+        "year": 2026,
+        "scope": "scope3"
+      }
+    },
+    "method_profile": "finance_proxy",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "finance_proxy",
+      "source_authority": "PCAF",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 0.02,
+      "co2e_per_unit_max": 0.1,
+      "co2e_unit": "kgCO2e/USD",
+      "must_include_assumptions": [
+        "PCAF",
+        "Global Standard v2",
+        "scope 1+2 building energy"
+      ]
+    },
+    "tags": [
+      "methodology",
+      "pcaf",
+      "finance_proxy",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "meth_land_global_001",
+    "activity": {
+      "description": "Afforestation removal, temperate broadleaf",
+      "quantity": 1.0,
+      "unit": "ha",
+      "metadata": {
+        "country": "GLOBAL",
+        "year": 2026,
+        "category": "removals"
+      }
+    },
+    "method_profile": "land_removals",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "land_use_removals",
+      "source_authority": "IPCC",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": -8000.0,
+      "co2e_per_unit_max": -3000.0,
+      "co2e_unit": "kgCO2e/ha",
+      "must_include_assumptions": [
+        "GHG LSR",
+        "removal",
+        "GHG LSR",
+        "IPCC AFOLU"
+      ]
+    },
+    "tags": [
+      "methodology",
+      "land_removals",
+      "global",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "meth_land_us_002",
+    "activity": {
+      "description": "Soil organic carbon, no-till cropland",
+      "quantity": 1.0,
+      "unit": "ha",
+      "metadata": {
+        "country": "US",
+        "year": 2026,
+        "category": "removals"
+      }
+    },
+    "method_profile": "land_removals",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "land_use_removals",
+      "source_authority": "IPCC",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": -1500.0,
+      "co2e_per_unit_max": -300.0,
+      "co2e_unit": "kgCO2e/ha",
+      "must_include_assumptions": [
+        "GHG LSR",
+        "removal",
+        "GHG LSR",
+        "IPCC AFOLU"
+      ]
+    },
+    "tags": [
+      "methodology",
+      "land_removals",
+      "us",
+      "fy27_launch"
+    ]
+  }
+]

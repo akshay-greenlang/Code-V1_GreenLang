@@ -748,6 +748,103 @@ class StripeBillingProvider(BillingProvider):
         )
         return {"session_id": session_id, "url": session_url}
 
+    def create_billing_portal_session(
+        self,
+        customer_id: str,
+        return_url: str,
+        configuration: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        """Create a Stripe Billing Portal session for a customer.
+
+        The Billing Portal is Stripe's hosted self-service surface where
+        customers can update payment methods, see invoice history, change
+        plans (when allowed by the configuration), and cancel.
+
+        Args:
+            customer_id: Stripe customer id (``cus_...``).
+            return_url: Absolute URL Stripe redirects the user back to
+                when they leave the portal.
+            configuration: Optional Stripe Billing Portal configuration id
+                (``bpc_...``). When omitted, Stripe uses the default
+                configuration on the account.
+
+        Returns:
+            ``{"session_id": ..., "url": ...}`` -- redirect the browser
+            to ``url`` to deliver the customer into the portal.
+
+        Raises:
+            BillingProviderError: when the Stripe call fails.
+        """
+        if not self.configured:
+            return {
+                "session_id": "bps_test_noop_" + (customer_id or "")[:24],
+                "url": return_url,
+                "status": "noop",
+            }
+
+        params: Dict[str, Any] = {
+            "customer": customer_id,
+            "return_url": return_url,
+        }
+        if configuration:
+            params["configuration"] = configuration
+
+        try:
+            result = self._stripe_request(
+                "POST",
+                "/billing_portal/sessions",
+                params,
+            )
+        except StripeApiError as exc:
+            raise BillingProviderError(
+                message=f"Stripe billing portal session creation failed: {exc}",
+                provider="stripe",
+                operation="create_billing_portal_session",
+                status_code=exc.status_code,
+                cause=exc,
+                context={"customer_id": customer_id},
+            ) from exc
+
+        session_id = result.get("id")
+        url = result.get("url")
+        if not session_id or not url:
+            raise BillingProviderError(
+                message=(
+                    "Stripe billing portal response missing id/url: "
+                    f"{result}"
+                ),
+                provider="stripe",
+                operation="create_billing_portal_session",
+            )
+        logger.info(
+            "Created Stripe Billing Portal session %s for customer %s",
+            session_id,
+            customer_id,
+        )
+        return {"session_id": session_id, "url": url}
+
+    def report_usage(
+        self,
+        subscription_id: str,
+        quantity: int,
+        *,
+        timestamp: Optional[int] = None,
+        idempotency_key: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        """Report metered usage to Stripe (alias for :meth:`record_usage`).
+
+        Provides a name aligned with Stripe's own ``UsageRecord`` API so
+        the FY27 billing surface reads naturally. All semantics, including
+        idempotency and the metered-item lookup, are inherited from
+        :meth:`record_usage`.
+        """
+        return self.record_usage(
+            subscription_id=subscription_id,
+            quantity=quantity,
+            timestamp=timestamp,
+            idempotency_key=idempotency_key,
+        )
+
     def record_usage(
         self,
         subscription_id: str,

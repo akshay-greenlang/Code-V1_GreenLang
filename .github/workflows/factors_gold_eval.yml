@@ -1,0 +1,254 @@
+# GreenLang Factors — gold-set evaluation (Track B-1)
+#
+# Runs the public gold-label evaluation set against the matching +
+# resolution pipeline on every PR that touches factors code or data.
+# Computes precision@1 globally and per family.  Hard-fails the PR
+# when:
+#   * Global precision@1 falls below the B-1 acceptance bar (0.85), OR
+#   * Precision@1 drops by more than 2 points compared to the most
+#     recent baseline run on the main branch.
+#
+# Posts a delta comment on the PR with the per-family breakdown.
+#
+# Owner: GreenLang Factors team (Track B-1, FY27_Factors_Launch_Checklist.md L124-130)
+
+name: factors-gold-eval
+
+on:
+  pull_request:
+    branches: [main, master]
+    paths:
+      - 'greenlang/factors/**'
+      - 'greenlang/factors/data/gold_set/**'
+      - 'tests/factors/test_gold_set_eval.py'
+      - '.github/workflows/factors_gold_eval.yml'
+  push:
+    branches: [main, master]
+    paths:
+      - 'greenlang/factors/**'
+      - 'greenlang/factors/data/gold_set/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: factors-gold-eval-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  factors-gold-eval:
+    name: Factors Gold-Set Evaluation
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Check out PR head
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # need full history to fetch baseline below
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install GreenLang (test extras)
+        run: |
+          python -m pip install -U pip
+          pip install -e .[test,dev] || pip install -e .
+
+      - name: Verify gold-set files are present
+        run: |
+          ls -la greenlang/factors/data/gold_set/v1/
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          base = Path("greenlang/factors/data/gold_set/v1")
+          fams = ["electricity","fuel_combustion","refrigerants","freight",
+                  "materials","cbam","methodology_profiles"]
+          total = sum(len(json.load(open(base/f"{f}.json"))) for f in fams)
+          print(f"gold_set total cases: {total}")
+          assert total >= 300, f"need >=300 cases, found {total}"
+          PY
+
+      - name: Run gold-set evaluation
+        id: eval
+        run: |
+          mkdir -p artifacts
+          set +e
+          pytest tests/factors/test_gold_set_eval.py -v \
+            --tb=short --maxfail=3 \
+            -o log_cli=true -o log_cli_level=INFO \
+            | tee artifacts/gold_eval_pytest.log
+          echo "pytest_exit=$?" >> "$GITHUB_OUTPUT"
+
+      - name: Print summary JSON
+        if: always()
+        run: |
+          if [ -f artifacts/gold_eval_summary.json ]; then
+            cat artifacts/gold_eval_summary.json
+          else
+            echo "No summary file written."
+          fi
+
+      - name: Upload gold-eval summary artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gold-eval-summary-${{ github.run_id }}
+          path: |
+            artifacts/gold_eval_summary.json
+            artifacts/gold_eval_pytest.log
+          retention-days: 30
+
+      - name: Fetch baseline summary from main
+        if: github.event_name == 'pull_request'
+        id: baseline
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p baseline
+          # Try to download the most recent main-branch run of this workflow.
+          BASELINE_RUN=$(gh run list \
+            --workflow factors_gold_eval.yml \
+            --branch ${{ github.event.repository.default_branch }} \
+            --status success \
+            --limit 1 \
+            --json databaseId \
+            --jq '.[0].databaseId' || echo "")
+          if [ -n "$BASELINE_RUN" ]; then
+            echo "baseline_run=$BASELINE_RUN" >> "$GITHUB_OUTPUT"
+            gh run download "$BASELINE_RUN" -n "gold-eval-summary-$BASELINE_RUN" \
+              -D baseline/ || true
+            ls -la baseline/ || true
+          else
+            echo "No baseline run found on default branch."
+          fi
+
+      - name: Compute precision@1 delta vs baseline
+        if: github.event_name == 'pull_request' && always()
+        id: delta
+        run: |
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+
+          cur_path = Path("artifacts/gold_eval_summary.json")
+          base_path = Path("baseline/gold_eval_summary.json")
+          out_md = []
+          if not cur_path.exists():
+              out_md.append("Could not generate current evaluation summary.")
+              cur_p = None
+          else:
+              cur = json.loads(cur_path.read_text())
+              cur_p = cur.get("precision_at_1")
+              out_md.append(
+                  f"## Factors Gold-Set Evaluation\n\n"
+                  f"| Metric | This PR | Baseline (main) |\n"
+                  f"|---|---|---|\n"
+              )
+              if base_path.exists():
+                  base = json.loads(base_path.read_text())
+                  base_p = base.get("precision_at_1")
+                  delta = (cur_p - base_p) * 100.0 if (cur_p is not None and base_p is not None) else None
+                  out_md.append(
+                      f"| Total cases | {cur.get('total_cases')} | {base.get('total_cases')} |\n"
+                      f"| Hits @ rank 1 | {cur.get('hits_at_1')} | {base.get('hits_at_1')} |\n"
+                      f"| Precision @1 | {cur_p:.3f} | {base_p:.3f} |\n"
+                      f"| Delta (pp) | {delta:+.2f} | — |\n"
+                      f"| Acceptance bar | {cur.get('acceptance_bar', 0.85):.2f} | — |\n"
+                      f"| Runner mode | `{cur.get('runner_mode')}` | `{base.get('runner_mode')}` |\n\n"
+                  )
+                  out_md.append("### Per-family\n\n")
+                  out_md.append("| Family | This PR P@1 | Baseline P@1 | Delta (pp) |\n")
+                  out_md.append("|---|---|---|---|\n")
+                  cur_fam = cur.get("by_family", {})
+                  base_fam = base.get("by_family", {})
+                  for fam in sorted(set(cur_fam) | set(base_fam)):
+                      a = cur_fam.get(fam, {}).get("precision_at_1")
+                      b = base_fam.get(fam, {}).get("precision_at_1")
+                      d = ((a - b) * 100.0) if (a is not None and b is not None) else None
+                      a_s = f"{a:.3f}" if a is not None else "—"
+                      b_s = f"{b:.3f}" if b is not None else "—"
+                      d_s = f"{d:+.2f}" if d is not None else "—"
+                      out_md.append(f"| {fam} | {a_s} | {b_s} | {d_s} |\n")
+
+                  drop_pp = (base_p - cur_p) * 100.0 if (cur_p is not None and base_p is not None) else 0.0
+                  if drop_pp > 2.0:
+                      out_md.append(
+                          f"\n**FAIL**: precision@1 dropped by {drop_pp:.2f}pp "
+                          "vs main, exceeding the 2.00pp guard rail.\n"
+                      )
+                      Path("delta_failed").write_text("1")
+                  else:
+                      out_md.append(
+                          f"\nWithin the 2.00pp guard rail "
+                          f"(observed drop: {max(drop_pp, 0):.2f}pp).\n"
+                      )
+              else:
+                  out_md.append(
+                      f"| Total cases | {cur.get('total_cases')} | (no baseline) |\n"
+                      f"| Hits @ rank 1 | {cur.get('hits_at_1')} | — |\n"
+                      f"| Precision @1 | {cur_p:.3f} | — |\n"
+                      f"| Acceptance bar | {cur.get('acceptance_bar', 0.85):.2f} | — |\n"
+                      f"| Runner mode | `{cur.get('runner_mode')}` | — |\n\n"
+                      "_No baseline summary on main yet — first successful "
+                      "main-branch run will become the baseline._\n"
+                  )
+
+          Path("comment_body.md").write_text("".join(out_md))
+          print("".join(out_md))
+          PY
+
+      - name: Comment delta on PR
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            if (!fs.existsSync('comment_body.md')) {
+              core.info('No comment body to post.');
+              return;
+            }
+            const body = fs.readFileSync('comment_body.md', 'utf8');
+            const { owner, repo } = context.repo;
+            const issue_number = context.issue.number;
+            // Find existing bot comment for this job and update it instead
+            // of stacking new comments on every push.
+            const { data: comments } = await github.rest.issues.listComments({
+              owner, repo, issue_number, per_page: 100,
+            });
+            const marker = "## Factors Gold-Set Evaluation";
+            const existing = comments.find(c =>
+              c.user.type === "Bot" && c.body && c.body.startsWith(marker)
+            );
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner, repo, comment_id: existing.id, body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner, repo, issue_number, body,
+              });
+            }
+
+      - name: Fail PR on regression > 2pp
+        if: github.event_name == 'pull_request' && always()
+        run: |
+          if [ -f delta_failed ]; then
+            echo "::error::factors-gold-eval: precision@1 regressed by more than 2pp vs main."
+            exit 1
+          fi
+          echo "delta within guard rail"
+
+      - name: Re-raise pytest failure (acceptance bar)
+        if: always()
+        run: |
+          test "${{ steps.eval.outputs.pytest_exit }}" = "0" || {
+            echo "::error::factors-gold-eval: pytest run failed (exit ${{ steps.eval.outputs.pytest_exit }}). See uploaded artifact."
+            exit "${{ steps.eval.outputs.pytest_exit }}"
+          }

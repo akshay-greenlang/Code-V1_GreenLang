@@ -256,6 +256,125 @@ def pack_sku_for_profile(method_profile: str) -> Optional[str]:
     return PACK_SKU_FOR_METHOD_PROFILE.get(method_profile)
 
 
+# ---------------------------------------------------------------------------
+# Track C-5: OEM redistribution guard
+# ---------------------------------------------------------------------------
+#
+# Hooked into the licensing guard (see e.g.
+# ``greenlang.factors.security.license_check``) so any factor served via
+# an OEM key is gated by both:
+#   1. the parent OEM's redistribution_grants (set at signup), and
+#   2. the per-factor ``licensing.redistribution_class`` field on the
+#      Canonical Factor Record.
+#
+# A factor is ONLY redistributable through an OEM when its license_class
+# appears in the OEM's grant. The check is intentionally cheap and
+# deterministic so it can sit in the request-time hot path.
+
+
+def _factor_license_class(factor: Any) -> Optional[str]:
+    """Pull the redistribution-relevant license class off a factor.
+
+    Accepts a dict or any object with a ``license_class`` /
+    ``licensing`` / ``source`` attribute - the canonical record changes
+    shape across editions, so we probe a few common surfaces before
+    giving up.
+    """
+    if factor is None:
+        return None
+    # Dict shape (most common in API serialisation path).
+    if isinstance(factor, dict):
+        # Direct field
+        cls = factor.get("license_class") or factor.get("redistribution_class")
+        if cls:
+            return str(cls)
+        # Nested licensing block
+        lic = factor.get("licensing") or factor.get("license") or {}
+        if isinstance(lic, dict):
+            cls = (
+                lic.get("license_class")
+                or lic.get("redistribution")
+                or lic.get("redistribution_class")
+            )
+            if cls:
+                return str(cls)
+        # Nested source block
+        src = factor.get("source") or {}
+        if isinstance(src, dict):
+            cls = src.get("license_class")
+            if cls:
+                return str(cls)
+        return None
+    # Object shape - canonical_v2 record / dataclass.
+    for attr in ("license_class", "redistribution_class"):
+        val = getattr(factor, attr, None)
+        if val:
+            return str(val)
+    lic = getattr(factor, "licensing", None) or getattr(factor, "license", None)
+    if lic is not None:
+        for attr in ("license_class", "redistribution", "redistribution_class"):
+            val = getattr(lic, attr, None)
+            if val:
+                return str(val)
+    src = getattr(factor, "source", None)
+    if src is not None:
+        val = getattr(src, "license_class", None)
+        if val:
+            return str(val)
+    return None
+
+
+def check_oem_redistribution(oem_id: str, factor: Any) -> bool:
+    """Return True iff ``factor`` is within the OEM's redistribution grant.
+
+    This is the load-bearing license guard the API layer hooks into.
+    It deliberately fails closed: any non-trivial error (missing OEM,
+    factor with no license class, lookup exception) returns False so a
+    misconfigured request never silently leaks a licensed factor.
+
+    Args:
+        oem_id: OEM partner id presented by the caller's API key.
+        factor: Canonical factor record / dict with a license_class.
+
+    Returns:
+        True when redistribution is allowed; False otherwise.
+    """
+    if not oem_id:
+        return False
+    try:
+        # Local import avoids circular dependency at module load.
+        from greenlang.factors.onboarding.partner_setup import (
+            OemError,
+            get_redistribution_grant,
+        )
+    except Exception:  # pragma: no cover - defensive
+        logger.warning("OEM registry unavailable; denying redistribution by default")
+        return False
+
+    try:
+        grant = get_redistribution_grant(oem_id)
+    except OemError as exc:
+        logger.warning("Unknown OEM in redistribution check: %s", exc)
+        return False
+
+    license_class = _factor_license_class(factor)
+    if not license_class:
+        # No license class on the factor = treat as licensed-by-default.
+        # Refuse redistribution; the operator can fix the catalog row.
+        logger.debug(
+            "Factor missing license_class; denying OEM %s redistribution", oem_id
+        )
+        return False
+
+    allowed = grant.covers(license_class)
+    if not allowed:
+        logger.info(
+            "OEM %s denied redistribution: license_class=%s grants=%s",
+            oem_id, license_class, grant.allowed_classes,
+        )
+    return allowed
+
+
 __all__ = [
     "Entitlement",
     "EntitlementError",
@@ -264,4 +383,5 @@ __all__ = [
     "PackSKU",
     "PACK_SKU_FOR_METHOD_PROFILE",
     "pack_sku_for_profile",
+    "check_oem_redistribution",
 ]

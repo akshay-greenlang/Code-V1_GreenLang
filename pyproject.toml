@@ -291,6 +291,50 @@ doc = [
   "mkdocstrings==0.24.0",
 ]
 # ---------------------------------------------------------------------------
+# Factors FY27 Test Environment
+#   Reproducible toolchain for `tests/factors/` — pinned where the rest of
+#   the repo already pins, otherwise floating to keep the group small and
+#   easy to install in clean Python 3.11 / 3.12 environments.
+#
+#   Use:
+#       pip install -e ".[factors-test]"
+#       pytest tests/factors -v --cov=greenlang.factors
+#
+#   See `docs/factors/TEST_ENVIRONMENT.md` for the full runbook and the
+#   Docker / GitHub Actions equivalents.
+# ---------------------------------------------------------------------------
+factors-test = [
+  # --- pytest core ---------------------------------------------------------
+  "pytest>=8.0",
+  "pytest-asyncio>=0.23.4",
+  "pytest-cov>=4.1.0",
+  "pytest-xdist>=3.5.0",
+  "pytest-mock>=3.12.0",
+  # --- HTTP / ASGI test plumbing ------------------------------------------
+  "httpx>=0.28.1",
+  "anyio>=4.0",
+  "fastapi>=0.109.2",
+  "uvicorn[standard]>=0.27.1",
+  "starlette>=0.36",
+  "pydantic>=2.0",
+  # --- Datastore drivers (real PG via Docker, fakeredis fallback) ---------
+  "psycopg[binary,pool]>=3.1",
+  "redis>=5.0.1",
+  "pgvector>=0.2",
+  "fakeredis>=2.20",
+  # --- Payloads / serialization -------------------------------------------
+  "numpy>=1.26.3",
+  "pyyaml>=6.0.1",
+  # --- Billing & receipts (offline-mocked) --------------------------------
+  "stripe>=7.0",
+  "python-jose[cryptography]>=3.4.0",  # offline signed-receipt verification
+  "cryptography>=42.0",
+  # --- HTTP mocking for SDK + connector tests -----------------------------
+  "respx>=0.20",
+  "responses>=0.24.1",
+]
+
+# ---------------------------------------------------------------------------
 # Meta-groups
 # ---------------------------------------------------------------------------
 full = [
@@ -313,6 +357,7 @@ all = [
   "greenlang-cli[nlp]",
   "greenlang-cli[graph]",
   "greenlang-cli[supply-chain]",
+  "greenlang-cli[factors-test]",
 ]
 
 # Removed setuptools_scm - using static version

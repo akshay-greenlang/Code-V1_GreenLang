@@ -1,15 +1,13 @@
 /**
- * F7.2 — Mapping workbench.
+ * F7.2 / Track B-5 — Mapping workbench.
  *
- * Lets operators paste a free-text activity / spend line and see what
- * the mapping layer (Phase F4) resolves. Useful for:
- *   - QA: verifying a customer-supplied description resolves correctly
- *   - Rule authoring: spotting a synonym gap before it ships to prod
+ * Wired to:
+ *   POST /v1/admin/mapping/suggest    — get suggested family + canonical key
+ *   POST /v1/admin/mapping/confirm    — promote a suggestion to a saved rule
  *
- * Backing endpoint (planned): POST /api/v1/factors/mapping/resolve
- * Until that lands, the page calls the four client-side mapping JSONs
- * via a stub ``/mapping/test`` endpoint; falls back to displaying the
- * raw input with a "backend not wired" notice.
+ * Lets operators paste a free-text activity / spend line and see what the
+ * mapping layer (Phase F4) resolves; the Confirm action persists the
+ * suggested mapping as a new rule (closes synonym gaps before they ship).
  */
 import { useState } from "react";
 import Alert from "@mui/material/Alert";
@@ -26,55 +24,81 @@ import Select from "@mui/material/Select";
 import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
+import {
+  FactorsApiError,
+  confirmMapping,
+  suggestMapping,
+  type MappingSuggestion,
+} from "../lib/api/factorsClient";
 
-type Taxonomy = "fuel" | "transport" | "material" | "waste" | "electricity_market" | "spend";
+type Taxonomy =
+  | "fuel"
+  | "transport"
+  | "material"
+  | "waste"
+  | "electricity_market"
+  | "spend";
 
-interface MappingResponse {
-  canonical: unknown;
-  confidence: number;
-  band: string;
-  rationale: string;
-  matched_pattern?: string;
-  alternates?: unknown[];
-  raw_input?: string;
-}
+const TAXONOMIES: Array<{ value: Taxonomy; label: string }> = [
+  { value: "fuel", label: "Fuel" },
+  { value: "transport", label: "Transport" },
+  { value: "material", label: "Material" },
+  { value: "waste", label: "Waste" },
+  { value: "electricity_market", label: "Electricity market" },
+  { value: "spend", label: "Spend category" },
+];
 
 export function FactorsMappingWorkbench() {
   const [taxonomy, setTaxonomy] = useState<Taxonomy>("fuel");
   const [input, setInput] = useState("");
-  const [result, setResult] = useState<MappingResponse | null>(null);
+  const [result, setResult] = useState<MappingSuggestion | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [confirming, setConfirming] = useState(false);
+  const [confirmedRuleId, setConfirmedRuleId] = useState<string | null>(null);
 
   const resolve = async () => {
     setLoading(true);
     setError(null);
+    setConfirmedRuleId(null);
     try {
-      const res = await fetch("/api/v1/factors/mapping/resolve", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ taxonomy, description: input }),
-      });
-      if (!res.ok) throw new Error(`mapping ${res.status}`);
-      setResult((await res.json()) as MappingResponse);
+      const r = await suggestMapping(taxonomy, input);
+      setResult(r);
     } catch (e) {
-      setError(
-        `${(e as Error).message} — backend endpoint may not be wired yet; ` +
-          "the Python API (greenlang.factors.mapping) is fully available.",
-      );
+      setError(e instanceof FactorsApiError ? e.userMessage : (e as Error).message);
       setResult(null);
     } finally {
       setLoading(false);
     }
   };
 
+  const confirm = async () => {
+    if (!result) return;
+    setConfirming(true);
+    setError(null);
+    try {
+      const { rule_id } = await confirmMapping({
+        taxonomy,
+        description: input,
+        family: result.family,
+        canonical_key: result.canonical_key,
+      });
+      setConfirmedRuleId(rule_id);
+    } catch (e) {
+      setError(e instanceof FactorsApiError ? e.userMessage : (e as Error).message);
+    } finally {
+      setConfirming(false);
+    }
+  };
+
   return (
     <Box sx={{ p: 3, maxWidth: 1000, mx: "auto" }}>
-      <Typography variant="h4" gutterBottom>Mapping Workbench</Typography>
+      <Typography variant="h4" gutterBottom>
+        Mapping Workbench
+      </Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-        Test free-text → canonical key resolution against any taxonomy.
-        Confidence band + rationale + alternates are shown so operators can
-        close synonym gaps before production.
+        Test free-text → canonical-key resolution against any taxonomy. Confirm to persist as a
+        new mapping rule so the same input resolves consistently in production.
       </Typography>
 
       <Card>
@@ -87,12 +111,11 @@ export function FactorsMappingWorkbench() {
                 value={taxonomy}
                 onChange={(e) => setTaxonomy(e.target.value as Taxonomy)}
               >
-                <MenuItem value="fuel">Fuel</MenuItem>
-                <MenuItem value="transport">Transport</MenuItem>
-                <MenuItem value="material">Material</MenuItem>
-                <MenuItem value="waste">Waste</MenuItem>
-                <MenuItem value="electricity_market">Electricity market</MenuItem>
-                <MenuItem value="spend">Spend category</MenuItem>
+                {TAXONOMIES.map((t) => (
+                  <MenuItem key={t.value} value={t.value}>
+                    {t.label}
+                  </MenuItem>
+                ))}
               </Select>
             </FormControl>
             <TextField
@@ -105,34 +128,93 @@ export function FactorsMappingWorkbench() {
                 if (e.key === "Enter") void resolve();
               }}
             />
-            <Button variant="contained" onClick={() => void resolve()} disabled={loading || !input.trim()}>
-              Resolve
+            <Button
+              variant="contained"
+              onClick={() => void resolve()}
+              disabled={loading || !input.trim()}
+            >
+              {loading ? "Resolving…" : "Resolve"}
             </Button>
           </Stack>
         </CardContent>
       </Card>
 
-      {error && <Alert severity="warning" sx={{ mt: 2 }}>{error}</Alert>}
+      {error && (
+        <Alert severity="error" sx={{ mt: 2 }} role="alert">
+          {error}
+        </Alert>
+      )}
+
+      {confirmedRuleId && (
+        <Alert severity="success" sx={{ mt: 2 }}>
+          Saved as rule <code>{confirmedRuleId}</code>. The same description will now resolve
+          deterministically.
+        </Alert>
+      )}
 
       {result && (
         <Card sx={{ mt: 3 }}>
           <CardContent>
-            <Typography variant="h6" gutterBottom>Result</Typography>
-            <Stack direction="row" spacing={1} sx={{ mb: 2 }}>
-              <Chip label={`Confidence: ${result.confidence.toFixed(2)}`} color="primary" />
+            <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+              <Typography variant="h6">Result</Typography>
+              <Chip
+                label={`Confidence ${(result.confidence * 100).toFixed(0)}%`}
+                color={
+                  result.confidence >= 0.8
+                    ? "success"
+                    : result.confidence >= 0.5
+                      ? "warning"
+                      : "error"
+                }
+              />
               <Chip label={`Band: ${result.band}`} variant="outlined" />
               {result.matched_pattern && (
                 <Chip label={`Matched: ${result.matched_pattern}`} variant="outlined" />
               )}
+              <Box sx={{ flex: 1 }} />
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={() => void confirm()}
+                disabled={confirming}
+              >
+                {confirming ? "Saving…" : "Confirm + Save Rule"}
+              </Button>
             </Stack>
+
+            <Typography variant="subtitle2">Family</Typography>
+            <Typography sx={{ mb: 2 }}><code>{result.family}</code></Typography>
+
+            <Typography variant="subtitle2">Rationale</Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-              {result.rationale}
+              {result.rationale ?? "—"}
             </Typography>
-            <Paper variant="outlined" sx={{ p: 2, overflow: "auto" }}>
+
+            <Typography variant="subtitle2">Canonical key</Typography>
+            <Paper variant="outlined" sx={{ p: 2, overflow: "auto", mb: 2 }}>
               <pre style={{ margin: 0, fontSize: 13 }}>
-                {JSON.stringify(result.canonical, null, 2)}
+                {JSON.stringify(result.canonical_key, null, 2)}
               </pre>
             </Paper>
+
+            {result.alternates && result.alternates.length > 0 && (
+              <>
+                <Typography variant="subtitle2">Alternates</Typography>
+                <Stack spacing={1} sx={{ mt: 1 }}>
+                  {result.alternates.map((a, idx) => (
+                    <Paper key={idx} variant="outlined" sx={{ p: 1 }}>
+                      <Stack direction="row" spacing={1} alignItems="center">
+                        <Chip size="small" label={`${(a.confidence * 100).toFixed(0)}%`} />
+                        <code>{a.family}</code>
+                      </Stack>
+                      <pre style={{ margin: "4px 0 0 0", fontSize: 12 }}>
+                        {JSON.stringify(a.canonical_key, null, 2)}
+                      </pre>
+                    </Paper>
+                  ))}
+                </Stack>
+              </>
+            )}
           </CardContent>
         </Card>
       )}

@@ -1,15 +1,15 @@
 /**
- * Phase 5.1 — Factor Explorer UI.
+ * Track B-5 — Factors Explorer (operator-gated).
  *
- * Search, filter, and inspect factors against the hosted Factors API.
- * Wires to:
- *   - GET /api/v1/factors/search          (full-text)
- *   - GET /api/v1/factors/search/facets   (filter choices)
- *   - GET /api/v1/factors/{factor_id}     (detail modal)
+ * Wired to:
+ *   GET  /v1/factors          (search)
+ *   GET  /v1/factors/{id}     (detail)
+ *   GET  /v1/factors/{id}/explain  (full resolution path)
  *
- * Requires JWT or API-Key authentication (the middleware enforces it).
+ * Searchable table + detail panel showing the factor record AND the full
+ * explain payload (resolution_path, FQS components, citations, notes).
  */
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import Alert from "@mui/material/Alert";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
@@ -19,13 +19,9 @@ import Chip from "@mui/material/Chip";
 import Dialog from "@mui/material/Dialog";
 import DialogContent from "@mui/material/DialogContent";
 import DialogTitle from "@mui/material/DialogTitle";
-import FormControl from "@mui/material/FormControl";
-import IconButton from "@mui/material/IconButton";
-import InputLabel from "@mui/material/InputLabel";
+import Divider from "@mui/material/Divider";
 import LinearProgress from "@mui/material/LinearProgress";
-import MenuItem from "@mui/material/MenuItem";
 import Paper from "@mui/material/Paper";
-import Select from "@mui/material/Select";
 import Stack from "@mui/material/Stack";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
@@ -35,35 +31,18 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
+import {
+  FactorsApiError,
+  explainFactor,
+  getFactor,
+  searchFactors,
+  type FactorExplain,
+  type FactorSummary,
+  type FactorTier,
+} from "../lib/api/factorsClient";
 
-interface FactorSummary {
-  factor_id: string;
-  fuel_type: string;
-  unit: string;
-  geography: string;
-  scope: string;
-  co2e_per_unit: number;
-  source: string;
-  source_year: number;
-  data_quality_score: number;
-  factor_status: string;
-  source_id?: string | null;
-  license_class?: string | null;
-}
-
-interface SearchResponse {
-  factors: FactorSummary[];
-  total_count?: number;
-  edition_id?: string;
-}
-
-interface FacetsResponse {
-  edition_id: string;
-  facets: Record<string, Record<string, number>>;
-}
-
-function TierBadge({ status }: { status: string }) {
-  const normalized = (status || "certified").toLowerCase();
+function TierBadge({ status }: { status?: FactorTier }) {
+  const normalized = (status ?? "certified").toLowerCase();
   const styleByStatus: Record<string, { label: string; color: "success" | "warning" | "default" | "error" }> = {
     certified: { label: "Certified", color: "success" },
     preview: { label: "Preview", color: "warning" },
@@ -76,102 +55,93 @@ function TierBadge({ status }: { status: string }) {
 
 export function FactorsExplorer() {
   const [query, setQuery] = useState("");
-  const [geography, setGeography] = useState<string>("");
-  const [scope, setScope] = useState<string>("");
-  const [fuelType, setFuelType] = useState<string>("");
+  const [geography, setGeography] = useState("");
+  const [scope, setScope] = useState("");
+  const [family, setFamily] = useState("");
   const [results, setResults] = useState<FactorSummary[]>([]);
-  const [facets, setFacets] = useState<FacetsResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [selected, setSelected] = useState<string | null>(null);
-  const [detail, setDetail] = useState<Record<string, unknown> | null>(null);
-  const [detailLoading, setDetailLoading] = useState(false);
+  const [hasSearched, setHasSearched] = useState(false);
 
-  // Preload filter choices.
-  useEffect(() => {
-    let cancelled = false;
-    fetch("/api/v1/factors/search/facets")
-      .then(async (r) => {
-        if (!r.ok) throw new Error(`Facets ${r.status}`);
-        return r.json();
-      })
-      .then((data: FacetsResponse) => {
-        if (!cancelled) setFacets(data);
-      })
-      .catch((e: Error) => {
-        if (!cancelled) setError(`Could not load filters: ${e.message}`);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [detail, setDetail] = useState<(FactorSummary & Record<string, unknown>) | null>(null);
+  const [explain, setExplain] = useState<FactorExplain | null>(null);
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [detailError, setDetailError] = useState<string | null>(null);
 
   const runSearch = async () => {
     setLoading(true);
     setError(null);
+    setHasSearched(true);
     try {
-      const params = new URLSearchParams();
-      params.set("q", query || "*");
-      if (geography) params.set("geography", geography);
-      params.set("limit", "50");
-      const res = await fetch(`/api/v1/factors/search?${params.toString()}`);
-      if (!res.ok) throw new Error(`Search ${res.status}`);
-      const payload = (await res.json()) as SearchResponse;
-      let rows = payload.factors ?? [];
-      // Client-side fuel_type + scope refinement (server's POST /search/v2
-      // supports these natively; we keep GET /search simple here).
-      if (fuelType) rows = rows.filter((r) => r.fuel_type?.toLowerCase() === fuelType.toLowerCase());
-      if (scope) rows = rows.filter((r) => r.scope === scope);
-      setResults(rows);
+      const res = await searchFactors(query, {
+        geography: geography || undefined,
+        scope: scope || undefined,
+        family: family || undefined,
+        limit: 50,
+      });
+      setResults(res.factors ?? []);
     } catch (e) {
-      setError((e as Error).message);
+      setError(e instanceof FactorsApiError ? e.userMessage : (e as Error).message);
       setResults([]);
     } finally {
       setLoading(false);
     }
   };
 
+  // Initial empty-state: an empty query returns the first page so the
+  // operator sees something useful on first paint.
+  useEffect(() => {
+    void runSearch();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const openDetail = async (factorId: string) => {
-    setSelected(factorId);
+    setSelectedId(factorId);
     setDetail(null);
+    setExplain(null);
+    setDetailError(null);
     setDetailLoading(true);
-    try {
-      const res = await fetch(`/api/v1/factors/${encodeURIComponent(factorId)}`);
-      if (!res.ok) throw new Error(`Detail ${res.status}`);
-      setDetail((await res.json()) as Record<string, unknown>);
-    } catch (e) {
-      setError((e as Error).message);
-    } finally {
-      setDetailLoading(false);
+    // Fetch detail and explain independently so that a missing /explain
+    // endpoint doesn't blank the whole panel.
+    const [detailRes, explainRes] = await Promise.allSettled([
+      getFactor(factorId),
+      explainFactor(factorId),
+    ]);
+    if (detailRes.status === "fulfilled") {
+      setDetail(detailRes.value);
+    } else {
+      const err = detailRes.reason;
+      setDetailError(err instanceof FactorsApiError ? err.userMessage : (err as Error).message);
     }
+    if (explainRes.status === "fulfilled") {
+      setExplain(explainRes.value);
+    } else if (detailRes.status === "fulfilled") {
+      // Detail loaded but explain failed — surface a soft warning.
+      const err = explainRes.reason;
+      setDetailError(
+        `Detail loaded; /explain failed: ${err instanceof FactorsApiError ? err.userMessage : (err as Error).message}`,
+      );
+    }
+    setDetailLoading(false);
   };
 
   const closeDetail = () => {
-    setSelected(null);
+    setSelectedId(null);
     setDetail(null);
+    setExplain(null);
+    setDetailError(null);
   };
-
-  const geographyChoices = useMemo(
-    () => Object.keys(facets?.facets["geography"] ?? {}).sort(),
-    [facets],
-  );
-  const scopeChoices = useMemo(
-    () => Object.keys(facets?.facets["scope"] ?? {}).sort(),
-    [facets],
-  );
-  const fuelChoices = useMemo(
-    () => Object.keys(facets?.facets["fuel_type"] ?? {}).sort(),
-    [facets],
-  );
 
   return (
     <Box sx={{ p: 3, maxWidth: 1200, mx: "auto" }}>
       <Typography variant="h4" gutterBottom>
-        GreenLang Factors — Explorer
+        Factors Explorer
       </Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
         Search and inspect emission factors across all sources. Click a row to
-        see the full provenance chain, license, and data quality scores.
+        see the full provenance chain (`/explain`), license, and data quality
+        scores.
       </Typography>
 
       <Card>
@@ -187,54 +157,24 @@ export function FactorsExplorer() {
                 if (e.key === "Enter") void runSearch();
               }}
             />
-            <FormControl sx={{ minWidth: 160 }}>
-              <InputLabel id="geo-label">Geography</InputLabel>
-              <Select
-                labelId="geo-label"
-                label="Geography"
-                value={geography}
-                onChange={(e) => setGeography(e.target.value)}
-              >
-                <MenuItem value="">Any</MenuItem>
-                {geographyChoices.map((g) => (
-                  <MenuItem key={g} value={g}>
-                    {g}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-            <FormControl sx={{ minWidth: 140 }}>
-              <InputLabel id="scope-label">Scope</InputLabel>
-              <Select
-                labelId="scope-label"
-                label="Scope"
-                value={scope}
-                onChange={(e) => setScope(e.target.value)}
-              >
-                <MenuItem value="">Any</MenuItem>
-                {scopeChoices.map((s) => (
-                  <MenuItem key={s} value={s}>
-                    {s}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-            <FormControl sx={{ minWidth: 180 }}>
-              <InputLabel id="fuel-label">Fuel / activity</InputLabel>
-              <Select
-                labelId="fuel-label"
-                label="Fuel / activity"
-                value={fuelType}
-                onChange={(e) => setFuelType(e.target.value)}
-              >
-                <MenuItem value="">Any</MenuItem>
-                {fuelChoices.map((f) => (
-                  <MenuItem key={f} value={f}>
-                    {f}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+            <TextField
+              label="Geography"
+              value={geography}
+              onChange={(e) => setGeography(e.target.value)}
+              sx={{ minWidth: 140 }}
+            />
+            <TextField
+              label="Scope"
+              value={scope}
+              onChange={(e) => setScope(e.target.value)}
+              sx={{ minWidth: 140 }}
+            />
+            <TextField
+              label="Family"
+              value={family}
+              onChange={(e) => setFamily(e.target.value)}
+              sx={{ minWidth: 160 }}
+            />
             <Button variant="contained" onClick={() => void runSearch()} disabled={loading}>
               Search
             </Button>
@@ -244,7 +184,7 @@ export function FactorsExplorer() {
 
       {loading && <LinearProgress sx={{ mt: 2 }} />}
       {error && (
-        <Alert severity="error" sx={{ mt: 2 }}>
+        <Alert severity="error" sx={{ mt: 2 }} role="alert">
           {error}
         </Alert>
       )}
@@ -254,12 +194,12 @@ export function FactorsExplorer() {
           <TableHead>
             <TableRow>
               <TableCell>Factor ID</TableCell>
-              <TableCell>Fuel / activity</TableCell>
+              <TableCell>Family / fuel</TableCell>
               <TableCell>Geography</TableCell>
               <TableCell>Scope</TableCell>
               <TableCell align="right">CO₂e / unit</TableCell>
               <TableCell>Source</TableCell>
-              <TableCell align="right">DQS</TableCell>
+              <TableCell align="right">FQS</TableCell>
               <TableCell>Label</TableCell>
             </TableRow>
           </TableHead>
@@ -271,28 +211,27 @@ export function FactorsExplorer() {
                 onClick={() => void openDetail(row.factor_id)}
                 sx={{ cursor: "pointer" }}
               >
-                <TableCell>
-                  <code>{row.factor_id}</code>
-                </TableCell>
-                <TableCell>{row.fuel_type}</TableCell>
-                <TableCell>{row.geography}</TableCell>
-                <TableCell>{row.scope}</TableCell>
+                <TableCell><code>{row.factor_id}</code></TableCell>
+                <TableCell>{row.family ?? row.fuel_type ?? "—"}</TableCell>
+                <TableCell>{row.geography ?? "—"}</TableCell>
+                <TableCell>{row.scope ?? "—"}</TableCell>
                 <TableCell align="right">
-                  {row.co2e_per_unit?.toLocaleString(undefined, {
-                    maximumFractionDigits: 4,
-                  })}{" "}
-                  / {row.unit}
+                  {row.co2e_per_unit?.toLocaleString(undefined, { maximumFractionDigits: 4 }) ?? "—"}
+                  {row.unit ? ` / ${row.unit}` : ""}
                 </TableCell>
                 <TableCell>
-                  {row.source} ({row.source_year})
+                  {row.source ?? "—"}
+                  {row.source_year ? ` (${row.source_year})` : ""}
                 </TableCell>
-                <TableCell align="right">{row.data_quality_score?.toFixed(1)}</TableCell>
+                <TableCell align="right">
+                  {(row.fqs ?? row.data_quality_score)?.toFixed?.(1) ?? "—"}
+                </TableCell>
                 <TableCell>
                   <TierBadge status={row.factor_status} />
                 </TableCell>
               </TableRow>
             ))}
-            {!loading && results.length === 0 && (
+            {!loading && hasSearched && results.length === 0 && (
               <TableRow>
                 <TableCell colSpan={8} align="center">
                   <Typography variant="body2" color="text.secondary">
@@ -305,54 +244,107 @@ export function FactorsExplorer() {
         </Table>
       </TableContainer>
 
-      <Dialog open={selected !== null} onClose={closeDetail} maxWidth="md" fullWidth>
+      <Dialog open={selectedId !== null} onClose={closeDetail} maxWidth="md" fullWidth>
         <DialogTitle>
-          Factor Detail
-          {selected && (
+          Factor detail
+          {selectedId && (
             <Typography variant="caption" display="block">
-              <code>{selected}</code>
+              <code>{selectedId}</code>
             </Typography>
           )}
         </DialogTitle>
         <DialogContent dividers>
           {detailLoading && <LinearProgress />}
+          {detailError && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {detailError}
+            </Alert>
+          )}
           {detail && (
             <Stack spacing={2}>
               <Box>
-                <Typography variant="subtitle2">Source</Typography>
-                <pre style={{ margin: 0, whiteSpace: "pre-wrap" }}>
-                  {JSON.stringify(detail["source"] ?? {}, null, 2)}
-                </pre>
-              </Box>
-              <Box>
-                <Typography variant="subtitle2">Data Quality Score</Typography>
-                <pre style={{ margin: 0, whiteSpace: "pre-wrap" }}>
-                  {JSON.stringify(detail["data_quality"] ?? {}, null, 2)}
-                </pre>
-              </Box>
-              <Box>
-                <Typography variant="subtitle2">License</Typography>
-                <pre style={{ margin: 0, whiteSpace: "pre-wrap" }}>
-                  {JSON.stringify(
-                    {
-                      license: detail["license"],
-                      license_class: detail["license_class"],
-                      redistribution_allowed: detail["redistribution_allowed"],
-                    },
-                    null,
-                    2,
+                <Typography variant="subtitle2">Summary</Typography>
+                <Stack direction="row" spacing={1} sx={{ flexWrap: "wrap", mt: 1 }}>
+                  <TierBadge status={detail.factor_status} />
+                  {detail.license_class && (
+                    <Chip size="small" label={`License: ${detail.license_class}`} />
                   )}
-                </pre>
+                  {detail.geography && <Chip size="small" label={`Geo: ${detail.geography}`} />}
+                  {detail.scope && <Chip size="small" label={`Scope: ${detail.scope}`} />}
+                </Stack>
               </Box>
+
+              <Divider />
+
               <Box>
-                <Typography variant="subtitle2">Compliance frameworks</Typography>
-                <pre style={{ margin: 0, whiteSpace: "pre-wrap" }}>
-                  {JSON.stringify(detail["compliance_frameworks"] ?? [], null, 2)}
-                </pre>
+                <Typography variant="subtitle2">Resolution path (`/explain`)</Typography>
+                {explain ? (
+                  <TableContainer component={Paper} variant="outlined" sx={{ mt: 1 }}>
+                    <Table size="small">
+                      <TableHead>
+                        <TableRow>
+                          <TableCell>Step</TableCell>
+                          <TableCell>Source</TableCell>
+                          <TableCell>Score</TableCell>
+                          <TableCell>Rationale</TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {(explain.resolution_path ?? []).map((p, idx) => (
+                          <TableRow key={`${p.step}-${idx}`}>
+                            <TableCell><code>{p.step}</code></TableCell>
+                            <TableCell>{p.source ?? "—"}</TableCell>
+                            <TableCell>{p.score?.toFixed?.(2) ?? "—"}</TableCell>
+                            <TableCell>{p.rationale ?? "—"}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                ) : (
+                  <Typography variant="caption" color="text.secondary">
+                    No explain payload available for this factor.
+                  </Typography>
+                )}
               </Box>
+
+              {explain?.components && (
+                <Box>
+                  <Typography variant="subtitle2">FQS components</Typography>
+                  <Stack direction="row" spacing={1} sx={{ flexWrap: "wrap", mt: 1 }}>
+                    {Object.entries(explain.components).map(([k, v]) => (
+                      <Chip key={k} size="small" variant="outlined" label={`${k}: ${v.toFixed(1)}`} />
+                    ))}
+                  </Stack>
+                </Box>
+              )}
+
+              {explain?.citations && explain.citations.length > 0 && (
+                <Box>
+                  <Typography variant="subtitle2">Citations</Typography>
+                  <Stack spacing={0.5} sx={{ mt: 1 }}>
+                    {explain.citations.map((c) => (
+                      <Typography key={c.id} variant="body2">
+                        <code>{c.id}</code> — {c.title}
+                        {c.url && (
+                          <>
+                            {" "}
+                            <a href={c.url} target="_blank" rel="noreferrer">
+                              link
+                            </a>
+                          </>
+                        )}
+                      </Typography>
+                    ))}
+                  </Stack>
+                </Box>
+              )}
+
+              <Divider />
+
               <Box>
                 <Typography variant="subtitle2">Raw factor payload</Typography>
-                <pre style={{ margin: 0, whiteSpace: "pre-wrap", maxHeight: 300, overflow: "auto" }}>
+                <pre style={{ margin: 0, whiteSpace: "pre-wrap", maxHeight: 280, overflow: "auto", fontSize: 12 }}>
                   {JSON.stringify(detail, null, 2)}
                 </pre>
               </Box>

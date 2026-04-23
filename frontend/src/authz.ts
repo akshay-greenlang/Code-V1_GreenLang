@@ -14,11 +14,53 @@ const appRoutes = [
   "/apps/taxonomy"
 ] as const;
 
+// Public Factors dashboards — available to every role.
+const factorsPublicRoutes = ["/factors/status", "/factors/qa"];
+
+// Operator console — admin-only via AdminGate. Listed here so the
+// shell-level RoleGuard doesn't bounce admins on its own.
+const factorsOperatorRoutes = [
+  "/factors/explorer",
+  "/factors/sources",
+  "/factors/mapping",
+  "/factors/diff",
+  "/factors/approvals",
+  "/factors/overrides",
+  "/factors/impact"
+];
+
+// Track C-5 OEM white-label onboarding routes. Signup is public; the
+// branding + sub-tenants pages are OEM-admin scoped (we keep them on
+// the admin allowlist alongside the operator console).
+const oemPublicRoutes = ["/oem/signup"];
+const oemOperatorRoutes = ["/oem/branding", "/oem/subtenants"];
+
 export const roleRouteAllowlist: Record<ShellRole, string[]> = {
-  operator: [...appRoutes, "/runs"],
-  auditor: [...appRoutes, "/runs", "/governance"],
-  compliance: [...appRoutes, "/runs", "/governance"],
-  admin: [...appRoutes, "/runs", "/governance", "/admin"]
+  operator: [...appRoutes, "/runs", ...factorsPublicRoutes, ...oemPublicRoutes],
+  auditor: [
+    ...appRoutes,
+    "/runs",
+    "/governance",
+    ...factorsPublicRoutes,
+    ...oemPublicRoutes
+  ],
+  compliance: [
+    ...appRoutes,
+    "/runs",
+    "/governance",
+    ...factorsPublicRoutes,
+    ...oemPublicRoutes
+  ],
+  admin: [
+    ...appRoutes,
+    "/runs",
+    "/governance",
+    "/admin",
+    ...factorsPublicRoutes,
+    ...factorsOperatorRoutes,
+    ...oemPublicRoutes,
+    ...oemOperatorRoutes
+  ]
 };
 
 export function readRoleFromStorage(): ShellRole {

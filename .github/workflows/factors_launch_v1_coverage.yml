@@ -1,0 +1,66 @@
+name: factors-launch-v1-coverage
+
+on:
+  pull_request:
+    paths:
+      - 'greenlang/factors/**'
+      - 'greenlang/factors/data/**'
+      - 'tests/factors/test_launch_v1_coverage_*.py'
+      - 'tests/factors/_launch_v1_helpers.py'
+      - '.github/workflows/factors_launch_v1_coverage.yml'
+  push:
+    branches: [main, master]
+    paths:
+      - 'greenlang/factors/**'
+
+jobs:
+  coverage:
+    name: Coverage — ${{ matrix.family }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        family:
+          - electricity
+          - combustion
+          - refrigerants
+          - freight
+          - materials
+          - method_profiles
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      - name: Install Factors test extras
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[factors-test]"
+
+      - name: Seed builtin catalog
+        run: |
+          python -c "
+          from pathlib import Path
+          from greenlang.factors.etl.ingest import ingest_builtin_database
+          db = Path('factors-launch-v1.sqlite')
+          ingest_builtin_database(db, 'launch-v1', label='launch-v1 coverage')
+          print('Seeded:', db, db.stat().st_size, 'bytes')
+          "
+          echo "GL_FACTORS_SQLITE_PATH=$PWD/factors-launch-v1.sqlite" >> $GITHUB_ENV
+
+      - name: Run coverage tests for ${{ matrix.family }}
+        run: |
+          pytest tests/factors/test_launch_v1_coverage_${{ matrix.family }}.py \
+            -v -m launch_v1 \
+            --junit-xml=launch-v1-${{ matrix.family }}.xml
+
+      - name: Upload JUnit XML
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: launch-v1-${{ matrix.family }}
+          path: launch-v1-${{ matrix.family }}.xml

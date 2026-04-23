@@ -1,9 +1,14 @@
 /**
- * Phase 5.3 — Public three-label catalog status dashboard.
+ * Phase 5.3 / Track B-2 — Public catalog status dashboard.
  *
- * Shows factor counts by coverage label (Certified / Preview /
- * Connector-only / Deprecated) plus a per-source breakdown. Public:
- * no auth required. Backed by `GET /api/v1/factors/status/summary`.
+ * Wired to the FY27 spec endpoint `GET /v1/coverage` via factorsClient.
+ * Renders three-label counts per family (Certified / Preview /
+ * Connector-only) plus optional per-source breakdown.
+ *
+ * Refresh cadence: 60s (per FY27 launch checklist Track B-2).
+ *
+ * Public — no auth required. The factorsClient still attaches a bearer
+ * token if one is in localStorage, but the endpoint is open.
  */
 import { useEffect, useMemo, useState } from "react";
 import Alert from "@mui/material/Alert";
@@ -21,34 +26,23 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Typography from "@mui/material/Typography";
 import Paper from "@mui/material/Paper";
+import {
+  FactorsApiError,
+  getCoverage,
+  type CoverageByFamily,
+  type CoverageResponse,
+  type CoverageTotals,
+} from "../lib/api/factorsClient";
 
-export interface StatusTotals {
-  certified: number;
-  preview: number;
-  connector_only: number;
-  deprecated: number;
-  all: number;
-}
+const REFRESH_MS = 60_000;
 
-export interface StatusBySource extends StatusTotals {
-  source_id: string;
-}
-
-export interface StatusSummary {
-  edition_id: string;
-  totals: StatusTotals;
-  by_source: StatusBySource[];
-  generated_at: string;
-}
-
-/** Proportion bar: a small horizontal stacked bar without charting deps. */
-function ProportionBar({ totals }: { totals: StatusTotals }) {
+function ProportionBar({ totals }: { totals: CoverageTotals }) {
   const total = Math.max(1, totals.all);
   const segments = [
     { label: "Certified", value: totals.certified, color: "#2e7d32" },
     { label: "Preview", value: totals.preview, color: "#ed6c02" },
     { label: "Connector-only", value: totals.connector_only, color: "#6c757d" },
-    { label: "Deprecated", value: totals.deprecated, color: "#c62828" },
+    { label: "Deprecated", value: totals.deprecated ?? 0, color: "#c62828" },
   ];
   return (
     <Box sx={{ width: "100%" }}>
@@ -72,10 +66,7 @@ function ProportionBar({ totals }: { totals: StatusTotals }) {
             <Box
               key={s.label}
               title={`${s.label}: ${s.value} (${pct.toFixed(1)}%)`}
-              sx={{
-                width: `${pct}%`,
-                backgroundColor: s.color,
-              }}
+              sx={{ width: `${pct}%`, backgroundColor: s.color }}
             />
           );
         })}
@@ -111,33 +102,33 @@ function StatusChip({ label, value }: { label: string; value: number }) {
 }
 
 export function FactorsCatalogStatus() {
-  const [summary, setSummary] = useState<StatusSummary | null>(null);
+  const [summary, setSummary] = useState<CoverageResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [lastRefreshed, setLastRefreshed] = useState<Date | null>(null);
 
   useEffect(() => {
     let cancelled = false;
-    setLoading(true);
-    // Public endpoint — no auth headers needed.
-    fetch("/api/v1/factors/status/summary")
-      .then(async (res) => {
-        if (!res.ok) throw new Error(`Status ${res.status}`);
-        return res.json();
-      })
-      .then((data: StatusSummary) => {
-        if (!cancelled) {
-          setSummary(data);
-          setError(null);
-        }
-      })
-      .catch((err: Error) => {
-        if (!cancelled) setError(err.message);
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
+    const load = async (initial: boolean) => {
+      if (initial) setLoading(true);
+      try {
+        const data = await getCoverage();
+        if (cancelled) return;
+        setSummary(data);
+        setError(null);
+        setLastRefreshed(new Date());
+      } catch (e) {
+        if (cancelled) return;
+        setError(e instanceof FactorsApiError ? e.userMessage : (e as Error).message);
+      } finally {
+        if (!cancelled && initial) setLoading(false);
+      }
+    };
+    void load(true);
+    const timer = window.setInterval(() => void load(false), REFRESH_MS);
     return () => {
       cancelled = true;
+      window.clearInterval(timer);
     };
   }, []);
 
@@ -150,7 +141,7 @@ export function FactorsCatalogStatus() {
     }
   }, [summary]);
 
-  if (loading) {
+  if (loading && !summary) {
     return (
       <Box sx={{ p: 3 }}>
         <LinearProgress />
@@ -158,7 +149,7 @@ export function FactorsCatalogStatus() {
     );
   }
 
-  if (error) {
+  if (error && !summary) {
     return (
       <Box sx={{ p: 3 }}>
         <Alert severity="error">Could not load catalog status: {error}</Alert>
@@ -168,8 +159,11 @@ export function FactorsCatalogStatus() {
 
   if (!summary) return null;
 
+  const familyRows: CoverageByFamily[] = summary.by_family ?? [];
+  const sourceRows = summary.by_source ?? [];
+
   return (
-    <Box sx={{ p: 3, maxWidth: 1000, mx: "auto" }}>
+    <Box sx={{ p: 3, maxWidth: 1100, mx: "auto" }}>
       <Typography variant="h4" gutterBottom>
         GreenLang Factors — Catalog Status
       </Typography>
@@ -177,8 +171,19 @@ export function FactorsCatalogStatus() {
         Public coverage snapshot. Three labels separate what's regulator-ready
         (Certified) from what's under review (Preview) and what requires a
         pre-licensed connector (Connector-only). Edition: <code>{summary.edition_id}</code>.
-        Generated: {generatedAt}.
+        Generated: {generatedAt}.{" "}
+        {lastRefreshed && (
+          <span>
+            Auto-refresh every 60s, last updated {lastRefreshed.toLocaleTimeString()}.
+          </span>
+        )}
       </Typography>
+
+      {error && (
+        <Alert severity="warning" sx={{ mt: 2 }} role="status">
+          Refresh failed ({error}). Showing previously loaded snapshot.
+        </Alert>
+      )}
 
       <Card sx={{ mt: 3 }}>
         <CardContent>
@@ -187,7 +192,7 @@ export function FactorsCatalogStatus() {
             <StatusChip label="Certified" value={summary.totals.certified} />
             <StatusChip label="Preview" value={summary.totals.preview} />
             <StatusChip label="Connector-only" value={summary.totals.connector_only} />
-            <StatusChip label="Deprecated" value={summary.totals.deprecated} />
+            <StatusChip label="Deprecated" value={summary.totals.deprecated ?? 0} />
             <Chip label={`Total: ${summary.totals.all.toLocaleString()}`} />
           </Stack>
           <Box sx={{ mt: 3 }}>
@@ -199,13 +204,13 @@ export function FactorsCatalogStatus() {
       <Card sx={{ mt: 3 }}>
         <CardContent>
           <Typography variant="h6" gutterBottom>
-            By Source
+            By Family
           </Typography>
           <TableContainer component={Paper} variant="outlined">
-            <Table size="small" aria-label="Factor counts by source">
+            <Table size="small" aria-label="Factor counts by family">
               <TableHead>
                 <TableRow>
-                  <TableCell>Source</TableCell>
+                  <TableCell>Family</TableCell>
                   <TableCell align="right">Certified</TableCell>
                   <TableCell align="right">Preview</TableCell>
                   <TableCell align="right">Connector-only</TableCell>
@@ -214,25 +219,25 @@ export function FactorsCatalogStatus() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {summary.by_source.map((row) => (
-                  <TableRow key={row.source_id} hover>
+                {familyRows.map((row) => (
+                  <TableRow key={row.family} hover>
                     <TableCell component="th" scope="row">
-                      <code>{row.source_id}</code>
+                      <code>{row.family}</code>
                     </TableCell>
                     <TableCell align="right">{row.certified.toLocaleString()}</TableCell>
                     <TableCell align="right">{row.preview.toLocaleString()}</TableCell>
                     <TableCell align="right">{row.connector_only.toLocaleString()}</TableCell>
-                    <TableCell align="right">{row.deprecated.toLocaleString()}</TableCell>
+                    <TableCell align="right">{(row.deprecated ?? 0).toLocaleString()}</TableCell>
                     <TableCell align="right">
                       <strong>{row.all.toLocaleString()}</strong>
                     </TableCell>
                   </TableRow>
                 ))}
-                {summary.by_source.length === 0 && (
+                {familyRows.length === 0 && (
                   <TableRow>
                     <TableCell colSpan={6} align="center">
                       <Typography variant="body2" color="text.secondary">
-                        No factors in this edition.
+                        No families reported in this edition yet.
                       </Typography>
                     </TableCell>
                   </TableRow>
@@ -242,6 +247,46 @@ export function FactorsCatalogStatus() {
           </TableContainer>
         </CardContent>
       </Card>
+
+      {sourceRows.length > 0 && (
+        <Card sx={{ mt: 3 }}>
+          <CardContent>
+            <Typography variant="h6" gutterBottom>
+              By Source
+            </Typography>
+            <TableContainer component={Paper} variant="outlined">
+              <Table size="small" aria-label="Factor counts by source">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Source</TableCell>
+                    <TableCell align="right">Certified</TableCell>
+                    <TableCell align="right">Preview</TableCell>
+                    <TableCell align="right">Connector-only</TableCell>
+                    <TableCell align="right">Deprecated</TableCell>
+                    <TableCell align="right">Total</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {sourceRows.map((row) => (
+                    <TableRow key={row.source_id} hover>
+                      <TableCell component="th" scope="row">
+                        <code>{row.source_id}</code>
+                      </TableCell>
+                      <TableCell align="right">{row.certified.toLocaleString()}</TableCell>
+                      <TableCell align="right">{row.preview.toLocaleString()}</TableCell>
+                      <TableCell align="right">{row.connector_only.toLocaleString()}</TableCell>
+                      <TableCell align="right">{(row.deprecated ?? 0).toLocaleString()}</TableCell>
+                      <TableCell align="right">
+                        <strong>{row.all.toLocaleString()}</strong>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </CardContent>
+        </Card>
+      )}
 
       <Alert severity="info" sx={{ mt: 3 }}>
         <Typography variant="body2">

@@ -209,3 +209,87 @@ class ReadinessChecker:
         if sla:
             return CheckResult("sla_defined", "operations", CheckStatus.PASS, "SLAs defined and tracked")
         return CheckResult("sla_defined", "operations", CheckStatus.WARN, "SLAs not yet defined")
+
+
+# ---------------------------------------------------------------------------
+# Three-label coverage counts (Track B-2 of the FY27 launch checklist).
+#
+# The public dashboard at greenlang.ai/factors/coverage shows three numbers
+# per family: Certified / Preview / Connector-only. This helper aggregates
+# them straight off the catalog so the count is always live.
+# ---------------------------------------------------------------------------
+
+
+def label_counts(
+    repo,
+    edition_id: Optional[str] = None,
+    *,
+    include_deprecated: bool = False,
+) -> Dict[str, Dict[str, int]]:
+    """Return ``{family: {certified, preview, connector_only}}`` counts.
+
+    ``family`` is read from ``factor.factor_family.value`` (canonical_v2
+    enum) when present, falling back to ``factor.fuel_type`` or the
+    string ``"uncategorized"``.
+
+    The label is read from ``factor.status`` / ``factor.label`` /
+    ``factor.publication_status`` in that order; values are normalised to
+    one of ``certified``, ``preview``, ``connector_only`` so the dashboard
+    has a stable schema even as the catalog enum evolves.
+    """
+    if edition_id is None:
+        try:
+            edition_id = repo.get_default_edition_id()
+        except Exception:  # noqa: BLE001
+            edition_id = None
+    if not edition_id:
+        return {}
+
+    out: Dict[str, Dict[str, int]] = {}
+    try:
+        rows, _ = repo.list_factors(edition_id, page=1, limit=100_000)
+    except TypeError:
+        rows, _ = repo.list_factors(edition_id)
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("label_counts: list_factors failed: %s", exc)
+        return {}
+
+    for factor in rows:
+        family = _family_str(factor)
+        label = _label_str(factor)
+        if label == "deprecated" and not include_deprecated:
+            continue
+        bucket = out.setdefault(family, {"certified": 0, "preview": 0, "connector_only": 0})
+        if label not in bucket:
+            bucket[label] = 0
+        bucket[label] += 1
+    return out
+
+
+def _family_str(factor) -> str:
+    fam = getattr(factor, "factor_family", None)
+    if fam is not None:
+        return getattr(fam, "value", str(fam))
+    fuel = getattr(factor, "fuel_type", None)
+    if fuel:
+        return str(fuel)
+    return "uncategorized"
+
+
+def _label_str(factor) -> str:
+    for attr in ("publication_label", "label", "status", "publication_status"):
+        v = getattr(factor, attr, None)
+        if v is None:
+            continue
+        s = (getattr(v, "value", v) or "").lower() if isinstance(v, str) or hasattr(v, "value") else str(v).lower()
+        if s in ("certified", "ga", "released", "active"):
+            return "certified"
+        if s in ("preview", "beta", "candidate"):
+            return "preview"
+        if s in ("connector", "connector_only", "connector-only", "ingest_only"):
+            return "connector_only"
+        if s in ("deprecated", "retired", "withdrawn"):
+            return "deprecated"
+    # Default: anything in the catalog with no explicit label is connector-only
+    # so we never inflate the Certified count without a positive signal.
+    return "connector_only"

@@ -105,6 +105,39 @@ class RateLimitError(FactorsAPIError):
         self.retry_after = retry_after
 
 
+class LicensingGapError(FactorsAPIError):
+    """Caller's tier or contract does not include the requested licensed pack.
+
+    Different from :class:`LicenseError` (which is about the SDK or
+    customer not being entitled to *redistribute* a factor) -- this error
+    is raised when the customer asked for a factor whose licence chain
+    cannot be satisfied at all (e.g. ``connector_only`` factor on a
+    Community plan, or a Premium pack the contract does not list).
+    """
+
+
+class EntitlementError(FactorsAPIError):
+    """Caller's plan does not entitle them to the requested feature.
+
+    Mapped from 403 responses whose body contains an explicit
+    ``"entitlement"`` discriminator (e.g. ``audit-bundle`` on a Pro plan,
+    ``set_override`` on a Community plan). Distinct from
+    :class:`TierError` so client code can branch on missing-feature vs.
+    insufficient-tier without parsing the message string.
+    """
+
+
+class EditionPinError(FactorsAPIError):
+    """Edition pinning was requested but the server cannot honour it.
+
+    Raised when the Server returns a 409/410 indicating the pinned
+    edition has been retired, or when client validation rejects the
+    edition-id format before the request goes out. For drift between
+    pinned and returned editions on otherwise-successful requests, see
+    :class:`EditionMismatchError`.
+    """
+
+
 class EditionMismatchError(FactorsAPIError):
     """Client pinned edition X, server returned a different edition Y.
 
@@ -245,9 +278,12 @@ __all__ = [
     "AuthError",
     "TierError",
     "LicenseError",
+    "LicensingGapError",
+    "EntitlementError",
     "FactorNotFoundError",
     "ValidationError",
     "RateLimitError",
+    "EditionPinError",
     "EditionMismatchError",
     "error_from_response",
 ]

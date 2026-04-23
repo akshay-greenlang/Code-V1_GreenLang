@@ -1,0 +1,1702 @@
+[
+  {
+    "case_id": "fuel_ng_us_therm_001",
+    "activity": {
+      "description": "Natural gas combustion, stationary, US",
+      "quantity": 12000,
+      "unit": "therm",
+      "metadata": {
+        "country": "US",
+        "year": 2026,
+        "scope": "scope1",
+        "fuel_type": "natural_gas"
+      }
+    },
+    "method_profile": "corporate_scope1",
+    "expected": {
+      "factor_id": "EF:EPA:natural_gas_therm:US:2026:v1",
+      "factor_family": "emissions",
+      "source_authority": "EPA",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 5.2,
+      "co2e_per_unit_max": 5.4,
+      "co2e_unit": "kgCO2e/therm",
+      "must_include_assumptions": [
+        "stationary combustion",
+        "stationary combustion"
+      ]
+    },
+    "tags": [
+      "fuel",
+      "natural_gas",
+      "us",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "fuel_ng_us_MMBtu_002",
+    "activity": {
+      "description": "Natural gas combustion, stationary, US",
+      "quantity": 850,
+      "unit": "MMBtu",
+      "metadata": {
+        "country": "US",
+        "year": 2026,
+        "scope": "scope1",
+        "fuel_type": "natural_gas"
+      }
+    },
+    "method_profile": "corporate_scope1",
+    "expected": {
+      "factor_id": "EF:EPA:natural_gas_MMBtu:US:2026:v1",
+      "factor_family": "emissions",
+      "source_authority": "EPA",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 52.0,
+      "co2e_per_unit_max": 54.0,
+      "co2e_unit": "kgCO2e/MMBtu",
+      "must_include_assumptions": [
+        "stationary combustion",
+        "stationary combustion"
+      ]
+    },
+    "tags": [
+      "fuel",
+      "natural_gas",
+      "us",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "fuel_ng_us_scf_003",
+    "activity": {
+      "description": "Natural gas combustion, stationary, US",
+      "quantity": 1500000,
+      "unit": "scf",
+      "metadata": {
+        "country": "US",
+        "year": 2026,
+        "scope": "scope1",
+        "fuel_type": "natural_gas"
+      }
+    },
+    "method_profile": "corporate_scope1",
+    "expected": {
+      "factor_id": "EF:EPA:natural_gas_scf:US:2026:v1",
+      "factor_family": "emissions",
+      "source_authority": "EPA",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 0.054,
+      "co2e_per_unit_max": 0.057,
+      "co2e_unit": "kgCO2e/scf",
+      "must_include_assumptions": [
+        "stationary combustion",
+        "stationary combustion"
+      ]
+    },
+    "tags": [
+      "fuel",
+      "natural_gas",
+      "us",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "fuel_ng_uk_kWh_004",
+    "activity": {
+      "description": "Natural gas combustion, stationary, UK",
+      "quantity": 240000,
+      "unit": "kWh",
+      "metadata": {
+        "country": "UK",
+        "year": 2026,
+        "scope": "scope1",
+        "fuel_type": "natural_gas"
+      }
+    },
+    "method_profile": "corporate_scope1",
+    "expected": {
+      "factor_id": "EF:DESNZ:s1_natural_gas_kWh:UK:2026:v1",
+      "factor_family": "emissions",
+      "source_authority": "DESNZ",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 0.18,
+      "co2e_per_unit_max": 0.19,
+      "co2e_unit": "kgCO2e/kWh",
+      "must_include_assumptions": [
+        "stationary combustion",
+        "gross CV stationary"
+      ]
+    },
+    "tags": [
+      "fuel",
+      "natural_gas",
+      "uk",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "fuel_ng_uk_m3_005",
+    "activity": {
+      "description": "Natural gas combustion, stationary, UK",
+      "quantity": 22500,
+      "unit": "m3",
+      "metadata": {
+        "country": "UK",
+        "year": 2026,
+        "scope": "scope1",
+        "fuel_type": "natural_gas"
+      }
+    },
+    "method_profile": "corporate_scope1",
+    "expected": {
+      "factor_id": "EF:DESNZ:s1_natural_gas_m3:UK:2026:v1",
+      "factor_family": "emissions",
+      "source_authority": "DESNZ",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 2.0,
+      "co2e_per_unit_max": 2.07,
+      "co2e_unit": "kgCO2e/m3",
+      "must_include_assumptions": [
+        "stationary combustion",
+        "gross CV stationary"
+      ]
+    },
+    "tags": [
+      "fuel",
+      "natural_gas",
+      "uk",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "fuel_ng_eu_GJ_006",
+    "activity": {
+      "description": "Natural gas combustion, stationary, EU",
+      "quantity": 1850,
+      "unit": "GJ",
+      "metadata": {
+        "country": "EU",
+        "year": 2026,
+        "scope": "scope1",
+        "fuel_type": "natural_gas"
+      }
+    },
+    "method_profile": "corporate_scope1",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "emissions",
+      "source_authority": "IPCC",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 55.5,
+      "co2e_per_unit_max": 57.0,
+      "co2e_unit": "kgCO2e/GJ",
+      "must_include_assumptions": [
+        "stationary combustion",
+        "tier-1 default"
+      ]
+    },
+    "tags": [
+      "fuel",
+      "natural_gas",
+      "eu",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "fuel_ng_de_kWh_007",
+    "activity": {
+      "description": "Natural gas combustion, stationary, DE",
+      "quantity": 130000,
+      "unit": "kWh",
+      "metadata": {
+        "country": "DE",
+        "year": 2026,
+        "scope": "scope1",
+        "fuel_type": "natural_gas"
+      }
+    },
+    "method_profile": "corporate_scope1",
+    "expected": {
+      "factor_id": "EF:DESNZ:s1_natural_gas_kWh:DE:2026:v1",
+      "factor_family": "emissions",
+      "source_authority": "DESNZ",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 0.18,
+      "co2e_per_unit_max": 0.19,
+      "co2e_unit": "kgCO2e/kWh",
+      "must_include_assumptions": [
+        "stationary combustion",
+        "gross CV proxy"
+      ]
+    },
+    "tags": [
+      "fuel",
+      "natural_gas",
+      "de",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "fuel_ng_fr_kWh_008",
+    "activity": {
+      "description": "Natural gas combustion, stationary, FR",
+      "quantity": 88000,
+      "unit": "kWh",
+      "metadata": {
+        "country": "FR",
+        "year": 2026,
+        "scope": "scope1",
+        "fuel_type": "natural_gas"
+      }
+    },
+    "method_profile": "corporate_scope1",
+    "expected": {
+      "factor_id": "EF:DESNZ:s1_natural_gas_kWh:FR:2026:v1",
+      "factor_family": "emissions",
+      "source_authority": "DESNZ",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 0.18,
+      "co2e_per_unit_max": 0.19,
+      "co2e_unit": "kgCO2e/kWh",
+      "must_include_assumptions": [
+        "stationary combustion",
+        "gross CV proxy"
+      ]
+    },
+    "tags": [
+      "fuel",
+      "natural_gas",
+      "fr",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "fuel_ng_in_m3_009",
+    "activity": {
+      "description": "Natural gas combustion, stationary, IN",
+      "quantity": 18500,
+      "unit": "m3",
+      "metadata": {
+        "country": "IN",
+        "year": 2026,
+        "scope": "scope1",
+        "fuel_type": "natural_gas"
+      }
+    },
+    "method_profile": "corporate_scope1",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "emissions",
+      "source_authority": "IPCC",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 1.93,
+      "co2e_per_unit_max": 2.05,
+      "co2e_unit": "kgCO2e/m3",
+      "must_include_assumptions": [
+        "stationary combustion",
+        "tier-1 default"
+      ]
+    },
+    "tags": [
+      "fuel",
+      "natural_gas",
+      "in",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "fuel_ng_in_kg_010",
+    "activity": {
+      "description": "Natural gas combustion, stationary, IN",
+      "quantity": 14200,
+      "unit": "kg",
+      "metadata": {
+        "country": "IN",
+        "year": 2026,
+        "scope": "scope1",
+        "fuel_type": "natural_gas"
+      }
+    },
+    "method_profile": "corporate_scope1",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "emissions",
+      "source_authority": "IPCC",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 2.65,
+      "co2e_per_unit_max": 2.78,
+      "co2e_unit": "kgCO2e/kg",
+      "must_include_assumptions": [
+        "stationary combustion",
+        "tier-1 default"
+      ]
+    },
+    "tags": [
+      "fuel",
+      "natural_gas",
+      "in",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "fuel_ng_us_therm_011",
+    "activity": {
+      "description": "Natural gas combustion, stationary, US",
+      "quantity": 35000,
+      "unit": "therm",
+      "metadata": {
+        "country": "US",
+        "year": 2026,
+        "scope": "scope1",
+        "fuel_type": "natural_gas"
+      }
+    },
+    "method_profile": "corporate_scope1",
+    "expected": {
+      "factor_id": "EF:EPA:natural_gas_therm:US:2026:v1",
+      "factor_family": "emissions",
+      "source_authority": "EPA",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 5.2,
+      "co2e_per_unit_max": 5.4,
+      "co2e_unit": "kgCO2e/therm",
+      "must_include_assumptions": [
+        "stationary combustion",
+        "commercial boiler"
+      ]
+    },
+    "tags": [
+      "fuel",
+      "natural_gas",
+      "us",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "fuel_ng_uk_kWh_012",
+    "activity": {
+      "description": "Natural gas combustion, stationary, UK",
+      "quantity": 412000,
+      "unit": "kWh",
+      "metadata": {
+        "country": "UK",
+        "year": 2026,
+        "scope": "scope1",
+        "fuel_type": "natural_gas"
+      }
+    },
+    "method_profile": "corporate_scope1",
+    "expected": {
+      "factor_id": "EF:DESNZ:s1_natural_gas_kWh:UK:2026:v1",
+      "factor_family": "emissions",
+      "source_authority": "DESNZ",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 0.18,
+      "co2e_per_unit_max": 0.19,
+      "co2e_unit": "kgCO2e/kWh",
+      "must_include_assumptions": [
+        "stationary combustion",
+        "industrial boiler"
+      ]
+    },
+    "tags": [
+      "fuel",
+      "natural_gas",
+      "uk",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "fuel_diesel_us_gallon_001",
+    "activity": {
+      "description": "Diesel combustion, stationary genset, US",
+      "quantity": 4200,
+      "unit": "gallon",
+      "metadata": {
+        "country": "US",
+        "year": 2026,
+        "scope": "scope1",
+        "fuel_type": "diesel"
+      }
+    },
+    "method_profile": "corporate_scope1",
+    "expected": {
+      "factor_id": "EF:EPA:diesel_gallon:US:2026:v1",
+      "factor_family": "emissions",
+      "source_authority": "EPA",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 10.1,
+      "co2e_per_unit_max": 10.3,
+      "co2e_unit": "kgCO2e/gallon",
+      "must_include_assumptions": [
+        "stationary genset",
+        "diesel"
+      ]
+    },
+    "tags": [
+      "fuel",
+      "diesel",
+      "us",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "fuel_diesel_us_gallon_002",
+    "activity": {
+      "description": "Diesel combustion, mobile, on-road HDV, US",
+      "quantity": 9800,
+      "unit": "gallon",
+      "metadata": {
+        "country": "US",
+        "year": 2026,
+        "scope": "scope1",
+        "fuel_type": "diesel"
+      }
+    },
+    "method_profile": "corporate_scope1",
+    "expected": {
+      "factor_id": "EF:EPA:diesel_gallon:US:2026:v1",
+      "factor_family": "emissions",
+      "source_authority": "EPA",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 10.1,
+      "co2e_per_unit_max": 10.3,
+      "co2e_unit": "kgCO2e/gallon",
+      "must_include_assumptions": [
+        "mobile, on-road HDV",
+        "diesel"
+      ]
+    },
+    "tags": [
+      "fuel",
+      "diesel",
+      "us",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "fuel_diesel_uk_litre_003",
+    "activity": {
+      "description": "Diesel combustion, stationary, UK",
+      "quantity": 18500,
+      "unit": "litre",
+      "metadata": {
+        "country": "UK",
+        "year": 2026,
+        "scope": "scope1",
+        "fuel_type": "diesel"
+      }
+    },
+    "method_profile": "corporate_scope1",
+    "expected": {
+      "factor_id": "EF:DESNZ:s1_diesel_litre:UK:2026:v1",
+      "factor_family": "emissions",
+      "source_authority": "DESNZ",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 2.5,
+      "co2e_per_unit_max": 2.7,
+      "co2e_unit": "kgCO2e/litre",
+      "must_include_assumptions": [
+        "stationary",
+        "diesel"
+      ]
+    },
+    "tags": [
+      "fuel",
+      "diesel",
+      "uk",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "fuel_diesel_uk_litre_004",
+    "activity": {
+      "description": "Diesel combustion, mobile, articulated truck, UK",
+      "quantity": 32000,
+      "unit": "litre",
+      "metadata": {
+        "country": "UK",
+        "year": 2026,
+        "scope": "scope1",
+        "fuel_type": "diesel"
+      }
+    },
+    "method_profile": "corporate_scope1",
+    "expected": {
+      "factor_id": "EF:DESNZ:s1_diesel_litre:UK:2026:v1",
+      "factor_family": "emissions",
+      "source_authority": "DESNZ",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 2.5,
+      "co2e_per_unit_max": 2.7,
+      "co2e_unit": "kgCO2e/litre",
+      "must_include_assumptions": [
+        "mobile, articulated truck",
+        "diesel"
+      ]
+    },
+    "tags": [
+      "fuel",
+      "diesel",
+      "uk",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "fuel_diesel_eu_litre_005",
+    "activity": {
+      "description": "Diesel combustion, tier-1 stationary, EU",
+      "quantity": 24000,
+      "unit": "litre",
+      "metadata": {
+        "country": "EU",
+        "year": 2026,
+        "scope": "scope1",
+        "fuel_type": "diesel"
+      }
+    },
+    "method_profile": "corporate_scope1",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "emissions",
+      "source_authority": "IPCC",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 2.6,
+      "co2e_per_unit_max": 2.75,
+      "co2e_unit": "kgCO2e/litre",
+      "must_include_assumptions": [
+        "tier-1 stationary",
+        "diesel"
+      ]
+    },
+    "tags": [
+      "fuel",
+      "diesel",
+      "eu",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "fuel_diesel_de_litre_006",
+    "activity": {
+      "description": "Diesel combustion, tier-1 stationary, DE",
+      "quantity": 18500,
+      "unit": "litre",
+      "metadata": {
+        "country": "DE",
+        "year": 2026,
+        "scope": "scope1",
+        "fuel_type": "diesel"
+      }
+    },
+    "method_profile": "corporate_scope1",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "emissions",
+      "source_authority": "IPCC",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 2.6,
+      "co2e_per_unit_max": 2.75,
+      "co2e_unit": "kgCO2e/litre",
+      "must_include_assumptions": [
+        "tier-1 stationary",
+        "diesel"
+      ]
+    },
+    "tags": [
+      "fuel",
+      "diesel",
+      "de",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "fuel_diesel_fr_litre_007",
+    "activity": {
+      "description": "Diesel combustion, tier-1 stationary, FR",
+      "quantity": 8400,
+      "unit": "litre",
+      "metadata": {
+        "country": "FR",
+        "year": 2026,
+        "scope": "scope1",
+        "fuel_type": "diesel"
+      }
+    },
+    "method_profile": "corporate_scope1",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "emissions",
+      "source_authority": "IPCC",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 2.6,
+      "co2e_per_unit_max": 2.75,
+      "co2e_unit": "kgCO2e/litre",
+      "must_include_assumptions": [
+        "tier-1 stationary",
+        "diesel"
+      ]
+    },
+    "tags": [
+      "fuel",
+      "diesel",
+      "fr",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "fuel_diesel_in_litre_008",
+    "activity": {
+      "description": "Diesel combustion, tier-1 stationary, IN",
+      "quantity": 22000,
+      "unit": "litre",
+      "metadata": {
+        "country": "IN",
+        "year": 2026,
+        "scope": "scope1",
+        "fuel_type": "diesel"
+      }
+    },
+    "method_profile": "corporate_scope1",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "emissions",
+      "source_authority": "IPCC",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 2.65,
+      "co2e_per_unit_max": 2.8,
+      "co2e_unit": "kgCO2e/litre",
+      "must_include_assumptions": [
+        "tier-1 stationary",
+        "diesel"
+      ]
+    },
+    "tags": [
+      "fuel",
+      "diesel",
+      "in",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "fuel_diesel_in_litre_009",
+    "activity": {
+      "description": "Diesel combustion, mobile, BS-VI HDV, IN",
+      "quantity": 36500,
+      "unit": "litre",
+      "metadata": {
+        "country": "IN",
+        "year": 2026,
+        "scope": "scope1",
+        "fuel_type": "diesel"
+      }
+    },
+    "method_profile": "corporate_scope1",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "emissions",
+      "source_authority": "IPCC",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 2.65,
+      "co2e_per_unit_max": 2.8,
+      "co2e_unit": "kgCO2e/litre",
+      "must_include_assumptions": [
+        "mobile, BS-VI HDV",
+        "diesel"
+      ]
+    },
+    "tags": [
+      "fuel",
+      "diesel",
+      "in",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "fuel_diesel_us_gallon_010",
+    "activity": {
+      "description": "Diesel combustion, marine bunkered, US",
+      "quantity": 2400,
+      "unit": "gallon",
+      "metadata": {
+        "country": "US",
+        "year": 2026,
+        "scope": "scope1",
+        "fuel_type": "diesel"
+      }
+    },
+    "method_profile": "corporate_scope1",
+    "expected": {
+      "factor_id": "EF:EPA:diesel_gallon:US:2026:v1",
+      "factor_family": "emissions",
+      "source_authority": "EPA",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 10.1,
+      "co2e_per_unit_max": 10.3,
+      "co2e_unit": "kgCO2e/gallon",
+      "must_include_assumptions": [
+        "marine bunkered",
+        "diesel"
+      ]
+    },
+    "tags": [
+      "fuel",
+      "diesel",
+      "us",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "fuel_gasoline_us_gallon_001",
+    "activity": {
+      "description": "Gasoline (petrol) combustion, mobile light-duty, US",
+      "quantity": 1500,
+      "unit": "gallon",
+      "metadata": {
+        "country": "US",
+        "year": 2026,
+        "scope": "scope1",
+        "fuel_type": "gasoline"
+      }
+    },
+    "method_profile": "corporate_scope1",
+    "expected": {
+      "factor_id": "EF:EPA:gasoline_gallon:US:2026:v1",
+      "factor_family": "emissions",
+      "source_authority": "EPA",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 8.7,
+      "co2e_per_unit_max": 8.92,
+      "co2e_unit": "kgCO2e/gallon",
+      "must_include_assumptions": [
+        "mobile light-duty",
+        "gasoline"
+      ]
+    },
+    "tags": [
+      "fuel",
+      "gasoline",
+      "us",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "fuel_gasoline_us_gallon_002",
+    "activity": {
+      "description": "Gasoline (petrol) combustion, fleet light-duty, US",
+      "quantity": 4200,
+      "unit": "gallon",
+      "metadata": {
+        "country": "US",
+        "year": 2026,
+        "scope": "scope1",
+        "fuel_type": "gasoline"
+      }
+    },
+    "method_profile": "corporate_scope1",
+    "expected": {
+      "factor_id": "EF:EPA:gasoline_gallon:US:2026:v1",
+      "factor_family": "emissions",
+      "source_authority": "EPA",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 8.7,
+      "co2e_per_unit_max": 8.92,
+      "co2e_unit": "kgCO2e/gallon",
+      "must_include_assumptions": [
+        "fleet light-duty",
+        "gasoline"
+      ]
+    },
+    "tags": [
+      "fuel",
+      "gasoline",
+      "us",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "fuel_gasoline_uk_litre_003",
+    "activity": {
+      "description": "Gasoline (petrol) combustion, average car, UK",
+      "quantity": 9800,
+      "unit": "litre",
+      "metadata": {
+        "country": "UK",
+        "year": 2026,
+        "scope": "scope1",
+        "fuel_type": "gasoline"
+      }
+    },
+    "method_profile": "corporate_scope1",
+    "expected": {
+      "factor_id": "EF:DESNZ:s1_gasoline_litre:UK:2026:v1",
+      "factor_family": "emissions",
+      "source_authority": "DESNZ",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 2.18,
+      "co2e_per_unit_max": 2.3,
+      "co2e_unit": "kgCO2e/litre",
+      "must_include_assumptions": [
+        "average car",
+        "gasoline"
+      ]
+    },
+    "tags": [
+      "fuel",
+      "gasoline",
+      "uk",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "fuel_gasoline_uk_litre_004",
+    "activity": {
+      "description": "Gasoline (petrol) combustion, small car, UK",
+      "quantity": 4200,
+      "unit": "litre",
+      "metadata": {
+        "country": "UK",
+        "year": 2026,
+        "scope": "scope1",
+        "fuel_type": "gasoline"
+      }
+    },
+    "method_profile": "corporate_scope1",
+    "expected": {
+      "factor_id": "EF:DESNZ:s1_gasoline_litre:UK:2026:v1",
+      "factor_family": "emissions",
+      "source_authority": "DESNZ",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 2.18,
+      "co2e_per_unit_max": 2.3,
+      "co2e_unit": "kgCO2e/litre",
+      "must_include_assumptions": [
+        "small car",
+        "gasoline"
+      ]
+    },
+    "tags": [
+      "fuel",
+      "gasoline",
+      "uk",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "fuel_gasoline_eu_litre_005",
+    "activity": {
+      "description": "Gasoline (petrol) combustion, tier-1 mobile, EU",
+      "quantity": 6500,
+      "unit": "litre",
+      "metadata": {
+        "country": "EU",
+        "year": 2026,
+        "scope": "scope1",
+        "fuel_type": "gasoline"
+      }
+    },
+    "method_profile": "corporate_scope1",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "emissions",
+      "source_authority": "IPCC",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 2.2,
+      "co2e_per_unit_max": 2.34,
+      "co2e_unit": "kgCO2e/litre",
+      "must_include_assumptions": [
+        "tier-1 mobile",
+        "gasoline"
+      ]
+    },
+    "tags": [
+      "fuel",
+      "gasoline",
+      "eu",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "fuel_gasoline_de_litre_006",
+    "activity": {
+      "description": "Gasoline (petrol) combustion, tier-1 mobile, DE",
+      "quantity": 12000,
+      "unit": "litre",
+      "metadata": {
+        "country": "DE",
+        "year": 2026,
+        "scope": "scope1",
+        "fuel_type": "gasoline"
+      }
+    },
+    "method_profile": "corporate_scope1",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "emissions",
+      "source_authority": "IPCC",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 2.2,
+      "co2e_per_unit_max": 2.34,
+      "co2e_unit": "kgCO2e/litre",
+      "must_include_assumptions": [
+        "tier-1 mobile",
+        "gasoline"
+      ]
+    },
+    "tags": [
+      "fuel",
+      "gasoline",
+      "de",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "fuel_gasoline_in_litre_007",
+    "activity": {
+      "description": "Gasoline (petrol) combustion, tier-1 mobile, IN",
+      "quantity": 8400,
+      "unit": "litre",
+      "metadata": {
+        "country": "IN",
+        "year": 2026,
+        "scope": "scope1",
+        "fuel_type": "gasoline"
+      }
+    },
+    "method_profile": "corporate_scope1",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "emissions",
+      "source_authority": "IPCC",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 2.3,
+      "co2e_per_unit_max": 2.45,
+      "co2e_unit": "kgCO2e/litre",
+      "must_include_assumptions": [
+        "tier-1 mobile",
+        "gasoline"
+      ]
+    },
+    "tags": [
+      "fuel",
+      "gasoline",
+      "in",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "fuel_gasoline_in_litre_008",
+    "activity": {
+      "description": "Gasoline (petrol) combustion, BS-VI passenger car, IN",
+      "quantity": 17500,
+      "unit": "litre",
+      "metadata": {
+        "country": "IN",
+        "year": 2026,
+        "scope": "scope1",
+        "fuel_type": "gasoline"
+      }
+    },
+    "method_profile": "corporate_scope1",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "emissions",
+      "source_authority": "IPCC",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 2.3,
+      "co2e_per_unit_max": 2.45,
+      "co2e_unit": "kgCO2e/litre",
+      "must_include_assumptions": [
+        "BS-VI passenger car",
+        "gasoline"
+      ]
+    },
+    "tags": [
+      "fuel",
+      "gasoline",
+      "in",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "fuel_coal_us_short_ton_001",
+    "activity": {
+      "description": "Coal combustion, bituminous boiler, US",
+      "quantity": 250,
+      "unit": "short_ton",
+      "metadata": {
+        "country": "US",
+        "year": 2026,
+        "scope": "scope1",
+        "fuel_type": "coal"
+      }
+    },
+    "method_profile": "corporate_scope1",
+    "expected": {
+      "factor_id": "EF:EPA:coal_short_ton:US:2026:v1",
+      "factor_family": "emissions",
+      "source_authority": "EPA",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 2240.0,
+      "co2e_per_unit_max": 2400.0,
+      "co2e_unit": "kgCO2e/short_ton",
+      "must_include_assumptions": [
+        "bituminous boiler",
+        "coal"
+      ]
+    },
+    "tags": [
+      "fuel",
+      "coal",
+      "us",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "fuel_coal_us_short_ton_002",
+    "activity": {
+      "description": "Coal combustion, subbituminous boiler, US",
+      "quantity": 180,
+      "unit": "short_ton",
+      "metadata": {
+        "country": "US",
+        "year": 2026,
+        "scope": "scope1",
+        "fuel_type": "coal"
+      }
+    },
+    "method_profile": "corporate_scope1",
+    "expected": {
+      "factor_id": "EF:EPA:coal_short_ton:US:2026:v1",
+      "factor_family": "emissions",
+      "source_authority": "EPA",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 1900.0,
+      "co2e_per_unit_max": 2080.0,
+      "co2e_unit": "kgCO2e/short_ton",
+      "must_include_assumptions": [
+        "subbituminous boiler",
+        "coal"
+      ]
+    },
+    "tags": [
+      "fuel",
+      "coal",
+      "us",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "fuel_coal_uk_tonne_003",
+    "activity": {
+      "description": "Coal combustion, industrial bituminous, UK",
+      "quantity": 95,
+      "unit": "tonne",
+      "metadata": {
+        "country": "UK",
+        "year": 2026,
+        "scope": "scope1",
+        "fuel_type": "coal"
+      }
+    },
+    "method_profile": "corporate_scope1",
+    "expected": {
+      "factor_id": "EF:DESNZ:s1_coal_tonne:UK:2026:v1",
+      "factor_family": "emissions",
+      "source_authority": "DESNZ",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 2380.0,
+      "co2e_per_unit_max": 2520.0,
+      "co2e_unit": "kgCO2e/tonne",
+      "must_include_assumptions": [
+        "industrial bituminous",
+        "coal"
+      ]
+    },
+    "tags": [
+      "fuel",
+      "coal",
+      "uk",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "fuel_coal_eu_tonne_004",
+    "activity": {
+      "description": "Coal combustion, hard coal tier-1, EU",
+      "quantity": 1200,
+      "unit": "tonne",
+      "metadata": {
+        "country": "EU",
+        "year": 2026,
+        "scope": "scope1",
+        "fuel_type": "coal"
+      }
+    },
+    "method_profile": "corporate_scope1",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "emissions",
+      "source_authority": "IPCC",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 2200.0,
+      "co2e_per_unit_max": 2520.0,
+      "co2e_unit": "kgCO2e/tonne",
+      "must_include_assumptions": [
+        "hard coal tier-1",
+        "coal"
+      ]
+    },
+    "tags": [
+      "fuel",
+      "coal",
+      "eu",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "fuel_coal_de_tonne_005",
+    "activity": {
+      "description": "Coal combustion, hard coal tier-1, DE",
+      "quantity": 850,
+      "unit": "tonne",
+      "metadata": {
+        "country": "DE",
+        "year": 2026,
+        "scope": "scope1",
+        "fuel_type": "coal"
+      }
+    },
+    "method_profile": "corporate_scope1",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "emissions",
+      "source_authority": "IPCC",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 2200.0,
+      "co2e_per_unit_max": 2520.0,
+      "co2e_unit": "kgCO2e/tonne",
+      "must_include_assumptions": [
+        "hard coal tier-1",
+        "coal"
+      ]
+    },
+    "tags": [
+      "fuel",
+      "coal",
+      "de",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "fuel_coal_in_tonne_006",
+    "activity": {
+      "description": "Coal combustion, Indian coal tier-1, IN",
+      "quantity": 18500,
+      "unit": "tonne",
+      "metadata": {
+        "country": "IN",
+        "year": 2026,
+        "scope": "scope1",
+        "fuel_type": "coal"
+      }
+    },
+    "method_profile": "corporate_scope1",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "emissions",
+      "source_authority": "IPCC",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 1850.0,
+      "co2e_per_unit_max": 2050.0,
+      "co2e_unit": "kgCO2e/tonne",
+      "must_include_assumptions": [
+        "Indian coal tier-1",
+        "coal"
+      ]
+    },
+    "tags": [
+      "fuel",
+      "coal",
+      "in",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "fuel_coal_in_tonne_007",
+    "activity": {
+      "description": "Coal combustion, thermal power plant, IN",
+      "quantity": 24500,
+      "unit": "tonne",
+      "metadata": {
+        "country": "IN",
+        "year": 2026,
+        "scope": "scope1",
+        "fuel_type": "coal"
+      }
+    },
+    "method_profile": "corporate_scope1",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "emissions",
+      "source_authority": "IPCC",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 1850.0,
+      "co2e_per_unit_max": 2050.0,
+      "co2e_unit": "kgCO2e/tonne",
+      "must_include_assumptions": [
+        "thermal power plant",
+        "coal"
+      ]
+    },
+    "tags": [
+      "fuel",
+      "coal",
+      "in",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "fuel_coal_in_tonne_008",
+    "activity": {
+      "description": "Coal combustion, lignite tier-1, IN",
+      "quantity": 6700,
+      "unit": "tonne",
+      "metadata": {
+        "country": "IN",
+        "year": 2026,
+        "scope": "scope1",
+        "fuel_type": "coal"
+      }
+    },
+    "method_profile": "corporate_scope1",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "emissions",
+      "source_authority": "IPCC",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 950.0,
+      "co2e_per_unit_max": 1150.0,
+      "co2e_unit": "kgCO2e/tonne",
+      "must_include_assumptions": [
+        "lignite tier-1",
+        "coal"
+      ]
+    },
+    "tags": [
+      "fuel",
+      "coal",
+      "in",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "fuel_lpg_us_gallon_001",
+    "activity": {
+      "description": "LPG combustion, stationary heating, US",
+      "quantity": 1200,
+      "unit": "gallon",
+      "metadata": {
+        "country": "US",
+        "year": 2026,
+        "scope": "scope1",
+        "fuel_type": "lpg"
+      }
+    },
+    "method_profile": "corporate_scope1",
+    "expected": {
+      "factor_id": "EF:EPA:lpg_gallon:US:2026:v1",
+      "factor_family": "emissions",
+      "source_authority": "EPA",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 5.65,
+      "co2e_per_unit_max": 5.85,
+      "co2e_unit": "kgCO2e/gallon",
+      "must_include_assumptions": [
+        "stationary heating",
+        "LPG"
+      ]
+    },
+    "tags": [
+      "fuel",
+      "lpg",
+      "us",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "fuel_lpg_uk_litre_002",
+    "activity": {
+      "description": "LPG combustion, stationary heating, UK",
+      "quantity": 4500,
+      "unit": "litre",
+      "metadata": {
+        "country": "UK",
+        "year": 2026,
+        "scope": "scope1",
+        "fuel_type": "lpg"
+      }
+    },
+    "method_profile": "corporate_scope1",
+    "expected": {
+      "factor_id": "EF:DESNZ:s1_lpg_litre:UK:2026:v1",
+      "factor_family": "emissions",
+      "source_authority": "DESNZ",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 1.5,
+      "co2e_per_unit_max": 1.62,
+      "co2e_unit": "kgCO2e/litre",
+      "must_include_assumptions": [
+        "stationary heating",
+        "LPG"
+      ]
+    },
+    "tags": [
+      "fuel",
+      "lpg",
+      "uk",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "fuel_lpg_uk_kg_003",
+    "activity": {
+      "description": "LPG combustion, stationary heating, UK",
+      "quantity": 2300,
+      "unit": "kg",
+      "metadata": {
+        "country": "UK",
+        "year": 2026,
+        "scope": "scope1",
+        "fuel_type": "lpg"
+      }
+    },
+    "method_profile": "corporate_scope1",
+    "expected": {
+      "factor_id": "EF:DESNZ:s1_lpg_kg:UK:2026:v1",
+      "factor_family": "emissions",
+      "source_authority": "DESNZ",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 2.85,
+      "co2e_per_unit_max": 3.0,
+      "co2e_unit": "kgCO2e/kg",
+      "must_include_assumptions": [
+        "stationary heating",
+        "LPG"
+      ]
+    },
+    "tags": [
+      "fuel",
+      "lpg",
+      "uk",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "fuel_lpg_eu_kg_004",
+    "activity": {
+      "description": "LPG combustion, tier-1 stationary, EU",
+      "quantity": 8800,
+      "unit": "kg",
+      "metadata": {
+        "country": "EU",
+        "year": 2026,
+        "scope": "scope1",
+        "fuel_type": "lpg"
+      }
+    },
+    "method_profile": "corporate_scope1",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "emissions",
+      "source_authority": "IPCC",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 2.95,
+      "co2e_per_unit_max": 3.1,
+      "co2e_unit": "kgCO2e/kg",
+      "must_include_assumptions": [
+        "tier-1 stationary",
+        "LPG"
+      ]
+    },
+    "tags": [
+      "fuel",
+      "lpg",
+      "eu",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "fuel_lpg_in_kg_005",
+    "activity": {
+      "description": "LPG combustion, commercial cooking, IN",
+      "quantity": 14500,
+      "unit": "kg",
+      "metadata": {
+        "country": "IN",
+        "year": 2026,
+        "scope": "scope1",
+        "fuel_type": "lpg"
+      }
+    },
+    "method_profile": "corporate_scope1",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "emissions",
+      "source_authority": "IPCC",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 2.95,
+      "co2e_per_unit_max": 3.1,
+      "co2e_unit": "kgCO2e/kg",
+      "must_include_assumptions": [
+        "commercial cooking",
+        "LPG"
+      ]
+    },
+    "tags": [
+      "fuel",
+      "lpg",
+      "in",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "fuel_lpg_in_kg_006",
+    "activity": {
+      "description": "LPG combustion, industrial process heat, IN",
+      "quantity": 4200,
+      "unit": "kg",
+      "metadata": {
+        "country": "IN",
+        "year": 2026,
+        "scope": "scope1",
+        "fuel_type": "lpg"
+      }
+    },
+    "method_profile": "corporate_scope1",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "emissions",
+      "source_authority": "IPCC",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 2.95,
+      "co2e_per_unit_max": 3.1,
+      "co2e_unit": "kgCO2e/kg",
+      "must_include_assumptions": [
+        "industrial process heat",
+        "LPG"
+      ]
+    },
+    "tags": [
+      "fuel",
+      "lpg",
+      "in",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "fuel_oil_us_gallon_001",
+    "activity": {
+      "description": "Fuel oil combustion, residual fuel oil #6, US",
+      "quantity": 2400,
+      "unit": "gallon",
+      "metadata": {
+        "country": "US",
+        "year": 2026,
+        "scope": "scope1",
+        "fuel_type": "fuel_oil"
+      }
+    },
+    "method_profile": "corporate_scope1",
+    "expected": {
+      "factor_id": "EF:EPA:fuel_oil_gallon:US:2026:v1",
+      "factor_family": "emissions",
+      "source_authority": "EPA",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 11.2,
+      "co2e_per_unit_max": 11.6,
+      "co2e_unit": "kgCO2e/gallon",
+      "must_include_assumptions": [
+        "residual fuel oil #6",
+        "fuel oil"
+      ]
+    },
+    "tags": [
+      "fuel",
+      "fuel_oil",
+      "us",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "fuel_oil_us_gallon_002",
+    "activity": {
+      "description": "Fuel oil combustion, distillate fuel oil #2, US",
+      "quantity": 1800,
+      "unit": "gallon",
+      "metadata": {
+        "country": "US",
+        "year": 2026,
+        "scope": "scope1",
+        "fuel_type": "fuel_oil"
+      }
+    },
+    "method_profile": "corporate_scope1",
+    "expected": {
+      "factor_id": "EF:EPA:fuel_oil_gallon:US:2026:v1",
+      "factor_family": "emissions",
+      "source_authority": "EPA",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 10.2,
+      "co2e_per_unit_max": 10.5,
+      "co2e_unit": "kgCO2e/gallon",
+      "must_include_assumptions": [
+        "distillate fuel oil #2",
+        "fuel oil"
+      ]
+    },
+    "tags": [
+      "fuel",
+      "fuel_oil",
+      "us",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "fuel_oil_uk_litre_003",
+    "activity": {
+      "description": "Fuel oil combustion, burning oil, UK",
+      "quantity": 6800,
+      "unit": "litre",
+      "metadata": {
+        "country": "UK",
+        "year": 2026,
+        "scope": "scope1",
+        "fuel_type": "fuel_oil"
+      }
+    },
+    "method_profile": "corporate_scope1",
+    "expected": {
+      "factor_id": "EF:DESNZ:s1_fuel_oil_litre:UK:2026:v1",
+      "factor_family": "emissions",
+      "source_authority": "DESNZ",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 3.1,
+      "co2e_per_unit_max": 3.3,
+      "co2e_unit": "kgCO2e/litre",
+      "must_include_assumptions": [
+        "burning oil",
+        "fuel oil"
+      ]
+    },
+    "tags": [
+      "fuel",
+      "fuel_oil",
+      "uk",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "fuel_oil_uk_litre_004",
+    "activity": {
+      "description": "Fuel oil combustion, fuel oil, UK",
+      "quantity": 9800,
+      "unit": "litre",
+      "metadata": {
+        "country": "UK",
+        "year": 2026,
+        "scope": "scope1",
+        "fuel_type": "fuel_oil"
+      }
+    },
+    "method_profile": "corporate_scope1",
+    "expected": {
+      "factor_id": "EF:DESNZ:s1_fuel_oil_litre:UK:2026:v1",
+      "factor_family": "emissions",
+      "source_authority": "DESNZ",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 3.18,
+      "co2e_per_unit_max": 3.36,
+      "co2e_unit": "kgCO2e/litre",
+      "must_include_assumptions": [
+        "fuel oil",
+        "fuel oil"
+      ]
+    },
+    "tags": [
+      "fuel",
+      "fuel_oil",
+      "uk",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "fuel_oil_eu_tonne_005",
+    "activity": {
+      "description": "Fuel oil combustion, residual fuel oil tier-1, EU",
+      "quantity": 220,
+      "unit": "tonne",
+      "metadata": {
+        "country": "EU",
+        "year": 2026,
+        "scope": "scope1",
+        "fuel_type": "fuel_oil"
+      }
+    },
+    "method_profile": "corporate_scope1",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "emissions",
+      "source_authority": "IPCC",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 3100.0,
+      "co2e_per_unit_max": 3260.0,
+      "co2e_unit": "kgCO2e/tonne",
+      "must_include_assumptions": [
+        "residual fuel oil tier-1",
+        "fuel oil"
+      ]
+    },
+    "tags": [
+      "fuel",
+      "fuel_oil",
+      "eu",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "fuel_oil_in_tonne_006",
+    "activity": {
+      "description": "Fuel oil combustion, industrial furnace oil, IN",
+      "quantity": 480,
+      "unit": "tonne",
+      "metadata": {
+        "country": "IN",
+        "year": 2026,
+        "scope": "scope1",
+        "fuel_type": "fuel_oil"
+      }
+    },
+    "method_profile": "corporate_scope1",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "emissions",
+      "source_authority": "IPCC",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 3050.0,
+      "co2e_per_unit_max": 3220.0,
+      "co2e_unit": "kgCO2e/tonne",
+      "must_include_assumptions": [
+        "industrial furnace oil",
+        "fuel oil"
+      ]
+    },
+    "tags": [
+      "fuel",
+      "fuel_oil",
+      "in",
+      "fy27_launch"
+    ]
+  }
+]

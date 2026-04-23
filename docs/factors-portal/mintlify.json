@@ -1,0 +1,101 @@
+{
+  "$schema": "https://mintlify.com/schema.json",
+  "name": "GreenLang Factors",
+  "logo": {
+    "light": "/logo/light.svg",
+    "dark": "/logo/dark.svg",
+    "href": "https://greenlang.io"
+  },
+  "favicon": "/favicon.ico",
+  "colors": {
+    "primary": "#16a34a",
+    "light": "#22c55e",
+    "dark": "#15803d",
+    "anchors": {
+      "from": "#16a34a",
+      "to": "#0ea5e9"
+    },
+    "background": {
+      "light": "#ffffff",
+      "dark": "#0a0a0a"
+    }
+  },
+  "topbarLinks": [
+    {
+      "name": "Pricing",
+      "url": "https://greenlang.ai/pricing"
+    },
+    {
+      "name": "Status",
+      "url": "https://status.greenlang.io"
+    }
+  ],
+  "topbarCtaButton": {
+    "name": "Sign up",
+    "url": "https://greenlang.ai/pricing"
+  },
+  "anchors": [
+    {
+      "name": "GitHub",
+      "icon": "github",
+      "url": "https://github.com/greenlang/greenlang"
+    },
+    {
+      "name": "Pricing",
+      "icon": "tag",
+      "url": "https://greenlang.ai/pricing"
+    }
+  ],
+  "navigation": [
+    {
+      "group": "Getting started",
+      "pages": [
+        "index",
+        "quickstart"
+      ]
+    },
+    {
+      "group": "Concepts",
+      "pages": [
+        "concepts/factor-record",
+        "concepts/editions",
+        "concepts/licensing-classes"
+      ]
+    },
+    {
+      "group": "API reference",
+      "pages": [
+        "api/resolve",
+        "api/explain"
+      ]
+    },
+    {
+      "group": "SDK reference",
+      "pages": [
+        "sdk/python",
+        "sdk/typescript"
+      ]
+    },
+    {
+      "group": "Resources",
+      "pages": [
+        "gold-set",
+        "changelog"
+      ]
+    }
+  ],
+  "footerSocials": {
+    "github": "https://github.com/greenlang",
+    "linkedin": "https://www.linkedin.com/company/greenlang"
+  },
+  "modeToggle": {
+    "default": "light"
+  },
+  "search": {
+    "prompt": "Search docs"
+  },
+  "feedback": {
+    "thumbsRating": true,
+    "suggestEdit": true
+  }
+}

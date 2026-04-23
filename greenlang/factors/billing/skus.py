@@ -40,7 +40,7 @@ import logging
 from dataclasses import dataclass, field
 from decimal import Decimal
 from enum import Enum
-from typing import Dict, FrozenSet, List, Mapping, Optional, Tuple
+from typing import Any, Dict, FrozenSet, List, Mapping, Optional, Tuple
 
 from greenlang.factors.entitlements import OEMRights
 from greenlang.factors.entitlements import PackSKU as _LegacyPackSKU
@@ -937,6 +937,194 @@ def _assert_catalog_invariants() -> None:
 _assert_catalog_invariants()
 
 
+# ---------------------------------------------------------------------------
+# Public 4-SKU catalog (FY27 Pricing Page surface)
+# ---------------------------------------------------------------------------
+#
+# The internal catalog above keeps Consulting and Platform separate so the
+# sales motion can negotiate the upper rung without tipping its hand on
+# the entry rung. The Pricing Page, however, surfaces a single combined
+# "Consulting / Platform" SKU (per the founder decision documented in the
+# FY27 launch plan), giving four buy-able SKUs:
+#
+#     1. community              free, open-class only, 60 req/min
+#     2. developer_pro          $499/mo + $0.001/req over 100k, open + selected licensed
+#     3. consulting_platform    $2500/mo annual + usage, 5 sub-tenants, open + most licensed
+#     4. enterprise             contact-sales, all classes including OEM redistribution
+#
+# Each SKU maps onto one of the internal Tier enum members so downstream
+# entitlement checks remain consistent. ``consulting_platform`` resolves
+# to ``Tier.PLATFORM`` (the more permissive of the two) because the public
+# SKU is the upper inclusive offer.
+
+PUBLIC_SKUS: List[Dict[str, Any]] = [
+    {
+        "plan_id": "community",
+        "tier_name": Tier.COMMUNITY.value,
+        "display_name": "Community",
+        "tagline": "Free open-source emission factors for individuals, students, and OSS maintainers.",
+        "price_usd_monthly": "0.00",
+        "price_usd_annual": "0.00",
+        "contact_sales": False,
+        "self_serve": True,
+        "rate_limit": {
+            "requests_per_minute": 60,
+            "requests_per_month_included": 1_000,
+        },
+        "overage_unit_price_usd": None,
+        "license_classes": [
+            REDISTRIBUTION_OPEN,
+        ],
+        "included_premium_packs": [],
+        "included_sub_tenants": 0,
+        "oem_redistribution": False,
+        "sla": None,
+        "features": [
+            "Open-class emission factors only",
+            "Public catalog browser",
+            "Community Slack support",
+            "Read-only API (no overrides)",
+        ],
+    },
+    {
+        "plan_id": "developer_pro",
+        "tier_name": Tier.PRO.value,
+        "display_name": "Developer Pro",
+        "tagline": "For startups and consultants shipping into production. Usage-based pricing.",
+        "price_usd_monthly": "499.00",
+        "price_usd_annual": "4990.00",
+        "contact_sales": False,
+        "self_serve": True,
+        "rate_limit": {
+            "requests_per_minute": 1_000,
+            "requests_per_month_included": 100_000,
+        },
+        "overage_unit_price_usd": "0.001",
+        "license_classes": [
+            REDISTRIBUTION_OPEN,
+            REDISTRIBUTION_RESTRICTED,
+        ],
+        "included_premium_packs": [],
+        "included_sub_tenants": 0,
+        "oem_redistribution": False,
+        "sla": SLALevel.UPTIME_99_5.value,
+        "features": [
+            "100,000 requests / month included",
+            "$0.001 / request over included quota",
+            "Open + selected licensed packs",
+            "Private overrides (50 entries / project)",
+            "99.5% uptime SLA",
+            "Email support",
+        ],
+    },
+    {
+        "plan_id": "consulting_platform",
+        "tier_name": Tier.PLATFORM.value,
+        "display_name": "Consulting / Platform",
+        "tagline": "For consulting firms and ESG SaaS platforms with multi-client portfolios.",
+        "price_usd_monthly": "2500.00",
+        "price_usd_annual": "25000.00",
+        "contact_sales": False,
+        "self_serve": True,
+        "rate_limit": {
+            "requests_per_minute": 5_000,
+            "requests_per_month_included": 1_000_000,
+        },
+        "overage_unit_price_usd": "0.0008",
+        "license_classes": [
+            REDISTRIBUTION_OPEN,
+            REDISTRIBUTION_RESTRICTED,
+            REDISTRIBUTION_CUSTOMER_PRIVATE,
+        ],
+        "included_premium_packs": [
+            PremiumPack.ELECTRICITY.value,
+            PremiumPack.CBAM_EU_POLICY.value,
+            PremiumPack.FREIGHT.value,
+        ],
+        "included_sub_tenants": 5,
+        "oem_redistribution": False,
+        "sla": SLALevel.UPTIME_99_9.value,
+        "features": [
+            "1,000,000 requests / month included",
+            "5 sub-tenants included (additional $50/mo each)",
+            "Most licensed premium packs included",
+            "Customer-private overrides (unlimited per sub-tenant)",
+            "Audit bundles + signed receipts",
+            "99.9% uptime SLA",
+            "Slack-Connect support channel",
+        ],
+    },
+    {
+        "plan_id": "enterprise",
+        "tier_name": Tier.ENTERPRISE.value,
+        "display_name": "Enterprise",
+        "tagline": "For Fortune 500 enterprises with regulated reporting and OEM redistribution needs.",
+        "price_usd_monthly": None,
+        "price_usd_annual": None,
+        "contact_sales": True,
+        "self_serve": False,
+        "rate_limit": {
+            "requests_per_minute": 0,  # unlimited; surface as zero in JSON to mean "no limit"
+            "requests_per_month_included": 0,
+        },
+        "overage_unit_price_usd": None,
+        "license_classes": sorted(ALL_REDISTRIBUTION_CLASSES),
+        "included_premium_packs": [p.value for p in PremiumPack],
+        "included_sub_tenants": 0,  # negotiated per contract; not metered
+        "oem_redistribution": True,
+        "sla": SLALevel.UPTIME_99_95.value,
+        "features": [
+            "Unlimited requests (fair-use)",
+            "All licensed packs + OEM white-label rights",
+            "Customer-private + connector-only license classes",
+            "SSO / SCIM included",
+            "Full audit bundles + reproducibility manifests",
+            "99.95% uptime SLA + named TAM",
+            "Custom contract + DPA",
+        ],
+    },
+]
+
+
+def get_skus() -> List[Dict[str, Any]]:
+    """Return the four public SKUs that drive the FY27 Pricing Page.
+
+    Each entry is a plain ``dict`` (not a dataclass) so the FastAPI route
+    that surfaces this list does not need to import private types and can
+    serialise straight to JSON. The fields match :class:`PlanView` in
+    :mod:`greenlang.factors.billing.api`.
+    """
+    return [dict(sku) for sku in PUBLIC_SKUS]
+
+
+def get_sku_by_id(plan_id: str) -> Optional[Dict[str, Any]]:
+    """Look up one SKU by its public ``plan_id`` slug.
+
+    Args:
+        plan_id: One of ``community``, ``developer_pro``,
+            ``consulting_platform``, ``enterprise``.
+
+    Returns:
+        The SKU dict (a fresh copy) or ``None`` if no match.
+    """
+    needle = (plan_id or "").lower().strip()
+    for sku in PUBLIC_SKUS:
+        if sku["plan_id"] == needle:
+            return dict(sku)
+    return None
+
+
+# Sanity: every public SKU must reference an existing internal tier.
+for _public_sku in PUBLIC_SKUS:
+    _t = Tier(_public_sku["tier_name"])
+    assert _t in _TIERS, f"public SKU {_public_sku['plan_id']!r} -> unknown tier {_t}"
+del _public_sku, _t
+
+# Sanity: there must be exactly four public SKUs (Community, Developer Pro,
+# Consulting/Platform, Enterprise) per the FY27 launch decision.
+assert len(PUBLIC_SKUS) == 4, "PUBLIC_SKUS must contain exactly 4 entries"
+
+
 __all__ = [
     "Tier",
     "PremiumPack",
@@ -969,4 +1157,8 @@ __all__ = [
     "tier_from_price_id",
     "pack_from_price_id",
     "meter_price_id",
+    # Public 4-SKU catalog
+    "PUBLIC_SKUS",
+    "get_skus",
+    "get_sku_by_id",
 ]

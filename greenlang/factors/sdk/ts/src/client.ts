@@ -14,8 +14,18 @@ import {
 import {
   CertificatePinError,
   EditionMismatchError,
+  EditionPinError,
+  EntitlementError,
   FactorsAPIError,
+  LicensingGapError,
+  RateLimitError,
 } from './errors';
+import {
+  ReceiptVerificationError,
+  VerifiedReceipt,
+  VerifyReceiptOptions,
+  verifyReceipt as verifyReceiptStandalone,
+} from './verify';
 import {
   AuditBundle,
   BatchJobHandle,
@@ -271,6 +281,32 @@ export interface FactorsClientOptions {
   expectedCertFingerprint?: string;
 }
 
+/** Accepted edition-id formats: `v1.0.0`, `2027.Q1`, `2027.Q1-electricity`, `2027-04-01-freight`. */
+const EDITION_ID_REGEX =
+  /^(v\d+(?:\.\d+){0,2}(?:-[A-Za-z0-9_]+)?|\d{4}\.Q[1-4](?:-[A-Za-z0-9_]+)?|\d{4}-\d{2}-\d{2}(?:-[A-Za-z0-9_]+)?)$/;
+
+/**
+ * Validate an edition id before sending it as a pin header.
+ *
+ * Throws an `EditionPinError` (loaded lazily so tests don't accidentally
+ * import the full client to check format-only behaviour) when the input
+ * is empty, the wrong type, or does not match a known edition format.
+ */
+function validateEditionId(editionId: string): void {
+  if (!editionId || typeof editionId !== 'string') {
+    throw new EditionPinError(
+      'pinEdition() / withEdition() require a non-empty string editionId.',
+      { editionId },
+    );
+  }
+  if (!EDITION_ID_REGEX.test(editionId)) {
+    throw new EditionPinError(
+      `Edition id ${JSON.stringify(editionId)} is not in a recognised format. Use one of: v1.0.0, 2027.Q1, 2027.Q1-electricity, 2027-04-01-freight.`,
+      { editionId },
+    );
+  }
+}
+
 function resolveAuth(opts: FactorsClientOptions): AuthProvider | undefined {
   if (opts.auth) return opts.auth;
   if (opts.apiKey) return new APIKeyAuth({ apiKey: opts.apiKey });
@@ -412,9 +448,7 @@ export class FactorsClient {
    * the response header on the way back.
    */
   pinEdition(editionId: string): FactorsClient {
-    if (!editionId || typeof editionId !== 'string') {
-      throw new Error('pinEdition() requires a non-empty string editionId');
-    }
+    validateEditionId(editionId);
     return new FactorsClient({
       ...this.cloneOpts,
       pinnedEdition: editionId,
@@ -435,6 +469,32 @@ export class FactorsClient {
     } finally {
       scoped.close();
     }
+  }
+
+  /** Alias for `edition()`. */
+  async withEdition<T>(
+    editionId: string,
+    fn: (scoped: FactorsClient) => Promise<T>,
+  ): Promise<T> {
+    return this.edition(editionId, fn);
+  }
+
+  /**
+   * Verify a signed-receipt-bearing response **offline**.
+   *
+   * Convenience wrapper around the standalone {@link verifyReceiptStandalone}
+   * function so the SDK exposes a single import surface.
+   *
+   * @param response Parsed response object, JSON string, or raw bytes.
+   * @param options Verification options (secret, jwksUrl, algorithm).
+   * @returns Verified-receipt summary.
+   * @throws ReceiptVerificationError when verification fails.
+   */
+  async verifyReceipt(
+    response: unknown,
+    options: VerifyReceiptOptions = {},
+  ): Promise<VerifiedReceipt> {
+    return verifyReceiptStandalone(response, options);
   }
 
   /** Enforce the edition pin against a response. No-op if no pin. */

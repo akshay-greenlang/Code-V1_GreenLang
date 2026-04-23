@@ -61,15 +61,30 @@ export {
   AuthError,
   CertificatePinError,
   EditionMismatchError,
+  EditionPinError,
+  EntitlementError,
   FactorNotFoundError,
   FactorsAPIError,
   LicenseError,
+  LicensingGapError,
   RateLimitError,
   TierError,
   ValidationError,
   errorFromResponse,
 } from './errors';
 export type { FactorsAPIErrorOptions } from './errors';
+
+// Receipt verification (offline)
+export {
+  ReceiptVerificationError,
+  verifyReceipt,
+  DEFAULT_FUTURE_TOLERANCE_SEC,
+} from './verify';
+export type {
+  SignedReceipt,
+  VerifiedReceipt,
+  VerifyReceiptOptions,
+} from './verify';
 
 // Auth
 export { APIKeyAuth, HMACAuth, JWTAuth, composeAuthHeaders } from './auth';

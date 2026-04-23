@@ -1,4 +1,5 @@
-.PHONY: help install dev test unit integ e2e cov test-all lint demo fetch-opa clean security-scan doctor
+.PHONY: help install dev test unit integ e2e cov test-all lint demo fetch-opa clean security-scan doctor \
+        factors-test factors-test-local factors-test-coverage factors-test-build factors-test-shell
 
 # Variables
 OPA_VERSION ?= 0.64.0
@@ -89,3 +90,33 @@ doctor: ## Check development environment and configuration
 	@echo ""
 	@echo "Running greenlang doctor..."
 	$(PYTHON) -m greenlang.cli doctor || echo "GreenLang doctor not available"
+
+# =============================================================================
+# Factors FY27 — reproducible test environment (closes CTO-flagged gap)
+# =============================================================================
+# These targets stand up the full Postgres + Redis + pytest stack defined in
+# `deployment/docker/docker-compose.factors-test.yml`.  They are the canonical
+# entrypoint a developer (or CI) uses to get `tests/factors/` green.
+# See docs/factors/TEST_ENVIRONMENT.md for the runbook.
+
+FACTORS_COMPOSE := deployment/docker/docker-compose.factors-test.yml
+
+factors-test: ## Run full Factors test suite via Docker compose stack
+	docker compose -f $(FACTORS_COMPOSE) up --build --abort-on-container-exit --exit-code-from factors-test
+	docker compose -f $(FACTORS_COMPOSE) down -v
+
+factors-test-local: ## Run Factors tests via local venv (no Docker)
+	$(PYTHON) -m pip install -e ".[factors-test]"
+	pytest tests/factors -v --maxfail=10
+
+factors-test-coverage: ## Run Factors tests with full coverage report (Docker)
+	docker compose -f $(FACTORS_COMPOSE) up --build --abort-on-container-exit --exit-code-from factors-test
+	@echo "Coverage report: ./coverage-factors.xml"
+	docker compose -f $(FACTORS_COMPOSE) down -v
+
+factors-test-build: ## Rebuild the factors-test image without running tests
+	docker compose -f $(FACTORS_COMPOSE) build factors-test
+
+factors-test-shell: ## Drop into the factors-test container with PG + Redis up
+	docker compose -f $(FACTORS_COMPOSE) up -d postgres redis
+	docker compose -f $(FACTORS_COMPOSE) run --rm factors-test bash

@@ -1,0 +1,1332 @@
+[
+  {
+    "case_id": "cbam_steel_cn_001",
+    "activity": {
+      "description": "CBAM goods import: Steel hot-rolled coil, China (CN 7208)",
+      "quantity": 250,
+      "unit": "tonne",
+      "metadata": {
+        "country": "CN",
+        "year": 2026,
+        "cbam_product": "iron_and_steel",
+        "cn_code": "7208",
+        "scope": "embedded_emissions"
+      }
+    },
+    "method_profile": "eu_cbam",
+    "expected": {
+      "factor_id": "EF:CBAM:steel:CN:2024:v1",
+      "factor_family": "material_embodied",
+      "source_authority": "EU CBAM",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 2400.0,
+      "co2e_per_unit_max": 2800.0,
+      "co2e_unit": "kgCO2e/tonne",
+      "must_include_assumptions": [
+        "CBAM default value",
+        "EU CBAM default 2.06 t embedded direct + indirect",
+        "CN code 7208",
+        "embedded emissions"
+      ]
+    },
+    "tags": [
+      "cbam",
+      "steel",
+      "cn",
+      "cn7208",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "cbam_steel_cn_002",
+    "activity": {
+      "description": "CBAM goods import: Steel cold-rolled coil, China (CN 7209)",
+      "quantity": 180,
+      "unit": "tonne",
+      "metadata": {
+        "country": "CN",
+        "year": 2026,
+        "cbam_product": "iron_and_steel",
+        "cn_code": "7209",
+        "scope": "embedded_emissions"
+      }
+    },
+    "method_profile": "eu_cbam",
+    "expected": {
+      "factor_id": "EF:CBAM:steel:CN:2024:v1",
+      "factor_family": "material_embodied",
+      "source_authority": "EU CBAM",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 2500.0,
+      "co2e_per_unit_max": 2950.0,
+      "co2e_unit": "kgCO2e/tonne",
+      "must_include_assumptions": [
+        "CBAM default value",
+        "CBAM default direct",
+        "CN code 7209",
+        "embedded emissions"
+      ]
+    },
+    "tags": [
+      "cbam",
+      "steel",
+      "cn",
+      "cn7209",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "cbam_steel_in_003",
+    "activity": {
+      "description": "CBAM goods import: Steel rebar, India (CN 7214)",
+      "quantity": 320,
+      "unit": "tonne",
+      "metadata": {
+        "country": "IN",
+        "year": 2026,
+        "cbam_product": "iron_and_steel",
+        "cn_code": "7214",
+        "scope": "embedded_emissions"
+      }
+    },
+    "method_profile": "eu_cbam",
+    "expected": {
+      "factor_id": "EF:CBAM:steel:IN:2024:v1",
+      "factor_family": "material_embodied",
+      "source_authority": "EU CBAM",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 2300.0,
+      "co2e_per_unit_max": 2650.0,
+      "co2e_unit": "kgCO2e/tonne",
+      "must_include_assumptions": [
+        "CBAM default value",
+        "Indian BF-BOF with CBAM default fallback",
+        "CN code 7214",
+        "embedded emissions"
+      ]
+    },
+    "tags": [
+      "cbam",
+      "steel",
+      "in",
+      "cn7214",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "cbam_steel_tr_004",
+    "activity": {
+      "description": "CBAM goods import: Steel rebar, Turkey (CN 7214)",
+      "quantity": 200,
+      "unit": "tonne",
+      "metadata": {
+        "country": "TR",
+        "year": 2026,
+        "cbam_product": "iron_and_steel",
+        "cn_code": "7214",
+        "scope": "embedded_emissions"
+      }
+    },
+    "method_profile": "eu_cbam",
+    "expected": {
+      "factor_id": "EF:CBAM:steel:TR:2024:v1",
+      "factor_family": "material_embodied",
+      "source_authority": "EU CBAM",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 1200.0,
+      "co2e_per_unit_max": 1600.0,
+      "co2e_unit": "kgCO2e/tonne",
+      "must_include_assumptions": [
+        "CBAM default value",
+        "Turkish EAF scrap-route",
+        "CN code 7214",
+        "embedded emissions"
+      ]
+    },
+    "tags": [
+      "cbam",
+      "steel",
+      "tr",
+      "cn7214",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "cbam_steel_in_005",
+    "activity": {
+      "description": "CBAM goods import: Steel HDG sheet, India (CN 7210)",
+      "quantity": 150,
+      "unit": "tonne",
+      "metadata": {
+        "country": "IN",
+        "year": 2026,
+        "cbam_product": "iron_and_steel",
+        "cn_code": "7210",
+        "scope": "embedded_emissions"
+      }
+    },
+    "method_profile": "eu_cbam",
+    "expected": {
+      "factor_id": "EF:CBAM:steel:IN:2024:v1",
+      "factor_family": "material_embodied",
+      "source_authority": "EU CBAM",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 2400.0,
+      "co2e_per_unit_max": 2800.0,
+      "co2e_unit": "kgCO2e/tonne",
+      "must_include_assumptions": [
+        "CBAM default value",
+        "Indian primary steel + galvanizing",
+        "CN code 7210",
+        "embedded emissions"
+      ]
+    },
+    "tags": [
+      "cbam",
+      "steel",
+      "in",
+      "cn7210",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "cbam_steel_br_006",
+    "activity": {
+      "description": "CBAM goods import: Iron ore pellets, Brazil (CN 2601)",
+      "quantity": 1500,
+      "unit": "tonne",
+      "metadata": {
+        "country": "BR",
+        "year": 2026,
+        "cbam_product": "iron_and_steel",
+        "cn_code": "2601",
+        "scope": "embedded_emissions"
+      }
+    },
+    "method_profile": "eu_cbam",
+    "expected": {
+      "factor_id": "EF:CBAM:steel:BR:2024:v1",
+      "factor_family": "material_embodied",
+      "source_authority": "EU CBAM",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 100.0,
+      "co2e_per_unit_max": 180.0,
+      "co2e_unit": "kgCO2e/tonne",
+      "must_include_assumptions": [
+        "CBAM default value",
+        "iron ore preparation",
+        "CN code 2601",
+        "embedded emissions"
+      ]
+    },
+    "tags": [
+      "cbam",
+      "steel",
+      "br",
+      "cn2601",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "cbam_steel_ru_007",
+    "activity": {
+      "description": "CBAM goods import: Pig iron, Russia (CN 7201)",
+      "quantity": 800,
+      "unit": "tonne",
+      "metadata": {
+        "country": "RU",
+        "year": 2026,
+        "cbam_product": "iron_and_steel",
+        "cn_code": "7201",
+        "scope": "embedded_emissions"
+      }
+    },
+    "method_profile": "eu_cbam",
+    "expected": {
+      "factor_id": "EF:CBAM:steel:RU:2024:v1",
+      "factor_family": "material_embodied",
+      "source_authority": "EU CBAM",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 1800.0,
+      "co2e_per_unit_max": 2200.0,
+      "co2e_unit": "kgCO2e/tonne",
+      "must_include_assumptions": [
+        "CBAM default value",
+        "blast furnace pig iron",
+        "CN code 7201",
+        "embedded emissions"
+      ]
+    },
+    "tags": [
+      "cbam",
+      "steel",
+      "ru",
+      "cn7201",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "cbam_steel_cn_008",
+    "activity": {
+      "description": "CBAM goods import: Steel wire, China (CN 7217)",
+      "quantity": 90,
+      "unit": "tonne",
+      "metadata": {
+        "country": "CN",
+        "year": 2026,
+        "cbam_product": "iron_and_steel",
+        "cn_code": "7217",
+        "scope": "embedded_emissions"
+      }
+    },
+    "method_profile": "eu_cbam",
+    "expected": {
+      "factor_id": "EF:CBAM:steel:CN:2024:v1",
+      "factor_family": "material_embodied",
+      "source_authority": "EU CBAM",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 2600.0,
+      "co2e_per_unit_max": 3000.0,
+      "co2e_unit": "kgCO2e/tonne",
+      "must_include_assumptions": [
+        "CBAM default value",
+        "drawn wire",
+        "CN code 7217",
+        "embedded emissions"
+      ]
+    },
+    "tags": [
+      "cbam",
+      "steel",
+      "cn",
+      "cn7217",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "cbam_steel_in_009",
+    "activity": {
+      "description": "CBAM goods import: Steel tubes, India (CN 7304)",
+      "quantity": 220,
+      "unit": "tonne",
+      "metadata": {
+        "country": "IN",
+        "year": 2026,
+        "cbam_product": "iron_and_steel",
+        "cn_code": "7304",
+        "scope": "embedded_emissions"
+      }
+    },
+    "method_profile": "eu_cbam",
+    "expected": {
+      "factor_id": "EF:CBAM:steel:IN:2024:v1",
+      "factor_family": "material_embodied",
+      "source_authority": "EU CBAM",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 2400.0,
+      "co2e_per_unit_max": 2800.0,
+      "co2e_unit": "kgCO2e/tonne",
+      "must_include_assumptions": [
+        "CBAM default value",
+        "seamless tubes",
+        "CN code 7304",
+        "embedded emissions"
+      ]
+    },
+    "tags": [
+      "cbam",
+      "steel",
+      "in",
+      "cn7304",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "cbam_steel_cn_010",
+    "activity": {
+      "description": "CBAM goods import: Stainless steel, China (CN 7219)",
+      "quantity": 110,
+      "unit": "tonne",
+      "metadata": {
+        "country": "CN",
+        "year": 2026,
+        "cbam_product": "iron_and_steel",
+        "cn_code": "7219",
+        "scope": "embedded_emissions"
+      }
+    },
+    "method_profile": "eu_cbam",
+    "expected": {
+      "factor_id": "EF:CBAM:steel:CN:2024:v1",
+      "factor_family": "material_embodied",
+      "source_authority": "EU CBAM",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 5500.0,
+      "co2e_per_unit_max": 7000.0,
+      "co2e_unit": "kgCO2e/tonne",
+      "must_include_assumptions": [
+        "CBAM default value",
+        "stainless 304 grade",
+        "CN code 7219",
+        "embedded emissions"
+      ]
+    },
+    "tags": [
+      "cbam",
+      "steel",
+      "cn",
+      "cn7219",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "cbam_steel_kr_011",
+    "activity": {
+      "description": "CBAM goods import: Pre-painted steel, Korea (CN 7210)",
+      "quantity": 130,
+      "unit": "tonne",
+      "metadata": {
+        "country": "KR",
+        "year": 2026,
+        "cbam_product": "iron_and_steel",
+        "cn_code": "7210",
+        "scope": "embedded_emissions"
+      }
+    },
+    "method_profile": "eu_cbam",
+    "expected": {
+      "factor_id": "EF:CBAM:steel:KR:2024:v1",
+      "factor_family": "material_embodied",
+      "source_authority": "EU CBAM",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 2600.0,
+      "co2e_per_unit_max": 3100.0,
+      "co2e_unit": "kgCO2e/tonne",
+      "must_include_assumptions": [
+        "CBAM default value",
+        "Korean coated steel",
+        "CN code 7210",
+        "embedded emissions"
+      ]
+    },
+    "tags": [
+      "cbam",
+      "steel",
+      "kr",
+      "cn7210",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "cbam_steel_ua_012",
+    "activity": {
+      "description": "CBAM goods import: Slab semi-finished, Ukraine (CN 7207)",
+      "quantity": 600,
+      "unit": "tonne",
+      "metadata": {
+        "country": "UA",
+        "year": 2026,
+        "cbam_product": "iron_and_steel",
+        "cn_code": "7207",
+        "scope": "embedded_emissions"
+      }
+    },
+    "method_profile": "eu_cbam",
+    "expected": {
+      "factor_id": "EF:CBAM:steel:UA:2024:v1",
+      "factor_family": "material_embodied",
+      "source_authority": "EU CBAM",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 1950.0,
+      "co2e_per_unit_max": 2300.0,
+      "co2e_unit": "kgCO2e/tonne",
+      "must_include_assumptions": [
+        "CBAM default value",
+        "semi-finished slab",
+        "CN code 7207",
+        "embedded emissions"
+      ]
+    },
+    "tags": [
+      "cbam",
+      "steel",
+      "ua",
+      "cn7207",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "cbam_al_cn_001",
+    "activity": {
+      "description": "CBAM goods import: Primary Al ingot, China (CN 7601)",
+      "quantity": 80,
+      "unit": "tonne",
+      "metadata": {
+        "country": "CN",
+        "year": 2026,
+        "cbam_product": "aluminium",
+        "cn_code": "7601",
+        "scope": "embedded_emissions"
+      }
+    },
+    "method_profile": "eu_cbam",
+    "expected": {
+      "factor_id": "EF:CBAM:aluminium:CN:2024:v1",
+      "factor_family": "material_embodied",
+      "source_authority": "EU CBAM",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 18000.0,
+      "co2e_per_unit_max": 22000.0,
+      "co2e_unit": "kgCO2e/tonne",
+      "must_include_assumptions": [
+        "CBAM default value",
+        "China coal-fired smelter",
+        "CN code 7601",
+        "embedded emissions"
+      ]
+    },
+    "tags": [
+      "cbam",
+      "aluminium",
+      "cn",
+      "cn7601",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "cbam_al_in_002",
+    "activity": {
+      "description": "CBAM goods import: Primary Al ingot, India (CN 7601)",
+      "quantity": 65,
+      "unit": "tonne",
+      "metadata": {
+        "country": "IN",
+        "year": 2026,
+        "cbam_product": "aluminium",
+        "cn_code": "7601",
+        "scope": "embedded_emissions"
+      }
+    },
+    "method_profile": "eu_cbam",
+    "expected": {
+      "factor_id": "EF:CBAM:aluminium:IN:2024:v1",
+      "factor_family": "material_embodied",
+      "source_authority": "EU CBAM",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 16000.0,
+      "co2e_per_unit_max": 19000.0,
+      "co2e_unit": "kgCO2e/tonne",
+      "must_include_assumptions": [
+        "CBAM default value",
+        "India coal-fired smelter",
+        "CN code 7601",
+        "embedded emissions"
+      ]
+    },
+    "tags": [
+      "cbam",
+      "aluminium",
+      "in",
+      "cn7601",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "cbam_al_ae_003",
+    "activity": {
+      "description": "CBAM goods import: Primary Al ingot, UAE (CN 7601)",
+      "quantity": 50,
+      "unit": "tonne",
+      "metadata": {
+        "country": "AE",
+        "year": 2026,
+        "cbam_product": "aluminium",
+        "cn_code": "7601",
+        "scope": "embedded_emissions"
+      }
+    },
+    "method_profile": "eu_cbam",
+    "expected": {
+      "factor_id": "EF:CBAM:aluminium:AE:2024:v1",
+      "factor_family": "material_embodied",
+      "source_authority": "EU CBAM",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 8000.0,
+      "co2e_per_unit_max": 11000.0,
+      "co2e_unit": "kgCO2e/tonne",
+      "must_include_assumptions": [
+        "CBAM default value",
+        "UAE gas-fired smelter",
+        "CN code 7601",
+        "embedded emissions"
+      ]
+    },
+    "tags": [
+      "cbam",
+      "aluminium",
+      "ae",
+      "cn7601",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "cbam_al_ru_004",
+    "activity": {
+      "description": "CBAM goods import: Primary Al ingot, Russia (CN 7601)",
+      "quantity": 90,
+      "unit": "tonne",
+      "metadata": {
+        "country": "RU",
+        "year": 2026,
+        "cbam_product": "aluminium",
+        "cn_code": "7601",
+        "scope": "embedded_emissions"
+      }
+    },
+    "method_profile": "eu_cbam",
+    "expected": {
+      "factor_id": "EF:CBAM:aluminium:RU:2024:v1",
+      "factor_family": "material_embodied",
+      "source_authority": "EU CBAM",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 4000.0,
+      "co2e_per_unit_max": 7000.0,
+      "co2e_unit": "kgCO2e/tonne",
+      "must_include_assumptions": [
+        "CBAM default value",
+        "Russian hydro smelter",
+        "CN code 7601",
+        "embedded emissions"
+      ]
+    },
+    "tags": [
+      "cbam",
+      "aluminium",
+      "ru",
+      "cn7601",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "cbam_al_cn_005",
+    "activity": {
+      "description": "CBAM goods import: Aluminium wire/rod, China (CN 7605)",
+      "quantity": 30,
+      "unit": "tonne",
+      "metadata": {
+        "country": "CN",
+        "year": 2026,
+        "cbam_product": "aluminium",
+        "cn_code": "7605",
+        "scope": "embedded_emissions"
+      }
+    },
+    "method_profile": "eu_cbam",
+    "expected": {
+      "factor_id": "EF:CBAM:aluminium:CN:2024:v1",
+      "factor_family": "material_embodied",
+      "source_authority": "EU CBAM",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 18500.0,
+      "co2e_per_unit_max": 23000.0,
+      "co2e_unit": "kgCO2e/tonne",
+      "must_include_assumptions": [
+        "CBAM default value",
+        "China primary + drawing",
+        "CN code 7605",
+        "embedded emissions"
+      ]
+    },
+    "tags": [
+      "cbam",
+      "aluminium",
+      "cn",
+      "cn7605",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "cbam_al_cn_006",
+    "activity": {
+      "description": "CBAM goods import: Aluminium foil, China (CN 7607)",
+      "quantity": 25,
+      "unit": "tonne",
+      "metadata": {
+        "country": "CN",
+        "year": 2026,
+        "cbam_product": "aluminium",
+        "cn_code": "7607",
+        "scope": "embedded_emissions"
+      }
+    },
+    "method_profile": "eu_cbam",
+    "expected": {
+      "factor_id": "EF:CBAM:aluminium:CN:2024:v1",
+      "factor_family": "material_embodied",
+      "source_authority": "EU CBAM",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 19000.0,
+      "co2e_per_unit_max": 23500.0,
+      "co2e_unit": "kgCO2e/tonne",
+      "must_include_assumptions": [
+        "CBAM default value",
+        "rolled foil",
+        "CN code 7607",
+        "embedded emissions"
+      ]
+    },
+    "tags": [
+      "cbam",
+      "aluminium",
+      "cn",
+      "cn7607",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "cbam_al_in_007",
+    "activity": {
+      "description": "CBAM goods import: Aluminium structural, India (CN 7610)",
+      "quantity": 40,
+      "unit": "tonne",
+      "metadata": {
+        "country": "IN",
+        "year": 2026,
+        "cbam_product": "aluminium",
+        "cn_code": "7610",
+        "scope": "embedded_emissions"
+      }
+    },
+    "method_profile": "eu_cbam",
+    "expected": {
+      "factor_id": "EF:CBAM:aluminium:IN:2024:v1",
+      "factor_family": "material_embodied",
+      "source_authority": "EU CBAM",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 16500.0,
+      "co2e_per_unit_max": 20000.0,
+      "co2e_unit": "kgCO2e/tonne",
+      "must_include_assumptions": [
+        "CBAM default value",
+        "structural extrusion",
+        "CN code 7610",
+        "embedded emissions"
+      ]
+    },
+    "tags": [
+      "cbam",
+      "aluminium",
+      "in",
+      "cn7610",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "cbam_al_tr_008",
+    "activity": {
+      "description": "CBAM goods import: Aluminium tube, Turkey (CN 7608)",
+      "quantity": 20,
+      "unit": "tonne",
+      "metadata": {
+        "country": "TR",
+        "year": 2026,
+        "cbam_product": "aluminium",
+        "cn_code": "7608",
+        "scope": "embedded_emissions"
+      }
+    },
+    "method_profile": "eu_cbam",
+    "expected": {
+      "factor_id": "EF:CBAM:aluminium:TR:2024:v1",
+      "factor_family": "material_embodied",
+      "source_authority": "EU CBAM",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 12000.0,
+      "co2e_per_unit_max": 15500.0,
+      "co2e_unit": "kgCO2e/tonne",
+      "must_include_assumptions": [
+        "CBAM default value",
+        "Turkish extrusion",
+        "CN code 7608",
+        "embedded emissions"
+      ]
+    },
+    "tags": [
+      "cbam",
+      "aluminium",
+      "tr",
+      "cn7608",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "cbam_cement_tr_001",
+    "activity": {
+      "description": "CBAM goods import: Cement clinker, Turkey (CN 252310)",
+      "quantity": 1200,
+      "unit": "tonne",
+      "metadata": {
+        "country": "TR",
+        "year": 2026,
+        "cbam_product": "cement",
+        "cn_code": "252310",
+        "scope": "embedded_emissions"
+      }
+    },
+    "method_profile": "eu_cbam",
+    "expected": {
+      "factor_id": "EF:CBAM:cement:TR:2024:v1",
+      "factor_family": "material_embodied",
+      "source_authority": "EU CBAM",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 850.0,
+      "co2e_per_unit_max": 1050.0,
+      "co2e_unit": "kgCO2e/tonne",
+      "must_include_assumptions": [
+        "CBAM default value",
+        "clinker default",
+        "CN code 252310",
+        "embedded emissions"
+      ]
+    },
+    "tags": [
+      "cbam",
+      "cement",
+      "tr",
+      "cn252310",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "cbam_cement_tr_002",
+    "activity": {
+      "description": "CBAM goods import: Cement Portland, Turkey (CN 252329)",
+      "quantity": 800,
+      "unit": "tonne",
+      "metadata": {
+        "country": "TR",
+        "year": 2026,
+        "cbam_product": "cement",
+        "cn_code": "252329",
+        "scope": "embedded_emissions"
+      }
+    },
+    "method_profile": "eu_cbam",
+    "expected": {
+      "factor_id": "EF:CBAM:cement:TR:2024:v1",
+      "factor_family": "material_embodied",
+      "source_authority": "EU CBAM",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 650.0,
+      "co2e_per_unit_max": 850.0,
+      "co2e_unit": "kgCO2e/tonne",
+      "must_include_assumptions": [
+        "CBAM default value",
+        "Portland cement",
+        "CN code 252329",
+        "embedded emissions"
+      ]
+    },
+    "tags": [
+      "cbam",
+      "cement",
+      "tr",
+      "cn252329",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "cbam_cement_eg_003",
+    "activity": {
+      "description": "CBAM goods import: Cement clinker, Egypt (CN 252310)",
+      "quantity": 1500,
+      "unit": "tonne",
+      "metadata": {
+        "country": "EG",
+        "year": 2026,
+        "cbam_product": "cement",
+        "cn_code": "252310",
+        "scope": "embedded_emissions"
+      }
+    },
+    "method_profile": "eu_cbam",
+    "expected": {
+      "factor_id": "EF:CBAM:cement:EG:2024:v1",
+      "factor_family": "material_embodied",
+      "source_authority": "EU CBAM",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 850.0,
+      "co2e_per_unit_max": 1050.0,
+      "co2e_unit": "kgCO2e/tonne",
+      "must_include_assumptions": [
+        "CBAM default value",
+        "clinker default",
+        "CN code 252310",
+        "embedded emissions"
+      ]
+    },
+    "tags": [
+      "cbam",
+      "cement",
+      "eg",
+      "cn252310",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "cbam_cement_in_004",
+    "activity": {
+      "description": "CBAM goods import: Cement Portland, India (CN 252329)",
+      "quantity": 950,
+      "unit": "tonne",
+      "metadata": {
+        "country": "IN",
+        "year": 2026,
+        "cbam_product": "cement",
+        "cn_code": "252329",
+        "scope": "embedded_emissions"
+      }
+    },
+    "method_profile": "eu_cbam",
+    "expected": {
+      "factor_id": "EF:CBAM:cement:IN:2024:v1",
+      "factor_family": "material_embodied",
+      "source_authority": "EU CBAM",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 700.0,
+      "co2e_per_unit_max": 900.0,
+      "co2e_unit": "kgCO2e/tonne",
+      "must_include_assumptions": [
+        "CBAM default value",
+        "Indian PPC",
+        "CN code 252329",
+        "embedded emissions"
+      ]
+    },
+    "tags": [
+      "cbam",
+      "cement",
+      "in",
+      "cn252329",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "cbam_cement_eg_005",
+    "activity": {
+      "description": "CBAM goods import: White cement, Egypt (CN 252321)",
+      "quantity": 220,
+      "unit": "tonne",
+      "metadata": {
+        "country": "EG",
+        "year": 2026,
+        "cbam_product": "cement",
+        "cn_code": "252321",
+        "scope": "embedded_emissions"
+      }
+    },
+    "method_profile": "eu_cbam",
+    "expected": {
+      "factor_id": "EF:CBAM:cement:EG:2024:v1",
+      "factor_family": "material_embodied",
+      "source_authority": "EU CBAM",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 1000.0,
+      "co2e_per_unit_max": 1300.0,
+      "co2e_unit": "kgCO2e/tonne",
+      "must_include_assumptions": [
+        "CBAM default value",
+        "white cement",
+        "CN code 252321",
+        "embedded emissions"
+      ]
+    },
+    "tags": [
+      "cbam",
+      "cement",
+      "eg",
+      "cn252321",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "cbam_fert_ru_001",
+    "activity": {
+      "description": "CBAM goods import: Urea, Russia (CN 310210)",
+      "quantity": 600,
+      "unit": "tonne",
+      "metadata": {
+        "country": "RU",
+        "year": 2026,
+        "cbam_product": "fertilizers",
+        "cn_code": "310210",
+        "scope": "embedded_emissions"
+      }
+    },
+    "method_profile": "eu_cbam",
+    "expected": {
+      "factor_id": "EF:CBAM:fertilizer:RU:2024:v1",
+      "factor_family": "material_embodied",
+      "source_authority": "EU CBAM",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 1800.0,
+      "co2e_per_unit_max": 2400.0,
+      "co2e_unit": "kgCO2e/tonne",
+      "must_include_assumptions": [
+        "CBAM default value",
+        "urea CBAM default",
+        "CN code 310210",
+        "embedded emissions"
+      ]
+    },
+    "tags": [
+      "cbam",
+      "fertilizer",
+      "ru",
+      "cn310210",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "cbam_fert_ru_002",
+    "activity": {
+      "description": "CBAM goods import: Ammonia, Russia (CN 281410)",
+      "quantity": 400,
+      "unit": "tonne",
+      "metadata": {
+        "country": "RU",
+        "year": 2026,
+        "cbam_product": "fertilizers",
+        "cn_code": "281410",
+        "scope": "embedded_emissions"
+      }
+    },
+    "method_profile": "eu_cbam",
+    "expected": {
+      "factor_id": "EF:CBAM:fertilizer:RU:2024:v1",
+      "factor_family": "material_embodied",
+      "source_authority": "EU CBAM",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 2200.0,
+      "co2e_per_unit_max": 2850.0,
+      "co2e_unit": "kgCO2e/tonne",
+      "must_include_assumptions": [
+        "CBAM default value",
+        "ammonia CBAM default",
+        "CN code 281410",
+        "embedded emissions"
+      ]
+    },
+    "tags": [
+      "cbam",
+      "fertilizer",
+      "ru",
+      "cn281410",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "cbam_fert_eg_003",
+    "activity": {
+      "description": "CBAM goods import: Ammonium nitrate, Egypt (CN 310230)",
+      "quantity": 350,
+      "unit": "tonne",
+      "metadata": {
+        "country": "EG",
+        "year": 2026,
+        "cbam_product": "fertilizers",
+        "cn_code": "310230",
+        "scope": "embedded_emissions"
+      }
+    },
+    "method_profile": "eu_cbam",
+    "expected": {
+      "factor_id": "EF:CBAM:fertilizer:EG:2024:v1",
+      "factor_family": "material_embodied",
+      "source_authority": "EU CBAM",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 2500.0,
+      "co2e_per_unit_max": 3500.0,
+      "co2e_unit": "kgCO2e/tonne",
+      "must_include_assumptions": [
+        "CBAM default value",
+        "AN CBAM default",
+        "CN code 310230",
+        "embedded emissions"
+      ]
+    },
+    "tags": [
+      "cbam",
+      "fertilizer",
+      "eg",
+      "cn310230",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "cbam_fert_eg_004",
+    "activity": {
+      "description": "CBAM goods import: Nitric acid, Egypt (CN 280800)",
+      "quantity": 200,
+      "unit": "tonne",
+      "metadata": {
+        "country": "EG",
+        "year": 2026,
+        "cbam_product": "fertilizers",
+        "cn_code": "280800",
+        "scope": "embedded_emissions"
+      }
+    },
+    "method_profile": "eu_cbam",
+    "expected": {
+      "factor_id": "EF:CBAM:fertilizer:EG:2024:v1",
+      "factor_family": "material_embodied",
+      "source_authority": "EU CBAM",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 5500.0,
+      "co2e_per_unit_max": 6500.0,
+      "co2e_unit": "kgCO2e/tonne",
+      "must_include_assumptions": [
+        "CBAM default value",
+        "nitric acid + N2O abatement",
+        "CN code 280800",
+        "embedded emissions"
+      ]
+    },
+    "tags": [
+      "cbam",
+      "fertilizer",
+      "eg",
+      "cn280800",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "cbam_fert_ma_005",
+    "activity": {
+      "description": "CBAM goods import: NPK fertilizer, Morocco (CN 310520)",
+      "quantity": 280,
+      "unit": "tonne",
+      "metadata": {
+        "country": "MA",
+        "year": 2026,
+        "cbam_product": "fertilizers",
+        "cn_code": "310520",
+        "scope": "embedded_emissions"
+      }
+    },
+    "method_profile": "eu_cbam",
+    "expected": {
+      "factor_id": "EF:CBAM:fertilizer:MA:2024:v1",
+      "factor_family": "material_embodied",
+      "source_authority": "EU CBAM",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 1600.0,
+      "co2e_per_unit_max": 2400.0,
+      "co2e_unit": "kgCO2e/tonne",
+      "must_include_assumptions": [
+        "CBAM default value",
+        "compound NPK",
+        "CN code 310520",
+        "embedded emissions"
+      ]
+    },
+    "tags": [
+      "cbam",
+      "fertilizer",
+      "ma",
+      "cn310520",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "cbam_h2_sa_001",
+    "activity": {
+      "description": "CBAM goods import: Grey H2, SMR, Saudi Arabia (CN 280410)",
+      "quantity": 50,
+      "unit": "tonne",
+      "metadata": {
+        "country": "SA",
+        "year": 2026,
+        "cbam_product": "hydrogen",
+        "cn_code": "280410",
+        "scope": "embedded_emissions"
+      }
+    },
+    "method_profile": "eu_cbam",
+    "expected": {
+      "factor_id": "EF:CBAM:hydrogen:SA:2024:v1",
+      "factor_family": "material_embodied",
+      "source_authority": "EU CBAM",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 9000.0,
+      "co2e_per_unit_max": 11000.0,
+      "co2e_unit": "kgCO2e/tonne",
+      "must_include_assumptions": [
+        "CBAM default value",
+        "SMR fossil hydrogen",
+        "CN code 280410",
+        "embedded emissions"
+      ]
+    },
+    "tags": [
+      "cbam",
+      "hydrogen",
+      "sa",
+      "cn280410",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "cbam_h2_ru_002",
+    "activity": {
+      "description": "CBAM goods import: Grey H2, SMR, Russia (CN 280410)",
+      "quantity": 80,
+      "unit": "tonne",
+      "metadata": {
+        "country": "RU",
+        "year": 2026,
+        "cbam_product": "hydrogen",
+        "cn_code": "280410",
+        "scope": "embedded_emissions"
+      }
+    },
+    "method_profile": "eu_cbam",
+    "expected": {
+      "factor_id": "EF:CBAM:hydrogen:RU:2024:v1",
+      "factor_family": "material_embodied",
+      "source_authority": "EU CBAM",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 9000.0,
+      "co2e_per_unit_max": 11000.0,
+      "co2e_unit": "kgCO2e/tonne",
+      "must_include_assumptions": [
+        "CBAM default value",
+        "SMR fossil hydrogen",
+        "CN code 280410",
+        "embedded emissions"
+      ]
+    },
+    "tags": [
+      "cbam",
+      "hydrogen",
+      "ru",
+      "cn280410",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "cbam_h2_no_003",
+    "activity": {
+      "description": "CBAM goods import: Blue H2, SMR+CCS, Norway (CN 280410)",
+      "quantity": 30,
+      "unit": "tonne",
+      "metadata": {
+        "country": "NO",
+        "year": 2026,
+        "cbam_product": "hydrogen",
+        "cn_code": "280410",
+        "scope": "embedded_emissions"
+      }
+    },
+    "method_profile": "eu_cbam",
+    "expected": {
+      "factor_id": "EF:CBAM:hydrogen:NO:2024:v1",
+      "factor_family": "material_embodied",
+      "source_authority": "EU CBAM",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 1500.0,
+      "co2e_per_unit_max": 4000.0,
+      "co2e_unit": "kgCO2e/tonne",
+      "must_include_assumptions": [
+        "CBAM default value",
+        "SMR with carbon capture",
+        "CN code 280410",
+        "embedded emissions"
+      ]
+    },
+    "tags": [
+      "cbam",
+      "hydrogen",
+      "no",
+      "cn280410",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "cbam_elec_rs_001",
+    "activity": {
+      "description": "CBAM goods import: Imported electricity from non-EU, Serbia (CN 27160000)",
+      "quantity": 5000,
+      "unit": "MWh",
+      "metadata": {
+        "country": "RS",
+        "year": 2026,
+        "cbam_product": "electricity",
+        "cn_code": "27160000",
+        "scope": "embedded_emissions"
+      }
+    },
+    "method_profile": "eu_cbam",
+    "expected": {
+      "factor_id": "EF:CBAM:electricity:RS:2024:v1",
+      "factor_family": "grid_intensity",
+      "source_authority": "EU CBAM",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 700.0,
+      "co2e_per_unit_max": 900.0,
+      "co2e_unit": "kgCO2e/MWh",
+      "must_include_assumptions": [
+        "CBAM default value",
+        "fossil-heavy import",
+        "CN code 27160000",
+        "imported electricity"
+      ]
+    },
+    "tags": [
+      "cbam",
+      "electricity",
+      "rs",
+      "cn27160000",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "cbam_elec_ua_002",
+    "activity": {
+      "description": "CBAM goods import: Imported electricity from non-EU, Ukraine (CN 27160000)",
+      "quantity": 2500,
+      "unit": "MWh",
+      "metadata": {
+        "country": "UA",
+        "year": 2026,
+        "cbam_product": "electricity",
+        "cn_code": "27160000",
+        "scope": "embedded_emissions"
+      }
+    },
+    "method_profile": "eu_cbam",
+    "expected": {
+      "factor_id": "EF:CBAM:electricity:UA:2024:v1",
+      "factor_family": "grid_intensity",
+      "source_authority": "EU CBAM",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 450.0,
+      "co2e_per_unit_max": 700.0,
+      "co2e_unit": "kgCO2e/MWh",
+      "must_include_assumptions": [
+        "CBAM default value",
+        "mixed import",
+        "CN code 27160000",
+        "imported electricity"
+      ]
+    },
+    "tags": [
+      "cbam",
+      "electricity",
+      "ua",
+      "cn27160000",
+      "fy27_launch"
+    ]
+  }
+]

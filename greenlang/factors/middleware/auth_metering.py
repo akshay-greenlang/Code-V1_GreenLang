@@ -154,3 +154,104 @@ def install_factors_middleware(
         protected_prefix,
         len(key_validator.list_records()),
     )
+
+
+# ---------------------------------------------------------------------------
+# Class-shape middleware (BaseHTTPMiddleware) for use with
+# `app.add_middleware(AuthMeteringMiddleware)` from factors_app.py.
+# Mirrors the decorator above but applies to /v1 by default.
+# ---------------------------------------------------------------------------
+
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.requests import Request as _StarletteRequest
+from starlette.responses import JSONResponse as _JSONResponse
+
+
+class AuthMeteringMiddleware(BaseHTTPMiddleware):
+    """Class wrapper around the same auth + tier + metering logic.
+
+    Reads protected prefix from ``GL_FACTORS_PROTECTED_PREFIX`` env (default
+    ``/v1``). Public routes (/v1/health, /openapi.json, /docs, /redoc,
+    /metrics) bypass the gate so monitoring + docs work unauthenticated.
+    """
+
+    PUBLIC_PATHS = {
+        "/v1/health",
+        "/openapi.json",
+        "/docs",
+        "/redoc",
+        "/metrics",
+        "/",
+    }
+
+    def __init__(self, app, *, protected_prefix: Optional[str] = None,
+                 validator: Optional[APIKeyValidator] = None,
+                 jwt_decode: Optional[Callable] = None) -> None:
+        import os
+        super().__init__(app)
+        self.protected_prefix = protected_prefix or os.getenv(
+            "GL_FACTORS_PROTECTED_PREFIX", "/v1"
+        )
+        self.validator = validator or default_validator()
+        self.decoder = jwt_decode or _default_jwt_decoder()
+
+    async def dispatch(self, request: _StarletteRequest, call_next):
+        path = request.url.path
+        if path in self.PUBLIC_PATHS:
+            return await call_next(request)
+        if not path.startswith(self.protected_prefix):
+            return await call_next(request)
+
+        authorization = request.headers.get("Authorization")
+        api_key = request.headers.get("X-API-Key")
+        user = authenticate_headers(
+            authorization, api_key,
+            jwt_decode=self.decoder, validator=self.validator,
+        )
+        if user is None:
+            return _JSONResponse(
+                status_code=401,
+                content={
+                    "error": "unauthenticated",
+                    "message": (
+                        "Missing or invalid credentials. Provide either "
+                        "Authorization: Bearer <jwt> or X-API-Key: <key>."
+                    ),
+                },
+            )
+
+        tier = user.get("tier") or "community"
+        if not tier_allows_endpoint(tier, path):
+            required = min_tier_for_endpoint(path)
+            return _JSONResponse(
+                status_code=403,
+                content={
+                    "error": "tier_forbidden",
+                    "message": (
+                        f"Endpoint {path} requires tier '{required}'+ "
+                        f"(caller tier: '{tier}')."
+                    ),
+                    "required_tier": required,
+                    "caller_tier": tier,
+                    "upgrade_url": "https://greenlang.ai/pricing",
+                },
+            )
+
+        request.state.user = user
+        request.state.tier = tier
+        response = await call_next(request)
+
+        row_count = 1
+        try:
+            row_count = int(response.headers.get("X-Row-Count", "1") or 1)
+        except (TypeError, ValueError):
+            row_count = 1
+        try:
+            record_usage_event(
+                tier=tier, endpoint=path, method=request.method,
+                user=user, row_count=row_count,
+                status_code=response.status_code, api_key=api_key,
+            )
+        except Exception as exc:  # noqa: BLE001
+            logger.debug("metering failed: %s", exc)
+        return response

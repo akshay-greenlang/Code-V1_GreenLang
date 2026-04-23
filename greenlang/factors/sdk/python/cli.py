@@ -31,6 +31,7 @@ from typing import Any, Dict, List, Optional, Sequence
 from .client import FactorsClient
 from .errors import FactorsAPIError
 from .models import ResolutionRequest
+from .verify import ReceiptVerificationError, verify_receipt
 
 logger = logging.getLogger(__name__)
 
@@ -121,6 +122,32 @@ def cmd_list_editions(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_verify_receipt(args: argparse.Namespace) -> int:
+    """Standalone offline receipt verifier.
+
+    Reads a JSON response from a file (or stdin when path is ``-``) and
+    runs :func:`verify_receipt`. Exits 0 on success, 3 on verification
+    failure, 2 on usage / IO errors.
+    """
+    if args.response_path == "-":
+        payload_text = sys.stdin.read()
+    else:
+        with open(args.response_path, "r", encoding="utf-8") as fh:
+            payload_text = fh.read()
+    try:
+        result = verify_receipt(
+            payload_text,
+            secret=args.secret,
+            jwks_url=args.jwks_url,
+            algorithm=args.algorithm,
+        )
+    except ReceiptVerificationError as exc:
+        sys.stderr.write(f"verification failed: {exc}\n")
+        return 3
+    _print_json(result, pretty=args.pretty)
+    return 0
+
+
 # ---------------------------------------------------------------------------
 # Argument parsing
 # ---------------------------------------------------------------------------
@@ -202,6 +229,38 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_common(p_list)
     p_list.set_defaults(func=cmd_list_editions)
+
+    # verify-receipt (standalone, no network call)
+    p_verify = sub.add_parser(
+        "verify-receipt",
+        help="Verify a signed-receipt-bearing response file (offline, no network call)",
+    )
+    p_verify.add_argument(
+        "response_path",
+        help='Path to the JSON response file. Use "-" to read from stdin.',
+    )
+    p_verify.add_argument(
+        "--secret",
+        default=None,
+        help="HMAC secret (defaults to GL_FACTORS_SIGNING_SECRET env var)",
+    )
+    p_verify.add_argument(
+        "--jwks-url",
+        default=None,
+        help="JWKS URL for Ed25519 receipts (defaults to GL_FACTORS_JWKS_URL env var)",
+    )
+    p_verify.add_argument(
+        "--algorithm",
+        default=None,
+        choices=["sha256-hmac", "ed25519"],
+        help="Force a specific algorithm (default: trust the receipt's algorithm field)",
+    )
+    p_verify.add_argument(
+        "--pretty",
+        action="store_true",
+        help="Pretty-print JSON output",
+    )
+    p_verify.set_defaults(func=cmd_verify_receipt)
 
     return parser
 

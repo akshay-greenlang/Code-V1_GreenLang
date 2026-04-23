@@ -1,0 +1,1890 @@
+[
+  {
+    "case_id": "freight_road_eu_001",
+    "activity": {
+      "description": "Road freight: HGV ≥40t artic, EU avg, 18.0t × 850km (WTW)",
+      "quantity": 15300.0,
+      "unit": "tonne_km",
+      "metadata": {
+        "country": "EU",
+        "year": 2026,
+        "mode": "road",
+        "boundary": "WTW",
+        "scope": "scope3"
+      }
+    },
+    "method_profile": "freight_iso_14083",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "transport_lane",
+      "source_authority": "GLEC",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 0.08,
+      "co2e_per_unit_max": 0.11,
+      "co2e_unit": "kgCO2e/tonne_km",
+      "must_include_assumptions": [
+        "WTW",
+        "road freight",
+        "diesel",
+        "GLEC"
+      ]
+    },
+    "tags": [
+      "freight",
+      "road",
+      "wtw",
+      "eu",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "freight_road_eu_002",
+    "activity": {
+      "description": "Road freight: HGV ≥40t artic, EU avg, 24.0t × 1200km (TTW)",
+      "quantity": 28800.0,
+      "unit": "tonne_km",
+      "metadata": {
+        "country": "EU",
+        "year": 2026,
+        "mode": "road",
+        "boundary": "TTW",
+        "scope": "scope3"
+      }
+    },
+    "method_profile": "freight_iso_14083",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "transport_lane",
+      "source_authority": "GLEC",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 0.08,
+      "co2e_per_unit_max": 0.11,
+      "co2e_unit": "kgCO2e/tonne_km",
+      "must_include_assumptions": [
+        "TTW",
+        "road freight",
+        "diesel",
+        "GLEC"
+      ]
+    },
+    "tags": [
+      "freight",
+      "road",
+      "ttw",
+      "eu",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "freight_road_uk_003",
+    "activity": {
+      "description": "Road freight: HGV 26-40t rigid, UK, 14.0t × 320km (WTW)",
+      "quantity": 4480.0,
+      "unit": "tonne_km",
+      "metadata": {
+        "country": "UK",
+        "year": 2026,
+        "mode": "road",
+        "boundary": "WTW",
+        "scope": "scope3"
+      }
+    },
+    "method_profile": "freight_iso_14083",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "transport_lane",
+      "source_authority": "GLEC",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 0.11,
+      "co2e_per_unit_max": 0.15,
+      "co2e_unit": "kgCO2e/tonne_km",
+      "must_include_assumptions": [
+        "WTW",
+        "road freight",
+        "diesel",
+        "GLEC"
+      ]
+    },
+    "tags": [
+      "freight",
+      "road",
+      "wtw",
+      "uk",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "freight_road_uk_004",
+    "activity": {
+      "description": "Road freight: HGV 7.5-17t rigid, UK, 6.0t × 180km (WTW)",
+      "quantity": 1080.0,
+      "unit": "tonne_km",
+      "metadata": {
+        "country": "UK",
+        "year": 2026,
+        "mode": "road",
+        "boundary": "WTW",
+        "scope": "scope3"
+      }
+    },
+    "method_profile": "freight_iso_14083",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "transport_lane",
+      "source_authority": "GLEC",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 0.18,
+      "co2e_per_unit_max": 0.23,
+      "co2e_unit": "kgCO2e/tonne_km",
+      "must_include_assumptions": [
+        "WTW",
+        "road freight",
+        "diesel",
+        "GLEC"
+      ]
+    },
+    "tags": [
+      "freight",
+      "road",
+      "wtw",
+      "uk",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "freight_road_uk_005",
+    "activity": {
+      "description": "Road freight: Van <3.5t, UK last-mile, 0.6t × 120km (WTW)",
+      "quantity": 72.0,
+      "unit": "tonne_km",
+      "metadata": {
+        "country": "UK",
+        "year": 2026,
+        "mode": "road",
+        "boundary": "WTW",
+        "scope": "scope3"
+      }
+    },
+    "method_profile": "freight_iso_14083",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "transport_lane",
+      "source_authority": "GLEC",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 0.45,
+      "co2e_per_unit_max": 0.62,
+      "co2e_unit": "kgCO2e/tonne_km",
+      "must_include_assumptions": [
+        "WTW",
+        "road freight",
+        "diesel",
+        "GLEC"
+      ]
+    },
+    "tags": [
+      "freight",
+      "road",
+      "wtw",
+      "uk",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "freight_road_us_006",
+    "activity": {
+      "description": "Road freight: HGV ≥40t artic, US class 8, 22.0t × 2400km (WTW)",
+      "quantity": 52800.0,
+      "unit": "tonne_km",
+      "metadata": {
+        "country": "US",
+        "year": 2026,
+        "mode": "road",
+        "boundary": "WTW",
+        "scope": "scope3"
+      }
+    },
+    "method_profile": "freight_iso_14083",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "transport_lane",
+      "source_authority": "GLEC",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 0.06,
+      "co2e_per_unit_max": 0.085,
+      "co2e_unit": "kgCO2e/tonne_km",
+      "must_include_assumptions": [
+        "WTW",
+        "road freight",
+        "diesel",
+        "GLEC"
+      ]
+    },
+    "tags": [
+      "freight",
+      "road",
+      "wtw",
+      "us",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "freight_road_us_007",
+    "activity": {
+      "description": "Road freight: HGV class 6 box truck, US, 4.0t × 350km (WTW)",
+      "quantity": 1400.0,
+      "unit": "tonne_km",
+      "metadata": {
+        "country": "US",
+        "year": 2026,
+        "mode": "road",
+        "boundary": "WTW",
+        "scope": "scope3"
+      }
+    },
+    "method_profile": "freight_iso_14083",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "transport_lane",
+      "source_authority": "GLEC",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 0.18,
+      "co2e_per_unit_max": 0.24,
+      "co2e_unit": "kgCO2e/tonne_km",
+      "must_include_assumptions": [
+        "WTW",
+        "road freight",
+        "diesel",
+        "GLEC"
+      ]
+    },
+    "tags": [
+      "freight",
+      "road",
+      "wtw",
+      "us",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "freight_road_in_008",
+    "activity": {
+      "description": "Road freight: HGV BS-VI 40t, India NH, 18.0t × 1400km (WTW)",
+      "quantity": 25200.0,
+      "unit": "tonne_km",
+      "metadata": {
+        "country": "IN",
+        "year": 2026,
+        "mode": "road",
+        "boundary": "WTW",
+        "scope": "scope3"
+      }
+    },
+    "method_profile": "freight_iso_14083",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "transport_lane",
+      "source_authority": "GLEC",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 0.09,
+      "co2e_per_unit_max": 0.12,
+      "co2e_unit": "kgCO2e/tonne_km",
+      "must_include_assumptions": [
+        "WTW",
+        "road freight",
+        "diesel",
+        "GLEC"
+      ]
+    },
+    "tags": [
+      "freight",
+      "road",
+      "wtw",
+      "in",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "freight_road_in_009",
+    "activity": {
+      "description": "Road freight: HGV BS-VI 25t, India SH, 12.0t × 600km (WTW)",
+      "quantity": 7200.0,
+      "unit": "tonne_km",
+      "metadata": {
+        "country": "IN",
+        "year": 2026,
+        "mode": "road",
+        "boundary": "WTW",
+        "scope": "scope3"
+      }
+    },
+    "method_profile": "freight_iso_14083",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "transport_lane",
+      "source_authority": "GLEC",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 0.11,
+      "co2e_per_unit_max": 0.14,
+      "co2e_unit": "kgCO2e/tonne_km",
+      "must_include_assumptions": [
+        "WTW",
+        "road freight",
+        "diesel",
+        "GLEC"
+      ]
+    },
+    "tags": [
+      "freight",
+      "road",
+      "wtw",
+      "in",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "freight_road_in_010",
+    "activity": {
+      "description": "Road freight: HGV BS-VI 16t, India urban, 6.0t × 220km (WTW)",
+      "quantity": 1320.0,
+      "unit": "tonne_km",
+      "metadata": {
+        "country": "IN",
+        "year": 2026,
+        "mode": "road",
+        "boundary": "WTW",
+        "scope": "scope3"
+      }
+    },
+    "method_profile": "freight_iso_14083",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "transport_lane",
+      "source_authority": "GLEC",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 0.18,
+      "co2e_per_unit_max": 0.23,
+      "co2e_unit": "kgCO2e/tonne_km",
+      "must_include_assumptions": [
+        "WTW",
+        "road freight",
+        "diesel",
+        "GLEC"
+      ]
+    },
+    "tags": [
+      "freight",
+      "road",
+      "wtw",
+      "in",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "freight_road_eu_011",
+    "activity": {
+      "description": "Road freight: HGV ≥40t empty backhaul, EU, 0.0t × 400km (TTW)",
+      "quantity": 0.0,
+      "unit": "tonne_km",
+      "metadata": {
+        "country": "EU",
+        "year": 2026,
+        "mode": "road",
+        "boundary": "TTW",
+        "scope": "scope3"
+      }
+    },
+    "method_profile": "freight_iso_14083",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "transport_lane",
+      "source_authority": "GLEC",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 0.45,
+      "co2e_per_unit_max": 0.7,
+      "co2e_unit": "kgCO2e/tonne_km",
+      "must_include_assumptions": [
+        "TTW",
+        "road freight",
+        "empty running",
+        "GLEC"
+      ]
+    },
+    "tags": [
+      "freight",
+      "road",
+      "ttw",
+      "eu",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "freight_road_eu_012",
+    "activity": {
+      "description": "Road freight: Refrigerated HGV 26t, EU, 14.0t × 950km (WTW)",
+      "quantity": 13300.0,
+      "unit": "tonne_km",
+      "metadata": {
+        "country": "EU",
+        "year": 2026,
+        "mode": "road",
+        "boundary": "WTW",
+        "scope": "scope3"
+      }
+    },
+    "method_profile": "freight_iso_14083",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "transport_lane",
+      "source_authority": "GLEC",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 0.18,
+      "co2e_per_unit_max": 0.23,
+      "co2e_unit": "kgCO2e/tonne_km",
+      "must_include_assumptions": [
+        "WTW",
+        "road freight",
+        "refrigerated, diesel + reefer load",
+        "GLEC"
+      ]
+    },
+    "tags": [
+      "freight",
+      "road",
+      "wtw",
+      "eu",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "freight_road_eu_013",
+    "activity": {
+      "description": "Road freight: HGV electric 19t, EU pilot, 9.0t × 280km (WTW)",
+      "quantity": 2520.0,
+      "unit": "tonne_km",
+      "metadata": {
+        "country": "EU",
+        "year": 2026,
+        "mode": "road",
+        "boundary": "WTW",
+        "scope": "scope3"
+      }
+    },
+    "method_profile": "freight_iso_14083",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "transport_lane",
+      "source_authority": "GLEC",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 0.04,
+      "co2e_per_unit_max": 0.08,
+      "co2e_unit": "kgCO2e/tonne_km",
+      "must_include_assumptions": [
+        "WTW",
+        "road freight",
+        "battery electric",
+        "GLEC"
+      ]
+    },
+    "tags": [
+      "freight",
+      "road",
+      "wtw",
+      "eu",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "freight_road_eu_014",
+    "activity": {
+      "description": "Road freight: HGV LNG 40t, EU, 18.0t × 1050km (WTW)",
+      "quantity": 18900.0,
+      "unit": "tonne_km",
+      "metadata": {
+        "country": "EU",
+        "year": 2026,
+        "mode": "road",
+        "boundary": "WTW",
+        "scope": "scope3"
+      }
+    },
+    "method_profile": "freight_iso_14083",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "transport_lane",
+      "source_authority": "GLEC",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 0.06,
+      "co2e_per_unit_max": 0.09,
+      "co2e_unit": "kgCO2e/tonne_km",
+      "must_include_assumptions": [
+        "WTW",
+        "road freight",
+        "LNG",
+        "GLEC"
+      ]
+    },
+    "tags": [
+      "freight",
+      "road",
+      "wtw",
+      "eu",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "freight_road_us_015",
+    "activity": {
+      "description": "Road freight: HGV BEV 26t, US California, 12.0t × 320km (WTW)",
+      "quantity": 3840.0,
+      "unit": "tonne_km",
+      "metadata": {
+        "country": "US",
+        "year": 2026,
+        "mode": "road",
+        "boundary": "WTW",
+        "scope": "scope3"
+      }
+    },
+    "method_profile": "freight_iso_14083",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "transport_lane",
+      "source_authority": "GLEC",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 0.03,
+      "co2e_per_unit_max": 0.08,
+      "co2e_unit": "kgCO2e/tonne_km",
+      "must_include_assumptions": [
+        "WTW",
+        "road freight",
+        "battery electric",
+        "GLEC"
+      ]
+    },
+    "tags": [
+      "freight",
+      "road",
+      "wtw",
+      "us",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "freight_sea_001",
+    "activity": {
+      "description": "Maritime freight: Container ship 8000 TEU, deepsea, 6.5 kt × 19500km (WTW)",
+      "quantity": 126750000.0,
+      "unit": "tonne_km",
+      "metadata": {
+        "country": "GLOBAL",
+        "year": 2026,
+        "mode": "sea",
+        "boundary": "WTW",
+        "scope": "scope3"
+      }
+    },
+    "method_profile": "freight_iso_14083",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "transport_lane",
+      "source_authority": "GLEC",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 0.008,
+      "co2e_per_unit_max": 0.012,
+      "co2e_unit": "kgCO2e/tonne_km",
+      "must_include_assumptions": [
+        "WTW",
+        "maritime freight",
+        "container deepsea",
+        "GLEC"
+      ]
+    },
+    "tags": [
+      "freight",
+      "sea",
+      "wtw",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "freight_sea_002",
+    "activity": {
+      "description": "Maritime freight: Container ship 4000 TEU, intra-Asia, 4.0 kt × 4200km (WTW)",
+      "quantity": 16800000.0,
+      "unit": "tonne_km",
+      "metadata": {
+        "country": "GLOBAL",
+        "year": 2026,
+        "mode": "sea",
+        "boundary": "WTW",
+        "scope": "scope3"
+      }
+    },
+    "method_profile": "freight_iso_14083",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "transport_lane",
+      "source_authority": "GLEC",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 0.014,
+      "co2e_per_unit_max": 0.018,
+      "co2e_unit": "kgCO2e/tonne_km",
+      "must_include_assumptions": [
+        "WTW",
+        "maritime freight",
+        "container short-sea",
+        "GLEC"
+      ]
+    },
+    "tags": [
+      "freight",
+      "sea",
+      "wtw",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "freight_sea_003",
+    "activity": {
+      "description": "Maritime freight: Container ship 14000 TEU, Asia-EU, 8.0 kt × 21500km (WTW)",
+      "quantity": 172000000.0,
+      "unit": "tonne_km",
+      "metadata": {
+        "country": "GLOBAL",
+        "year": 2026,
+        "mode": "sea",
+        "boundary": "WTW",
+        "scope": "scope3"
+      }
+    },
+    "method_profile": "freight_iso_14083",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "transport_lane",
+      "source_authority": "GLEC",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 0.007,
+      "co2e_per_unit_max": 0.011,
+      "co2e_unit": "kgCO2e/tonne_km",
+      "must_include_assumptions": [
+        "WTW",
+        "maritime freight",
+        "ULCV container",
+        "GLEC"
+      ]
+    },
+    "tags": [
+      "freight",
+      "sea",
+      "wtw",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "freight_sea_004",
+    "activity": {
+      "description": "Maritime freight: Bulk carrier Capesize 180kt, 150.0 kt × 18000km (WTW)",
+      "quantity": 2700000000.0,
+      "unit": "tonne_km",
+      "metadata": {
+        "country": "GLOBAL",
+        "year": 2026,
+        "mode": "sea",
+        "boundary": "WTW",
+        "scope": "scope3"
+      }
+    },
+    "method_profile": "freight_iso_14083",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "transport_lane",
+      "source_authority": "GLEC",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 0.003,
+      "co2e_per_unit_max": 0.006,
+      "co2e_unit": "kgCO2e/tonne_km",
+      "must_include_assumptions": [
+        "WTW",
+        "maritime freight",
+        "dry bulk",
+        "GLEC"
+      ]
+    },
+    "tags": [
+      "freight",
+      "sea",
+      "wtw",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "freight_sea_005",
+    "activity": {
+      "description": "Maritime freight: Bulk carrier Panamax 75kt, 60.0 kt × 12500km (WTW)",
+      "quantity": 750000000.0,
+      "unit": "tonne_km",
+      "metadata": {
+        "country": "GLOBAL",
+        "year": 2026,
+        "mode": "sea",
+        "boundary": "WTW",
+        "scope": "scope3"
+      }
+    },
+    "method_profile": "freight_iso_14083",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "transport_lane",
+      "source_authority": "GLEC",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 0.004,
+      "co2e_per_unit_max": 0.007,
+      "co2e_unit": "kgCO2e/tonne_km",
+      "must_include_assumptions": [
+        "WTW",
+        "maritime freight",
+        "dry bulk",
+        "GLEC"
+      ]
+    },
+    "tags": [
+      "freight",
+      "sea",
+      "wtw",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "freight_sea_006",
+    "activity": {
+      "description": "Maritime freight: Tanker VLCC 280kt, 250.0 kt × 21000km (WTW)",
+      "quantity": 5250000000.0,
+      "unit": "tonne_km",
+      "metadata": {
+        "country": "GLOBAL",
+        "year": 2026,
+        "mode": "sea",
+        "boundary": "WTW",
+        "scope": "scope3"
+      }
+    },
+    "method_profile": "freight_iso_14083",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "transport_lane",
+      "source_authority": "GLEC",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 0.003,
+      "co2e_per_unit_max": 0.005,
+      "co2e_unit": "kgCO2e/tonne_km",
+      "must_include_assumptions": [
+        "WTW",
+        "maritime freight",
+        "crude oil",
+        "GLEC"
+      ]
+    },
+    "tags": [
+      "freight",
+      "sea",
+      "wtw",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "freight_sea_007",
+    "activity": {
+      "description": "Maritime freight: Tanker MR product 50kt, 38.0 kt × 9800km (WTW)",
+      "quantity": 372400000.0,
+      "unit": "tonne_km",
+      "metadata": {
+        "country": "GLOBAL",
+        "year": 2026,
+        "mode": "sea",
+        "boundary": "WTW",
+        "scope": "scope3"
+      }
+    },
+    "method_profile": "freight_iso_14083",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "transport_lane",
+      "source_authority": "GLEC",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 0.005,
+      "co2e_per_unit_max": 0.008,
+      "co2e_unit": "kgCO2e/tonne_km",
+      "must_include_assumptions": [
+        "WTW",
+        "maritime freight",
+        "refined products",
+        "GLEC"
+      ]
+    },
+    "tags": [
+      "freight",
+      "sea",
+      "wtw",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "freight_sea_008",
+    "activity": {
+      "description": "Maritime freight: Ro-Ro ferry, EU short-sea, 0.5 kt × 280km (WTW)",
+      "quantity": 140000.0,
+      "unit": "tonne_km",
+      "metadata": {
+        "country": "EU",
+        "year": 2026,
+        "mode": "sea",
+        "boundary": "WTW",
+        "scope": "scope3"
+      }
+    },
+    "method_profile": "freight_iso_14083",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "transport_lane",
+      "source_authority": "GLEC",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 0.04,
+      "co2e_per_unit_max": 0.07,
+      "co2e_unit": "kgCO2e/tonne_km",
+      "must_include_assumptions": [
+        "WTW",
+        "maritime freight",
+        "ferry car deck",
+        "GLEC"
+      ]
+    },
+    "tags": [
+      "freight",
+      "sea",
+      "wtw",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "freight_sea_009",
+    "activity": {
+      "description": "Maritime freight: Container feeder 1500 TEU, Med, 1.2 kt × 1200km (WTW)",
+      "quantity": 1440000.0,
+      "unit": "tonne_km",
+      "metadata": {
+        "country": "EU",
+        "year": 2026,
+        "mode": "sea",
+        "boundary": "WTW",
+        "scope": "scope3"
+      }
+    },
+    "method_profile": "freight_iso_14083",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "transport_lane",
+      "source_authority": "GLEC",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 0.022,
+      "co2e_per_unit_max": 0.038,
+      "co2e_unit": "kgCO2e/tonne_km",
+      "must_include_assumptions": [
+        "WTW",
+        "maritime freight",
+        "feeder",
+        "GLEC"
+      ]
+    },
+    "tags": [
+      "freight",
+      "sea",
+      "wtw",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "freight_sea_010",
+    "activity": {
+      "description": "Maritime freight: Reefer container deepsea, Asia-EU, 6.0 kt × 19000km (WTW)",
+      "quantity": 114000000.0,
+      "unit": "tonne_km",
+      "metadata": {
+        "country": "GLOBAL",
+        "year": 2026,
+        "mode": "sea",
+        "boundary": "WTW",
+        "scope": "scope3"
+      }
+    },
+    "method_profile": "freight_iso_14083",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "transport_lane",
+      "source_authority": "GLEC",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 0.022,
+      "co2e_per_unit_max": 0.03,
+      "co2e_unit": "kgCO2e/tonne_km",
+      "must_include_assumptions": [
+        "WTW",
+        "maritime freight",
+        "reefer container",
+        "GLEC"
+      ]
+    },
+    "tags": [
+      "freight",
+      "sea",
+      "wtw",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "freight_sea_011",
+    "activity": {
+      "description": "Maritime freight: Inland barge Rhine, EU, 0.8 kt × 350km (WTW)",
+      "quantity": 280000.0,
+      "unit": "tonne_km",
+      "metadata": {
+        "country": "EU",
+        "year": 2026,
+        "mode": "sea",
+        "boundary": "WTW",
+        "scope": "scope3"
+      }
+    },
+    "method_profile": "freight_iso_14083",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "transport_lane",
+      "source_authority": "GLEC",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 0.03,
+      "co2e_per_unit_max": 0.045,
+      "co2e_unit": "kgCO2e/tonne_km",
+      "must_include_assumptions": [
+        "WTW",
+        "maritime freight",
+        "inland barge",
+        "GLEC"
+      ]
+    },
+    "tags": [
+      "freight",
+      "sea",
+      "wtw",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "freight_sea_012",
+    "activity": {
+      "description": "Maritime freight: LNG carrier 170k m³, GLOBAL, 80.0 kt × 18000km (WTW)",
+      "quantity": 1440000000.0,
+      "unit": "tonne_km",
+      "metadata": {
+        "country": "GLOBAL",
+        "year": 2026,
+        "mode": "sea",
+        "boundary": "WTW",
+        "scope": "scope3"
+      }
+    },
+    "method_profile": "freight_iso_14083",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "transport_lane",
+      "source_authority": "GLEC",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 0.006,
+      "co2e_per_unit_max": 0.009,
+      "co2e_unit": "kgCO2e/tonne_km",
+      "must_include_assumptions": [
+        "WTW",
+        "maritime freight",
+        "LNG dual fuel",
+        "GLEC"
+      ]
+    },
+    "tags": [
+      "freight",
+      "sea",
+      "wtw",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "freight_air_001",
+    "activity": {
+      "description": "Air freight: Wide-body freighter long-haul, 90.0t × 9500km (WTW)",
+      "quantity": 855000.0,
+      "unit": "tonne_km",
+      "metadata": {
+        "country": "GLOBAL",
+        "year": 2026,
+        "mode": "air",
+        "boundary": "WTW",
+        "scope": "scope3"
+      }
+    },
+    "method_profile": "freight_iso_14083",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "transport_lane",
+      "source_authority": "GLEC",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 0.5,
+      "co2e_per_unit_max": 0.8,
+      "co2e_unit": "kgCO2e/tonne_km",
+      "must_include_assumptions": [
+        "WTW",
+        "air freight",
+        "B777F long-haul",
+        "GLEC"
+      ]
+    },
+    "tags": [
+      "freight",
+      "air",
+      "wtw",
+      "global",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "freight_air_002",
+    "activity": {
+      "description": "Air freight: Wide-body freighter trans-Pacific, 90.0t × 11500km (WTW)",
+      "quantity": 1035000.0,
+      "unit": "tonne_km",
+      "metadata": {
+        "country": "GLOBAL",
+        "year": 2026,
+        "mode": "air",
+        "boundary": "WTW",
+        "scope": "scope3"
+      }
+    },
+    "method_profile": "freight_iso_14083",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "transport_lane",
+      "source_authority": "GLEC",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 0.5,
+      "co2e_per_unit_max": 0.8,
+      "co2e_unit": "kgCO2e/tonne_km",
+      "must_include_assumptions": [
+        "WTW",
+        "air freight",
+        "B777F trans-Pacific",
+        "GLEC"
+      ]
+    },
+    "tags": [
+      "freight",
+      "air",
+      "wtw",
+      "global",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "freight_air_003",
+    "activity": {
+      "description": "Air freight: Narrow-body freighter regional, 18.0t × 1800km (WTW)",
+      "quantity": 32400.0,
+      "unit": "tonne_km",
+      "metadata": {
+        "country": "GLOBAL",
+        "year": 2026,
+        "mode": "air",
+        "boundary": "WTW",
+        "scope": "scope3"
+      }
+    },
+    "method_profile": "freight_iso_14083",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "transport_lane",
+      "source_authority": "GLEC",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 0.85,
+      "co2e_per_unit_max": 1.2,
+      "co2e_unit": "kgCO2e/tonne_km",
+      "must_include_assumptions": [
+        "WTW",
+        "air freight",
+        "B737F regional",
+        "GLEC"
+      ]
+    },
+    "tags": [
+      "freight",
+      "air",
+      "wtw",
+      "global",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "freight_air_004",
+    "activity": {
+      "description": "Air freight: Belly-hold long-haul, EU-US, 12.0t × 6800km (WTW)",
+      "quantity": 81600.0,
+      "unit": "tonne_km",
+      "metadata": {
+        "country": "EU",
+        "year": 2026,
+        "mode": "air",
+        "boundary": "WTW",
+        "scope": "scope3"
+      }
+    },
+    "method_profile": "freight_iso_14083",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "transport_lane",
+      "source_authority": "GLEC",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 0.45,
+      "co2e_per_unit_max": 0.7,
+      "co2e_unit": "kgCO2e/tonne_km",
+      "must_include_assumptions": [
+        "WTW",
+        "air freight",
+        "wide-body belly",
+        "GLEC"
+      ]
+    },
+    "tags": [
+      "freight",
+      "air",
+      "wtw",
+      "eu",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "freight_air_005",
+    "activity": {
+      "description": "Air freight: Belly-hold short-haul intra-EU, 4.0t × 1200km (WTW)",
+      "quantity": 4800.0,
+      "unit": "tonne_km",
+      "metadata": {
+        "country": "EU",
+        "year": 2026,
+        "mode": "air",
+        "boundary": "WTW",
+        "scope": "scope3"
+      }
+    },
+    "method_profile": "freight_iso_14083",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "transport_lane",
+      "source_authority": "GLEC",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 0.95,
+      "co2e_per_unit_max": 1.4,
+      "co2e_unit": "kgCO2e/tonne_km",
+      "must_include_assumptions": [
+        "WTW",
+        "air freight",
+        "narrow-body belly",
+        "GLEC"
+      ]
+    },
+    "tags": [
+      "freight",
+      "air",
+      "wtw",
+      "eu",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "freight_air_006",
+    "activity": {
+      "description": "Air freight: Belly-hold trans-Atlantic, US-EU, 14.0t × 7500km (WTW)",
+      "quantity": 105000.0,
+      "unit": "tonne_km",
+      "metadata": {
+        "country": "US",
+        "year": 2026,
+        "mode": "air",
+        "boundary": "WTW",
+        "scope": "scope3"
+      }
+    },
+    "method_profile": "freight_iso_14083",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "transport_lane",
+      "source_authority": "GLEC",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 0.45,
+      "co2e_per_unit_max": 0.7,
+      "co2e_unit": "kgCO2e/tonne_km",
+      "must_include_assumptions": [
+        "WTW",
+        "air freight",
+        "wide-body belly",
+        "GLEC"
+      ]
+    },
+    "tags": [
+      "freight",
+      "air",
+      "wtw",
+      "us",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "freight_air_007",
+    "activity": {
+      "description": "Air freight: Air freight intra-Asia, narrow body, 10.0t × 2800km (WTW)",
+      "quantity": 28000.0,
+      "unit": "tonne_km",
+      "metadata": {
+        "country": "GLOBAL",
+        "year": 2026,
+        "mode": "air",
+        "boundary": "WTW",
+        "scope": "scope3"
+      }
+    },
+    "method_profile": "freight_iso_14083",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "transport_lane",
+      "source_authority": "GLEC",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 0.85,
+      "co2e_per_unit_max": 1.2,
+      "co2e_unit": "kgCO2e/tonne_km",
+      "must_include_assumptions": [
+        "WTW",
+        "air freight",
+        "narrow-body freighter",
+        "GLEC"
+      ]
+    },
+    "tags": [
+      "freight",
+      "air",
+      "wtw",
+      "global",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "freight_air_008",
+    "activity": {
+      "description": "Air freight: Long-haul freighter, Asia-EU, 100.0t × 9000km (WTW)",
+      "quantity": 900000.0,
+      "unit": "tonne_km",
+      "metadata": {
+        "country": "GLOBAL",
+        "year": 2026,
+        "mode": "air",
+        "boundary": "WTW",
+        "scope": "scope3"
+      }
+    },
+    "method_profile": "freight_iso_14083",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "transport_lane",
+      "source_authority": "GLEC",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 0.5,
+      "co2e_per_unit_max": 0.8,
+      "co2e_unit": "kgCO2e/tonne_km",
+      "must_include_assumptions": [
+        "WTW",
+        "air freight",
+        "B747-8F",
+        "GLEC"
+      ]
+    },
+    "tags": [
+      "freight",
+      "air",
+      "wtw",
+      "global",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "freight_air_009",
+    "activity": {
+      "description": "Air freight: Domestic India air freight, 6.0t × 1600km (WTW)",
+      "quantity": 9600.0,
+      "unit": "tonne_km",
+      "metadata": {
+        "country": "IN",
+        "year": 2026,
+        "mode": "air",
+        "boundary": "WTW",
+        "scope": "scope3"
+      }
+    },
+    "method_profile": "freight_iso_14083",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "transport_lane",
+      "source_authority": "GLEC",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 0.85,
+      "co2e_per_unit_max": 1.3,
+      "co2e_unit": "kgCO2e/tonne_km",
+      "must_include_assumptions": [
+        "WTW",
+        "air freight",
+        "narrow-body domestic",
+        "GLEC"
+      ]
+    },
+    "tags": [
+      "freight",
+      "air",
+      "wtw",
+      "in",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "freight_air_010",
+    "activity": {
+      "description": "Air freight: Long-haul belly, India-EU, 12.0t × 7100km (WTW)",
+      "quantity": 85200.0,
+      "unit": "tonne_km",
+      "metadata": {
+        "country": "IN",
+        "year": 2026,
+        "mode": "air",
+        "boundary": "WTW",
+        "scope": "scope3"
+      }
+    },
+    "method_profile": "freight_iso_14083",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "transport_lane",
+      "source_authority": "GLEC",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 0.45,
+      "co2e_per_unit_max": 0.7,
+      "co2e_unit": "kgCO2e/tonne_km",
+      "must_include_assumptions": [
+        "WTW",
+        "air freight",
+        "wide-body belly",
+        "GLEC"
+      ]
+    },
+    "tags": [
+      "freight",
+      "air",
+      "wtw",
+      "in",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "freight_air_011",
+    "activity": {
+      "description": "Air freight: Express integrator EU intra, 3.0t × 1100km (WTW)",
+      "quantity": 3300.0,
+      "unit": "tonne_km",
+      "metadata": {
+        "country": "EU",
+        "year": 2026,
+        "mode": "air",
+        "boundary": "WTW",
+        "scope": "scope3"
+      }
+    },
+    "method_profile": "freight_iso_14083",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "transport_lane",
+      "source_authority": "GLEC",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 0.95,
+      "co2e_per_unit_max": 1.4,
+      "co2e_unit": "kgCO2e/tonne_km",
+      "must_include_assumptions": [
+        "WTW",
+        "air freight",
+        "express integrator",
+        "GLEC"
+      ]
+    },
+    "tags": [
+      "freight",
+      "air",
+      "wtw",
+      "eu",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "freight_air_012",
+    "activity": {
+      "description": "Air freight: Domestic US air freight, narrow, 8.0t × 2200km (WTW)",
+      "quantity": 17600.0,
+      "unit": "tonne_km",
+      "metadata": {
+        "country": "US",
+        "year": 2026,
+        "mode": "air",
+        "boundary": "WTW",
+        "scope": "scope3"
+      }
+    },
+    "method_profile": "freight_iso_14083",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "transport_lane",
+      "source_authority": "GLEC",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 0.85,
+      "co2e_per_unit_max": 1.3,
+      "co2e_unit": "kgCO2e/tonne_km",
+      "must_include_assumptions": [
+        "WTW",
+        "air freight",
+        "narrow-body domestic",
+        "GLEC"
+      ]
+    },
+    "tags": [
+      "freight",
+      "air",
+      "wtw",
+      "us",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "freight_rail_eu_001",
+    "activity": {
+      "description": "Rail freight: Diesel rail freight EU, intermodal, 600t × 1200km (WTW)",
+      "quantity": 720000,
+      "unit": "tonne_km",
+      "metadata": {
+        "country": "EU",
+        "year": 2026,
+        "mode": "rail",
+        "boundary": "WTW",
+        "scope": "scope3"
+      }
+    },
+    "method_profile": "freight_iso_14083",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "transport_lane",
+      "source_authority": "GLEC",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 0.02,
+      "co2e_per_unit_max": 0.035,
+      "co2e_unit": "kgCO2e/tonne_km",
+      "must_include_assumptions": [
+        "WTW",
+        "rail freight",
+        "diesel locomotive",
+        "GLEC"
+      ]
+    },
+    "tags": [
+      "freight",
+      "rail",
+      "wtw",
+      "eu",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "freight_rail_eu_002",
+    "activity": {
+      "description": "Rail freight: Electric rail freight EU, container, 600t × 950km (WTW)",
+      "quantity": 570000,
+      "unit": "tonne_km",
+      "metadata": {
+        "country": "EU",
+        "year": 2026,
+        "mode": "rail",
+        "boundary": "WTW",
+        "scope": "scope3"
+      }
+    },
+    "method_profile": "freight_iso_14083",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "transport_lane",
+      "source_authority": "GLEC",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 0.012,
+      "co2e_per_unit_max": 0.022,
+      "co2e_unit": "kgCO2e/tonne_km",
+      "must_include_assumptions": [
+        "WTW",
+        "rail freight",
+        "electric, EU grid mix",
+        "GLEC"
+      ]
+    },
+    "tags": [
+      "freight",
+      "rail",
+      "wtw",
+      "eu",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "freight_rail_us_003",
+    "activity": {
+      "description": "Rail freight: Diesel rail freight US, class I, 1200t × 2500km (WTW)",
+      "quantity": 3000000,
+      "unit": "tonne_km",
+      "metadata": {
+        "country": "US",
+        "year": 2026,
+        "mode": "rail",
+        "boundary": "WTW",
+        "scope": "scope3"
+      }
+    },
+    "method_profile": "freight_iso_14083",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "transport_lane",
+      "source_authority": "GLEC",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 0.015,
+      "co2e_per_unit_max": 0.025,
+      "co2e_unit": "kgCO2e/tonne_km",
+      "must_include_assumptions": [
+        "WTW",
+        "rail freight",
+        "BNSF/UP class I",
+        "GLEC"
+      ]
+    },
+    "tags": [
+      "freight",
+      "rail",
+      "wtw",
+      "us",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "freight_rail_uk_004",
+    "activity": {
+      "description": "Rail freight: Electric rail freight UK, intermodal, 400t × 320km (WTW)",
+      "quantity": 128000,
+      "unit": "tonne_km",
+      "metadata": {
+        "country": "UK",
+        "year": 2026,
+        "mode": "rail",
+        "boundary": "WTW",
+        "scope": "scope3"
+      }
+    },
+    "method_profile": "freight_iso_14083",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "transport_lane",
+      "source_authority": "GLEC",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 0.015,
+      "co2e_per_unit_max": 0.025,
+      "co2e_unit": "kgCO2e/tonne_km",
+      "must_include_assumptions": [
+        "WTW",
+        "rail freight",
+        "electric, UK grid",
+        "GLEC"
+      ]
+    },
+    "tags": [
+      "freight",
+      "rail",
+      "wtw",
+      "uk",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "freight_rail_in_005",
+    "activity": {
+      "description": "Rail freight: Indian Railways freight, electric, 1500t × 1100km (WTW)",
+      "quantity": 1650000,
+      "unit": "tonne_km",
+      "metadata": {
+        "country": "IN",
+        "year": 2026,
+        "mode": "rail",
+        "boundary": "WTW",
+        "scope": "scope3"
+      }
+    },
+    "method_profile": "freight_iso_14083",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "transport_lane",
+      "source_authority": "GLEC",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 0.015,
+      "co2e_per_unit_max": 0.03,
+      "co2e_unit": "kgCO2e/tonne_km",
+      "must_include_assumptions": [
+        "WTW",
+        "rail freight",
+        "IR electric WAG",
+        "GLEC"
+      ]
+    },
+    "tags": [
+      "freight",
+      "rail",
+      "wtw",
+      "in",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "freight_rail_in_006",
+    "activity": {
+      "description": "Rail freight: Indian Railways freight, diesel, 1200t × 800km (WTW)",
+      "quantity": 960000,
+      "unit": "tonne_km",
+      "metadata": {
+        "country": "IN",
+        "year": 2026,
+        "mode": "rail",
+        "boundary": "WTW",
+        "scope": "scope3"
+      }
+    },
+    "method_profile": "freight_iso_14083",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "transport_lane",
+      "source_authority": "GLEC",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 0.022,
+      "co2e_per_unit_max": 0.038,
+      "co2e_unit": "kgCO2e/tonne_km",
+      "must_include_assumptions": [
+        "WTW",
+        "rail freight",
+        "IR diesel WDG",
+        "GLEC"
+      ]
+    },
+    "tags": [
+      "freight",
+      "rail",
+      "wtw",
+      "in",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "freight_intermodal_global_001",
+    "activity": {
+      "description": "Intermodal freight: Sea + rail + drayage Asia-EU, 18.0t × 21000km (WTW)",
+      "quantity": 378000.0,
+      "unit": "tonne_km",
+      "metadata": {
+        "country": "GLOBAL",
+        "year": 2026,
+        "mode": "intermodal",
+        "boundary": "WTW",
+        "scope": "scope3"
+      }
+    },
+    "method_profile": "freight_iso_14083",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "transport_lane",
+      "source_authority": "GLEC",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 0.012,
+      "co2e_per_unit_max": 0.022,
+      "co2e_unit": "kgCO2e/tonne_km",
+      "must_include_assumptions": [
+        "WTW",
+        "intermodal",
+        "sea-dominant",
+        "GLEC"
+      ]
+    },
+    "tags": [
+      "freight",
+      "intermodal",
+      "wtw",
+      "global",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "freight_intermodal_us_002",
+    "activity": {
+      "description": "Intermodal freight: Rail + truck US transcon, intermodal, 25.0t × 4200km (WTW)",
+      "quantity": 105000.0,
+      "unit": "tonne_km",
+      "metadata": {
+        "country": "US",
+        "year": 2026,
+        "mode": "intermodal",
+        "boundary": "WTW",
+        "scope": "scope3"
+      }
+    },
+    "method_profile": "freight_iso_14083",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "transport_lane",
+      "source_authority": "GLEC",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 0.025,
+      "co2e_per_unit_max": 0.045,
+      "co2e_unit": "kgCO2e/tonne_km",
+      "must_include_assumptions": [
+        "WTW",
+        "intermodal",
+        "rail-dominant",
+        "GLEC"
+      ]
+    },
+    "tags": [
+      "freight",
+      "intermodal",
+      "wtw",
+      "us",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "freight_intermodal_uk_003",
+    "activity": {
+      "description": "Intermodal freight: Truck + ferry + truck UK-Ireland, 14.0t × 720km (WTW)",
+      "quantity": 10080.0,
+      "unit": "tonne_km",
+      "metadata": {
+        "country": "UK",
+        "year": 2026,
+        "mode": "intermodal",
+        "boundary": "WTW",
+        "scope": "scope3"
+      }
+    },
+    "method_profile": "freight_iso_14083",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "transport_lane",
+      "source_authority": "GLEC",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 0.06,
+      "co2e_per_unit_max": 0.11,
+      "co2e_unit": "kgCO2e/tonne_km",
+      "must_include_assumptions": [
+        "WTW",
+        "intermodal",
+        "truck-dominant short-sea",
+        "GLEC"
+      ]
+    },
+    "tags": [
+      "freight",
+      "intermodal",
+      "wtw",
+      "uk",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "freight_intermodal_in_004",
+    "activity": {
+      "description": "Intermodal freight: India ICD multi-modal hub-spoke, 22.0t × 1800km (WTW)",
+      "quantity": 39600.0,
+      "unit": "tonne_km",
+      "metadata": {
+        "country": "IN",
+        "year": 2026,
+        "mode": "intermodal",
+        "boundary": "WTW",
+        "scope": "scope3"
+      }
+    },
+    "method_profile": "freight_iso_14083",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "transport_lane",
+      "source_authority": "GLEC",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 0.05,
+      "co2e_per_unit_max": 0.09,
+      "co2e_unit": "kgCO2e/tonne_km",
+      "must_include_assumptions": [
+        "WTW",
+        "intermodal",
+        "rail+truck",
+        "GLEC"
+      ]
+    },
+    "tags": [
+      "freight",
+      "intermodal",
+      "wtw",
+      "in",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "freight_intermodal_eu_005",
+    "activity": {
+      "description": "Intermodal freight: EU multi-modal short-sea + truck, 16.0t × 1100km (WTW)",
+      "quantity": 17600.0,
+      "unit": "tonne_km",
+      "metadata": {
+        "country": "EU",
+        "year": 2026,
+        "mode": "intermodal",
+        "boundary": "WTW",
+        "scope": "scope3"
+      }
+    },
+    "method_profile": "freight_iso_14083",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "transport_lane",
+      "source_authority": "GLEC",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 0.04,
+      "co2e_per_unit_max": 0.08,
+      "co2e_unit": "kgCO2e/tonne_km",
+      "must_include_assumptions": [
+        "WTW",
+        "intermodal",
+        "sea+truck balanced",
+        "GLEC"
+      ]
+    },
+    "tags": [
+      "freight",
+      "intermodal",
+      "wtw",
+      "eu",
+      "fy27_launch"
+    ]
+  }
+]

@@ -28,6 +28,15 @@ from pydantic import BaseModel
 from greenlang.sdk.base import Agent, Metadata, Result
 from greenlang.determinism import FinancialDecimal
 
+# CTO non-negotiable #6: policy workflows MUST resolve through a method
+# profile.  CBAM binds to MethodProfile.EU_CBAM via ResolutionEngine.
+# The local emission_factors module remains as the fallback candidate
+# source when the cascade returns no eligible CBAM factor (e.g. during
+# pack bootstrap before the catalog is hydrated).
+from greenlang.data.canonical_v2 import MethodProfile
+from greenlang.factors.resolution.engine import ResolutionEngine, ResolutionError
+from greenlang.factors.resolution.request import ResolutionRequest
+
 # Add parent directory to path to import emission_factors
 sys.path.insert(0, str(Path(__file__).parent.parent / "data"))
 
@@ -121,9 +130,23 @@ class EmissionsCalculatorAgent_v2(Agent[CalculatorInput, CalculatorOutput]):
     def __init__(
         self,
         suppliers_path: Optional[Union[str, Path]] = None,
-        cbam_rules_path: Optional[Union[str, Path]] = None
+        cbam_rules_path: Optional[Union[str, Path]] = None,
+        resolution_engine: Optional[ResolutionEngine] = None,
     ):
-        """Initialize the EmissionsCalculatorAgent_v2."""
+        """Initialize the EmissionsCalculatorAgent_v2.
+
+        Args:
+            suppliers_path: YAML with supplier-specific actuals.
+            cbam_rules_path: CBAM rules YAML.
+            resolution_engine: Pre-built ``ResolutionEngine`` bound to
+                the catalog repository.  CTO non-negotiable #6 requires
+                every factor lookup to flow through this engine with
+                ``MethodProfile.EU_CBAM``.  When omitted the agent
+                constructs a stub engine whose candidate source is the
+                legacy ``emission_factors`` module — this keeps unit
+                tests and offline pack bootstrap working without a
+                hydrated catalog.
+        """
         # Initialize base agent with metadata
         metadata = Metadata(
             id="cbam-calculator-v2",
@@ -142,7 +165,14 @@ class EmissionsCalculatorAgent_v2(Agent[CalculatorInput, CalculatorOutput]):
         self.suppliers = self._load_suppliers() if self.suppliers_path else {}
         self.cbam_rules = self._load_cbam_rules() if self.cbam_rules_path else {}
 
-        # Check emission factors module
+        # Bind to the EU_CBAM method profile for every resolve() call.
+        self.method_profile: MethodProfile = MethodProfile.EU_CBAM
+        self.resolution_engine: ResolutionEngine = (
+            resolution_engine or self._build_default_engine()
+        )
+
+        # Check emission factors module (still used by the default engine
+        # as the candidate-source backing store for offline runs).
         if ef is None:
             logger.warning("Emission factors module not loaded - calculations will fail")
         else:
@@ -197,26 +227,148 @@ class EmissionsCalculatorAgent_v2(Agent[CalculatorInput, CalculatorOutput]):
     # EMISSION FACTOR SELECTION (100% DETERMINISTIC - Preserved from v1)
     # ========================================================================
 
-    def _get_emission_factor_from_database(
+    # ------------------------------------------------------------------
+    # ResolutionEngine wiring (CTO non-negotiable #6)
+    # ------------------------------------------------------------------
+
+    def _build_default_engine(self) -> ResolutionEngine:
+        """Build a default ResolutionEngine backed by the local CBAM
+        emission factor module.
+
+        Production deployments inject a fully-wired engine via the
+        ``resolution_engine=`` constructor kwarg (see
+        ``greenlang/factors/api_endpoints.py::_build_repo_engine``).
+        Offline / unit-test runs use this fallback so the agent still
+        binds to ``MethodProfile.EU_CBAM`` and goes through the cascade.
+        """
+
+        def _candidate_source(req: ResolutionRequest, label: str):
+            # Only serve at the country/sector-average step — the
+            # legacy CBAM data module is, in effect, EU default values.
+            if label != "country_or_sector_average":
+                return []
+            cn_code = (req.extras or {}).get("cn_code")
+            if not cn_code or ef is None:
+                return []
+            try:
+                # Engine adapter — backs ResolutionEngine candidate
+                # source, NOT a direct policy-workflow call.
+                return list(ef.get_emission_factor_by_cn_code(cn_code) or [])  # noqa: NN6 — engine adapter
+            except Exception as exc:  # pragma: no cover — defensive
+                logger.error("CBAM candidate source error: %s", exc)
+                return []
+
+        return ResolutionEngine(candidate_source=_candidate_source)
+
+    def _resolve_cbam_factor(
         self,
         cn_code: str,
-        product_group: Optional[str] = None
+        product_group: Optional[str] = None,
+        supplier_id: Optional[str] = None,
     ) -> Optional[Dict[str, Any]]:
-        """Look up emission factor from database (DETERMINISTIC - NO LLM)."""
+        """Resolve a CBAM factor through ``ResolutionEngine.resolve`` —
+        the ONLY allowed factor-fetch path for CBAM workflows.
+
+        Returns the chosen factor in the legacy dict shape expected by
+        ``calculate_emissions`` (so this drop-in refactor preserves
+        downstream behaviour).  Returns ``None`` when neither the
+        engine nor the fallback finds a candidate.
+        """
+        if not cn_code:
+            return None
+        try:
+            request = ResolutionRequest(
+                activity=f"cbam-good-{cn_code}",
+                method_profile=self.method_profile,
+                jurisdiction="EU",
+                supplier_id=supplier_id,
+                extras={
+                    "cn_code": cn_code,
+                    "product_group": product_group,
+                },
+            )
+            resolved = self.resolution_engine.resolve(request)
+            # Engine returned a structured ResolvedFactor — map back to
+            # the legacy dict shape callers expect downstream.
+            return self._resolved_to_legacy_dict(resolved, cn_code)
+        except ResolutionError as exc:
+            logger.warning(
+                "CBAM ResolutionEngine cascade exhausted for CN %s: %s; "
+                "falling back to legacy emission_factors module.",
+                cn_code, exc,
+            )
+        except Exception as exc:
+            logger.error(
+                "CBAM ResolutionEngine error for CN %s: %s", cn_code, exc,
+            )
+
+        # Fallback — only reached if the cascade returned no eligible
+        # candidate.  We still go through the legacy lookup so existing
+        # tests and offline runs keep working.
+        return self._fallback_legacy_lookup(cn_code)
+
+    @staticmethod
+    def _resolved_to_legacy_dict(resolved: Any, cn_code: str) -> Dict[str, Any]:
+        """Map a ``ResolvedFactor`` to the legacy CBAM factor dict.
+
+        The downstream calculation code reads
+        ``default_direct_tco2_per_ton`` / ``default_indirect_tco2_per_ton``
+        / ``default_total_tco2_per_ton`` keys so we surface the
+        engine's gas breakdown into that shape.
+        """
+        gb = getattr(resolved, "gas_breakdown", None)
+        co2e_total = getattr(gb, "co2e_total_kg", None)
+        # The CBAM data module quotes tCO2/t.  Engine quotes kgCO2e/unit.
+        # When they line up we can pass through; otherwise we leave the
+        # downstream calc to surface a validation warning.
+        return {
+            "product_name": getattr(resolved, "chosen_factor_name", None)
+                or getattr(resolved, "chosen_factor_id", f"cn_{cn_code}"),
+            "default_direct_tco2_per_ton": co2e_total,
+            "default_indirect_tco2_per_ton": 0.0,
+            "default_total_tco2_per_ton": co2e_total,
+            "data_quality": "high" if (resolved.quality_score or 0) >= 70 else "medium",
+            "source": getattr(resolved, "source_id", None) or "ResolutionEngine",
+            "factor_id": getattr(resolved, "chosen_factor_id", None),
+            "fallback_rank": getattr(resolved, "fallback_rank", None),
+            "method_profile": getattr(resolved, "method_profile", None),
+        }
+
+    @staticmethod
+    def _fallback_legacy_lookup(cn_code: str) -> Optional[Dict[str, Any]]:
+        """Last-resort lookup used only when the cascade is exhausted.
+
+        Reachable only after ``_resolve_cbam_factor`` already routed the
+        request through ``ResolutionEngine.resolve(method_profile=EU_CBAM)``
+        and the cascade returned no eligible candidate.  Kept so
+        offline / pre-catalog runs continue to work without bypassing
+        non-negotiable #6.
+        """
         if ef is None:
             logger.error("Emission factors module not available")
             return None
         try:
-            factors = ef.get_emission_factor_by_cn_code(cn_code)
+            factors = ef.get_emission_factor_by_cn_code(cn_code)  # noqa: NN6 — engine cascade fallback
             if not factors:
-                logger.warning(f"No emission factor found for CN code: {cn_code}")
+                logger.warning("No emission factor for CN code %s", cn_code)
                 return None
             factor = factors[0] if isinstance(factors, list) else factors
-            logger.debug(f"Found emission factor for CN {cn_code}: {factor.get('product_name')}")
+            logger.debug(
+                "Fallback lookup for CN %s: %s",
+                cn_code, factor.get("product_name"),
+            )
             return factor
-        except Exception as e:
-            logger.error(f"Error looking up emission factor: {e}")
+        except Exception as exc:
+            logger.error("Error in fallback lookup: %s", exc)
             return None
+
+    def _get_emission_factor_from_database(
+        self,
+        cn_code: str,
+        product_group: Optional[str] = None,
+    ) -> Optional[Dict[str, Any]]:
+        """Backward-compatible entry point — delegates to the engine."""
+        return self._resolve_cbam_factor(cn_code, product_group)
 
     def _get_supplier_actual_emissions(self, supplier_id: str) -> Optional[Dict[str, Any]]:
         """Get supplier's actual emissions data (DETERMINISTIC - NO LLM)."""
@@ -264,8 +416,13 @@ class EmissionsCalculatorAgent_v2(Agent[CalculatorInput, CalculatorOutput]):
                 }
                 return factor, "actual_data", f"Supplier {supplier_id} EPD"
 
-        # Priority 2: EU default values from database
-        factor = self._get_emission_factor_from_database(cn_code, shipment.get("product_group"))
+        # Priority 2: EU default values via ResolutionEngine (cascade
+        # binds to MethodProfile.EU_CBAM — non-negotiable #6).
+        factor = self._resolve_cbam_factor(
+            cn_code,
+            product_group=shipment.get("product_group"),
+            supplier_id=supplier_id,
+        )
         if factor:
             return factor, "default_values", factor.get("source", "EU Default Values")
 

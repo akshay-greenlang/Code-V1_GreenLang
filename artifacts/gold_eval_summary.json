@@ -1,0 +1,60 @@
+{
+  "gold_set_version": "1.0",
+  "total_cases": 302,
+  "hits_at_1": 0,
+  "precision_at_1": 0.0,
+  "by_family": {
+    "electricity": {
+      "total": 60,
+      "hits": 0,
+      "match_misses": 60,
+      "engine_errors": 60,
+      "precision_at_1": 0.0
+    },
+    "fuel_combustion": {
+      "total": 50,
+      "hits": 0,
+      "match_misses": 50,
+      "engine_errors": 18,
+      "precision_at_1": 0.0
+    },
+    "refrigerants": {
+      "total": 32,
+      "hits": 0,
+      "match_misses": 32,
+      "engine_errors": 4,
+      "precision_at_1": 0.0
+    },
+    "freight": {
+      "total": 50,
+      "hits": 0,
+      "match_misses": 50,
+      "engine_errors": 23,
+      "precision_at_1": 0.0
+    },
+    "materials": {
+      "total": 50,
+      "hits": 0,
+      "match_misses": 50,
+      "engine_errors": 14,
+      "precision_at_1": 0.0
+    },
+    "cbam": {
+      "total": 35,
+      "hits": 0,
+      "match_misses": 35,
+      "engine_errors": 35,
+      "precision_at_1": 0.0
+    },
+    "methodology_profiles": {
+      "total": 25,
+      "hits": 0,
+      "match_misses": 25,
+      "engine_errors": 15,
+      "precision_at_1": 0.0
+    }
+  },
+  "acceptance_bar": 0.85,
+  "runner_mode": "full",
+  "timestamp": "2026-04-23T05:41:14Z"
+}

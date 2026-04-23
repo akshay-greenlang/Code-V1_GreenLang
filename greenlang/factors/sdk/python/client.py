@@ -32,13 +32,21 @@ import asyncio
 import contextlib
 import hashlib
 import logging
+import re
 import ssl
 import time
 from typing import Any, Dict, Iterator, List, Mapping, Optional, Union
 from urllib.parse import urlparse
 
 from .auth import APIKeyAuth, AuthProvider, JWTAuth
-from .errors import EditionMismatchError, FactorsAPIError, RateLimitError
+from .errors import (
+    EditionMismatchError,
+    EditionPinError,
+    EntitlementError,
+    FactorsAPIError,
+    LicensingGapError,
+    RateLimitError,
+)
 from .models import (
     AuditBundle,
     BatchJobHandle,
@@ -68,6 +76,7 @@ from .transport import (
     Transport,
     TransportResponse,
 )
+from .verify import ReceiptVerificationError, verify_receipt as _verify_receipt
 
 logger = logging.getLogger(__name__)
 
@@ -345,6 +354,35 @@ def _build_search_response(payload: Any) -> SearchResponse:
     return SearchResponse()
 
 
+_EDITION_ID_REGEX = re.compile(
+    r"^("
+    r"v\d+(?:\.\d+){0,2}(?:-[A-Za-z0-9_]+)?"  # v1, v1.0, v1.0.0, v1.0.0-foo
+    r"|\d{4}\.Q[1-4](?:-[A-Za-z0-9_]+)?"      # 2027.Q1, 2027.Q1-electricity
+    r"|\d{4}-\d{2}-\d{2}(?:-[A-Za-z0-9_]+)?"  # 2027-04-01, 2027-04-01-freight
+    r")$"
+)
+
+
+def _validate_edition_id(edition_id: Any) -> None:
+    """Validate an edition id before sending it as a pin header.
+
+    Raises:
+        EditionPinError: When ``edition_id`` is empty, the wrong type, or
+            does not match the known edition-id format.
+    """
+    if not isinstance(edition_id, str) or not edition_id:
+        raise EditionPinError(
+            "pin_edition() / with_edition() require a non-empty string edition_id.",
+            context={"edition_id": edition_id},
+        )
+    if not _EDITION_ID_REGEX.match(edition_id):
+        raise EditionPinError(
+            f"Edition id {edition_id!r} is not in a recognised format. "
+            "Use one of: v1.0.0, 2027.Q1, 2027.Q1-electricity, 2027-04-01-freight.",
+            context={"edition_id": edition_id},
+        )
+
+
 def _check_edition_pin(
     *,
     pinned: Optional[str],
@@ -540,11 +578,17 @@ class FactorsClient:
 
         Returns:
             A fresh :class:`FactorsClient` — the original is not mutated.
+
+        Raises:
+            EditionPinError: if ``edition_id`` is empty, non-string, or
+                fails basic format validation. Format must be one of:
+
+                  * ``"<year>.Q<n>"``                -> ``"2027.Q1"``
+                  * ``"<year>.Q<n>-<scope>"``        -> ``"2027.Q1-electricity"``
+                  * ``"<year>-<month>-<day>-<scope>"`` -> ``"2027-04-01-freight"``
+                  * any string starting with the letter ``"v"``       -> ``"v1.0.0"``
         """
-        if not edition_id or not isinstance(edition_id, str):
-            raise ValueError(
-                "pin_edition() requires a non-empty string edition_id."
-            )
+        _validate_edition_id(edition_id)
         opts = dict(self._clone_opts)
         return FactorsClient(
             base_url=self._base_url,
@@ -569,6 +613,53 @@ class FactorsClient:
             yield scoped
         finally:
             scoped.close()
+
+    @contextlib.contextmanager
+    def with_edition(self, edition_id: str) -> "Iterator[FactorsClient]":
+        """Alias for :meth:`edition`.
+
+        Some integrations prefer the verb-prefixed name for symmetry with
+        ``with_tenant`` / ``with_role`` style scoped helpers. Behaviour is
+        identical to :meth:`edition`.
+        """
+        with self.edition(edition_id) as scoped:
+            yield scoped
+
+    # ---- Receipt verification ------------------------------------------
+
+    def verify_receipt(
+        self,
+        response: Any,
+        *,
+        secret: Optional[Any] = None,
+        jwks_url: Optional[str] = None,
+        algorithm: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        """Verify a signed-receipt-bearing response **offline**.
+
+        Convenience wrapper around :func:`greenlang.factors.sdk.python.verify.verify_receipt`
+        bound to the client so the SDK exposes a single import surface.
+
+        Args:
+            response: Response body (dict, JSON string, or raw bytes) as
+                returned by any endpoint that emits signed receipts.
+            secret: Optional shared secret for HMAC-SHA256 receipts.
+            jwks_url: Optional JWKS URL for Ed25519 receipts.
+            algorithm: Optional explicit algorithm override.
+
+        Returns:
+            Verified-receipt summary dict. See
+            :func:`greenlang.factors.sdk.python.verify.verify_receipt`.
+
+        Raises:
+            ReceiptVerificationError: when the receipt cannot be verified.
+        """
+        return _verify_receipt(
+            response,
+            secret=secret,
+            jwks_url=jwks_url,
+            algorithm=algorithm,
+        )
 
     # ---- Lifecycle -------------------------------------------------------
 
@@ -1193,11 +1284,13 @@ class AsyncFactorsClient:
         return self._pinned_edition
 
     def pin_edition(self, edition_id: str) -> "AsyncFactorsClient":
-        """Return a NEW async client with ``edition_id`` pinned."""
-        if not edition_id or not isinstance(edition_id, str):
-            raise ValueError(
-                "pin_edition() requires a non-empty string edition_id."
-            )
+        """Return a NEW async client with ``edition_id`` pinned.
+
+        Raises:
+            EditionPinError: when ``edition_id`` fails validation
+                (see :func:`_validate_edition_id` for accepted formats).
+        """
+        _validate_edition_id(edition_id)
         opts = dict(self._clone_opts)
         return AsyncFactorsClient(
             base_url=self._base_url,
@@ -1213,6 +1306,33 @@ class AsyncFactorsClient:
             yield scoped
         finally:
             await scoped.aclose()
+
+    @contextlib.asynccontextmanager
+    async def with_edition(self, edition_id: str):
+        """Alias for :meth:`edition` (async)."""
+        async with self.edition(edition_id) as scoped:
+            yield scoped
+
+    def verify_receipt(
+        self,
+        response: Any,
+        *,
+        secret: Optional[Any] = None,
+        jwks_url: Optional[str] = None,
+        algorithm: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        """Verify a signed-receipt-bearing response **offline**.
+
+        Mirrors :meth:`FactorsClient.verify_receipt`. Synchronous because
+        the verification path is pure CPU + (cached) JWKS fetch, no need
+        to introduce a coroutine boundary.
+        """
+        return _verify_receipt(
+            response,
+            secret=secret,
+            jwks_url=jwks_url,
+            algorithm=algorithm,
+        )
 
     async def aclose(self) -> None:
         await self._transport.aclose()
@@ -1701,4 +1821,5 @@ __all__ = [
     "GREENLANG_CA_PEM",
     "PINNED_HOST_SUFFIXES",
     "build_pinned_httpx_transport",
+    "ReceiptVerificationError",
 ]

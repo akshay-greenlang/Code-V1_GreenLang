@@ -18,10 +18,40 @@ The engine is deliberately backend-agnostic — it accepts a ``candidate_source`
 callable which returns a list of records that the engine then filters through
 the method-pack :class:`SelectionRule` and scores via :func:`build_tiebreak`.
 Tests inject a stub source; production passes a repository-backed callable.
+
+Production candidate-source loader
+----------------------------------
+
+When ``ResolutionEngine`` is constructed without an explicit
+``candidate_source``, :func:`build_default_candidate_source` is called to
+pick the best available backend in the following order:
+
+    1. **Postgres** — if ``DATABASE_URL`` (or ``GL_FACTORS_PG_DSN``) is set,
+       the engine wraps :class:`PostgresFactorCatalogRepository` with a
+       resolution-aware filter (geography + status visibility).
+    2. **File-backed** — otherwise the engine wraps the in-memory
+       :class:`MemoryFactorCatalogRepository`, which loads built-in
+       factors from ``greenlang/factors/data/source_registry.yaml`` and
+       ``greenlang/factors/data/method_packs/`` via the
+       :class:`EmissionFactorDatabase` loader.
+    3. **Hard fail** — if neither backend yields any factor (e.g. empty
+       built-in DB and no DSN), :func:`_unconfigured_candidate_source`
+       raises :class:`ConfigurationError` on first use rather than
+       silently returning empty results.  This guarantees that a misconfigured
+       production pod fails fast instead of returning ``ResolutionError``
+       for every request.
+
+Override the loader explicitly in production for stricter control::
+
+    engine = ResolutionEngine(
+        candidate_source=my_repo_backed_source,
+        tenant_overlay_reader=my_tenant_lookup,
+    )
 """
 from __future__ import annotations
 
 import logging
+import os
 from datetime import date
 from typing import Any, Callable, Iterable, List, Optional, Sequence, Tuple
 
@@ -29,6 +59,7 @@ from greenlang.data.canonical_v2 import (
     MethodProfile,
     enforce_license_class_homogeneity,
 )
+from greenlang.exceptions import ConfigurationError
 from greenlang.factors.method_packs import MethodPack, get_pack
 from greenlang.factors.ontology.unit_graph import (
     DEFAULT_GRAPH,
@@ -65,10 +96,9 @@ class ResolutionEngine:
         tenant_overlay_reader: Optional[Callable[[ResolutionRequest], Optional[Any]]] = None,
         unit_graph: Optional[UnitGraph] = None,
     ) -> None:
-        # A default candidate source exists so tests + smoke runs work even
-        # without a full Factors repository wired in.  Production callers
-        # inject a real source backed by ``FactorCatalogService``.
-        self._candidate_source = candidate_source or _empty_candidate_source
+        # Production deployments get a real source loader.  Tests + library
+        # callers can still inject a stub source explicitly.
+        self._candidate_source = candidate_source or build_default_candidate_source()
         self._tenant_overlay_reader = tenant_overlay_reader or _default_tenant_lookup
         self._unit_graph = unit_graph or DEFAULT_GRAPH
 
@@ -298,11 +328,23 @@ class ResolutionEngine:
 
         why_chosen = rationale or f"Selected at cascade step {rank} ({label}). {tb.one_liner()}."
 
+        prov = getattr(record, "provenance", None)
+        source_id = (
+            getattr(record, "source_id", None)
+            or (getattr(prov, "source_org", None) if prov is not None else None)
+            or (getattr(prov, "source_publication", None) if prov is not None else None)
+        )
+        source_version = (
+            getattr(record, "source_release", None)
+            or getattr(record, "release_version", None)
+            or (getattr(prov, "version", None) if prov is not None else None)
+            or (str(getattr(prov, "source_year", "")) if prov is not None and getattr(prov, "source_year", None) else None)
+        )
         return ResolvedFactor(
             chosen_factor_id=str(getattr(record, "factor_id", "unknown")),
             chosen_factor_name=getattr(record, "factor_name", None),
-            source_id=getattr(record, "source_id", None),
-            source_version=getattr(record, "source_release", None) or getattr(record, "release_version", None),
+            source_id=source_id,
+            source_version=source_version,
             factor_version=getattr(record, "factor_version", None),
             vintage=_safe_vintage(record),
             method_profile=pack.profile.value,
@@ -341,9 +383,168 @@ _STEP_ORDER: Tuple[Tuple[int, str], ...] = (
 )
 
 
-def _empty_candidate_source(request: ResolutionRequest, label: str) -> List[Any]:
-    """Default candidate source: yields nothing.  Production overrides this."""
-    return []
+# ---------------------------------------------------------------------------
+# Production candidate-source loader
+# ---------------------------------------------------------------------------
+
+
+def _pg_dsn_from_env() -> Optional[str]:
+    """Return the Postgres DSN if set in any of the supported env vars."""
+    for var in ("DATABASE_URL", "GL_FACTORS_PG_DSN"):
+        dsn = os.environ.get(var, "").strip()
+        if dsn:
+            return dsn
+    return None
+
+
+def _build_pg_candidate_source() -> Optional[CandidateSource]:
+    """Try to wire a Postgres-backed candidate source.
+
+    Returns ``None`` if the DSN env vars are unset or the Postgres
+    repository cannot be initialized (psycopg missing, schema empty, etc).
+    Errors are logged at WARNING level — the caller falls back to the
+    file-backed loader rather than failing the engine constructor.
+    """
+    dsn = _pg_dsn_from_env()
+    if not dsn:
+        return None
+    try:
+        from greenlang.factors.catalog_repository_pg import (
+            PgPoolConfig,
+            PostgresFactorCatalogRepository,
+        )
+
+        repo = PostgresFactorCatalogRepository(PgPoolConfig(dsn=dsn))
+        edition_id = repo.get_default_edition_id()
+        if not edition_id:
+            logger.warning(
+                "DATABASE_URL is set but factors_catalog has no stable edition; "
+                "falling back to file-backed source."
+            )
+            return None
+        logger.info(
+            "ResolutionEngine: using Postgres candidate source (edition=%s)",
+            edition_id,
+        )
+        return _wrap_repo_as_source(repo, edition_id)
+    except Exception as exc:  # pragma: no cover — depends on optional psycopg
+        logger.warning(
+            "ResolutionEngine: Postgres source unavailable (%s); "
+            "falling back to file-backed source.",
+            exc,
+        )
+        return None
+
+
+def _build_file_candidate_source() -> Optional[CandidateSource]:
+    """Try to wire the file-backed (built-in) candidate source.
+
+    Reads the built-in :class:`EmissionFactorDatabase` which itself loads
+    from ``greenlang/factors/data/source_registry.yaml`` and
+    ``greenlang/factors/data/method_packs/``.  Returns ``None`` if the
+    catalog is empty (e.g. data files removed in a stripped-down build).
+    """
+    try:
+        from greenlang.data.emission_factor_database import EmissionFactorDatabase
+        from greenlang.factors.catalog_repository import MemoryFactorCatalogRepository
+
+        db = EmissionFactorDatabase(enable_cache=False)
+        if not getattr(db, "factors", None):
+            logger.warning(
+                "ResolutionEngine: built-in EmissionFactorDatabase is empty; "
+                "no file-backed source available."
+            )
+            return None
+        edition_id = os.environ.get("GL_FACTORS_BUILTIN_EDITION", "builtin-v1.0.0")
+        label = os.environ.get(
+            "GL_FACTORS_BUILTIN_LABEL", "GreenLang built-in v2 factors"
+        )
+        repo = MemoryFactorCatalogRepository(edition_id, label, db)
+        logger.info(
+            "ResolutionEngine: using file-backed candidate source (edition=%s, factors=%d)",
+            edition_id, len(db.factors),
+        )
+        return _wrap_repo_as_source(repo, edition_id)
+    except Exception as exc:  # pragma: no cover — defensive
+        logger.warning(
+            "ResolutionEngine: file-backed source unavailable (%s).", exc,
+        )
+        return None
+
+
+def _wrap_repo_as_source(repo: Any, edition_id: str) -> CandidateSource:
+    """Wrap a :class:`FactorCatalogRepository` as a :data:`CandidateSource`.
+
+    The wrapper applies the same per-step filter heuristics used by the
+    API in ``api_endpoints._build_repo_engine`` so the CLI and the API
+    use identical selection logic.  Customer-override is handled by the
+    engine's ``tenant_overlay_reader`` and never routed through the
+    repository here.
+    """
+
+    def _source(req: ResolutionRequest, label: str) -> List[Any]:
+        if label == "customer_override":
+            return []
+        try:
+            rows, _ = repo.list_factors(
+                edition_id,
+                geography=req.jurisdiction,
+                page=1,
+                limit=500,
+                include_preview=getattr(req, "include_preview", False),
+                include_connector=False,
+            )
+        except TypeError:
+            # Older repo signatures without kw-only filters.
+            rows, _ = repo.list_factors(edition_id, page=1, limit=500)
+        except Exception as exc:
+            logger.warning(
+                "Repository candidate fetch failed (label=%s): %s", label, exc,
+            )
+            return []
+        return list(rows)
+
+    return _source
+
+
+def _unconfigured_candidate_source(
+    request: ResolutionRequest, label: str
+) -> List[Any]:
+    """Hard-fail source — raises :class:`ConfigurationError` on first call.
+
+    This replaces the old silent ``return []`` placeholder.  Production
+    pods that are missing both ``DATABASE_URL`` and the built-in factor
+    database will fail loudly on the first ``resolve()`` call rather than
+    returning a misleading "no eligible factor" :class:`ResolutionError`.
+    """
+    raise ConfigurationError(
+        "ResolutionEngine has no candidate source configured. Set "
+        "DATABASE_URL (or GL_FACTORS_PG_DSN) for Postgres, ensure the "
+        "built-in EmissionFactorDatabase is available, or pass an explicit "
+        "candidate_source= to ResolutionEngine(...). "
+        "Step requested: %r." % label
+    )
+
+
+def build_default_candidate_source() -> CandidateSource:
+    """Return the best available production candidate source.
+
+    Resolution order:
+        1. :func:`_build_pg_candidate_source` (DATABASE_URL set)
+        2. :func:`_build_file_candidate_source` (built-in factors)
+        3. :func:`_unconfigured_candidate_source` (raises on first use)
+    """
+    pg_source = _build_pg_candidate_source()
+    if pg_source is not None:
+        return pg_source
+    file_source = _build_file_candidate_source()
+    if file_source is not None:
+        return file_source
+    logger.error(
+        "ResolutionEngine: no candidate source could be configured. "
+        "Calls to resolve() will raise ConfigurationError."
+    )
+    return _unconfigured_candidate_source
 
 
 def _default_tenant_lookup(request: ResolutionRequest) -> Optional[Any]:
@@ -396,4 +597,9 @@ def _gas_breakdown(record: Any, gwp_basis: str) -> GasBreakdown:
     )
 
 
-__all__ = ["ResolutionEngine", "ResolutionError", "CandidateSource"]
+__all__ = [
+    "ResolutionEngine",
+    "ResolutionError",
+    "CandidateSource",
+    "build_default_candidate_source",
+]

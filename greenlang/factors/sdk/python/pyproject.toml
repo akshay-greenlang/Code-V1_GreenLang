@@ -1,0 +1,111 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "greenlang-factors"
+version = "1.0.0"
+description = "GreenLang Factors API client - typed Python SDK for the global emission-factor catalog (search, resolve, edition pinning, signed-receipt verification)."
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.10"
+authors = [
+    {name = "GreenLang", email = "support@greenlang.io"},
+]
+maintainers = [
+    {name = "GreenLang", email = "support@greenlang.io"},
+]
+keywords = [
+    "greenlang",
+    "factors",
+    "emission-factors",
+    "ghg",
+    "carbon",
+    "carbon-accounting",
+    "sustainability",
+    "esg",
+    "climate",
+    "scope-1",
+    "scope-2",
+    "scope-3",
+    "cbam",
+    "ghg-protocol",
+    "iso-14064",
+    "iso-14083",
+    "pcaf",
+    "api-client",
+    "sdk",
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Financial and Insurance Industry",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Atmospheric Science",
+    "Topic :: Scientific/Engineering :: Information Analysis",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Typing :: Typed",
+]
+dependencies = [
+    "httpx>=0.25,<1.0",
+    "pydantic>=2.0,<3.0",
+    "tenacity>=8.0,<10.0",
+]
+
+[project.optional-dependencies]
+# Ed25519 signed-receipt verification
+crypto = [
+    "cryptography>=41.0",
+]
+# Synchronous HTTP fallback (older integrations using `requests`)
+requests = [
+    "requests>=2.31",
+]
+# Bundle everything an integrator might want
+all = [
+    "cryptography>=41.0",
+    "requests>=2.31",
+]
+# Development + test dependencies
+dev = [
+    "pytest>=7.4",
+    "pytest-asyncio>=0.21",
+    "pytest-cov>=4.1",
+    "respx>=0.20",
+    "mypy>=1.7",
+    "ruff>=0.1",
+    "build>=1.0",
+    "twine>=4.0",
+]
+
+[project.urls]
+Homepage = "https://greenlang.io/factors"
+Documentation = "https://developers.greenlang.ai"
+Changelog = "https://github.com/greenlang/greenlang/blob/master/greenlang/factors/sdk/CHANGELOG.md"
+Repository = "https://github.com/greenlang/greenlang"
+Source = "https://github.com/greenlang/greenlang/tree/master/greenlang/factors/sdk/python"
+"Bug Tracker" = "https://github.com/greenlang/greenlang/issues"
+"Release Notes" = "https://github.com/greenlang/greenlang/blob/master/greenlang/factors/sdk/RELEASE_NOTES_v1.0.0.md"
+"Pricing" = "https://greenlang.ai/pricing"
+
+[project.scripts]
+gl-factors = "greenlang_factors.cli:main"
+greenlang-factors = "greenlang_factors.cli:main"
+
+[tool.setuptools]
+packages = ["greenlang_factors"]
+include-package-data = true
+
+[tool.setuptools.package-dir]
+greenlang_factors = "."
+
+[tool.setuptools.package-data]
+greenlang_factors = ["py.typed", "README.md"]

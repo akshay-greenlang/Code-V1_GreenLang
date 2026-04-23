@@ -1,125 +1,162 @@
-# @greenlang/factors
+# @greenlang/factors -- TypeScript SDK (v1.0.0)
 
-TypeScript/JavaScript SDK for the [GreenLang Emission Factors API](https://greenlang.io).
-Search, resolve, diff, and audit 300+ peer-reviewed emission factors
-from a single typed client. Full parity with the Python SDK.
+Production-grade TypeScript / Node client for the [GreenLang Factors REST API](https://developers.greenlang.ai). Search, resolve, and audit emission factors across the global open + licensed catalog with edition pinning, signed-receipt verification, and rate-limit-aware retries.
 
-## Installation
-
-```bash
+```sh
 npm install @greenlang/factors
 # or
-yarn add @greenlang/factors
-# or
 pnpm add @greenlang/factors
+# or
+yarn add @greenlang/factors
 ```
 
-Requires Node.js 18+ (uses native `fetch` and WebCrypto) or any
-modern browser. For Node 16, install `undici` and pass its `fetch`
-via `fetchImpl`.
+Requires Node 18+. Dual-bundled (ESM + CJS) with full type declarations.
 
-## Quick Start
+## 60-second quickstart
 
 ```ts
-import { FactorsClient } from '@greenlang/factors';
+import { FactorsClient } from "@greenlang/factors";
 
 const client = new FactorsClient({
-  baseUrl: 'https://api.greenlang.io',
+  baseUrl: "https://api.greenlang.io",
   apiKey: process.env.GL_FACTORS_API_KEY!,
-  edition: 'ef_2026_q1',
 });
 
-// Basic search
-const hits = await client.search('diesel combustion US');
+// 1. Search the catalog
+const hits = await client.search("natural gas US Scope 1", { limit: 5 });
 for (const f of hits.factors) {
-  console.log(`${f.factor_id}: ${f.co2e_per_unit} kgCO2e/${f.unit}`);
+  console.log(f.factor_id, f.co2e_per_unit, f.unit);
 }
 
-// 7-step cascade resolution with full explain
+// 2. Resolve an activity into a chosen factor
 const resolved = await client.resolve({
-  activity: 'diesel combustion',
-  method_profile: 'corporate_scope1',
-  jurisdiction: 'US-CA',
-  facility_id: 'plant-42',
+  activity: "natural gas combustion",
+  method_profile: "corporate_scope1",
+  jurisdiction: "US",
+  reporting_date: "2026-04-01",
+  quantity: 1000,
+  unit: "therm",
 });
-console.log(resolved.chosen_factor_id, resolved.why_chosen);
+console.log("chosen:", resolved.chosen.factor_id);
+console.log("co2e:", resolved.computed_total);
 ```
 
-## Authentication
+## Edition pinning
+
+Pin every request to a specific catalog edition so reports remain reproducible across catalog updates:
 
 ```ts
-// API key (recommended)
-new FactorsClient({ baseUrl, apiKey: 'gl_fac_...' });
-
-// JWT bearer
-new FactorsClient({ baseUrl, jwtToken: 'eyJ...' });
-
-// HMAC request signing (Pro+)
-import { APIKeyAuth, HMACAuth } from '@greenlang/factors';
-new FactorsClient({
-  baseUrl,
-  auth: new HMACAuth({
-    apiKeyId: 'key-id',
-    secret: process.env.HMAC_SECRET!,
-    primary: new APIKeyAuth({ apiKey: 'gl_fac_...' }),
-  }),
+await client.withEdition("2027.Q1-electricity", async (scoped) => {
+  const resolved = await scoped.resolve({
+    activity: "electricity consumption",
+    method_profile: "corporate_scope2_location_based",
+    jurisdiction: "US-CA",
+    quantity: 5000,
+    unit: "kWh",
+  });
+  // If the server returns a different edition than the pin, an
+  // EditionMismatchError is thrown -- we never silently accept drift.
 });
 ```
 
-See [docs/sdk/typescript/AUTHENTICATION.md](../../../../docs/sdk/typescript/AUTHENTICATION.md) for full details.
+The accepted edition-id formats are:
 
-## Key features
+* `v1.0.0`, `v1`, `v2.1` -- semantic-version style
+* `2027.Q1`, `2027.Q1-electricity` -- quarterly + scope
+* `2027-04-01-freight` -- date + scope
 
-- **Typed models** — `Factor`, `ResolvedFactor`, `Edition`, `AuditBundle`, `Override`, and 13 more
-- **Full parity** with the Python SDK (same endpoint list, same error hierarchy)
-- **Automatic retries** on 429 / 5xx with exponential backoff and `Retry-After` support
-- **ETag caching** — transparent `If-None-Match`/`304` on GETs
-- **Webhook verification** — HMAC-SHA256 over canonical JSON, byte-compatible with Python
-- **Async iterators** — `for await (const f of client.paginateSearch(...))`
-- **Works everywhere** — Node 18+, browsers, Cloudflare Workers, Deno, Bun
+Anything else throws `EditionPinError` before the request goes out.
 
-## Documentation
+## Offline signed-receipt verification
 
-- [README.md](../../../../docs/sdk/typescript/README.md) — overview
-- [AUTHENTICATION.md](../../../../docs/sdk/typescript/AUTHENTICATION.md)
-- [RESOLUTION.md](../../../../docs/sdk/typescript/RESOLUTION.md)
-- [ERROR_HANDLING.md](../../../../docs/sdk/typescript/ERROR_HANDLING.md)
-- [VERSION_PINNING.md](../../../../docs/sdk/typescript/VERSION_PINNING.md)
-- [BROWSER_VS_NODE.md](../../../../docs/sdk/typescript/BROWSER_VS_NODE.md)
+Every Pro+ response can carry a signed receipt. Verify it offline -- no network call back to GreenLang -- so audit packages remain self-contained.
 
-## Example scripts
+```ts
+import { ReceiptVerificationError } from "@greenlang/factors";
 
-Runnable samples live under [`/examples/factors_sdk/typescript/`](../../../../examples/factors_sdk/typescript/):
+const response = await client.resolve(request);
+try {
+  const summary = await client.verifyReceipt(response, {
+    // secret: ...     for HMAC-SHA256
+    // jwksUrl: ...    for Ed25519 (defaults to GreenLang's public JWKS)
+  });
+  console.log("verified by", summary.key_id, "at", summary.signed_at);
+} catch (err) {
+  if (err instanceof ReceiptVerificationError) {
+    console.error("AUDIT FAILURE:", err.message);
+  }
+}
+```
 
-| Script                        | What it does                                  |
-|-------------------------------|-----------------------------------------------|
-| `01_basic_search.ts`          | Basic and advanced `/search` + `/search/v2`   |
-| `02_resolve_with_explain.ts`  | 7-step cascade resolution (Pro+ tier)         |
-| `03_batch_resolution.ts`      | Submit batch jobs and poll to completion      |
-| `04_tenant_override.ts`       | Write a tenant-scoped override (Platform tier)|
-| `05_audit_export.ts`          | Download audit bundles (Enterprise tier)      |
+Two algorithms supported:
+
+| Algorithm    | Tier                         | Key material                                            |
+|--------------|------------------------------|---------------------------------------------------------|
+| HMAC-SHA256  | Community / Developer Pro    | Shared secret (`GL_FACTORS_SIGNING_SECRET`)             |
+| Ed25519      | Consulting / Platform / Ent. | JWKS at `https://api.greenlang.io/.well-known/jwks.json`|
+
+The Ed25519 path uses the optional `jose` peer dependency:
+
+```sh
+npm install jose
+```
+
+## Rate-limit-aware retries
+
+Built-in: when the server returns `429 Too Many Requests`, the transport reads `Retry-After` and waits exactly that long before retrying (capped at 60s, up to `maxRetries` attempts). On the final attempt a `RateLimitError` exposes the `retryAfter` field so caller code can also back off.
+
+```ts
+import { RateLimitError } from "@greenlang/factors";
+
+try {
+  await client.resolve(request);
+} catch (err) {
+  if (err instanceof RateLimitError) {
+    console.log(`slow down -- retry after ${err.retryAfter}s`);
+  }
+}
+```
+
+## Typed exceptions
+
+| Exception              | Trigger                                                           |
+|------------------------|-------------------------------------------------------------------|
+| `AuthError`            | 401 -- bad/missing API key or JWT                                 |
+| `TierError`            | 403 -- caller's tier insufficient                                 |
+| `LicenseError`         | 403 -- factor is `connector_only` and caller lacks permission     |
+| `LicensingGapError`    | 403 -- requested licensed pack not in contract                    |
+| `EntitlementError`     | 403 -- plan does not include the requested feature                |
+| `FactorNotFoundError`  | 404 -- factor id missing in this edition                          |
+| `ValidationError`      | 400 / 422 -- bad request body                                     |
+| `RateLimitError`       | 429 -- exceeded tier rate limit                                   |
+| `EditionPinError`      | client-side: bad edition id, or 409/410 from server               |
+| `EditionMismatchError` | server returned a different edition than the pin                  |
+| `FactorsAPIError`      | catch-all base class                                              |
 
 ## CLI
 
-```bash
-npm install -g @greenlang/factors
-export GL_FACTORS_API_KEY=gl_fac_...
-glfactors search "diesel" --geography US --limit 5
-glfactors resolve ./request.json
-glfactors explain ef_us_diesel_scope1_v2
-glfactors coverage
+```
+glfactors search "diesel US Scope 1"
+glfactors get-factor ef:co2:diesel:us:2026
+glfactors resolve "natural gas combustion" --jurisdiction US
+glfactors explain ef:co2:elec:us-ca:2027 --alternates 5
+glfactors list-editions
 ```
 
-## Build & test
+Authentication is sourced from environment variables (mirrors the Python SDK):
 
-```bash
-cd greenlang/factors/sdk/ts
-npm install
-npm test              # jest
-npm run typecheck     # tsc --noEmit (strict)
-npm run build         # ESM + CJS dual output
+```
+GREENLANG_FACTORS_BASE_URL    # default: http://localhost:8000
+GREENLANG_FACTORS_API_KEY
+GREENLANG_FACTORS_JWT
+GREENLANG_FACTORS_EDITION
+GL_FACTORS_SIGNING_SECRET     # for HMAC receipt verification
+GL_FACTORS_JWKS_URL           # for Ed25519 receipt verification
 ```
 
-## License
+## Links
 
-MIT.
+* Pricing -- https://greenlang.ai/pricing
+* Documentation -- https://developers.greenlang.ai
+* Changelog -- https://github.com/greenlang/greenlang/blob/master/greenlang/factors/sdk/CHANGELOG.md
+* Source -- https://github.com/greenlang/greenlang

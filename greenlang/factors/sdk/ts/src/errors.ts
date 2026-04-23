@@ -89,6 +89,77 @@ export class LicenseError extends FactorsAPIError {
   }
 }
 
+/**
+ * 403 -- caller's contract does not include the requested licensed pack.
+ *
+ * Distinct from `LicenseError` (the SDK / customer is not allowed to
+ * *redistribute* a factor) -- this fires when the customer asked for a
+ * factor whose licence chain cannot be satisfied at all (e.g. requesting
+ * the Electricity Premium pack on a Community plan).
+ */
+export class LicensingGapError extends FactorsAPIError {
+  constructor(message: string, opts: FactorsAPIErrorOptions = {}) {
+    super(message, {
+      ...opts,
+      remediation:
+        opts.remediation ??
+        'Upgrade your plan to a tier that includes the requested premium pack, or remove the pack from your request.',
+    });
+    this.name = 'LicensingGapError';
+    Object.setPrototypeOf(this, LicensingGapError.prototype);
+  }
+}
+
+/**
+ * 403 -- caller's plan does not entitle them to the requested feature.
+ *
+ * Distinct from `TierError` so client code can branch on missing-feature
+ * vs. insufficient-tier without parsing the error message.
+ */
+export class EntitlementError extends FactorsAPIError {
+  constructor(message: string, opts: FactorsAPIErrorOptions = {}) {
+    super(message, {
+      ...opts,
+      remediation:
+        opts.remediation ??
+        'Your plan does not include this feature. Visit https://greenlang.ai/pricing to compare tiers.',
+    });
+    this.name = 'EntitlementError';
+    Object.setPrototypeOf(this, EntitlementError.prototype);
+  }
+}
+
+/**
+ * Edition pinning was requested but cannot be honoured.
+ *
+ * Raised when the server returns 409/410 indicating the pinned edition
+ * has been retired, or when client validation rejects the edition-id
+ * format before the request goes out. For drift between the pinned and
+ * returned editions on otherwise-successful requests, see
+ * `EditionMismatchError`.
+ */
+export class EditionPinError extends FactorsAPIError {
+  public readonly editionId?: string;
+
+  constructor(
+    message: string,
+    opts: FactorsAPIErrorOptions & { editionId?: string } = {},
+  ) {
+    super(message, {
+      ...opts,
+      remediation:
+        opts.remediation ??
+        'Use a current edition id (formats: v1.0.0, 2027.Q1, 2027.Q1-electricity, 2027-04-01-freight).',
+    });
+    this.name = 'EditionPinError';
+    this.editionId = opts.editionId;
+    if (opts.editionId !== undefined) {
+      this.context.edition_id = opts.editionId;
+    }
+    Object.setPrototypeOf(this, EditionPinError.prototype);
+  }
+}
+
 /** 404 — factor id does not exist in the edition. */
 export class FactorNotFoundError extends FactorsAPIError {
   constructor(message: string, opts: FactorsAPIErrorOptions = {}) {

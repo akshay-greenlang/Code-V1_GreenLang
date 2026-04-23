@@ -532,3 +532,96 @@ def apply_export_rate_limit(
     tier = current_user.get("tier", "community")
     limiter.check_general(request, response, user_id, tier)
     limiter.check_export(request, response, user_id, tier)
+
+
+# ---------------------------------------------------------------------------
+# Class-shape middleware (BaseHTTPMiddleware) for use with
+# `app.add_middleware(RateLimitMiddleware)` from factors_app.py.
+#
+# Launch-tier overrides per FY27 Factors checklist (CTO spec § "Commercial
+# packaging"):
+#   - community         : 60   req/min
+#   - developer_pro     : 1000 req/min
+#   - consulting        : 3000 req/min
+#   - enterprise        : unlimited (bypass)
+#   - internal          : unlimited (bypass)
+# ---------------------------------------------------------------------------
+
+from starlette.middleware.base import BaseHTTPMiddleware as _BaseHTTPMiddleware
+from starlette.responses import JSONResponse as _JSONResponse
+
+
+_LAUNCH_TIER_SPECS: Dict[str, _TierSpec] = {
+    "community":          _TierSpec(requests_per_minute=60,    burst=10,  exports_per_15min=1),
+    "developer_pro":      _TierSpec(requests_per_minute=1000,  burst=100, exports_per_15min=10),
+    "pro":                _TierSpec(requests_per_minute=1000,  burst=100, exports_per_15min=10),
+    "consulting":         _TierSpec(requests_per_minute=3000,  burst=200, exports_per_15min=30),
+    "consulting_platform":_TierSpec(requests_per_minute=3000,  burst=200, exports_per_15min=30),
+}
+
+_UNLIMITED_TIERS = {"enterprise", "internal"}
+
+
+class RateLimitMiddleware(_BaseHTTPMiddleware):
+    """Sliding-window rate limiter applied at /v1.
+
+    Uses the existing :class:`TierRateLimiter` backend but overrides the
+    per-tier RPM caps with the launch tiers above. Public routes
+    (/v1/health, /openapi.json, /metrics, /docs, /redoc) and unlimited
+    tiers bypass the limiter entirely.
+    """
+
+    BYPASS = {"/v1/health", "/openapi.json", "/docs", "/redoc", "/metrics", "/"}
+
+    def __init__(self, app, *, config: Optional[RateLimitConfig] = None) -> None:
+        super().__init__(app)
+        self._limiter = TierRateLimiter(config or RateLimitConfig())
+
+    async def dispatch(self, request, call_next):
+        path = request.url.path
+        if path in self.BYPASS:
+            return await call_next(request)
+        if not self._limiter.enabled:
+            return await call_next(request)
+
+        user = getattr(request.state, "user", None) or {}
+        tier = (user.get("tier") or "community").lower()
+        if tier in _UNLIMITED_TIERS:
+            return await call_next(request)
+
+        spec = _LAUNCH_TIER_SPECS.get(tier, _LAUNCH_TIER_SPECS["community"])
+        user_id = user.get("user_id") or user.get("api_key") or request.client.host
+
+        now = time.time()
+        key = f"rl:v1:{user_id}"
+        allowed, remaining, reset_at = self._limiter._backend.record_and_check(  # type: ignore[attr-defined]
+            key, now, _GENERAL_WINDOW_SECONDS, spec.requests_per_minute,
+        )
+        if not allowed:
+            retry_after = max(1, int(reset_at - now))
+            return _JSONResponse(
+                status_code=429,
+                content={
+                    "error": "rate_limit_exceeded",
+                    "message": (
+                        f"Tier '{tier}' allows {spec.requests_per_minute} req/min."
+                        " Upgrade for higher limits."
+                    ),
+                    "tier": tier,
+                    "limit": spec.requests_per_minute,
+                    "retry_after_seconds": retry_after,
+                    "upgrade_url": "https://greenlang.ai/pricing",
+                },
+                headers={
+                    "Retry-After": str(retry_after),
+                    "X-RateLimit-Limit": str(spec.requests_per_minute),
+                    "X-RateLimit-Remaining": "0",
+                    "X-RateLimit-Reset": str(int(reset_at)),
+                },
+            )
+
+        response = await call_next(request)
+        response.headers["X-RateLimit-Limit"] = str(spec.requests_per_minute)
+        response.headers["X-RateLimit-Remaining"] = str(remaining)
+        response.headers["X-RateLimit-Reset"] = str(int(reset_at))
+        return response

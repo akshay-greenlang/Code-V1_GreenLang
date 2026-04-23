@@ -667,3 +667,103 @@ class TenantOverlayRegistry:
     def list_paths(self, tenant_id: str) -> List[str]:
         """Legacy: list registered SQLite paths."""
         return []
+
+
+# ===========================================================================
+# Track C-5: OEM branding overlay
+# ===========================================================================
+#
+# White-labelled responses for OEM partners. The decorator below is
+# called from the API serialiser layer (see Agent 1's middleware) right
+# before a response is returned to a caller authenticating with an OEM
+# key. Centralising this here keeps the overlay precedence explicit:
+#
+#     1. tenant overlay (if any) replaces the value
+#     2. OEM branding wraps the envelope
+#
+# The function deliberately accepts ``Any`` for the response so it can
+# decorate dicts, lists-of-dicts, or pydantic models without each
+# endpoint having to know which shape is in flight.
+
+
+def apply_oem_branding(response: Any, oem_id: Optional[str]) -> Any:
+    """Decorate an API response with OEM branding metadata.
+
+    The branding payload is fetched from the OEM registry (see
+    :mod:`greenlang.factors.onboarding.partner_setup`). If ``oem_id`` is
+    falsy, or the OEM has no branding configured, or the branding
+    lookup fails for any reason, the response is returned unchanged.
+
+    Args:
+        response: The serialised response body. Mutated in place when
+            it is a ``dict``; wrapped into ``{"data": ..., "branding": ...}``
+            otherwise.
+        oem_id: The OEM partner id. ``None`` short-circuits to a no-op.
+
+    Returns:
+        The decorated response.
+    """
+    if not oem_id:
+        return response
+
+    try:
+        # Local import avoids circular: onboarding -> entitlements -> overlay
+        from greenlang.factors.onboarding.partner_setup import get_oem_partner
+    except Exception:  # pragma: no cover - defensive guard
+        logger.debug("OEM registry unavailable; skipping branding overlay")
+        return response
+
+    try:
+        partner = get_oem_partner(oem_id)
+    except Exception as exc:
+        logger.warning("OEM %r not found; skipping branding overlay: %s", oem_id, exc)
+        return response
+
+    branding = partner.branding
+    if branding is None:
+        return response
+
+    # Materialise the branding metadata. Both ``BrandingConfig`` (pydantic)
+    # and a plain dict are accepted to keep callers honest.
+    if hasattr(branding, "to_response_metadata"):
+        meta = branding.to_response_metadata()
+    elif hasattr(branding, "model_dump"):
+        meta = {k: v for k, v in branding.model_dump(mode="json").items() if v is not None}
+    elif isinstance(branding, dict):
+        meta = {k: v for k, v in branding.items() if v is not None}
+    else:
+        logger.debug(
+            "Unsupported OEM branding payload type %s; skipping overlay",
+            type(branding).__name__,
+        )
+        return response
+
+    # Always advertise the OEM id so downstream renderers can scope
+    # static asset caches.
+    meta.setdefault("oem_id", oem_id)
+
+    if isinstance(response, dict):
+        # Don't clobber an existing branding key if a caller already
+        # populated one; OEM metadata takes precedence on overlap by
+        # merging field-by-field.
+        existing = response.get("branding") or {}
+        if isinstance(existing, dict):
+            merged = dict(existing)
+            merged.update(meta)
+        else:
+            merged = meta
+        response["branding"] = merged
+        return response
+
+    # Non-dict payloads (e.g. lists) get wrapped; we never silently
+    # discard the original body.
+    return {"data": response, "branding": meta}
+
+
+__all__ = [
+    "REDISTRIBUTION_CUSTOMER_PRIVATE",
+    "TenantOverlay",
+    "OverlayAuditEntry",
+    "TenantOverlayRegistry",
+    "apply_oem_branding",
+]

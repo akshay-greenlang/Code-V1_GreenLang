@@ -8,6 +8,7 @@ import json
 import logging
 import sys
 from pathlib import Path
+from typing import Any, Dict, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -328,6 +329,227 @@ def _cmd_bulk_ingest(args: argparse.Namespace) -> int:
         return 1
 
 
+# ============================================================================
+# resolve / explain — CTO-critical commands (mirror /v1/resolve & /v1/explain)
+# ============================================================================
+
+
+def _print_payload(payload: Dict[str, Any], *, json_mode: bool, compact: bool) -> None:
+    """Print a payload either as JSON (compact or indented) or as a short
+    human-readable summary suitable for a terminal."""
+    if json_mode:
+        print(json.dumps(payload, default=str, separators=(",", ":") if compact else None,
+                         indent=None if compact else 2))
+        return
+
+    # Human-friendly view (compact summary). The CLI defaults to JSON
+    # because that mirrors the API; the text view is a convenience.
+    chosen = payload.get("explain", {}).get("chosen") or {
+        "factor_id": payload.get("chosen_factor_id"),
+        "source": payload.get("source_id"),
+        "source_version": payload.get("source_version"),
+    }
+    derivation = payload.get("explain", {}).get("derivation") or {
+        "fallback_rank": payload.get("fallback_rank"),
+        "step_label": payload.get("step_label"),
+        "why_chosen": payload.get("why_chosen"),
+    }
+    quality = payload.get("explain", {}).get("quality") or {
+        "score": payload.get("quality_score"),
+    }
+    emissions = payload.get("explain", {}).get("emissions") or payload.get("gas_breakdown", {}) or {}
+    print(f"Factor:           {chosen.get('factor_id')}")
+    print(f"Source:           {chosen.get('source')} (version {chosen.get('source_version')})")
+    print(f"Method profile:   {chosen.get('method_profile') or payload.get('method_profile')}")
+    print(f"Fallback rank:    {derivation.get('fallback_rank')} ({derivation.get('step_label')})")
+    print(f"Quality score:    {quality.get('score')}")
+    print(f"CO2e (kg):        {emissions.get('co2e_total_kg')}  (basis: {emissions.get('gwp_basis')})")
+    why = derivation.get("why_chosen")
+    if why:
+        print(f"Why chosen:       {why}")
+    alts = payload.get("alternates") or []
+    if alts:
+        print(f"Alternates:       {len(alts)}")
+        for a in alts[:3]:
+            print(f"  - {a.get('factor_id')}  score={a.get('tie_break_score')}")
+
+
+def _build_resolve_payload(args: argparse.Namespace) -> Dict[str, Any]:
+    """Build the /v1/resolve payload using the same engine the API uses.
+
+    The CLI deliberately reuses :func:`build_resolution_explain` from
+    ``api_endpoints`` so resolve/explain output is byte-identical to the
+    HTTP surface.
+    """
+    from greenlang.data.canonical_v2 import MethodProfile
+    from greenlang.factors.api_endpoints import build_resolution_explain
+    from greenlang.factors.service import FactorCatalogService
+
+    svc = FactorCatalogService.from_environment()
+    edition_id = svc.repo.resolve_edition(args.edition)
+
+    # Validate method_profile early so the user sees a friendly error
+    # instead of a Pydantic stack trace.
+    try:
+        MethodProfile(args.method_profile)
+    except ValueError as exc:
+        valid = ", ".join(p.value for p in MethodProfile)
+        raise SystemExit(
+            f"Unknown method-profile: {args.method_profile!r}. "
+            f"Valid options: {valid}."
+        ) from exc
+
+    request_dict: Dict[str, Any] = {
+        "activity": args.activity,
+        "method_profile": args.method_profile,
+    }
+    if args.country:
+        request_dict["jurisdiction"] = args.country
+    if args.target_unit:
+        request_dict["target_unit"] = args.target_unit
+    if args.reporting_date:
+        request_dict["reporting_date"] = args.reporting_date
+    if args.tenant:
+        request_dict["tenant_id"] = args.tenant
+    if args.supplier:
+        request_dict["supplier_id"] = args.supplier
+    if args.facility:
+        request_dict["facility_id"] = args.facility
+    if args.utility:
+        request_dict["utility_or_grid_region"] = args.utility
+    if args.include_preview:
+        request_dict["include_preview"] = True
+
+    extras: Dict[str, Any] = {}
+    if args.quantity is not None:
+        extras["quantity"] = float(args.quantity)
+    if args.unit:
+        extras["activity_unit"] = args.unit
+    if extras:
+        request_dict["extras"] = extras
+
+    payload = build_resolution_explain(
+        svc.repo,
+        edition_id,
+        request_dict,
+        include_preview=args.include_preview,
+        include_connector=False,
+    )
+    payload["edition_id"] = edition_id
+
+    # Surface co2e directly when the caller passed --quantity, mirroring
+    # the API quickstart shape.
+    if args.quantity is not None:
+        gas = payload.get("gas_breakdown") or {}
+        co2e_per_unit = gas.get("co2e_total_kg")
+        if co2e_per_unit is not None:
+            try:
+                payload["co2e"] = float(co2e_per_unit) * float(args.quantity)
+                payload["co2e_unit"] = "kg"
+            except (TypeError, ValueError):
+                pass
+    return payload
+
+
+def _cmd_resolve(args: argparse.Namespace) -> int:
+    """gl-factors resolve — POST /v1/resolve via CLI."""
+    try:
+        payload = _build_resolve_payload(args)
+    except SystemExit:
+        raise
+    except Exception as exc:
+        err = {"error": "resolve_failed", "message": str(exc)}
+        print(json.dumps(err, indent=2 if not args.compact else None))
+        return 2
+
+    _print_payload(payload, json_mode=args.json or args.compact, compact=args.compact)
+    return 0
+
+
+def _cmd_explain(args: argparse.Namespace) -> int:
+    """gl-factors explain <factor_id> — GET /v1/factors/{id}/explain via CLI."""
+    from greenlang.factors.api_endpoints import build_factor_explain
+    from greenlang.factors.service import FactorCatalogService
+
+    svc = FactorCatalogService.from_environment()
+    try:
+        edition_id = svc.repo.resolve_edition(args.edition)
+    except Exception as exc:
+        print(json.dumps({"error": "unknown_edition", "message": str(exc)}, indent=2))
+        return 2
+
+    payload = build_factor_explain(
+        svc.repo,
+        edition_id,
+        args.factor_id,
+        method_profile=args.method_profile,
+    )
+    if payload is None:
+        err = {
+            "error": "factor_not_found",
+            "factor_id": args.factor_id,
+            "edition_id": edition_id,
+        }
+        print(json.dumps(err, indent=2))
+        return 1
+
+    payload["edition_id"] = edition_id
+    _print_payload(payload, json_mode=args.json or args.compact, compact=args.compact)
+    return 0
+
+
+# ============================================================================
+# Argument parser
+# ============================================================================
+
+
+def _add_resolve_parser(sub: argparse._SubParsersAction) -> None:
+    rs = sub.add_parser(
+        "resolve",
+        help="Resolve a factor through the 7-step cascade (mirrors POST /v1/resolve)",
+    )
+    rs.add_argument("--activity", required=True, help="Free-text activity, e.g. 'purchased electricity'")
+    rs.add_argument("--method-profile", dest="method_profile", required=True,
+                    help="Method profile (e.g. corporate_scope2_location_based)")
+    rs.add_argument("--quantity", type=float, default=None,
+                    help="Activity quantity. When supplied, payload includes computed co2e.")
+    rs.add_argument("--unit", default=None,
+                    help="Activity unit (kWh, MMBtu, kg, etc.)")
+    rs.add_argument("--country", default=None,
+                    help="ISO country / region code (e.g. IN, US-CA, EU)")
+    rs.add_argument("--edition", default=None,
+                    help="Pin a specific catalog edition (defaults to stable)")
+    rs.add_argument("--target-unit", dest="target_unit", default=None,
+                    help="Convert factor to this denominator unit (uses unit graph)")
+    rs.add_argument("--reporting-date", dest="reporting_date", default=None,
+                    help="ISO-8601 reporting date (defaults to today)")
+    rs.add_argument("--tenant", default=None, help="Tenant id for the customer-override step")
+    rs.add_argument("--supplier", default=None, help="Supplier id for step 2")
+    rs.add_argument("--facility", default=None, help="Facility id for step 3")
+    rs.add_argument("--utility", default=None,
+                    help="Utility tariff or grid sub-region for step 4 (e.g. eGRID-SERC)")
+    rs.add_argument("--include-preview", dest="include_preview", action="store_true",
+                    help="Allow preview-status factors when no certified match exists")
+    rs.add_argument("--json", action="store_true", help="Emit JSON (default)")
+    rs.add_argument("--compact", action="store_true", help="Single-line JSON output")
+    rs.set_defaults(func=_cmd_resolve)
+
+
+def _add_explain_parser(sub: argparse._SubParsersAction) -> None:
+    ex = sub.add_parser(
+        "explain",
+        help="Show the explain payload for a specific factor (mirrors GET /v1/factors/{id}/explain)",
+    )
+    ex.add_argument("factor_id", help="Factor id to explain")
+    ex.add_argument("--edition", default=None,
+                    help="Pin a specific catalog edition (defaults to stable)")
+    ex.add_argument("--method-profile", dest="method_profile", default=None,
+                    help="Method profile (defaults to derived from factor scope)")
+    ex.add_argument("--json", action="store_true", help="Emit JSON (default)")
+    ex.add_argument("--compact", action="store_true", help="Single-line JSON output")
+    ex.set_defaults(func=_cmd_explain)
+
+
 def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(description="GreenLang Factors catalog tools")
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -420,6 +642,10 @@ def main(argv: list[str] | None = None) -> int:
     )
     bi.add_argument("--dry-run", dest="dry_run", action="store_true", help="Validate without writing")
     bi.set_defaults(func=_cmd_bulk_ingest)
+
+    # CTO-critical resolve / explain commands
+    _add_resolve_parser(sub)
+    _add_explain_parser(sub)
 
     args = p.parse_args(argv)
     logger.info("CLI command=%s", args.cmd)

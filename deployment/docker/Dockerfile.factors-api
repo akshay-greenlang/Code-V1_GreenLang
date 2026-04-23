@@ -1,0 +1,76 @@
+# GreenLang Factors API — production image (FY27 launch).
+#
+# Build:  docker build -f deployment/docker/Dockerfile.factors-api -t gl-factors-api:1.0.0 .
+# Run:    docker run --rm -p 8080:8080 \
+#             -e GL_FACTORS_SQLITE_PATH=/data/factors.sqlite \
+#             -e GL_FACTORS_SIGNING_SECRET=<your-secret> \
+#             -v $(pwd)/data:/data \
+#             gl-factors-api:1.0.0
+#
+# Health: curl http://localhost:8080/v1/health
+# Docs:   http://localhost:8080/docs
+
+FROM python:3.12-slim AS builder
+
+WORKDIR /build
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        build-essential \
+        libpq-dev \
+        git \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY pyproject.toml ./
+COPY README.md ./
+COPY greenlang ./greenlang
+
+RUN pip install --no-cache-dir --upgrade pip wheel setuptools \
+    && pip install --no-cache-dir -e ".[server,security]" \
+    && pip install --no-cache-dir gunicorn "uvicorn[standard]" prometheus-client
+
+
+FROM python:3.12-slim AS runtime
+
+LABEL org.opencontainers.image.title="GreenLang Factors API" \
+      org.opencontainers.image.description="Canonical climate reference layer — emissions factors with provenance, version pinning, and signed receipts." \
+      org.opencontainers.image.vendor="GreenLang" \
+      org.opencontainers.image.source="https://github.com/greenlang/greenlang" \
+      org.opencontainers.image.licenses="Apache-2.0"
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        libpq5 \
+        curl \
+        ca-certificates \
+    && rm -rf /var/lib/apt/lists/* \
+    && groupadd -r factors && useradd -r -g factors -d /app -s /sbin/nologin factors
+
+WORKDIR /app
+
+COPY --from=builder /usr/local/lib/python3.12/site-packages /usr/local/lib/python3.12/site-packages
+COPY --from=builder /usr/local/bin /usr/local/bin
+COPY --from=builder /build/greenlang /app/greenlang
+COPY pyproject.toml /app/pyproject.toml
+
+USER factors
+
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    GL_FACTORS_PROTECTED_PREFIX=/v1 \
+    GL_FACTORS_CORS_ORIGINS=* \
+    PORT=8080
+
+EXPOSE 8080
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+    CMD curl --fail --silent http://localhost:${PORT}/v1/health || exit 1
+
+CMD ["gunicorn", \
+     "-k", "uvicorn.workers.UvicornWorker", \
+     "greenlang.factors.factors_app:app", \
+     "--bind", "0.0.0.0:8080", \
+     "--workers", "4", \
+     "--timeout", "60", \
+     "--access-logfile", "-", \
+     "--error-logfile", "-"]

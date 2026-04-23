@@ -1,0 +1,93 @@
+# =============================================================================
+# GreenLang Factors FY27 — `tests/factors/` reproducible test stack
+# =============================================================================
+# One-command CI-equivalent stack so a developer (or the CTO!) can get the
+# full Factors test suite green in any environment that has Docker.
+#
+# Usage:
+#   docker compose -f deployment/docker/docker-compose.factors-test.yml up \
+#       --build --abort-on-container-exit
+#
+#   # Re-run only one family without rebuilding deps:
+#   docker compose -f deployment/docker/docker-compose.factors-test.yml run --rm \
+#       factors-test pytest tests/factors/billing -v
+#
+#   # Tear down (volumes too):
+#   docker compose -f deployment/docker/docker-compose.factors-test.yml down -v
+#
+# Notes:
+#   * Postgres uses the pgvector image so vector-search tests work.
+#   * Redis is real; conftest.py prefers `fakeredis` when REDIS_URL is empty.
+#   * Stripe is mocked (STRIPE_API_KEY=test_key_mock) — tests use respx /
+#     pytest-mock to intercept stripe SDK calls.  Never points at real Stripe.
+#   * Source tree is bind-mounted so iteration is fast (no rebuild needed
+#     for test code changes; rebuild only when pyproject.toml changes).
+# =============================================================================
+version: "3.9"
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: gl-factors-test-postgres
+    environment:
+      POSTGRES_USER: factors_test
+      POSTGRES_PASSWORD: factors_test
+      POSTGRES_DB: factors_test
+    tmpfs:
+      # Use tmpfs so test runs are stateless and fast; nothing persists.
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U factors_test -d factors_test"]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+      start_period: 5s
+
+  redis:
+    image: redis:7-alpine
+    container_name: gl-factors-test-redis
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 3s
+      timeout: 2s
+      retries: 20
+      start_period: 2s
+
+  factors-test:
+    build:
+      context: ../..
+      dockerfile: deployment/docker/Dockerfile.factors-test
+    image: greenlang/factors-test:dev
+    container_name: gl-factors-test-runner
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      GL_ENV: test
+      GL_LOG_LEVEL: WARNING
+      DATABASE_URL: "postgresql://factors_test:factors_test@postgres:5432/factors_test"
+      GL_FACTORS_PG_DSN: "postgresql://factors_test:factors_test@postgres:5432/factors_test"
+      REDIS_URL: "redis://redis:6379/0"
+      # --- Mocked external services -- never call out to a real provider --
+      STRIPE_API_KEY: "test_key_mock"
+      STRIPE_WEBHOOK_SECRET: "test_secret_mock"
+      GL_FACTORS_SIGNING_SECRET: "test-signing-secret-for-pytest-only-32-chars-min"
+      GL_JWT_SECRET: "test-jwt-secret-for-pytest-only-32-chars-min"
+      OPENAI_API_KEY: ""
+      ANTHROPIC_API_KEY: ""
+      # Coverage targets land in the bind-mounted repo root so CI can read.
+      COVERAGE_FILE: "/app/.coverage.factors"
+    volumes:
+      # Bind mount the host repo so tests pick up local edits without rebuilding.
+      - ../..:/app
+      # Keep the venv from the image — never mask it with the host one.
+      - factors-test-venv:/opt/venv
+    working_dir: /app
+    # Override Dockerfile CMD if you want to scope a single family / file.
+    # command: ["pytest", "tests/factors/billing", "-v"]
+
+volumes:
+  factors-test-venv:

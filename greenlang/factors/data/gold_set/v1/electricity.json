@@ -1,0 +1,2149 @@
+[
+  {
+    "case_id": "elec_in_all_india_2027_lb_001",
+    "activity": {
+      "description": "Purchased grid electricity, India All India (FY2026-27), location-based",
+      "quantity": 12500,
+      "unit": "kWh",
+      "metadata": {
+        "country": "IN",
+        "grid_region": "all_india",
+        "year": 2027,
+        "fy_label": "FY2026-27",
+        "scope": "scope2"
+      }
+    },
+    "method_profile": "corporate_scope2_location_based",
+    "expected": {
+      "factor_id": "EF:IN:all_india:2026-27:cea-v20.0",
+      "factor_family": "grid_intensity",
+      "source_authority": "CEA",
+      "fallback_rank": 4,
+      "co2e_per_unit_min": 0.715,
+      "co2e_per_unit_max": 0.745,
+      "co2e_unit": "kgCO2e/kWh",
+      "must_include_assumptions": [
+        "grid average",
+        "location-based",
+        "CEA"
+      ]
+    },
+    "tags": [
+      "electricity",
+      "india",
+      "location_based",
+      "all_india",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "elec_in_northern_grid_2027_lb_002",
+    "activity": {
+      "description": "Purchased grid electricity, India Northern Grid (FY2026-27), location-based",
+      "quantity": 8200,
+      "unit": "kWh",
+      "metadata": {
+        "country": "IN",
+        "grid_region": "northern_grid",
+        "year": 2027,
+        "fy_label": "FY2026-27",
+        "scope": "scope2"
+      }
+    },
+    "method_profile": "corporate_scope2_location_based",
+    "expected": {
+      "factor_id": "EF:IN:northern_grid:2026-27:cea-v20.0",
+      "factor_family": "grid_intensity",
+      "source_authority": "CEA",
+      "fallback_rank": 4,
+      "co2e_per_unit_min": 0.5,
+      "co2e_per_unit_max": 0.56,
+      "co2e_unit": "kgCO2e/kWh",
+      "must_include_assumptions": [
+        "grid average",
+        "location-based",
+        "CEA"
+      ]
+    },
+    "tags": [
+      "electricity",
+      "india",
+      "location_based",
+      "northern_grid",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "elec_in_western_grid_2027_lb_003",
+    "activity": {
+      "description": "Purchased grid electricity, India Western Grid (FY2026-27), location-based",
+      "quantity": 14300,
+      "unit": "kWh",
+      "metadata": {
+        "country": "IN",
+        "grid_region": "western_grid",
+        "year": 2027,
+        "fy_label": "FY2026-27",
+        "scope": "scope2"
+      }
+    },
+    "method_profile": "corporate_scope2_location_based",
+    "expected": {
+      "factor_id": "EF:IN:western_grid:2026-27:cea-v20.0",
+      "factor_family": "grid_intensity",
+      "source_authority": "CEA",
+      "fallback_rank": 4,
+      "co2e_per_unit_min": 0.86,
+      "co2e_per_unit_max": 0.91,
+      "co2e_unit": "kgCO2e/kWh",
+      "must_include_assumptions": [
+        "grid average",
+        "location-based",
+        "CEA"
+      ]
+    },
+    "tags": [
+      "electricity",
+      "india",
+      "location_based",
+      "western_grid",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "elec_in_southern_grid_2027_lb_004",
+    "activity": {
+      "description": "Purchased grid electricity, India Southern Grid (FY2026-27), location-based",
+      "quantity": 9800,
+      "unit": "kWh",
+      "metadata": {
+        "country": "IN",
+        "grid_region": "southern_grid",
+        "year": 2027,
+        "fy_label": "FY2026-27",
+        "scope": "scope2"
+      }
+    },
+    "method_profile": "corporate_scope2_location_based",
+    "expected": {
+      "factor_id": "EF:IN:southern_grid:2026-27:cea-v20.0",
+      "factor_family": "grid_intensity",
+      "source_authority": "CEA",
+      "fallback_rank": 4,
+      "co2e_per_unit_min": 0.66,
+      "co2e_per_unit_max": 0.72,
+      "co2e_unit": "kgCO2e/kWh",
+      "must_include_assumptions": [
+        "grid average",
+        "location-based",
+        "CEA"
+      ]
+    },
+    "tags": [
+      "electricity",
+      "india",
+      "location_based",
+      "southern_grid",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "elec_in_eastern_grid_2027_lb_005",
+    "activity": {
+      "description": "Purchased grid electricity, India Eastern Grid (FY2026-27), location-based",
+      "quantity": 6400,
+      "unit": "kWh",
+      "metadata": {
+        "country": "IN",
+        "grid_region": "eastern_grid",
+        "year": 2027,
+        "fy_label": "FY2026-27",
+        "scope": "scope2"
+      }
+    },
+    "method_profile": "corporate_scope2_location_based",
+    "expected": {
+      "factor_id": "EF:IN:eastern_grid:2026-27:cea-v20.0",
+      "factor_family": "grid_intensity",
+      "source_authority": "CEA",
+      "fallback_rank": 4,
+      "co2e_per_unit_min": 0.94,
+      "co2e_per_unit_max": 0.99,
+      "co2e_unit": "kgCO2e/kWh",
+      "must_include_assumptions": [
+        "grid average",
+        "location-based",
+        "CEA"
+      ]
+    },
+    "tags": [
+      "electricity",
+      "india",
+      "location_based",
+      "eastern_grid",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "elec_in_north_eastern_grid_2027_lb_006",
+    "activity": {
+      "description": "Purchased grid electricity, India North Eastern Grid (FY2026-27), location-based",
+      "quantity": 1100,
+      "unit": "kWh",
+      "metadata": {
+        "country": "IN",
+        "grid_region": "north_eastern_grid",
+        "year": 2027,
+        "fy_label": "FY2026-27",
+        "scope": "scope2"
+      }
+    },
+    "method_profile": "corporate_scope2_location_based",
+    "expected": {
+      "factor_id": "EF:IN:north_eastern_grid:2026-27:cea-v20.0",
+      "factor_family": "grid_intensity",
+      "source_authority": "CEA",
+      "fallback_rank": 4,
+      "co2e_per_unit_min": 0.22,
+      "co2e_per_unit_max": 0.28,
+      "co2e_unit": "kgCO2e/kWh",
+      "must_include_assumptions": [
+        "grid average",
+        "location-based",
+        "CEA"
+      ]
+    },
+    "tags": [
+      "electricity",
+      "india",
+      "location_based",
+      "north_eastern_grid",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "elec_in_all_india_2026_lb_007",
+    "activity": {
+      "description": "Purchased grid electricity, India All India (FY2025-26), location-based",
+      "quantity": 5600,
+      "unit": "kWh",
+      "metadata": {
+        "country": "IN",
+        "grid_region": "all_india",
+        "year": 2026,
+        "fy_label": "FY2025-26",
+        "scope": "scope2"
+      }
+    },
+    "method_profile": "corporate_scope2_location_based",
+    "expected": {
+      "factor_id": "EF:IN:all_india:2025-26:cea-v20.0",
+      "factor_family": "grid_intensity",
+      "source_authority": "CEA",
+      "fallback_rank": 4,
+      "co2e_per_unit_min": 0.715,
+      "co2e_per_unit_max": 0.745,
+      "co2e_unit": "kgCO2e/kWh",
+      "must_include_assumptions": [
+        "grid average",
+        "location-based",
+        "CEA"
+      ]
+    },
+    "tags": [
+      "electricity",
+      "india",
+      "location_based",
+      "all_india",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "elec_in_western_grid_2026_lb_008",
+    "activity": {
+      "description": "Purchased grid electricity, India Western Grid (FY2025-26), location-based",
+      "quantity": 22000,
+      "unit": "kWh",
+      "metadata": {
+        "country": "IN",
+        "grid_region": "western_grid",
+        "year": 2026,
+        "fy_label": "FY2025-26",
+        "scope": "scope2"
+      }
+    },
+    "method_profile": "corporate_scope2_location_based",
+    "expected": {
+      "factor_id": "EF:IN:western_grid:2025-26:cea-v20.0",
+      "factor_family": "grid_intensity",
+      "source_authority": "CEA",
+      "fallback_rank": 4,
+      "co2e_per_unit_min": 0.86,
+      "co2e_per_unit_max": 0.91,
+      "co2e_unit": "kgCO2e/kWh",
+      "must_include_assumptions": [
+        "grid average",
+        "location-based",
+        "CEA"
+      ]
+    },
+    "tags": [
+      "electricity",
+      "india",
+      "location_based",
+      "western_grid",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "elec_in_southern_grid_2026_lb_009",
+    "activity": {
+      "description": "Purchased grid electricity, India Southern Grid (FY2025-26), location-based",
+      "quantity": 17400,
+      "unit": "kWh",
+      "metadata": {
+        "country": "IN",
+        "grid_region": "southern_grid",
+        "year": 2026,
+        "fy_label": "FY2025-26",
+        "scope": "scope2"
+      }
+    },
+    "method_profile": "corporate_scope2_location_based",
+    "expected": {
+      "factor_id": "EF:IN:southern_grid:2025-26:cea-v20.0",
+      "factor_family": "grid_intensity",
+      "source_authority": "CEA",
+      "fallback_rank": 4,
+      "co2e_per_unit_min": 0.66,
+      "co2e_per_unit_max": 0.72,
+      "co2e_unit": "kgCO2e/kWh",
+      "must_include_assumptions": [
+        "grid average",
+        "location-based",
+        "CEA"
+      ]
+    },
+    "tags": [
+      "electricity",
+      "india",
+      "location_based",
+      "southern_grid",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "elec_in_northern_grid_2026_lb_010",
+    "activity": {
+      "description": "Purchased grid electricity, India Northern Grid (FY2025-26), location-based",
+      "quantity": 33000,
+      "unit": "kWh",
+      "metadata": {
+        "country": "IN",
+        "grid_region": "northern_grid",
+        "year": 2026,
+        "fy_label": "FY2025-26",
+        "scope": "scope2"
+      }
+    },
+    "method_profile": "corporate_scope2_location_based",
+    "expected": {
+      "factor_id": "EF:IN:northern_grid:2025-26:cea-v20.0",
+      "factor_family": "grid_intensity",
+      "source_authority": "CEA",
+      "fallback_rank": 4,
+      "co2e_per_unit_min": 0.5,
+      "co2e_per_unit_max": 0.56,
+      "co2e_unit": "kgCO2e/kWh",
+      "must_include_assumptions": [
+        "grid average",
+        "location-based",
+        "CEA"
+      ]
+    },
+    "tags": [
+      "electricity",
+      "india",
+      "location_based",
+      "northern_grid",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "elec_in_all_india_2025_lb_011",
+    "activity": {
+      "description": "Purchased grid electricity, India All India (FY2024-25), location-based",
+      "quantity": 9200,
+      "unit": "kWh",
+      "metadata": {
+        "country": "IN",
+        "grid_region": "all_india",
+        "year": 2025,
+        "fy_label": "FY2024-25",
+        "scope": "scope2"
+      }
+    },
+    "method_profile": "corporate_scope2_location_based",
+    "expected": {
+      "factor_id": "EF:IN:all_india:2024-25:cea-v20.0",
+      "factor_family": "grid_intensity",
+      "source_authority": "CEA",
+      "fallback_rank": 4,
+      "co2e_per_unit_min": 0.715,
+      "co2e_per_unit_max": 0.745,
+      "co2e_unit": "kgCO2e/kWh",
+      "must_include_assumptions": [
+        "grid average",
+        "location-based",
+        "CEA"
+      ]
+    },
+    "tags": [
+      "electricity",
+      "india",
+      "location_based",
+      "all_india",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "elec_in_eastern_grid_2025_lb_012",
+    "activity": {
+      "description": "Purchased grid electricity, India Eastern Grid (FY2024-25), location-based",
+      "quantity": 4100,
+      "unit": "kWh",
+      "metadata": {
+        "country": "IN",
+        "grid_region": "eastern_grid",
+        "year": 2025,
+        "fy_label": "FY2024-25",
+        "scope": "scope2"
+      }
+    },
+    "method_profile": "corporate_scope2_location_based",
+    "expected": {
+      "factor_id": "EF:IN:eastern_grid:2024-25:cea-v20.0",
+      "factor_family": "grid_intensity",
+      "source_authority": "CEA",
+      "fallback_rank": 4,
+      "co2e_per_unit_min": 0.94,
+      "co2e_per_unit_max": 0.99,
+      "co2e_unit": "kgCO2e/kWh",
+      "must_include_assumptions": [
+        "grid average",
+        "location-based",
+        "CEA"
+      ]
+    },
+    "tags": [
+      "electricity",
+      "india",
+      "location_based",
+      "eastern_grid",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "elec_in_market_supplier_001",
+    "activity": {
+      "description": "Market-based purchased electricity, Tata Power solar PPA, Karnataka",
+      "quantity": 5400,
+      "unit": "kWh",
+      "metadata": {
+        "country": "IN",
+        "year": 2027,
+        "scope": "scope2",
+        "instrument": "PPA"
+      }
+    },
+    "method_profile": "corporate_scope2_market_based",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "grid_intensity",
+      "source_authority": "supplier",
+      "fallback_rank": 2,
+      "co2e_per_unit_min": 0.04,
+      "co2e_per_unit_max": 0.06,
+      "co2e_unit": "kgCO2e/kWh",
+      "must_include_assumptions": [
+        "market-based",
+        "supplier-specific"
+      ]
+    },
+    "tags": [
+      "electricity",
+      "india",
+      "market_based",
+      "ppa",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "elec_in_market_supplier_002",
+    "activity": {
+      "description": "Market-based purchased electricity, ReNew Power wind PPA, Tamil Nadu",
+      "quantity": 7200,
+      "unit": "kWh",
+      "metadata": {
+        "country": "IN",
+        "year": 2027,
+        "scope": "scope2",
+        "instrument": "PPA"
+      }
+    },
+    "method_profile": "corporate_scope2_market_based",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "grid_intensity",
+      "source_authority": "supplier",
+      "fallback_rank": 2,
+      "co2e_per_unit_min": 0.01,
+      "co2e_per_unit_max": 0.03,
+      "co2e_unit": "kgCO2e/kWh",
+      "must_include_assumptions": [
+        "market-based",
+        "supplier-specific"
+      ]
+    },
+    "tags": [
+      "electricity",
+      "india",
+      "market_based",
+      "ppa",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "elec_in_market_supplier_003",
+    "activity": {
+      "description": "Market-based purchased electricity, Adani Green hybrid PPA, Rajasthan",
+      "quantity": 12500,
+      "unit": "kWh",
+      "metadata": {
+        "country": "IN",
+        "year": 2027,
+        "scope": "scope2",
+        "instrument": "PPA"
+      }
+    },
+    "method_profile": "corporate_scope2_market_based",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "grid_intensity",
+      "source_authority": "supplier",
+      "fallback_rank": 2,
+      "co2e_per_unit_min": 0.03,
+      "co2e_per_unit_max": 0.05,
+      "co2e_unit": "kgCO2e/kWh",
+      "must_include_assumptions": [
+        "market-based",
+        "supplier-specific"
+      ]
+    },
+    "tags": [
+      "electricity",
+      "india",
+      "market_based",
+      "ppa",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "elec_in_market_supplier_004",
+    "activity": {
+      "description": "Market-based purchased electricity, ACME Solar rooftop PPA, Maharashtra",
+      "quantity": 2400,
+      "unit": "kWh",
+      "metadata": {
+        "country": "IN",
+        "year": 2027,
+        "scope": "scope2",
+        "instrument": "PPA"
+      }
+    },
+    "method_profile": "corporate_scope2_market_based",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "grid_intensity",
+      "source_authority": "supplier",
+      "fallback_rank": 2,
+      "co2e_per_unit_min": 0.04,
+      "co2e_per_unit_max": 0.07,
+      "co2e_unit": "kgCO2e/kWh",
+      "must_include_assumptions": [
+        "market-based",
+        "supplier-specific"
+      ]
+    },
+    "tags": [
+      "electricity",
+      "india",
+      "market_based",
+      "ppa",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "elec_in_market_residual_fallback_001",
+    "activity": {
+      "description": "Market-based electricity with no contractual instrument, India all india — defaults to CEA grid-average",
+      "quantity": 11000,
+      "unit": "kWh",
+      "metadata": {
+        "country": "IN",
+        "grid_region": "all_india",
+        "year": 2027,
+        "scope": "scope2",
+        "instrument": null
+      }
+    },
+    "method_profile": "corporate_scope2_market_based",
+    "expected": {
+      "factor_id": "EF:IN:all_india:2026-27:cea-v20.0",
+      "factor_family": "grid_intensity",
+      "source_authority": "CEA",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 0.715,
+      "co2e_per_unit_max": 0.745,
+      "co2e_unit": "kgCO2e/kWh",
+      "must_include_assumptions": [
+        "market-based",
+        "no instrument applied",
+        "grid-average fallback"
+      ]
+    },
+    "tags": [
+      "electricity",
+      "india",
+      "market_based",
+      "fallback",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "elec_in_market_residual_fallback_002",
+    "activity": {
+      "description": "Market-based electricity with no contractual instrument, India western grid — defaults to CEA grid-average",
+      "quantity": 6800,
+      "unit": "kWh",
+      "metadata": {
+        "country": "IN",
+        "grid_region": "western_grid",
+        "year": 2027,
+        "scope": "scope2",
+        "instrument": null
+      }
+    },
+    "method_profile": "corporate_scope2_market_based",
+    "expected": {
+      "factor_id": "EF:IN:western_grid:2026-27:cea-v20.0",
+      "factor_family": "grid_intensity",
+      "source_authority": "CEA",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 0.86,
+      "co2e_per_unit_max": 0.91,
+      "co2e_unit": "kgCO2e/kWh",
+      "must_include_assumptions": [
+        "market-based",
+        "no instrument applied",
+        "grid-average fallback"
+      ]
+    },
+    "tags": [
+      "electricity",
+      "india",
+      "market_based",
+      "fallback",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "elec_in_market_residual_fallback_003",
+    "activity": {
+      "description": "Market-based electricity with no contractual instrument, India southern grid — defaults to CEA grid-average",
+      "quantity": 9400,
+      "unit": "kWh",
+      "metadata": {
+        "country": "IN",
+        "grid_region": "southern_grid",
+        "year": 2027,
+        "scope": "scope2",
+        "instrument": null
+      }
+    },
+    "method_profile": "corporate_scope2_market_based",
+    "expected": {
+      "factor_id": "EF:IN:southern_grid:2026-27:cea-v20.0",
+      "factor_family": "grid_intensity",
+      "source_authority": "CEA",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 0.66,
+      "co2e_per_unit_max": 0.72,
+      "co2e_unit": "kgCO2e/kWh",
+      "must_include_assumptions": [
+        "market-based",
+        "no instrument applied",
+        "grid-average fallback"
+      ]
+    },
+    "tags": [
+      "electricity",
+      "india",
+      "market_based",
+      "fallback",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "elec_in_market_residual_fallback_004",
+    "activity": {
+      "description": "Market-based electricity with no contractual instrument, India northern grid — defaults to CEA grid-average",
+      "quantity": 14200,
+      "unit": "kWh",
+      "metadata": {
+        "country": "IN",
+        "grid_region": "northern_grid",
+        "year": 2027,
+        "scope": "scope2",
+        "instrument": null
+      }
+    },
+    "method_profile": "corporate_scope2_market_based",
+    "expected": {
+      "factor_id": "EF:IN:northern_grid:2026-27:cea-v20.0",
+      "factor_family": "grid_intensity",
+      "source_authority": "CEA",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 0.5,
+      "co2e_per_unit_max": 0.56,
+      "co2e_unit": "kgCO2e/kWh",
+      "must_include_assumptions": [
+        "market-based",
+        "no instrument applied",
+        "grid-average fallback"
+      ]
+    },
+    "tags": [
+      "electricity",
+      "india",
+      "market_based",
+      "fallback",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "elec_eu_fr_lb_001",
+    "activity": {
+      "description": "Purchased grid electricity, FR national grid average, location-based",
+      "quantity": 18000,
+      "unit": "kWh",
+      "metadata": {
+        "country": "FR",
+        "year": 2027,
+        "scope": "scope2"
+      }
+    },
+    "method_profile": "corporate_scope2_location_based",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "grid_intensity",
+      "source_authority": "AIB",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 0.035,
+      "co2e_per_unit_max": 0.06,
+      "co2e_unit": "kgCO2e/kWh",
+      "must_include_assumptions": [
+        "location-based"
+      ]
+    },
+    "tags": [
+      "electricity",
+      "eu",
+      "location_based",
+      "fr",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "elec_eu_de_lb_001",
+    "activity": {
+      "description": "Purchased grid electricity, DE national grid average, location-based",
+      "quantity": 25000,
+      "unit": "kWh",
+      "metadata": {
+        "country": "DE",
+        "year": 2027,
+        "scope": "scope2"
+      }
+    },
+    "method_profile": "corporate_scope2_location_based",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "grid_intensity",
+      "source_authority": "AIB",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 0.33,
+      "co2e_per_unit_max": 0.42,
+      "co2e_unit": "kgCO2e/kWh",
+      "must_include_assumptions": [
+        "location-based"
+      ]
+    },
+    "tags": [
+      "electricity",
+      "eu",
+      "location_based",
+      "de",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "elec_eu_pl_lb_001",
+    "activity": {
+      "description": "Purchased grid electricity, PL national grid average, location-based",
+      "quantity": 8500,
+      "unit": "kWh",
+      "metadata": {
+        "country": "PL",
+        "year": 2027,
+        "scope": "scope2"
+      }
+    },
+    "method_profile": "corporate_scope2_location_based",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "grid_intensity",
+      "source_authority": "AIB",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 0.69,
+      "co2e_per_unit_max": 0.78,
+      "co2e_unit": "kgCO2e/kWh",
+      "must_include_assumptions": [
+        "location-based"
+      ]
+    },
+    "tags": [
+      "electricity",
+      "eu",
+      "location_based",
+      "pl",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "elec_eu_es_lb_001",
+    "activity": {
+      "description": "Purchased grid electricity, ES national grid average, location-based",
+      "quantity": 12000,
+      "unit": "kWh",
+      "metadata": {
+        "country": "ES",
+        "year": 2027,
+        "scope": "scope2"
+      }
+    },
+    "method_profile": "corporate_scope2_location_based",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "grid_intensity",
+      "source_authority": "AIB",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 0.14,
+      "co2e_per_unit_max": 0.21,
+      "co2e_unit": "kgCO2e/kWh",
+      "must_include_assumptions": [
+        "location-based"
+      ]
+    },
+    "tags": [
+      "electricity",
+      "eu",
+      "location_based",
+      "es",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "elec_eu_it_lb_001",
+    "activity": {
+      "description": "Purchased grid electricity, IT national grid average, location-based",
+      "quantity": 9800,
+      "unit": "kWh",
+      "metadata": {
+        "country": "IT",
+        "year": 2027,
+        "scope": "scope2"
+      }
+    },
+    "method_profile": "corporate_scope2_location_based",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "grid_intensity",
+      "source_authority": "AIB",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 0.22,
+      "co2e_per_unit_max": 0.3,
+      "co2e_unit": "kgCO2e/kWh",
+      "must_include_assumptions": [
+        "location-based"
+      ]
+    },
+    "tags": [
+      "electricity",
+      "eu",
+      "location_based",
+      "it",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "elec_eu_nl_lb_001",
+    "activity": {
+      "description": "Purchased grid electricity, NL national grid average, location-based",
+      "quantity": 14500,
+      "unit": "kWh",
+      "metadata": {
+        "country": "NL",
+        "year": 2027,
+        "scope": "scope2"
+      }
+    },
+    "method_profile": "corporate_scope2_location_based",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "grid_intensity",
+      "source_authority": "AIB",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 0.26,
+      "co2e_per_unit_max": 0.34,
+      "co2e_unit": "kgCO2e/kWh",
+      "must_include_assumptions": [
+        "location-based"
+      ]
+    },
+    "tags": [
+      "electricity",
+      "eu",
+      "location_based",
+      "nl",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "elec_eu_fr_residual_001",
+    "activity": {
+      "description": "Residual-mix electricity, FR, market-based with no contractual instrument",
+      "quantity": 9000,
+      "unit": "kWh",
+      "metadata": {
+        "country": "FR",
+        "year": 2027,
+        "scope": "scope2",
+        "instrument": null
+      }
+    },
+    "method_profile": "corporate_scope2_market_based",
+    "expected": {
+      "factor_id": "EF:FR:residual_mix:2026:v1.0",
+      "factor_family": "residual_mix",
+      "source_authority": "AIB",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 0.06,
+      "co2e_per_unit_max": 0.11,
+      "co2e_unit": "kgCO2e/kWh",
+      "must_include_assumptions": [
+        "residual mix",
+        "AIB",
+        "market-based"
+      ]
+    },
+    "tags": [
+      "electricity",
+      "eu",
+      "residual_mix",
+      "fr",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "elec_eu_de_residual_001",
+    "activity": {
+      "description": "Residual-mix electricity, DE, market-based with no contractual instrument",
+      "quantity": 16000,
+      "unit": "kWh",
+      "metadata": {
+        "country": "DE",
+        "year": 2027,
+        "scope": "scope2",
+        "instrument": null
+      }
+    },
+    "method_profile": "corporate_scope2_market_based",
+    "expected": {
+      "factor_id": "EF:DE:residual_mix:2026:v1.0",
+      "factor_family": "residual_mix",
+      "source_authority": "AIB",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 0.47,
+      "co2e_per_unit_max": 0.56,
+      "co2e_unit": "kgCO2e/kWh",
+      "must_include_assumptions": [
+        "residual mix",
+        "AIB",
+        "market-based"
+      ]
+    },
+    "tags": [
+      "electricity",
+      "eu",
+      "residual_mix",
+      "de",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "elec_eu_es_residual_001",
+    "activity": {
+      "description": "Residual-mix electricity, ES, market-based with no contractual instrument",
+      "quantity": 7800,
+      "unit": "kWh",
+      "metadata": {
+        "country": "ES",
+        "year": 2027,
+        "scope": "scope2",
+        "instrument": null
+      }
+    },
+    "method_profile": "corporate_scope2_market_based",
+    "expected": {
+      "factor_id": "EF:ES:residual_mix:2026:v1.0",
+      "factor_family": "residual_mix",
+      "source_authority": "AIB",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 0.33,
+      "co2e_per_unit_max": 0.42,
+      "co2e_unit": "kgCO2e/kWh",
+      "must_include_assumptions": [
+        "residual mix",
+        "AIB",
+        "market-based"
+      ]
+    },
+    "tags": [
+      "electricity",
+      "eu",
+      "residual_mix",
+      "es",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "elec_eu_it_residual_001",
+    "activity": {
+      "description": "Residual-mix electricity, IT, market-based with no contractual instrument",
+      "quantity": 6200,
+      "unit": "kWh",
+      "metadata": {
+        "country": "IT",
+        "year": 2027,
+        "scope": "scope2",
+        "instrument": null
+      }
+    },
+    "method_profile": "corporate_scope2_market_based",
+    "expected": {
+      "factor_id": "EF:IT:residual_mix:2026:v1.0",
+      "factor_family": "residual_mix",
+      "source_authority": "AIB",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 0.42,
+      "co2e_per_unit_max": 0.51,
+      "co2e_unit": "kgCO2e/kWh",
+      "must_include_assumptions": [
+        "residual mix",
+        "AIB",
+        "market-based"
+      ]
+    },
+    "tags": [
+      "electricity",
+      "eu",
+      "residual_mix",
+      "it",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "elec_eu_nl_residual_001",
+    "activity": {
+      "description": "Residual-mix electricity, NL, market-based with no contractual instrument",
+      "quantity": 10400,
+      "unit": "kWh",
+      "metadata": {
+        "country": "NL",
+        "year": 2027,
+        "scope": "scope2",
+        "instrument": null
+      }
+    },
+    "method_profile": "corporate_scope2_market_based",
+    "expected": {
+      "factor_id": "EF:NL:residual_mix:2026:v1.0",
+      "factor_family": "residual_mix",
+      "source_authority": "AIB",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 0.43,
+      "co2e_per_unit_max": 0.52,
+      "co2e_unit": "kgCO2e/kWh",
+      "must_include_assumptions": [
+        "residual mix",
+        "AIB",
+        "market-based"
+      ]
+    },
+    "tags": [
+      "electricity",
+      "eu",
+      "residual_mix",
+      "nl",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "elec_eu_pl_residual_001",
+    "activity": {
+      "description": "Residual-mix electricity, PL, market-based with no contractual instrument",
+      "quantity": 5500,
+      "unit": "kWh",
+      "metadata": {
+        "country": "PL",
+        "year": 2027,
+        "scope": "scope2",
+        "instrument": null
+      }
+    },
+    "method_profile": "corporate_scope2_market_based",
+    "expected": {
+      "factor_id": "EF:PL:residual_mix:2026:v1.0",
+      "factor_family": "residual_mix",
+      "source_authority": "AIB",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 0.76,
+      "co2e_per_unit_max": 0.87,
+      "co2e_unit": "kgCO2e/kWh",
+      "must_include_assumptions": [
+        "residual mix",
+        "AIB",
+        "market-based"
+      ]
+    },
+    "tags": [
+      "electricity",
+      "eu",
+      "residual_mix",
+      "pl",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "elec_eu_fr_supplier_001",
+    "activity": {
+      "description": "Market-based electricity backed by EECS-GO hydro, FR",
+      "quantity": 8000,
+      "unit": "kWh",
+      "metadata": {
+        "country": "FR",
+        "year": 2027,
+        "scope": "scope2",
+        "instrument": "GO"
+      }
+    },
+    "method_profile": "corporate_scope2_market_based",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "grid_intensity",
+      "source_authority": "supplier",
+      "fallback_rank": 2,
+      "co2e_per_unit_min": 0.0,
+      "co2e_per_unit_max": 0.005,
+      "co2e_unit": "kgCO2e/kWh",
+      "must_include_assumptions": [
+        "market-based",
+        "guarantee of origin",
+        "supplier-specific"
+      ]
+    },
+    "tags": [
+      "electricity",
+      "eu",
+      "market_based",
+      "go",
+      "fr",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "elec_eu_de_supplier_002",
+    "activity": {
+      "description": "Market-based electricity backed by EECS-GO wind, DE",
+      "quantity": 12000,
+      "unit": "kWh",
+      "metadata": {
+        "country": "DE",
+        "year": 2027,
+        "scope": "scope2",
+        "instrument": "GO"
+      }
+    },
+    "method_profile": "corporate_scope2_market_based",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "grid_intensity",
+      "source_authority": "supplier",
+      "fallback_rank": 2,
+      "co2e_per_unit_min": 0.0,
+      "co2e_per_unit_max": 0.01,
+      "co2e_unit": "kgCO2e/kWh",
+      "must_include_assumptions": [
+        "market-based",
+        "guarantee of origin",
+        "supplier-specific"
+      ]
+    },
+    "tags": [
+      "electricity",
+      "eu",
+      "market_based",
+      "go",
+      "de",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "elec_eu_es_supplier_003",
+    "activity": {
+      "description": "Market-based electricity backed by GdO solar, ES",
+      "quantity": 5500,
+      "unit": "kWh",
+      "metadata": {
+        "country": "ES",
+        "year": 2027,
+        "scope": "scope2",
+        "instrument": "GO"
+      }
+    },
+    "method_profile": "corporate_scope2_market_based",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "grid_intensity",
+      "source_authority": "supplier",
+      "fallback_rank": 2,
+      "co2e_per_unit_min": 0.005,
+      "co2e_per_unit_max": 0.02,
+      "co2e_unit": "kgCO2e/kWh",
+      "must_include_assumptions": [
+        "market-based",
+        "guarantee of origin",
+        "supplier-specific"
+      ]
+    },
+    "tags": [
+      "electricity",
+      "eu",
+      "market_based",
+      "go",
+      "es",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "elec_uk_lb_2026_001",
+    "activity": {
+      "description": "UK national grid 2026 (DESNZ)",
+      "quantity": 14000,
+      "unit": "kWh",
+      "metadata": {
+        "country": "UK",
+        "year": 2026,
+        "scope": "scope2"
+      }
+    },
+    "method_profile": "corporate_scope2_location_based",
+    "expected": {
+      "factor_id": "EF:DESNZ:grid_electricity_kwh:UK:2026:v1",
+      "factor_family": "grid_intensity",
+      "source_authority": "DESNZ",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 0.18,
+      "co2e_per_unit_max": 0.22,
+      "co2e_unit": "kgCO2e/kWh",
+      "must_include_assumptions": [
+        "location-based",
+        "DESNZ"
+      ]
+    },
+    "tags": [
+      "electricity",
+      "uk",
+      "location_based",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "elec_uk_lb_2025_002",
+    "activity": {
+      "description": "UK national grid 2025 (DESNZ)",
+      "quantity": 8200,
+      "unit": "kWh",
+      "metadata": {
+        "country": "UK",
+        "year": 2025,
+        "scope": "scope2"
+      }
+    },
+    "method_profile": "corporate_scope2_location_based",
+    "expected": {
+      "factor_id": "EF:DESNZ:grid_electricity_kwh:UK:2025:v1",
+      "factor_family": "grid_intensity",
+      "source_authority": "DESNZ",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 0.19,
+      "co2e_per_unit_max": 0.24,
+      "co2e_unit": "kgCO2e/kWh",
+      "must_include_assumptions": [
+        "location-based",
+        "DESNZ"
+      ]
+    },
+    "tags": [
+      "electricity",
+      "uk",
+      "location_based",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "elec_uk_lb_2027_003",
+    "activity": {
+      "description": "UK national grid 2027 (DESNZ)",
+      "quantity": 19500,
+      "unit": "kWh",
+      "metadata": {
+        "country": "UK",
+        "year": 2027,
+        "scope": "scope2"
+      }
+    },
+    "method_profile": "corporate_scope2_location_based",
+    "expected": {
+      "factor_id": "EF:DESNZ:grid_electricity_kwh:UK:2027:v1",
+      "factor_family": "grid_intensity",
+      "source_authority": "DESNZ",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 0.17,
+      "co2e_per_unit_max": 0.21,
+      "co2e_unit": "kgCO2e/kWh",
+      "must_include_assumptions": [
+        "location-based",
+        "DESNZ"
+      ]
+    },
+    "tags": [
+      "electricity",
+      "uk",
+      "location_based",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "elec_uk_lb_2026_004",
+    "activity": {
+      "description": "UK T&D losses 2026 (DESNZ)",
+      "quantity": 14000,
+      "unit": "kWh",
+      "metadata": {
+        "country": "UK",
+        "year": 2026,
+        "scope": "scope2"
+      }
+    },
+    "method_profile": "corporate_scope2_location_based",
+    "expected": {
+      "factor_id": "EF:DESNZ:t_d_losses_kwh:UK:2026:v1",
+      "factor_family": "grid_intensity",
+      "source_authority": "DESNZ",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 0.012,
+      "co2e_per_unit_max": 0.018,
+      "co2e_unit": "kgCO2e/kWh",
+      "must_include_assumptions": [
+        "location-based",
+        "DESNZ"
+      ]
+    },
+    "tags": [
+      "electricity",
+      "uk",
+      "location_based",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "elec_uk_residual_2026_001",
+    "activity": {
+      "description": "UK national residual-mix electricity 2026, market-based",
+      "quantity": 14000,
+      "unit": "kWh",
+      "metadata": {
+        "country": "UK",
+        "year": 2026,
+        "scope": "scope2",
+        "instrument": null
+      }
+    },
+    "method_profile": "corporate_scope2_market_based",
+    "expected": {
+      "factor_id": "EF:UK:residual_mix:2026:v1.0",
+      "factor_family": "residual_mix",
+      "source_authority": "DESNZ",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 0.26,
+      "co2e_per_unit_max": 0.33,
+      "co2e_unit": "kgCO2e/kWh",
+      "must_include_assumptions": [
+        "residual mix",
+        "REGO netting",
+        "DESNZ"
+      ]
+    },
+    "tags": [
+      "electricity",
+      "uk",
+      "residual_mix",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "elec_uk_residual_2025_002",
+    "activity": {
+      "description": "UK national residual-mix electricity 2025, market-based",
+      "quantity": 8200,
+      "unit": "kWh",
+      "metadata": {
+        "country": "UK",
+        "year": 2025,
+        "scope": "scope2",
+        "instrument": null
+      }
+    },
+    "method_profile": "corporate_scope2_market_based",
+    "expected": {
+      "factor_id": "EF:UK:residual_mix:2025:v1.0",
+      "factor_family": "residual_mix",
+      "source_authority": "DESNZ",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 0.27,
+      "co2e_per_unit_max": 0.34,
+      "co2e_unit": "kgCO2e/kWh",
+      "must_include_assumptions": [
+        "residual mix",
+        "REGO netting",
+        "DESNZ"
+      ]
+    },
+    "tags": [
+      "electricity",
+      "uk",
+      "residual_mix",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "elec_uk_residual_2027_003",
+    "activity": {
+      "description": "UK national residual-mix electricity 2027, market-based",
+      "quantity": 19500,
+      "unit": "kWh",
+      "metadata": {
+        "country": "UK",
+        "year": 2027,
+        "scope": "scope2",
+        "instrument": null
+      }
+    },
+    "method_profile": "corporate_scope2_market_based",
+    "expected": {
+      "factor_id": "EF:UK:residual_mix:2027:v1.0",
+      "factor_family": "residual_mix",
+      "source_authority": "DESNZ",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 0.25,
+      "co2e_per_unit_max": 0.32,
+      "co2e_unit": "kgCO2e/kWh",
+      "must_include_assumptions": [
+        "residual mix",
+        "REGO netting",
+        "DESNZ"
+      ]
+    },
+    "tags": [
+      "electricity",
+      "uk",
+      "residual_mix",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "elec_uk_residual_2024_004",
+    "activity": {
+      "description": "UK national residual-mix electricity 2024, market-based",
+      "quantity": 7600,
+      "unit": "kWh",
+      "metadata": {
+        "country": "UK",
+        "year": 2024,
+        "scope": "scope2",
+        "instrument": null
+      }
+    },
+    "method_profile": "corporate_scope2_market_based",
+    "expected": {
+      "factor_id": "EF:UK:residual_mix:2024:v1.0",
+      "factor_family": "residual_mix",
+      "source_authority": "DESNZ",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 0.28,
+      "co2e_per_unit_max": 0.36,
+      "co2e_unit": "kgCO2e/kWh",
+      "must_include_assumptions": [
+        "residual mix",
+        "REGO netting",
+        "DESNZ"
+      ]
+    },
+    "tags": [
+      "electricity",
+      "uk",
+      "residual_mix",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "elec_uk_supplier_001",
+    "activity": {
+      "description": "UK market-based electricity backed by REGO 100% wind",
+      "quantity": 9500,
+      "unit": "kWh",
+      "metadata": {
+        "country": "UK",
+        "year": 2027,
+        "scope": "scope2",
+        "instrument": "REGO"
+      }
+    },
+    "method_profile": "corporate_scope2_market_based",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "grid_intensity",
+      "source_authority": "supplier",
+      "fallback_rank": 2,
+      "co2e_per_unit_min": 0.0,
+      "co2e_per_unit_max": 0.01,
+      "co2e_unit": "kgCO2e/kWh",
+      "must_include_assumptions": [
+        "market-based",
+        "REGO",
+        "supplier-specific"
+      ]
+    },
+    "tags": [
+      "electricity",
+      "uk",
+      "market_based",
+      "rego",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "elec_uk_supplier_002",
+    "activity": {
+      "description": "UK market-based electricity backed by REGO 100% hydro",
+      "quantity": 6300,
+      "unit": "kWh",
+      "metadata": {
+        "country": "UK",
+        "year": 2027,
+        "scope": "scope2",
+        "instrument": "REGO"
+      }
+    },
+    "method_profile": "corporate_scope2_market_based",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "grid_intensity",
+      "source_authority": "supplier",
+      "fallback_rank": 2,
+      "co2e_per_unit_min": 0.0,
+      "co2e_per_unit_max": 0.01,
+      "co2e_unit": "kgCO2e/kWh",
+      "must_include_assumptions": [
+        "market-based",
+        "REGO",
+        "supplier-specific"
+      ]
+    },
+    "tags": [
+      "electricity",
+      "uk",
+      "market_based",
+      "rego",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "elec_us_rfce_lb_001",
+    "activity": {
+      "description": "Purchased grid electricity, US eGRID RFCE, location-based",
+      "quantity": 22000,
+      "unit": "kWh",
+      "metadata": {
+        "country": "US",
+        "grid_region": "RFCE",
+        "year": 2026,
+        "scope": "scope2"
+      }
+    },
+    "method_profile": "corporate_scope2_location_based",
+    "expected": {
+      "factor_id": "EF:eGRID:rfce:US:2026:v1",
+      "factor_family": "grid_intensity",
+      "source_authority": "eGRID",
+      "fallback_rank": 4,
+      "co2e_per_unit_min": 0.3,
+      "co2e_per_unit_max": 0.38,
+      "co2e_unit": "kgCO2e/kWh",
+      "must_include_assumptions": [
+        "location-based",
+        "eGRID",
+        "RFCE"
+      ]
+    },
+    "tags": [
+      "electricity",
+      "us",
+      "location_based",
+      "rfce",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "elec_us_rfcm_lb_001",
+    "activity": {
+      "description": "Purchased grid electricity, US eGRID RFCM, location-based",
+      "quantity": 18500,
+      "unit": "kWh",
+      "metadata": {
+        "country": "US",
+        "grid_region": "RFCM",
+        "year": 2026,
+        "scope": "scope2"
+      }
+    },
+    "method_profile": "corporate_scope2_location_based",
+    "expected": {
+      "factor_id": "EF:eGRID:rfcm:US:2026:v1",
+      "factor_family": "grid_intensity",
+      "source_authority": "eGRID",
+      "fallback_rank": 4,
+      "co2e_per_unit_min": 0.43,
+      "co2e_per_unit_max": 0.52,
+      "co2e_unit": "kgCO2e/kWh",
+      "must_include_assumptions": [
+        "location-based",
+        "eGRID",
+        "RFCM"
+      ]
+    },
+    "tags": [
+      "electricity",
+      "us",
+      "location_based",
+      "rfcm",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "elec_us_rfcw_lb_001",
+    "activity": {
+      "description": "Purchased grid electricity, US eGRID RFCW, location-based",
+      "quantity": 14000,
+      "unit": "kWh",
+      "metadata": {
+        "country": "US",
+        "grid_region": "RFCW",
+        "year": 2026,
+        "scope": "scope2"
+      }
+    },
+    "method_profile": "corporate_scope2_location_based",
+    "expected": {
+      "factor_id": "EF:eGRID:rfcw:US:2026:v1",
+      "factor_family": "grid_intensity",
+      "source_authority": "eGRID",
+      "fallback_rank": 4,
+      "co2e_per_unit_min": 0.47,
+      "co2e_per_unit_max": 0.57,
+      "co2e_unit": "kgCO2e/kWh",
+      "must_include_assumptions": [
+        "location-based",
+        "eGRID",
+        "RFCW"
+      ]
+    },
+    "tags": [
+      "electricity",
+      "us",
+      "location_based",
+      "rfcw",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "elec_us_srmw_lb_001",
+    "activity": {
+      "description": "Purchased grid electricity, US eGRID SRMW, location-based",
+      "quantity": 9700,
+      "unit": "kWh",
+      "metadata": {
+        "country": "US",
+        "grid_region": "SRMW",
+        "year": 2026,
+        "scope": "scope2"
+      }
+    },
+    "method_profile": "corporate_scope2_location_based",
+    "expected": {
+      "factor_id": "EF:eGRID:srmw:US:2026:v1",
+      "factor_family": "grid_intensity",
+      "source_authority": "eGRID",
+      "fallback_rank": 4,
+      "co2e_per_unit_min": 0.5,
+      "co2e_per_unit_max": 0.62,
+      "co2e_unit": "kgCO2e/kWh",
+      "must_include_assumptions": [
+        "location-based",
+        "eGRID",
+        "SRMW"
+      ]
+    },
+    "tags": [
+      "electricity",
+      "us",
+      "location_based",
+      "srmw",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "elec_us_serc_lb_001",
+    "activity": {
+      "description": "Purchased grid electricity, US eGRID SERC, location-based",
+      "quantity": 30000,
+      "unit": "kWh",
+      "metadata": {
+        "country": "US",
+        "grid_region": "SERC",
+        "year": 2026,
+        "scope": "scope2"
+      }
+    },
+    "method_profile": "corporate_scope2_location_based",
+    "expected": {
+      "factor_id": "EF:eGRID:serc:US:2026:v1",
+      "factor_family": "grid_intensity",
+      "source_authority": "eGRID",
+      "fallback_rank": 4,
+      "co2e_per_unit_min": 0.33,
+      "co2e_per_unit_max": 0.42,
+      "co2e_unit": "kgCO2e/kWh",
+      "must_include_assumptions": [
+        "location-based",
+        "eGRID",
+        "SERC"
+      ]
+    },
+    "tags": [
+      "electricity",
+      "us",
+      "location_based",
+      "serc",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "elec_us_erct_lb_001",
+    "activity": {
+      "description": "Purchased grid electricity, US eGRID ERCT, location-based",
+      "quantity": 25500,
+      "unit": "kWh",
+      "metadata": {
+        "country": "US",
+        "grid_region": "ERCT",
+        "year": 2026,
+        "scope": "scope2"
+      }
+    },
+    "method_profile": "corporate_scope2_location_based",
+    "expected": {
+      "factor_id": "EF:eGRID:erct:US:2026:v1",
+      "factor_family": "grid_intensity",
+      "source_authority": "eGRID",
+      "fallback_rank": 4,
+      "co2e_per_unit_min": 0.37,
+      "co2e_per_unit_max": 0.46,
+      "co2e_unit": "kgCO2e/kWh",
+      "must_include_assumptions": [
+        "location-based",
+        "eGRID",
+        "ERCT"
+      ]
+    },
+    "tags": [
+      "electricity",
+      "us",
+      "location_based",
+      "erct",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "elec_us_camx_lb_001",
+    "activity": {
+      "description": "Purchased grid electricity, US eGRID CAMX, location-based",
+      "quantity": 12000,
+      "unit": "kWh",
+      "metadata": {
+        "country": "US",
+        "grid_region": "CAMX",
+        "year": 2026,
+        "scope": "scope2"
+      }
+    },
+    "method_profile": "corporate_scope2_location_based",
+    "expected": {
+      "factor_id": "EF:eGRID:camx:US:2026:v1",
+      "factor_family": "grid_intensity",
+      "source_authority": "eGRID",
+      "fallback_rank": 4,
+      "co2e_per_unit_min": 0.18,
+      "co2e_per_unit_max": 0.26,
+      "co2e_unit": "kgCO2e/kWh",
+      "must_include_assumptions": [
+        "location-based",
+        "eGRID",
+        "CAMX"
+      ]
+    },
+    "tags": [
+      "electricity",
+      "us",
+      "location_based",
+      "camx",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "elec_us_nwpp_lb_001",
+    "activity": {
+      "description": "Purchased grid electricity, US eGRID NWPP, location-based",
+      "quantity": 8000,
+      "unit": "kWh",
+      "metadata": {
+        "country": "US",
+        "grid_region": "NWPP",
+        "year": 2026,
+        "scope": "scope2"
+      }
+    },
+    "method_profile": "corporate_scope2_location_based",
+    "expected": {
+      "factor_id": "EF:eGRID:nwpp:US:2026:v1",
+      "factor_family": "grid_intensity",
+      "source_authority": "eGRID",
+      "fallback_rank": 4,
+      "co2e_per_unit_min": 0.26,
+      "co2e_per_unit_max": 0.34,
+      "co2e_unit": "kgCO2e/kWh",
+      "must_include_assumptions": [
+        "location-based",
+        "eGRID",
+        "NWPP"
+      ]
+    },
+    "tags": [
+      "electricity",
+      "us",
+      "location_based",
+      "nwpp",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "elec_us_newe_lb_001",
+    "activity": {
+      "description": "Purchased grid electricity, US eGRID NEWE, location-based",
+      "quantity": 6400,
+      "unit": "kWh",
+      "metadata": {
+        "country": "US",
+        "grid_region": "NEWE",
+        "year": 2026,
+        "scope": "scope2"
+      }
+    },
+    "method_profile": "corporate_scope2_location_based",
+    "expected": {
+      "factor_id": "EF:eGRID:newe:US:2026:v1",
+      "factor_family": "grid_intensity",
+      "source_authority": "eGRID",
+      "fallback_rank": 4,
+      "co2e_per_unit_min": 0.22,
+      "co2e_per_unit_max": 0.3,
+      "co2e_unit": "kgCO2e/kWh",
+      "must_include_assumptions": [
+        "location-based",
+        "eGRID",
+        "NEWE"
+      ]
+    },
+    "tags": [
+      "electricity",
+      "us",
+      "location_based",
+      "newe",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "elec_us_rfce_residual_001",
+    "activity": {
+      "description": "US residual-mix electricity, eGRID RFCE, Green-e",
+      "quantity": 11000,
+      "unit": "kWh",
+      "metadata": {
+        "country": "US",
+        "grid_region": "RFCE",
+        "year": 2026,
+        "scope": "scope2",
+        "instrument": null
+      }
+    },
+    "method_profile": "corporate_scope2_market_based",
+    "expected": {
+      "factor_id": "EF:US:residual_mix:rfce:2026:v1.0",
+      "factor_family": "residual_mix",
+      "source_authority": "Green-e",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 0.42,
+      "co2e_per_unit_max": 0.52,
+      "co2e_unit": "kgCO2e/kWh",
+      "must_include_assumptions": [
+        "residual mix",
+        "Green-e",
+        "REC netting"
+      ]
+    },
+    "tags": [
+      "electricity",
+      "us",
+      "residual_mix",
+      "rfce",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "elec_us_camx_residual_001",
+    "activity": {
+      "description": "US residual-mix electricity, eGRID CAMX, Green-e",
+      "quantity": 8500,
+      "unit": "kWh",
+      "metadata": {
+        "country": "US",
+        "grid_region": "CAMX",
+        "year": 2026,
+        "scope": "scope2",
+        "instrument": null
+      }
+    },
+    "method_profile": "corporate_scope2_market_based",
+    "expected": {
+      "factor_id": "EF:US:residual_mix:camx:2026:v1.0",
+      "factor_family": "residual_mix",
+      "source_authority": "Green-e",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 0.26,
+      "co2e_per_unit_max": 0.35,
+      "co2e_unit": "kgCO2e/kWh",
+      "must_include_assumptions": [
+        "residual mix",
+        "Green-e",
+        "REC netting"
+      ]
+    },
+    "tags": [
+      "electricity",
+      "us",
+      "residual_mix",
+      "camx",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "elec_us_erct_residual_001",
+    "activity": {
+      "description": "US residual-mix electricity, eGRID ERCT, Green-e",
+      "quantity": 14400,
+      "unit": "kWh",
+      "metadata": {
+        "country": "US",
+        "grid_region": "ERCT",
+        "year": 2026,
+        "scope": "scope2",
+        "instrument": null
+      }
+    },
+    "method_profile": "corporate_scope2_market_based",
+    "expected": {
+      "factor_id": "EF:US:residual_mix:erct:2026:v1.0",
+      "factor_family": "residual_mix",
+      "source_authority": "Green-e",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 0.46,
+      "co2e_per_unit_max": 0.56,
+      "co2e_unit": "kgCO2e/kWh",
+      "must_include_assumptions": [
+        "residual mix",
+        "Green-e",
+        "REC netting"
+      ]
+    },
+    "tags": [
+      "electricity",
+      "us",
+      "residual_mix",
+      "erct",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "elec_us_serc_residual_001",
+    "activity": {
+      "description": "US residual-mix electricity, eGRID SERC, Green-e",
+      "quantity": 9300,
+      "unit": "kWh",
+      "metadata": {
+        "country": "US",
+        "grid_region": "SERC",
+        "year": 2026,
+        "scope": "scope2",
+        "instrument": null
+      }
+    },
+    "method_profile": "corporate_scope2_market_based",
+    "expected": {
+      "factor_id": "EF:US:residual_mix:serc:2026:v1.0",
+      "factor_family": "residual_mix",
+      "source_authority": "Green-e",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 0.43,
+      "co2e_per_unit_max": 0.52,
+      "co2e_unit": "kgCO2e/kWh",
+      "must_include_assumptions": [
+        "residual mix",
+        "Green-e",
+        "REC netting"
+      ]
+    },
+    "tags": [
+      "electricity",
+      "us",
+      "residual_mix",
+      "serc",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "elec_us_supplier_001",
+    "activity": {
+      "description": "US market-based electricity backed by Green-e Energy REC solar",
+      "quantity": 7800,
+      "unit": "kWh",
+      "metadata": {
+        "country": "US",
+        "grid_region": "CAMX",
+        "year": 2026,
+        "scope": "scope2",
+        "instrument": "REC"
+      }
+    },
+    "method_profile": "corporate_scope2_market_based",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "grid_intensity",
+      "source_authority": "supplier",
+      "fallback_rank": 2,
+      "co2e_per_unit_min": 0.0,
+      "co2e_per_unit_max": 0.02,
+      "co2e_unit": "kgCO2e/kWh",
+      "must_include_assumptions": [
+        "market-based",
+        "REC",
+        "supplier-specific"
+      ]
+    },
+    "tags": [
+      "electricity",
+      "us",
+      "market_based",
+      "rec",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "elec_us_supplier_002",
+    "activity": {
+      "description": "US market-based electricity backed by Green-e Energy REC wind",
+      "quantity": 9100,
+      "unit": "kWh",
+      "metadata": {
+        "country": "US",
+        "grid_region": "ERCT",
+        "year": 2026,
+        "scope": "scope2",
+        "instrument": "REC"
+      }
+    },
+    "method_profile": "corporate_scope2_market_based",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "grid_intensity",
+      "source_authority": "supplier",
+      "fallback_rank": 2,
+      "co2e_per_unit_min": 0.0,
+      "co2e_per_unit_max": 0.02,
+      "co2e_unit": "kgCO2e/kWh",
+      "must_include_assumptions": [
+        "market-based",
+        "REC",
+        "supplier-specific"
+      ]
+    },
+    "tags": [
+      "electricity",
+      "us",
+      "market_based",
+      "rec",
+      "fy27_launch"
+    ]
+  }
+]

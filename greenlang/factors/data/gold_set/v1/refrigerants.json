@@ -1,0 +1,1250 @@
+[
+  {
+    "case_id": "ref_r_22_ipcc_ar5_100_001",
+    "activity": {
+      "description": "Refrigerant R-22 fugitive emission, rooftop AC leak, US (IPCC_AR5_100)",
+      "quantity": 12.5,
+      "unit": "kg",
+      "metadata": {
+        "country": "US",
+        "year": 2026,
+        "scope": "scope1",
+        "refrigerant": "R-22",
+        "gwp_basis": "IPCC_AR5_100",
+        "fuel_type": "refrigerant"
+      }
+    },
+    "method_profile": "corporate_scope1",
+    "expected": {
+      "factor_id": "EF:IPCC:r_22:GLOBAL:ipcc_ar5_100:v1",
+      "factor_family": "refrigerant_gwp",
+      "source_authority": "IPCC",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 1760.0,
+      "co2e_per_unit_max": 1820.0,
+      "co2e_unit": "kgCO2e/kg",
+      "must_include_assumptions": [
+        "fugitive emission",
+        "IPCC_AR5_100",
+        "HCFC, phase-out",
+        "R-22"
+      ]
+    },
+    "tags": [
+      "refrigerant",
+      "r-22",
+      "ipcc_ar5_100",
+      "us",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "ref_r_22_ipcc_ar5_100_002",
+    "activity": {
+      "description": "Refrigerant R-22 fugitive emission, fleet MAC service, US (IPCC_AR5_100)",
+      "quantity": 6.0,
+      "unit": "kg",
+      "metadata": {
+        "country": "US",
+        "year": 2026,
+        "scope": "scope1",
+        "refrigerant": "R-22",
+        "gwp_basis": "IPCC_AR5_100",
+        "fuel_type": "refrigerant"
+      }
+    },
+    "method_profile": "corporate_scope1",
+    "expected": {
+      "factor_id": "EF:IPCC:r_22:GLOBAL:ipcc_ar5_100:v1",
+      "factor_family": "refrigerant_gwp",
+      "source_authority": "IPCC",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 1760.0,
+      "co2e_per_unit_max": 1820.0,
+      "co2e_unit": "kgCO2e/kg",
+      "must_include_assumptions": [
+        "fugitive emission",
+        "IPCC_AR5_100",
+        "HCFC, phase-out",
+        "R-22"
+      ]
+    },
+    "tags": [
+      "refrigerant",
+      "r-22",
+      "ipcc_ar5_100",
+      "us",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "ref_r_22_ipcc_ar6_100_003",
+    "activity": {
+      "description": "Refrigerant R-22 fugitive emission, supermarket refrigeration, UK (IPCC_AR6_100)",
+      "quantity": 8.0,
+      "unit": "kg",
+      "metadata": {
+        "country": "UK",
+        "year": 2026,
+        "scope": "scope1",
+        "refrigerant": "R-22",
+        "gwp_basis": "IPCC_AR6_100",
+        "fuel_type": "refrigerant"
+      }
+    },
+    "method_profile": "corporate_scope1",
+    "expected": {
+      "factor_id": "EF:IPCC:r_22:GLOBAL:ipcc_ar6_100:v1",
+      "factor_family": "refrigerant_gwp",
+      "source_authority": "IPCC",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 1750.0,
+      "co2e_per_unit_max": 1810.0,
+      "co2e_unit": "kgCO2e/kg",
+      "must_include_assumptions": [
+        "fugitive emission",
+        "IPCC_AR6_100",
+        "HCFC, phase-out",
+        "R-22"
+      ]
+    },
+    "tags": [
+      "refrigerant",
+      "r-22",
+      "ipcc_ar6_100",
+      "uk",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "ref_r_22_ipcc_ar6_100_004",
+    "activity": {
+      "description": "Refrigerant R-22 fugitive emission, industrial chiller leak, EU (IPCC_AR6_100)",
+      "quantity": 14.0,
+      "unit": "kg",
+      "metadata": {
+        "country": "EU",
+        "year": 2026,
+        "scope": "scope1",
+        "refrigerant": "R-22",
+        "gwp_basis": "IPCC_AR6_100",
+        "fuel_type": "refrigerant"
+      }
+    },
+    "method_profile": "corporate_scope1",
+    "expected": {
+      "factor_id": "EF:IPCC:r_22:GLOBAL:ipcc_ar6_100:v1",
+      "factor_family": "refrigerant_gwp",
+      "source_authority": "IPCC",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 1750.0,
+      "co2e_per_unit_max": 1810.0,
+      "co2e_unit": "kgCO2e/kg",
+      "must_include_assumptions": [
+        "fugitive emission",
+        "IPCC_AR6_100",
+        "HCFC, phase-out",
+        "R-22"
+      ]
+    },
+    "tags": [
+      "refrigerant",
+      "r-22",
+      "ipcc_ar6_100",
+      "eu",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "ref_r_22_ipcc_ar6_100_005",
+    "activity": {
+      "description": "Refrigerant R-22 fugitive emission, cold chain warehouse, IN (IPCC_AR6_100)",
+      "quantity": 22.0,
+      "unit": "kg",
+      "metadata": {
+        "country": "IN",
+        "year": 2026,
+        "scope": "scope1",
+        "refrigerant": "R-22",
+        "gwp_basis": "IPCC_AR6_100",
+        "fuel_type": "refrigerant"
+      }
+    },
+    "method_profile": "corporate_scope1",
+    "expected": {
+      "factor_id": "EF:IPCC:r_22:GLOBAL:ipcc_ar6_100:v1",
+      "factor_family": "refrigerant_gwp",
+      "source_authority": "IPCC",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 1750.0,
+      "co2e_per_unit_max": 1810.0,
+      "co2e_unit": "kgCO2e/kg",
+      "must_include_assumptions": [
+        "fugitive emission",
+        "IPCC_AR6_100",
+        "HCFC, phase-out",
+        "R-22"
+      ]
+    },
+    "tags": [
+      "refrigerant",
+      "r-22",
+      "ipcc_ar6_100",
+      "in",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "ref_r_32_ipcc_ar5_100_006",
+    "activity": {
+      "description": "Refrigerant R-32 fugitive emission, rooftop AC leak, US (IPCC_AR5_100)",
+      "quantity": 12.5,
+      "unit": "kg",
+      "metadata": {
+        "country": "US",
+        "year": 2026,
+        "scope": "scope1",
+        "refrigerant": "R-32",
+        "gwp_basis": "IPCC_AR5_100",
+        "fuel_type": "refrigerant"
+      }
+    },
+    "method_profile": "corporate_scope1",
+    "expected": {
+      "factor_id": "EF:IPCC:r_32:GLOBAL:ipcc_ar5_100:v1",
+      "factor_family": "refrigerant_gwp",
+      "source_authority": "IPCC",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 670.0,
+      "co2e_per_unit_max": 690.0,
+      "co2e_unit": "kgCO2e/kg",
+      "must_include_assumptions": [
+        "fugitive emission",
+        "IPCC_AR5_100",
+        "low-GWP HFC, R-410A successor",
+        "R-32"
+      ]
+    },
+    "tags": [
+      "refrigerant",
+      "r-32",
+      "ipcc_ar5_100",
+      "us",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "ref_r_32_ipcc_ar5_100_007",
+    "activity": {
+      "description": "Refrigerant R-32 fugitive emission, fleet MAC service, US (IPCC_AR5_100)",
+      "quantity": 6.0,
+      "unit": "kg",
+      "metadata": {
+        "country": "US",
+        "year": 2026,
+        "scope": "scope1",
+        "refrigerant": "R-32",
+        "gwp_basis": "IPCC_AR5_100",
+        "fuel_type": "refrigerant"
+      }
+    },
+    "method_profile": "corporate_scope1",
+    "expected": {
+      "factor_id": "EF:IPCC:r_32:GLOBAL:ipcc_ar5_100:v1",
+      "factor_family": "refrigerant_gwp",
+      "source_authority": "IPCC",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 670.0,
+      "co2e_per_unit_max": 690.0,
+      "co2e_unit": "kgCO2e/kg",
+      "must_include_assumptions": [
+        "fugitive emission",
+        "IPCC_AR5_100",
+        "low-GWP HFC, R-410A successor",
+        "R-32"
+      ]
+    },
+    "tags": [
+      "refrigerant",
+      "r-32",
+      "ipcc_ar5_100",
+      "us",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "ref_r_32_ipcc_ar6_100_008",
+    "activity": {
+      "description": "Refrigerant R-32 fugitive emission, supermarket refrigeration, UK (IPCC_AR6_100)",
+      "quantity": 8.0,
+      "unit": "kg",
+      "metadata": {
+        "country": "UK",
+        "year": 2026,
+        "scope": "scope1",
+        "refrigerant": "R-32",
+        "gwp_basis": "IPCC_AR6_100",
+        "fuel_type": "refrigerant"
+      }
+    },
+    "method_profile": "corporate_scope1",
+    "expected": {
+      "factor_id": "EF:IPCC:r_32:GLOBAL:ipcc_ar6_100:v1",
+      "factor_family": "refrigerant_gwp",
+      "source_authority": "IPCC",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 760.0,
+      "co2e_per_unit_max": 790.0,
+      "co2e_unit": "kgCO2e/kg",
+      "must_include_assumptions": [
+        "fugitive emission",
+        "IPCC_AR6_100",
+        "low-GWP HFC, R-410A successor",
+        "R-32"
+      ]
+    },
+    "tags": [
+      "refrigerant",
+      "r-32",
+      "ipcc_ar6_100",
+      "uk",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "ref_r_32_ipcc_ar6_100_009",
+    "activity": {
+      "description": "Refrigerant R-32 fugitive emission, industrial chiller leak, EU (IPCC_AR6_100)",
+      "quantity": 14.0,
+      "unit": "kg",
+      "metadata": {
+        "country": "EU",
+        "year": 2026,
+        "scope": "scope1",
+        "refrigerant": "R-32",
+        "gwp_basis": "IPCC_AR6_100",
+        "fuel_type": "refrigerant"
+      }
+    },
+    "method_profile": "corporate_scope1",
+    "expected": {
+      "factor_id": "EF:IPCC:r_32:GLOBAL:ipcc_ar6_100:v1",
+      "factor_family": "refrigerant_gwp",
+      "source_authority": "IPCC",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 760.0,
+      "co2e_per_unit_max": 790.0,
+      "co2e_unit": "kgCO2e/kg",
+      "must_include_assumptions": [
+        "fugitive emission",
+        "IPCC_AR6_100",
+        "low-GWP HFC, R-410A successor",
+        "R-32"
+      ]
+    },
+    "tags": [
+      "refrigerant",
+      "r-32",
+      "ipcc_ar6_100",
+      "eu",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "ref_r_32_ipcc_ar6_100_010",
+    "activity": {
+      "description": "Refrigerant R-32 fugitive emission, cold chain warehouse, IN (IPCC_AR6_100)",
+      "quantity": 22.0,
+      "unit": "kg",
+      "metadata": {
+        "country": "IN",
+        "year": 2026,
+        "scope": "scope1",
+        "refrigerant": "R-32",
+        "gwp_basis": "IPCC_AR6_100",
+        "fuel_type": "refrigerant"
+      }
+    },
+    "method_profile": "corporate_scope1",
+    "expected": {
+      "factor_id": "EF:IPCC:r_32:GLOBAL:ipcc_ar6_100:v1",
+      "factor_family": "refrigerant_gwp",
+      "source_authority": "IPCC",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 760.0,
+      "co2e_per_unit_max": 790.0,
+      "co2e_unit": "kgCO2e/kg",
+      "must_include_assumptions": [
+        "fugitive emission",
+        "IPCC_AR6_100",
+        "low-GWP HFC, R-410A successor",
+        "R-32"
+      ]
+    },
+    "tags": [
+      "refrigerant",
+      "r-32",
+      "ipcc_ar6_100",
+      "in",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "ref_r_134a_ipcc_ar5_100_011",
+    "activity": {
+      "description": "Refrigerant R-134a fugitive emission, rooftop AC leak, US (IPCC_AR5_100)",
+      "quantity": 12.5,
+      "unit": "kg",
+      "metadata": {
+        "country": "US",
+        "year": 2026,
+        "scope": "scope1",
+        "refrigerant": "R-134a",
+        "gwp_basis": "IPCC_AR5_100",
+        "fuel_type": "refrigerant"
+      }
+    },
+    "method_profile": "corporate_scope1",
+    "expected": {
+      "factor_id": "EF:IPCC:r_134a:GLOBAL:ipcc_ar5_100:v1",
+      "factor_family": "refrigerant_gwp",
+      "source_authority": "IPCC",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 1290.0,
+      "co2e_per_unit_max": 1320.0,
+      "co2e_unit": "kgCO2e/kg",
+      "must_include_assumptions": [
+        "fugitive emission",
+        "IPCC_AR5_100",
+        "single-component HFC",
+        "R-134a"
+      ]
+    },
+    "tags": [
+      "refrigerant",
+      "r-134a",
+      "ipcc_ar5_100",
+      "us",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "ref_r_134a_ipcc_ar5_100_012",
+    "activity": {
+      "description": "Refrigerant R-134a fugitive emission, fleet MAC service, US (IPCC_AR5_100)",
+      "quantity": 6.0,
+      "unit": "kg",
+      "metadata": {
+        "country": "US",
+        "year": 2026,
+        "scope": "scope1",
+        "refrigerant": "R-134a",
+        "gwp_basis": "IPCC_AR5_100",
+        "fuel_type": "refrigerant"
+      }
+    },
+    "method_profile": "corporate_scope1",
+    "expected": {
+      "factor_id": "EF:IPCC:r_134a:GLOBAL:ipcc_ar5_100:v1",
+      "factor_family": "refrigerant_gwp",
+      "source_authority": "IPCC",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 1290.0,
+      "co2e_per_unit_max": 1320.0,
+      "co2e_unit": "kgCO2e/kg",
+      "must_include_assumptions": [
+        "fugitive emission",
+        "IPCC_AR5_100",
+        "single-component HFC",
+        "R-134a"
+      ]
+    },
+    "tags": [
+      "refrigerant",
+      "r-134a",
+      "ipcc_ar5_100",
+      "us",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "ref_r_134a_ipcc_ar6_100_013",
+    "activity": {
+      "description": "Refrigerant R-134a fugitive emission, supermarket refrigeration, UK (IPCC_AR6_100)",
+      "quantity": 8.0,
+      "unit": "kg",
+      "metadata": {
+        "country": "UK",
+        "year": 2026,
+        "scope": "scope1",
+        "refrigerant": "R-134a",
+        "gwp_basis": "IPCC_AR6_100",
+        "fuel_type": "refrigerant"
+      }
+    },
+    "method_profile": "corporate_scope1",
+    "expected": {
+      "factor_id": "EF:IPCC:r_134a:GLOBAL:ipcc_ar6_100:v1",
+      "factor_family": "refrigerant_gwp",
+      "source_authority": "IPCC",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 1490.0,
+      "co2e_per_unit_max": 1550.0,
+      "co2e_unit": "kgCO2e/kg",
+      "must_include_assumptions": [
+        "fugitive emission",
+        "IPCC_AR6_100",
+        "single-component HFC",
+        "R-134a"
+      ]
+    },
+    "tags": [
+      "refrigerant",
+      "r-134a",
+      "ipcc_ar6_100",
+      "uk",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "ref_r_134a_ipcc_ar6_100_014",
+    "activity": {
+      "description": "Refrigerant R-134a fugitive emission, industrial chiller leak, EU (IPCC_AR6_100)",
+      "quantity": 14.0,
+      "unit": "kg",
+      "metadata": {
+        "country": "EU",
+        "year": 2026,
+        "scope": "scope1",
+        "refrigerant": "R-134a",
+        "gwp_basis": "IPCC_AR6_100",
+        "fuel_type": "refrigerant"
+      }
+    },
+    "method_profile": "corporate_scope1",
+    "expected": {
+      "factor_id": "EF:IPCC:r_134a:GLOBAL:ipcc_ar6_100:v1",
+      "factor_family": "refrigerant_gwp",
+      "source_authority": "IPCC",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 1490.0,
+      "co2e_per_unit_max": 1550.0,
+      "co2e_unit": "kgCO2e/kg",
+      "must_include_assumptions": [
+        "fugitive emission",
+        "IPCC_AR6_100",
+        "single-component HFC",
+        "R-134a"
+      ]
+    },
+    "tags": [
+      "refrigerant",
+      "r-134a",
+      "ipcc_ar6_100",
+      "eu",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "ref_r_134a_ipcc_ar6_100_015",
+    "activity": {
+      "description": "Refrigerant R-134a fugitive emission, cold chain warehouse, IN (IPCC_AR6_100)",
+      "quantity": 22.0,
+      "unit": "kg",
+      "metadata": {
+        "country": "IN",
+        "year": 2026,
+        "scope": "scope1",
+        "refrigerant": "R-134a",
+        "gwp_basis": "IPCC_AR6_100",
+        "fuel_type": "refrigerant"
+      }
+    },
+    "method_profile": "corporate_scope1",
+    "expected": {
+      "factor_id": "EF:IPCC:r_134a:GLOBAL:ipcc_ar6_100:v1",
+      "factor_family": "refrigerant_gwp",
+      "source_authority": "IPCC",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 1490.0,
+      "co2e_per_unit_max": 1550.0,
+      "co2e_unit": "kgCO2e/kg",
+      "must_include_assumptions": [
+        "fugitive emission",
+        "IPCC_AR6_100",
+        "single-component HFC",
+        "R-134a"
+      ]
+    },
+    "tags": [
+      "refrigerant",
+      "r-134a",
+      "ipcc_ar6_100",
+      "in",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "ref_r_410a_ipcc_ar5_100_016",
+    "activity": {
+      "description": "Refrigerant R-410A fugitive emission, rooftop AC leak, US (IPCC_AR5_100)",
+      "quantity": 12.5,
+      "unit": "kg",
+      "metadata": {
+        "country": "US",
+        "year": 2026,
+        "scope": "scope1",
+        "refrigerant": "R-410A",
+        "gwp_basis": "IPCC_AR5_100",
+        "fuel_type": "refrigerant"
+      }
+    },
+    "method_profile": "corporate_scope1",
+    "expected": {
+      "factor_id": "EF:IPCC:r_410a:GLOBAL:ipcc_ar5_100:v1",
+      "factor_family": "refrigerant_gwp",
+      "source_authority": "IPCC",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 1900.0,
+      "co2e_per_unit_max": 2090.0,
+      "co2e_unit": "kgCO2e/kg",
+      "must_include_assumptions": [
+        "fugitive emission",
+        "IPCC_AR5_100",
+        "R-32/R-125 50/50 blend",
+        "R-410A"
+      ]
+    },
+    "tags": [
+      "refrigerant",
+      "r-410a",
+      "ipcc_ar5_100",
+      "us",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "ref_r_410a_ipcc_ar5_100_017",
+    "activity": {
+      "description": "Refrigerant R-410A fugitive emission, fleet MAC service, US (IPCC_AR5_100)",
+      "quantity": 6.0,
+      "unit": "kg",
+      "metadata": {
+        "country": "US",
+        "year": 2026,
+        "scope": "scope1",
+        "refrigerant": "R-410A",
+        "gwp_basis": "IPCC_AR5_100",
+        "fuel_type": "refrigerant"
+      }
+    },
+    "method_profile": "corporate_scope1",
+    "expected": {
+      "factor_id": "EF:IPCC:r_410a:GLOBAL:ipcc_ar5_100:v1",
+      "factor_family": "refrigerant_gwp",
+      "source_authority": "IPCC",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 1900.0,
+      "co2e_per_unit_max": 2090.0,
+      "co2e_unit": "kgCO2e/kg",
+      "must_include_assumptions": [
+        "fugitive emission",
+        "IPCC_AR5_100",
+        "R-32/R-125 50/50 blend",
+        "R-410A"
+      ]
+    },
+    "tags": [
+      "refrigerant",
+      "r-410a",
+      "ipcc_ar5_100",
+      "us",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "ref_r_410a_ipcc_ar6_100_018",
+    "activity": {
+      "description": "Refrigerant R-410A fugitive emission, supermarket refrigeration, UK (IPCC_AR6_100)",
+      "quantity": 8.0,
+      "unit": "kg",
+      "metadata": {
+        "country": "UK",
+        "year": 2026,
+        "scope": "scope1",
+        "refrigerant": "R-410A",
+        "gwp_basis": "IPCC_AR6_100",
+        "fuel_type": "refrigerant"
+      }
+    },
+    "method_profile": "corporate_scope1",
+    "expected": {
+      "factor_id": "EF:IPCC:r_410a:GLOBAL:ipcc_ar6_100:v1",
+      "factor_family": "refrigerant_gwp",
+      "source_authority": "IPCC",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 2240.0,
+      "co2e_per_unit_max": 2340.0,
+      "co2e_unit": "kgCO2e/kg",
+      "must_include_assumptions": [
+        "fugitive emission",
+        "IPCC_AR6_100",
+        "R-32/R-125 50/50 blend",
+        "R-410A"
+      ]
+    },
+    "tags": [
+      "refrigerant",
+      "r-410a",
+      "ipcc_ar6_100",
+      "uk",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "ref_r_410a_ipcc_ar6_100_019",
+    "activity": {
+      "description": "Refrigerant R-410A fugitive emission, industrial chiller leak, EU (IPCC_AR6_100)",
+      "quantity": 14.0,
+      "unit": "kg",
+      "metadata": {
+        "country": "EU",
+        "year": 2026,
+        "scope": "scope1",
+        "refrigerant": "R-410A",
+        "gwp_basis": "IPCC_AR6_100",
+        "fuel_type": "refrigerant"
+      }
+    },
+    "method_profile": "corporate_scope1",
+    "expected": {
+      "factor_id": "EF:IPCC:r_410a:GLOBAL:ipcc_ar6_100:v1",
+      "factor_family": "refrigerant_gwp",
+      "source_authority": "IPCC",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 2240.0,
+      "co2e_per_unit_max": 2340.0,
+      "co2e_unit": "kgCO2e/kg",
+      "must_include_assumptions": [
+        "fugitive emission",
+        "IPCC_AR6_100",
+        "R-32/R-125 50/50 blend",
+        "R-410A"
+      ]
+    },
+    "tags": [
+      "refrigerant",
+      "r-410a",
+      "ipcc_ar6_100",
+      "eu",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "ref_r_410a_ipcc_ar6_100_020",
+    "activity": {
+      "description": "Refrigerant R-410A fugitive emission, cold chain warehouse, IN (IPCC_AR6_100)",
+      "quantity": 22.0,
+      "unit": "kg",
+      "metadata": {
+        "country": "IN",
+        "year": 2026,
+        "scope": "scope1",
+        "refrigerant": "R-410A",
+        "gwp_basis": "IPCC_AR6_100",
+        "fuel_type": "refrigerant"
+      }
+    },
+    "method_profile": "corporate_scope1",
+    "expected": {
+      "factor_id": "EF:IPCC:r_410a:GLOBAL:ipcc_ar6_100:v1",
+      "factor_family": "refrigerant_gwp",
+      "source_authority": "IPCC",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 2240.0,
+      "co2e_per_unit_max": 2340.0,
+      "co2e_unit": "kgCO2e/kg",
+      "must_include_assumptions": [
+        "fugitive emission",
+        "IPCC_AR6_100",
+        "R-32/R-125 50/50 blend",
+        "R-410A"
+      ]
+    },
+    "tags": [
+      "refrigerant",
+      "r-410a",
+      "ipcc_ar6_100",
+      "in",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "ref_r_404a_ipcc_ar5_100_021",
+    "activity": {
+      "description": "Refrigerant R-404A fugitive emission, rooftop AC leak, US (IPCC_AR5_100)",
+      "quantity": 12.5,
+      "unit": "kg",
+      "metadata": {
+        "country": "US",
+        "year": 2026,
+        "scope": "scope1",
+        "refrigerant": "R-404A",
+        "gwp_basis": "IPCC_AR5_100",
+        "fuel_type": "refrigerant"
+      }
+    },
+    "method_profile": "corporate_scope1",
+    "expected": {
+      "factor_id": "EF:IPCC:r_404a:GLOBAL:ipcc_ar5_100:v1",
+      "factor_family": "refrigerant_gwp",
+      "source_authority": "IPCC",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 3900.0,
+      "co2e_per_unit_max": 4000.0,
+      "co2e_unit": "kgCO2e/kg",
+      "must_include_assumptions": [
+        "fugitive emission",
+        "IPCC_AR5_100",
+        "R-125/R-143a/R-134a blend",
+        "R-404A"
+      ]
+    },
+    "tags": [
+      "refrigerant",
+      "r-404a",
+      "ipcc_ar5_100",
+      "us",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "ref_r_404a_ipcc_ar5_100_022",
+    "activity": {
+      "description": "Refrigerant R-404A fugitive emission, fleet MAC service, US (IPCC_AR5_100)",
+      "quantity": 6.0,
+      "unit": "kg",
+      "metadata": {
+        "country": "US",
+        "year": 2026,
+        "scope": "scope1",
+        "refrigerant": "R-404A",
+        "gwp_basis": "IPCC_AR5_100",
+        "fuel_type": "refrigerant"
+      }
+    },
+    "method_profile": "corporate_scope1",
+    "expected": {
+      "factor_id": "EF:IPCC:r_404a:GLOBAL:ipcc_ar5_100:v1",
+      "factor_family": "refrigerant_gwp",
+      "source_authority": "IPCC",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 3900.0,
+      "co2e_per_unit_max": 4000.0,
+      "co2e_unit": "kgCO2e/kg",
+      "must_include_assumptions": [
+        "fugitive emission",
+        "IPCC_AR5_100",
+        "R-125/R-143a/R-134a blend",
+        "R-404A"
+      ]
+    },
+    "tags": [
+      "refrigerant",
+      "r-404a",
+      "ipcc_ar5_100",
+      "us",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "ref_r_404a_ipcc_ar6_100_023",
+    "activity": {
+      "description": "Refrigerant R-404A fugitive emission, supermarket refrigeration, UK (IPCC_AR6_100)",
+      "quantity": 8.0,
+      "unit": "kg",
+      "metadata": {
+        "country": "UK",
+        "year": 2026,
+        "scope": "scope1",
+        "refrigerant": "R-404A",
+        "gwp_basis": "IPCC_AR6_100",
+        "fuel_type": "refrigerant"
+      }
+    },
+    "method_profile": "corporate_scope1",
+    "expected": {
+      "factor_id": "EF:IPCC:r_404a:GLOBAL:ipcc_ar6_100:v1",
+      "factor_family": "refrigerant_gwp",
+      "source_authority": "IPCC",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 4720.0,
+      "co2e_per_unit_max": 4810.0,
+      "co2e_unit": "kgCO2e/kg",
+      "must_include_assumptions": [
+        "fugitive emission",
+        "IPCC_AR6_100",
+        "R-125/R-143a/R-134a blend",
+        "R-404A"
+      ]
+    },
+    "tags": [
+      "refrigerant",
+      "r-404a",
+      "ipcc_ar6_100",
+      "uk",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "ref_r_404a_ipcc_ar6_100_024",
+    "activity": {
+      "description": "Refrigerant R-404A fugitive emission, industrial chiller leak, EU (IPCC_AR6_100)",
+      "quantity": 14.0,
+      "unit": "kg",
+      "metadata": {
+        "country": "EU",
+        "year": 2026,
+        "scope": "scope1",
+        "refrigerant": "R-404A",
+        "gwp_basis": "IPCC_AR6_100",
+        "fuel_type": "refrigerant"
+      }
+    },
+    "method_profile": "corporate_scope1",
+    "expected": {
+      "factor_id": "EF:IPCC:r_404a:GLOBAL:ipcc_ar6_100:v1",
+      "factor_family": "refrigerant_gwp",
+      "source_authority": "IPCC",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 4720.0,
+      "co2e_per_unit_max": 4810.0,
+      "co2e_unit": "kgCO2e/kg",
+      "must_include_assumptions": [
+        "fugitive emission",
+        "IPCC_AR6_100",
+        "R-125/R-143a/R-134a blend",
+        "R-404A"
+      ]
+    },
+    "tags": [
+      "refrigerant",
+      "r-404a",
+      "ipcc_ar6_100",
+      "eu",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "ref_r_507_ipcc_ar5_100_025",
+    "activity": {
+      "description": "Refrigerant R-507 fugitive emission, rooftop AC leak, US (IPCC_AR5_100)",
+      "quantity": 12.5,
+      "unit": "kg",
+      "metadata": {
+        "country": "US",
+        "year": 2026,
+        "scope": "scope1",
+        "refrigerant": "R-507",
+        "gwp_basis": "IPCC_AR5_100",
+        "fuel_type": "refrigerant"
+      }
+    },
+    "method_profile": "corporate_scope1",
+    "expected": {
+      "factor_id": "EF:IPCC:r_507:GLOBAL:ipcc_ar5_100:v1",
+      "factor_family": "refrigerant_gwp",
+      "source_authority": "IPCC",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 3940.0,
+      "co2e_per_unit_max": 4020.0,
+      "co2e_unit": "kgCO2e/kg",
+      "must_include_assumptions": [
+        "fugitive emission",
+        "IPCC_AR5_100",
+        "R-125/R-143a 50/50 blend",
+        "R-507"
+      ]
+    },
+    "tags": [
+      "refrigerant",
+      "r-507",
+      "ipcc_ar5_100",
+      "us",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "ref_r_507_ipcc_ar5_100_026",
+    "activity": {
+      "description": "Refrigerant R-507 fugitive emission, fleet MAC service, US (IPCC_AR5_100)",
+      "quantity": 6.0,
+      "unit": "kg",
+      "metadata": {
+        "country": "US",
+        "year": 2026,
+        "scope": "scope1",
+        "refrigerant": "R-507",
+        "gwp_basis": "IPCC_AR5_100",
+        "fuel_type": "refrigerant"
+      }
+    },
+    "method_profile": "corporate_scope1",
+    "expected": {
+      "factor_id": "EF:IPCC:r_507:GLOBAL:ipcc_ar5_100:v1",
+      "factor_family": "refrigerant_gwp",
+      "source_authority": "IPCC",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 3940.0,
+      "co2e_per_unit_max": 4020.0,
+      "co2e_unit": "kgCO2e/kg",
+      "must_include_assumptions": [
+        "fugitive emission",
+        "IPCC_AR5_100",
+        "R-125/R-143a 50/50 blend",
+        "R-507"
+      ]
+    },
+    "tags": [
+      "refrigerant",
+      "r-507",
+      "ipcc_ar5_100",
+      "us",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "ref_r_507_ipcc_ar6_100_027",
+    "activity": {
+      "description": "Refrigerant R-507 fugitive emission, supermarket refrigeration, UK (IPCC_AR6_100)",
+      "quantity": 8.0,
+      "unit": "kg",
+      "metadata": {
+        "country": "UK",
+        "year": 2026,
+        "scope": "scope1",
+        "refrigerant": "R-507",
+        "gwp_basis": "IPCC_AR6_100",
+        "fuel_type": "refrigerant"
+      }
+    },
+    "method_profile": "corporate_scope1",
+    "expected": {
+      "factor_id": "EF:IPCC:r_507:GLOBAL:ipcc_ar6_100:v1",
+      "factor_family": "refrigerant_gwp",
+      "source_authority": "IPCC",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 4400.0,
+      "co2e_per_unit_max": 4500.0,
+      "co2e_unit": "kgCO2e/kg",
+      "must_include_assumptions": [
+        "fugitive emission",
+        "IPCC_AR6_100",
+        "R-125/R-143a 50/50 blend",
+        "R-507"
+      ]
+    },
+    "tags": [
+      "refrigerant",
+      "r-507",
+      "ipcc_ar6_100",
+      "uk",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "ref_r_507_ipcc_ar6_100_028",
+    "activity": {
+      "description": "Refrigerant R-507 fugitive emission, industrial chiller leak, EU (IPCC_AR6_100)",
+      "quantity": 14.0,
+      "unit": "kg",
+      "metadata": {
+        "country": "EU",
+        "year": 2026,
+        "scope": "scope1",
+        "refrigerant": "R-507",
+        "gwp_basis": "IPCC_AR6_100",
+        "fuel_type": "refrigerant"
+      }
+    },
+    "method_profile": "corporate_scope1",
+    "expected": {
+      "factor_id": "EF:IPCC:r_507:GLOBAL:ipcc_ar6_100:v1",
+      "factor_family": "refrigerant_gwp",
+      "source_authority": "IPCC",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 4400.0,
+      "co2e_per_unit_max": 4500.0,
+      "co2e_unit": "kgCO2e/kg",
+      "must_include_assumptions": [
+        "fugitive emission",
+        "IPCC_AR6_100",
+        "R-125/R-143a 50/50 blend",
+        "R-507"
+      ]
+    },
+    "tags": [
+      "refrigerant",
+      "r-507",
+      "ipcc_ar6_100",
+      "eu",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "ref_r_1234yf_ipcc_ar5_100_029",
+    "activity": {
+      "description": "Refrigerant R-1234yf fugitive emission, rooftop AC leak, US (IPCC_AR5_100)",
+      "quantity": 12.5,
+      "unit": "kg",
+      "metadata": {
+        "country": "US",
+        "year": 2026,
+        "scope": "scope1",
+        "refrigerant": "R-1234yf",
+        "gwp_basis": "IPCC_AR5_100",
+        "fuel_type": "refrigerant"
+      }
+    },
+    "method_profile": "corporate_scope1",
+    "expected": {
+      "factor_id": "EF:IPCC:r_1234yf:GLOBAL:ipcc_ar5_100:v1",
+      "factor_family": "refrigerant_gwp",
+      "source_authority": "IPCC",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 1.0,
+      "co2e_per_unit_max": 5.0,
+      "co2e_unit": "kgCO2e/kg",
+      "must_include_assumptions": [
+        "fugitive emission",
+        "IPCC_AR5_100",
+        "HFO single-component",
+        "R-1234yf"
+      ]
+    },
+    "tags": [
+      "refrigerant",
+      "r-1234yf",
+      "ipcc_ar5_100",
+      "us",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "ref_r_1234yf_ipcc_ar5_100_030",
+    "activity": {
+      "description": "Refrigerant R-1234yf fugitive emission, fleet MAC service, US (IPCC_AR5_100)",
+      "quantity": 6.0,
+      "unit": "kg",
+      "metadata": {
+        "country": "US",
+        "year": 2026,
+        "scope": "scope1",
+        "refrigerant": "R-1234yf",
+        "gwp_basis": "IPCC_AR5_100",
+        "fuel_type": "refrigerant"
+      }
+    },
+    "method_profile": "corporate_scope1",
+    "expected": {
+      "factor_id": "EF:IPCC:r_1234yf:GLOBAL:ipcc_ar5_100:v1",
+      "factor_family": "refrigerant_gwp",
+      "source_authority": "IPCC",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 1.0,
+      "co2e_per_unit_max": 5.0,
+      "co2e_unit": "kgCO2e/kg",
+      "must_include_assumptions": [
+        "fugitive emission",
+        "IPCC_AR5_100",
+        "HFO single-component",
+        "R-1234yf"
+      ]
+    },
+    "tags": [
+      "refrigerant",
+      "r-1234yf",
+      "ipcc_ar5_100",
+      "us",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "ref_r_1234yf_ipcc_ar6_100_031",
+    "activity": {
+      "description": "Refrigerant R-1234yf fugitive emission, supermarket refrigeration, UK (IPCC_AR6_100)",
+      "quantity": 8.0,
+      "unit": "kg",
+      "metadata": {
+        "country": "UK",
+        "year": 2026,
+        "scope": "scope1",
+        "refrigerant": "R-1234yf",
+        "gwp_basis": "IPCC_AR6_100",
+        "fuel_type": "refrigerant"
+      }
+    },
+    "method_profile": "corporate_scope1",
+    "expected": {
+      "factor_id": "EF:IPCC:r_1234yf:GLOBAL:ipcc_ar6_100:v1",
+      "factor_family": "refrigerant_gwp",
+      "source_authority": "IPCC",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 1.0,
+      "co2e_per_unit_max": 5.0,
+      "co2e_unit": "kgCO2e/kg",
+      "must_include_assumptions": [
+        "fugitive emission",
+        "IPCC_AR6_100",
+        "HFO single-component",
+        "R-1234yf"
+      ]
+    },
+    "tags": [
+      "refrigerant",
+      "r-1234yf",
+      "ipcc_ar6_100",
+      "uk",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "ref_r_1234yf_ipcc_ar6_100_032",
+    "activity": {
+      "description": "Refrigerant R-1234yf fugitive emission, industrial chiller leak, EU (IPCC_AR6_100)",
+      "quantity": 14.0,
+      "unit": "kg",
+      "metadata": {
+        "country": "EU",
+        "year": 2026,
+        "scope": "scope1",
+        "refrigerant": "R-1234yf",
+        "gwp_basis": "IPCC_AR6_100",
+        "fuel_type": "refrigerant"
+      }
+    },
+    "method_profile": "corporate_scope1",
+    "expected": {
+      "factor_id": "EF:IPCC:r_1234yf:GLOBAL:ipcc_ar6_100:v1",
+      "factor_family": "refrigerant_gwp",
+      "source_authority": "IPCC",
+      "fallback_rank": 6,
+      "co2e_per_unit_min": 1.0,
+      "co2e_per_unit_max": 5.0,
+      "co2e_unit": "kgCO2e/kg",
+      "must_include_assumptions": [
+        "fugitive emission",
+        "IPCC_AR6_100",
+        "HFO single-component",
+        "R-1234yf"
+      ]
+    },
+    "tags": [
+      "refrigerant",
+      "r-1234yf",
+      "ipcc_ar6_100",
+      "eu",
+      "fy27_launch"
+    ]
+  }
+]

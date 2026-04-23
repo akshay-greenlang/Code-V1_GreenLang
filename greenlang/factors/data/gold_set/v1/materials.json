@@ -1,0 +1,1802 @@
+[
+  {
+    "case_id": "mat_steel_eu_001",
+    "activity": {
+      "description": "Steel BF-BOF primary, EU avg",
+      "quantity": 1500,
+      "unit": "tonne",
+      "metadata": {
+        "country": "EU",
+        "year": 2026,
+        "scope": "scope3",
+        "category": "purchased_goods",
+        "material": "steel"
+      }
+    },
+    "method_profile": "corporate_scope3",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "material_embodied",
+      "source_authority": "EPD/Worldsteel",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 2100.0,
+      "co2e_per_unit_max": 2400.0,
+      "co2e_unit": "kgCO2e/tonne",
+      "must_include_assumptions": [
+        "cradle-to-gate",
+        "BF-BOF primary",
+        "steel"
+      ]
+    },
+    "tags": [
+      "material",
+      "steel",
+      "eu",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "mat_steel_cn_002",
+    "activity": {
+      "description": "Steel BF-BOF primary, China",
+      "quantity": 1200,
+      "unit": "tonne",
+      "metadata": {
+        "country": "CN",
+        "year": 2026,
+        "scope": "scope3",
+        "category": "purchased_goods",
+        "material": "steel"
+      }
+    },
+    "method_profile": "corporate_scope3",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "material_embodied",
+      "source_authority": "EPD/Worldsteel",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 2400.0,
+      "co2e_per_unit_max": 2800.0,
+      "co2e_unit": "kgCO2e/tonne",
+      "must_include_assumptions": [
+        "cradle-to-gate",
+        "BF-BOF primary",
+        "steel"
+      ]
+    },
+    "tags": [
+      "material",
+      "steel",
+      "cn",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "mat_steel_in_003",
+    "activity": {
+      "description": "Steel BF-BOF primary, India",
+      "quantity": 800,
+      "unit": "tonne",
+      "metadata": {
+        "country": "IN",
+        "year": 2026,
+        "scope": "scope3",
+        "category": "purchased_goods",
+        "material": "steel"
+      }
+    },
+    "method_profile": "corporate_scope3",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "material_embodied",
+      "source_authority": "EPD/Worldsteel",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 2300.0,
+      "co2e_per_unit_max": 2650.0,
+      "co2e_unit": "kgCO2e/tonne",
+      "must_include_assumptions": [
+        "cradle-to-gate",
+        "BF-BOF primary",
+        "steel"
+      ]
+    },
+    "tags": [
+      "material",
+      "steel",
+      "in",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "mat_steel_jp_004",
+    "activity": {
+      "description": "Steel BF-BOF primary, JP",
+      "quantity": 600,
+      "unit": "tonne",
+      "metadata": {
+        "country": "JP",
+        "year": 2026,
+        "scope": "scope3",
+        "category": "purchased_goods",
+        "material": "steel"
+      }
+    },
+    "method_profile": "corporate_scope3",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "material_embodied",
+      "source_authority": "EPD/Worldsteel",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 2050.0,
+      "co2e_per_unit_max": 2300.0,
+      "co2e_unit": "kgCO2e/tonne",
+      "must_include_assumptions": [
+        "cradle-to-gate",
+        "BF-BOF primary",
+        "steel"
+      ]
+    },
+    "tags": [
+      "material",
+      "steel",
+      "jp",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "mat_steel_eu_005",
+    "activity": {
+      "description": "Steel EAF scrap, EU avg",
+      "quantity": 900,
+      "unit": "tonne",
+      "metadata": {
+        "country": "EU",
+        "year": 2026,
+        "scope": "scope3",
+        "category": "purchased_goods",
+        "material": "steel"
+      }
+    },
+    "method_profile": "corporate_scope3",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "material_embodied",
+      "source_authority": "EPD/Worldsteel",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 400.0,
+      "co2e_per_unit_max": 800.0,
+      "co2e_unit": "kgCO2e/tonne",
+      "must_include_assumptions": [
+        "cradle-to-gate",
+        "EAF scrap-route",
+        "steel"
+      ]
+    },
+    "tags": [
+      "material",
+      "steel",
+      "eu",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "mat_steel_us_006",
+    "activity": {
+      "description": "Steel EAF scrap, US avg",
+      "quantity": 1100,
+      "unit": "tonne",
+      "metadata": {
+        "country": "US",
+        "year": 2026,
+        "scope": "scope3",
+        "category": "purchased_goods",
+        "material": "steel"
+      }
+    },
+    "method_profile": "corporate_scope3",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "material_embodied",
+      "source_authority": "EPD/Worldsteel",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 400.0,
+      "co2e_per_unit_max": 850.0,
+      "co2e_unit": "kgCO2e/tonne",
+      "must_include_assumptions": [
+        "cradle-to-gate",
+        "EAF scrap-route",
+        "steel"
+      ]
+    },
+    "tags": [
+      "material",
+      "steel",
+      "us",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "mat_steel_in_007",
+    "activity": {
+      "description": "Steel EAF DRI, India",
+      "quantity": 750,
+      "unit": "tonne",
+      "metadata": {
+        "country": "IN",
+        "year": 2026,
+        "scope": "scope3",
+        "category": "purchased_goods",
+        "material": "steel"
+      }
+    },
+    "method_profile": "corporate_scope3",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "material_embodied",
+      "source_authority": "EPD/Worldsteel",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 1200.0,
+      "co2e_per_unit_max": 1600.0,
+      "co2e_unit": "kgCO2e/tonne",
+      "must_include_assumptions": [
+        "cradle-to-gate",
+        "EAF DRI mix",
+        "steel"
+      ]
+    },
+    "tags": [
+      "material",
+      "steel",
+      "in",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "mat_steel_eu_008",
+    "activity": {
+      "description": "Steel HRC, EU EPD avg",
+      "quantity": 1400,
+      "unit": "tonne",
+      "metadata": {
+        "country": "EU",
+        "year": 2026,
+        "scope": "scope3",
+        "category": "purchased_goods",
+        "material": "steel"
+      }
+    },
+    "method_profile": "corporate_scope3",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "material_embodied",
+      "source_authority": "EPD",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 1800.0,
+      "co2e_per_unit_max": 2200.0,
+      "co2e_unit": "kgCO2e/tonne",
+      "must_include_assumptions": [
+        "cradle-to-gate",
+        "hot-rolled coil",
+        "steel"
+      ]
+    },
+    "tags": [
+      "material",
+      "steel",
+      "eu",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "mat_steel_in_009",
+    "activity": {
+      "description": "Steel rebar, India market avg",
+      "quantity": 1800,
+      "unit": "tonne",
+      "metadata": {
+        "country": "IN",
+        "year": 2026,
+        "scope": "scope3",
+        "category": "purchased_goods",
+        "material": "steel"
+      }
+    },
+    "method_profile": "corporate_scope3",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "material_embodied",
+      "source_authority": "EPD",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 1800.0,
+      "co2e_per_unit_max": 2300.0,
+      "co2e_unit": "kgCO2e/tonne",
+      "must_include_assumptions": [
+        "cradle-to-gate",
+        "rebar",
+        "steel"
+      ]
+    },
+    "tags": [
+      "material",
+      "steel",
+      "in",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "mat_steel_eu_010",
+    "activity": {
+      "description": "Steel hot-dipped galvanized, EU",
+      "quantity": 1200,
+      "unit": "tonne",
+      "metadata": {
+        "country": "EU",
+        "year": 2026,
+        "scope": "scope3",
+        "category": "purchased_goods",
+        "material": "steel"
+      }
+    },
+    "method_profile": "corporate_scope3",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "material_embodied",
+      "source_authority": "EPD",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 2400.0,
+      "co2e_per_unit_max": 2800.0,
+      "co2e_unit": "kgCO2e/tonne",
+      "must_include_assumptions": [
+        "cradle-to-gate",
+        "HDG coated",
+        "steel"
+      ]
+    },
+    "tags": [
+      "material",
+      "steel",
+      "eu",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "mat_al_eu_001",
+    "activity": {
+      "description": "Primary Al ingot, EU IAI",
+      "quantity": 600,
+      "unit": "tonne",
+      "metadata": {
+        "country": "EU",
+        "year": 2026,
+        "scope": "scope3",
+        "category": "purchased_goods",
+        "material": "aluminium"
+      }
+    },
+    "method_profile": "corporate_scope3",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "material_embodied",
+      "source_authority": "IAI/EPD",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 6500.0,
+      "co2e_per_unit_max": 8200.0,
+      "co2e_unit": "kgCO2e/tonne",
+      "must_include_assumptions": [
+        "cradle-to-gate",
+        "primary, EU mix",
+        "aluminium"
+      ]
+    },
+    "tags": [
+      "material",
+      "aluminium",
+      "eu",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "mat_al_cn_002",
+    "activity": {
+      "description": "Primary Al ingot, China",
+      "quantity": 950,
+      "unit": "tonne",
+      "metadata": {
+        "country": "CN",
+        "year": 2026,
+        "scope": "scope3",
+        "category": "purchased_goods",
+        "material": "aluminium"
+      }
+    },
+    "method_profile": "corporate_scope3",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "material_embodied",
+      "source_authority": "IAI/EPD",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 16000.0,
+      "co2e_per_unit_max": 19000.0,
+      "co2e_unit": "kgCO2e/tonne",
+      "must_include_assumptions": [
+        "cradle-to-gate",
+        "primary, China coal mix",
+        "aluminium"
+      ]
+    },
+    "tags": [
+      "material",
+      "aluminium",
+      "cn",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "mat_al_is_003",
+    "activity": {
+      "description": "Primary Al ingot, Iceland (hydro)",
+      "quantity": 280,
+      "unit": "tonne",
+      "metadata": {
+        "country": "IS",
+        "year": 2026,
+        "scope": "scope3",
+        "category": "purchased_goods",
+        "material": "aluminium"
+      }
+    },
+    "method_profile": "corporate_scope3",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "material_embodied",
+      "source_authority": "IAI/EPD",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 2200.0,
+      "co2e_per_unit_max": 3500.0,
+      "co2e_unit": "kgCO2e/tonne",
+      "must_include_assumptions": [
+        "cradle-to-gate",
+        "primary, hydro",
+        "aluminium"
+      ]
+    },
+    "tags": [
+      "material",
+      "aluminium",
+      "is",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "mat_al_in_004",
+    "activity": {
+      "description": "Primary Al ingot, India",
+      "quantity": 480,
+      "unit": "tonne",
+      "metadata": {
+        "country": "IN",
+        "year": 2026,
+        "scope": "scope3",
+        "category": "purchased_goods",
+        "material": "aluminium"
+      }
+    },
+    "method_profile": "corporate_scope3",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "material_embodied",
+      "source_authority": "IAI/EPD",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 14000.0,
+      "co2e_per_unit_max": 18000.0,
+      "co2e_unit": "kgCO2e/tonne",
+      "must_include_assumptions": [
+        "cradle-to-gate",
+        "primary, India coal mix",
+        "aluminium"
+      ]
+    },
+    "tags": [
+      "material",
+      "aluminium",
+      "in",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "mat_al_eu_005",
+    "activity": {
+      "description": "Recycled Al ingot, EU avg",
+      "quantity": 320,
+      "unit": "tonne",
+      "metadata": {
+        "country": "EU",
+        "year": 2026,
+        "scope": "scope3",
+        "category": "purchased_goods",
+        "material": "aluminium"
+      }
+    },
+    "method_profile": "corporate_scope3",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "material_embodied",
+      "source_authority": "IAI/EPD",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 400.0,
+      "co2e_per_unit_max": 800.0,
+      "co2e_unit": "kgCO2e/tonne",
+      "must_include_assumptions": [
+        "cradle-to-gate",
+        "secondary recycled",
+        "aluminium"
+      ]
+    },
+    "tags": [
+      "material",
+      "aluminium",
+      "eu",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "mat_al_us_006",
+    "activity": {
+      "description": "Recycled Al ingot, US avg",
+      "quantity": 410,
+      "unit": "tonne",
+      "metadata": {
+        "country": "US",
+        "year": 2026,
+        "scope": "scope3",
+        "category": "purchased_goods",
+        "material": "aluminium"
+      }
+    },
+    "method_profile": "corporate_scope3",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "material_embodied",
+      "source_authority": "IAI/EPD",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 400.0,
+      "co2e_per_unit_max": 800.0,
+      "co2e_unit": "kgCO2e/tonne",
+      "must_include_assumptions": [
+        "cradle-to-gate",
+        "secondary recycled",
+        "aluminium"
+      ]
+    },
+    "tags": [
+      "material",
+      "aluminium",
+      "us",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "mat_al_eu_007",
+    "activity": {
+      "description": "Aluminium extrusion EU EPD",
+      "quantity": 220,
+      "unit": "tonne",
+      "metadata": {
+        "country": "EU",
+        "year": 2026,
+        "scope": "scope3",
+        "category": "purchased_goods",
+        "material": "aluminium"
+      }
+    },
+    "method_profile": "corporate_scope3",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "material_embodied",
+      "source_authority": "EPD",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 4500.0,
+      "co2e_per_unit_max": 6200.0,
+      "co2e_unit": "kgCO2e/tonne",
+      "must_include_assumptions": [
+        "cradle-to-gate",
+        "extruded profile",
+        "aluminium"
+      ]
+    },
+    "tags": [
+      "material",
+      "aluminium",
+      "eu",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "mat_al_eu_008",
+    "activity": {
+      "description": "Aluminium sheet rolled, EU",
+      "quantity": 180,
+      "unit": "tonne",
+      "metadata": {
+        "country": "EU",
+        "year": 2026,
+        "scope": "scope3",
+        "category": "purchased_goods",
+        "material": "aluminium"
+      }
+    },
+    "method_profile": "corporate_scope3",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "material_embodied",
+      "source_authority": "EPD",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 5200.0,
+      "co2e_per_unit_max": 7000.0,
+      "co2e_unit": "kgCO2e/tonne",
+      "must_include_assumptions": [
+        "cradle-to-gate",
+        "rolled sheet",
+        "aluminium"
+      ]
+    },
+    "tags": [
+      "material",
+      "aluminium",
+      "eu",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "mat_cement_eu_001",
+    "activity": {
+      "description": "CEM I OPC, EU EPD avg",
+      "quantity": 2200,
+      "unit": "tonne",
+      "metadata": {
+        "country": "EU",
+        "year": 2026,
+        "scope": "scope3",
+        "category": "purchased_goods",
+        "material": "cement"
+      }
+    },
+    "method_profile": "corporate_scope3",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "material_embodied",
+      "source_authority": "EPD",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 800.0,
+      "co2e_per_unit_max": 950.0,
+      "co2e_unit": "kgCO2e/tonne",
+      "must_include_assumptions": [
+        "cradle-to-gate",
+        "OPC clinker-rich",
+        "cement"
+      ]
+    },
+    "tags": [
+      "material",
+      "cement",
+      "eu",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "mat_cement_eu_002",
+    "activity": {
+      "description": "CEM II Portland-composite, EU",
+      "quantity": 1800,
+      "unit": "tonne",
+      "metadata": {
+        "country": "EU",
+        "year": 2026,
+        "scope": "scope3",
+        "category": "purchased_goods",
+        "material": "cement"
+      }
+    },
+    "method_profile": "corporate_scope3",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "material_embodied",
+      "source_authority": "EPD",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 550.0,
+      "co2e_per_unit_max": 750.0,
+      "co2e_unit": "kgCO2e/tonne",
+      "must_include_assumptions": [
+        "cradle-to-gate",
+        "blended cement",
+        "cement"
+      ]
+    },
+    "tags": [
+      "material",
+      "cement",
+      "eu",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "mat_cement_eu_003",
+    "activity": {
+      "description": "CEM III blast furnace slag, EU",
+      "quantity": 1200,
+      "unit": "tonne",
+      "metadata": {
+        "country": "EU",
+        "year": 2026,
+        "scope": "scope3",
+        "category": "purchased_goods",
+        "material": "cement"
+      }
+    },
+    "method_profile": "corporate_scope3",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "material_embodied",
+      "source_authority": "EPD",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 400.0,
+      "co2e_per_unit_max": 550.0,
+      "co2e_unit": "kgCO2e/tonne",
+      "must_include_assumptions": [
+        "cradle-to-gate",
+        "GGBFS-blended",
+        "cement"
+      ]
+    },
+    "tags": [
+      "material",
+      "cement",
+      "eu",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "mat_cement_in_004",
+    "activity": {
+      "description": "OPC PPC, India avg",
+      "quantity": 3500,
+      "unit": "tonne",
+      "metadata": {
+        "country": "IN",
+        "year": 2026,
+        "scope": "scope3",
+        "category": "purchased_goods",
+        "material": "cement"
+      }
+    },
+    "method_profile": "corporate_scope3",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "material_embodied",
+      "source_authority": "EPD",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 650.0,
+      "co2e_per_unit_max": 850.0,
+      "co2e_unit": "kgCO2e/tonne",
+      "must_include_assumptions": [
+        "cradle-to-gate",
+        "fly-ash blended",
+        "cement"
+      ]
+    },
+    "tags": [
+      "material",
+      "cement",
+      "in",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "mat_cement_in_005",
+    "activity": {
+      "description": "OPC 53 grade, India",
+      "quantity": 2800,
+      "unit": "tonne",
+      "metadata": {
+        "country": "IN",
+        "year": 2026,
+        "scope": "scope3",
+        "category": "purchased_goods",
+        "material": "cement"
+      }
+    },
+    "method_profile": "corporate_scope3",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "material_embodied",
+      "source_authority": "EPD",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 850.0,
+      "co2e_per_unit_max": 1050.0,
+      "co2e_unit": "kgCO2e/tonne",
+      "must_include_assumptions": [
+        "cradle-to-gate",
+        "OPC clinker-rich",
+        "cement"
+      ]
+    },
+    "tags": [
+      "material",
+      "cement",
+      "in",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "mat_cement_us_006",
+    "activity": {
+      "description": "Type II Portland, US avg",
+      "quantity": 1400,
+      "unit": "tonne",
+      "metadata": {
+        "country": "US",
+        "year": 2026,
+        "scope": "scope3",
+        "category": "purchased_goods",
+        "material": "cement"
+      }
+    },
+    "method_profile": "corporate_scope3",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "material_embodied",
+      "source_authority": "EPD",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 850.0,
+      "co2e_per_unit_max": 1000.0,
+      "co2e_unit": "kgCO2e/tonne",
+      "must_include_assumptions": [
+        "cradle-to-gate",
+        "OPC",
+        "cement"
+      ]
+    },
+    "tags": [
+      "material",
+      "cement",
+      "us",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "mat_cement_eu_007",
+    "activity": {
+      "description": "Limestone Portland LC3, EU pilot",
+      "quantity": 600,
+      "unit": "tonne",
+      "metadata": {
+        "country": "EU",
+        "year": 2026,
+        "scope": "scope3",
+        "category": "purchased_goods",
+        "material": "cement"
+      }
+    },
+    "method_profile": "corporate_scope3",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "material_embodied",
+      "source_authority": "EPD",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 400.0,
+      "co2e_per_unit_max": 550.0,
+      "co2e_unit": "kgCO2e/tonne",
+      "must_include_assumptions": [
+        "cradle-to-gate",
+        "LC3",
+        "cement"
+      ]
+    },
+    "tags": [
+      "material",
+      "cement",
+      "eu",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "mat_cement_us_008",
+    "activity": {
+      "description": "Type IL portland-limestone, US",
+      "quantity": 1100,
+      "unit": "tonne",
+      "metadata": {
+        "country": "US",
+        "year": 2026,
+        "scope": "scope3",
+        "category": "purchased_goods",
+        "material": "cement"
+      }
+    },
+    "method_profile": "corporate_scope3",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "material_embodied",
+      "source_authority": "EPD",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 650.0,
+      "co2e_per_unit_max": 850.0,
+      "co2e_unit": "kgCO2e/tonne",
+      "must_include_assumptions": [
+        "cradle-to-gate",
+        "PLC type IL",
+        "cement"
+      ]
+    },
+    "tags": [
+      "material",
+      "cement",
+      "us",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "mat_plastic_eu_001",
+    "activity": {
+      "description": "PE-LD virgin, EU PlasticsEurope",
+      "quantity": 90,
+      "unit": "tonne",
+      "metadata": {
+        "country": "EU",
+        "year": 2026,
+        "scope": "scope3",
+        "category": "purchased_goods",
+        "material": "plastic"
+      }
+    },
+    "method_profile": "corporate_scope3",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "material_embodied",
+      "source_authority": "PlasticsEurope EPD",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 1850.0,
+      "co2e_per_unit_max": 2200.0,
+      "co2e_unit": "kgCO2e/tonne",
+      "must_include_assumptions": [
+        "cradle-to-gate",
+        "low-density polyethylene",
+        "plastic"
+      ]
+    },
+    "tags": [
+      "material",
+      "plastic",
+      "eu",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "mat_plastic_eu_002",
+    "activity": {
+      "description": "PE-HD virgin, EU PlasticsEurope",
+      "quantity": 120,
+      "unit": "tonne",
+      "metadata": {
+        "country": "EU",
+        "year": 2026,
+        "scope": "scope3",
+        "category": "purchased_goods",
+        "material": "plastic"
+      }
+    },
+    "method_profile": "corporate_scope3",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "material_embodied",
+      "source_authority": "PlasticsEurope EPD",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 1750.0,
+      "co2e_per_unit_max": 2050.0,
+      "co2e_unit": "kgCO2e/tonne",
+      "must_include_assumptions": [
+        "cradle-to-gate",
+        "high-density polyethylene",
+        "plastic"
+      ]
+    },
+    "tags": [
+      "material",
+      "plastic",
+      "eu",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "mat_plastic_eu_003",
+    "activity": {
+      "description": "PP virgin, EU PlasticsEurope",
+      "quantity": 150,
+      "unit": "tonne",
+      "metadata": {
+        "country": "EU",
+        "year": 2026,
+        "scope": "scope3",
+        "category": "purchased_goods",
+        "material": "plastic"
+      }
+    },
+    "method_profile": "corporate_scope3",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "material_embodied",
+      "source_authority": "PlasticsEurope EPD",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 1850.0,
+      "co2e_per_unit_max": 2100.0,
+      "co2e_unit": "kgCO2e/tonne",
+      "must_include_assumptions": [
+        "cradle-to-gate",
+        "polypropylene",
+        "plastic"
+      ]
+    },
+    "tags": [
+      "material",
+      "plastic",
+      "eu",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "mat_plastic_eu_004",
+    "activity": {
+      "description": "PET resin virgin, EU PCI",
+      "quantity": 200,
+      "unit": "tonne",
+      "metadata": {
+        "country": "EU",
+        "year": 2026,
+        "scope": "scope3",
+        "category": "purchased_goods",
+        "material": "plastic"
+      }
+    },
+    "method_profile": "corporate_scope3",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "material_embodied",
+      "source_authority": "EPD",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 2100.0,
+      "co2e_per_unit_max": 2450.0,
+      "co2e_unit": "kgCO2e/tonne",
+      "must_include_assumptions": [
+        "cradle-to-gate",
+        "polyethylene terephthalate",
+        "plastic"
+      ]
+    },
+    "tags": [
+      "material",
+      "plastic",
+      "eu",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "mat_plastic_eu_005",
+    "activity": {
+      "description": "PVC suspension, EU PlasticsEurope",
+      "quantity": 180,
+      "unit": "tonne",
+      "metadata": {
+        "country": "EU",
+        "year": 2026,
+        "scope": "scope3",
+        "category": "purchased_goods",
+        "material": "plastic"
+      }
+    },
+    "method_profile": "corporate_scope3",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "material_embodied",
+      "source_authority": "PlasticsEurope EPD",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 2200.0,
+      "co2e_per_unit_max": 2550.0,
+      "co2e_unit": "kgCO2e/tonne",
+      "must_include_assumptions": [
+        "cradle-to-gate",
+        "polyvinyl chloride",
+        "plastic"
+      ]
+    },
+    "tags": [
+      "material",
+      "plastic",
+      "eu",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "mat_plastic_eu_006",
+    "activity": {
+      "description": "Recycled PET (rPET) flake, EU",
+      "quantity": 80,
+      "unit": "tonne",
+      "metadata": {
+        "country": "EU",
+        "year": 2026,
+        "scope": "scope3",
+        "category": "purchased_goods",
+        "material": "plastic"
+      }
+    },
+    "method_profile": "corporate_scope3",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "material_embodied",
+      "source_authority": "EPD",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 800.0,
+      "co2e_per_unit_max": 1200.0,
+      "co2e_unit": "kgCO2e/tonne",
+      "must_include_assumptions": [
+        "cradle-to-gate",
+        "rPET secondary",
+        "plastic"
+      ]
+    },
+    "tags": [
+      "material",
+      "plastic",
+      "eu",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "mat_plastic_us_007",
+    "activity": {
+      "description": "PE-LD virgin, US APR avg",
+      "quantity": 110,
+      "unit": "tonne",
+      "metadata": {
+        "country": "US",
+        "year": 2026,
+        "scope": "scope3",
+        "category": "purchased_goods",
+        "material": "plastic"
+      }
+    },
+    "method_profile": "corporate_scope3",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "material_embodied",
+      "source_authority": "EPD",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 1800.0,
+      "co2e_per_unit_max": 2150.0,
+      "co2e_unit": "kgCO2e/tonne",
+      "must_include_assumptions": [
+        "cradle-to-gate",
+        "LDPE US",
+        "plastic"
+      ]
+    },
+    "tags": [
+      "material",
+      "plastic",
+      "us",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "mat_plastic_in_008",
+    "activity": {
+      "description": "PP virgin, India market avg",
+      "quantity": 220,
+      "unit": "tonne",
+      "metadata": {
+        "country": "IN",
+        "year": 2026,
+        "scope": "scope3",
+        "category": "purchased_goods",
+        "material": "plastic"
+      }
+    },
+    "method_profile": "corporate_scope3",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "material_embodied",
+      "source_authority": "EPD",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 1950.0,
+      "co2e_per_unit_max": 2300.0,
+      "co2e_unit": "kgCO2e/tonne",
+      "must_include_assumptions": [
+        "cradle-to-gate",
+        "PP India",
+        "plastic"
+      ]
+    },
+    "tags": [
+      "material",
+      "plastic",
+      "in",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "mat_paper_eu_001",
+    "activity": {
+      "description": "Kraft pulp bleached, EU CEPI",
+      "quantity": 80,
+      "unit": "tonne",
+      "metadata": {
+        "country": "EU",
+        "year": 2026,
+        "scope": "scope3",
+        "category": "purchased_goods",
+        "material": "paper"
+      }
+    },
+    "method_profile": "corporate_scope3",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "material_embodied",
+      "source_authority": "CEPI EPD",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 800.0,
+      "co2e_per_unit_max": 1200.0,
+      "co2e_unit": "kgCO2e/tonne",
+      "must_include_assumptions": [
+        "cradle-to-gate",
+        "bleached kraft pulp",
+        "paper"
+      ]
+    },
+    "tags": [
+      "material",
+      "paper",
+      "eu",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "mat_paper_eu_002",
+    "activity": {
+      "description": "Newsprint, EU CEPI",
+      "quantity": 65,
+      "unit": "tonne",
+      "metadata": {
+        "country": "EU",
+        "year": 2026,
+        "scope": "scope3",
+        "category": "purchased_goods",
+        "material": "paper"
+      }
+    },
+    "method_profile": "corporate_scope3",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "material_embodied",
+      "source_authority": "CEPI EPD",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 400.0,
+      "co2e_per_unit_max": 800.0,
+      "co2e_unit": "kgCO2e/tonne",
+      "must_include_assumptions": [
+        "cradle-to-gate",
+        "newsprint",
+        "paper"
+      ]
+    },
+    "tags": [
+      "material",
+      "paper",
+      "eu",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "mat_paper_eu_003",
+    "activity": {
+      "description": "Corrugated case material, EU",
+      "quantity": 120,
+      "unit": "tonne",
+      "metadata": {
+        "country": "EU",
+        "year": 2026,
+        "scope": "scope3",
+        "category": "purchased_goods",
+        "material": "paper"
+      }
+    },
+    "method_profile": "corporate_scope3",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "material_embodied",
+      "source_authority": "CEPI EPD",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 450.0,
+      "co2e_per_unit_max": 800.0,
+      "co2e_unit": "kgCO2e/tonne",
+      "must_include_assumptions": [
+        "cradle-to-gate",
+        "OCC + virgin mix",
+        "paper"
+      ]
+    },
+    "tags": [
+      "material",
+      "paper",
+      "eu",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "mat_paper_eu_004",
+    "activity": {
+      "description": "Office paper, EU avg",
+      "quantity": 35,
+      "unit": "tonne",
+      "metadata": {
+        "country": "EU",
+        "year": 2026,
+        "scope": "scope3",
+        "category": "purchased_goods",
+        "material": "paper"
+      }
+    },
+    "method_profile": "corporate_scope3",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "material_embodied",
+      "source_authority": "CEPI EPD",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 850.0,
+      "co2e_per_unit_max": 1200.0,
+      "co2e_unit": "kgCO2e/tonne",
+      "must_include_assumptions": [
+        "cradle-to-gate",
+        "office paper",
+        "paper"
+      ]
+    },
+    "tags": [
+      "material",
+      "paper",
+      "eu",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "mat_paper_us_005",
+    "activity": {
+      "description": "Corrugated CCM, US avg",
+      "quantity": 200,
+      "unit": "tonne",
+      "metadata": {
+        "country": "US",
+        "year": 2026,
+        "scope": "scope3",
+        "category": "purchased_goods",
+        "material": "paper"
+      }
+    },
+    "method_profile": "corporate_scope3",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "material_embodied",
+      "source_authority": "EPD",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 550.0,
+      "co2e_per_unit_max": 950.0,
+      "co2e_unit": "kgCO2e/tonne",
+      "must_include_assumptions": [
+        "cradle-to-gate",
+        "OCC US",
+        "paper"
+      ]
+    },
+    "tags": [
+      "material",
+      "paper",
+      "us",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "mat_paper_in_006",
+    "activity": {
+      "description": "Office paper, India avg",
+      "quantity": 28,
+      "unit": "tonne",
+      "metadata": {
+        "country": "IN",
+        "year": 2026,
+        "scope": "scope3",
+        "category": "purchased_goods",
+        "material": "paper"
+      }
+    },
+    "method_profile": "corporate_scope3",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "material_embodied",
+      "source_authority": "EPD",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 950.0,
+      "co2e_per_unit_max": 1400.0,
+      "co2e_unit": "kgCO2e/tonne",
+      "must_include_assumptions": [
+        "cradle-to-gate",
+        "office paper IN",
+        "paper"
+      ]
+    },
+    "tags": [
+      "material",
+      "paper",
+      "in",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "mat_fert_eu_001",
+    "activity": {
+      "description": "Urea N fertilizer, EU avg",
+      "quantity": 220,
+      "unit": "tonne",
+      "metadata": {
+        "country": "EU",
+        "year": 2026,
+        "scope": "scope3",
+        "category": "purchased_goods",
+        "material": "fertilizer"
+      }
+    },
+    "method_profile": "corporate_scope3",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "material_embodied",
+      "source_authority": "Fertilizers Europe EPD",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 1800.0,
+      "co2e_per_unit_max": 3500.0,
+      "co2e_unit": "kgCO2e/tonne",
+      "must_include_assumptions": [
+        "cradle-to-gate",
+        "urea, EU SCR",
+        "fertilizer"
+      ]
+    },
+    "tags": [
+      "material",
+      "fertilizer",
+      "eu",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "mat_fert_in_002",
+    "activity": {
+      "description": "Urea N fertilizer, India avg",
+      "quantity": 1500,
+      "unit": "tonne",
+      "metadata": {
+        "country": "IN",
+        "year": 2026,
+        "scope": "scope3",
+        "category": "purchased_goods",
+        "material": "fertilizer"
+      }
+    },
+    "method_profile": "corporate_scope3",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "material_embodied",
+      "source_authority": "EPD",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 2800.0,
+      "co2e_per_unit_max": 4200.0,
+      "co2e_unit": "kgCO2e/tonne",
+      "must_include_assumptions": [
+        "cradle-to-gate",
+        "urea, India natural-gas",
+        "fertilizer"
+      ]
+    },
+    "tags": [
+      "material",
+      "fertilizer",
+      "in",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "mat_fert_eu_003",
+    "activity": {
+      "description": "Ammonium nitrate, EU avg",
+      "quantity": 180,
+      "unit": "tonne",
+      "metadata": {
+        "country": "EU",
+        "year": 2026,
+        "scope": "scope3",
+        "category": "purchased_goods",
+        "material": "fertilizer"
+      }
+    },
+    "method_profile": "corporate_scope3",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "material_embodied",
+      "source_authority": "Fertilizers Europe EPD",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 2800.0,
+      "co2e_per_unit_max": 4500.0,
+      "co2e_unit": "kgCO2e/tonne",
+      "must_include_assumptions": [
+        "cradle-to-gate",
+        "AN, EU",
+        "fertilizer"
+      ]
+    },
+    "tags": [
+      "material",
+      "fertilizer",
+      "eu",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "mat_fert_eu_004",
+    "activity": {
+      "description": "DAP fertilizer, EU avg",
+      "quantity": 160,
+      "unit": "tonne",
+      "metadata": {
+        "country": "EU",
+        "year": 2026,
+        "scope": "scope3",
+        "category": "purchased_goods",
+        "material": "fertilizer"
+      }
+    },
+    "method_profile": "corporate_scope3",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "material_embodied",
+      "source_authority": "EPD",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 1200.0,
+      "co2e_per_unit_max": 2100.0,
+      "co2e_unit": "kgCO2e/tonne",
+      "must_include_assumptions": [
+        "cradle-to-gate",
+        "diammonium phosphate",
+        "fertilizer"
+      ]
+    },
+    "tags": [
+      "material",
+      "fertilizer",
+      "eu",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "mat_fert_eu_005",
+    "activity": {
+      "description": "Compound NPK 15-15-15, EU",
+      "quantity": 200,
+      "unit": "tonne",
+      "metadata": {
+        "country": "EU",
+        "year": 2026,
+        "scope": "scope3",
+        "category": "purchased_goods",
+        "material": "fertilizer"
+      }
+    },
+    "method_profile": "corporate_scope3",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "material_embodied",
+      "source_authority": "EPD",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 1500.0,
+      "co2e_per_unit_max": 2800.0,
+      "co2e_unit": "kgCO2e/tonne",
+      "must_include_assumptions": [
+        "cradle-to-gate",
+        "NPK blended",
+        "fertilizer"
+      ]
+    },
+    "tags": [
+      "material",
+      "fertilizer",
+      "eu",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "mat_glass_eu_001",
+    "activity": {
+      "description": "Container glass virgin, EU FEVE",
+      "quantity": 60,
+      "unit": "tonne",
+      "metadata": {
+        "country": "EU",
+        "year": 2026,
+        "scope": "scope3",
+        "category": "purchased_goods",
+        "material": "glass"
+      }
+    },
+    "method_profile": "corporate_scope3",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "material_embodied",
+      "source_authority": "FEVE EPD",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 800.0,
+      "co2e_per_unit_max": 1200.0,
+      "co2e_unit": "kgCO2e/tonne",
+      "must_include_assumptions": [
+        "cradle-to-gate",
+        "container glass",
+        "glass"
+      ]
+    },
+    "tags": [
+      "material",
+      "glass",
+      "eu",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "mat_glass_eu_002",
+    "activity": {
+      "description": "Float glass virgin, EU Glass-for-Europe",
+      "quantity": 80,
+      "unit": "tonne",
+      "metadata": {
+        "country": "EU",
+        "year": 2026,
+        "scope": "scope3",
+        "category": "purchased_goods",
+        "material": "glass"
+      }
+    },
+    "method_profile": "corporate_scope3",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "material_embodied",
+      "source_authority": "EPD",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 950.0,
+      "co2e_per_unit_max": 1400.0,
+      "co2e_unit": "kgCO2e/tonne",
+      "must_include_assumptions": [
+        "cradle-to-gate",
+        "float glass",
+        "glass"
+      ]
+    },
+    "tags": [
+      "material",
+      "glass",
+      "eu",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "mat_glass_eu_003",
+    "activity": {
+      "description": "Container glass 60% recycled cullet, EU",
+      "quantity": 50,
+      "unit": "tonne",
+      "metadata": {
+        "country": "EU",
+        "year": 2026,
+        "scope": "scope3",
+        "category": "purchased_goods",
+        "material": "glass"
+      }
+    },
+    "method_profile": "corporate_scope3",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "material_embodied",
+      "source_authority": "FEVE EPD",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 550.0,
+      "co2e_per_unit_max": 800.0,
+      "co2e_unit": "kgCO2e/tonne",
+      "must_include_assumptions": [
+        "cradle-to-gate",
+        "high cullet",
+        "glass"
+      ]
+    },
+    "tags": [
+      "material",
+      "glass",
+      "eu",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "mat_glass_us_004",
+    "activity": {
+      "description": "Float glass, US avg",
+      "quantity": 70,
+      "unit": "tonne",
+      "metadata": {
+        "country": "US",
+        "year": 2026,
+        "scope": "scope3",
+        "category": "purchased_goods",
+        "material": "glass"
+      }
+    },
+    "method_profile": "corporate_scope3",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "material_embodied",
+      "source_authority": "EPD",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 1000.0,
+      "co2e_per_unit_max": 1450.0,
+      "co2e_unit": "kgCO2e/tonne",
+      "must_include_assumptions": [
+        "cradle-to-gate",
+        "float glass US",
+        "glass"
+      ]
+    },
+    "tags": [
+      "material",
+      "glass",
+      "us",
+      "fy27_launch"
+    ]
+  },
+  {
+    "case_id": "mat_glass_in_005",
+    "activity": {
+      "description": "Container glass, India avg",
+      "quantity": 40,
+      "unit": "tonne",
+      "metadata": {
+        "country": "IN",
+        "year": 2026,
+        "scope": "scope3",
+        "category": "purchased_goods",
+        "material": "glass"
+      }
+    },
+    "method_profile": "corporate_scope3",
+    "expected": {
+      "factor_id": null,
+      "factor_family": "material_embodied",
+      "source_authority": "EPD",
+      "fallback_rank": 5,
+      "co2e_per_unit_min": 950.0,
+      "co2e_per_unit_max": 1450.0,
+      "co2e_unit": "kgCO2e/tonne",
+      "must_include_assumptions": [
+        "cradle-to-gate",
+        "container IN",
+        "glass"
+      ]
+    },
+    "tags": [
+      "material",
+      "glass",
+      "in",
+      "fy27_launch"
+    ]
+  }
+]

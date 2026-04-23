@@ -39,9 +39,14 @@ const links = [
   { label: "Sources", to: "/factors/sources" },
   { label: "Mapping", to: "/factors/mapping" },
   { label: "QA", to: "/factors/qa" },
+  { label: "Diff", to: "/factors/diff" },
   { label: "Approvals", to: "/factors/approvals" },
   { label: "Overrides", to: "/factors/overrides" },
-  { label: "Impact", to: "/factors/impact" }
+  { label: "Impact", to: "/factors/impact" },
+  // Track C-5 OEM white-label section
+  { label: "OEM Signup", to: "/oem/signup" },
+  { label: "OEM Branding", to: "/oem/branding" },
+  { label: "OEM Sub-tenants", to: "/oem/subtenants" }
 ];
 
 export function ShellLayout() {

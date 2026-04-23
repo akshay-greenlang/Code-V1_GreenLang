@@ -1,0 +1,163 @@
+# =============================================================================
+# GreenLang Factors FY27 — reproducible test CI
+# =============================================================================
+# This workflow closes the CTO-flagged "no reproducible test environment" gap
+# for the FY27 launch. It is the GitHub Actions equivalent of the
+# `deployment/docker/docker-compose.factors-test.yml` stack:
+#
+#   * Postgres-with-pgvector + Redis as services
+#   * `pip install -e ".[factors-test]"` for the toolchain
+#   * `pytest tests/factors -v --cov` as the gate
+#   * coverage + JUnit artifacts uploaded for downstream dashboards
+#
+# Triggered on every PR / push that touches Factors source or tests, plus
+# manual `workflow_dispatch` for ad-hoc runs.
+#
+# See `docs/factors/TEST_ENVIRONMENT.md` for the full runbook.
+# =============================================================================
+
+name: Factors CI (factors-test extras)
+
+on:
+  pull_request:
+    paths:
+      - 'greenlang/factors/**'
+      - 'tests/factors/**'
+      - 'pyproject.toml'
+      - 'deployment/docker/Dockerfile.factors-test'
+      - 'deployment/docker/docker-compose.factors-test.yml'
+      - '.github/workflows/factors_ci.yml'
+  push:
+    branches: [master]
+    paths:
+      - 'greenlang/factors/**'
+      - 'tests/factors/**'
+      - 'pyproject.toml'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  factors-test:
+    name: Run tests/factors with [factors-test] extras
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: factors_test
+          POSTGRES_PASSWORD: factors_test
+          POSTGRES_DB: factors_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U factors_test -d factors_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 20
+
+    env:
+      GL_ENV: test
+      GL_LOG_LEVEL: WARNING
+      DATABASE_URL: "postgresql://factors_test:factors_test@localhost:5432/factors_test"
+      GL_FACTORS_PG_DSN: "postgresql://factors_test:factors_test@localhost:5432/factors_test"
+      REDIS_URL: "redis://localhost:6379/0"
+      STRIPE_API_KEY: "test_key_mock"
+      STRIPE_WEBHOOK_SECRET: "test_secret_mock"
+      GL_FACTORS_SIGNING_SECRET: "test-signing-secret-for-pytest-only-32-chars-min"
+      GL_JWT_SECRET: "test-jwt-secret-for-pytest-only-32-chars-min"
+      PYTHONDONTWRITEBYTECODE: "1"
+      PYTHONUNBUFFERED: "1"
+      PIP_DISABLE_PIP_VERSION_CHECK: "1"
+
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12"]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+          cache-dependency-path: 'pyproject.toml'
+
+      - name: Show toolchain
+        run: |
+          python --version
+          pip --version
+
+      - name: Install factors-test extras
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          pip install -e ".[factors-test]"
+
+      - name: Verify pgvector + redis reachability
+        run: |
+          python - <<'PY'
+          import os, sys
+          import psycopg
+          import redis
+          dsn = os.environ["DATABASE_URL"]
+          with psycopg.connect(dsn) as conn:
+              with conn.cursor() as cur:
+                  cur.execute("CREATE EXTENSION IF NOT EXISTS vector;")
+                  cur.execute("SELECT 1;")
+                  assert cur.fetchone() == (1,)
+          r = redis.Redis.from_url(os.environ["REDIS_URL"])
+          assert r.ping()
+          print("Postgres + pgvector + Redis OK")
+          PY
+
+      - name: Run tests/factors with coverage
+        run: |
+          pytest tests/factors -v \
+            --maxfail=10 \
+            --cov=greenlang.factors \
+            --cov-report=term-missing \
+            --cov-report=xml:coverage-factors.xml \
+            --junitxml=junit-factors.xml
+
+      - name: Upload coverage artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: factors-coverage-py${{ matrix.python-version }}
+          path: |
+            coverage-factors.xml
+            junit-factors.xml
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Summarize coverage in job log
+        if: always()
+        run: |
+          if [ -f coverage-factors.xml ]; then
+            python - <<'PY'
+          import xml.etree.ElementTree as ET
+          tree = ET.parse("coverage-factors.xml")
+          root = tree.getroot()
+          rate = float(root.attrib.get("line-rate", "0")) * 100
+          print(f"::notice::tests/factors line coverage = {rate:.2f}%")
+          PY
+          else
+            echo "::warning::coverage-factors.xml not generated"
+          fi

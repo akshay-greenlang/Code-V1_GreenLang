@@ -1,10 +1,13 @@
 /**
- * F7.6 — Customer override manager.
+ * F7.6 / Track B-5 — Customer override manager.
  *
- * Per-tenant factor overlay CRUD. Backing:
- *   GET /api/v1/factors/overlays?tenant_id=...
- *   POST /api/v1/factors/overlays
- *   DELETE /api/v1/factors/overlays/{id}
+ * Wired to:
+ *   GET    /v1/admin/overrides              — list (optionally filtered by tenant)
+ *   POST   /v1/admin/overrides              — create
+ *   DELETE /v1/admin/overrides/{id}         — soft-delete
+ *
+ * Per-tenant factor overlays. Always wins over upstream factors in the
+ * resolution cascade (Phase F3, step 1).
  */
 import { useEffect, useState } from "react";
 import Alert from "@mui/material/Alert";
@@ -13,6 +16,10 @@ import Button from "@mui/material/Button";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import Chip from "@mui/material/Chip";
+import Dialog from "@mui/material/Dialog";
+import DialogActions from "@mui/material/DialogActions";
+import DialogContent from "@mui/material/DialogContent";
+import DialogTitle from "@mui/material/DialogTitle";
 import LinearProgress from "@mui/material/LinearProgress";
 import Paper from "@mui/material/Paper";
 import Stack from "@mui/material/Stack";
@@ -24,105 +31,162 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
+import {
+  FactorsApiError,
+  createOverride,
+  deleteOverride,
+  listOverrides,
+  type OverrideRecord,
+} from "../lib/api/factorsClient";
 
-interface Overlay {
-  id: string;
+interface CreateForm {
   tenant_id: string;
   factor_id: string;
-  override_value: number;
+  override_value: string;
   unit: string;
   valid_from: string;
-  valid_to: string | null;
-  active: boolean;
+  valid_to: string;
+  rationale: string;
 }
 
+const EMPTY_FORM: CreateForm = {
+  tenant_id: "",
+  factor_id: "",
+  override_value: "",
+  unit: "",
+  valid_from: new Date().toISOString().slice(0, 10),
+  valid_to: "",
+  rationale: "",
+};
+
 export function FactorsOverrideManager() {
-  const [tenantId, setTenantId] = useState("");
-  const [overlays, setOverlays] = useState<Overlay[]>([]);
+  const [tenantFilter, setTenantFilter] = useState("");
+  const [overrides, setOverrides] = useState<OverrideRecord[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [createOpen, setCreateOpen] = useState(false);
+  const [form, setForm] = useState<CreateForm>(EMPTY_FORM);
+  const [creating, setCreating] = useState(false);
+  const [busyDelete, setBusyDelete] = useState<string | null>(null);
 
   const load = async () => {
-    if (!tenantId.trim()) return;
     setLoading(true);
     setError(null);
     try {
-      const qs = new URLSearchParams({ tenant_id: tenantId });
-      const res = await fetch(`/api/v1/factors/overlays?${qs}`);
-      if (!res.ok) throw new Error(`overlays ${res.status}`);
-      const payload = await res.json();
-      setOverlays((payload.overlays ?? []) as Overlay[]);
+      const r = await listOverrides({ tenant_id: tenantFilter.trim() || undefined });
+      setOverrides(r.overrides ?? []);
     } catch (e) {
-      setError((e as Error).message);
+      setError(e instanceof FactorsApiError ? e.userMessage : (e as Error).message);
     } finally {
       setLoading(false);
     }
   };
 
-  const del = async (id: string) => {
+  useEffect(() => {
+    void load();
+    // Re-load whenever the filter changes via the Load button only — avoid
+    // hammering the API on every keystroke.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const onCreate = async () => {
+    setCreating(true);
+    setError(null);
     try {
-      const res = await fetch(`/api/v1/factors/overlays/${encodeURIComponent(id)}`, {
-        method: "DELETE",
+      const valNum = Number(form.override_value);
+      if (!Number.isFinite(valNum)) {
+        throw new Error("Override value must be a number.");
+      }
+      await createOverride({
+        tenant_id: form.tenant_id.trim(),
+        factor_id: form.factor_id.trim(),
+        override_value: valNum,
+        unit: form.unit.trim(),
+        valid_from: form.valid_from,
+        valid_to: form.valid_to.trim() || null,
+        rationale: form.rationale.trim() || undefined,
       });
-      if (!res.ok) throw new Error(`delete ${res.status}`);
+      setCreateOpen(false);
+      setForm(EMPTY_FORM);
       await load();
     } catch (e) {
-      setError((e as Error).message);
+      setError(e instanceof FactorsApiError ? e.userMessage : (e as Error).message);
+    } finally {
+      setCreating(false);
     }
   };
 
-  useEffect(() => {
-    if (tenantId) void load();
-  }, []);
+  const onDelete = async (id: string) => {
+    setBusyDelete(id);
+    try {
+      await deleteOverride(id);
+      await load();
+    } catch (e) {
+      setError(e instanceof FactorsApiError ? e.userMessage : (e as Error).message);
+    } finally {
+      setBusyDelete(null);
+    }
+  };
 
   return (
-    <Box sx={{ p: 3, maxWidth: 1200, mx: "auto" }}>
-      <Typography variant="h4" gutterBottom>Customer Override Manager</Typography>
+    <Box sx={{ p: 3, maxWidth: 1300, mx: "auto" }}>
+      <Typography variant="h4" gutterBottom>
+        Customer Override Manager
+      </Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-        Per-tenant factor overlays. Step 1 of the resolution cascade (Phase
-        F3) — these always win over upstream factors.
+        Per-tenant factor overlays. Step 1 of the resolution cascade — these always win over
+        upstream factors.
       </Typography>
 
       <Card sx={{ mb: 3 }}>
         <CardContent>
-          <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
+          <Stack direction={{ xs: "column", md: "row" }} spacing={2} alignItems="center">
             <TextField
               fullWidth
-              label="Tenant ID"
-              value={tenantId}
-              onChange={(e) => setTenantId(e.target.value)}
+              label="Filter by tenant ID (optional)"
+              value={tenantFilter}
+              onChange={(e) => setTenantFilter(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === "Enter") void load();
               }}
             />
-            <Button variant="contained" onClick={() => void load()} disabled={!tenantId.trim()}>
-              Load
+            <Button variant="outlined" onClick={() => void load()} disabled={loading}>
+              {loading ? "Loading…" : "Load"}
+            </Button>
+            <Button variant="contained" onClick={() => setCreateOpen(true)}>
+              + New override
             </Button>
           </Stack>
         </CardContent>
       </Card>
 
       {loading && <LinearProgress />}
-      {error && <Alert severity="info" sx={{ mb: 2 }}>{error} — endpoint may not be wired yet.</Alert>}
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
+          {error}
+        </Alert>
+      )}
 
       <TableContainer component={Paper} variant="outlined">
         <Table size="small">
           <TableHead>
             <TableRow>
-              <TableCell>Overlay ID</TableCell>
+              <TableCell>Override ID</TableCell>
+              <TableCell>Tenant</TableCell>
               <TableCell>Factor</TableCell>
               <TableCell align="right">Value</TableCell>
               <TableCell>Unit</TableCell>
               <TableCell>Valid from</TableCell>
               <TableCell>Valid to</TableCell>
-              <TableCell>Active</TableCell>
+              <TableCell>Status</TableCell>
               <TableCell>Action</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {overlays.map((o) => (
+            {overrides.map((o) => (
               <TableRow key={o.id}>
                 <TableCell><code>{o.id.slice(0, 12)}…</code></TableCell>
+                <TableCell><code>{o.tenant_id}</code></TableCell>
                 <TableCell><code>{o.factor_id}</code></TableCell>
                 <TableCell align="right">{o.override_value}</TableCell>
                 <TableCell>{o.unit}</TableCell>
@@ -136,17 +200,22 @@ export function FactorsOverrideManager() {
                   />
                 </TableCell>
                 <TableCell>
-                  <Button size="small" color="error" onClick={() => void del(o.id)}>
-                    Delete
+                  <Button
+                    size="small"
+                    color="error"
+                    onClick={() => void onDelete(o.id)}
+                    disabled={busyDelete === o.id}
+                  >
+                    {busyDelete === o.id ? "…" : "Delete"}
                   </Button>
                 </TableCell>
               </TableRow>
             ))}
-            {!loading && overlays.length === 0 && (
+            {!loading && overrides.length === 0 && (
               <TableRow>
-                <TableCell colSpan={8} align="center">
+                <TableCell colSpan={9} align="center">
                   <Typography variant="body2" color="text.secondary">
-                    No overlays for this tenant.
+                    No overrides configured{tenantFilter ? ` for tenant ${tenantFilter}` : ""}.
                   </Typography>
                 </TableCell>
               </TableRow>
@@ -154,6 +223,85 @@ export function FactorsOverrideManager() {
           </TableBody>
         </Table>
       </TableContainer>
+
+      <Dialog open={createOpen} onClose={() => setCreateOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>New override</DialogTitle>
+        <DialogContent>
+          <Stack spacing={2} sx={{ mt: 1 }}>
+            <TextField
+              required
+              label="Tenant ID"
+              value={form.tenant_id}
+              onChange={(e) => setForm((f) => ({ ...f, tenant_id: e.target.value }))}
+            />
+            <TextField
+              required
+              label="Factor ID"
+              value={form.factor_id}
+              onChange={(e) => setForm((f) => ({ ...f, factor_id: e.target.value }))}
+            />
+            <Stack direction="row" spacing={2}>
+              <TextField
+                required
+                label="Override value"
+                value={form.override_value}
+                onChange={(e) => setForm((f) => ({ ...f, override_value: e.target.value }))}
+                sx={{ flex: 1 }}
+              />
+              <TextField
+                required
+                label="Unit"
+                value={form.unit}
+                onChange={(e) => setForm((f) => ({ ...f, unit: e.target.value }))}
+                sx={{ flex: 1 }}
+              />
+            </Stack>
+            <Stack direction="row" spacing={2}>
+              <TextField
+                required
+                label="Valid from"
+                type="date"
+                InputLabelProps={{ shrink: true }}
+                value={form.valid_from}
+                onChange={(e) => setForm((f) => ({ ...f, valid_from: e.target.value }))}
+                sx={{ flex: 1 }}
+              />
+              <TextField
+                label="Valid to (optional)"
+                type="date"
+                InputLabelProps={{ shrink: true }}
+                value={form.valid_to}
+                onChange={(e) => setForm((f) => ({ ...f, valid_to: e.target.value }))}
+                sx={{ flex: 1 }}
+              />
+            </Stack>
+            <TextField
+              label="Rationale"
+              multiline
+              minRows={2}
+              value={form.rationale}
+              onChange={(e) => setForm((f) => ({ ...f, rationale: e.target.value }))}
+            />
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setCreateOpen(false)}>Cancel</Button>
+          <Button
+            variant="contained"
+            onClick={() => void onCreate()}
+            disabled={
+              creating ||
+              !form.tenant_id.trim() ||
+              !form.factor_id.trim() ||
+              !form.override_value.trim() ||
+              !form.unit.trim() ||
+              !form.valid_from
+            }
+          >
+            {creating ? "Creating…" : "Create"}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

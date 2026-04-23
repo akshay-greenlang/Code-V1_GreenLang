@@ -1,0 +1,118 @@
+# syntax=docker/dockerfile:1.7
+# =============================================================================
+# GreenLang Factors FY27 — Reproducible test environment
+# =============================================================================
+# Purpose: provide a deterministic, throw-away container that can run the full
+# `tests/factors/` suite green.  Built specifically to close the CTO-flagged
+# "no reproducible test environment" gap (see docs/factors/TEST_ENVIRONMENT.md).
+#
+# Layered for fast iteration:
+#   1. Builder stage installs system + Python deps from `pyproject.toml`
+#      `[factors-test]` group so the dependency layer is cached as long as the
+#      pinned set is unchanged.
+#   2. Runtime stage copies the prepared venv + the (live-mounted in compose)
+#      source tree.
+#
+# Build:
+#   docker build -f deployment/docker/Dockerfile.factors-test -t greenlang/factors-test:dev .
+# Run (standalone):
+#   docker run --rm greenlang/factors-test:dev
+# Run (with PG + Redis):
+#   docker compose -f deployment/docker/docker-compose.factors-test.yml up --build --abort-on-container-exit
+# =============================================================================
+
+ARG PYTHON_VERSION=3.12-slim
+
+# ---------------------------------------------------------------------------
+# Stage 1: Builder — install deps + factors-test extras
+# ---------------------------------------------------------------------------
+FROM python:${PYTHON_VERSION} AS builder
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    PIP_DEFAULT_TIMEOUT=120 \
+    VIRTUAL_ENV=/opt/venv
+
+RUN python -m venv "$VIRTUAL_ENV"
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+
+# System libs needed to build psycopg, cryptography wheels (where missing) and
+# any C extensions the test deps touch.  `git` is needed because some
+# pyproject groups still resolve VCS deps in older constraint files.
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      git \
+      build-essential \
+      gcc \
+      g++ \
+      libpq-dev \
+      libffi-dev \
+      libssl-dev \
+      pkg-config \
+      ca-certificates \
+      curl \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Copy only what is needed for `pip install -e .` to compute the dep tree first
+# so this layer is cached when only test code changes.
+COPY pyproject.toml README.md setup.py MANIFEST.in ./
+COPY core/ ./core/
+COPY greenlang/ ./greenlang/
+
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install --upgrade pip setuptools wheel && \
+    pip install -e ".[factors-test]"
+
+# ---------------------------------------------------------------------------
+# Stage 2: Runtime — minimal image that just runs pytest
+# ---------------------------------------------------------------------------
+FROM python:${PYTHON_VERSION}
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    VIRTUAL_ENV=/opt/venv \
+    PATH="/opt/venv/bin:$PATH" \
+    GL_ENV=test \
+    PYTHONPATH=/app
+
+# Runtime libs only — keep the image small.  `libpq5` for psycopg, `curl` for
+# health probes / debug, `tini` for clean signal handling.
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      libpq5 \
+      curl \
+      tini \
+      ca-certificates \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY --from=builder ${VIRTUAL_ENV} ${VIRTUAL_ENV}
+
+WORKDIR /app
+
+# Copy full source so tests can import from anywhere in the repo.  In the
+# docker-compose flow this is shadowed by a bind mount of the host repo so
+# code changes are picked up without rebuilding.
+COPY . /app
+
+# Drop privileges for safety even in a test image.
+RUN groupadd -g 10001 tester && \
+    useradd  -u 10001 -g 10001 -m -s /bin/bash tester && \
+    chown -R tester:tester /app
+USER tester
+
+ENTRYPOINT ["/usr/bin/tini", "--"]
+
+# Default command runs the full Factors suite with coverage; CI / compose can
+# override with `pytest tests/factors/<sub> -k <name>` for tighter loops.
+CMD ["pytest", \
+     "tests/factors", \
+     "-v", \
+     "--maxfail=10", \
+     "--cov=greenlang.factors", \
+     "--cov-report=term-missing", \
+     "--cov-report=xml:/app/coverage-factors.xml", \
+     "--junitxml=/app/junit-factors.xml"]

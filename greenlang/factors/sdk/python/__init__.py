@@ -35,9 +35,12 @@ from .client import AsyncFactorsClient, FactorsClient
 from .errors import (
     AuthError,
     EditionMismatchError,
+    EditionPinError,
+    EntitlementError,
     FactorNotFoundError,
     FactorsAPIError,
     LicenseError,
+    LicensingGapError,
     RateLimitError,
     TierError,
     ValidationError,
@@ -47,6 +50,7 @@ from .client import (
     CertPinnedHTTPAdapter,
     GREENLANG_CA_PEM,
 )
+from .verify import ReceiptVerificationError, verify_receipt
 from .webhooks import (
     WebhookVerificationError,
     compute_signature,
@@ -76,6 +80,12 @@ from .models import (
 )
 
 __version__ = "1.0.0"
+"""Public version string for the GreenLang Factors Python SDK.
+
+Pinned at 1.0.0 for the FY27 launch (planned 2026-05-01). This value is
+the source of truth read by ``setup.py``/``pyproject.toml`` build
+metadata and by the ``greenlang-factors --version`` CLI flag.
+"""
 
 __all__ = [
     # Client
@@ -117,9 +127,15 @@ __all__ = [
     "TierError",
     "FactorNotFoundError",
     "LicenseError",
+    "LicensingGapError",
+    "EntitlementError",
     "ValidationError",
     "AuthError",
+    "EditionPinError",
     "EditionMismatchError",
+    # Receipt verification
+    "ReceiptVerificationError",
+    "verify_receipt",
     # Pinning
     "CertificatePinError",
     "CertPinnedHTTPAdapter",

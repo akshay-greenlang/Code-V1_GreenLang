@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import { RoleGuard } from "./components/RoleGuard";
 import { ShellLayout } from "./components/ShellLayout";
+import { AdminGate } from "./lib/auth/AdminGate";
 import { AdminPage } from "./pages/AdminPage";
 import { FactorsApprovalQueue } from "./pages/FactorsApprovalQueue";
 import { FactorsCatalogStatus } from "./pages/FactorsCatalogStatus";
@@ -12,6 +13,12 @@ import { FactorsOverrideManager } from "./pages/FactorsOverrideManager";
 import { FactorsQADashboard } from "./pages/FactorsQADashboard";
 import { FactorsSourceConsole } from "./pages/FactorsSourceConsole";
 import { GovernancePage } from "./pages/GovernancePage";
+import { LoginPage } from "./pages/LoginPage";
+import { OemBranding } from "./pages/OemBranding";
+import { OemSignup } from "./pages/OemSignup";
+import { OemSubTenants } from "./pages/OemSubTenants";
+import { PricingPage } from "./pages/PricingPage";
+import { CheckoutSuccess } from "./pages/CheckoutSuccess";
 import { RunsPage } from "./pages/RunsPage";
 import { WorkspacePage } from "./pages/WorkspacePage";
 
@@ -31,17 +38,26 @@ export default function App() {
         <Route path="/runs" element={<RoleGuard><RunsPage /></RoleGuard>} />
         <Route path="/governance" element={<RoleGuard><GovernancePage /></RoleGuard>} />
         <Route path="/admin" element={<RoleGuard><AdminPage /></RoleGuard>} />
-        <Route path="/factors/explorer" element={<RoleGuard><FactorsExplorer /></RoleGuard>} />
-        {/* Public: no auth guard on the catalog-status dashboard. */}
+        {/* Public Factors dashboards: no auth required (Track B-2). */}
         <Route path="/factors/status" element={<FactorsCatalogStatus />} />
-        {/* Phase F7 operator pages */}
-        <Route path="/factors/sources" element={<RoleGuard><FactorsSourceConsole /></RoleGuard>} />
-        <Route path="/factors/mapping" element={<RoleGuard><FactorsMappingWorkbench /></RoleGuard>} />
-        <Route path="/factors/qa" element={<RoleGuard><FactorsQADashboard /></RoleGuard>} />
-        <Route path="/factors/diff" element={<RoleGuard><FactorsDiffViewer /></RoleGuard>} />
-        <Route path="/factors/approvals" element={<RoleGuard><FactorsApprovalQueue /></RoleGuard>} />
-        <Route path="/factors/overrides" element={<RoleGuard><FactorsOverrideManager /></RoleGuard>} />
-        <Route path="/factors/impact" element={<RoleGuard><FactorsImpactSimulator /></RoleGuard>} />
+        <Route path="/factors/qa" element={<FactorsQADashboard />} />
+        {/* Operator console (Track B-5): admin-gated via AdminGate. */}
+        <Route path="/factors/explorer" element={<AdminGate><FactorsExplorer /></AdminGate>} />
+        <Route path="/factors/sources" element={<AdminGate><FactorsSourceConsole /></AdminGate>} />
+        <Route path="/factors/mapping" element={<AdminGate><FactorsMappingWorkbench /></AdminGate>} />
+        <Route path="/factors/diff" element={<AdminGate><FactorsDiffViewer /></AdminGate>} />
+        <Route path="/factors/approvals" element={<AdminGate><FactorsApprovalQueue /></AdminGate>} />
+        <Route path="/factors/overrides" element={<AdminGate><FactorsOverrideManager /></AdminGate>} />
+        <Route path="/factors/impact" element={<AdminGate><FactorsImpactSimulator /></AdminGate>} />
+        {/* Login lands here when AdminGate sees no token. */}
+        <Route path="/login" element={<LoginPage />} />
+        {/* Track C-5 OEM white-label onboarding */}
+        <Route path="/oem/signup" element={<OemSignup />} />
+        <Route path="/oem/branding" element={<RoleGuard><OemBranding /></RoleGuard>} />
+        <Route path="/oem/subtenants" element={<RoleGuard><OemSubTenants /></RoleGuard>} />
+        {/* Track C-1 commercial surface — public, no auth */}
+        <Route path="/pricing" element={<PricingPage />} />
+        <Route path="/checkout/success" element={<CheckoutSuccess />} />
       </Route>
     </Routes>
   );
