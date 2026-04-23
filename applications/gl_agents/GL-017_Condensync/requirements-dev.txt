@@ -9,7 +9,7 @@
 # -----------------------------------------------------------------------------
 # Testing Framework
 # -----------------------------------------------------------------------------
-pytest==8.0.0                       # Test framework
+pytest==9.0.3                       # Test framework
 pytest-cov==4.1.0                   # Coverage reporting
 pytest-asyncio==0.23.4              # Async test support
 pytest-xdist==3.5.0                 # Parallel test execution
