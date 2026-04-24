@@ -43,6 +43,17 @@ export interface Uncertainty {
   distribution?: string | null;
   std_dev?: number | null;
   sample_size?: number | null;
+  /**
+   * v1.3: ABSOLUTE uncertainty in the factor's native unit
+   * (e.g. kg CO2e per activity unit). See `uncertainty_percent`
+   * for the relative form.
+   */
+  uncertainty?: number | null;
+  /**
+   * v1.3: RELATIVE uncertainty as a percentage 0-100
+   * (`5.0` = 5 %). Complements the absolute `uncertainty` field.
+   */
+  uncertainty_percent?: number | null;
   [extra: string]: unknown;
 }
 
@@ -174,6 +185,124 @@ export interface CoverageReport {
   [extra: string]: unknown;
 }
 
+/**
+ * v1.3: single-pack entry returned by
+ * `/v1/method-packs/coverage` under `packs[]` / `overall`.
+ */
+export interface MethodPackCoverage {
+  /** Canonical pack slug (or `null` on the `overall` roll-up). */
+  slug?: string | null;
+  version?: string | null;
+  total_activities?: number | null;
+  covered?: number | null;
+  /** covered / total_activities as a 0-1 float. */
+  fraction?: number | null;
+  by_family?: Record<string, unknown>;
+  by_jurisdiction?: Record<string, unknown>;
+  [extra: string]: unknown;
+}
+
+/**
+ * v1.3 canonical top-level shape for
+ * `GET /v1/method-packs/coverage`.
+ *
+ * A single canonical shape is returned whether or not a `?pack=<slug>`
+ * filter was applied. The Wave 4-G legacy payload
+ * `{ packs: [{ pack_id, version, resolved_case_count_7d, ... }], total }`
+ * is inflated transparently by {@link inflateMethodPackCoverage}.
+ */
+export interface MethodPackCoverageReport {
+  packs: MethodPackCoverage[];
+  overall?: MethodPackCoverage | null;
+  /** Back-compat: legacy Wave 4-G payload preserved verbatim. */
+  legacy_packs?: Array<Record<string, unknown>>;
+  [extra: string]: unknown;
+}
+
+function legacyPackToCanonical(
+  raw: Record<string, unknown>,
+): MethodPackCoverage {
+  const slug =
+    (raw.slug as string | undefined) ?? (raw.pack_id as string | undefined) ?? null;
+  const resolved = Number(raw.resolved_case_count_7d ?? 0) || 0;
+  const unresolved = Number(raw.unresolved_case_count_7d ?? 0) || 0;
+  let total_activities =
+    (raw.total_activities as number | null | undefined) ?? null;
+  let covered = (raw.covered as number | null | undefined) ?? null;
+  let fraction = (raw.fraction as number | null | undefined) ?? null;
+  if (total_activities == null) total_activities = resolved + unresolved;
+  if (covered == null) covered = resolved;
+  if (fraction == null && total_activities) {
+    fraction = Number(covered) / Number(total_activities);
+  }
+  return {
+    slug,
+    version: (raw.version as string | null | undefined) ?? null,
+    total_activities,
+    covered,
+    fraction,
+    by_family: (raw.by_family as Record<string, unknown>) ?? {},
+    by_jurisdiction: (raw.by_jurisdiction as Record<string, unknown>) ?? {},
+  };
+}
+
+/**
+ * Inflate either the v1.3 canonical shape or the legacy Wave 4-G shape
+ * into {@link MethodPackCoverageReport}.
+ */
+export function inflateMethodPackCoverage(
+  payload: unknown,
+): MethodPackCoverageReport {
+  if (!payload || typeof payload !== 'object') {
+    return { packs: [], overall: null };
+  }
+  const obj = payload as Record<string, unknown>;
+  // v1.3 canonical — already has `overall` or `packs[0].slug`.
+  const packs = obj.packs;
+  if (
+    'overall' in obj ||
+    (Array.isArray(packs) &&
+      packs.length > 0 &&
+      typeof packs[0] === 'object' &&
+      packs[0] !== null &&
+      'slug' in (packs[0] as Record<string, unknown>))
+  ) {
+    return obj as unknown as MethodPackCoverageReport;
+  }
+  // Legacy single-pack object (no `packs` wrapper).
+  if ('pack_id' in obj && !('packs' in obj)) {
+    const entry = legacyPackToCanonical(obj);
+    return { packs: [entry], overall: entry, legacy_packs: [obj] };
+  }
+  // Legacy list-of-packs (Wave 4-G).
+  const legacy = Array.isArray(packs) ? (packs as Array<Record<string, unknown>>) : [];
+  const canonical = legacy.map(legacyPackToCanonical);
+  let overall: MethodPackCoverage | null = null;
+  if (canonical.length === 1) {
+    overall = canonical[0];
+  } else if (canonical.length > 0) {
+    const total_activities = canonical.reduce(
+      (acc, c) => acc + (c.total_activities ?? 0),
+      0,
+    );
+    const covered = canonical.reduce((acc, c) => acc + (c.covered ?? 0), 0);
+    overall = {
+      slug: null,
+      version: null,
+      total_activities,
+      covered,
+      fraction: total_activities ? covered / total_activities : null,
+      by_family: {},
+      by_jurisdiction: {},
+    };
+  }
+  return {
+    packs: canonical,
+    overall,
+    legacy_packs: legacy,
+  };
+}
+
 // ---------------------------------------------------------------------------
 // Resolution (7-step cascade)
 // ---------------------------------------------------------------------------
@@ -241,7 +370,14 @@ export interface QualityEnvelope {
   [extra: string]: unknown;
 }
 
-/** Richer Wave 2 uncertainty envelope (superset of {@link Uncertainty}). */
+/**
+ * Richer Wave 2 uncertainty envelope (superset of {@link Uncertainty}).
+ *
+ * v1.3: `uncertainty` is ABSOLUTE (native unit of the factor, e.g.
+ * kg CO2e / activity unit); `uncertainty_percent` is RELATIVE (0-100,
+ * `5.0` = 5 %). Both are optional and the resolver emits both when it
+ * can compute them.
+ */
 export interface UncertaintyEnvelope {
   ci_95?: number | null;
   ci_lower?: number | null;
@@ -250,6 +386,10 @@ export interface UncertaintyEnvelope {
   std_dev?: number | null;
   sample_size?: number | null;
   pedigree_matrix?: Record<string, unknown>;
+  /** v1.3: absolute magnitude in the factor's native unit. */
+  uncertainty?: number | null;
+  /** v1.3: relative percentage 0-100 (`5.0` = 5 %). */
+  uncertainty_percent?: number | null;
   [extra: string]: unknown;
 }
 
@@ -265,15 +405,74 @@ export interface LicensingEnvelope {
   [extra: string]: unknown;
 }
 
-/** Structured Wave 2 deprecation status (pre-Wave-2 was a bare string). */
+/**
+ * Structured deprecation status — canonical v1.3 shape.
+ *
+ * The wire may emit a bare string (pre-Wave-2), the Wave 2 dict with
+ * legacy keys (`replacement_factor_id` / `effective_from`), or the new
+ * canonical v1.3 dict (`successor_id` / `deprecated_at`). Use
+ * {@link inflateDeprecationStatus} to normalize any wire shape into
+ * this interface before reading it; the SDK `ResolvedFactor` builder
+ * calls that helper automatically.
+ */
 export interface DeprecationStatus {
+  /** active | deprecated | sunset (legacy: current | scheduled | retired) */
   status?: string | null;
-  effective_from?: string | null;
-  effective_to?: string | null;
-  replacement_factor_id?: string | null;
+  /** v1.3 canonical: factor id that supersedes this one. */
+  successor_id?: string | null;
+  /** v1.3 canonical: human-readable reason. */
   reason?: string | null;
+  /** v1.3 canonical: ISO-8601 timestamp the deprecation took effect. */
+  deprecated_at?: string | null;
+  /** Legacy alias for `deprecated_at`. */
+  effective_from?: string | null;
+  /** Legacy; no canonical equivalent. */
+  effective_to?: string | null;
+  /** Legacy alias for `successor_id`. */
+  replacement_factor_id?: string | null;
+  /** Legacy; optional notice URL. */
   notice_url?: string | null;
   [extra: string]: unknown;
+}
+
+/**
+ * Inflate any wire value into a canonical v1.3 {@link DeprecationStatus}.
+ *
+ * - `null` / `undefined` -> `null`.
+ * - Bare string (e.g. `"active"`, `"deprecated"`) ->
+ *   `{ status, successor_id: null, reason: null, deprecated_at: null }`.
+ * - Legacy dict with `replacement_factor_id` / `effective_from` -> canonical
+ *   fields backfilled from the legacy aliases (only when canonical is
+ *   missing).
+ * - Canonical dict -> pass through.
+ */
+export function inflateDeprecationStatus(
+  raw: unknown,
+): DeprecationStatus | null {
+  if (raw === null || raw === undefined) return null;
+  if (typeof raw === 'string') {
+    return {
+      status: raw,
+      successor_id: null,
+      reason: null,
+      deprecated_at: null,
+    };
+  }
+  if (typeof raw === 'object') {
+    const src = raw as Record<string, unknown>;
+    const out: DeprecationStatus = { ...(src as DeprecationStatus) };
+    if (out.successor_id == null && typeof src.replacement_factor_id === 'string') {
+      out.successor_id = src.replacement_factor_id;
+    }
+    if (out.deprecated_at == null && typeof src.effective_from === 'string') {
+      out.deprecated_at = src.effective_from;
+    }
+    if (out.successor_id === undefined) out.successor_id = null;
+    if (out.reason === undefined) out.reason = null;
+    if (out.deprecated_at === undefined) out.deprecated_at = null;
+    return out;
+  }
+  return { status: String(raw), successor_id: null, reason: null, deprecated_at: null };
 }
 
 export interface ResolvedFactor {

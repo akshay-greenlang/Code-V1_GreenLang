@@ -35,11 +35,13 @@ import {
   FactorDiff,
   FactorMatch,
   MethodPack,
+  MethodPackCoverageReport,
   Override,
   ResolutionRequest,
   ResolvedFactor,
   SearchResponse,
   Source,
+  inflateMethodPackCoverage,
   isTerminalBatchStatus,
 } from './models';
 import { OffsetPaginator } from './pagination';
@@ -960,6 +962,26 @@ export class FactorsClient {
   async getMethodPack(methodPackId: string): Promise<MethodPack> {
     const resp = await this.get(`/method-packs/${encodeURIComponent(methodPackId)}`);
     return resp.data as MethodPack;
+  }
+
+  /**
+   * GET /method-packs/coverage — canonical v1.3 coverage report.
+   *
+   * Returns a single canonical {@link MethodPackCoverageReport} shape
+   * regardless of whether a specific pack was requested via `pack`.
+   * When `pack` is supplied the response still includes
+   * `packs: [one entry]` plus an `overall` roll-up mirroring the single
+   * entry, so downstream code never has to branch on the call mode.
+   *
+   * The Wave 4-G legacy payload shape is inflated transparently.
+   */
+  async methodPackCoverage(
+    opts: { pack?: string } = {},
+  ): Promise<MethodPackCoverageReport> {
+    const params: Record<string, unknown> = {};
+    if (opts.pack) params.pack = opts.pack;
+    const resp = await this.get('/method-packs/coverage', params);
+    return inflateMethodPackCoverage(resp.data);
   }
 
   // =====================================================================

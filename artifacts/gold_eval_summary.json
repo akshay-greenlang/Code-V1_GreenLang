@@ -29,7 +29,7 @@
       "total": 50,
       "hits": 0,
       "match_misses": 50,
-      "engine_errors": 4,
+      "engine_errors": 9,
       "precision_at_1": 0.0
     },
     "materials": {
@@ -56,5 +56,5 @@
   },
   "acceptance_bar": 0.85,
   "runner_mode": "full",
-  "timestamp": "2026-04-23T18:27:56Z"
+  "timestamp": "2026-04-24T07:23:39Z"
 }

@@ -56,6 +56,7 @@ from .models import (
     FactorDiff,
     FactorMatch,
     MethodPack,
+    MethodPackCoverageReport,
     Override,
     ResolutionRequest,
     ResolvedFactor,
@@ -1150,6 +1151,30 @@ class FactorsClient:
         resp = self._get(f"/method-packs/{method_pack_id}")
         return MethodPack.model_validate(resp.data)
 
+    def method_pack_coverage(
+        self,
+        *,
+        pack: Optional[str] = None,
+    ) -> MethodPackCoverageReport:
+        """GET /method-packs/coverage — canonical v1.3 coverage report.
+
+        Returns the single canonical shape regardless of whether a
+        specific pack was requested. When ``pack`` is supplied the server
+        (or the SDK's legacy adapter) filters the result to that pack;
+        the response still includes a ``packs=[one entry]`` list plus an
+        ``overall`` roll-up mirroring the single entry, so downstream
+        code never has to branch on the call mode.
+
+        The Wave 4-G legacy payload ``{packs: [...], total: N}`` is
+        inflated transparently via
+        :meth:`MethodPackCoverageReport.from_legacy_payload`.
+        """
+        params: Dict[str, Any] = {}
+        if pack:
+            params["pack"] = pack
+        resp = self._get("/method-packs/coverage", params=params or None)
+        return MethodPackCoverageReport.from_legacy_payload(resp.data)
+
     # =====================================================================
     # Tenant overrides (Consulting/Platform tier)
     # =====================================================================
@@ -1779,6 +1804,21 @@ class AsyncFactorsClient:
     async def get_method_pack(self, method_pack_id: str) -> MethodPack:
         resp = await self._get(f"/method-packs/{method_pack_id}")
         return MethodPack.model_validate(resp.data)
+
+    async def method_pack_coverage(
+        self,
+        *,
+        pack: Optional[str] = None,
+    ) -> MethodPackCoverageReport:
+        """GET /method-packs/coverage — canonical v1.3 coverage report.
+
+        Async mirror of :meth:`FactorsClient.method_pack_coverage`.
+        """
+        params: Dict[str, Any] = {}
+        if pack:
+            params["pack"] = pack
+        resp = await self._get("/method-packs/coverage", params=params or None)
+        return MethodPackCoverageReport.from_legacy_payload(resp.data)
 
     # ---- Overrides -------------------------------------------------------
 

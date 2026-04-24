@@ -38,9 +38,13 @@ Numbers are authoritative per the W4-E brief:
     * In ``--dry-run`` prints a plain-text plan and exits 0.
 
 **Idempotency**
-    * Products are matched by ``name``. If a product with the same name
-      exists, it is updated (description + metadata) rather than
-      duplicated.
+    * Products are matched FIRST by ``metadata.greenlang_sku_id`` (set
+      by this script to ``cfg.stripe_product_id``) and SECOND by
+      ``name``. If either match finds an existing product, its
+      description + metadata are UPDATED in place — never duplicated.
+      The Wave 5 launch-audit requires the ``greenlang_sku_id`` path so
+      that a display-name rename on the Stripe side doesn't break the
+      next bootstrap run.
     * Prices are matched by ``lookup_key`` (we use the GreenLang
       ``price_factors_*`` id). Stripe does not allow mutating a price's
       ``unit_amount``; when the target price has changed we create a
@@ -226,6 +230,8 @@ def build_plan() -> BootstrapPlan:
                 ),
                 stripe_product_id=cfg.stripe_product_id,
                 metadata={
+                    # greenlang_sku_id is the idempotency key (Wave 5 audit).
+                    "greenlang_sku_id": cfg.stripe_product_id,
                     "tier": tier.value,
                     "sla": cfg.sla_level.value,
                     "annual_contract_required": str(cfg.annual_contract_required),
@@ -287,6 +293,8 @@ def build_plan() -> BootstrapPlan:
                 ),
                 stripe_product_id=cfg.stripe_product_id,
                 metadata={
+                    # greenlang_sku_id is the idempotency key (Wave 5 audit).
+                    "greenlang_sku_id": cfg.stripe_product_id,
                     "pack_sku": pack.value,
                     "default_oem_rights": cfg.default_oem_rights,
                     "requires_license_chain": str(cfg.requires_license_chain),
@@ -382,17 +390,46 @@ def _stripe_request(
         raise
 
 
-def _find_existing_product(name: str, api_key: str) -> Optional[Dict[str, Any]]:
-    """Return the existing product with this name, if any."""
-    resp = _stripe_request(
-        "GET",
-        f"/products?active=true&limit=100",
-        api_key=api_key,
-    )
-    for p in resp.get("data", []):
-        if p.get("name") == name:
-            return p
-    return None
+def _find_existing_product(
+    name: str,
+    api_key: str,
+    *,
+    greenlang_sku_id: Optional[str] = None,
+) -> Optional[Dict[str, Any]]:
+    """Return the existing product for this GreenLang SKU, if any.
+
+    Matching precedence (Wave 5 idempotency requirement):
+      1. ``metadata.greenlang_sku_id == greenlang_sku_id`` — the stable,
+         rename-proof key owned by this codebase.
+      2. ``name == name`` — fallback for products that predate the
+         greenlang_sku_id metadata (one-shot migration safety net).
+
+    The function paginates through all products to handle catalogs
+    larger than the 100-per-page Stripe default. It stops as soon as a
+    match is found.
+    """
+    starting_after: Optional[str] = None
+    while True:
+        path = "/products?active=true&limit=100"
+        if starting_after:
+            path += f"&starting_after={starting_after}"
+        resp = _stripe_request("GET", path, api_key=api_key)
+        data = resp.get("data", [])
+        if not data:
+            return None
+        # Pass 1: metadata.greenlang_sku_id (preferred).
+        if greenlang_sku_id:
+            for p in data:
+                md = p.get("metadata") or {}
+                if md.get("greenlang_sku_id") == greenlang_sku_id:
+                    return p
+        # Pass 2: exact name match (fallback for legacy products).
+        for p in data:
+            if p.get("name") == name:
+                return p
+        if not resp.get("has_more"):
+            return None
+        starting_after = data[-1]["id"]
 
 
 def _find_existing_price(lookup_key: str, api_key: str) -> Optional[Dict[str, Any]]:
@@ -421,7 +458,11 @@ def execute_plan(
 
     # Products.
     for prod in plan.products:
-        existing = _find_existing_product(prod.name, api_key)
+        existing = _find_existing_product(
+            prod.name,
+            api_key,
+            greenlang_sku_id=prod.metadata.get("greenlang_sku_id"),
+        )
         if existing:
             logger.info(
                 "Product exists: name=%r stripe_id=%s (updating metadata)",

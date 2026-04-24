@@ -1,0 +1,64 @@
+## {{ edition_slug }} — {{ vintage }}
+
+**Cut date:** {{ published_at }}.
+**Edition ID:** `{{ edition_id }}`.
+{% if previous_edition_id -%}
+**Previous edition:** `{{ previous_edition_id }}`.
+{% else -%}
+**Previous edition:** _(initial release)_.
+{% endif %}
+
+### Factor count
+
+| Metric | Previous | Current | Delta |
+|---|---|---|---|
+| Total factors | {{ previous_factor_count }} | {{ factor_count }} | {{ factor_count_delta|signed }} |
+| Added | — | {{ added_count }} | +{{ added_count }} |
+| Removed | — | {{ removed_count }} | -{{ removed_count }} |
+| Changed | — | {{ changed_count }} | ~{{ changed_count }} |
+
+{% if new_sources -%}
+### New sources
+
+{% for src in new_sources -%}
+- `{{ src }}`
+{% endfor %}
+{%- endif %}
+
+{% if deprecated_factors -%}
+### Deprecated factors
+
+{% for fid in deprecated_factors[:25] -%}
+- `{{ fid }}`
+{% endfor %}
+{%- if deprecated_factors|length > 25 %}
+- _... and {{ deprecated_factors|length - 25 }} more. See the full manifest diff._
+{%- endif %}
+{%- endif %}
+
+{% if schema_changes -%}
+### Breaking / schema changes
+
+{% for change in schema_changes -%}
+- {{ change }}
+{% endfor %}
+{%- else -%}
+### Breaking changes
+
+_None._
+{%- endif %}
+
+{% if gold_eval -%}
+### Gold-eval quality
+
+| Metric | Previous | Current | Delta |
+|---|---|---|---|
+| P@1 | {{ gold_eval.previous_p_at_1 }} | {{ gold_eval.p_at_1 }} | {{ gold_eval.p_at_1_delta|signed }} |
+| R@3 | {{ gold_eval.previous_r_at_3 }} | {{ gold_eval.r_at_3 }} | {{ gold_eval.r_at_3_delta|signed }} |
+{%- endif %}
+
+### Verification
+
+Signed with the GreenLang Factors Ed25519 key. Verify receipts with the published public key: [`docs/developer-portal/signing.md`](signing.md).
+
+---

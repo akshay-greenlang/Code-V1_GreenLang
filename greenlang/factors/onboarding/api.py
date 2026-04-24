@@ -43,11 +43,16 @@ from __future__ import annotations
 import logging
 from typing import Any, Dict, List, Optional
 
-from fastapi import APIRouter, Header, HTTPException, Query, status
+from fastapi import APIRouter, Header, HTTPException, Query, Request, status
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 from greenlang.factors.entitlements import EntitlementError
 from greenlang.factors.onboarding.branding_config import BrandingConfig
+from greenlang.factors.onboarding.oem_export import (
+    OemExportError,
+    OemExportQuotaError,
+    build_oem_export,
+)
 from greenlang.factors.onboarding.partner_setup import (
     OEM_ELIGIBLE_PARENT_PLANS,
     OEM_GRANT_CLASSES,
@@ -355,9 +360,203 @@ def get_redistribution_route(
     return payload
 
 
+# ---------------------------------------------------------------------------
+# Bulk export (Wave 5 - Track C-5.2)
+# ---------------------------------------------------------------------------
+#
+# POST /v1/oem/export returns a signed JSONL artifact filtered to the
+# factors this OEM is licensed to redistribute. A non-OEM tenant hitting
+# the endpoint (i.e. a caller whose ``X-OEM-Id`` is not registered)
+# receives a 403 via the ``OemError`` branch below.
+
+
+class OemExportRequest(BaseModel):
+    """Payload for ``POST /v1/oem/export``."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    edition_id: Optional[str] = Field(
+        default=None,
+        description=(
+            "Edition slug to export from. Defaults to the request's pinned "
+            "edition (X-GL-Edition header or the service default)."
+        ),
+    )
+    include_preview: bool = Field(
+        default=False,
+        description="Include preview-status factors in the dump.",
+    )
+    include_connector: bool = Field(
+        default=False,
+        description="Include connector-only factors in the dump.",
+    )
+    max_rows: Optional[int] = Field(
+        default=None,
+        ge=1,
+        le=100_000,
+        description="Optional row ceiling; defaults to the service cap.",
+    )
+
+
+def _factors_service(request: Request) -> Any:
+    svc = getattr(request.app.state, "factors_service", None)
+    if svc is None:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="factors_service not configured; cannot export.",
+        )
+    return svc
+
+
+def _resolve_edition(request: Request, svc: Any, requested: Optional[str]) -> str:
+    if requested:
+        try:
+            return svc.repo.resolve_edition(requested)
+        except Exception as exc:  # noqa: BLE001
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Unknown edition {requested!r}: {exc}",
+            ) from exc
+    pinned = getattr(request.state, "edition_id", None)
+    if pinned:
+        return pinned
+    try:
+        return svc.repo.resolve_edition(None)
+    except Exception as exc:  # noqa: BLE001
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=f"No default edition: {exc}",
+        ) from exc
+
+
+def _fetch_rows_for_export(
+    svc: Any,
+    edition_id: str,
+    *,
+    include_preview: bool,
+    include_connector: bool,
+    max_rows: int,
+) -> List[Dict[str, Any]]:
+    """Pull a capped list of factor records for the export filter.
+
+    Repository surfaces vary across the memory / sqlite / pg back-ends so
+    we probe ``list_factors`` first (canonical records) and fall back to
+    ``list_factor_summaries`` when that isn't available.
+    """
+    repo = svc.repo
+    if hasattr(repo, "list_factors"):
+        try:
+            rows, _total = repo.list_factors(
+                edition_id,
+                page=1,
+                limit=max_rows,
+                include_preview=include_preview,
+                include_connector=include_connector,
+            )
+            return list(rows)
+        except TypeError:
+            try:
+                rows, _total = repo.list_factors(edition_id, page=1, limit=max_rows)
+                return list(rows)
+            except Exception:  # noqa: BLE001
+                pass
+        except Exception:  # noqa: BLE001
+            pass
+    if hasattr(repo, "list_factor_summaries"):
+        try:
+            rows = repo.list_factor_summaries(edition_id)
+            return [dict(r) for r in rows][:max_rows]
+        except Exception:  # noqa: BLE001
+            pass
+    return []
+
+
+@oem_router.post(
+    "/export",
+    summary="Export a signed bulk dump of factors this OEM may redistribute.",
+    response_description=(
+        "Signed JSONL artifact + manifest filtered by the OEM's grant."
+    ),
+)
+def export_oem_bulk(
+    request: Request,
+    body: OemExportRequest,
+    x_oem_id: Optional[str] = Header(default=None, alias="X-OEM-Id"),
+    oem_id: Optional[str] = Query(default=None),
+) -> Dict[str, Any]:
+    """Produce a :class:`SignedArtifact` for the identified OEM.
+
+    Authorisation:
+      * The caller MUST identify as a known OEM (header or query param).
+        An unknown or missing id surfaces as HTTP 403 (not 401) because
+        the auth layer in front of this route has already proven the
+        API key; the 403 reflects "you are not an OEM partner".
+      * The OEM's ``redistribution_grant`` determines which rows are
+        eligible. Rows outside the grant are silently filtered.
+    """
+    # A non-OEM tenant hitting this endpoint gets 403 (NOT 401). The
+    # canonical failure mode is "authed but not an OEM".
+    if not (x_oem_id or oem_id):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail={
+                "error": "not_oem",
+                "message": (
+                    "OEM context required (provide X-OEM-Id header). "
+                    "This endpoint is only available to registered OEM partners."
+                ),
+            },
+        )
+    resolved = (x_oem_id or oem_id or "").strip()
+    try:
+        get_oem_partner(resolved)
+    except OemError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail={
+                "error": "not_oem",
+                "message": str(exc),
+            },
+        ) from exc
+
+    svc = _factors_service(request)
+    edition_id = _resolve_edition(request, svc, body.edition_id)
+    max_rows = int(body.max_rows or 100_000)
+
+    rows = _fetch_rows_for_export(
+        svc,
+        edition_id,
+        include_preview=body.include_preview,
+        include_connector=body.include_connector,
+        max_rows=max_rows,
+    )
+
+    try:
+        artifact = build_oem_export(
+            resolved,
+            edition_id=edition_id,
+            rows=rows,
+        )
+    except OemExportQuotaError as exc:
+        logger.info("OEM export quota hit: oem=%s err=%s", resolved, exc)
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail={"error": "oem_export_quota", "message": str(exc)},
+        ) from exc
+    except OemExportError as exc:
+        logger.info("OEM export rejected: oem=%s err=%s", resolved, exc)
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail={"error": "oem_export_invalid", "message": str(exc)},
+        ) from exc
+
+    return artifact.to_envelope()
+
+
 __all__ = [
     "oem_router",
     "OemSignupRequest",
     "SubTenantCreateRequest",
     "BrandingUpdateRequest",
+    "OemExportRequest",
 ]

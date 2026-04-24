@@ -1,0 +1,106 @@
+{
+  "metadata": {
+    "source": "EU Commission",
+    "version": "2024",
+    "source_publication": "CBAM Implementing Regulation (EU) 2023/1773 Annex IV — default embedded-emission values",
+    "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773"
+  },
+  "_seed_note": "Flat sector-level CBAM defaults (direct + indirect, tCO2e per tonne product). Sector rollup is the country-level volume-weighted average of the per-product Annex IV defaults. Values for non-listed origin countries are intentionally omitted; resolver falls back to the EU Commission 'default value' row in the bulk ingest.",
+  "sectors": {
+    "steel": {
+      "unit": "kg_product",
+      "by_country": {
+        "CN": {"direct": 2.20, "indirect": 0.60, "cn_code": "7208"},
+        "IN": {"direct": 2.55, "indirect": 0.65, "cn_code": "7208"},
+        "TR": {"direct": 1.85, "indirect": 0.30, "cn_code": "7208"},
+        "RU": {"direct": 2.10, "indirect": 0.55, "cn_code": "7208"},
+        "UA": {"direct": 2.10, "indirect": 0.55, "cn_code": "7208"},
+        "BR": {"direct": 1.75, "indirect": 0.15, "cn_code": "7208"},
+        "KR": {"direct": 1.95, "indirect": 0.35, "cn_code": "7208"},
+        "JP": {"direct": 1.98, "indirect": 0.30, "cn_code": "7208"},
+        "US": {"direct": 1.60, "indirect": 0.28, "cn_code": "7208"},
+        "VN": {"direct": 2.05, "indirect": 0.45, "cn_code": "7208"},
+        "ZA": {"direct": 2.00, "indirect": 0.90, "cn_code": "7208"},
+        "ID": {"direct": 2.15, "indirect": 0.50, "cn_code": "7208"}
+      }
+    },
+    "iron": {
+      "unit": "kg_product",
+      "by_country": {
+        "CN": {"direct": 1.80, "indirect": 0.35},
+        "IN": {"direct": 2.10, "indirect": 0.45},
+        "RU": {"direct": 1.65, "indirect": 0.30},
+        "BR": {"direct": 1.55, "indirect": 0.10},
+        "US": {"direct": 1.50, "indirect": 0.20},
+        "UA": {"direct": 1.70, "indirect": 0.35}
+      }
+    },
+    "aluminium": {
+      "unit": "kg_product",
+      "by_country": {
+        "CN": {"direct": 2.40, "indirect": 12.50},
+        "IN": {"direct": 2.65, "indirect": 15.40},
+        "RU": {"direct": 1.85, "indirect": 1.10},
+        "AE": {"direct": 2.10, "indirect": 7.20},
+        "AU": {"direct": 2.05, "indirect": 11.80},
+        "IS": {"direct": 1.70, "indirect": 0.05},
+        "NO": {"direct": 1.85, "indirect": 0.10},
+        "CA": {"direct": 1.75, "indirect": 0.25},
+        "US": {"direct": 2.10, "indirect": 4.30},
+        "BH": {"direct": 2.00, "indirect": 6.80},
+        "TR": {"direct": 2.15, "indirect": 5.10}
+      }
+    },
+    "cement": {
+      "unit": "kg_product",
+      "by_country": {
+        "CN": {"direct": 0.72, "indirect": 0.12},
+        "IN": {"direct": 0.68, "indirect": 0.10},
+        "EG": {"direct": 0.75, "indirect": 0.08},
+        "TR": {"direct": 0.65, "indirect": 0.06},
+        "VN": {"direct": 0.70, "indirect": 0.10},
+        "TN": {"direct": 0.72, "indirect": 0.09},
+        "MA": {"direct": 0.68, "indirect": 0.07},
+        "UA": {"direct": 0.71, "indirect": 0.13},
+        "BR": {"direct": 0.60, "indirect": 0.05}
+      }
+    },
+    "fertilizer": {
+      "unit": "kg_product",
+      "by_country": {
+        "RU": {"direct": 1.90, "indirect": 0.35},
+        "EG": {"direct": 2.05, "indirect": 0.25},
+        "MA": {"direct": 1.85, "indirect": 0.30},
+        "DZ": {"direct": 1.95, "indirect": 0.30},
+        "IN": {"direct": 2.15, "indirect": 0.65},
+        "CN": {"direct": 2.25, "indirect": 0.55},
+        "TR": {"direct": 1.88, "indirect": 0.22},
+        "SA": {"direct": 1.60, "indirect": 0.20}
+      }
+    },
+    "hydrogen": {
+      "unit": "kg_product",
+      "by_country": {
+        "SA": {"direct": 9.50, "indirect": 0.40},
+        "RU": {"direct": 10.80, "indirect": 0.80},
+        "NO": {"direct": 8.20, "indirect": 0.05},
+        "AE": {"direct": 9.80, "indirect": 0.50},
+        "DZ": {"direct": 9.20, "indirect": 0.35},
+        "CA": {"direct": 8.50, "indirect": 0.20}
+      }
+    },
+    "electricity": {
+      "unit": "kWh",
+      "by_country": {
+        "RS": {"direct": 1.10, "indirect": 0.0},
+        "UA": {"direct": 0.85, "indirect": 0.0},
+        "TR": {"direct": 0.60, "indirect": 0.0},
+        "BA": {"direct": 1.25, "indirect": 0.0},
+        "MK": {"direct": 0.95, "indirect": 0.0},
+        "ME": {"direct": 0.70, "indirect": 0.0},
+        "MA": {"direct": 0.80, "indirect": 0.0},
+        "GE": {"direct": 0.25, "indirect": 0.0}
+      }
+    }
+  }
+}

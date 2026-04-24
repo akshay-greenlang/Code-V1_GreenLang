@@ -612,6 +612,93 @@ sources:
     legal_notes: "Republic of Korea public information - Act on Disclosure of Information by Public Agencies; attribution required."
     legal_signoff_artifact: null
 
+  # =========================================================================
+  # Wave 5 catalog expansion (2026-04-24) — four new Safe-to-Certify rows
+  # =========================================================================
+  - source_id: cbam_default_values
+    display_name: EU CBAM Annex IV default embedded-emission values (flat sector rollup)
+    authority: European Commission DG TAXUD
+    publisher: European Commission
+    jurisdiction: [EU]
+    connector_only: false
+    license_class: public_eu
+    redistribution_class: open
+    redistribution_allowed: true
+    attribution_required: true
+    verification_status: regulator_approved
+    citation_text: "EU Commission Implementing Regulation (EU) 2023/1773 Annex IV, default embedded-emission values for CBAM goods."
+    publication_frequency: event_driven
+    cadence: event_driven
+    watch:
+      mechanism: http_head
+      url: "https://taxation-customs.ec.europa.eu/carbon-border-adjustment-mechanism_en"
+    approval_required_for_certified: true
+    legal_notes: "EU publication (Decision 2011/833/EU); factual regulatory defaults — redistributable with attribution to the European Commission."
+    legal_signoff_artifact: null
+
+  - source_id: defra_uk_env_accounts
+    display_name: UK ONS/DEFRA Environmental Accounts — atmospheric emissions by industry (SIC 2007)
+    authority: UK Office for National Statistics / DEFRA
+    publisher: UK Office for National Statistics
+    jurisdiction: [UK, GB]
+    connector_only: false
+    license_class: uk_open_government
+    redistribution_class: open
+    redistribution_allowed: true
+    attribution_required: true
+    verification_status: regulator_approved
+    citation_text: "ONS UK Environmental Accounts — atmospheric emissions: greenhouse gas emissions by SIC industry and gas, Office for National Statistics / DEFRA."
+    publication_frequency: annual
+    cadence: annual
+    watch:
+      mechanism: http_head
+      url: "https://www.ons.gov.uk/economy/environmentalaccounts"
+    approval_required_for_certified: true
+    legal_notes: "Open Government Licence v3.0 (UK); attribution required."
+    legal_signoff_artifact: null
+
+  - source_id: eea_waste_stats
+    display_name: European Environment Agency — European waste statistics GHG intensities
+    authority: European Environment Agency
+    publisher: European Environment Agency (EEA)
+    jurisdiction: [EU, EEA]
+    connector_only: false
+    license_class: public_eu
+    redistribution_class: open
+    redistribution_allowed: true
+    attribution_required: true
+    verification_status: regulator_approved
+    citation_text: "European Environment Agency, European waste statistics — per-treatment GHG intensity series (annual)."
+    publication_frequency: annual
+    cadence: annual
+    watch:
+      mechanism: http_head
+      url: "https://www.eea.europa.eu/en/topics/in-depth/waste-and-recycling"
+    approval_required_for_certified: true
+    legal_notes: "EU publication (Decision 2011/833/EU); redistribution allowed with attribution to the EEA."
+    legal_signoff_artifact: null
+
+  - source_id: ipcc_waste_vol5_in
+    display_name: IPCC 2006 Vol 5 (Waste) — India-parameterised default factors
+    authority: IPCC Task Force on National GHG Inventories
+    publisher: Intergovernmental Panel on Climate Change
+    jurisdiction: [IN]
+    connector_only: false
+    license_class: ipcc_reference
+    redistribution_class: open
+    redistribution_allowed: true
+    attribution_required: true
+    verification_status: external_verified
+    citation_text: "IPCC 2006 Guidelines for National GHG Inventories, Volume 5 (Waste), default values parameterised for India (tropical-wet climate zone)."
+    publication_frequency: ad_hoc
+    cadence: ad_hoc
+    watch:
+      mechanism: html_diff
+      url: "https://www.ipcc-nggip.iges.or.jp/public/2006gl/vol5.html"
+    approval_required_for_certified: true
+    legal_notes: "IPCC guidelines are public international publications; numerical default values carry no copyright restriction and are redistributable with attribution."
+    legal_signoff_artifact: null
+
   # Singapore EMA residual (gap-closure #1)
   - source_id: ema_singapore_residual
     display_name: Singapore EMA Grid Emission Factor

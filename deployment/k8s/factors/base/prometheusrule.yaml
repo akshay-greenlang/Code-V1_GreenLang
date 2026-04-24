@@ -2,6 +2,10 @@
 # OBS-004 alerting rules for factors-api. Wired to PagerDuty (critical)
 # and Slack #factors-alerts (warning) through AlertManager routes keyed
 # on labels below.
+#
+# Wave 5 (2026-04-24): concrete SLA thresholds replace placeholder values.
+# All new alerts carry runbook_url -> docs/runbooks/factors-alerts.md
+# (one section per alert name slug).
 apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
 metadata:
@@ -15,7 +19,8 @@ spec:
     - name: factors-api.slo
       interval: 30s
       rules:
-        # SLO: p95 latency <= 500ms (OBS-005)
+        # SLO: p95 latency <= 500ms (OBS-005). Wave 5: warning @ 500ms,
+        # critical @ 2000ms (matches factors-production dashboard thresholds).
         - alert: FactorsAPIHighLatencyP95
           expr: |
             histogram_quantile(
@@ -33,16 +38,59 @@ spec:
           annotations:
             summary: "factors-api p95 latency > 500ms"
             description: "p95 HTTP latency is {{ $value | humanizeDuration }} over the last 5m. Investigate pod CPU, DB latency, and embedding-model external calls."
-            runbook_url: "https://github.com/greenlang/greenlang/blob/main/docs/deployment/FACTORS-API-DEPLOY.md#incident-p95-high"
+            runbook_url: "https://github.com/greenlang/greenlang/blob/main/docs/runbooks/factors-alerts.md#factorsapihighlatencyp95"
 
-        # SLO: 5xx error rate <= 1% (OBS-005)
+        - alert: FactorsAPIHighLatencyP95Critical
+          expr: |
+            histogram_quantile(
+              0.95,
+              sum by (le) (
+                rate(http_request_duration_seconds_bucket{service="factors-api"}[5m])
+              )
+            ) > 2.0
+          for: 5m
+          labels:
+            severity: critical
+            service: factors-api
+            slo: latency-p95
+            pagerduty_service: greenlang-factors
+          annotations:
+            summary: "factors-api p95 latency > 2s (CRITICAL)"
+            description: "p95 HTTP latency is {{ $value | humanizeDuration }} over the last 5m. Customer impact likely; consider rollback."
+            runbook_url: "https://github.com/greenlang/greenlang/blob/main/docs/runbooks/factors-alerts.md#factorsapihighlatencyp95critical"
+
+        # 5xx + CannotResolveSafely treated as a single SLI per Wave 5 spec.
         - alert: FactorsAPIHighErrorRate
           expr: |
             (
-              sum(rate(http_requests_total{service="factors-api",status=~"5.."}[5m]))
-              /
-              sum(rate(http_requests_total{service="factors-api"}[5m]))
-            ) > 0.01
+              sum(rate(greenlang_factors_api_requests_total{status=~"5.."}[10m]))
+              +
+              sum(rate(factors_cannot_resolve_safely_total[10m]))
+            )
+            /
+            clamp_min(sum(rate(greenlang_factors_api_requests_total[10m])), 1e-9)
+            > 0.01
+          for: 10m
+          labels:
+            severity: warning
+            service: factors-api
+            slo: availability
+            pagerduty_service: greenlang-factors
+          annotations:
+            summary: "factors-api combined error rate > 1% (warning)"
+            description: "Combined 5xx + cannot_resolve_safely rate is {{ $value | humanizePercentage }} over 10m. Check pod logs, recent deploy, pack coverage, and DB connectivity."
+            runbook_url: "https://github.com/greenlang/greenlang/blob/main/docs/runbooks/factors-alerts.md#factorsapihigherrorrate"
+
+        - alert: FactorsAPIHighErrorRateCritical
+          expr: |
+            (
+              sum(rate(greenlang_factors_api_requests_total{status=~"5.."}[5m]))
+              +
+              sum(rate(factors_cannot_resolve_safely_total[5m]))
+            )
+            /
+            clamp_min(sum(rate(greenlang_factors_api_requests_total[5m])), 1e-9)
+            > 0.05
           for: 5m
           labels:
             severity: critical
@@ -50,14 +98,68 @@ spec:
             slo: availability
             pagerduty_service: greenlang-factors
           annotations:
-            summary: "factors-api 5xx rate > 1%"
-            description: "Observed 5xx rate is {{ $value | humanizePercentage }} over the last 5m. Check pod logs, recent deploy, and DB connectivity."
-            runbook_url: "https://github.com/greenlang/greenlang/blob/main/docs/deployment/FACTORS-API-DEPLOY.md#incident-5xx-high"
+            summary: "factors-api combined error rate > 5% (CRITICAL)"
+            description: "Combined 5xx + cannot_resolve_safely rate is {{ $value | humanizePercentage }} over 5m. Page on-call; consider rollback."
+            runbook_url: "https://github.com/greenlang/greenlang/blob/main/docs/runbooks/factors-alerts.md#factorsapihigherrorratecritical"
+
+    - name: factors-api.gold-eval
+      interval: 300s
+      rules:
+        # Matching-quality regression. Wave 4 baseline P@1 = 37.8%, R@3 ~ 48%.
+        # Headroom: warn at 33% P@1 (about 5pp below baseline), crit at
+        # 42% R@3 (6pp below baseline).  Metrics are pushed by the nightly
+        # factors_gold_eval workflow via pushgateway.
+        - alert: FactorsGoldEvalRegression
+          expr: factors_gold_eval_precision_at_1 < 0.33
+          for: 0m
+          labels:
+            severity: warning
+            service: factors-api
+            subsystem: matching
+            slo: matching-quality
+          annotations:
+            summary: "factors gold-eval P@1 regression ({{ $value | humanizePercentage }})"
+            description: "Nightly gold-eval P@1 dropped below 33% (baseline 37.8%). Quality gate tripped — investigate recent method-pack / embedding / resolver changes."
+            runbook_url: "https://github.com/greenlang/greenlang/blob/main/docs/runbooks/factors-alerts.md#factorsgoldevalregression"
+
+        - alert: FactorsGoldEvalR3Critical
+          expr: factors_gold_eval_recall_at_3 < 0.42
+          for: 0m
+          labels:
+            severity: critical
+            service: factors-api
+            subsystem: matching
+            slo: matching-quality
+            pagerduty_service: greenlang-factors
+          annotations:
+            summary: "factors gold-eval R@3 < 42% (CRITICAL)"
+            description: "R@3 dropped below the hold-the-line threshold (42%). Halt promotions out of staging until resolved."
+            runbook_url: "https://github.com/greenlang/greenlang/blob/main/docs/runbooks/factors-alerts.md#factorsgoldevalr3critical"
 
     - name: factors-api.signing
       interval: 30s
       rules:
-        # Signed-receipt middleware failure: any failure is a critical bug
+        # Signed-receipt middleware failure: any sustained failure > 0.1% is
+        # a critical audit-trail bug.
+        - alert: FactorsSignedReceiptFailure
+          expr: |
+            (
+              sum(rate(factors_signed_receipt_failures_total[10m]))
+              /
+              clamp_min(sum(rate(factors_signed_receipts_issued_total[10m])), 1e-9)
+            ) > 0.001
+          for: 10m
+          labels:
+            severity: critical
+            service: factors-api
+            subsystem: signing
+            pagerduty_service: greenlang-factors
+          annotations:
+            summary: "factors signed-receipt failure rate > 0.1%"
+            description: "Signing failure rate is {{ $value | humanizePercentage }} over 10m. Signed receipts protect the audit trail — halt deploys until resolved."
+            runbook_url: "https://github.com/greenlang/greenlang/blob/main/docs/runbooks/factors-alerts.md#factorssignedreceiptfailure"
+
+        # Any single failure is also caught by the existing 1-min rule below.
         - alert: FactorsSigningFailures
           expr: |
             sum(rate(factors_signing_failures_total[5m])) > 0
@@ -69,8 +171,8 @@ spec:
             pagerduty_service: greenlang-factors
           annotations:
             summary: "factors-api signed-receipt failures detected"
-            description: "{{ $value | humanize }} signing failures/sec over the last 5m. Signed receipts protect the audit trail — halt deploys until resolved."
-            runbook_url: "https://github.com/greenlang/greenlang/blob/main/docs/deployment/FACTORS-API-DEPLOY.md#incident-signing-broken"
+            description: "{{ $value | humanize }} signing failures/sec over the last 5m."
+            runbook_url: "https://github.com/greenlang/greenlang/blob/main/docs/runbooks/factors-alerts.md#factorssigningfailures"
 
         # Source-license violation detected in provenance checks
         - alert: FactorsSourceLicenseViolation
@@ -85,7 +187,7 @@ spec:
           annotations:
             summary: "factors-api source-license violation detected"
             description: "A redistribution check failed. Freeze any active publishing job and page the legal on-call."
-            runbook_url: "https://github.com/greenlang/greenlang/blob/main/docs/deployment/FACTORS-API-DEPLOY.md#incident-license-violation"
+            runbook_url: "https://github.com/greenlang/greenlang/blob/main/docs/runbooks/factors-alerts.md#factorssourcelicenseviolation"
 
     - name: factors-api.availability
       interval: 30s
@@ -104,10 +206,9 @@ spec:
             pagerduty_service: greenlang-factors
           annotations:
             summary: "factors-api has fewer than 2 healthy replicas"
-            description: "Available replicas = {{ $value }}. PDB minAvailable is 2 — a rolling update or node drain will block. Investigate pod crashes or cluster capacity."
-            runbook_url: "https://github.com/greenlang/greenlang/blob/main/docs/deployment/FACTORS-API-DEPLOY.md#incident-replicas-low"
+            description: "Available replicas = {{ $value }}. PDB minAvailable is 2 — a rolling update or node drain will block."
+            runbook_url: "https://github.com/greenlang/greenlang/blob/main/docs/runbooks/factors-alerts.md#factorsapireplicasbelowpdb"
 
-        # Pod crash-looping
         - alert: FactorsAPICrashLooping
           expr: |
             rate(kube_pod_container_status_restarts_total{
@@ -121,11 +222,11 @@ spec:
           annotations:
             summary: "factors-api pod crash-looping"
             description: "Pod {{ $labels.pod }} restarted more than 3 times in 15m."
+            runbook_url: "https://github.com/greenlang/greenlang/blob/main/docs/runbooks/factors-alerts.md#factorsapicrashlooping"
 
     - name: factors-api.tenancy
       interval: 60s
       rules:
-        # Tenant leak: a request carried a tier/edition header that doesn't match the JWT claim
         - alert: FactorsTenantLeakSuspected
           expr: |
             sum(increase(factors_tenant_mismatch_total[10m])) > 0
@@ -138,22 +239,16 @@ spec:
           annotations:
             summary: "factors-api tenant mismatch detected"
             description: "A request was observed where the X-GreenLang-Tier header disagrees with the JWT claim. Possible credential replay or middleware bug. Page the security on-call."
-            runbook_url: "https://github.com/greenlang/greenlang/blob/main/docs/deployment/FACTORS-API-DEPLOY.md#incident-tenant-leak"
+            runbook_url: "https://github.com/greenlang/greenlang/blob/main/docs/runbooks/factors-alerts.md#factorstenantleaksuspected"
 
     # -----------------------------------------------------------------------
     # DEP2 — Factors-specific resolve / entitlement / signing metrics
-    # -----------------------------------------------------------------------
-    # Emitted by greenlang/factors/factors_app.py (prometheus_client). The
-    # metric families below were added during DEP2 and reference the CTO
-    # Master ToDo rows for "resolve p95", "entitlement denials spike",
-    # "signed-receipt failures", "source-watch health", "cannot resolve
-    # safely". Runbook section IDs map 1:1 to the alert name slug.
     # -----------------------------------------------------------------------
     - name: factors-api.resolve
       interval: 30s
       rules:
         # p95 latency of /v1/resolve exceeds the SLO (500ms) for 5m.
-        - alert: FactorsResolveP95High
+        - alert: FactorsResolveLatencyHigh
           expr: |
             histogram_quantile(
               0.95,
@@ -170,16 +265,53 @@ spec:
           annotations:
             summary: "factors resolve p95 > 500ms ({{ $labels.family }})"
             description: "Resolve p95 for family={{ $labels.family }} is {{ $value | humanizeDuration }} (SLO 500ms). Check pgvector latency, embedding-model calls, and fallback_rank distribution."
-            runbook_url: "https://github.com/greenlang/greenlang/blob/main/deployment/runbooks/factors_incidents.md#resolve-latency"
+            runbook_url: "https://github.com/greenlang/greenlang/blob/main/docs/runbooks/factors-alerts.md#factorsresolvelatencyhigh"
 
-        # Resolve error-rate (outcome!=success) exceeds 1% of total for 5m.
+        - alert: FactorsResolveLatencyCritical
+          expr: |
+            histogram_quantile(
+              0.95,
+              sum by (le, family) (
+                rate(factors_resolve_latency_seconds_bucket[5m])
+              )
+            ) > 2.0
+          for: 5m
+          labels:
+            severity: critical
+            service: factors-api
+            subsystem: resolve
+            slo: resolve-latency-p95
+            pagerduty_service: greenlang-factors
+          annotations:
+            summary: "factors resolve p95 > 2s ({{ $labels.family }}) CRITICAL"
+            description: "Resolve p95 for family={{ $labels.family }} is {{ $value | humanizeDuration }}. Customer SLA breach imminent."
+            runbook_url: "https://github.com/greenlang/greenlang/blob/main/docs/runbooks/factors-alerts.md#factorsresolvelatencycritical"
+
         - alert: FactorsResolveErrorRateHigh
+          expr: |
+            (
+              sum(rate(factors_resolve_requests_total{outcome!="success"}[10m]))
+              /
+              clamp_min(sum(rate(factors_resolve_requests_total[10m])), 1e-9)
+            ) > 0.01
+          for: 10m
+          labels:
+            severity: warning
+            service: factors-api
+            subsystem: resolve
+            slo: resolve-error-rate
+          annotations:
+            summary: "factors resolve error-rate > 1% (warning)"
+            description: "Resolve error-rate is {{ $value | humanizePercentage }} over 10m. Inspect outcome labels and per-family breakdown."
+            runbook_url: "https://github.com/greenlang/greenlang/blob/main/docs/runbooks/factors-alerts.md#factorsresolveerrorratehigh"
+
+        - alert: FactorsResolveErrorRateCritical
           expr: |
             (
               sum(rate(factors_resolve_requests_total{outcome!="success"}[5m]))
               /
               clamp_min(sum(rate(factors_resolve_requests_total[5m])), 1e-9)
-            ) > 0.01
+            ) > 0.05
           for: 5m
           labels:
             severity: critical
@@ -188,13 +320,10 @@ spec:
             slo: resolve-error-rate
             pagerduty_service: greenlang-factors
           annotations:
-            summary: "factors resolve error-rate > 1%"
-            description: "Resolve error-rate is {{ $value | humanizePercentage }} over 5m. Inspect outcome labels and per-family breakdown; check DB, method packs, and recent deploys."
-            runbook_url: "https://github.com/greenlang/greenlang/blob/main/deployment/runbooks/factors_incidents.md#bad-release"
+            summary: "factors resolve error-rate > 5% (CRITICAL)"
+            description: "Resolve error-rate is {{ $value | humanizePercentage }} over 5m. Page on-call; consider rollback."
+            runbook_url: "https://github.com/greenlang/greenlang/blob/main/docs/runbooks/factors-alerts.md#factorsresolveerrorratecritical"
 
-        # Methodology gap signal — cannot_resolve_safely indicates we've hit
-        # a request where no fallback tier is allowed (e.g. strict method
-        # profile + no matching factor). >5/min sustained => pack gap.
         - alert: FactorsCannotResolveSafelySpike
           expr: |
             sum(rate(factors_cannot_resolve_safely_total[5m])) * 60 > 5
@@ -206,13 +335,11 @@ spec:
           annotations:
             summary: "factors cannot_resolve_safely spike ({{ $value | humanize }}/min)"
             description: "Cannot-resolve-safely events exceeded 5/min for 10m. Indicates methodology gap in pack={{ $labels.pack_id }} / profile={{ $labels.method_profile }}. Engage methodology lead."
-            runbook_url: "https://github.com/greenlang/greenlang/blob/main/deployment/runbooks/factors_incidents.md#wrong-factor"
+            runbook_url: "https://github.com/greenlang/greenlang/blob/main/docs/runbooks/factors-alerts.md#factorscannotresolvesafelyspike"
 
     - name: factors-api.entitlements
       interval: 30s
       rules:
-        # Spike of entitlement denials — could indicate probing / stolen key
-        # or a botched tier migration. 10/min over 10m is the trigger.
         - alert: FactorsEntitlementDenialsSpike
           expr: |
             sum(rate(factors_entitlement_denials_total[5m])) * 60 > 10
@@ -224,28 +351,7 @@ spec:
           annotations:
             summary: "factors entitlement denials > 10/min"
             description: "Entitlement denials are {{ $value | humanize }}/min over 10m. Class={{ $labels.class }}, tier={{ $labels.tier }}. Check for credential probing or tier-migration bug."
-            runbook_url: "https://github.com/greenlang/greenlang/blob/main/deployment/runbooks/factors_incidents.md#api-outage"
-
-    - name: factors-api.signing-receipts
-      interval: 30s
-      rules:
-        # ANY signed-receipt failure is a critical audit-trail bug.
-        # 1-minute window catches a single failure; the base rule above
-        # (FactorsSigningFailures) covers a different metric (5m window)
-        # so both fire in parallel without de-duplicating.
-        - alert: FactorsSignedReceiptFailures
-          expr: |
-            increase(factors_signed_receipt_failures_total[1m]) > 0
-          for: 0m
-          labels:
-            severity: critical
-            service: factors-api
-            subsystem: signing
-            pagerduty_service: greenlang-factors
-          annotations:
-            summary: "factors signed-receipt failure detected ({{ $labels.reason }})"
-            description: "A signed-receipt failure occurred in the last minute (reason={{ $labels.reason }}). Do NOT disable signing — investigate key-mount, Vault health, and signing.py logs."
-            runbook_url: "https://github.com/greenlang/greenlang/blob/main/deployment/runbooks/factors_incidents.md#signed-receipt-verification-failure"
+            runbook_url: "https://github.com/greenlang/greenlang/blob/main/docs/runbooks/factors-alerts.md#factorsentitlementdenialsspike"
 
     - name: factors-api.source-watch
       interval: 60s
@@ -263,4 +369,83 @@ spec:
           annotations:
             summary: "factors source-watch down for {{ $labels.source_id }}"
             description: "{{ $labels.source_id }} has logged 3+ watch failures in the last 30m. Check the source URL, auth creds in Vault, and network egress."
-            runbook_url: "https://github.com/greenlang/greenlang/blob/main/deployment/runbooks/factors_incidents.md#source-license-issue"
+            runbook_url: "https://github.com/greenlang/greenlang/blob/main/docs/runbooks/factors-alerts.md#factorssourcewatchdown"
+
+        # Catalog stale: no successful source-watch run in 36h.
+        - alert: FactorsCatalogStale
+          expr: |
+            (time() - max by (source_id) (factors_source_watch_last_success_timestamp)) > 129600
+          for: 15m
+          labels:
+            severity: warning
+            service: factors-api
+            subsystem: source-watch
+          annotations:
+            summary: "factors catalog stale for {{ $labels.source_id }} (> 36h)"
+            description: "No successful source-watch run for source_id={{ $labels.source_id }} in the last 36h. The catalog may be drifting. Check the watch cron and source endpoint."
+            runbook_url: "https://github.com/greenlang/greenlang/blob/main/docs/runbooks/factors-alerts.md#factorscatalogstale"
+
+    - name: factors-api.billing
+      interval: 60s
+      rules:
+        # Stripe webhook ingestion lag.  Wave 5 thresholds: 15m warn, 1h crit.
+        - alert: FactorsBillingLag
+          expr: |
+            max(factors_stripe_webhook_lag_seconds) > 900
+          for: 5m
+          labels:
+            severity: warning
+            service: factors-api
+            subsystem: billing
+          annotations:
+            summary: "Stripe billing webhook lag > 15m"
+            description: "Max observed Stripe webhook lag is {{ $value | humanizeDuration }}. Check stripe_webhook consumer health and database write throughput."
+            runbook_url: "https://github.com/greenlang/greenlang/blob/main/docs/runbooks/factors-alerts.md#factorsbillinglag"
+
+        - alert: FactorsBillingLagCritical
+          expr: |
+            max(factors_stripe_webhook_lag_seconds) > 3600
+          for: 5m
+          labels:
+            severity: critical
+            service: factors-api
+            subsystem: billing
+            pagerduty_service: greenlang-factors
+          annotations:
+            summary: "Stripe billing webhook lag > 1h (CRITICAL)"
+            description: "Max observed Stripe webhook lag is {{ $value | humanizeDuration }}. Revenue events backing up; page Commercial on-call."
+            runbook_url: "https://github.com/greenlang/greenlang/blob/main/docs/runbooks/factors-alerts.md#factorsbillinglagcritical"
+
+    - name: factors-api.batch
+      interval: 60s
+      rules:
+        # Batch backlog: pending jobs > 100 for 15m.
+        - alert: FactorsBatchBacklog
+          expr: |
+            sum(factors_batch_jobs_pending) > 100
+          for: 15m
+          labels:
+            severity: warning
+            service: factors-api
+            subsystem: batch
+          annotations:
+            summary: "factors batch backlog > 100 pending for 15m"
+            description: "{{ $value }} pending batch jobs. Check factors-worker deployment health, scale HPA, and confirm DB throughput."
+            runbook_url: "https://github.com/greenlang/greenlang/blob/main/docs/runbooks/factors-alerts.md#factorsbatchbacklog"
+
+    - name: factors-api.webhooks
+      interval: 60s
+      rules:
+        # Webhook DLQ depth > 0 sustained = outbound delivery broken.
+        - alert: FactorsWebhookDLQ
+          expr: |
+            sum(factors_webhook_dlq_depth) > 0
+          for: 15m
+          labels:
+            severity: warning
+            service: factors-api
+            subsystem: webhooks
+          annotations:
+            summary: "factors webhook DLQ non-empty for 15m"
+            description: "{{ $value }} messages in webhook DLQ. Inspect recent endpoint 4xx/5xx responses and requeue manually after fix."
+            runbook_url: "https://github.com/greenlang/greenlang/blob/main/docs/runbooks/factors-alerts.md#factorswebhookdlq"

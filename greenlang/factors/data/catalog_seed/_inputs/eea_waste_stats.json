@@ -1,0 +1,46 @@
+{
+  "metadata": {
+    "source": "European Environment Agency (EEA)",
+    "vintage_year": 2022,
+    "source_publication": "EEA European waste statistics — treatment GHG intensity (2022)",
+    "source_url": "https://www.eea.europa.eu/en/topics/in-depth/waste-and-recycling"
+  },
+  "_seed_note": "Per-treatment GHG intensities (kgCO2e/t) derived from EEA waste statistics combined with JRC per-treatment CO2e factors. Rows flagged illustrative_value=true pending pin to the EEA 2024 dashboard XLSX release.",
+  "streams": [
+    {"treatment": "landfill", "material": "msw", "country": "EU", "kg_co2e_per_tonne": 950.0, "biogenic": false, "illustrative_value": true},
+    {"treatment": "landfill", "material": "msw", "country": "DE", "kg_co2e_per_tonne": 420.0, "biogenic": false, "illustrative_value": true},
+    {"treatment": "landfill", "material": "msw", "country": "FR", "kg_co2e_per_tonne": 510.0, "biogenic": false, "illustrative_value": true},
+    {"treatment": "landfill", "material": "msw", "country": "IT", "kg_co2e_per_tonne": 680.0, "biogenic": false, "illustrative_value": true},
+    {"treatment": "landfill", "material": "msw", "country": "ES", "kg_co2e_per_tonne": 780.0, "biogenic": false, "illustrative_value": true},
+    {"treatment": "landfill", "material": "msw", "country": "PL", "kg_co2e_per_tonne": 860.0, "biogenic": false, "illustrative_value": true},
+    {"treatment": "landfill", "material": "organic", "country": "EU", "kg_co2e_per_tonne": 1100.0, "biogenic": true, "illustrative_value": true},
+
+    {"treatment": "incineration", "material": "msw", "country": "EU", "kg_co2e_per_tonne": 385.0, "biogenic": false, "illustrative_value": true},
+    {"treatment": "incineration", "material": "msw", "country": "DE", "kg_co2e_per_tonne": 365.0, "biogenic": false, "illustrative_value": true},
+    {"treatment": "incineration", "material": "msw", "country": "FR", "kg_co2e_per_tonne": 375.0, "biogenic": false, "illustrative_value": true},
+    {"treatment": "incineration", "material": "msw", "country": "NL", "kg_co2e_per_tonne": 350.0, "biogenic": false, "illustrative_value": true},
+    {"treatment": "incineration", "material": "msw", "country": "SE", "kg_co2e_per_tonne": 320.0, "biogenic": false, "illustrative_value": true},
+    {"treatment": "incineration", "material": "plastic", "country": "EU", "kg_co2e_per_tonne": 2700.0, "biogenic": false, "illustrative_value": true},
+    {"treatment": "incineration", "material": "sewage_sludge", "country": "EU", "kg_co2e_per_tonne": 345.0, "biogenic": false, "illustrative_value": true},
+
+    {"treatment": "recycling", "material": "plastic", "country": "EU", "kg_co2e_per_tonne": 320.0, "biogenic": false, "illustrative_value": true},
+    {"treatment": "recycling", "material": "paper", "country": "EU", "kg_co2e_per_tonne": 180.0, "biogenic": false, "illustrative_value": true},
+    {"treatment": "recycling", "material": "glass", "country": "EU", "kg_co2e_per_tonne": 220.0, "biogenic": false, "illustrative_value": true},
+    {"treatment": "recycling", "material": "steel", "country": "EU", "kg_co2e_per_tonne": 550.0, "biogenic": false, "illustrative_value": true},
+    {"treatment": "recycling", "material": "aluminium", "country": "EU", "kg_co2e_per_tonne": 780.0, "biogenic": false, "illustrative_value": true},
+    {"treatment": "recycling", "material": "copper", "country": "EU", "kg_co2e_per_tonne": 420.0, "biogenic": false, "illustrative_value": true},
+    {"treatment": "recycling", "material": "textiles", "country": "EU", "kg_co2e_per_tonne": 260.0, "biogenic": false, "illustrative_value": true},
+    {"treatment": "recycling", "material": "electronics", "country": "EU", "kg_co2e_per_tonne": 640.0, "biogenic": false, "illustrative_value": true},
+
+    {"treatment": "composting", "material": "organic", "country": "EU", "kg_co2e_per_tonne": 110.0, "biogenic": true, "illustrative_value": true},
+    {"treatment": "composting", "material": "garden", "country": "EU", "kg_co2e_per_tonne": 95.0, "biogenic": true, "illustrative_value": true},
+    {"treatment": "composting", "material": "food", "country": "EU", "kg_co2e_per_tonne": 115.0, "biogenic": true, "illustrative_value": true},
+
+    {"treatment": "anaerobic_digestion", "material": "organic", "country": "EU", "kg_co2e_per_tonne": 60.0, "biogenic": true, "illustrative_value": true},
+    {"treatment": "anaerobic_digestion", "material": "food", "country": "EU", "kg_co2e_per_tonne": 72.0, "biogenic": true, "illustrative_value": true},
+    {"treatment": "anaerobic_digestion", "material": "manure", "country": "EU", "kg_co2e_per_tonne": 45.0, "biogenic": true, "illustrative_value": true},
+
+    {"treatment": "aerobic", "material": "domestic", "country": "EU", "kg_co2e_per_tonne": 0.6, "unit": "m3", "biogenic": true, "illustrative_value": true},
+    {"treatment": "anaerobic", "material": "industrial", "country": "EU", "kg_co2e_per_tonne": 8.1, "unit": "m3", "biogenic": true, "illustrative_value": true}
+  ]
+}

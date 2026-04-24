@@ -314,6 +314,10 @@ def publish_release(
     approved_by: str,
     *,
     changelog: Optional[List[str]] = None,
+    auto_publish_release_notes: bool = False,
+    docs_root: Optional[Path] = None,
+    previous_edition_id: Optional[str] = None,
+    gold_eval: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     """
     Promote an edition to stable after human approval.
@@ -322,16 +326,31 @@ def publish_release(
       1. Verify edition exists
       2. Update edition status to 'stable'
       3. Record approval metadata
-      4. Return confirmation
+      4. Auto-publish release notes (Markdown + changelog prepend)
+      5. Emit ``factors.edition.release.published`` log event
+      6. Return confirmation
 
     Args:
         repo: The catalog repository (must support upsert_edition).
         edition_id: The edition to promote.
         approved_by: Email or username of the approver.
         changelog: Optional final changelog lines.
+        auto_publish_release_notes: When True, render + write the
+            Markdown release notes via :func:`publish_release_notes`.
+            Default False to keep test callers hermetic; the production
+            edition-cut CLI entrypoint sets True explicitly so the CTO
+            non-negotiable (publish on every cut + emit log event) holds.
+        docs_root: Root directory for the developer portal docs. Defaults
+            to the repo's ``docs/developer-portal`` path. Override in
+            tests to write into a temp dir.
+        previous_edition_id: Prior edition to diff against for the
+            release notes. Skipped when None.
+        gold_eval: Optional dict with ``p_at_1``, ``r_at_3``, and the
+            previous values for delta rendering.
 
     Returns:
-        Confirmation dict with edition_id, status, approved_by, timestamp.
+        Confirmation dict with edition_id, status, approved_by, timestamp,
+        and (when auto-publish fires) the generated release-notes paths.
     """
     repo.resolve_edition(edition_id)
 
@@ -354,7 +373,7 @@ def publish_release(
             changelog=final_changelog,
         )
 
-    result = {
+    result: Dict[str, Any] = {
         "edition_id": edition_id,
         "status": "stable",
         "approved_by": approved_by,
@@ -366,4 +385,406 @@ def publish_release(
         "Edition %s promoted to stable by %s",
         edition_id, approved_by,
     )
+
+    # Step 4+5: auto-publish release notes on every edition cut (CTO
+    # non-negotiable - the webhook system consumes the log event).
+    if auto_publish_release_notes:
+        try:
+            publish_outcome = publish_release_notes(
+                repo,
+                edition_id=edition_id,
+                previous_edition_id=previous_edition_id,
+                docs_root=docs_root,
+                gold_eval=gold_eval,
+            )
+            result["release_notes"] = publish_outcome
+        except Exception as exc:  # noqa: BLE001
+            # Never let a docs-write failure block a promotion.
+            logger.error(
+                "Release notes publish failed for edition=%s: %s",
+                edition_id, exc, exc_info=True,
+            )
+            result["release_notes"] = {"error": str(exc)}
+
     return result
+
+
+# ---------------------------------------------------------------------------
+# Wave 5 - Release notes auto-publish
+# ---------------------------------------------------------------------------
+#
+# On every edition cut we render a Markdown release note, prepend it to
+# the developer-portal changelog, and emit a structured log event that
+# the webhook system consumes to fan out ``edition.release.published``.
+# The template lives next to this module
+# (``templates/release_notes.md.j2``) and is optional - we fall back to
+# a built-in mini-renderer when Jinja2 is not installed so CI stays
+# hermetic.
+
+
+_DEFAULT_DOCS_ROOT = Path(__file__).resolve().parents[3] / "docs" / "developer-portal"
+_TEMPLATES_DIR = Path(__file__).resolve().parent / "templates"
+_TEMPLATE_NAME = "release_notes.md.j2"
+
+
+def _slugify_edition(edition_id: str) -> str:
+    """Turn an edition id into a filesystem-safe slug."""
+    import re as _re
+
+    slug = _re.sub(r"[^a-z0-9.\-_]+", "-", edition_id.lower()).strip("-")
+    return slug or "edition"
+
+
+def _vintage_from_edition(edition_id: str) -> str:
+    """Best-effort vintage (YYYY.MM) pulled from an edition id."""
+    import re as _re
+
+    match = _re.match(r"^(\d{4}[.-]\d{2})", edition_id)
+    if match:
+        return match.group(1).replace("-", ".")
+    return edition_id
+
+
+def _signed_filter(value: Any) -> str:
+    """Render ``value`` with a leading +/- sign; used by the template."""
+    try:
+        n = int(value)
+    except (TypeError, ValueError):
+        try:
+            n = float(value)
+        except (TypeError, ValueError):
+            return str(value)
+    if isinstance(n, float):
+        return f"{'+' if n >= 0 else ''}{n:g}"
+    return f"{n:+d}"
+
+
+def _render_with_jinja(context: Dict[str, Any]) -> Optional[str]:
+    """Try to render via Jinja2; return None if the library is missing."""
+    try:
+        from jinja2 import Environment, FileSystemLoader, select_autoescape
+    except ImportError:
+        return None
+
+    env = Environment(
+        loader=FileSystemLoader(str(_TEMPLATES_DIR)),
+        autoescape=select_autoescape(enabled_extensions=()),  # markdown output
+        trim_blocks=True,
+        lstrip_blocks=True,
+        keep_trailing_newline=True,
+    )
+    env.filters["signed"] = _signed_filter
+    template = env.get_template(_TEMPLATE_NAME)
+    return template.render(**context)
+
+
+def _render_with_fallback(context: Dict[str, Any]) -> str:
+    """Minimal inline renderer that matches the Jinja template's shape.
+
+    Used when Jinja2 is not installed. The output is intentionally
+    simpler than the Jinja version but carries the same required fields
+    (edition slug, vintage, deltas, sources, schema changes, gold eval).
+    """
+    out: List[str] = []
+    out.append(f"## {context['edition_slug']} - {context['vintage']}")
+    out.append("")
+    out.append(f"**Cut date:** {context['published_at']}.")
+    out.append(f"**Edition ID:** `{context['edition_id']}`.")
+    prev = context.get("previous_edition_id")
+    out.append(
+        f"**Previous edition:** `{prev}`."
+        if prev else
+        "**Previous edition:** _(initial release)_."
+    )
+    out.append("")
+    out.append("### Factor count")
+    out.append("")
+    out.append("| Metric | Previous | Current | Delta |")
+    out.append("|---|---|---|---|")
+    delta = _signed_filter(context["factor_count_delta"])
+    out.append(
+        f"| Total factors | {context['previous_factor_count']} | "
+        f"{context['factor_count']} | {delta} |"
+    )
+    out.append(f"| Added | - | {context['added_count']} | +{context['added_count']} |")
+    out.append(f"| Removed | - | {context['removed_count']} | -{context['removed_count']} |")
+    out.append(f"| Changed | - | {context['changed_count']} | ~{context['changed_count']} |")
+    out.append("")
+    sources = context.get("new_sources") or []
+    if sources:
+        out.append("### New sources")
+        out.append("")
+        for s in sources:
+            out.append(f"- `{s}`")
+        out.append("")
+    deprecated = context.get("deprecated_factors") or []
+    if deprecated:
+        out.append("### Deprecated factors")
+        out.append("")
+        for fid in deprecated[:25]:
+            out.append(f"- `{fid}`")
+        if len(deprecated) > 25:
+            out.append(f"- _... and {len(deprecated) - 25} more._")
+        out.append("")
+    schema_changes = context.get("schema_changes") or []
+    if schema_changes:
+        out.append("### Breaking / schema changes")
+        out.append("")
+        for c in schema_changes:
+            out.append(f"- {c}")
+        out.append("")
+    else:
+        out.append("### Breaking changes")
+        out.append("")
+        out.append("_None._")
+        out.append("")
+    gold = context.get("gold_eval")
+    if gold:
+        out.append("### Gold-eval quality")
+        out.append("")
+        out.append("| Metric | Previous | Current | Delta |")
+        out.append("|---|---|---|---|")
+        out.append(
+            f"| P@1 | {gold.get('previous_p_at_1')} | {gold.get('p_at_1')} | "
+            f"{_signed_filter(gold.get('p_at_1_delta', 0))} |"
+        )
+        out.append(
+            f"| R@3 | {gold.get('previous_r_at_3')} | {gold.get('r_at_3')} | "
+            f"{_signed_filter(gold.get('r_at_3_delta', 0))} |"
+        )
+        out.append("")
+    out.append("### Verification")
+    out.append("")
+    out.append(
+        "Signed with the GreenLang Factors Ed25519 key. Verify receipts with the "
+        "published public key: [`docs/developer-portal/signing.md`](signing.md)."
+    )
+    out.append("")
+    out.append("---")
+    out.append("")
+    return "\n".join(out)
+
+
+def _render_release_notes(context: Dict[str, Any]) -> str:
+    """Render the markdown, preferring Jinja2, falling back to inline."""
+    rendered = _render_with_jinja(context)
+    if rendered is None:
+        rendered = _render_with_fallback(context)
+    return rendered
+
+
+def _collect_diff_for_release(
+    repo: FactorCatalogRepository,
+    edition_id: str,
+    previous_edition_id: Optional[str],
+) -> Dict[str, Any]:
+    """Compute the factor-count delta, new sources, deprecated factors."""
+    current_manifest = repo.get_manifest_dict(edition_id) or {}
+    current_factor_count = int(
+        current_manifest.get("total_factors")
+        or current_manifest.get("factor_count")
+        or 0
+    )
+    if previous_edition_id is None:
+        return {
+            "previous_edition_id": None,
+            "factor_count": current_factor_count,
+            "previous_factor_count": 0,
+            "factor_count_delta": current_factor_count,
+            "added_count": current_factor_count,
+            "removed_count": 0,
+            "changed_count": 0,
+            "new_sources": [],
+            "deprecated_factors": [],
+            "schema_changes": [],
+        }
+
+    previous_manifest = {}
+    try:
+        previous_manifest = repo.get_manifest_dict(previous_edition_id) or {}
+    except Exception:  # noqa: BLE001
+        previous_manifest = {}
+    previous_factor_count = int(
+        previous_manifest.get("total_factors")
+        or previous_manifest.get("factor_count")
+        or 0
+    )
+
+    added: List[str] = []
+    removed: List[str] = []
+    changed: List[str] = []
+    try:
+        from greenlang.factors.service import FactorCatalogService
+
+        svc = FactorCatalogService(repo)
+        diff = svc.compare_editions(previous_edition_id, edition_id)
+        added = list(diff.get("added_factor_ids") or [])
+        removed = list(diff.get("removed_factor_ids") or [])
+        changed = list(diff.get("changed_factor_ids") or [])
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("compare_editions failed for release notes: %s", exc)
+
+    # New sources: any source_id that shows up only on the new side.
+    new_sources: List[str] = []
+    try:
+        prev_sources = set(previous_manifest.get("per_source_hashes", {}).keys())
+        curr_sources = set(current_manifest.get("per_source_hashes", {}).keys())
+        new_sources = sorted(curr_sources - prev_sources)
+    except Exception:  # noqa: BLE001
+        new_sources = []
+
+    schema_changes: List[str] = list(current_manifest.get("schema_changes") or [])
+    deprecated_factors: List[str] = list(current_manifest.get("deprecations") or removed)
+
+    return {
+        "previous_edition_id": previous_edition_id,
+        "factor_count": current_factor_count,
+        "previous_factor_count": previous_factor_count,
+        "factor_count_delta": current_factor_count - previous_factor_count,
+        "added_count": len(added),
+        "removed_count": len(removed),
+        "changed_count": len(changed),
+        "new_sources": new_sources,
+        "deprecated_factors": deprecated_factors,
+        "schema_changes": schema_changes,
+    }
+
+
+def _prepend_to_changelog(changelog_path: Path, rendered: str) -> None:
+    """Insert ``rendered`` above any existing edition entries in the changelog.
+
+    Preserves the page preamble (everything before the first ``---``
+    separator) so the operator's hand-written introduction is not lost.
+    Creates the file with a minimal header when it does not exist yet.
+    """
+    if not changelog_path.exists():
+        changelog_path.parent.mkdir(parents=True, exist_ok=True)
+        header = (
+            "# Public changelog\n\n"
+            "Auto-published release notes for GreenLang Factors editions.\n\n"
+            "---\n\n"
+        )
+        changelog_path.write_text(header + rendered, encoding="utf-8")
+        return
+    existing = changelog_path.read_text(encoding="utf-8")
+    marker = "\n---\n"
+    idx = existing.find(marker)
+    if idx < 0:
+        # No separator - prepend straight after the first blank line.
+        changelog_path.write_text(rendered + "\n" + existing, encoding="utf-8")
+        return
+    preamble = existing[: idx + len(marker)]
+    rest = existing[idx + len(marker):]
+    changelog_path.write_text(preamble + "\n" + rendered + rest, encoding="utf-8")
+
+
+def publish_release_notes(
+    repo: FactorCatalogRepository,
+    *,
+    edition_id: str,
+    previous_edition_id: Optional[str] = None,
+    docs_root: Optional[Path] = None,
+    gold_eval: Optional[Dict[str, Any]] = None,
+    logger_override: Optional[logging.Logger] = None,
+) -> Dict[str, Any]:
+    """Render + persist the Markdown release notes for an edition cut.
+
+    Behaviour:
+      1. Diff the new edition against ``previous_edition_id`` (if any).
+      2. Render the Markdown via Jinja2 (or the inline fallback).
+      3. Write the per-edition file at
+         ``docs_root/releases/<slug>-<vintage>.md``.
+      4. Prepend the same content to ``docs_root/changelog.md`` so the
+         top of the page shows the newest release.
+      5. Emit a ``factors.edition.release.published`` log event carrying
+         the canonical payload shape the webhook system consumes.
+
+    Args:
+        repo: Catalog repository (must expose ``get_manifest_dict`` and
+            ideally ``list_factor_summaries`` for the diff path).
+        edition_id: The newly cut edition.
+        previous_edition_id: The prior stable edition; omit for initial
+            releases (the full factor count becomes the delta).
+        docs_root: Developer-portal docs root. Defaults to
+            ``<repo>/docs/developer-portal``. Override in tests.
+        gold_eval: Optional gold-set quality snapshot. When provided,
+            the template renders the P@1 / R@3 deltas.
+        logger_override: Swap the module-level logger (test hook).
+
+    Returns:
+        Dict with the rendered file paths, the publish timestamp, and a
+        copy of the log-event payload (so tests can assert its shape).
+    """
+    log = logger_override or logger
+    root = Path(docs_root) if docs_root is not None else _DEFAULT_DOCS_ROOT
+
+    diff = _collect_diff_for_release(repo, edition_id, previous_edition_id)
+    slug = _slugify_edition(edition_id)
+    vintage = _vintage_from_edition(edition_id)
+    published_at = _now_iso()
+
+    context: Dict[str, Any] = {
+        "edition_id": edition_id,
+        "edition_slug": slug,
+        "vintage": vintage,
+        "published_at": published_at,
+        **diff,
+    }
+    if gold_eval:
+        context["gold_eval"] = dict(gold_eval)
+
+    rendered = _render_release_notes(context)
+
+    releases_dir = root / "releases"
+    releases_dir.mkdir(parents=True, exist_ok=True)
+    per_edition_path = releases_dir / f"{slug}-{vintage}.md"
+    per_edition_path.write_text(rendered, encoding="utf-8")
+
+    changelog_path = root / "changelog.md"
+    _prepend_to_changelog(changelog_path, rendered)
+
+    event_payload: Dict[str, Any] = {
+        "event": "factors.edition.release.published",
+        "edition_id": edition_id,
+        "edition_slug": slug,
+        "vintage": vintage,
+        "previous_edition_id": previous_edition_id,
+        "factor_count": diff["factor_count"],
+        "factor_count_delta": diff["factor_count_delta"],
+        "added_count": diff["added_count"],
+        "removed_count": diff["removed_count"],
+        "changed_count": diff["changed_count"],
+        "new_sources": list(diff["new_sources"]),
+        "deprecated_factors": list(diff["deprecated_factors"]),
+        "schema_changes": list(diff["schema_changes"]),
+        "per_edition_path": str(per_edition_path),
+        "changelog_path": str(changelog_path),
+        "published_at": published_at,
+    }
+    if gold_eval:
+        event_payload["gold_eval"] = dict(gold_eval)
+
+    # Structured log event for the webhook system (CTO non-negotiable:
+    # every edition cut MUST emit a machine-parseable event).
+    log.info(
+        "factors.edition.release.published %s",
+        json.dumps(event_payload, sort_keys=True, default=str),
+        extra={"structured_event": event_payload},
+    )
+
+    return {
+        "per_edition_path": str(per_edition_path),
+        "changelog_path": str(changelog_path),
+        "rendered_length": len(rendered),
+        "published_at": published_at,
+        "event": event_payload,
+    }
+
+
+__all__ = [
+    "QAGateResult",
+    "ReleaseReport",
+    "prepare_release",
+    "publish_release",
+    "publish_release_notes",
+]

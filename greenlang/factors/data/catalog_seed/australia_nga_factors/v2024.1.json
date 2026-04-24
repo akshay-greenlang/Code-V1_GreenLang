@@ -1,7 +1,7 @@
 {
   "source_id": "australia_nga_factors",
   "source_version": "2024.1",
-  "ingested_at": "2026-04-23T18:26:52+00:00",
+  "ingested_at": "2026-04-24T07:12:23+00:00",
   "license_class": "open",
   "license_name": "CC-BY-4.0",
   "redistribution_class": "open",
@@ -87,8 +87,8 @@
         "Climate_Active",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.775288",
-      "updated_at": "2026-04-23T23:56:52.775288",
+      "created_at": "2026-04-24T12:42:23.075337",
+      "updated_at": "2026-04-24T12:42:23.075337",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -105,7 +105,7 @@
       "source_record_id": "nga:NSW:2023-24",
       "release_version": "NGA-2024-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "NGER state-level residual emission factors, Australian Clean Energy Regulator and DCCEEW, CC BY 4.0.",
         "alternates_considered": [
           "EF:AU:residual_mix:qld:2023_24:nga-2024-v1",
@@ -262,8 +262,8 @@
         "Climate_Active",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.775288",
-      "updated_at": "2026-04-23T23:56:52.775288",
+      "created_at": "2026-04-24T12:42:23.075337",
+      "updated_at": "2026-04-24T12:42:23.075337",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -280,7 +280,7 @@
       "source_record_id": "nga:QLD:2023-24",
       "release_version": "NGA-2024-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "NGER state-level residual emission factors, Australian Clean Energy Regulator and DCCEEW, CC BY 4.0.",
         "alternates_considered": [
           "EF:AU:residual_mix:nsw:2023_24:nga-2024-v1",
@@ -437,8 +437,8 @@
         "Climate_Active",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.776285",
-      "updated_at": "2026-04-23T23:56:52.776285",
+      "created_at": "2026-04-24T12:42:23.076362",
+      "updated_at": "2026-04-24T12:42:23.076362",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -455,7 +455,7 @@
       "source_record_id": "nga:VIC:2023-24",
       "release_version": "NGA-2024-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "NGER state-level residual emission factors, Australian Clean Energy Regulator and DCCEEW, CC BY 4.0.",
         "alternates_considered": [
           "EF:AU:residual_mix:nsw:2023_24:nga-2024-v1",
@@ -612,8 +612,8 @@
         "Climate_Active",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.776285",
-      "updated_at": "2026-04-23T23:56:52.776285",
+      "created_at": "2026-04-24T12:42:23.076362",
+      "updated_at": "2026-04-24T12:42:23.076362",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -630,7 +630,7 @@
       "source_record_id": "nga:SA:2023-24",
       "release_version": "NGA-2024-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "NGER state-level residual emission factors, Australian Clean Energy Regulator and DCCEEW, CC BY 4.0.",
         "alternates_considered": [
           "EF:AU:residual_mix:nsw:2023_24:nga-2024-v1",
@@ -787,8 +787,8 @@
         "Climate_Active",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.776285",
-      "updated_at": "2026-04-23T23:56:52.776285",
+      "created_at": "2026-04-24T12:42:23.076362",
+      "updated_at": "2026-04-24T12:42:23.076362",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -805,7 +805,7 @@
       "source_record_id": "nga:TAS:2023-24",
       "release_version": "NGA-2024-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "NGER state-level residual emission factors, Australian Clean Energy Regulator and DCCEEW, CC BY 4.0.",
         "alternates_considered": [
           "EF:AU:residual_mix:nsw:2023_24:nga-2024-v1",
@@ -962,8 +962,8 @@
         "Climate_Active",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.777282",
-      "updated_at": "2026-04-23T23:56:52.777282",
+      "created_at": "2026-04-24T12:42:23.076362",
+      "updated_at": "2026-04-24T12:42:23.076362",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -980,7 +980,7 @@
       "source_record_id": "nga:WA:2023-24",
       "release_version": "NGA-2024-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "NGER state-level residual emission factors, Australian Clean Energy Regulator and DCCEEW, CC BY 4.0.",
         "alternates_considered": [
           "EF:AU:residual_mix:nsw:2023_24:nga-2024-v1",
@@ -1137,8 +1137,8 @@
         "Climate_Active",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.777282",
-      "updated_at": "2026-04-23T23:56:52.777282",
+      "created_at": "2026-04-24T12:42:23.077355",
+      "updated_at": "2026-04-24T12:42:23.077355",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -1155,7 +1155,7 @@
       "source_record_id": "nga:NT:2023-24",
       "release_version": "NGA-2024-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "NGER state-level residual emission factors, Australian Clean Energy Regulator and DCCEEW, CC BY 4.0.",
         "alternates_considered": [
           "EF:AU:residual_mix:nsw:2023_24:nga-2024-v1",
@@ -1312,8 +1312,8 @@
         "Climate_Active",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.777282",
-      "updated_at": "2026-04-23T23:56:52.777282",
+      "created_at": "2026-04-24T12:42:23.077355",
+      "updated_at": "2026-04-24T12:42:23.077355",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -1330,7 +1330,7 @@
       "source_record_id": "nga:NSW:2022-23",
       "release_version": "NGA-2023-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "NGER state-level residual emission factors, Australian Clean Energy Regulator and DCCEEW, CC BY 4.0.",
         "alternates_considered": [
           "EF:AU:residual_mix:qld:2022_23:nga-2023-v1",
@@ -1487,8 +1487,8 @@
         "Climate_Active",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.777282",
-      "updated_at": "2026-04-23T23:56:52.777282",
+      "created_at": "2026-04-24T12:42:23.077355",
+      "updated_at": "2026-04-24T12:42:23.077355",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -1505,7 +1505,7 @@
       "source_record_id": "nga:QLD:2022-23",
       "release_version": "NGA-2023-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "NGER state-level residual emission factors, Australian Clean Energy Regulator and DCCEEW, CC BY 4.0.",
         "alternates_considered": [
           "EF:AU:residual_mix:nsw:2022_23:nga-2023-v1",
@@ -1662,8 +1662,8 @@
         "Climate_Active",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.778299",
-      "updated_at": "2026-04-23T23:56:52.778299",
+      "created_at": "2026-04-24T12:42:23.077355",
+      "updated_at": "2026-04-24T12:42:23.077355",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -1680,7 +1680,7 @@
       "source_record_id": "nga:VIC:2022-23",
       "release_version": "NGA-2023-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "NGER state-level residual emission factors, Australian Clean Energy Regulator and DCCEEW, CC BY 4.0.",
         "alternates_considered": [
           "EF:AU:residual_mix:nsw:2022_23:nga-2023-v1",
@@ -1837,8 +1837,8 @@
         "Climate_Active",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.778299",
-      "updated_at": "2026-04-23T23:56:52.778299",
+      "created_at": "2026-04-24T12:42:23.078339",
+      "updated_at": "2026-04-24T12:42:23.078339",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -1855,7 +1855,7 @@
       "source_record_id": "nga:SA:2022-23",
       "release_version": "NGA-2023-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "NGER state-level residual emission factors, Australian Clean Energy Regulator and DCCEEW, CC BY 4.0.",
         "alternates_considered": [
           "EF:AU:residual_mix:nsw:2022_23:nga-2023-v1",
@@ -2012,8 +2012,8 @@
         "Climate_Active",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.778299",
-      "updated_at": "2026-04-23T23:56:52.778299",
+      "created_at": "2026-04-24T12:42:23.078339",
+      "updated_at": "2026-04-24T12:42:23.078339",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -2030,7 +2030,7 @@
       "source_record_id": "nga:TAS:2022-23",
       "release_version": "NGA-2023-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "NGER state-level residual emission factors, Australian Clean Energy Regulator and DCCEEW, CC BY 4.0.",
         "alternates_considered": [
           "EF:AU:residual_mix:nsw:2022_23:nga-2023-v1",
@@ -2187,8 +2187,8 @@
         "Climate_Active",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.778299",
-      "updated_at": "2026-04-23T23:56:52.778299",
+      "created_at": "2026-04-24T12:42:23.078339",
+      "updated_at": "2026-04-24T12:42:23.078339",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -2205,7 +2205,7 @@
       "source_record_id": "nga:WA:2022-23",
       "release_version": "NGA-2023-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "NGER state-level residual emission factors, Australian Clean Energy Regulator and DCCEEW, CC BY 4.0.",
         "alternates_considered": [
           "EF:AU:residual_mix:nsw:2022_23:nga-2023-v1",
@@ -2362,8 +2362,8 @@
         "Climate_Active",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.779300",
-      "updated_at": "2026-04-23T23:56:52.779300",
+      "created_at": "2026-04-24T12:42:23.078339",
+      "updated_at": "2026-04-24T12:42:23.078339",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -2380,7 +2380,7 @@
       "source_record_id": "nga:NT:2022-23",
       "release_version": "NGA-2023-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "NGER state-level residual emission factors, Australian Clean Energy Regulator and DCCEEW, CC BY 4.0.",
         "alternates_considered": [
           "EF:AU:residual_mix:nsw:2022_23:nga-2023-v1",
@@ -2537,8 +2537,8 @@
         "Climate_Active",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.779300",
-      "updated_at": "2026-04-23T23:56:52.779300",
+      "created_at": "2026-04-24T12:42:23.079353",
+      "updated_at": "2026-04-24T12:42:23.079353",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -2555,7 +2555,7 @@
       "source_record_id": "nga:NSW:2021-22",
       "release_version": "NGA-2022-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "NGER state-level residual emission factors, Australian Clean Energy Regulator and DCCEEW, CC BY 4.0.",
         "alternates_considered": [
           "EF:AU:residual_mix:qld:2021_22:nga-2022-v1",
@@ -2712,8 +2712,8 @@
         "Climate_Active",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.779300",
-      "updated_at": "2026-04-23T23:56:52.779300",
+      "created_at": "2026-04-24T12:42:23.079353",
+      "updated_at": "2026-04-24T12:42:23.079353",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -2730,7 +2730,7 @@
       "source_record_id": "nga:QLD:2021-22",
       "release_version": "NGA-2022-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "NGER state-level residual emission factors, Australian Clean Energy Regulator and DCCEEW, CC BY 4.0.",
         "alternates_considered": [
           "EF:AU:residual_mix:nsw:2021_22:nga-2022-v1",
@@ -2887,8 +2887,8 @@
         "Climate_Active",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.779300",
-      "updated_at": "2026-04-23T23:56:52.779300",
+      "created_at": "2026-04-24T12:42:23.079353",
+      "updated_at": "2026-04-24T12:42:23.079353",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -2905,7 +2905,7 @@
       "source_record_id": "nga:VIC:2021-22",
       "release_version": "NGA-2022-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "NGER state-level residual emission factors, Australian Clean Energy Regulator and DCCEEW, CC BY 4.0.",
         "alternates_considered": [
           "EF:AU:residual_mix:nsw:2021_22:nga-2022-v1",
@@ -3062,8 +3062,8 @@
         "Climate_Active",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.780298",
-      "updated_at": "2026-04-23T23:56:52.780298",
+      "created_at": "2026-04-24T12:42:23.079353",
+      "updated_at": "2026-04-24T12:42:23.080353",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -3080,7 +3080,7 @@
       "source_record_id": "nga:SA:2021-22",
       "release_version": "NGA-2022-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "NGER state-level residual emission factors, Australian Clean Energy Regulator and DCCEEW, CC BY 4.0.",
         "alternates_considered": [
           "EF:AU:residual_mix:nsw:2021_22:nga-2022-v1",
@@ -3237,8 +3237,8 @@
         "Climate_Active",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.780298",
-      "updated_at": "2026-04-23T23:56:52.780298",
+      "created_at": "2026-04-24T12:42:23.080353",
+      "updated_at": "2026-04-24T12:42:23.080353",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -3255,7 +3255,7 @@
       "source_record_id": "nga:TAS:2021-22",
       "release_version": "NGA-2022-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "NGER state-level residual emission factors, Australian Clean Energy Regulator and DCCEEW, CC BY 4.0.",
         "alternates_considered": [
           "EF:AU:residual_mix:nsw:2021_22:nga-2022-v1",
@@ -3412,8 +3412,8 @@
         "Climate_Active",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.780298",
-      "updated_at": "2026-04-23T23:56:52.780298",
+      "created_at": "2026-04-24T12:42:23.080353",
+      "updated_at": "2026-04-24T12:42:23.080353",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -3430,7 +3430,7 @@
       "source_record_id": "nga:WA:2021-22",
       "release_version": "NGA-2022-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "NGER state-level residual emission factors, Australian Clean Energy Regulator and DCCEEW, CC BY 4.0.",
         "alternates_considered": [
           "EF:AU:residual_mix:nsw:2021_22:nga-2022-v1",
@@ -3587,8 +3587,8 @@
         "Climate_Active",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.780298",
-      "updated_at": "2026-04-23T23:56:52.780298",
+      "created_at": "2026-04-24T12:42:23.080353",
+      "updated_at": "2026-04-24T12:42:23.080353",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -3605,7 +3605,7 @@
       "source_record_id": "nga:NT:2021-22",
       "release_version": "NGA-2022-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "NGER state-level residual emission factors, Australian Clean Energy Regulator and DCCEEW, CC BY 4.0.",
         "alternates_considered": [
           "EF:AU:residual_mix:nsw:2021_22:nga-2022-v1",
@@ -3762,8 +3762,8 @@
         "Climate_Active",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.781282",
-      "updated_at": "2026-04-23T23:56:52.781282",
+      "created_at": "2026-04-24T12:42:23.080353",
+      "updated_at": "2026-04-24T12:42:23.080353",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -3780,7 +3780,7 @@
       "source_record_id": "nga:NSW:2024-25",
       "release_version": "NGA-2025-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "NGER state-level residual emission factors, Australian Clean Energy Regulator and DCCEEW, CC BY 4.0.",
         "alternates_considered": [
           "EF:AU:residual_mix:qld:2024_25:nga-2025-v1",
@@ -3935,8 +3935,8 @@
         "Climate_Active",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.781282",
-      "updated_at": "2026-04-23T23:56:52.781282",
+      "created_at": "2026-04-24T12:42:23.080353",
+      "updated_at": "2026-04-24T12:42:23.080353",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -3953,7 +3953,7 @@
       "source_record_id": "nga:QLD:2024-25",
       "release_version": "NGA-2025-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "NGER state-level residual emission factors, Australian Clean Energy Regulator and DCCEEW, CC BY 4.0.",
         "alternates_considered": [
           "EF:AU:residual_mix:nsw:2024_25:nga-2025-v1",
@@ -4108,8 +4108,8 @@
         "Climate_Active",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.781282",
-      "updated_at": "2026-04-23T23:56:52.781282",
+      "created_at": "2026-04-24T12:42:23.080353",
+      "updated_at": "2026-04-24T12:42:23.080353",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -4126,7 +4126,7 @@
       "source_record_id": "nga:VIC:2024-25",
       "release_version": "NGA-2025-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "NGER state-level residual emission factors, Australian Clean Energy Regulator and DCCEEW, CC BY 4.0.",
         "alternates_considered": [
           "EF:AU:residual_mix:nsw:2024_25:nga-2025-v1",
@@ -4281,8 +4281,8 @@
         "Climate_Active",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.781282",
-      "updated_at": "2026-04-23T23:56:52.781282",
+      "created_at": "2026-04-24T12:42:23.081878",
+      "updated_at": "2026-04-24T12:42:23.081878",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -4299,7 +4299,7 @@
       "source_record_id": "nga:SA:2024-25",
       "release_version": "NGA-2025-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "NGER state-level residual emission factors, Australian Clean Energy Regulator and DCCEEW, CC BY 4.0.",
         "alternates_considered": [
           "EF:AU:residual_mix:nsw:2024_25:nga-2025-v1",
@@ -4454,8 +4454,8 @@
         "Climate_Active",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.782286",
-      "updated_at": "2026-04-23T23:56:52.782286",
+      "created_at": "2026-04-24T12:42:23.081878",
+      "updated_at": "2026-04-24T12:42:23.081878",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -4472,7 +4472,7 @@
       "source_record_id": "nga:TAS:2024-25",
       "release_version": "NGA-2025-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "NGER state-level residual emission factors, Australian Clean Energy Regulator and DCCEEW, CC BY 4.0.",
         "alternates_considered": [
           "EF:AU:residual_mix:nsw:2024_25:nga-2025-v1",

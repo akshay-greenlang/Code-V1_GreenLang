@@ -68,6 +68,7 @@ See [`concepts/edition.md`](../concepts/edition.md#drift-rejection) for how drif
 
 ---
 
+<a id="bulk-export"></a>
 ## Bulk export — `GET /v1/editions/{edition_id}/bulk-export`
 
 Streams a compressed Parquet / JSON Lines archive containing every **`open`**-class factor in the edition. `licensed_embedded`, `oem_redistributable`, and `customer_private` factors are NEVER included.

@@ -1,0 +1,3247 @@
+{
+  "source_id": "eea_waste_stats",
+  "source_version": "2022.1",
+  "ingested_at": "2026-04-24T07:12:23+00:00",
+  "license_class": "public_eu",
+  "license_name": "EU-Publication",
+  "redistribution_class": "open",
+  "attribution_text": "European Environment Agency, European waste statistics \u2014 per-treatment GHG intensity series.",
+  "factor_status_default": "certified",
+  "factor_count": 30,
+  "factors": [
+    {
+      "factor_id": "EF:EEA:waste_landfill_msw:EU:2022:v1",
+      "fuel_type": "waste_msw",
+      "unit": "tonne",
+      "geography": "EU",
+      "geography_level": "global",
+      "vectors": {
+        "CO2": 950.0,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "European Environment Agency (EEA)",
+        "source_publication": "EEA European waste statistics \u2014 treatment GHG intensity (2022)",
+        "source_year": 2022,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.eea.europa.eu/en/topics/in-depth/waste-and-recycling",
+        "version": "eea-waste-2022"
+      },
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31",
+      "uncertainty_95ci": 0.3,
+      "dqs": {
+        "temporal": 3,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 3,
+        "methodological": 3
+      },
+      "license_info": {
+        "license": "EU-Publication",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "eea",
+        "waste",
+        "treatment_landfill",
+        "material_msw",
+        "scope3_cat5",
+        "eu27",
+        "illustrative"
+      ],
+      "notes": "EEA waste-stream factor: landfill msw (EU, 2022); illustrative_value=true; TODO: reconcile with the EEA dashboard XLSX release",
+      "biogenic_flag": false,
+      "factor_family": "waste_treatment",
+      "activity_tags": [
+        "waste_landfill",
+        "end_of_life"
+      ],
+      "sector_tags": [
+        "waste_management"
+      ],
+      "source_id": "eea_waste_stats",
+      "source_release": "eea-waste-2022",
+      "release_version": "eea-waste-2022",
+      "validation_flags": {
+        "method_pack_compat": [
+          "corporate",
+          "eu_policy"
+        ],
+        "eea_treatment": "landfill",
+        "eea_material": "msw",
+        "assumptions": [
+          "EEA European waste statistics 2022",
+          "Treatment: landfill",
+          "Material: msw",
+          "Country: EU"
+        ],
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "attribution_text": "European Environment Agency, European waste statistics \u2014 per-treatment GHG intensity series.",
+        "alternates_considered": [
+          "EF:EEA:waste_landfill_organic:EU:2022:v1",
+          "EF:EEA:waste_incineration_msw:EU:2022:v1",
+          "EF:EEA:waste_incineration_plastic:EU:2022:v1",
+          "EF:EEA:waste_incineration_sewage_sludge:EU:2022:v1",
+          "EF:EEA:waste_recycling_plastic:EU:2022:v1",
+          "EF:EEA:waste_recycling_paper:EU:2022:v1",
+          "EF:EEA:waste_recycling_glass:EU:2022:v1",
+          "EF:EEA:waste_recycling_steel:EU:2022:v1",
+          "EF:EEA:waste_recycling_aluminium:EU:2022:v1",
+          "EF:EEA:waste_recycling_copper:EU:2022:v1",
+          "EF:EEA:waste_recycling_textiles:EU:2022:v1",
+          "EF:EEA:waste_recycling_electronics:EU:2022:v1",
+          "EF:EEA:waste_composting_organic:EU:2022:v1",
+          "EF:EEA:waste_composting_garden:EU:2022:v1",
+          "EF:EEA:waste_composting_food:EU:2022:v1",
+          "EF:EEA:waste_anaerobic_digestion_organic:EU:2022:v1",
+          "EF:EEA:waste_anaerobic_digestion_food:EU:2022:v1",
+          "EF:EEA:waste_anaerobic_digestion_manure:EU:2022:v1",
+          "EF:EEA:wastewater_aerobic:EU:2022:v1",
+          "EF:EEA:wastewater_anaerobic:EU:2022:v1"
+        ]
+      },
+      "created_at": "2026-04-24T07:12:23+00:00",
+      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "GHG_Protocol_Scope3",
+        "EU_Waste_Framework_Directive"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_eu",
+      "redistribution_class": "open"
+    },
+    {
+      "factor_id": "EF:EEA:waste_landfill_msw:DE:2022:v1",
+      "fuel_type": "waste_msw",
+      "unit": "tonne",
+      "geography": "DE",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 420.0,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "European Environment Agency (EEA)",
+        "source_publication": "EEA European waste statistics \u2014 treatment GHG intensity (2022)",
+        "source_year": 2022,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.eea.europa.eu/en/topics/in-depth/waste-and-recycling",
+        "version": "eea-waste-2022"
+      },
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31",
+      "uncertainty_95ci": 0.3,
+      "dqs": {
+        "temporal": 3,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 3,
+        "methodological": 3
+      },
+      "license_info": {
+        "license": "EU-Publication",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "eea",
+        "waste",
+        "treatment_landfill",
+        "material_msw",
+        "scope3_cat5",
+        "eu27",
+        "illustrative"
+      ],
+      "notes": "EEA waste-stream factor: landfill msw (DE, 2022); illustrative_value=true; TODO: reconcile with the EEA dashboard XLSX release",
+      "biogenic_flag": false,
+      "factor_family": "waste_treatment",
+      "activity_tags": [
+        "waste_landfill",
+        "end_of_life"
+      ],
+      "sector_tags": [
+        "waste_management"
+      ],
+      "source_id": "eea_waste_stats",
+      "source_release": "eea-waste-2022",
+      "release_version": "eea-waste-2022",
+      "validation_flags": {
+        "method_pack_compat": [
+          "corporate",
+          "eu_policy"
+        ],
+        "eea_treatment": "landfill",
+        "eea_material": "msw",
+        "assumptions": [
+          "EEA European waste statistics 2022",
+          "Treatment: landfill",
+          "Material: msw",
+          "Country: DE"
+        ],
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "attribution_text": "European Environment Agency, European waste statistics \u2014 per-treatment GHG intensity series.",
+        "alternates_considered": [
+          "EF:EEA:waste_incineration_msw:DE:2022:v1"
+        ]
+      },
+      "created_at": "2026-04-24T07:12:23+00:00",
+      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "GHG_Protocol_Scope3",
+        "EU_Waste_Framework_Directive"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_eu",
+      "redistribution_class": "open"
+    },
+    {
+      "factor_id": "EF:EEA:waste_landfill_msw:FR:2022:v1",
+      "fuel_type": "waste_msw",
+      "unit": "tonne",
+      "geography": "FR",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 510.0,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "European Environment Agency (EEA)",
+        "source_publication": "EEA European waste statistics \u2014 treatment GHG intensity (2022)",
+        "source_year": 2022,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.eea.europa.eu/en/topics/in-depth/waste-and-recycling",
+        "version": "eea-waste-2022"
+      },
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31",
+      "uncertainty_95ci": 0.3,
+      "dqs": {
+        "temporal": 3,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 3,
+        "methodological": 3
+      },
+      "license_info": {
+        "license": "EU-Publication",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "eea",
+        "waste",
+        "treatment_landfill",
+        "material_msw",
+        "scope3_cat5",
+        "eu27",
+        "illustrative"
+      ],
+      "notes": "EEA waste-stream factor: landfill msw (FR, 2022); illustrative_value=true; TODO: reconcile with the EEA dashboard XLSX release",
+      "biogenic_flag": false,
+      "factor_family": "waste_treatment",
+      "activity_tags": [
+        "waste_landfill",
+        "end_of_life"
+      ],
+      "sector_tags": [
+        "waste_management"
+      ],
+      "source_id": "eea_waste_stats",
+      "source_release": "eea-waste-2022",
+      "release_version": "eea-waste-2022",
+      "validation_flags": {
+        "method_pack_compat": [
+          "corporate",
+          "eu_policy"
+        ],
+        "eea_treatment": "landfill",
+        "eea_material": "msw",
+        "assumptions": [
+          "EEA European waste statistics 2022",
+          "Treatment: landfill",
+          "Material: msw",
+          "Country: FR"
+        ],
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "attribution_text": "European Environment Agency, European waste statistics \u2014 per-treatment GHG intensity series.",
+        "alternates_considered": [
+          "EF:EEA:waste_incineration_msw:FR:2022:v1"
+        ]
+      },
+      "created_at": "2026-04-24T07:12:23+00:00",
+      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "GHG_Protocol_Scope3",
+        "EU_Waste_Framework_Directive"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_eu",
+      "redistribution_class": "open"
+    },
+    {
+      "factor_id": "EF:EEA:waste_landfill_msw:IT:2022:v1",
+      "fuel_type": "waste_msw",
+      "unit": "tonne",
+      "geography": "IT",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 680.0,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "European Environment Agency (EEA)",
+        "source_publication": "EEA European waste statistics \u2014 treatment GHG intensity (2022)",
+        "source_year": 2022,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.eea.europa.eu/en/topics/in-depth/waste-and-recycling",
+        "version": "eea-waste-2022"
+      },
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31",
+      "uncertainty_95ci": 0.3,
+      "dqs": {
+        "temporal": 3,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 3,
+        "methodological": 3
+      },
+      "license_info": {
+        "license": "EU-Publication",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "eea",
+        "waste",
+        "treatment_landfill",
+        "material_msw",
+        "scope3_cat5",
+        "eu27",
+        "illustrative"
+      ],
+      "notes": "EEA waste-stream factor: landfill msw (IT, 2022); illustrative_value=true; TODO: reconcile with the EEA dashboard XLSX release",
+      "biogenic_flag": false,
+      "factor_family": "waste_treatment",
+      "activity_tags": [
+        "waste_landfill",
+        "end_of_life"
+      ],
+      "sector_tags": [
+        "waste_management"
+      ],
+      "source_id": "eea_waste_stats",
+      "source_release": "eea-waste-2022",
+      "release_version": "eea-waste-2022",
+      "validation_flags": {
+        "method_pack_compat": [
+          "corporate",
+          "eu_policy"
+        ],
+        "eea_treatment": "landfill",
+        "eea_material": "msw",
+        "assumptions": [
+          "EEA European waste statistics 2022",
+          "Treatment: landfill",
+          "Material: msw",
+          "Country: IT"
+        ],
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "attribution_text": "European Environment Agency, European waste statistics \u2014 per-treatment GHG intensity series."
+      },
+      "created_at": "2026-04-24T07:12:23+00:00",
+      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "GHG_Protocol_Scope3",
+        "EU_Waste_Framework_Directive"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_eu",
+      "redistribution_class": "open"
+    },
+    {
+      "factor_id": "EF:EEA:waste_landfill_msw:ES:2022:v1",
+      "fuel_type": "waste_msw",
+      "unit": "tonne",
+      "geography": "ES",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 780.0,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "European Environment Agency (EEA)",
+        "source_publication": "EEA European waste statistics \u2014 treatment GHG intensity (2022)",
+        "source_year": 2022,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.eea.europa.eu/en/topics/in-depth/waste-and-recycling",
+        "version": "eea-waste-2022"
+      },
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31",
+      "uncertainty_95ci": 0.3,
+      "dqs": {
+        "temporal": 3,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 3,
+        "methodological": 3
+      },
+      "license_info": {
+        "license": "EU-Publication",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "eea",
+        "waste",
+        "treatment_landfill",
+        "material_msw",
+        "scope3_cat5",
+        "eu27",
+        "illustrative"
+      ],
+      "notes": "EEA waste-stream factor: landfill msw (ES, 2022); illustrative_value=true; TODO: reconcile with the EEA dashboard XLSX release",
+      "biogenic_flag": false,
+      "factor_family": "waste_treatment",
+      "activity_tags": [
+        "waste_landfill",
+        "end_of_life"
+      ],
+      "sector_tags": [
+        "waste_management"
+      ],
+      "source_id": "eea_waste_stats",
+      "source_release": "eea-waste-2022",
+      "release_version": "eea-waste-2022",
+      "validation_flags": {
+        "method_pack_compat": [
+          "corporate",
+          "eu_policy"
+        ],
+        "eea_treatment": "landfill",
+        "eea_material": "msw",
+        "assumptions": [
+          "EEA European waste statistics 2022",
+          "Treatment: landfill",
+          "Material: msw",
+          "Country: ES"
+        ],
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "attribution_text": "European Environment Agency, European waste statistics \u2014 per-treatment GHG intensity series."
+      },
+      "created_at": "2026-04-24T07:12:23+00:00",
+      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "GHG_Protocol_Scope3",
+        "EU_Waste_Framework_Directive"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_eu",
+      "redistribution_class": "open"
+    },
+    {
+      "factor_id": "EF:EEA:waste_landfill_msw:PL:2022:v1",
+      "fuel_type": "waste_msw",
+      "unit": "tonne",
+      "geography": "PL",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 860.0,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "European Environment Agency (EEA)",
+        "source_publication": "EEA European waste statistics \u2014 treatment GHG intensity (2022)",
+        "source_year": 2022,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.eea.europa.eu/en/topics/in-depth/waste-and-recycling",
+        "version": "eea-waste-2022"
+      },
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31",
+      "uncertainty_95ci": 0.3,
+      "dqs": {
+        "temporal": 3,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 3,
+        "methodological": 3
+      },
+      "license_info": {
+        "license": "EU-Publication",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "eea",
+        "waste",
+        "treatment_landfill",
+        "material_msw",
+        "scope3_cat5",
+        "eu27",
+        "illustrative"
+      ],
+      "notes": "EEA waste-stream factor: landfill msw (PL, 2022); illustrative_value=true; TODO: reconcile with the EEA dashboard XLSX release",
+      "biogenic_flag": false,
+      "factor_family": "waste_treatment",
+      "activity_tags": [
+        "waste_landfill",
+        "end_of_life"
+      ],
+      "sector_tags": [
+        "waste_management"
+      ],
+      "source_id": "eea_waste_stats",
+      "source_release": "eea-waste-2022",
+      "release_version": "eea-waste-2022",
+      "validation_flags": {
+        "method_pack_compat": [
+          "corporate",
+          "eu_policy"
+        ],
+        "eea_treatment": "landfill",
+        "eea_material": "msw",
+        "assumptions": [
+          "EEA European waste statistics 2022",
+          "Treatment: landfill",
+          "Material: msw",
+          "Country: PL"
+        ],
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "attribution_text": "European Environment Agency, European waste statistics \u2014 per-treatment GHG intensity series."
+      },
+      "created_at": "2026-04-24T07:12:23+00:00",
+      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "GHG_Protocol_Scope3",
+        "EU_Waste_Framework_Directive"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_eu",
+      "redistribution_class": "open"
+    },
+    {
+      "factor_id": "EF:EEA:waste_landfill_organic:EU:2022:v1",
+      "fuel_type": "waste_organic",
+      "unit": "tonne",
+      "geography": "EU",
+      "geography_level": "global",
+      "vectors": {
+        "CO2": 1100.0,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "European Environment Agency (EEA)",
+        "source_publication": "EEA European waste statistics \u2014 treatment GHG intensity (2022)",
+        "source_year": 2022,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.eea.europa.eu/en/topics/in-depth/waste-and-recycling",
+        "version": "eea-waste-2022"
+      },
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31",
+      "uncertainty_95ci": 0.3,
+      "dqs": {
+        "temporal": 3,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 3,
+        "methodological": 3
+      },
+      "license_info": {
+        "license": "EU-Publication",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "eea",
+        "waste",
+        "treatment_landfill",
+        "material_organic",
+        "scope3_cat5",
+        "eu27",
+        "illustrative"
+      ],
+      "notes": "EEA waste-stream factor: landfill organic (EU, 2022); illustrative_value=true; TODO: reconcile with the EEA dashboard XLSX release",
+      "biogenic_flag": true,
+      "factor_family": "waste_treatment",
+      "activity_tags": [
+        "waste_landfill",
+        "end_of_life"
+      ],
+      "sector_tags": [
+        "waste_management"
+      ],
+      "source_id": "eea_waste_stats",
+      "source_release": "eea-waste-2022",
+      "release_version": "eea-waste-2022",
+      "validation_flags": {
+        "method_pack_compat": [
+          "corporate",
+          "eu_policy"
+        ],
+        "eea_treatment": "landfill",
+        "eea_material": "organic",
+        "assumptions": [
+          "EEA European waste statistics 2022",
+          "Treatment: landfill",
+          "Material: organic",
+          "Country: EU"
+        ],
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "attribution_text": "European Environment Agency, European waste statistics \u2014 per-treatment GHG intensity series.",
+        "alternates_considered": [
+          "EF:EEA:waste_landfill_msw:EU:2022:v1",
+          "EF:EEA:waste_incineration_msw:EU:2022:v1",
+          "EF:EEA:waste_incineration_plastic:EU:2022:v1",
+          "EF:EEA:waste_incineration_sewage_sludge:EU:2022:v1",
+          "EF:EEA:waste_recycling_plastic:EU:2022:v1",
+          "EF:EEA:waste_recycling_paper:EU:2022:v1",
+          "EF:EEA:waste_recycling_glass:EU:2022:v1",
+          "EF:EEA:waste_recycling_steel:EU:2022:v1",
+          "EF:EEA:waste_recycling_aluminium:EU:2022:v1",
+          "EF:EEA:waste_recycling_copper:EU:2022:v1",
+          "EF:EEA:waste_recycling_textiles:EU:2022:v1",
+          "EF:EEA:waste_recycling_electronics:EU:2022:v1",
+          "EF:EEA:waste_composting_organic:EU:2022:v1",
+          "EF:EEA:waste_composting_garden:EU:2022:v1",
+          "EF:EEA:waste_composting_food:EU:2022:v1",
+          "EF:EEA:waste_anaerobic_digestion_organic:EU:2022:v1",
+          "EF:EEA:waste_anaerobic_digestion_food:EU:2022:v1",
+          "EF:EEA:waste_anaerobic_digestion_manure:EU:2022:v1",
+          "EF:EEA:wastewater_aerobic:EU:2022:v1",
+          "EF:EEA:wastewater_anaerobic:EU:2022:v1"
+        ]
+      },
+      "created_at": "2026-04-24T07:12:23+00:00",
+      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "GHG_Protocol_Scope3",
+        "EU_Waste_Framework_Directive"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_eu",
+      "redistribution_class": "open"
+    },
+    {
+      "factor_id": "EF:EEA:waste_incineration_msw:EU:2022:v1",
+      "fuel_type": "waste_msw",
+      "unit": "tonne",
+      "geography": "EU",
+      "geography_level": "global",
+      "vectors": {
+        "CO2": 385.0,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "European Environment Agency (EEA)",
+        "source_publication": "EEA European waste statistics \u2014 treatment GHG intensity (2022)",
+        "source_year": 2022,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.eea.europa.eu/en/topics/in-depth/waste-and-recycling",
+        "version": "eea-waste-2022"
+      },
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31",
+      "uncertainty_95ci": 0.3,
+      "dqs": {
+        "temporal": 3,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 3,
+        "methodological": 3
+      },
+      "license_info": {
+        "license": "EU-Publication",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "eea",
+        "waste",
+        "treatment_incineration",
+        "material_msw",
+        "scope3_cat5",
+        "eu27",
+        "illustrative"
+      ],
+      "notes": "EEA waste-stream factor: incineration msw (EU, 2022); illustrative_value=true; TODO: reconcile with the EEA dashboard XLSX release",
+      "biogenic_flag": false,
+      "factor_family": "waste_treatment",
+      "activity_tags": [
+        "waste_incineration",
+        "end_of_life"
+      ],
+      "sector_tags": [
+        "waste_management"
+      ],
+      "source_id": "eea_waste_stats",
+      "source_release": "eea-waste-2022",
+      "release_version": "eea-waste-2022",
+      "validation_flags": {
+        "method_pack_compat": [
+          "corporate",
+          "eu_policy"
+        ],
+        "eea_treatment": "incineration",
+        "eea_material": "msw",
+        "assumptions": [
+          "EEA European waste statistics 2022",
+          "Treatment: incineration",
+          "Material: msw",
+          "Country: EU"
+        ],
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "attribution_text": "European Environment Agency, European waste statistics \u2014 per-treatment GHG intensity series.",
+        "alternates_considered": [
+          "EF:EEA:waste_landfill_msw:EU:2022:v1",
+          "EF:EEA:waste_landfill_organic:EU:2022:v1",
+          "EF:EEA:waste_incineration_plastic:EU:2022:v1",
+          "EF:EEA:waste_incineration_sewage_sludge:EU:2022:v1",
+          "EF:EEA:waste_recycling_plastic:EU:2022:v1",
+          "EF:EEA:waste_recycling_paper:EU:2022:v1",
+          "EF:EEA:waste_recycling_glass:EU:2022:v1",
+          "EF:EEA:waste_recycling_steel:EU:2022:v1",
+          "EF:EEA:waste_recycling_aluminium:EU:2022:v1",
+          "EF:EEA:waste_recycling_copper:EU:2022:v1",
+          "EF:EEA:waste_recycling_textiles:EU:2022:v1",
+          "EF:EEA:waste_recycling_electronics:EU:2022:v1",
+          "EF:EEA:waste_composting_organic:EU:2022:v1",
+          "EF:EEA:waste_composting_garden:EU:2022:v1",
+          "EF:EEA:waste_composting_food:EU:2022:v1",
+          "EF:EEA:waste_anaerobic_digestion_organic:EU:2022:v1",
+          "EF:EEA:waste_anaerobic_digestion_food:EU:2022:v1",
+          "EF:EEA:waste_anaerobic_digestion_manure:EU:2022:v1",
+          "EF:EEA:wastewater_aerobic:EU:2022:v1",
+          "EF:EEA:wastewater_anaerobic:EU:2022:v1"
+        ]
+      },
+      "created_at": "2026-04-24T07:12:23+00:00",
+      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "GHG_Protocol_Scope3",
+        "EU_Waste_Framework_Directive"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_eu",
+      "redistribution_class": "open"
+    },
+    {
+      "factor_id": "EF:EEA:waste_incineration_msw:DE:2022:v1",
+      "fuel_type": "waste_msw",
+      "unit": "tonne",
+      "geography": "DE",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 365.0,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "European Environment Agency (EEA)",
+        "source_publication": "EEA European waste statistics \u2014 treatment GHG intensity (2022)",
+        "source_year": 2022,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.eea.europa.eu/en/topics/in-depth/waste-and-recycling",
+        "version": "eea-waste-2022"
+      },
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31",
+      "uncertainty_95ci": 0.3,
+      "dqs": {
+        "temporal": 3,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 3,
+        "methodological": 3
+      },
+      "license_info": {
+        "license": "EU-Publication",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "eea",
+        "waste",
+        "treatment_incineration",
+        "material_msw",
+        "scope3_cat5",
+        "eu27",
+        "illustrative"
+      ],
+      "notes": "EEA waste-stream factor: incineration msw (DE, 2022); illustrative_value=true; TODO: reconcile with the EEA dashboard XLSX release",
+      "biogenic_flag": false,
+      "factor_family": "waste_treatment",
+      "activity_tags": [
+        "waste_incineration",
+        "end_of_life"
+      ],
+      "sector_tags": [
+        "waste_management"
+      ],
+      "source_id": "eea_waste_stats",
+      "source_release": "eea-waste-2022",
+      "release_version": "eea-waste-2022",
+      "validation_flags": {
+        "method_pack_compat": [
+          "corporate",
+          "eu_policy"
+        ],
+        "eea_treatment": "incineration",
+        "eea_material": "msw",
+        "assumptions": [
+          "EEA European waste statistics 2022",
+          "Treatment: incineration",
+          "Material: msw",
+          "Country: DE"
+        ],
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "attribution_text": "European Environment Agency, European waste statistics \u2014 per-treatment GHG intensity series.",
+        "alternates_considered": [
+          "EF:EEA:waste_landfill_msw:DE:2022:v1"
+        ]
+      },
+      "created_at": "2026-04-24T07:12:23+00:00",
+      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "GHG_Protocol_Scope3",
+        "EU_Waste_Framework_Directive"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_eu",
+      "redistribution_class": "open"
+    },
+    {
+      "factor_id": "EF:EEA:waste_incineration_msw:FR:2022:v1",
+      "fuel_type": "waste_msw",
+      "unit": "tonne",
+      "geography": "FR",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 375.0,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "European Environment Agency (EEA)",
+        "source_publication": "EEA European waste statistics \u2014 treatment GHG intensity (2022)",
+        "source_year": 2022,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.eea.europa.eu/en/topics/in-depth/waste-and-recycling",
+        "version": "eea-waste-2022"
+      },
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31",
+      "uncertainty_95ci": 0.3,
+      "dqs": {
+        "temporal": 3,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 3,
+        "methodological": 3
+      },
+      "license_info": {
+        "license": "EU-Publication",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "eea",
+        "waste",
+        "treatment_incineration",
+        "material_msw",
+        "scope3_cat5",
+        "eu27",
+        "illustrative"
+      ],
+      "notes": "EEA waste-stream factor: incineration msw (FR, 2022); illustrative_value=true; TODO: reconcile with the EEA dashboard XLSX release",
+      "biogenic_flag": false,
+      "factor_family": "waste_treatment",
+      "activity_tags": [
+        "waste_incineration",
+        "end_of_life"
+      ],
+      "sector_tags": [
+        "waste_management"
+      ],
+      "source_id": "eea_waste_stats",
+      "source_release": "eea-waste-2022",
+      "release_version": "eea-waste-2022",
+      "validation_flags": {
+        "method_pack_compat": [
+          "corporate",
+          "eu_policy"
+        ],
+        "eea_treatment": "incineration",
+        "eea_material": "msw",
+        "assumptions": [
+          "EEA European waste statistics 2022",
+          "Treatment: incineration",
+          "Material: msw",
+          "Country: FR"
+        ],
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "attribution_text": "European Environment Agency, European waste statistics \u2014 per-treatment GHG intensity series.",
+        "alternates_considered": [
+          "EF:EEA:waste_landfill_msw:FR:2022:v1"
+        ]
+      },
+      "created_at": "2026-04-24T07:12:23+00:00",
+      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "GHG_Protocol_Scope3",
+        "EU_Waste_Framework_Directive"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_eu",
+      "redistribution_class": "open"
+    },
+    {
+      "factor_id": "EF:EEA:waste_incineration_msw:NL:2022:v1",
+      "fuel_type": "waste_msw",
+      "unit": "tonne",
+      "geography": "NL",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 350.0,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "European Environment Agency (EEA)",
+        "source_publication": "EEA European waste statistics \u2014 treatment GHG intensity (2022)",
+        "source_year": 2022,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.eea.europa.eu/en/topics/in-depth/waste-and-recycling",
+        "version": "eea-waste-2022"
+      },
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31",
+      "uncertainty_95ci": 0.3,
+      "dqs": {
+        "temporal": 3,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 3,
+        "methodological": 3
+      },
+      "license_info": {
+        "license": "EU-Publication",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "eea",
+        "waste",
+        "treatment_incineration",
+        "material_msw",
+        "scope3_cat5",
+        "eu27",
+        "illustrative"
+      ],
+      "notes": "EEA waste-stream factor: incineration msw (NL, 2022); illustrative_value=true; TODO: reconcile with the EEA dashboard XLSX release",
+      "biogenic_flag": false,
+      "factor_family": "waste_treatment",
+      "activity_tags": [
+        "waste_incineration",
+        "end_of_life"
+      ],
+      "sector_tags": [
+        "waste_management"
+      ],
+      "source_id": "eea_waste_stats",
+      "source_release": "eea-waste-2022",
+      "release_version": "eea-waste-2022",
+      "validation_flags": {
+        "method_pack_compat": [
+          "corporate",
+          "eu_policy"
+        ],
+        "eea_treatment": "incineration",
+        "eea_material": "msw",
+        "assumptions": [
+          "EEA European waste statistics 2022",
+          "Treatment: incineration",
+          "Material: msw",
+          "Country: NL"
+        ],
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "attribution_text": "European Environment Agency, European waste statistics \u2014 per-treatment GHG intensity series."
+      },
+      "created_at": "2026-04-24T07:12:23+00:00",
+      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "GHG_Protocol_Scope3",
+        "EU_Waste_Framework_Directive"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_eu",
+      "redistribution_class": "open"
+    },
+    {
+      "factor_id": "EF:EEA:waste_incineration_msw:SE:2022:v1",
+      "fuel_type": "waste_msw",
+      "unit": "tonne",
+      "geography": "SE",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 320.0,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "European Environment Agency (EEA)",
+        "source_publication": "EEA European waste statistics \u2014 treatment GHG intensity (2022)",
+        "source_year": 2022,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.eea.europa.eu/en/topics/in-depth/waste-and-recycling",
+        "version": "eea-waste-2022"
+      },
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31",
+      "uncertainty_95ci": 0.3,
+      "dqs": {
+        "temporal": 3,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 3,
+        "methodological": 3
+      },
+      "license_info": {
+        "license": "EU-Publication",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "eea",
+        "waste",
+        "treatment_incineration",
+        "material_msw",
+        "scope3_cat5",
+        "eu27",
+        "illustrative"
+      ],
+      "notes": "EEA waste-stream factor: incineration msw (SE, 2022); illustrative_value=true; TODO: reconcile with the EEA dashboard XLSX release",
+      "biogenic_flag": false,
+      "factor_family": "waste_treatment",
+      "activity_tags": [
+        "waste_incineration",
+        "end_of_life"
+      ],
+      "sector_tags": [
+        "waste_management"
+      ],
+      "source_id": "eea_waste_stats",
+      "source_release": "eea-waste-2022",
+      "release_version": "eea-waste-2022",
+      "validation_flags": {
+        "method_pack_compat": [
+          "corporate",
+          "eu_policy"
+        ],
+        "eea_treatment": "incineration",
+        "eea_material": "msw",
+        "assumptions": [
+          "EEA European waste statistics 2022",
+          "Treatment: incineration",
+          "Material: msw",
+          "Country: SE"
+        ],
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "attribution_text": "European Environment Agency, European waste statistics \u2014 per-treatment GHG intensity series."
+      },
+      "created_at": "2026-04-24T07:12:23+00:00",
+      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "GHG_Protocol_Scope3",
+        "EU_Waste_Framework_Directive"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_eu",
+      "redistribution_class": "open"
+    },
+    {
+      "factor_id": "EF:EEA:waste_incineration_plastic:EU:2022:v1",
+      "fuel_type": "waste_plastic",
+      "unit": "tonne",
+      "geography": "EU",
+      "geography_level": "global",
+      "vectors": {
+        "CO2": 2700.0,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "European Environment Agency (EEA)",
+        "source_publication": "EEA European waste statistics \u2014 treatment GHG intensity (2022)",
+        "source_year": 2022,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.eea.europa.eu/en/topics/in-depth/waste-and-recycling",
+        "version": "eea-waste-2022"
+      },
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31",
+      "uncertainty_95ci": 0.3,
+      "dqs": {
+        "temporal": 3,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 3,
+        "methodological": 3
+      },
+      "license_info": {
+        "license": "EU-Publication",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "eea",
+        "waste",
+        "treatment_incineration",
+        "material_plastic",
+        "scope3_cat5",
+        "eu27",
+        "illustrative"
+      ],
+      "notes": "EEA waste-stream factor: incineration plastic (EU, 2022); illustrative_value=true; TODO: reconcile with the EEA dashboard XLSX release",
+      "biogenic_flag": false,
+      "factor_family": "waste_treatment",
+      "activity_tags": [
+        "waste_incineration",
+        "end_of_life"
+      ],
+      "sector_tags": [
+        "waste_management"
+      ],
+      "source_id": "eea_waste_stats",
+      "source_release": "eea-waste-2022",
+      "release_version": "eea-waste-2022",
+      "validation_flags": {
+        "method_pack_compat": [
+          "corporate",
+          "eu_policy"
+        ],
+        "eea_treatment": "incineration",
+        "eea_material": "plastic",
+        "assumptions": [
+          "EEA European waste statistics 2022",
+          "Treatment: incineration",
+          "Material: plastic",
+          "Country: EU"
+        ],
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "attribution_text": "European Environment Agency, European waste statistics \u2014 per-treatment GHG intensity series.",
+        "alternates_considered": [
+          "EF:EEA:waste_landfill_msw:EU:2022:v1",
+          "EF:EEA:waste_landfill_organic:EU:2022:v1",
+          "EF:EEA:waste_incineration_msw:EU:2022:v1",
+          "EF:EEA:waste_incineration_sewage_sludge:EU:2022:v1",
+          "EF:EEA:waste_recycling_plastic:EU:2022:v1",
+          "EF:EEA:waste_recycling_paper:EU:2022:v1",
+          "EF:EEA:waste_recycling_glass:EU:2022:v1",
+          "EF:EEA:waste_recycling_steel:EU:2022:v1",
+          "EF:EEA:waste_recycling_aluminium:EU:2022:v1",
+          "EF:EEA:waste_recycling_copper:EU:2022:v1",
+          "EF:EEA:waste_recycling_textiles:EU:2022:v1",
+          "EF:EEA:waste_recycling_electronics:EU:2022:v1",
+          "EF:EEA:waste_composting_organic:EU:2022:v1",
+          "EF:EEA:waste_composting_garden:EU:2022:v1",
+          "EF:EEA:waste_composting_food:EU:2022:v1",
+          "EF:EEA:waste_anaerobic_digestion_organic:EU:2022:v1",
+          "EF:EEA:waste_anaerobic_digestion_food:EU:2022:v1",
+          "EF:EEA:waste_anaerobic_digestion_manure:EU:2022:v1",
+          "EF:EEA:wastewater_aerobic:EU:2022:v1",
+          "EF:EEA:wastewater_anaerobic:EU:2022:v1"
+        ]
+      },
+      "created_at": "2026-04-24T07:12:23+00:00",
+      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "GHG_Protocol_Scope3",
+        "EU_Waste_Framework_Directive"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_eu",
+      "redistribution_class": "open"
+    },
+    {
+      "factor_id": "EF:EEA:waste_incineration_sewage_sludge:EU:2022:v1",
+      "fuel_type": "waste_sewage_sludge",
+      "unit": "tonne",
+      "geography": "EU",
+      "geography_level": "global",
+      "vectors": {
+        "CO2": 345.0,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "European Environment Agency (EEA)",
+        "source_publication": "EEA European waste statistics \u2014 treatment GHG intensity (2022)",
+        "source_year": 2022,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.eea.europa.eu/en/topics/in-depth/waste-and-recycling",
+        "version": "eea-waste-2022"
+      },
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31",
+      "uncertainty_95ci": 0.3,
+      "dqs": {
+        "temporal": 3,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 3,
+        "methodological": 3
+      },
+      "license_info": {
+        "license": "EU-Publication",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "eea",
+        "waste",
+        "treatment_incineration",
+        "material_sewage_sludge",
+        "scope3_cat5",
+        "eu27",
+        "illustrative"
+      ],
+      "notes": "EEA waste-stream factor: incineration sewage_sludge (EU, 2022); illustrative_value=true; TODO: reconcile with the EEA dashboard XLSX release",
+      "biogenic_flag": false,
+      "factor_family": "waste_treatment",
+      "activity_tags": [
+        "waste_incineration",
+        "end_of_life"
+      ],
+      "sector_tags": [
+        "waste_management"
+      ],
+      "source_id": "eea_waste_stats",
+      "source_release": "eea-waste-2022",
+      "release_version": "eea-waste-2022",
+      "validation_flags": {
+        "method_pack_compat": [
+          "corporate",
+          "eu_policy"
+        ],
+        "eea_treatment": "incineration",
+        "eea_material": "sewage_sludge",
+        "assumptions": [
+          "EEA European waste statistics 2022",
+          "Treatment: incineration",
+          "Material: sewage_sludge",
+          "Country: EU"
+        ],
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "attribution_text": "European Environment Agency, European waste statistics \u2014 per-treatment GHG intensity series.",
+        "alternates_considered": [
+          "EF:EEA:waste_landfill_msw:EU:2022:v1",
+          "EF:EEA:waste_landfill_organic:EU:2022:v1",
+          "EF:EEA:waste_incineration_msw:EU:2022:v1",
+          "EF:EEA:waste_incineration_plastic:EU:2022:v1",
+          "EF:EEA:waste_recycling_plastic:EU:2022:v1",
+          "EF:EEA:waste_recycling_paper:EU:2022:v1",
+          "EF:EEA:waste_recycling_glass:EU:2022:v1",
+          "EF:EEA:waste_recycling_steel:EU:2022:v1",
+          "EF:EEA:waste_recycling_aluminium:EU:2022:v1",
+          "EF:EEA:waste_recycling_copper:EU:2022:v1",
+          "EF:EEA:waste_recycling_textiles:EU:2022:v1",
+          "EF:EEA:waste_recycling_electronics:EU:2022:v1",
+          "EF:EEA:waste_composting_organic:EU:2022:v1",
+          "EF:EEA:waste_composting_garden:EU:2022:v1",
+          "EF:EEA:waste_composting_food:EU:2022:v1",
+          "EF:EEA:waste_anaerobic_digestion_organic:EU:2022:v1",
+          "EF:EEA:waste_anaerobic_digestion_food:EU:2022:v1",
+          "EF:EEA:waste_anaerobic_digestion_manure:EU:2022:v1",
+          "EF:EEA:wastewater_aerobic:EU:2022:v1",
+          "EF:EEA:wastewater_anaerobic:EU:2022:v1"
+        ]
+      },
+      "created_at": "2026-04-24T07:12:23+00:00",
+      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "GHG_Protocol_Scope3",
+        "EU_Waste_Framework_Directive"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_eu",
+      "redistribution_class": "open"
+    },
+    {
+      "factor_id": "EF:EEA:waste_recycling_plastic:EU:2022:v1",
+      "fuel_type": "waste_plastic",
+      "unit": "tonne",
+      "geography": "EU",
+      "geography_level": "global",
+      "vectors": {
+        "CO2": 320.0,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "European Environment Agency (EEA)",
+        "source_publication": "EEA European waste statistics \u2014 treatment GHG intensity (2022)",
+        "source_year": 2022,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.eea.europa.eu/en/topics/in-depth/waste-and-recycling",
+        "version": "eea-waste-2022"
+      },
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31",
+      "uncertainty_95ci": 0.3,
+      "dqs": {
+        "temporal": 3,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 3,
+        "methodological": 3
+      },
+      "license_info": {
+        "license": "EU-Publication",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "eea",
+        "waste",
+        "treatment_recycling",
+        "material_plastic",
+        "scope3_cat5",
+        "eu27",
+        "illustrative"
+      ],
+      "notes": "EEA waste-stream factor: recycling plastic (EU, 2022); illustrative_value=true; TODO: reconcile with the EEA dashboard XLSX release",
+      "biogenic_flag": false,
+      "factor_family": "waste_treatment",
+      "activity_tags": [
+        "waste_recycling",
+        "end_of_life"
+      ],
+      "sector_tags": [
+        "waste_management"
+      ],
+      "source_id": "eea_waste_stats",
+      "source_release": "eea-waste-2022",
+      "release_version": "eea-waste-2022",
+      "validation_flags": {
+        "method_pack_compat": [
+          "corporate",
+          "eu_policy"
+        ],
+        "eea_treatment": "recycling",
+        "eea_material": "plastic",
+        "assumptions": [
+          "EEA European waste statistics 2022",
+          "Treatment: recycling",
+          "Material: plastic",
+          "Country: EU"
+        ],
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "attribution_text": "European Environment Agency, European waste statistics \u2014 per-treatment GHG intensity series.",
+        "alternates_considered": [
+          "EF:EEA:waste_landfill_msw:EU:2022:v1",
+          "EF:EEA:waste_landfill_organic:EU:2022:v1",
+          "EF:EEA:waste_incineration_msw:EU:2022:v1",
+          "EF:EEA:waste_incineration_plastic:EU:2022:v1",
+          "EF:EEA:waste_incineration_sewage_sludge:EU:2022:v1",
+          "EF:EEA:waste_recycling_paper:EU:2022:v1",
+          "EF:EEA:waste_recycling_glass:EU:2022:v1",
+          "EF:EEA:waste_recycling_steel:EU:2022:v1",
+          "EF:EEA:waste_recycling_aluminium:EU:2022:v1",
+          "EF:EEA:waste_recycling_copper:EU:2022:v1",
+          "EF:EEA:waste_recycling_textiles:EU:2022:v1",
+          "EF:EEA:waste_recycling_electronics:EU:2022:v1",
+          "EF:EEA:waste_composting_organic:EU:2022:v1",
+          "EF:EEA:waste_composting_garden:EU:2022:v1",
+          "EF:EEA:waste_composting_food:EU:2022:v1",
+          "EF:EEA:waste_anaerobic_digestion_organic:EU:2022:v1",
+          "EF:EEA:waste_anaerobic_digestion_food:EU:2022:v1",
+          "EF:EEA:waste_anaerobic_digestion_manure:EU:2022:v1",
+          "EF:EEA:wastewater_aerobic:EU:2022:v1",
+          "EF:EEA:wastewater_anaerobic:EU:2022:v1"
+        ]
+      },
+      "created_at": "2026-04-24T07:12:23+00:00",
+      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "GHG_Protocol_Scope3",
+        "EU_Waste_Framework_Directive"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_eu",
+      "redistribution_class": "open"
+    },
+    {
+      "factor_id": "EF:EEA:waste_recycling_paper:EU:2022:v1",
+      "fuel_type": "waste_paper",
+      "unit": "tonne",
+      "geography": "EU",
+      "geography_level": "global",
+      "vectors": {
+        "CO2": 180.0,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "European Environment Agency (EEA)",
+        "source_publication": "EEA European waste statistics \u2014 treatment GHG intensity (2022)",
+        "source_year": 2022,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.eea.europa.eu/en/topics/in-depth/waste-and-recycling",
+        "version": "eea-waste-2022"
+      },
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31",
+      "uncertainty_95ci": 0.3,
+      "dqs": {
+        "temporal": 3,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 3,
+        "methodological": 3
+      },
+      "license_info": {
+        "license": "EU-Publication",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "eea",
+        "waste",
+        "treatment_recycling",
+        "material_paper",
+        "scope3_cat5",
+        "eu27",
+        "illustrative"
+      ],
+      "notes": "EEA waste-stream factor: recycling paper (EU, 2022); illustrative_value=true; TODO: reconcile with the EEA dashboard XLSX release",
+      "biogenic_flag": false,
+      "factor_family": "waste_treatment",
+      "activity_tags": [
+        "waste_recycling",
+        "end_of_life"
+      ],
+      "sector_tags": [
+        "waste_management"
+      ],
+      "source_id": "eea_waste_stats",
+      "source_release": "eea-waste-2022",
+      "release_version": "eea-waste-2022",
+      "validation_flags": {
+        "method_pack_compat": [
+          "corporate",
+          "eu_policy"
+        ],
+        "eea_treatment": "recycling",
+        "eea_material": "paper",
+        "assumptions": [
+          "EEA European waste statistics 2022",
+          "Treatment: recycling",
+          "Material: paper",
+          "Country: EU"
+        ],
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "attribution_text": "European Environment Agency, European waste statistics \u2014 per-treatment GHG intensity series.",
+        "alternates_considered": [
+          "EF:EEA:waste_landfill_msw:EU:2022:v1",
+          "EF:EEA:waste_landfill_organic:EU:2022:v1",
+          "EF:EEA:waste_incineration_msw:EU:2022:v1",
+          "EF:EEA:waste_incineration_plastic:EU:2022:v1",
+          "EF:EEA:waste_incineration_sewage_sludge:EU:2022:v1",
+          "EF:EEA:waste_recycling_plastic:EU:2022:v1",
+          "EF:EEA:waste_recycling_glass:EU:2022:v1",
+          "EF:EEA:waste_recycling_steel:EU:2022:v1",
+          "EF:EEA:waste_recycling_aluminium:EU:2022:v1",
+          "EF:EEA:waste_recycling_copper:EU:2022:v1",
+          "EF:EEA:waste_recycling_textiles:EU:2022:v1",
+          "EF:EEA:waste_recycling_electronics:EU:2022:v1",
+          "EF:EEA:waste_composting_organic:EU:2022:v1",
+          "EF:EEA:waste_composting_garden:EU:2022:v1",
+          "EF:EEA:waste_composting_food:EU:2022:v1",
+          "EF:EEA:waste_anaerobic_digestion_organic:EU:2022:v1",
+          "EF:EEA:waste_anaerobic_digestion_food:EU:2022:v1",
+          "EF:EEA:waste_anaerobic_digestion_manure:EU:2022:v1",
+          "EF:EEA:wastewater_aerobic:EU:2022:v1",
+          "EF:EEA:wastewater_anaerobic:EU:2022:v1"
+        ]
+      },
+      "created_at": "2026-04-24T07:12:23+00:00",
+      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "GHG_Protocol_Scope3",
+        "EU_Waste_Framework_Directive"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_eu",
+      "redistribution_class": "open"
+    },
+    {
+      "factor_id": "EF:EEA:waste_recycling_glass:EU:2022:v1",
+      "fuel_type": "waste_glass",
+      "unit": "tonne",
+      "geography": "EU",
+      "geography_level": "global",
+      "vectors": {
+        "CO2": 220.0,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "European Environment Agency (EEA)",
+        "source_publication": "EEA European waste statistics \u2014 treatment GHG intensity (2022)",
+        "source_year": 2022,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.eea.europa.eu/en/topics/in-depth/waste-and-recycling",
+        "version": "eea-waste-2022"
+      },
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31",
+      "uncertainty_95ci": 0.3,
+      "dqs": {
+        "temporal": 3,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 3,
+        "methodological": 3
+      },
+      "license_info": {
+        "license": "EU-Publication",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "eea",
+        "waste",
+        "treatment_recycling",
+        "material_glass",
+        "scope3_cat5",
+        "eu27",
+        "illustrative"
+      ],
+      "notes": "EEA waste-stream factor: recycling glass (EU, 2022); illustrative_value=true; TODO: reconcile with the EEA dashboard XLSX release",
+      "biogenic_flag": false,
+      "factor_family": "waste_treatment",
+      "activity_tags": [
+        "waste_recycling",
+        "end_of_life"
+      ],
+      "sector_tags": [
+        "waste_management"
+      ],
+      "source_id": "eea_waste_stats",
+      "source_release": "eea-waste-2022",
+      "release_version": "eea-waste-2022",
+      "validation_flags": {
+        "method_pack_compat": [
+          "corporate",
+          "eu_policy"
+        ],
+        "eea_treatment": "recycling",
+        "eea_material": "glass",
+        "assumptions": [
+          "EEA European waste statistics 2022",
+          "Treatment: recycling",
+          "Material: glass",
+          "Country: EU"
+        ],
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "attribution_text": "European Environment Agency, European waste statistics \u2014 per-treatment GHG intensity series.",
+        "alternates_considered": [
+          "EF:EEA:waste_landfill_msw:EU:2022:v1",
+          "EF:EEA:waste_landfill_organic:EU:2022:v1",
+          "EF:EEA:waste_incineration_msw:EU:2022:v1",
+          "EF:EEA:waste_incineration_plastic:EU:2022:v1",
+          "EF:EEA:waste_incineration_sewage_sludge:EU:2022:v1",
+          "EF:EEA:waste_recycling_plastic:EU:2022:v1",
+          "EF:EEA:waste_recycling_paper:EU:2022:v1",
+          "EF:EEA:waste_recycling_steel:EU:2022:v1",
+          "EF:EEA:waste_recycling_aluminium:EU:2022:v1",
+          "EF:EEA:waste_recycling_copper:EU:2022:v1",
+          "EF:EEA:waste_recycling_textiles:EU:2022:v1",
+          "EF:EEA:waste_recycling_electronics:EU:2022:v1",
+          "EF:EEA:waste_composting_organic:EU:2022:v1",
+          "EF:EEA:waste_composting_garden:EU:2022:v1",
+          "EF:EEA:waste_composting_food:EU:2022:v1",
+          "EF:EEA:waste_anaerobic_digestion_organic:EU:2022:v1",
+          "EF:EEA:waste_anaerobic_digestion_food:EU:2022:v1",
+          "EF:EEA:waste_anaerobic_digestion_manure:EU:2022:v1",
+          "EF:EEA:wastewater_aerobic:EU:2022:v1",
+          "EF:EEA:wastewater_anaerobic:EU:2022:v1"
+        ]
+      },
+      "created_at": "2026-04-24T07:12:23+00:00",
+      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "GHG_Protocol_Scope3",
+        "EU_Waste_Framework_Directive"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_eu",
+      "redistribution_class": "open"
+    },
+    {
+      "factor_id": "EF:EEA:waste_recycling_steel:EU:2022:v1",
+      "fuel_type": "waste_steel",
+      "unit": "tonne",
+      "geography": "EU",
+      "geography_level": "global",
+      "vectors": {
+        "CO2": 550.0,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "European Environment Agency (EEA)",
+        "source_publication": "EEA European waste statistics \u2014 treatment GHG intensity (2022)",
+        "source_year": 2022,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.eea.europa.eu/en/topics/in-depth/waste-and-recycling",
+        "version": "eea-waste-2022"
+      },
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31",
+      "uncertainty_95ci": 0.3,
+      "dqs": {
+        "temporal": 3,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 3,
+        "methodological": 3
+      },
+      "license_info": {
+        "license": "EU-Publication",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "eea",
+        "waste",
+        "treatment_recycling",
+        "material_steel",
+        "scope3_cat5",
+        "eu27",
+        "illustrative"
+      ],
+      "notes": "EEA waste-stream factor: recycling steel (EU, 2022); illustrative_value=true; TODO: reconcile with the EEA dashboard XLSX release",
+      "biogenic_flag": false,
+      "factor_family": "waste_treatment",
+      "activity_tags": [
+        "waste_recycling",
+        "end_of_life"
+      ],
+      "sector_tags": [
+        "waste_management"
+      ],
+      "source_id": "eea_waste_stats",
+      "source_release": "eea-waste-2022",
+      "release_version": "eea-waste-2022",
+      "validation_flags": {
+        "method_pack_compat": [
+          "corporate",
+          "eu_policy"
+        ],
+        "eea_treatment": "recycling",
+        "eea_material": "steel",
+        "assumptions": [
+          "EEA European waste statistics 2022",
+          "Treatment: recycling",
+          "Material: steel",
+          "Country: EU"
+        ],
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "attribution_text": "European Environment Agency, European waste statistics \u2014 per-treatment GHG intensity series.",
+        "alternates_considered": [
+          "EF:EEA:waste_landfill_msw:EU:2022:v1",
+          "EF:EEA:waste_landfill_organic:EU:2022:v1",
+          "EF:EEA:waste_incineration_msw:EU:2022:v1",
+          "EF:EEA:waste_incineration_plastic:EU:2022:v1",
+          "EF:EEA:waste_incineration_sewage_sludge:EU:2022:v1",
+          "EF:EEA:waste_recycling_plastic:EU:2022:v1",
+          "EF:EEA:waste_recycling_paper:EU:2022:v1",
+          "EF:EEA:waste_recycling_glass:EU:2022:v1",
+          "EF:EEA:waste_recycling_aluminium:EU:2022:v1",
+          "EF:EEA:waste_recycling_copper:EU:2022:v1",
+          "EF:EEA:waste_recycling_textiles:EU:2022:v1",
+          "EF:EEA:waste_recycling_electronics:EU:2022:v1",
+          "EF:EEA:waste_composting_organic:EU:2022:v1",
+          "EF:EEA:waste_composting_garden:EU:2022:v1",
+          "EF:EEA:waste_composting_food:EU:2022:v1",
+          "EF:EEA:waste_anaerobic_digestion_organic:EU:2022:v1",
+          "EF:EEA:waste_anaerobic_digestion_food:EU:2022:v1",
+          "EF:EEA:waste_anaerobic_digestion_manure:EU:2022:v1",
+          "EF:EEA:wastewater_aerobic:EU:2022:v1",
+          "EF:EEA:wastewater_anaerobic:EU:2022:v1"
+        ]
+      },
+      "created_at": "2026-04-24T07:12:23+00:00",
+      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "GHG_Protocol_Scope3",
+        "EU_Waste_Framework_Directive"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_eu",
+      "redistribution_class": "open"
+    },
+    {
+      "factor_id": "EF:EEA:waste_recycling_aluminium:EU:2022:v1",
+      "fuel_type": "waste_aluminium",
+      "unit": "tonne",
+      "geography": "EU",
+      "geography_level": "global",
+      "vectors": {
+        "CO2": 780.0,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "European Environment Agency (EEA)",
+        "source_publication": "EEA European waste statistics \u2014 treatment GHG intensity (2022)",
+        "source_year": 2022,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.eea.europa.eu/en/topics/in-depth/waste-and-recycling",
+        "version": "eea-waste-2022"
+      },
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31",
+      "uncertainty_95ci": 0.3,
+      "dqs": {
+        "temporal": 3,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 3,
+        "methodological": 3
+      },
+      "license_info": {
+        "license": "EU-Publication",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "eea",
+        "waste",
+        "treatment_recycling",
+        "material_aluminium",
+        "scope3_cat5",
+        "eu27",
+        "illustrative"
+      ],
+      "notes": "EEA waste-stream factor: recycling aluminium (EU, 2022); illustrative_value=true; TODO: reconcile with the EEA dashboard XLSX release",
+      "biogenic_flag": false,
+      "factor_family": "waste_treatment",
+      "activity_tags": [
+        "waste_recycling",
+        "end_of_life"
+      ],
+      "sector_tags": [
+        "waste_management"
+      ],
+      "source_id": "eea_waste_stats",
+      "source_release": "eea-waste-2022",
+      "release_version": "eea-waste-2022",
+      "validation_flags": {
+        "method_pack_compat": [
+          "corporate",
+          "eu_policy"
+        ],
+        "eea_treatment": "recycling",
+        "eea_material": "aluminium",
+        "assumptions": [
+          "EEA European waste statistics 2022",
+          "Treatment: recycling",
+          "Material: aluminium",
+          "Country: EU"
+        ],
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "attribution_text": "European Environment Agency, European waste statistics \u2014 per-treatment GHG intensity series.",
+        "alternates_considered": [
+          "EF:EEA:waste_landfill_msw:EU:2022:v1",
+          "EF:EEA:waste_landfill_organic:EU:2022:v1",
+          "EF:EEA:waste_incineration_msw:EU:2022:v1",
+          "EF:EEA:waste_incineration_plastic:EU:2022:v1",
+          "EF:EEA:waste_incineration_sewage_sludge:EU:2022:v1",
+          "EF:EEA:waste_recycling_plastic:EU:2022:v1",
+          "EF:EEA:waste_recycling_paper:EU:2022:v1",
+          "EF:EEA:waste_recycling_glass:EU:2022:v1",
+          "EF:EEA:waste_recycling_steel:EU:2022:v1",
+          "EF:EEA:waste_recycling_copper:EU:2022:v1",
+          "EF:EEA:waste_recycling_textiles:EU:2022:v1",
+          "EF:EEA:waste_recycling_electronics:EU:2022:v1",
+          "EF:EEA:waste_composting_organic:EU:2022:v1",
+          "EF:EEA:waste_composting_garden:EU:2022:v1",
+          "EF:EEA:waste_composting_food:EU:2022:v1",
+          "EF:EEA:waste_anaerobic_digestion_organic:EU:2022:v1",
+          "EF:EEA:waste_anaerobic_digestion_food:EU:2022:v1",
+          "EF:EEA:waste_anaerobic_digestion_manure:EU:2022:v1",
+          "EF:EEA:wastewater_aerobic:EU:2022:v1",
+          "EF:EEA:wastewater_anaerobic:EU:2022:v1"
+        ]
+      },
+      "created_at": "2026-04-24T07:12:23+00:00",
+      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "GHG_Protocol_Scope3",
+        "EU_Waste_Framework_Directive"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_eu",
+      "redistribution_class": "open"
+    },
+    {
+      "factor_id": "EF:EEA:waste_recycling_copper:EU:2022:v1",
+      "fuel_type": "waste_copper",
+      "unit": "tonne",
+      "geography": "EU",
+      "geography_level": "global",
+      "vectors": {
+        "CO2": 420.0,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "European Environment Agency (EEA)",
+        "source_publication": "EEA European waste statistics \u2014 treatment GHG intensity (2022)",
+        "source_year": 2022,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.eea.europa.eu/en/topics/in-depth/waste-and-recycling",
+        "version": "eea-waste-2022"
+      },
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31",
+      "uncertainty_95ci": 0.3,
+      "dqs": {
+        "temporal": 3,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 3,
+        "methodological": 3
+      },
+      "license_info": {
+        "license": "EU-Publication",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "eea",
+        "waste",
+        "treatment_recycling",
+        "material_copper",
+        "scope3_cat5",
+        "eu27",
+        "illustrative"
+      ],
+      "notes": "EEA waste-stream factor: recycling copper (EU, 2022); illustrative_value=true; TODO: reconcile with the EEA dashboard XLSX release",
+      "biogenic_flag": false,
+      "factor_family": "waste_treatment",
+      "activity_tags": [
+        "waste_recycling",
+        "end_of_life"
+      ],
+      "sector_tags": [
+        "waste_management"
+      ],
+      "source_id": "eea_waste_stats",
+      "source_release": "eea-waste-2022",
+      "release_version": "eea-waste-2022",
+      "validation_flags": {
+        "method_pack_compat": [
+          "corporate",
+          "eu_policy"
+        ],
+        "eea_treatment": "recycling",
+        "eea_material": "copper",
+        "assumptions": [
+          "EEA European waste statistics 2022",
+          "Treatment: recycling",
+          "Material: copper",
+          "Country: EU"
+        ],
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "attribution_text": "European Environment Agency, European waste statistics \u2014 per-treatment GHG intensity series.",
+        "alternates_considered": [
+          "EF:EEA:waste_landfill_msw:EU:2022:v1",
+          "EF:EEA:waste_landfill_organic:EU:2022:v1",
+          "EF:EEA:waste_incineration_msw:EU:2022:v1",
+          "EF:EEA:waste_incineration_plastic:EU:2022:v1",
+          "EF:EEA:waste_incineration_sewage_sludge:EU:2022:v1",
+          "EF:EEA:waste_recycling_plastic:EU:2022:v1",
+          "EF:EEA:waste_recycling_paper:EU:2022:v1",
+          "EF:EEA:waste_recycling_glass:EU:2022:v1",
+          "EF:EEA:waste_recycling_steel:EU:2022:v1",
+          "EF:EEA:waste_recycling_aluminium:EU:2022:v1",
+          "EF:EEA:waste_recycling_textiles:EU:2022:v1",
+          "EF:EEA:waste_recycling_electronics:EU:2022:v1",
+          "EF:EEA:waste_composting_organic:EU:2022:v1",
+          "EF:EEA:waste_composting_garden:EU:2022:v1",
+          "EF:EEA:waste_composting_food:EU:2022:v1",
+          "EF:EEA:waste_anaerobic_digestion_organic:EU:2022:v1",
+          "EF:EEA:waste_anaerobic_digestion_food:EU:2022:v1",
+          "EF:EEA:waste_anaerobic_digestion_manure:EU:2022:v1",
+          "EF:EEA:wastewater_aerobic:EU:2022:v1",
+          "EF:EEA:wastewater_anaerobic:EU:2022:v1"
+        ]
+      },
+      "created_at": "2026-04-24T07:12:23+00:00",
+      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "GHG_Protocol_Scope3",
+        "EU_Waste_Framework_Directive"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_eu",
+      "redistribution_class": "open"
+    },
+    {
+      "factor_id": "EF:EEA:waste_recycling_textiles:EU:2022:v1",
+      "fuel_type": "waste_textiles",
+      "unit": "tonne",
+      "geography": "EU",
+      "geography_level": "global",
+      "vectors": {
+        "CO2": 260.0,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "European Environment Agency (EEA)",
+        "source_publication": "EEA European waste statistics \u2014 treatment GHG intensity (2022)",
+        "source_year": 2022,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.eea.europa.eu/en/topics/in-depth/waste-and-recycling",
+        "version": "eea-waste-2022"
+      },
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31",
+      "uncertainty_95ci": 0.3,
+      "dqs": {
+        "temporal": 3,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 3,
+        "methodological": 3
+      },
+      "license_info": {
+        "license": "EU-Publication",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "eea",
+        "waste",
+        "treatment_recycling",
+        "material_textiles",
+        "scope3_cat5",
+        "eu27",
+        "illustrative"
+      ],
+      "notes": "EEA waste-stream factor: recycling textiles (EU, 2022); illustrative_value=true; TODO: reconcile with the EEA dashboard XLSX release",
+      "biogenic_flag": false,
+      "factor_family": "waste_treatment",
+      "activity_tags": [
+        "waste_recycling",
+        "end_of_life"
+      ],
+      "sector_tags": [
+        "waste_management"
+      ],
+      "source_id": "eea_waste_stats",
+      "source_release": "eea-waste-2022",
+      "release_version": "eea-waste-2022",
+      "validation_flags": {
+        "method_pack_compat": [
+          "corporate",
+          "eu_policy"
+        ],
+        "eea_treatment": "recycling",
+        "eea_material": "textiles",
+        "assumptions": [
+          "EEA European waste statistics 2022",
+          "Treatment: recycling",
+          "Material: textiles",
+          "Country: EU"
+        ],
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "attribution_text": "European Environment Agency, European waste statistics \u2014 per-treatment GHG intensity series.",
+        "alternates_considered": [
+          "EF:EEA:waste_landfill_msw:EU:2022:v1",
+          "EF:EEA:waste_landfill_organic:EU:2022:v1",
+          "EF:EEA:waste_incineration_msw:EU:2022:v1",
+          "EF:EEA:waste_incineration_plastic:EU:2022:v1",
+          "EF:EEA:waste_incineration_sewage_sludge:EU:2022:v1",
+          "EF:EEA:waste_recycling_plastic:EU:2022:v1",
+          "EF:EEA:waste_recycling_paper:EU:2022:v1",
+          "EF:EEA:waste_recycling_glass:EU:2022:v1",
+          "EF:EEA:waste_recycling_steel:EU:2022:v1",
+          "EF:EEA:waste_recycling_aluminium:EU:2022:v1",
+          "EF:EEA:waste_recycling_copper:EU:2022:v1",
+          "EF:EEA:waste_recycling_electronics:EU:2022:v1",
+          "EF:EEA:waste_composting_organic:EU:2022:v1",
+          "EF:EEA:waste_composting_garden:EU:2022:v1",
+          "EF:EEA:waste_composting_food:EU:2022:v1",
+          "EF:EEA:waste_anaerobic_digestion_organic:EU:2022:v1",
+          "EF:EEA:waste_anaerobic_digestion_food:EU:2022:v1",
+          "EF:EEA:waste_anaerobic_digestion_manure:EU:2022:v1",
+          "EF:EEA:wastewater_aerobic:EU:2022:v1",
+          "EF:EEA:wastewater_anaerobic:EU:2022:v1"
+        ]
+      },
+      "created_at": "2026-04-24T07:12:23+00:00",
+      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "GHG_Protocol_Scope3",
+        "EU_Waste_Framework_Directive"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_eu",
+      "redistribution_class": "open"
+    },
+    {
+      "factor_id": "EF:EEA:waste_recycling_electronics:EU:2022:v1",
+      "fuel_type": "waste_electronics",
+      "unit": "tonne",
+      "geography": "EU",
+      "geography_level": "global",
+      "vectors": {
+        "CO2": 640.0,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "European Environment Agency (EEA)",
+        "source_publication": "EEA European waste statistics \u2014 treatment GHG intensity (2022)",
+        "source_year": 2022,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.eea.europa.eu/en/topics/in-depth/waste-and-recycling",
+        "version": "eea-waste-2022"
+      },
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31",
+      "uncertainty_95ci": 0.3,
+      "dqs": {
+        "temporal": 3,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 3,
+        "methodological": 3
+      },
+      "license_info": {
+        "license": "EU-Publication",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "eea",
+        "waste",
+        "treatment_recycling",
+        "material_electronics",
+        "scope3_cat5",
+        "eu27",
+        "illustrative"
+      ],
+      "notes": "EEA waste-stream factor: recycling electronics (EU, 2022); illustrative_value=true; TODO: reconcile with the EEA dashboard XLSX release",
+      "biogenic_flag": false,
+      "factor_family": "waste_treatment",
+      "activity_tags": [
+        "waste_recycling",
+        "end_of_life"
+      ],
+      "sector_tags": [
+        "waste_management"
+      ],
+      "source_id": "eea_waste_stats",
+      "source_release": "eea-waste-2022",
+      "release_version": "eea-waste-2022",
+      "validation_flags": {
+        "method_pack_compat": [
+          "corporate",
+          "eu_policy"
+        ],
+        "eea_treatment": "recycling",
+        "eea_material": "electronics",
+        "assumptions": [
+          "EEA European waste statistics 2022",
+          "Treatment: recycling",
+          "Material: electronics",
+          "Country: EU"
+        ],
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "attribution_text": "European Environment Agency, European waste statistics \u2014 per-treatment GHG intensity series.",
+        "alternates_considered": [
+          "EF:EEA:waste_landfill_msw:EU:2022:v1",
+          "EF:EEA:waste_landfill_organic:EU:2022:v1",
+          "EF:EEA:waste_incineration_msw:EU:2022:v1",
+          "EF:EEA:waste_incineration_plastic:EU:2022:v1",
+          "EF:EEA:waste_incineration_sewage_sludge:EU:2022:v1",
+          "EF:EEA:waste_recycling_plastic:EU:2022:v1",
+          "EF:EEA:waste_recycling_paper:EU:2022:v1",
+          "EF:EEA:waste_recycling_glass:EU:2022:v1",
+          "EF:EEA:waste_recycling_steel:EU:2022:v1",
+          "EF:EEA:waste_recycling_aluminium:EU:2022:v1",
+          "EF:EEA:waste_recycling_copper:EU:2022:v1",
+          "EF:EEA:waste_recycling_textiles:EU:2022:v1",
+          "EF:EEA:waste_composting_organic:EU:2022:v1",
+          "EF:EEA:waste_composting_garden:EU:2022:v1",
+          "EF:EEA:waste_composting_food:EU:2022:v1",
+          "EF:EEA:waste_anaerobic_digestion_organic:EU:2022:v1",
+          "EF:EEA:waste_anaerobic_digestion_food:EU:2022:v1",
+          "EF:EEA:waste_anaerobic_digestion_manure:EU:2022:v1",
+          "EF:EEA:wastewater_aerobic:EU:2022:v1",
+          "EF:EEA:wastewater_anaerobic:EU:2022:v1"
+        ]
+      },
+      "created_at": "2026-04-24T07:12:23+00:00",
+      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "GHG_Protocol_Scope3",
+        "EU_Waste_Framework_Directive"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_eu",
+      "redistribution_class": "open"
+    },
+    {
+      "factor_id": "EF:EEA:waste_composting_organic:EU:2022:v1",
+      "fuel_type": "waste_organic",
+      "unit": "tonne",
+      "geography": "EU",
+      "geography_level": "global",
+      "vectors": {
+        "CO2": 110.0,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "European Environment Agency (EEA)",
+        "source_publication": "EEA European waste statistics \u2014 treatment GHG intensity (2022)",
+        "source_year": 2022,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.eea.europa.eu/en/topics/in-depth/waste-and-recycling",
+        "version": "eea-waste-2022"
+      },
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31",
+      "uncertainty_95ci": 0.3,
+      "dqs": {
+        "temporal": 3,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 3,
+        "methodological": 3
+      },
+      "license_info": {
+        "license": "EU-Publication",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "eea",
+        "waste",
+        "treatment_composting",
+        "material_organic",
+        "scope3_cat5",
+        "eu27",
+        "illustrative"
+      ],
+      "notes": "EEA waste-stream factor: composting organic (EU, 2022); illustrative_value=true; TODO: reconcile with the EEA dashboard XLSX release",
+      "biogenic_flag": true,
+      "factor_family": "waste_treatment",
+      "activity_tags": [
+        "waste_composting",
+        "end_of_life"
+      ],
+      "sector_tags": [
+        "waste_management"
+      ],
+      "source_id": "eea_waste_stats",
+      "source_release": "eea-waste-2022",
+      "release_version": "eea-waste-2022",
+      "validation_flags": {
+        "method_pack_compat": [
+          "corporate",
+          "eu_policy"
+        ],
+        "eea_treatment": "composting",
+        "eea_material": "organic",
+        "assumptions": [
+          "EEA European waste statistics 2022",
+          "Treatment: composting",
+          "Material: organic",
+          "Country: EU"
+        ],
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "attribution_text": "European Environment Agency, European waste statistics \u2014 per-treatment GHG intensity series.",
+        "alternates_considered": [
+          "EF:EEA:waste_landfill_msw:EU:2022:v1",
+          "EF:EEA:waste_landfill_organic:EU:2022:v1",
+          "EF:EEA:waste_incineration_msw:EU:2022:v1",
+          "EF:EEA:waste_incineration_plastic:EU:2022:v1",
+          "EF:EEA:waste_incineration_sewage_sludge:EU:2022:v1",
+          "EF:EEA:waste_recycling_plastic:EU:2022:v1",
+          "EF:EEA:waste_recycling_paper:EU:2022:v1",
+          "EF:EEA:waste_recycling_glass:EU:2022:v1",
+          "EF:EEA:waste_recycling_steel:EU:2022:v1",
+          "EF:EEA:waste_recycling_aluminium:EU:2022:v1",
+          "EF:EEA:waste_recycling_copper:EU:2022:v1",
+          "EF:EEA:waste_recycling_textiles:EU:2022:v1",
+          "EF:EEA:waste_recycling_electronics:EU:2022:v1",
+          "EF:EEA:waste_composting_garden:EU:2022:v1",
+          "EF:EEA:waste_composting_food:EU:2022:v1",
+          "EF:EEA:waste_anaerobic_digestion_organic:EU:2022:v1",
+          "EF:EEA:waste_anaerobic_digestion_food:EU:2022:v1",
+          "EF:EEA:waste_anaerobic_digestion_manure:EU:2022:v1",
+          "EF:EEA:wastewater_aerobic:EU:2022:v1",
+          "EF:EEA:wastewater_anaerobic:EU:2022:v1"
+        ]
+      },
+      "created_at": "2026-04-24T07:12:23+00:00",
+      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "GHG_Protocol_Scope3",
+        "EU_Waste_Framework_Directive"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_eu",
+      "redistribution_class": "open"
+    },
+    {
+      "factor_id": "EF:EEA:waste_composting_garden:EU:2022:v1",
+      "fuel_type": "waste_garden",
+      "unit": "tonne",
+      "geography": "EU",
+      "geography_level": "global",
+      "vectors": {
+        "CO2": 95.0,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "European Environment Agency (EEA)",
+        "source_publication": "EEA European waste statistics \u2014 treatment GHG intensity (2022)",
+        "source_year": 2022,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.eea.europa.eu/en/topics/in-depth/waste-and-recycling",
+        "version": "eea-waste-2022"
+      },
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31",
+      "uncertainty_95ci": 0.3,
+      "dqs": {
+        "temporal": 3,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 3,
+        "methodological": 3
+      },
+      "license_info": {
+        "license": "EU-Publication",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "eea",
+        "waste",
+        "treatment_composting",
+        "material_garden",
+        "scope3_cat5",
+        "eu27",
+        "illustrative"
+      ],
+      "notes": "EEA waste-stream factor: composting garden (EU, 2022); illustrative_value=true; TODO: reconcile with the EEA dashboard XLSX release",
+      "biogenic_flag": true,
+      "factor_family": "waste_treatment",
+      "activity_tags": [
+        "waste_composting",
+        "end_of_life"
+      ],
+      "sector_tags": [
+        "waste_management"
+      ],
+      "source_id": "eea_waste_stats",
+      "source_release": "eea-waste-2022",
+      "release_version": "eea-waste-2022",
+      "validation_flags": {
+        "method_pack_compat": [
+          "corporate",
+          "eu_policy"
+        ],
+        "eea_treatment": "composting",
+        "eea_material": "garden",
+        "assumptions": [
+          "EEA European waste statistics 2022",
+          "Treatment: composting",
+          "Material: garden",
+          "Country: EU"
+        ],
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "attribution_text": "European Environment Agency, European waste statistics \u2014 per-treatment GHG intensity series.",
+        "alternates_considered": [
+          "EF:EEA:waste_landfill_msw:EU:2022:v1",
+          "EF:EEA:waste_landfill_organic:EU:2022:v1",
+          "EF:EEA:waste_incineration_msw:EU:2022:v1",
+          "EF:EEA:waste_incineration_plastic:EU:2022:v1",
+          "EF:EEA:waste_incineration_sewage_sludge:EU:2022:v1",
+          "EF:EEA:waste_recycling_plastic:EU:2022:v1",
+          "EF:EEA:waste_recycling_paper:EU:2022:v1",
+          "EF:EEA:waste_recycling_glass:EU:2022:v1",
+          "EF:EEA:waste_recycling_steel:EU:2022:v1",
+          "EF:EEA:waste_recycling_aluminium:EU:2022:v1",
+          "EF:EEA:waste_recycling_copper:EU:2022:v1",
+          "EF:EEA:waste_recycling_textiles:EU:2022:v1",
+          "EF:EEA:waste_recycling_electronics:EU:2022:v1",
+          "EF:EEA:waste_composting_organic:EU:2022:v1",
+          "EF:EEA:waste_composting_food:EU:2022:v1",
+          "EF:EEA:waste_anaerobic_digestion_organic:EU:2022:v1",
+          "EF:EEA:waste_anaerobic_digestion_food:EU:2022:v1",
+          "EF:EEA:waste_anaerobic_digestion_manure:EU:2022:v1",
+          "EF:EEA:wastewater_aerobic:EU:2022:v1",
+          "EF:EEA:wastewater_anaerobic:EU:2022:v1"
+        ]
+      },
+      "created_at": "2026-04-24T07:12:23+00:00",
+      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "GHG_Protocol_Scope3",
+        "EU_Waste_Framework_Directive"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_eu",
+      "redistribution_class": "open"
+    },
+    {
+      "factor_id": "EF:EEA:waste_composting_food:EU:2022:v1",
+      "fuel_type": "waste_food",
+      "unit": "tonne",
+      "geography": "EU",
+      "geography_level": "global",
+      "vectors": {
+        "CO2": 115.0,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "European Environment Agency (EEA)",
+        "source_publication": "EEA European waste statistics \u2014 treatment GHG intensity (2022)",
+        "source_year": 2022,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.eea.europa.eu/en/topics/in-depth/waste-and-recycling",
+        "version": "eea-waste-2022"
+      },
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31",
+      "uncertainty_95ci": 0.3,
+      "dqs": {
+        "temporal": 3,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 3,
+        "methodological": 3
+      },
+      "license_info": {
+        "license": "EU-Publication",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "eea",
+        "waste",
+        "treatment_composting",
+        "material_food",
+        "scope3_cat5",
+        "eu27",
+        "illustrative"
+      ],
+      "notes": "EEA waste-stream factor: composting food (EU, 2022); illustrative_value=true; TODO: reconcile with the EEA dashboard XLSX release",
+      "biogenic_flag": true,
+      "factor_family": "waste_treatment",
+      "activity_tags": [
+        "waste_composting",
+        "end_of_life"
+      ],
+      "sector_tags": [
+        "waste_management"
+      ],
+      "source_id": "eea_waste_stats",
+      "source_release": "eea-waste-2022",
+      "release_version": "eea-waste-2022",
+      "validation_flags": {
+        "method_pack_compat": [
+          "corporate",
+          "eu_policy"
+        ],
+        "eea_treatment": "composting",
+        "eea_material": "food",
+        "assumptions": [
+          "EEA European waste statistics 2022",
+          "Treatment: composting",
+          "Material: food",
+          "Country: EU"
+        ],
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "attribution_text": "European Environment Agency, European waste statistics \u2014 per-treatment GHG intensity series.",
+        "alternates_considered": [
+          "EF:EEA:waste_landfill_msw:EU:2022:v1",
+          "EF:EEA:waste_landfill_organic:EU:2022:v1",
+          "EF:EEA:waste_incineration_msw:EU:2022:v1",
+          "EF:EEA:waste_incineration_plastic:EU:2022:v1",
+          "EF:EEA:waste_incineration_sewage_sludge:EU:2022:v1",
+          "EF:EEA:waste_recycling_plastic:EU:2022:v1",
+          "EF:EEA:waste_recycling_paper:EU:2022:v1",
+          "EF:EEA:waste_recycling_glass:EU:2022:v1",
+          "EF:EEA:waste_recycling_steel:EU:2022:v1",
+          "EF:EEA:waste_recycling_aluminium:EU:2022:v1",
+          "EF:EEA:waste_recycling_copper:EU:2022:v1",
+          "EF:EEA:waste_recycling_textiles:EU:2022:v1",
+          "EF:EEA:waste_recycling_electronics:EU:2022:v1",
+          "EF:EEA:waste_composting_organic:EU:2022:v1",
+          "EF:EEA:waste_composting_garden:EU:2022:v1",
+          "EF:EEA:waste_anaerobic_digestion_organic:EU:2022:v1",
+          "EF:EEA:waste_anaerobic_digestion_food:EU:2022:v1",
+          "EF:EEA:waste_anaerobic_digestion_manure:EU:2022:v1",
+          "EF:EEA:wastewater_aerobic:EU:2022:v1",
+          "EF:EEA:wastewater_anaerobic:EU:2022:v1"
+        ]
+      },
+      "created_at": "2026-04-24T07:12:23+00:00",
+      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "GHG_Protocol_Scope3",
+        "EU_Waste_Framework_Directive"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_eu",
+      "redistribution_class": "open"
+    },
+    {
+      "factor_id": "EF:EEA:waste_anaerobic_digestion_organic:EU:2022:v1",
+      "fuel_type": "waste_organic",
+      "unit": "tonne",
+      "geography": "EU",
+      "geography_level": "global",
+      "vectors": {
+        "CO2": 60.0,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "European Environment Agency (EEA)",
+        "source_publication": "EEA European waste statistics \u2014 treatment GHG intensity (2022)",
+        "source_year": 2022,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.eea.europa.eu/en/topics/in-depth/waste-and-recycling",
+        "version": "eea-waste-2022"
+      },
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31",
+      "uncertainty_95ci": 0.3,
+      "dqs": {
+        "temporal": 3,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 3,
+        "methodological": 3
+      },
+      "license_info": {
+        "license": "EU-Publication",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "eea",
+        "waste",
+        "treatment_anaerobic_digestion",
+        "material_organic",
+        "scope3_cat5",
+        "eu27",
+        "illustrative"
+      ],
+      "notes": "EEA waste-stream factor: anaerobic_digestion organic (EU, 2022); illustrative_value=true; TODO: reconcile with the EEA dashboard XLSX release",
+      "biogenic_flag": true,
+      "factor_family": "waste_treatment",
+      "activity_tags": [
+        "waste_anaerobic_digestion",
+        "end_of_life"
+      ],
+      "sector_tags": [
+        "waste_management"
+      ],
+      "source_id": "eea_waste_stats",
+      "source_release": "eea-waste-2022",
+      "release_version": "eea-waste-2022",
+      "validation_flags": {
+        "method_pack_compat": [
+          "corporate",
+          "eu_policy"
+        ],
+        "eea_treatment": "anaerobic_digestion",
+        "eea_material": "organic",
+        "assumptions": [
+          "EEA European waste statistics 2022",
+          "Treatment: anaerobic_digestion",
+          "Material: organic",
+          "Country: EU"
+        ],
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "attribution_text": "European Environment Agency, European waste statistics \u2014 per-treatment GHG intensity series.",
+        "alternates_considered": [
+          "EF:EEA:waste_landfill_msw:EU:2022:v1",
+          "EF:EEA:waste_landfill_organic:EU:2022:v1",
+          "EF:EEA:waste_incineration_msw:EU:2022:v1",
+          "EF:EEA:waste_incineration_plastic:EU:2022:v1",
+          "EF:EEA:waste_incineration_sewage_sludge:EU:2022:v1",
+          "EF:EEA:waste_recycling_plastic:EU:2022:v1",
+          "EF:EEA:waste_recycling_paper:EU:2022:v1",
+          "EF:EEA:waste_recycling_glass:EU:2022:v1",
+          "EF:EEA:waste_recycling_steel:EU:2022:v1",
+          "EF:EEA:waste_recycling_aluminium:EU:2022:v1",
+          "EF:EEA:waste_recycling_copper:EU:2022:v1",
+          "EF:EEA:waste_recycling_textiles:EU:2022:v1",
+          "EF:EEA:waste_recycling_electronics:EU:2022:v1",
+          "EF:EEA:waste_composting_organic:EU:2022:v1",
+          "EF:EEA:waste_composting_garden:EU:2022:v1",
+          "EF:EEA:waste_composting_food:EU:2022:v1",
+          "EF:EEA:waste_anaerobic_digestion_food:EU:2022:v1",
+          "EF:EEA:waste_anaerobic_digestion_manure:EU:2022:v1",
+          "EF:EEA:wastewater_aerobic:EU:2022:v1",
+          "EF:EEA:wastewater_anaerobic:EU:2022:v1"
+        ]
+      },
+      "created_at": "2026-04-24T07:12:23+00:00",
+      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "GHG_Protocol_Scope3",
+        "EU_Waste_Framework_Directive"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_eu",
+      "redistribution_class": "open"
+    },
+    {
+      "factor_id": "EF:EEA:waste_anaerobic_digestion_food:EU:2022:v1",
+      "fuel_type": "waste_food",
+      "unit": "tonne",
+      "geography": "EU",
+      "geography_level": "global",
+      "vectors": {
+        "CO2": 72.0,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "European Environment Agency (EEA)",
+        "source_publication": "EEA European waste statistics \u2014 treatment GHG intensity (2022)",
+        "source_year": 2022,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.eea.europa.eu/en/topics/in-depth/waste-and-recycling",
+        "version": "eea-waste-2022"
+      },
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31",
+      "uncertainty_95ci": 0.3,
+      "dqs": {
+        "temporal": 3,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 3,
+        "methodological": 3
+      },
+      "license_info": {
+        "license": "EU-Publication",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "eea",
+        "waste",
+        "treatment_anaerobic_digestion",
+        "material_food",
+        "scope3_cat5",
+        "eu27",
+        "illustrative"
+      ],
+      "notes": "EEA waste-stream factor: anaerobic_digestion food (EU, 2022); illustrative_value=true; TODO: reconcile with the EEA dashboard XLSX release",
+      "biogenic_flag": true,
+      "factor_family": "waste_treatment",
+      "activity_tags": [
+        "waste_anaerobic_digestion",
+        "end_of_life"
+      ],
+      "sector_tags": [
+        "waste_management"
+      ],
+      "source_id": "eea_waste_stats",
+      "source_release": "eea-waste-2022",
+      "release_version": "eea-waste-2022",
+      "validation_flags": {
+        "method_pack_compat": [
+          "corporate",
+          "eu_policy"
+        ],
+        "eea_treatment": "anaerobic_digestion",
+        "eea_material": "food",
+        "assumptions": [
+          "EEA European waste statistics 2022",
+          "Treatment: anaerobic_digestion",
+          "Material: food",
+          "Country: EU"
+        ],
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "attribution_text": "European Environment Agency, European waste statistics \u2014 per-treatment GHG intensity series.",
+        "alternates_considered": [
+          "EF:EEA:waste_landfill_msw:EU:2022:v1",
+          "EF:EEA:waste_landfill_organic:EU:2022:v1",
+          "EF:EEA:waste_incineration_msw:EU:2022:v1",
+          "EF:EEA:waste_incineration_plastic:EU:2022:v1",
+          "EF:EEA:waste_incineration_sewage_sludge:EU:2022:v1",
+          "EF:EEA:waste_recycling_plastic:EU:2022:v1",
+          "EF:EEA:waste_recycling_paper:EU:2022:v1",
+          "EF:EEA:waste_recycling_glass:EU:2022:v1",
+          "EF:EEA:waste_recycling_steel:EU:2022:v1",
+          "EF:EEA:waste_recycling_aluminium:EU:2022:v1",
+          "EF:EEA:waste_recycling_copper:EU:2022:v1",
+          "EF:EEA:waste_recycling_textiles:EU:2022:v1",
+          "EF:EEA:waste_recycling_electronics:EU:2022:v1",
+          "EF:EEA:waste_composting_organic:EU:2022:v1",
+          "EF:EEA:waste_composting_garden:EU:2022:v1",
+          "EF:EEA:waste_composting_food:EU:2022:v1",
+          "EF:EEA:waste_anaerobic_digestion_organic:EU:2022:v1",
+          "EF:EEA:waste_anaerobic_digestion_manure:EU:2022:v1",
+          "EF:EEA:wastewater_aerobic:EU:2022:v1",
+          "EF:EEA:wastewater_anaerobic:EU:2022:v1"
+        ]
+      },
+      "created_at": "2026-04-24T07:12:23+00:00",
+      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "GHG_Protocol_Scope3",
+        "EU_Waste_Framework_Directive"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_eu",
+      "redistribution_class": "open"
+    },
+    {
+      "factor_id": "EF:EEA:waste_anaerobic_digestion_manure:EU:2022:v1",
+      "fuel_type": "waste_manure",
+      "unit": "tonne",
+      "geography": "EU",
+      "geography_level": "global",
+      "vectors": {
+        "CO2": 45.0,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "European Environment Agency (EEA)",
+        "source_publication": "EEA European waste statistics \u2014 treatment GHG intensity (2022)",
+        "source_year": 2022,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.eea.europa.eu/en/topics/in-depth/waste-and-recycling",
+        "version": "eea-waste-2022"
+      },
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31",
+      "uncertainty_95ci": 0.3,
+      "dqs": {
+        "temporal": 3,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 3,
+        "methodological": 3
+      },
+      "license_info": {
+        "license": "EU-Publication",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "eea",
+        "waste",
+        "treatment_anaerobic_digestion",
+        "material_manure",
+        "scope3_cat5",
+        "eu27",
+        "illustrative"
+      ],
+      "notes": "EEA waste-stream factor: anaerobic_digestion manure (EU, 2022); illustrative_value=true; TODO: reconcile with the EEA dashboard XLSX release",
+      "biogenic_flag": true,
+      "factor_family": "waste_treatment",
+      "activity_tags": [
+        "waste_anaerobic_digestion",
+        "end_of_life"
+      ],
+      "sector_tags": [
+        "waste_management"
+      ],
+      "source_id": "eea_waste_stats",
+      "source_release": "eea-waste-2022",
+      "release_version": "eea-waste-2022",
+      "validation_flags": {
+        "method_pack_compat": [
+          "corporate",
+          "eu_policy"
+        ],
+        "eea_treatment": "anaerobic_digestion",
+        "eea_material": "manure",
+        "assumptions": [
+          "EEA European waste statistics 2022",
+          "Treatment: anaerobic_digestion",
+          "Material: manure",
+          "Country: EU"
+        ],
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "attribution_text": "European Environment Agency, European waste statistics \u2014 per-treatment GHG intensity series.",
+        "alternates_considered": [
+          "EF:EEA:waste_landfill_msw:EU:2022:v1",
+          "EF:EEA:waste_landfill_organic:EU:2022:v1",
+          "EF:EEA:waste_incineration_msw:EU:2022:v1",
+          "EF:EEA:waste_incineration_plastic:EU:2022:v1",
+          "EF:EEA:waste_incineration_sewage_sludge:EU:2022:v1",
+          "EF:EEA:waste_recycling_plastic:EU:2022:v1",
+          "EF:EEA:waste_recycling_paper:EU:2022:v1",
+          "EF:EEA:waste_recycling_glass:EU:2022:v1",
+          "EF:EEA:waste_recycling_steel:EU:2022:v1",
+          "EF:EEA:waste_recycling_aluminium:EU:2022:v1",
+          "EF:EEA:waste_recycling_copper:EU:2022:v1",
+          "EF:EEA:waste_recycling_textiles:EU:2022:v1",
+          "EF:EEA:waste_recycling_electronics:EU:2022:v1",
+          "EF:EEA:waste_composting_organic:EU:2022:v1",
+          "EF:EEA:waste_composting_garden:EU:2022:v1",
+          "EF:EEA:waste_composting_food:EU:2022:v1",
+          "EF:EEA:waste_anaerobic_digestion_organic:EU:2022:v1",
+          "EF:EEA:waste_anaerobic_digestion_food:EU:2022:v1",
+          "EF:EEA:wastewater_aerobic:EU:2022:v1",
+          "EF:EEA:wastewater_anaerobic:EU:2022:v1"
+        ]
+      },
+      "created_at": "2026-04-24T07:12:23+00:00",
+      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "GHG_Protocol_Scope3",
+        "EU_Waste_Framework_Directive"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_eu",
+      "redistribution_class": "open"
+    },
+    {
+      "factor_id": "EF:EEA:wastewater_aerobic:EU:2022:v1",
+      "fuel_type": "waste_domestic",
+      "unit": "m3",
+      "geography": "EU",
+      "geography_level": "global",
+      "vectors": {
+        "CO2": 0.6,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "European Environment Agency (EEA)",
+        "source_publication": "EEA European waste statistics \u2014 treatment GHG intensity (2022)",
+        "source_year": 2022,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.eea.europa.eu/en/topics/in-depth/waste-and-recycling",
+        "version": "eea-waste-2022"
+      },
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31",
+      "uncertainty_95ci": 0.3,
+      "dqs": {
+        "temporal": 3,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 3,
+        "methodological": 3
+      },
+      "license_info": {
+        "license": "EU-Publication",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "eea",
+        "waste",
+        "treatment_aerobic",
+        "material_domestic",
+        "scope3_cat5",
+        "eu27",
+        "illustrative"
+      ],
+      "notes": "EEA waste-stream factor: aerobic domestic (EU, 2022); illustrative_value=true; TODO: reconcile with the EEA dashboard XLSX release",
+      "biogenic_flag": true,
+      "factor_family": "waste_treatment",
+      "activity_tags": [
+        "waste_aerobic",
+        "end_of_life"
+      ],
+      "sector_tags": [
+        "waste_management"
+      ],
+      "source_id": "eea_waste_stats",
+      "source_release": "eea-waste-2022",
+      "release_version": "eea-waste-2022",
+      "validation_flags": {
+        "method_pack_compat": [
+          "corporate",
+          "eu_policy"
+        ],
+        "eea_treatment": "aerobic",
+        "eea_material": "domestic",
+        "assumptions": [
+          "EEA European waste statistics 2022",
+          "Treatment: aerobic",
+          "Material: domestic",
+          "Country: EU"
+        ],
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "attribution_text": "European Environment Agency, European waste statistics \u2014 per-treatment GHG intensity series.",
+        "alternates_considered": [
+          "EF:EEA:waste_landfill_msw:EU:2022:v1",
+          "EF:EEA:waste_landfill_organic:EU:2022:v1",
+          "EF:EEA:waste_incineration_msw:EU:2022:v1",
+          "EF:EEA:waste_incineration_plastic:EU:2022:v1",
+          "EF:EEA:waste_incineration_sewage_sludge:EU:2022:v1",
+          "EF:EEA:waste_recycling_plastic:EU:2022:v1",
+          "EF:EEA:waste_recycling_paper:EU:2022:v1",
+          "EF:EEA:waste_recycling_glass:EU:2022:v1",
+          "EF:EEA:waste_recycling_steel:EU:2022:v1",
+          "EF:EEA:waste_recycling_aluminium:EU:2022:v1",
+          "EF:EEA:waste_recycling_copper:EU:2022:v1",
+          "EF:EEA:waste_recycling_textiles:EU:2022:v1",
+          "EF:EEA:waste_recycling_electronics:EU:2022:v1",
+          "EF:EEA:waste_composting_organic:EU:2022:v1",
+          "EF:EEA:waste_composting_garden:EU:2022:v1",
+          "EF:EEA:waste_composting_food:EU:2022:v1",
+          "EF:EEA:waste_anaerobic_digestion_organic:EU:2022:v1",
+          "EF:EEA:waste_anaerobic_digestion_food:EU:2022:v1",
+          "EF:EEA:waste_anaerobic_digestion_manure:EU:2022:v1",
+          "EF:EEA:wastewater_anaerobic:EU:2022:v1"
+        ]
+      },
+      "created_at": "2026-04-24T07:12:23+00:00",
+      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "GHG_Protocol_Scope3",
+        "EU_Waste_Framework_Directive"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_eu",
+      "redistribution_class": "open"
+    },
+    {
+      "factor_id": "EF:EEA:wastewater_anaerobic:EU:2022:v1",
+      "fuel_type": "waste_industrial",
+      "unit": "m3",
+      "geography": "EU",
+      "geography_level": "global",
+      "vectors": {
+        "CO2": 8.1,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "European Environment Agency (EEA)",
+        "source_publication": "EEA European waste statistics \u2014 treatment GHG intensity (2022)",
+        "source_year": 2022,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://www.eea.europa.eu/en/topics/in-depth/waste-and-recycling",
+        "version": "eea-waste-2022"
+      },
+      "valid_from": "2022-01-01",
+      "valid_to": "9999-12-31",
+      "uncertainty_95ci": 0.3,
+      "dqs": {
+        "temporal": 3,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 3,
+        "methodological": 3
+      },
+      "license_info": {
+        "license": "EU-Publication",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "eea",
+        "waste",
+        "treatment_anaerobic",
+        "material_industrial",
+        "scope3_cat5",
+        "eu27",
+        "illustrative"
+      ],
+      "notes": "EEA waste-stream factor: anaerobic industrial (EU, 2022); illustrative_value=true; TODO: reconcile with the EEA dashboard XLSX release",
+      "biogenic_flag": true,
+      "factor_family": "waste_treatment",
+      "activity_tags": [
+        "waste_anaerobic",
+        "end_of_life"
+      ],
+      "sector_tags": [
+        "waste_management"
+      ],
+      "source_id": "eea_waste_stats",
+      "source_release": "eea-waste-2022",
+      "release_version": "eea-waste-2022",
+      "validation_flags": {
+        "method_pack_compat": [
+          "corporate",
+          "eu_policy"
+        ],
+        "eea_treatment": "anaerobic",
+        "eea_material": "industrial",
+        "assumptions": [
+          "EEA European waste statistics 2022",
+          "Treatment: anaerobic",
+          "Material: industrial",
+          "Country: EU"
+        ],
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "attribution_text": "European Environment Agency, European waste statistics \u2014 per-treatment GHG intensity series.",
+        "alternates_considered": [
+          "EF:EEA:waste_landfill_msw:EU:2022:v1",
+          "EF:EEA:waste_landfill_organic:EU:2022:v1",
+          "EF:EEA:waste_incineration_msw:EU:2022:v1",
+          "EF:EEA:waste_incineration_plastic:EU:2022:v1",
+          "EF:EEA:waste_incineration_sewage_sludge:EU:2022:v1",
+          "EF:EEA:waste_recycling_plastic:EU:2022:v1",
+          "EF:EEA:waste_recycling_paper:EU:2022:v1",
+          "EF:EEA:waste_recycling_glass:EU:2022:v1",
+          "EF:EEA:waste_recycling_steel:EU:2022:v1",
+          "EF:EEA:waste_recycling_aluminium:EU:2022:v1",
+          "EF:EEA:waste_recycling_copper:EU:2022:v1",
+          "EF:EEA:waste_recycling_textiles:EU:2022:v1",
+          "EF:EEA:waste_recycling_electronics:EU:2022:v1",
+          "EF:EEA:waste_composting_organic:EU:2022:v1",
+          "EF:EEA:waste_composting_garden:EU:2022:v1",
+          "EF:EEA:waste_composting_food:EU:2022:v1",
+          "EF:EEA:waste_anaerobic_digestion_organic:EU:2022:v1",
+          "EF:EEA:waste_anaerobic_digestion_food:EU:2022:v1",
+          "EF:EEA:waste_anaerobic_digestion_manure:EU:2022:v1",
+          "EF:EEA:wastewater_aerobic:EU:2022:v1"
+        ]
+      },
+      "created_at": "2026-04-24T07:12:23+00:00",
+      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "GHG_Protocol",
+        "GHG_Protocol_Scope3",
+        "EU_Waste_Framework_Directive"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_eu",
+      "redistribution_class": "open"
+    }
+  ]
+}

@@ -1,0 +1,106 @@
+{
+  "metadata": {
+    "source": "EXIOBASE Consortium",
+    "version": "3.8.2",
+    "vintage_year": 2022,
+    "source_publication": "EXIOBASE v3.8.2 multi-regional environmentally-extended supply-use input-output model",
+    "source_url": "https://www.exiobase.eu/index.php/data-download/exiobase3mon/"
+  },
+  "_seed_note": "EXIOBASE v3.8.2 GHG-intensity vectors per sector x region. Sector codes follow NACE Rev 2 letter-numeric coding where applicable; EXIOBASE-native codes are kept as-is. Values in kgCO2e/EUR (EU rows) and kgCO2e/USD (non-EU rows) at basic prices. EU rows cover EU27 aggregate + select member states. Rows flagged illustrative_value=true pending the full v3.8.2 HDF5 import.",
+  "sectors": [
+    {"sector_code": "1712", "sector_name": "Manufacture of paper and paper products", "region": "EU", "kg_co2e_per_eur": 0.65, "illustrative_value": true},
+    {"sector_code": "1712", "sector_name": "Manufacture of paper and paper products", "region": "DE", "kg_co2e_per_eur": 0.62, "illustrative_value": true},
+    {"sector_code": "1712", "sector_name": "Manufacture of paper and paper products", "region": "FR", "kg_co2e_per_eur": 0.58, "illustrative_value": true},
+    {"sector_code": "1712", "sector_name": "Manufacture of paper and paper products", "region": "SE", "kg_co2e_per_eur": 0.48, "illustrative_value": true},
+    {"sector_code": "1712", "sector_name": "Manufacture of paper and paper products", "region": "FI", "kg_co2e_per_eur": 0.52, "illustrative_value": true},
+
+    {"sector_code": "J62", "sector_name": "Computer programming, consultancy and related activities", "region": "EU", "kg_co2e_per_eur": 0.08, "illustrative_value": true},
+    {"sector_code": "J62", "sector_name": "Computer programming, consultancy and related activities", "region": "DE", "kg_co2e_per_eur": 0.09, "illustrative_value": true},
+    {"sector_code": "J62", "sector_name": "Computer programming, consultancy and related activities", "region": "FR", "kg_co2e_per_eur": 0.07, "illustrative_value": true},
+    {"sector_code": "J62", "sector_name": "Computer programming, consultancy and related activities", "region": "IE", "kg_co2e_per_eur": 0.10, "illustrative_value": true},
+    {"sector_code": "J62", "sector_name": "Computer programming, consultancy and related activities", "region": "NL", "kg_co2e_per_eur": 0.08, "illustrative_value": true},
+
+    {"sector_code": "J63", "sector_name": "Information service activities", "region": "EU", "kg_co2e_per_eur": 0.09, "illustrative_value": true},
+    {"sector_code": "J63", "sector_name": "Information service activities", "region": "IN", "kg_co2e_per_usd": 0.14, "illustrative_value": true},
+    {"sector_code": "J63", "sector_name": "Information service activities", "region": "US", "kg_co2e_per_usd": 0.08, "illustrative_value": true},
+
+    {"sector_code": "14", "sector_name": "Manufacture of wearing apparel", "region": "EU", "kg_co2e_per_eur": 0.45, "illustrative_value": true},
+    {"sector_code": "14", "sector_name": "Manufacture of wearing apparel", "region": "IT", "kg_co2e_per_eur": 0.41, "illustrative_value": true},
+    {"sector_code": "14", "sector_name": "Manufacture of wearing apparel", "region": "PT", "kg_co2e_per_eur": 0.43, "illustrative_value": true},
+    {"sector_code": "14", "sector_name": "Manufacture of wearing apparel", "region": "PL", "kg_co2e_per_eur": 0.55, "illustrative_value": true},
+    {"sector_code": "14", "sector_name": "Manufacture of wearing apparel", "region": "RO", "kg_co2e_per_eur": 0.60, "illustrative_value": true},
+
+    {"sector_code": "55", "sector_name": "Accommodation", "region": "EU", "kg_co2e_per_eur": 0.35, "illustrative_value": true},
+    {"sector_code": "55", "sector_name": "Accommodation", "region": "ES", "kg_co2e_per_eur": 0.33, "illustrative_value": true},
+    {"sector_code": "55", "sector_name": "Accommodation", "region": "IT", "kg_co2e_per_eur": 0.36, "illustrative_value": true},
+    {"sector_code": "55", "sector_name": "Accommodation", "region": "FR", "kg_co2e_per_eur": 0.31, "illustrative_value": true},
+    {"sector_code": "56", "sector_name": "Food and beverage service activities", "region": "EU", "kg_co2e_per_eur": 0.42, "illustrative_value": true},
+    {"sector_code": "56", "sector_name": "Food and beverage service activities", "region": "DE", "kg_co2e_per_eur": 0.40, "illustrative_value": true},
+    {"sector_code": "56", "sector_name": "Food and beverage service activities", "region": "FR", "kg_co2e_per_eur": 0.38, "illustrative_value": true},
+
+    {"sector_code": "43", "sector_name": "Specialised construction activities", "region": "EU", "kg_co2e_per_eur": 0.52, "illustrative_value": true},
+    {"sector_code": "43", "sector_name": "Specialised construction activities", "region": "DE", "kg_co2e_per_eur": 0.48, "illustrative_value": true},
+    {"sector_code": "43", "sector_name": "Specialised construction activities", "region": "FR", "kg_co2e_per_eur": 0.50, "illustrative_value": true},
+    {"sector_code": "43", "sector_name": "Specialised construction activities", "region": "ES", "kg_co2e_per_eur": 0.55, "illustrative_value": true},
+
+    {"sector_code": "81", "sector_name": "Services to buildings and landscape activities", "region": "EU", "kg_co2e_per_eur": 0.19, "illustrative_value": true},
+    {"sector_code": "81", "sector_name": "Services to buildings and landscape activities", "region": "IN", "kg_co2e_per_usd": 0.45, "illustrative_value": true},
+    {"sector_code": "81", "sector_name": "Services to buildings and landscape activities", "region": "US", "kg_co2e_per_usd": 0.16, "illustrative_value": true},
+    {"sector_code": "81", "sector_name": "Services to buildings and landscape activities", "region": "DE", "kg_co2e_per_eur": 0.17, "illustrative_value": true},
+
+    {"sector_code": "20", "sector_name": "Manufacture of chemicals and chemical products", "region": "EU", "kg_co2e_per_eur": 1.85, "illustrative_value": true},
+    {"sector_code": "20", "sector_name": "Manufacture of chemicals and chemical products", "region": "DE", "kg_co2e_per_eur": 1.75, "illustrative_value": true},
+    {"sector_code": "20", "sector_name": "Manufacture of chemicals and chemical products", "region": "NL", "kg_co2e_per_eur": 2.05, "illustrative_value": true},
+
+    {"sector_code": "10", "sector_name": "Manufacture of food products", "region": "EU", "kg_co2e_per_eur": 1.25, "illustrative_value": true},
+    {"sector_code": "10", "sector_name": "Manufacture of food products", "region": "FR", "kg_co2e_per_eur": 1.15, "illustrative_value": true},
+    {"sector_code": "10", "sector_name": "Manufacture of food products", "region": "ES", "kg_co2e_per_eur": 1.30, "illustrative_value": true},
+
+    {"sector_code": "24", "sector_name": "Manufacture of basic metals", "region": "EU", "kg_co2e_per_eur": 3.85, "illustrative_value": true},
+    {"sector_code": "24", "sector_name": "Manufacture of basic metals", "region": "DE", "kg_co2e_per_eur": 3.65, "illustrative_value": true},
+    {"sector_code": "24", "sector_name": "Manufacture of basic metals", "region": "IT", "kg_co2e_per_eur": 3.20, "illustrative_value": true},
+
+    {"sector_code": "27", "sector_name": "Manufacture of electrical equipment", "region": "EU", "kg_co2e_per_eur": 0.95, "illustrative_value": true},
+    {"sector_code": "27", "sector_name": "Manufacture of electrical equipment", "region": "DE", "kg_co2e_per_eur": 0.88, "illustrative_value": true},
+
+    {"sector_code": "28", "sector_name": "Manufacture of machinery and equipment n.e.c.", "region": "EU", "kg_co2e_per_eur": 0.78, "illustrative_value": true},
+    {"sector_code": "28", "sector_name": "Manufacture of machinery and equipment n.e.c.", "region": "DE", "kg_co2e_per_eur": 0.72, "illustrative_value": true},
+
+    {"sector_code": "29", "sector_name": "Manufacture of motor vehicles, trailers and semi-trailers", "region": "EU", "kg_co2e_per_eur": 0.92, "illustrative_value": true},
+    {"sector_code": "29", "sector_name": "Manufacture of motor vehicles, trailers and semi-trailers", "region": "DE", "kg_co2e_per_eur": 0.85, "illustrative_value": true},
+    {"sector_code": "29", "sector_name": "Manufacture of motor vehicles, trailers and semi-trailers", "region": "FR", "kg_co2e_per_eur": 0.90, "illustrative_value": true},
+
+    {"sector_code": "45", "sector_name": "Wholesale and retail trade and repair of motor vehicles", "region": "EU", "kg_co2e_per_eur": 0.32, "illustrative_value": true},
+    {"sector_code": "46", "sector_name": "Wholesale trade, except of motor vehicles and motorcycles", "region": "EU", "kg_co2e_per_eur": 0.28, "illustrative_value": true},
+    {"sector_code": "47", "sector_name": "Retail trade, except of motor vehicles and motorcycles", "region": "EU", "kg_co2e_per_eur": 0.30, "illustrative_value": true},
+
+    {"sector_code": "49", "sector_name": "Land transport and transport via pipelines", "region": "EU", "kg_co2e_per_eur": 1.55, "illustrative_value": true},
+    {"sector_code": "50", "sector_name": "Water transport", "region": "EU", "kg_co2e_per_eur": 1.98, "illustrative_value": true},
+    {"sector_code": "51", "sector_name": "Air transport", "region": "EU", "kg_co2e_per_eur": 3.25, "illustrative_value": true},
+    {"sector_code": "52", "sector_name": "Warehousing and support activities for transportation", "region": "EU", "kg_co2e_per_eur": 0.85, "illustrative_value": true},
+
+    {"sector_code": "35", "sector_name": "Electricity, gas, steam and air conditioning supply", "region": "EU", "kg_co2e_per_eur": 2.95, "illustrative_value": true},
+    {"sector_code": "35", "sector_name": "Electricity, gas, steam and air conditioning supply", "region": "DE", "kg_co2e_per_eur": 2.45, "illustrative_value": true},
+    {"sector_code": "35", "sector_name": "Electricity, gas, steam and air conditioning supply", "region": "PL", "kg_co2e_per_eur": 4.85, "illustrative_value": true},
+
+    {"sector_code": "61", "sector_name": "Telecommunications", "region": "EU", "kg_co2e_per_eur": 0.14, "illustrative_value": true},
+    {"sector_code": "64", "sector_name": "Financial service activities", "region": "EU", "kg_co2e_per_eur": 0.06, "illustrative_value": true},
+    {"sector_code": "65", "sector_name": "Insurance, reinsurance and pension funding", "region": "EU", "kg_co2e_per_eur": 0.05, "illustrative_value": true},
+
+    {"sector_code": "69", "sector_name": "Legal and accounting activities", "region": "EU", "kg_co2e_per_eur": 0.05, "illustrative_value": true},
+    {"sector_code": "70", "sector_name": "Activities of head offices; management consultancy", "region": "EU", "kg_co2e_per_eur": 0.06, "illustrative_value": true},
+    {"sector_code": "71", "sector_name": "Architectural and engineering activities; technical testing", "region": "EU", "kg_co2e_per_eur": 0.09, "illustrative_value": true},
+    {"sector_code": "72", "sector_name": "Scientific research and development", "region": "EU", "kg_co2e_per_eur": 0.08, "illustrative_value": true},
+    {"sector_code": "73", "sector_name": "Advertising and market research", "region": "EU", "kg_co2e_per_eur": 0.08, "illustrative_value": true},
+    {"sector_code": "74", "sector_name": "Other professional, scientific and technical activities", "region": "EU", "kg_co2e_per_eur": 0.11, "illustrative_value": true},
+
+    {"sector_code": "85", "sector_name": "Education", "region": "EU", "kg_co2e_per_eur": 0.10, "illustrative_value": true},
+    {"sector_code": "86", "sector_name": "Human health activities", "region": "EU", "kg_co2e_per_eur": 0.18, "illustrative_value": true},
+    {"sector_code": "87", "sector_name": "Residential care activities", "region": "EU", "kg_co2e_per_eur": 0.15, "illustrative_value": true},
+
+    {"sector_code": "J62", "sector_name": "Computer programming, consultancy and related activities", "region": "IN", "kg_co2e_per_usd": 0.22, "illustrative_value": true},
+    {"sector_code": "J62", "sector_name": "Computer programming, consultancy and related activities", "region": "US", "kg_co2e_per_usd": 0.07, "illustrative_value": true},
+    {"sector_code": "J63", "sector_name": "Information service activities", "region": "GB", "kg_co2e_per_eur": 0.09, "illustrative_value": true},
+    {"sector_code": "J63", "sector_name": "Information service activities", "region": "DE", "kg_co2e_per_eur": 0.09, "illustrative_value": true}
+  ]
+}

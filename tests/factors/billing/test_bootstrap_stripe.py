@@ -186,3 +186,254 @@ class TestPriceShape:
         by_key = {p.lookup_key: p.unit_amount_cents for p in plan.prices}
         assert by_key["price_factors_consulting_monthly"] == 249_900  # $2,499.00
         assert by_key["price_factors_consulting_annual"] == 2_499_000  # $24,990.00
+
+
+# ---------------------------------------------------------------------------
+# Wave 5 — idempotency + SKU-coverage tests (mock Stripe client)
+# ---------------------------------------------------------------------------
+
+
+class TestWave5SKUCoverage:
+    """Wave 4 summary promised 13 products + 27 prices. Verify the plan
+    actually delivers that exact shape and that every product carries a
+    ``greenlang_sku_id`` metadata key (the Wave 5 idempotency anchor).
+    """
+
+    def test_product_and_price_counts_match_wave4_summary(self, bootstrap) -> None:
+        plan = bootstrap.build_plan()
+        assert len(plan.products) == 13, "Wave 4 summary promised 13 Stripe products"
+        assert len(plan.prices) == 27, "Wave 4 summary promised 27 Stripe prices"
+
+    def test_every_product_has_greenlang_sku_id_metadata(self, bootstrap) -> None:
+        plan = bootstrap.build_plan()
+        for prod in plan.products:
+            assert "greenlang_sku_id" in prod.metadata, (
+                f"product {prod.name!r} missing greenlang_sku_id; "
+                "required for Wave 5 idempotency"
+            )
+            assert prod.metadata["greenlang_sku_id"] == prod.stripe_product_id
+
+    def test_sku_ids_are_unique(self, bootstrap) -> None:
+        plan = bootstrap.build_plan()
+        ids = [p.metadata["greenlang_sku_id"] for p in plan.products]
+        assert len(ids) == len(set(ids)), "duplicate greenlang_sku_id values in plan"
+
+    def test_lookup_keys_are_unique(self, bootstrap) -> None:
+        plan = bootstrap.build_plan()
+        keys = [p.lookup_key for p in plan.prices]
+        assert len(keys) == len(set(keys)), "duplicate lookup_key values in plan"
+
+
+class _MockStripeClient:
+    """Record-and-replay Stripe mock that mimics the subset of endpoints
+    the bootstrap script calls. Hooks at the same ``_stripe_request`` seam
+    the live code uses so we never touch the ``stripe`` SDK or network.
+    """
+
+    def __init__(self) -> None:
+        self.products: list[dict] = []
+        self.prices: list[dict] = []
+        self.calls: list[tuple[str, str, dict | None]] = []
+        self._next_product_id = 1
+        self._next_price_id = 1
+
+    def request(self, method: str, path: str, data=None, api_key=None):
+        self.calls.append((method, path, data))
+        if method == "GET" and path.startswith("/products"):
+            return {"data": list(self.products), "has_more": False}
+        if method == "GET" and path.startswith("/prices"):
+            # ?lookup_keys[0]=<key>&active=true&limit=10
+            import urllib.parse
+            qs = urllib.parse.urlparse("http://x" + path).query
+            params = urllib.parse.parse_qs(qs)
+            lookup = params.get("lookup_keys[0]", [""])[0]
+            return {"data": [p for p in self.prices if p.get("lookup_key") == lookup]}
+        if method == "POST" and path == "/products":
+            prod = {
+                "id": f"prod_STRIPE{self._next_product_id:03d}",
+                "name": data["name"],
+                "description": data.get("description", ""),
+                "metadata": dict(data.get("metadata") or {}),
+                "active": True,
+            }
+            self._next_product_id += 1
+            self.products.append(prod)
+            return prod
+        if method == "POST" and path.startswith("/products/"):
+            prod_id = path.split("/")[-1]
+            for p in self.products:
+                if p["id"] == prod_id:
+                    if "description" in data:
+                        p["description"] = data["description"]
+                    if "metadata" in data:
+                        p["metadata"].update(data["metadata"])
+                    return p
+            raise AssertionError(f"product {prod_id} not found")
+        if method == "POST" and path == "/prices":
+            price = {
+                "id": f"price_STRIPE{self._next_price_id:03d}",
+                "lookup_key": data["lookup_key"],
+                "product": data["product"],
+                "unit_amount": int(data["unit_amount"]),
+                "currency": data["currency"],
+                "active": True,
+            }
+            self._next_price_id += 1
+            self.prices.append(price)
+            return price
+        raise AssertionError(f"unexpected mock call: {method} {path}")
+
+
+class TestIdempotency:
+    """Wave 5 launch-audit: bootstrap must be safe to re-run. A second
+    apply with no changes must create ZERO new products / prices and
+    just refresh metadata.
+    """
+
+    def _apply(self, bootstrap, mock: _MockStripeClient, monkeypatch) -> dict:
+        """Run execute_plan against the mock and return the resolved map."""
+        plan = bootstrap.build_plan()
+        monkeypatch.setattr(
+            bootstrap,
+            "_stripe_request",
+            lambda method, path, data=None, api_key=None: mock.request(
+                method, path, data, api_key
+            ),
+        )
+        return bootstrap.execute_plan(plan, api_key="sk_test_fake", write_catalog=False)
+
+    def test_second_apply_creates_no_duplicates(self, bootstrap, monkeypatch) -> None:
+        mock = _MockStripeClient()
+        first = self._apply(bootstrap, mock, monkeypatch)
+        products_after_first = len(mock.products)
+        prices_after_first = len(mock.prices)
+        assert products_after_first == 13
+        assert prices_after_first == 27
+
+        # Second run: must find everything by greenlang_sku_id / lookup_key
+        # and create nothing new.
+        second = self._apply(bootstrap, mock, monkeypatch)
+        assert len(mock.products) == products_after_first, (
+            "second --live run created duplicate products — idempotency broken"
+        )
+        assert len(mock.prices) == prices_after_first, (
+            "second --live run created duplicate prices — idempotency broken"
+        )
+        assert first == second, "resolved map changed between runs"
+
+    def test_rename_on_stripe_side_still_matches_by_sku_id(
+        self, bootstrap, monkeypatch
+    ) -> None:
+        """If someone renames a product in the Stripe dashboard, the next
+        bootstrap must still match it via metadata.greenlang_sku_id.
+        """
+        mock = _MockStripeClient()
+        self._apply(bootstrap, mock, monkeypatch)
+        # Simulate a human renaming one product in the Stripe dashboard.
+        mock.products[0]["name"] = "Renamed in Stripe Dashboard"
+        # Re-run: should not create a new product for the renamed SKU.
+        initial_count = len(mock.products)
+        self._apply(bootstrap, mock, monkeypatch)
+        assert len(mock.products) == initial_count, (
+            "bootstrap created a duplicate product after dashboard rename; "
+            "greenlang_sku_id metadata match failed"
+        )
+
+    def test_metadata_refreshed_on_second_run(
+        self, bootstrap, monkeypatch
+    ) -> None:
+        """When metadata drifts out-of-band, a re-run restores it."""
+        mock = _MockStripeClient()
+        self._apply(bootstrap, mock, monkeypatch)
+        # Corrupt a metadata field out-of-band.
+        mock.products[0]["metadata"]["pricing_proposal_version"] = "v0-stale"
+        self._apply(bootstrap, mock, monkeypatch)
+        assert mock.products[0]["metadata"]["pricing_proposal_version"] == "v1"
+
+    def test_prices_are_not_mutated_in_place(
+        self, bootstrap, monkeypatch
+    ) -> None:
+        """Stripe prices are immutable; on re-run we must not attempt
+        to POST changes to existing price IDs."""
+        mock = _MockStripeClient()
+        self._apply(bootstrap, mock, monkeypatch)
+        mock.calls.clear()
+        self._apply(bootstrap, mock, monkeypatch)
+        price_updates = [
+            c for c in mock.calls
+            if c[0] == "POST" and c[1].startswith("/prices/")
+        ]
+        assert price_updates == [], (
+            "second run attempted to mutate an existing price; prices are immutable"
+        )
+
+    def test_uses_stripe_request_seam_not_stripe_sdk(self, bootstrap) -> None:
+        """Regression guard: the script must NOT import the stripe SDK."""
+        import inspect
+        src = inspect.getsource(bootstrap)
+        assert "import stripe" not in src, (
+            "bootstrap_stripe.py added a stripe SDK dependency; keep urllib seam"
+        )
+        assert "from stripe" not in src
+
+    def test_find_existing_product_prefers_sku_id_over_name(
+        self, bootstrap
+    ) -> None:
+        """Unit-test the matcher: a name collision must not fool the
+        matcher if metadata.greenlang_sku_id disagrees."""
+        mock = _MockStripeClient()
+        # Seed: one product with the target name but WRONG greenlang_sku_id,
+        # and one product with the correct greenlang_sku_id but a different name.
+        mock.products = [
+            {
+                "id": "prod_wrong",
+                "name": "GreenLang Factors — Community",
+                "metadata": {"greenlang_sku_id": "prod_factors_legacy"},
+            },
+            {
+                "id": "prod_right",
+                "name": "Renamed",
+                "metadata": {"greenlang_sku_id": "prod_factors_community"},
+            },
+        ]
+        # Patch _stripe_request to our mock just for this call.
+        import types
+        orig = bootstrap._stripe_request
+        try:
+            bootstrap._stripe_request = (
+                lambda method, path, data=None, api_key=None: mock.request(
+                    method, path, data, api_key
+                )
+            )
+            found = bootstrap._find_existing_product(
+                "GreenLang Factors — Community",
+                api_key="sk_test_fake",
+                greenlang_sku_id="prod_factors_community",
+            )
+        finally:
+            bootstrap._stripe_request = orig
+        assert found is not None
+        assert found["id"] == "prod_right", (
+            "matcher fell back to name match when greenlang_sku_id was available"
+        )
+
+    def test_find_existing_product_returns_none_for_unknown(
+        self, bootstrap
+    ) -> None:
+        mock = _MockStripeClient()
+        import types
+        orig = bootstrap._stripe_request
+        try:
+            bootstrap._stripe_request = (
+                lambda method, path, data=None, api_key=None: mock.request(
+                    method, path, data, api_key
+                )
+            )
+            found = bootstrap._find_existing_product(
+                "Does Not Exist",
+                api_key="sk_test_fake",
+                greenlang_sku_id="prod_nope",
+            )
+        finally:
+            bootstrap._stripe_request = orig
+        assert found is None

@@ -1,7 +1,7 @@
 {
   "source_id": "egrid",
   "source_version": "2022.1",
-  "ingested_at": "2026-04-23T18:26:52+00:00",
+  "ingested_at": "2026-04-24T07:12:22+00:00",
   "license_class": "public_us_government",
   "license_name": "US-Public-Domain",
   "redistribution_class": "open",
@@ -57,8 +57,8 @@
         "akgd"
       ],
       "notes": "eGRID subregion AKGD (ASCC Alaska Grid); coal=12%, gas=41%",
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -71,7 +71,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
       }
     },
@@ -123,8 +123,8 @@
         "akms"
       ],
       "notes": "eGRID subregion AKMS (ASCC Miscellaneous)",
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -137,7 +137,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
       }
     },
@@ -189,8 +189,8 @@
         "aznm"
       ],
       "notes": "eGRID subregion AZNM (WECC Southwest)",
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -203,7 +203,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
       }
     },
@@ -255,8 +255,8 @@
         "camx"
       ],
       "notes": "eGRID subregion CAMX (WECC California)",
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -269,7 +269,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
       }
     },
@@ -321,8 +321,8 @@
         "erct"
       ],
       "notes": "eGRID subregion ERCT (ERCOT All)",
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -335,7 +335,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
       }
     },
@@ -387,8 +387,8 @@
         "frcc"
       ],
       "notes": "eGRID subregion FRCC (FRCC All)",
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -401,7 +401,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
       }
     },
@@ -453,8 +453,8 @@
         "hims"
       ],
       "notes": "eGRID subregion HIMS (HICC Miscellaneous)",
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -467,7 +467,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
       }
     },
@@ -519,8 +519,8 @@
         "hioa"
       ],
       "notes": "eGRID subregion HIOA (HICC Oahu)",
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -533,7 +533,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
       }
     },
@@ -585,8 +585,8 @@
         "mroe"
       ],
       "notes": "eGRID subregion MROE (MRO East)",
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -599,7 +599,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
       }
     },
@@ -651,8 +651,8 @@
         "mrow"
       ],
       "notes": "eGRID subregion MROW (MRO West)",
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -665,7 +665,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
       }
     },
@@ -717,8 +717,8 @@
         "newe"
       ],
       "notes": "eGRID subregion NEWE (NPCC New England)",
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -731,7 +731,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
       }
     },
@@ -783,8 +783,8 @@
         "nwpp"
       ],
       "notes": "eGRID subregion NWPP (WECC Northwest)",
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -797,7 +797,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
       }
     },
@@ -849,8 +849,8 @@
         "nycw"
       ],
       "notes": "eGRID subregion NYCW (NPCC NYC/Westchester)",
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -863,7 +863,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
       }
     },
@@ -915,8 +915,8 @@
         "nyli"
       ],
       "notes": "eGRID subregion NYLI (NPCC Long Island)",
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -929,7 +929,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
       }
     },
@@ -981,8 +981,8 @@
         "nyup"
       ],
       "notes": "eGRID subregion NYUP (NPCC Upstate NY)",
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -995,7 +995,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
       }
     },
@@ -1047,8 +1047,8 @@
         "prms"
       ],
       "notes": "eGRID subregion PRMS (Puerto Rico)",
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -1061,7 +1061,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
       }
     },
@@ -1113,8 +1113,8 @@
         "rfce"
       ],
       "notes": "eGRID subregion RFCE (RFC East)",
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -1127,7 +1127,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
       }
     },
@@ -1179,8 +1179,8 @@
         "rfcm"
       ],
       "notes": "eGRID subregion RFCM (RFC Michigan)",
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -1193,7 +1193,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
       }
     },
@@ -1245,8 +1245,8 @@
         "rfcw"
       ],
       "notes": "eGRID subregion RFCW (RFC West)",
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -1259,7 +1259,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
       }
     },
@@ -1311,8 +1311,8 @@
         "rmpa"
       ],
       "notes": "eGRID subregion RMPA (WECC Rockies)",
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -1325,7 +1325,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
       }
     },
@@ -1377,8 +1377,8 @@
         "spno"
       ],
       "notes": "eGRID subregion SPNO (SPP North)",
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -1391,7 +1391,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
       }
     },
@@ -1443,8 +1443,8 @@
         "spso"
       ],
       "notes": "eGRID subregion SPSO (SPP South)",
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -1457,7 +1457,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
       }
     },
@@ -1509,8 +1509,8 @@
         "srmv"
       ],
       "notes": "eGRID subregion SRMV (SERC Mississippi Valley)",
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -1523,7 +1523,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
       }
     },
@@ -1575,8 +1575,8 @@
         "srmw"
       ],
       "notes": "eGRID subregion SRMW (SERC Midwest)",
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -1589,7 +1589,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
       }
     },
@@ -1641,8 +1641,8 @@
         "srso"
       ],
       "notes": "eGRID subregion SRSO (SERC South)",
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -1655,7 +1655,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
       }
     },
@@ -1707,8 +1707,8 @@
         "srtv"
       ],
       "notes": "eGRID subregion SRTV (SERC Tennessee Valley)",
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -1721,7 +1721,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
       }
     },
@@ -1773,8 +1773,8 @@
         "srvc"
       ],
       "notes": "eGRID subregion SRVC (SERC Virginia/Carolinas)",
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -1787,7 +1787,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
       }
     },
@@ -1839,8 +1839,8 @@
         "al"
       ],
       "notes": "eGRID state-level average for AL",
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -1853,7 +1853,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
       }
     },
@@ -1905,8 +1905,8 @@
         "ak"
       ],
       "notes": "eGRID state-level average for AK",
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -1919,7 +1919,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
       }
     },
@@ -1971,8 +1971,8 @@
         "az"
       ],
       "notes": "eGRID state-level average for AZ",
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -1985,7 +1985,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
       }
     },
@@ -2037,8 +2037,8 @@
         "ar"
       ],
       "notes": "eGRID state-level average for AR",
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -2051,7 +2051,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
       }
     },
@@ -2103,8 +2103,8 @@
         "ca"
       ],
       "notes": "eGRID state-level average for CA",
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -2117,7 +2117,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
       }
     },
@@ -2169,8 +2169,8 @@
         "co"
       ],
       "notes": "eGRID state-level average for CO",
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -2183,7 +2183,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
       }
     },
@@ -2235,8 +2235,8 @@
         "ct"
       ],
       "notes": "eGRID state-level average for CT",
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -2249,7 +2249,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
       }
     },
@@ -2301,8 +2301,8 @@
         "de"
       ],
       "notes": "eGRID state-level average for DE",
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -2315,7 +2315,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
       }
     },
@@ -2367,8 +2367,8 @@
         "fl"
       ],
       "notes": "eGRID state-level average for FL",
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -2381,7 +2381,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
       }
     },
@@ -2433,8 +2433,8 @@
         "ga"
       ],
       "notes": "eGRID state-level average for GA",
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -2447,7 +2447,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
       }
     },
@@ -2499,8 +2499,8 @@
         "hi"
       ],
       "notes": "eGRID state-level average for HI",
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -2513,7 +2513,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
       }
     },
@@ -2565,8 +2565,8 @@
         "id"
       ],
       "notes": "eGRID state-level average for ID",
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -2579,7 +2579,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
       }
     },
@@ -2631,8 +2631,8 @@
         "il"
       ],
       "notes": "eGRID state-level average for IL",
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -2645,7 +2645,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
       }
     },
@@ -2697,8 +2697,8 @@
         "in"
       ],
       "notes": "eGRID state-level average for IN",
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -2711,7 +2711,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
       }
     },
@@ -2763,8 +2763,8 @@
         "ia"
       ],
       "notes": "eGRID state-level average for IA",
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -2777,7 +2777,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
       }
     },
@@ -2829,8 +2829,8 @@
         "ks"
       ],
       "notes": "eGRID state-level average for KS",
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -2843,7 +2843,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
       }
     },
@@ -2895,8 +2895,8 @@
         "ky"
       ],
       "notes": "eGRID state-level average for KY",
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -2909,7 +2909,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
       }
     },
@@ -2961,8 +2961,8 @@
         "la"
       ],
       "notes": "eGRID state-level average for LA",
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -2975,7 +2975,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
       }
     },
@@ -3027,8 +3027,8 @@
         "me"
       ],
       "notes": "eGRID state-level average for ME",
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -3041,7 +3041,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
       }
     },
@@ -3093,8 +3093,8 @@
         "md"
       ],
       "notes": "eGRID state-level average for MD",
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -3107,7 +3107,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
       }
     },
@@ -3159,8 +3159,8 @@
         "ma"
       ],
       "notes": "eGRID state-level average for MA",
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -3173,7 +3173,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
       }
     },
@@ -3225,8 +3225,8 @@
         "mi"
       ],
       "notes": "eGRID state-level average for MI",
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -3239,7 +3239,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
       }
     },
@@ -3291,8 +3291,8 @@
         "mn"
       ],
       "notes": "eGRID state-level average for MN",
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -3305,7 +3305,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
       }
     },
@@ -3357,8 +3357,8 @@
         "ms"
       ],
       "notes": "eGRID state-level average for MS",
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -3371,7 +3371,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
       }
     },
@@ -3423,8 +3423,8 @@
         "mo"
       ],
       "notes": "eGRID state-level average for MO",
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -3437,7 +3437,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
       }
     },
@@ -3489,8 +3489,8 @@
         "mt"
       ],
       "notes": "eGRID state-level average for MT",
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -3503,7 +3503,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
       }
     },
@@ -3555,8 +3555,8 @@
         "ne"
       ],
       "notes": "eGRID state-level average for NE",
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -3569,7 +3569,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
       }
     },
@@ -3621,8 +3621,8 @@
         "nv"
       ],
       "notes": "eGRID state-level average for NV",
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -3635,7 +3635,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
       }
     },
@@ -3687,8 +3687,8 @@
         "nh"
       ],
       "notes": "eGRID state-level average for NH",
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -3701,7 +3701,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
       }
     },
@@ -3753,8 +3753,8 @@
         "nj"
       ],
       "notes": "eGRID state-level average for NJ",
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -3767,7 +3767,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
       }
     },
@@ -3819,8 +3819,8 @@
         "nm"
       ],
       "notes": "eGRID state-level average for NM",
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -3833,7 +3833,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
       }
     },
@@ -3885,8 +3885,8 @@
         "ny"
       ],
       "notes": "eGRID state-level average for NY",
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -3899,7 +3899,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
       }
     },
@@ -3951,8 +3951,8 @@
         "nc"
       ],
       "notes": "eGRID state-level average for NC",
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -3965,7 +3965,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
       }
     },
@@ -4017,8 +4017,8 @@
         "nd"
       ],
       "notes": "eGRID state-level average for ND",
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -4031,7 +4031,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
       }
     },
@@ -4083,8 +4083,8 @@
         "oh"
       ],
       "notes": "eGRID state-level average for OH",
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -4097,7 +4097,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
       }
     },
@@ -4149,8 +4149,8 @@
         "ok"
       ],
       "notes": "eGRID state-level average for OK",
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -4163,7 +4163,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
       }
     },
@@ -4215,8 +4215,8 @@
         "or"
       ],
       "notes": "eGRID state-level average for OR",
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -4229,7 +4229,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
       }
     },
@@ -4281,8 +4281,8 @@
         "pa"
       ],
       "notes": "eGRID state-level average for PA",
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -4295,7 +4295,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
       }
     },
@@ -4347,8 +4347,8 @@
         "ri"
       ],
       "notes": "eGRID state-level average for RI",
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -4361,7 +4361,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
       }
     },
@@ -4413,8 +4413,8 @@
         "sc"
       ],
       "notes": "eGRID state-level average for SC",
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -4427,7 +4427,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
       }
     },
@@ -4479,8 +4479,8 @@
         "sd"
       ],
       "notes": "eGRID state-level average for SD",
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -4493,7 +4493,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
       }
     },
@@ -4545,8 +4545,8 @@
         "tn"
       ],
       "notes": "eGRID state-level average for TN",
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -4559,7 +4559,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
       }
     },
@@ -4611,8 +4611,8 @@
         "tx"
       ],
       "notes": "eGRID state-level average for TX",
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -4625,7 +4625,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
       }
     },
@@ -4677,8 +4677,8 @@
         "ut"
       ],
       "notes": "eGRID state-level average for UT",
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -4691,7 +4691,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
       }
     },
@@ -4743,8 +4743,8 @@
         "vt"
       ],
       "notes": "eGRID state-level average for VT",
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -4757,7 +4757,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
       }
     },
@@ -4809,8 +4809,8 @@
         "va"
       ],
       "notes": "eGRID state-level average for VA",
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -4823,7 +4823,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
       }
     },
@@ -4875,8 +4875,8 @@
         "wa"
       ],
       "notes": "eGRID state-level average for WA",
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -4889,7 +4889,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
       }
     },
@@ -4941,8 +4941,8 @@
         "wv"
       ],
       "notes": "eGRID state-level average for WV",
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -4955,7 +4955,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
       }
     },
@@ -5007,8 +5007,8 @@
         "wi"
       ],
       "notes": "eGRID state-level average for WI",
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -5021,7 +5021,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
       }
     },
@@ -5073,8 +5073,8 @@
         "wy"
       ],
       "notes": "eGRID state-level average for WY",
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -5087,7 +5087,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
       }
     },
@@ -5139,8 +5139,8 @@
         "dc"
       ],
       "notes": "eGRID state-level average for DC",
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -5153,7 +5153,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
       }
     },
@@ -5204,8 +5204,8 @@
         "national"
       ],
       "notes": "eGRID US national average",
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -5218,7 +5218,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates."
       }
     }

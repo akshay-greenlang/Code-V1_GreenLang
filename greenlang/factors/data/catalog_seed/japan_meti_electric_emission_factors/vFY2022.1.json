@@ -1,7 +1,7 @@
 {
   "source_id": "japan_meti_electric_emission_factors",
   "source_version": "FY2022.1",
-  "ingested_at": "2026-04-23T18:26:52+00:00",
+  "ingested_at": "2026-04-24T07:12:23+00:00",
   "license_class": "open",
   "license_name": "Japan-Government-Public-Use",
   "redistribution_class": "open",
@@ -87,8 +87,8 @@
         "IFRS_S2",
         "Japan_SSBJ"
       ],
-      "created_at": "2026-04-23T23:56:52.800528",
-      "updated_at": "2026-04-23T23:56:52.800528",
+      "created_at": "2026-04-24T12:42:23.095895",
+      "updated_at": "2026-04-24T12:42:23.095895",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -104,7 +104,7 @@
       "source_record_id": "meti:Hokkaido:FY2022",
       "release_version": "METI-FY2022-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "Electric Utility Emission Factors, Japan METI & MOEJ (annual).",
         "alternates_considered": [
           "EF:JP:residual_mix:tohoku:fy2022:meti-fy2022-v1",
@@ -263,8 +263,8 @@
         "IFRS_S2",
         "Japan_SSBJ"
       ],
-      "created_at": "2026-04-23T23:56:52.800528",
-      "updated_at": "2026-04-23T23:56:52.800528",
+      "created_at": "2026-04-24T12:42:23.096898",
+      "updated_at": "2026-04-24T12:42:23.096898",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -280,7 +280,7 @@
       "source_record_id": "meti:Tohoku:FY2022",
       "release_version": "METI-FY2022-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "Electric Utility Emission Factors, Japan METI & MOEJ (annual).",
         "alternates_considered": [
           "EF:JP:residual_mix:hokkaido:fy2022:meti-fy2022-v1",
@@ -439,8 +439,8 @@
         "IFRS_S2",
         "Japan_SSBJ"
       ],
-      "created_at": "2026-04-23T23:56:52.801528",
-      "updated_at": "2026-04-23T23:56:52.801528",
+      "created_at": "2026-04-24T12:42:23.096898",
+      "updated_at": "2026-04-24T12:42:23.096898",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -456,7 +456,7 @@
       "source_record_id": "meti:Tokyo:FY2022",
       "release_version": "METI-FY2022-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "Electric Utility Emission Factors, Japan METI & MOEJ (annual).",
         "alternates_considered": [
           "EF:JP:residual_mix:hokkaido:fy2022:meti-fy2022-v1",
@@ -615,8 +615,8 @@
         "IFRS_S2",
         "Japan_SSBJ"
       ],
-      "created_at": "2026-04-23T23:56:52.801528",
-      "updated_at": "2026-04-23T23:56:52.801528",
+      "created_at": "2026-04-24T12:42:23.096898",
+      "updated_at": "2026-04-24T12:42:23.096898",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -632,7 +632,7 @@
       "source_record_id": "meti:Chubu:FY2022",
       "release_version": "METI-FY2022-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "Electric Utility Emission Factors, Japan METI & MOEJ (annual).",
         "alternates_considered": [
           "EF:JP:residual_mix:hokkaido:fy2022:meti-fy2022-v1",
@@ -791,8 +791,8 @@
         "IFRS_S2",
         "Japan_SSBJ"
       ],
-      "created_at": "2026-04-23T23:56:52.801528",
-      "updated_at": "2026-04-23T23:56:52.801528",
+      "created_at": "2026-04-24T12:42:23.096898",
+      "updated_at": "2026-04-24T12:42:23.096898",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -808,7 +808,7 @@
       "source_record_id": "meti:Hokuriku:FY2022",
       "release_version": "METI-FY2022-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "Electric Utility Emission Factors, Japan METI & MOEJ (annual).",
         "alternates_considered": [
           "EF:JP:residual_mix:hokkaido:fy2022:meti-fy2022-v1",
@@ -967,8 +967,8 @@
         "IFRS_S2",
         "Japan_SSBJ"
       ],
-      "created_at": "2026-04-23T23:56:52.802597",
-      "updated_at": "2026-04-23T23:56:52.802597",
+      "created_at": "2026-04-24T12:42:23.097926",
+      "updated_at": "2026-04-24T12:42:23.097926",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -984,7 +984,7 @@
       "source_record_id": "meti:Kansai:FY2022",
       "release_version": "METI-FY2022-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "Electric Utility Emission Factors, Japan METI & MOEJ (annual).",
         "alternates_considered": [
           "EF:JP:residual_mix:hokkaido:fy2022:meti-fy2022-v1",
@@ -1143,8 +1143,8 @@
         "IFRS_S2",
         "Japan_SSBJ"
       ],
-      "created_at": "2026-04-23T23:56:52.802597",
-      "updated_at": "2026-04-23T23:56:52.802597",
+      "created_at": "2026-04-24T12:42:23.097926",
+      "updated_at": "2026-04-24T12:42:23.097926",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -1160,7 +1160,7 @@
       "source_record_id": "meti:Chugoku:FY2022",
       "release_version": "METI-FY2022-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "Electric Utility Emission Factors, Japan METI & MOEJ (annual).",
         "alternates_considered": [
           "EF:JP:residual_mix:hokkaido:fy2022:meti-fy2022-v1",
@@ -1319,8 +1319,8 @@
         "IFRS_S2",
         "Japan_SSBJ"
       ],
-      "created_at": "2026-04-23T23:56:52.802597",
-      "updated_at": "2026-04-23T23:56:52.802597",
+      "created_at": "2026-04-24T12:42:23.097926",
+      "updated_at": "2026-04-24T12:42:23.097926",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -1336,7 +1336,7 @@
       "source_record_id": "meti:Shikoku:FY2022",
       "release_version": "METI-FY2022-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "Electric Utility Emission Factors, Japan METI & MOEJ (annual).",
         "alternates_considered": [
           "EF:JP:residual_mix:hokkaido:fy2022:meti-fy2022-v1",
@@ -1495,8 +1495,8 @@
         "IFRS_S2",
         "Japan_SSBJ"
       ],
-      "created_at": "2026-04-23T23:56:52.802597",
-      "updated_at": "2026-04-23T23:56:52.802597",
+      "created_at": "2026-04-24T12:42:23.098912",
+      "updated_at": "2026-04-24T12:42:23.098912",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -1512,7 +1512,7 @@
       "source_record_id": "meti:Kyushu:FY2022",
       "release_version": "METI-FY2022-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "Electric Utility Emission Factors, Japan METI & MOEJ (annual).",
         "alternates_considered": [
           "EF:JP:residual_mix:hokkaido:fy2022:meti-fy2022-v1",
@@ -1671,8 +1671,8 @@
         "IFRS_S2",
         "Japan_SSBJ"
       ],
-      "created_at": "2026-04-23T23:56:52.803641",
-      "updated_at": "2026-04-23T23:56:52.803641",
+      "created_at": "2026-04-24T12:42:23.098912",
+      "updated_at": "2026-04-24T12:42:23.098912",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -1688,7 +1688,7 @@
       "source_record_id": "meti:Okinawa:FY2022",
       "release_version": "METI-FY2022-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "Electric Utility Emission Factors, Japan METI & MOEJ (annual).",
         "alternates_considered": [
           "EF:JP:residual_mix:hokkaido:fy2022:meti-fy2022-v1",
@@ -1847,8 +1847,8 @@
         "IFRS_S2",
         "Japan_SSBJ"
       ],
-      "created_at": "2026-04-23T23:56:52.803641",
-      "updated_at": "2026-04-23T23:56:52.803641",
+      "created_at": "2026-04-24T12:42:23.098912",
+      "updated_at": "2026-04-24T12:42:23.098912",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -1864,7 +1864,7 @@
       "source_record_id": "meti:Hokkaido:FY2021",
       "release_version": "METI-FY2021-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "Electric Utility Emission Factors, Japan METI & MOEJ (annual).",
         "alternates_considered": [
           "EF:JP:residual_mix:tohoku:fy2021:meti-fy2021-v1",
@@ -2023,8 +2023,8 @@
         "IFRS_S2",
         "Japan_SSBJ"
       ],
-      "created_at": "2026-04-23T23:56:52.803641",
-      "updated_at": "2026-04-23T23:56:52.803641",
+      "created_at": "2026-04-24T12:42:23.098912",
+      "updated_at": "2026-04-24T12:42:23.098912",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -2040,7 +2040,7 @@
       "source_record_id": "meti:Tohoku:FY2021",
       "release_version": "METI-FY2021-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "Electric Utility Emission Factors, Japan METI & MOEJ (annual).",
         "alternates_considered": [
           "EF:JP:residual_mix:hokkaido:fy2021:meti-fy2021-v1",
@@ -2199,8 +2199,8 @@
         "IFRS_S2",
         "Japan_SSBJ"
       ],
-      "created_at": "2026-04-23T23:56:52.803641",
-      "updated_at": "2026-04-23T23:56:52.803641",
+      "created_at": "2026-04-24T12:42:23.099911",
+      "updated_at": "2026-04-24T12:42:23.099911",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -2216,7 +2216,7 @@
       "source_record_id": "meti:Tokyo:FY2021",
       "release_version": "METI-FY2021-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "Electric Utility Emission Factors, Japan METI & MOEJ (annual).",
         "alternates_considered": [
           "EF:JP:residual_mix:hokkaido:fy2021:meti-fy2021-v1",
@@ -2375,8 +2375,8 @@
         "IFRS_S2",
         "Japan_SSBJ"
       ],
-      "created_at": "2026-04-23T23:56:52.804636",
-      "updated_at": "2026-04-23T23:56:52.804636",
+      "created_at": "2026-04-24T12:42:23.099911",
+      "updated_at": "2026-04-24T12:42:23.099911",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -2392,7 +2392,7 @@
       "source_record_id": "meti:Chubu:FY2021",
       "release_version": "METI-FY2021-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "Electric Utility Emission Factors, Japan METI & MOEJ (annual).",
         "alternates_considered": [
           "EF:JP:residual_mix:hokkaido:fy2021:meti-fy2021-v1",
@@ -2551,8 +2551,8 @@
         "IFRS_S2",
         "Japan_SSBJ"
       ],
-      "created_at": "2026-04-23T23:56:52.804636",
-      "updated_at": "2026-04-23T23:56:52.804636",
+      "created_at": "2026-04-24T12:42:23.099911",
+      "updated_at": "2026-04-24T12:42:23.099911",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -2568,7 +2568,7 @@
       "source_record_id": "meti:Kansai:FY2021",
       "release_version": "METI-FY2021-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "Electric Utility Emission Factors, Japan METI & MOEJ (annual).",
         "alternates_considered": [
           "EF:JP:residual_mix:hokkaido:fy2021:meti-fy2021-v1",
@@ -2727,8 +2727,8 @@
         "IFRS_S2",
         "Japan_SSBJ"
       ],
-      "created_at": "2026-04-23T23:56:52.805531",
-      "updated_at": "2026-04-23T23:56:52.805531",
+      "created_at": "2026-04-24T12:42:23.099911",
+      "updated_at": "2026-04-24T12:42:23.099911",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -2744,7 +2744,7 @@
       "source_record_id": "meti:Kyushu:FY2021",
       "release_version": "METI-FY2021-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "Electric Utility Emission Factors, Japan METI & MOEJ (annual).",
         "alternates_considered": [
           "EF:JP:residual_mix:hokkaido:fy2021:meti-fy2021-v1",
@@ -2903,8 +2903,8 @@
         "IFRS_S2",
         "Japan_SSBJ"
       ],
-      "created_at": "2026-04-23T23:56:52.805531",
-      "updated_at": "2026-04-23T23:56:52.805531",
+      "created_at": "2026-04-24T12:42:23.100911",
+      "updated_at": "2026-04-24T12:42:23.100911",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -2920,7 +2920,7 @@
       "source_record_id": "meti:Hokuriku:FY2021",
       "release_version": "METI-FY2021-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "Electric Utility Emission Factors, Japan METI & MOEJ (annual).",
         "alternates_considered": [
           "EF:JP:residual_mix:hokkaido:fy2021:meti-fy2021-v1",
@@ -3079,8 +3079,8 @@
         "IFRS_S2",
         "Japan_SSBJ"
       ],
-      "created_at": "2026-04-23T23:56:52.805531",
-      "updated_at": "2026-04-23T23:56:52.805531",
+      "created_at": "2026-04-24T12:42:23.100911",
+      "updated_at": "2026-04-24T12:42:23.100911",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -3096,7 +3096,7 @@
       "source_record_id": "meti:Chugoku:FY2021",
       "release_version": "METI-FY2021-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "Electric Utility Emission Factors, Japan METI & MOEJ (annual).",
         "alternates_considered": [
           "EF:JP:residual_mix:hokkaido:fy2021:meti-fy2021-v1",
@@ -3255,8 +3255,8 @@
         "IFRS_S2",
         "Japan_SSBJ"
       ],
-      "created_at": "2026-04-23T23:56:52.806644",
-      "updated_at": "2026-04-23T23:56:52.806644",
+      "created_at": "2026-04-24T12:42:23.100911",
+      "updated_at": "2026-04-24T12:42:23.100911",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -3272,7 +3272,7 @@
       "source_record_id": "meti:Shikoku:FY2021",
       "release_version": "METI-FY2021-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "Electric Utility Emission Factors, Japan METI & MOEJ (annual).",
         "alternates_considered": [
           "EF:JP:residual_mix:hokkaido:fy2021:meti-fy2021-v1",
@@ -3431,8 +3431,8 @@
         "IFRS_S2",
         "Japan_SSBJ"
       ],
-      "created_at": "2026-04-23T23:56:52.806644",
-      "updated_at": "2026-04-23T23:56:52.806644",
+      "created_at": "2026-04-24T12:42:23.100911",
+      "updated_at": "2026-04-24T12:42:23.100911",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -3448,7 +3448,7 @@
       "source_record_id": "meti:Okinawa:FY2021",
       "release_version": "METI-FY2021-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "Electric Utility Emission Factors, Japan METI & MOEJ (annual).",
         "alternates_considered": [
           "EF:JP:residual_mix:hokkaido:fy2021:meti-fy2021-v1",
@@ -3607,8 +3607,8 @@
         "IFRS_S2",
         "Japan_SSBJ"
       ],
-      "created_at": "2026-04-23T23:56:52.806644",
-      "updated_at": "2026-04-23T23:56:52.806644",
+      "created_at": "2026-04-24T12:42:23.101895",
+      "updated_at": "2026-04-24T12:42:23.101895",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -3624,7 +3624,7 @@
       "source_record_id": "meti:Hokkaido:FY2020",
       "release_version": "METI-FY2020-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "Electric Utility Emission Factors, Japan METI & MOEJ (annual).",
         "alternates_considered": [
           "EF:JP:residual_mix:tohoku:fy2020:meti-fy2020-v1",
@@ -3780,8 +3780,8 @@
         "IFRS_S2",
         "Japan_SSBJ"
       ],
-      "created_at": "2026-04-23T23:56:52.806644",
-      "updated_at": "2026-04-23T23:56:52.806644",
+      "created_at": "2026-04-24T12:42:23.101895",
+      "updated_at": "2026-04-24T12:42:23.101895",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -3797,7 +3797,7 @@
       "source_record_id": "meti:Tohoku:FY2020",
       "release_version": "METI-FY2020-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "Electric Utility Emission Factors, Japan METI & MOEJ (annual).",
         "alternates_considered": [
           "EF:JP:residual_mix:hokkaido:fy2020:meti-fy2020-v1",
@@ -3953,8 +3953,8 @@
         "IFRS_S2",
         "Japan_SSBJ"
       ],
-      "created_at": "2026-04-23T23:56:52.807615",
-      "updated_at": "2026-04-23T23:56:52.807615",
+      "created_at": "2026-04-24T12:42:23.101895",
+      "updated_at": "2026-04-24T12:42:23.101895",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -3970,7 +3970,7 @@
       "source_record_id": "meti:Tokyo:FY2020",
       "release_version": "METI-FY2020-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "Electric Utility Emission Factors, Japan METI & MOEJ (annual).",
         "alternates_considered": [
           "EF:JP:residual_mix:hokkaido:fy2020:meti-fy2020-v1",
@@ -4126,8 +4126,8 @@
         "IFRS_S2",
         "Japan_SSBJ"
       ],
-      "created_at": "2026-04-23T23:56:52.807615",
-      "updated_at": "2026-04-23T23:56:52.807615",
+      "created_at": "2026-04-24T12:42:23.101895",
+      "updated_at": "2026-04-24T12:42:23.101895",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -4143,7 +4143,7 @@
       "source_record_id": "meti:Chubu:FY2020",
       "release_version": "METI-FY2020-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "Electric Utility Emission Factors, Japan METI & MOEJ (annual).",
         "alternates_considered": [
           "EF:JP:residual_mix:hokkaido:fy2020:meti-fy2020-v1",
@@ -4299,8 +4299,8 @@
         "IFRS_S2",
         "Japan_SSBJ"
       ],
-      "created_at": "2026-04-23T23:56:52.807615",
-      "updated_at": "2026-04-23T23:56:52.807615",
+      "created_at": "2026-04-24T12:42:23.102896",
+      "updated_at": "2026-04-24T12:42:23.102896",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -4316,7 +4316,7 @@
       "source_record_id": "meti:Kansai:FY2020",
       "release_version": "METI-FY2020-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "Electric Utility Emission Factors, Japan METI & MOEJ (annual).",
         "alternates_considered": [
           "EF:JP:residual_mix:hokkaido:fy2020:meti-fy2020-v1",
@@ -4472,8 +4472,8 @@
         "IFRS_S2",
         "Japan_SSBJ"
       ],
-      "created_at": "2026-04-23T23:56:52.808644",
-      "updated_at": "2026-04-23T23:56:52.808644",
+      "created_at": "2026-04-24T12:42:23.102896",
+      "updated_at": "2026-04-24T12:42:23.102896",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -4489,7 +4489,7 @@
       "source_record_id": "meti:Chugoku:FY2020",
       "release_version": "METI-FY2020-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "Electric Utility Emission Factors, Japan METI & MOEJ (annual).",
         "alternates_considered": [
           "EF:JP:residual_mix:hokkaido:fy2020:meti-fy2020-v1",
@@ -4645,8 +4645,8 @@
         "IFRS_S2",
         "Japan_SSBJ"
       ],
-      "created_at": "2026-04-23T23:56:52.808644",
-      "updated_at": "2026-04-23T23:56:52.808644",
+      "created_at": "2026-04-24T12:42:23.102896",
+      "updated_at": "2026-04-24T12:42:23.102896",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -4662,7 +4662,7 @@
       "source_record_id": "meti:Kyushu:FY2020",
       "release_version": "METI-FY2020-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "Electric Utility Emission Factors, Japan METI & MOEJ (annual).",
         "alternates_considered": [
           "EF:JP:residual_mix:hokkaido:fy2020:meti-fy2020-v1",

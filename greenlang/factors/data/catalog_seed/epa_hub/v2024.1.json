@@ -1,7 +1,7 @@
 {
   "source_id": "epa_hub",
   "source_version": "2024.1",
-  "ingested_at": "2026-04-23T18:26:52+00:00",
+  "ingested_at": "2026-04-24T07:12:22+00:00",
   "license_class": "public_us_government",
   "license_name": "US-Public-Domain",
   "redistribution_class": "open",
@@ -56,8 +56,8 @@
         "natural_gas"
       ],
       "notes": "stationary combustion",
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -69,7 +69,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. Environmental Protection Agency, Emission Factors for Greenhouse Gas Inventories 2024.",
         "alternates_considered": [
           "EF:EPA:stat_lpg:US:2024:v1",
@@ -177,8 +177,8 @@
         "lpg"
       ],
       "notes": null,
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -190,7 +190,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. Environmental Protection Agency, Emission Factors for Greenhouse Gas Inventories 2024.",
         "alternates_considered": [
           "EF:EPA:stat_natural_gas:US:2024:v1",
@@ -298,8 +298,8 @@
         "propane"
       ],
       "notes": null,
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -311,7 +311,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. Environmental Protection Agency, Emission Factors for Greenhouse Gas Inventories 2024.",
         "alternates_considered": [
           "EF:EPA:stat_natural_gas:US:2024:v1",
@@ -419,8 +419,8 @@
         "butane"
       ],
       "notes": null,
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -432,7 +432,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. Environmental Protection Agency, Emission Factors for Greenhouse Gas Inventories 2024.",
         "alternates_considered": [
           "EF:EPA:stat_natural_gas:US:2024:v1",
@@ -540,8 +540,8 @@
         "kerosene"
       ],
       "notes": null,
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -553,7 +553,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. Environmental Protection Agency, Emission Factors for Greenhouse Gas Inventories 2024.",
         "alternates_considered": [
           "EF:EPA:stat_natural_gas:US:2024:v1",
@@ -661,8 +661,8 @@
         "distillate_fuel_oil_1"
       ],
       "notes": null,
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -674,7 +674,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. Environmental Protection Agency, Emission Factors for Greenhouse Gas Inventories 2024.",
         "alternates_considered": [
           "EF:EPA:stat_natural_gas:US:2024:v1",
@@ -782,8 +782,8 @@
         "distillate_fuel_oil_2"
       ],
       "notes": null,
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -795,7 +795,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. Environmental Protection Agency, Emission Factors for Greenhouse Gas Inventories 2024.",
         "alternates_considered": [
           "EF:EPA:stat_natural_gas:US:2024:v1",
@@ -903,8 +903,8 @@
         "distillate_fuel_oil_4"
       ],
       "notes": null,
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -916,7 +916,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. Environmental Protection Agency, Emission Factors for Greenhouse Gas Inventories 2024.",
         "alternates_considered": [
           "EF:EPA:stat_natural_gas:US:2024:v1",
@@ -1024,8 +1024,8 @@
         "residual_fuel_oil_5"
       ],
       "notes": null,
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -1037,7 +1037,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. Environmental Protection Agency, Emission Factors for Greenhouse Gas Inventories 2024.",
         "alternates_considered": [
           "EF:EPA:stat_natural_gas:US:2024:v1",
@@ -1145,8 +1145,8 @@
         "residual_fuel_oil_6"
       ],
       "notes": null,
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -1158,7 +1158,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. Environmental Protection Agency, Emission Factors for Greenhouse Gas Inventories 2024.",
         "alternates_considered": [
           "EF:EPA:stat_natural_gas:US:2024:v1",
@@ -1266,8 +1266,8 @@
         "diesel"
       ],
       "notes": null,
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -1279,7 +1279,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. Environmental Protection Agency, Emission Factors for Greenhouse Gas Inventories 2024.",
         "alternates_considered": [
           "EF:EPA:stat_natural_gas:US:2024:v1",
@@ -1387,8 +1387,8 @@
         "motor_gasoline"
       ],
       "notes": null,
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -1400,7 +1400,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. Environmental Protection Agency, Emission Factors for Greenhouse Gas Inventories 2024.",
         "alternates_considered": [
           "EF:EPA:stat_natural_gas:US:2024:v1",
@@ -1508,8 +1508,8 @@
         "aviation_gasoline"
       ],
       "notes": null,
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -1521,7 +1521,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. Environmental Protection Agency, Emission Factors for Greenhouse Gas Inventories 2024.",
         "alternates_considered": [
           "EF:EPA:stat_natural_gas:US:2024:v1",
@@ -1629,8 +1629,8 @@
         "jet_fuel"
       ],
       "notes": null,
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -1642,7 +1642,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. Environmental Protection Agency, Emission Factors for Greenhouse Gas Inventories 2024.",
         "alternates_considered": [
           "EF:EPA:stat_natural_gas:US:2024:v1",
@@ -1750,8 +1750,8 @@
         "crude_oil"
       ],
       "notes": null,
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -1763,7 +1763,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. Environmental Protection Agency, Emission Factors for Greenhouse Gas Inventories 2024.",
         "alternates_considered": [
           "EF:EPA:stat_natural_gas:US:2024:v1",
@@ -1871,8 +1871,8 @@
         "naphtha"
       ],
       "notes": null,
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -1884,7 +1884,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. Environmental Protection Agency, Emission Factors for Greenhouse Gas Inventories 2024.",
         "alternates_considered": [
           "EF:EPA:stat_natural_gas:US:2024:v1",
@@ -1992,8 +1992,8 @@
         "petroleum_coke"
       ],
       "notes": null,
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -2005,7 +2005,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. Environmental Protection Agency, Emission Factors for Greenhouse Gas Inventories 2024.",
         "alternates_considered": [
           "EF:EPA:stat_natural_gas:US:2024:v1",
@@ -2113,8 +2113,8 @@
         "anthracite_coal"
       ],
       "notes": null,
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -2126,7 +2126,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. Environmental Protection Agency, Emission Factors for Greenhouse Gas Inventories 2024.",
         "alternates_considered": [
           "EF:EPA:stat_natural_gas:US:2024:v1",
@@ -2234,8 +2234,8 @@
         "bituminous_coal"
       ],
       "notes": null,
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -2247,7 +2247,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. Environmental Protection Agency, Emission Factors for Greenhouse Gas Inventories 2024.",
         "alternates_considered": [
           "EF:EPA:stat_natural_gas:US:2024:v1",
@@ -2355,8 +2355,8 @@
         "sub_bituminous_coal"
       ],
       "notes": null,
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -2368,7 +2368,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. Environmental Protection Agency, Emission Factors for Greenhouse Gas Inventories 2024.",
         "alternates_considered": [
           "EF:EPA:stat_natural_gas:US:2024:v1",
@@ -2476,8 +2476,8 @@
         "lignite_coal"
       ],
       "notes": null,
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -2489,7 +2489,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. Environmental Protection Agency, Emission Factors for Greenhouse Gas Inventories 2024.",
         "alternates_considered": [
           "EF:EPA:stat_natural_gas:US:2024:v1",
@@ -2597,8 +2597,8 @@
         "coke_coal"
       ],
       "notes": null,
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -2610,7 +2610,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. Environmental Protection Agency, Emission Factors for Greenhouse Gas Inventories 2024.",
         "alternates_considered": [
           "EF:EPA:stat_natural_gas:US:2024:v1",
@@ -2718,8 +2718,8 @@
         "wood_waste"
       ],
       "notes": "Biogenic",
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -2731,7 +2731,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. Environmental Protection Agency, Emission Factors for Greenhouse Gas Inventories 2024.",
         "alternates_considered": [
           "EF:EPA:stat_natural_gas:US:2024:v1",
@@ -2839,8 +2839,8 @@
         "wood_pellets"
       ],
       "notes": null,
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -2852,7 +2852,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. Environmental Protection Agency, Emission Factors for Greenhouse Gas Inventories 2024.",
         "alternates_considered": [
           "EF:EPA:stat_natural_gas:US:2024:v1",
@@ -2960,8 +2960,8 @@
         "biogas"
       ],
       "notes": null,
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -2973,7 +2973,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. Environmental Protection Agency, Emission Factors for Greenhouse Gas Inventories 2024.",
         "alternates_considered": [
           "EF:EPA:stat_natural_gas:US:2024:v1",
@@ -3081,8 +3081,8 @@
         "landfill_gas"
       ],
       "notes": null,
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -3094,7 +3094,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. Environmental Protection Agency, Emission Factors for Greenhouse Gas Inventories 2024.",
         "alternates_considered": [
           "EF:EPA:stat_natural_gas:US:2024:v1",
@@ -3202,8 +3202,8 @@
         "msw_refuse_derived_fuel"
       ],
       "notes": null,
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -3215,7 +3215,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. Environmental Protection Agency, Emission Factors for Greenhouse Gas Inventories 2024.",
         "alternates_considered": [
           "EF:EPA:stat_natural_gas:US:2024:v1",
@@ -3323,8 +3323,8 @@
         "lng"
       ],
       "notes": null,
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -3336,7 +3336,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. Environmental Protection Agency, Emission Factors for Greenhouse Gas Inventories 2024.",
         "alternates_considered": [
           "EF:EPA:stat_natural_gas:US:2024:v1",
@@ -3444,8 +3444,8 @@
         "cng"
       ],
       "notes": null,
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -3457,7 +3457,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. Environmental Protection Agency, Emission Factors for Greenhouse Gas Inventories 2024.",
         "alternates_considered": [
           "EF:EPA:stat_natural_gas:US:2024:v1",
@@ -3565,8 +3565,8 @@
         "biodiesel_b100"
       ],
       "notes": "Biogenic CO2 reported separately",
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -3578,7 +3578,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. Environmental Protection Agency, Emission Factors for Greenhouse Gas Inventories 2024.",
         "alternates_considered": [
           "EF:EPA:stat_natural_gas:US:2024:v1",
@@ -3686,8 +3686,8 @@
         "ethanol_e100"
       ],
       "notes": null,
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -3699,7 +3699,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. Environmental Protection Agency, Emission Factors for Greenhouse Gas Inventories 2024.",
         "alternates_considered": [
           "EF:EPA:stat_natural_gas:US:2024:v1",
@@ -3807,8 +3807,8 @@
         "asphalt_road_oil"
       ],
       "notes": null,
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -3820,7 +3820,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. Environmental Protection Agency, Emission Factors for Greenhouse Gas Inventories 2024.",
         "alternates_considered": [
           "EF:EPA:stat_natural_gas:US:2024:v1",
@@ -3928,8 +3928,8 @@
         "lubricants"
       ],
       "notes": null,
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -3941,7 +3941,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. Environmental Protection Agency, Emission Factors for Greenhouse Gas Inventories 2024.",
         "alternates_considered": [
           "EF:EPA:stat_natural_gas:US:2024:v1",
@@ -4049,8 +4049,8 @@
         "tires"
       ],
       "notes": null,
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -4062,7 +4062,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. Environmental Protection Agency, Emission Factors for Greenhouse Gas Inventories 2024.",
         "alternates_considered": [
           "EF:EPA:stat_natural_gas:US:2024:v1",
@@ -4171,8 +4171,8 @@
         "passenger_car"
       ],
       "notes": null,
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -4184,7 +4184,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. Environmental Protection Agency, Emission Factors for Greenhouse Gas Inventories 2024.",
         "alternates_considered": [
           "EF:EPA:stat_natural_gas:US:2024:v1",
@@ -4293,8 +4293,8 @@
         "light_duty_truck"
       ],
       "notes": null,
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -4306,7 +4306,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. Environmental Protection Agency, Emission Factors for Greenhouse Gas Inventories 2024.",
         "alternates_considered": [
           "EF:EPA:stat_natural_gas:US:2024:v1",
@@ -4415,8 +4415,8 @@
         "heavy_duty_vehicle"
       ],
       "notes": null,
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -4428,7 +4428,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. Environmental Protection Agency, Emission Factors for Greenhouse Gas Inventories 2024.",
         "alternates_considered": [
           "EF:EPA:stat_natural_gas:US:2024:v1",
@@ -4537,8 +4537,8 @@
         "motorcycle"
       ],
       "notes": null,
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -4550,7 +4550,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. Environmental Protection Agency, Emission Factors for Greenhouse Gas Inventories 2024.",
         "alternates_considered": [
           "EF:EPA:stat_natural_gas:US:2024:v1",
@@ -4659,8 +4659,8 @@
         "passenger_car"
       ],
       "notes": null,
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -4672,7 +4672,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. Environmental Protection Agency, Emission Factors for Greenhouse Gas Inventories 2024.",
         "alternates_considered": [
           "EF:EPA:stat_natural_gas:US:2024:v1",
@@ -4781,8 +4781,8 @@
         "light_duty_truck"
       ],
       "notes": null,
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -4794,7 +4794,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. Environmental Protection Agency, Emission Factors for Greenhouse Gas Inventories 2024.",
         "alternates_considered": [
           "EF:EPA:stat_natural_gas:US:2024:v1",
@@ -4903,8 +4903,8 @@
         "heavy_duty_vehicle"
       ],
       "notes": null,
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -4916,7 +4916,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. Environmental Protection Agency, Emission Factors for Greenhouse Gas Inventories 2024.",
         "alternates_considered": [
           "EF:EPA:stat_natural_gas:US:2024:v1",
@@ -5025,8 +5025,8 @@
         "bus"
       ],
       "notes": null,
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -5038,7 +5038,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. Environmental Protection Agency, Emission Factors for Greenhouse Gas Inventories 2024.",
         "alternates_considered": [
           "EF:EPA:stat_natural_gas:US:2024:v1",
@@ -5147,8 +5147,8 @@
         "agricultural"
       ],
       "notes": null,
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -5160,7 +5160,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. Environmental Protection Agency, Emission Factors for Greenhouse Gas Inventories 2024.",
         "alternates_considered": [
           "EF:EPA:stat_natural_gas:US:2024:v1",
@@ -5269,8 +5269,8 @@
         "construction"
       ],
       "notes": null,
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -5282,7 +5282,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. Environmental Protection Agency, Emission Factors for Greenhouse Gas Inventories 2024.",
         "alternates_considered": [
           "EF:EPA:stat_natural_gas:US:2024:v1",
@@ -5391,8 +5391,8 @@
         "aircraft"
       ],
       "notes": null,
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -5404,7 +5404,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. Environmental Protection Agency, Emission Factors for Greenhouse Gas Inventories 2024.",
         "alternates_considered": [
           "EF:EPA:stat_natural_gas:US:2024:v1",
@@ -5513,8 +5513,8 @@
         "aircraft"
       ],
       "notes": null,
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -5526,7 +5526,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. Environmental Protection Agency, Emission Factors for Greenhouse Gas Inventories 2024.",
         "alternates_considered": [
           "EF:EPA:stat_natural_gas:US:2024:v1",
@@ -5635,8 +5635,8 @@
         "marine"
       ],
       "notes": null,
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -5648,7 +5648,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. Environmental Protection Agency, Emission Factors for Greenhouse Gas Inventories 2024.",
         "alternates_considered": [
           "EF:EPA:stat_natural_gas:US:2024:v1",
@@ -5757,8 +5757,8 @@
         "marine"
       ],
       "notes": null,
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -5770,7 +5770,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. Environmental Protection Agency, Emission Factors for Greenhouse Gas Inventories 2024.",
         "alternates_considered": [
           "EF:EPA:stat_natural_gas:US:2024:v1",
@@ -5879,8 +5879,8 @@
         "light_duty_truck"
       ],
       "notes": null,
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -5892,7 +5892,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. Environmental Protection Agency, Emission Factors for Greenhouse Gas Inventories 2024.",
         "alternates_considered": [
           "EF:EPA:stat_natural_gas:US:2024:v1",
@@ -6001,8 +6001,8 @@
         "heavy_duty_vehicle"
       ],
       "notes": null,
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -6014,7 +6014,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. Environmental Protection Agency, Emission Factors for Greenhouse Gas Inventories 2024.",
         "alternates_considered": [
           "EF:EPA:stat_natural_gas:US:2024:v1",
@@ -6123,8 +6123,8 @@
         "heavy_duty_vehicle"
       ],
       "notes": null,
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -6136,7 +6136,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. Environmental Protection Agency, Emission Factors for Greenhouse Gas Inventories 2024.",
         "alternates_considered": [
           "EF:EPA:stat_natural_gas:US:2024:v1",
@@ -6245,8 +6245,8 @@
         "passenger_car"
       ],
       "notes": "Fossil CO2 from blend",
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -6258,7 +6258,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. Environmental Protection Agency, Emission Factors for Greenhouse Gas Inventories 2024.",
         "alternates_considered": [
           "EF:EPA:stat_natural_gas:US:2024:v1",
@@ -6367,8 +6367,8 @@
         "heavy_duty_vehicle"
       ],
       "notes": "Biogenic",
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -6380,7 +6380,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. Environmental Protection Agency, Emission Factors for Greenhouse Gas Inventories 2024.",
         "alternates_considered": [
           "EF:EPA:stat_natural_gas:US:2024:v1",
@@ -6489,8 +6489,8 @@
         "us_national"
       ],
       "notes": "US grid average 2022 eGRID",
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -6502,7 +6502,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. Environmental Protection Agency, Emission Factors for Greenhouse Gas Inventories 2024."
       }
     },
@@ -6554,8 +6554,8 @@
         "akgd"
       ],
       "notes": null,
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -6567,7 +6567,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. Environmental Protection Agency, Emission Factors for Greenhouse Gas Inventories 2024."
       }
     },
@@ -6619,8 +6619,8 @@
         "akms"
       ],
       "notes": null,
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -6632,7 +6632,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. Environmental Protection Agency, Emission Factors for Greenhouse Gas Inventories 2024."
       }
     },
@@ -6684,8 +6684,8 @@
         "aznm"
       ],
       "notes": null,
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -6697,7 +6697,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. Environmental Protection Agency, Emission Factors for Greenhouse Gas Inventories 2024."
       }
     },
@@ -6749,8 +6749,8 @@
         "camx"
       ],
       "notes": "California / Mexico",
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -6762,7 +6762,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. Environmental Protection Agency, Emission Factors for Greenhouse Gas Inventories 2024."
       }
     },
@@ -6814,8 +6814,8 @@
         "erct"
       ],
       "notes": "ERCOT / Texas",
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -6827,7 +6827,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. Environmental Protection Agency, Emission Factors for Greenhouse Gas Inventories 2024."
       }
     },
@@ -6879,8 +6879,8 @@
         "frcc"
       ],
       "notes": "Florida",
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -6892,7 +6892,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. Environmental Protection Agency, Emission Factors for Greenhouse Gas Inventories 2024."
       }
     },
@@ -6944,8 +6944,8 @@
         "hims"
       ],
       "notes": null,
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -6957,7 +6957,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. Environmental Protection Agency, Emission Factors for Greenhouse Gas Inventories 2024."
       }
     },
@@ -7009,8 +7009,8 @@
         "hioa"
       ],
       "notes": null,
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -7022,7 +7022,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. Environmental Protection Agency, Emission Factors for Greenhouse Gas Inventories 2024."
       }
     },
@@ -7074,8 +7074,8 @@
         "mroe"
       ],
       "notes": null,
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -7087,7 +7087,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. Environmental Protection Agency, Emission Factors for Greenhouse Gas Inventories 2024."
       }
     },
@@ -7139,8 +7139,8 @@
         "mrow"
       ],
       "notes": null,
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -7152,7 +7152,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. Environmental Protection Agency, Emission Factors for Greenhouse Gas Inventories 2024."
       }
     },
@@ -7204,8 +7204,8 @@
         "newe"
       ],
       "notes": "ISO New England",
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -7217,7 +7217,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. Environmental Protection Agency, Emission Factors for Greenhouse Gas Inventories 2024."
       }
     },
@@ -7269,8 +7269,8 @@
         "nwpp"
       ],
       "notes": null,
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -7282,7 +7282,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. Environmental Protection Agency, Emission Factors for Greenhouse Gas Inventories 2024."
       }
     },
@@ -7334,8 +7334,8 @@
         "nycw"
       ],
       "notes": "NYISO NYC",
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -7347,7 +7347,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. Environmental Protection Agency, Emission Factors for Greenhouse Gas Inventories 2024."
       }
     },
@@ -7399,8 +7399,8 @@
         "nyli"
       ],
       "notes": null,
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -7412,7 +7412,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. Environmental Protection Agency, Emission Factors for Greenhouse Gas Inventories 2024."
       }
     },
@@ -7464,8 +7464,8 @@
         "nyup"
       ],
       "notes": null,
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -7477,7 +7477,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. Environmental Protection Agency, Emission Factors for Greenhouse Gas Inventories 2024."
       }
     },
@@ -7529,8 +7529,8 @@
         "prms"
       ],
       "notes": null,
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -7542,7 +7542,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. Environmental Protection Agency, Emission Factors for Greenhouse Gas Inventories 2024."
       }
     },
@@ -7594,8 +7594,8 @@
         "rfce"
       ],
       "notes": null,
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -7607,7 +7607,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. Environmental Protection Agency, Emission Factors for Greenhouse Gas Inventories 2024."
       }
     },
@@ -7659,8 +7659,8 @@
         "rfcm"
       ],
       "notes": null,
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -7672,7 +7672,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. Environmental Protection Agency, Emission Factors for Greenhouse Gas Inventories 2024."
       }
     },
@@ -7724,8 +7724,8 @@
         "rfcw"
       ],
       "notes": null,
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -7737,7 +7737,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. Environmental Protection Agency, Emission Factors for Greenhouse Gas Inventories 2024."
       }
     },
@@ -7789,8 +7789,8 @@
         "rmpa"
       ],
       "notes": null,
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -7802,7 +7802,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. Environmental Protection Agency, Emission Factors for Greenhouse Gas Inventories 2024."
       }
     },
@@ -7854,8 +7854,8 @@
         "spno"
       ],
       "notes": null,
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -7867,7 +7867,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. Environmental Protection Agency, Emission Factors for Greenhouse Gas Inventories 2024."
       }
     },
@@ -7919,8 +7919,8 @@
         "spso"
       ],
       "notes": null,
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -7932,7 +7932,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. Environmental Protection Agency, Emission Factors for Greenhouse Gas Inventories 2024."
       }
     },
@@ -7984,8 +7984,8 @@
         "srmv"
       ],
       "notes": null,
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -7997,7 +7997,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. Environmental Protection Agency, Emission Factors for Greenhouse Gas Inventories 2024."
       }
     },
@@ -8049,8 +8049,8 @@
         "srmw"
       ],
       "notes": null,
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -8062,7 +8062,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. Environmental Protection Agency, Emission Factors for Greenhouse Gas Inventories 2024."
       }
     },
@@ -8114,8 +8114,8 @@
         "srso"
       ],
       "notes": null,
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -8127,7 +8127,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. Environmental Protection Agency, Emission Factors for Greenhouse Gas Inventories 2024."
       }
     },
@@ -8179,8 +8179,8 @@
         "srtv"
       ],
       "notes": null,
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -8192,7 +8192,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. Environmental Protection Agency, Emission Factors for Greenhouse Gas Inventories 2024."
       }
     },
@@ -8244,8 +8244,8 @@
         "srvc"
       ],
       "notes": null,
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -8257,7 +8257,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. Environmental Protection Agency, Emission Factors for Greenhouse Gas Inventories 2024."
       }
     },
@@ -8308,8 +8308,8 @@
         "steam_natural_gas_boiler"
       ],
       "notes": null,
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -8321,7 +8321,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. Environmental Protection Agency, Emission Factors for Greenhouse Gas Inventories 2024.",
         "alternates_considered": [
           "EF:EPA:stat_natural_gas:US:2024:v1",
@@ -8429,8 +8429,8 @@
         "district_heating"
       ],
       "notes": null,
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -8442,7 +8442,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. Environmental Protection Agency, Emission Factors for Greenhouse Gas Inventories 2024.",
         "alternates_considered": [
           "EF:EPA:stat_natural_gas:US:2024:v1",
@@ -8550,8 +8550,8 @@
         "district_cooling"
       ],
       "notes": null,
-      "created_at": "2026-04-23T18:26:52+00:00",
-      "updated_at": "2026-04-23T18:26:52+00:00",
+      "created_at": "2026-04-24T07:12:22+00:00",
+      "updated_at": "2026-04-24T07:12:22+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -8563,7 +8563,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "U.S. Environmental Protection Agency, Emission Factors for Greenhouse Gas Inventories 2024.",
         "alternates_considered": [
           "EF:EPA:stat_natural_gas:US:2024:v1",

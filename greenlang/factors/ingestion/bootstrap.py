@@ -522,6 +522,115 @@ SOURCE_SPECS: List[SourceSpec] = [
         seed_input=None,
         source_version="n/a",
     ),
+    # ------------------------------------------------------------------
+    # Wave 5 catalog expansion (2026-04-24) — five new Safe-to-Certify
+    # sources: EU CBAM flat sector rollup, EXIOBASE v3 spend proxies,
+    # UK ONS/DEFRA Environmental Accounts, EEA waste statistics, and
+    # IPCC 2006 Vol 5 (Waste) India-parameterised defaults.
+    # ------------------------------------------------------------------
+    SourceSpec(
+        source_id="cbam_default_values",
+        display_name="EU CBAM Annex IV default values (flat sector rollup)",
+        redistribution_class="open",
+        license_class="public_eu",
+        license_name="EU-Publication",
+        attribution_text=(
+            "European Commission, CBAM Implementing Regulation (EU) "
+            "2023/1773 Annex IV default embedded-emission values."
+        ),
+        factor_status="certified",
+        parser_kind="dict",
+        parser_module=(
+            "greenlang.factors.ingestion.parsers.cbam_default_values"
+        ),
+        parser_function="parse_cbam_default_values",
+        seed_input="cbam_default_values.json",
+        source_version="2024.1",
+    ),
+    SourceSpec(
+        source_id="exiobase_v3",
+        display_name="EXIOBASE v3 multi-regional EE-IO spend proxies",
+        redistribution_class="open",
+        license_class="academic_research",
+        license_name="CC-BY-4.0",
+        attribution_text=(
+            "EXIOBASE Consortium (TU Wien / NTNU / UTwente), EXIOBASE v3.8.2 "
+            "multi-regional environmentally-extended input-output model."
+        ),
+        factor_status="certified",
+        parser_kind="dict",
+        parser_module="greenlang.factors.ingestion.parsers.exiobase_v3",
+        parser_function="parse_exiobase_v3",
+        seed_input="exiobase_v3.json",
+        source_version="3.8.2",
+    ),
+    SourceSpec(
+        source_id="defra_uk_env_accounts",
+        display_name=(
+            "UK ONS/DEFRA Environmental Accounts (atmospheric emissions by "
+            "SIC industry)"
+        ),
+        redistribution_class="open",
+        license_class="uk_open_government",
+        license_name="OGL-UK-v3",
+        attribution_text=(
+            "Contains public sector information licensed under the Open "
+            "Government Licence v3.0 — UK Office for National Statistics / "
+            "DEFRA, UK Environmental Accounts."
+        ),
+        factor_status="certified",
+        parser_kind="dict",
+        parser_module=(
+            "greenlang.factors.ingestion.parsers.defra_uk_env_accounts"
+        ),
+        parser_function="parse_defra_uk_env_accounts",
+        seed_input="defra_uk_env_accounts.json",
+        source_version="2022.1",
+    ),
+    SourceSpec(
+        source_id="eea_waste_stats",
+        display_name="EEA European waste statistics GHG intensities",
+        redistribution_class="open",
+        license_class="public_eu",
+        license_name="EU-Publication",
+        attribution_text=(
+            "European Environment Agency, European waste statistics — "
+            "per-treatment GHG intensity series."
+        ),
+        factor_status="certified",
+        parser_kind="dict",
+        parser_module="greenlang.factors.ingestion.parsers.eea_waste_stats",
+        parser_function="parse_eea_waste_stats",
+        seed_input="eea_waste_stats.json",
+        source_version="2022.1",
+    ),
+    SourceSpec(
+        source_id="ipcc_waste_vol5_in",
+        display_name=(
+            "IPCC 2006 Vol 5 (Waste) — India-parameterised default factors"
+        ),
+        redistribution_class="open",
+        license_class="ipcc_reference",
+        license_name="IPCC-Guideline",
+        attribution_text=(
+            "IPCC 2006 Guidelines for National GHG Inventories, Volume 5 "
+            "(Waste), default values parameterised for India (tropical-wet "
+            "climate zone)."
+        ),
+        factor_status="preview",
+        parser_kind="dict",
+        parser_module=(
+            "greenlang.factors.ingestion.parsers.ipcc_waste_vol5_in"
+        ),
+        parser_function="parse_ipcc_waste_vol5_in",
+        seed_input="ipcc_waste_vol5_in.json",
+        source_version="2006.1",
+        provisional_note=(
+            "provisional pending IPCC legal opinion: factual default values "
+            "carry no copyright restriction per the numerical-fact doctrine; "
+            "see docs/legal/source_rights_matrix.md row ipcc_waste_vol5_in."
+        ),
+    ),
 ]
 
 

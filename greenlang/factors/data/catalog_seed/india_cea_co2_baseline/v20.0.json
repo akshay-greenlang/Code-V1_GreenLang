@@ -1,7 +1,7 @@
 {
   "source_id": "india_cea_co2_baseline",
   "source_version": "20.0",
-  "ingested_at": "2026-04-23T18:26:52+00:00",
+  "ingested_at": "2026-04-24T07:12:22+00:00",
   "license_class": "public_in_government",
   "license_name": "India-Public-Information",
   "redistribution_class": "open",
@@ -85,8 +85,8 @@
         "GHG_Protocol_Scope2_LocationBased",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.671359",
-      "updated_at": "2026-04-23T23:56:52.671359",
+      "created_at": "2026-04-24T12:42:22.956748",
+      "updated_at": "2026-04-24T12:42:22.956748",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -101,7 +101,7 @@
       "source_record_id": "cea:All India:2023-24",
       "release_version": "cea-v20.0",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "CO2 Baseline Database for the Indian Power Sector, Central Electricity Authority (Government of India), CDM v20.0.",
         "alternates_considered": [
           "EF:IN:newne:2023-24:cea-v20.0",
@@ -252,8 +252,8 @@
         "GHG_Protocol_Scope2_LocationBased",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.672351",
-      "updated_at": "2026-04-23T23:56:52.672351",
+      "created_at": "2026-04-24T12:42:22.957647",
+      "updated_at": "2026-04-24T12:42:22.957647",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -268,7 +268,7 @@
       "source_record_id": "cea:NEWNE:2023-24",
       "release_version": "cea-v20.0",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "CO2 Baseline Database for the Indian Power Sector, Central Electricity Authority (Government of India), CDM v20.0.",
         "alternates_considered": [
           "EF:IN:all_india:2023-24:cea-v20.0",
@@ -419,8 +419,8 @@
         "GHG_Protocol_Scope2_LocationBased",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.672351",
-      "updated_at": "2026-04-23T23:56:52.672351",
+      "created_at": "2026-04-24T12:42:22.957647",
+      "updated_at": "2026-04-24T12:42:22.957647",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -435,7 +435,7 @@
       "source_record_id": "cea:S:2023-24",
       "release_version": "cea-v20.0",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "CO2 Baseline Database for the Indian Power Sector, Central Electricity Authority (Government of India), CDM v20.0.",
         "alternates_considered": [
           "EF:IN:all_india:2023-24:cea-v20.0",
@@ -586,8 +586,8 @@
         "GHG_Protocol_Scope2_LocationBased",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.672351",
-      "updated_at": "2026-04-23T23:56:52.672351",
+      "created_at": "2026-04-24T12:42:22.957647",
+      "updated_at": "2026-04-24T12:42:22.957647",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -602,7 +602,7 @@
       "source_record_id": "cea:NER:2023-24",
       "release_version": "cea-v20.0",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "CO2 Baseline Database for the Indian Power Sector, Central Electricity Authority (Government of India), CDM v20.0.",
         "alternates_considered": [
           "EF:IN:all_india:2023-24:cea-v20.0",
@@ -753,8 +753,8 @@
         "GHG_Protocol_Scope2_LocationBased",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.672351",
-      "updated_at": "2026-04-23T23:56:52.672351",
+      "created_at": "2026-04-24T12:42:22.958644",
+      "updated_at": "2026-04-24T12:42:22.958644",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -769,7 +769,7 @@
       "source_record_id": "cea:N:2023-24",
       "release_version": "cea-v20.0",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "CO2 Baseline Database for the Indian Power Sector, Central Electricity Authority (Government of India), CDM v20.0.",
         "alternates_considered": [
           "EF:IN:all_india:2023-24:cea-v20.0",
@@ -920,8 +920,8 @@
         "GHG_Protocol_Scope2_LocationBased",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.673297",
-      "updated_at": "2026-04-23T23:56:52.673297",
+      "created_at": "2026-04-24T12:42:22.958644",
+      "updated_at": "2026-04-24T12:42:22.958644",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -936,7 +936,7 @@
       "source_record_id": "cea:E:2023-24",
       "release_version": "cea-v20.0",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "CO2 Baseline Database for the Indian Power Sector, Central Electricity Authority (Government of India), CDM v20.0.",
         "alternates_considered": [
           "EF:IN:all_india:2023-24:cea-v20.0",
@@ -1087,8 +1087,8 @@
         "GHG_Protocol_Scope2_LocationBased",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.673297",
-      "updated_at": "2026-04-23T23:56:52.673297",
+      "created_at": "2026-04-24T12:42:22.958644",
+      "updated_at": "2026-04-24T12:42:22.958644",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -1103,7 +1103,7 @@
       "source_record_id": "cea:W:2023-24",
       "release_version": "cea-v20.0",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "CO2 Baseline Database for the Indian Power Sector, Central Electricity Authority (Government of India), CDM v20.0.",
         "alternates_considered": [
           "EF:IN:all_india:2023-24:cea-v20.0",
@@ -1254,8 +1254,8 @@
         "GHG_Protocol_Scope2_LocationBased",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.673297",
-      "updated_at": "2026-04-23T23:56:52.673297",
+      "created_at": "2026-04-24T12:42:22.958644",
+      "updated_at": "2026-04-24T12:42:22.958644",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -1270,7 +1270,7 @@
       "source_record_id": "cea:All India:2022-23",
       "release_version": "cea-v19.0",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "CO2 Baseline Database for the Indian Power Sector, Central Electricity Authority (Government of India), CDM v20.0.",
         "alternates_considered": [
           "EF:IN:newne:2022-23:cea-v19.0",
@@ -1418,8 +1418,8 @@
         "GHG_Protocol_Scope2_LocationBased",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.673297",
-      "updated_at": "2026-04-23T23:56:52.673297",
+      "created_at": "2026-04-24T12:42:22.959643",
+      "updated_at": "2026-04-24T12:42:22.959643",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -1434,7 +1434,7 @@
       "source_record_id": "cea:NEWNE:2022-23",
       "release_version": "cea-v19.0",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "CO2 Baseline Database for the Indian Power Sector, Central Electricity Authority (Government of India), CDM v20.0.",
         "alternates_considered": [
           "EF:IN:all_india:2022-23:cea-v19.0",
@@ -1582,8 +1582,8 @@
         "GHG_Protocol_Scope2_LocationBased",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.674296",
-      "updated_at": "2026-04-23T23:56:52.674296",
+      "created_at": "2026-04-24T12:42:22.959643",
+      "updated_at": "2026-04-24T12:42:22.959643",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -1598,7 +1598,7 @@
       "source_record_id": "cea:S:2022-23",
       "release_version": "cea-v19.0",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "CO2 Baseline Database for the Indian Power Sector, Central Electricity Authority (Government of India), CDM v20.0.",
         "alternates_considered": [
           "EF:IN:all_india:2022-23:cea-v19.0",
@@ -1746,8 +1746,8 @@
         "GHG_Protocol_Scope2_LocationBased",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.674296",
-      "updated_at": "2026-04-23T23:56:52.674296",
+      "created_at": "2026-04-24T12:42:22.959643",
+      "updated_at": "2026-04-24T12:42:22.959643",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -1762,7 +1762,7 @@
       "source_record_id": "cea:NER:2022-23",
       "release_version": "cea-v19.0",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "CO2 Baseline Database for the Indian Power Sector, Central Electricity Authority (Government of India), CDM v20.0.",
         "alternates_considered": [
           "EF:IN:all_india:2022-23:cea-v19.0",
@@ -1910,8 +1910,8 @@
         "GHG_Protocol_Scope2_LocationBased",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.674296",
-      "updated_at": "2026-04-23T23:56:52.674296",
+      "created_at": "2026-04-24T12:42:22.959643",
+      "updated_at": "2026-04-24T12:42:22.959643",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -1926,7 +1926,7 @@
       "source_record_id": "cea:All India:2021-22",
       "release_version": "cea-v18.0",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "CO2 Baseline Database for the Indian Power Sector, Central Electricity Authority (Government of India), CDM v20.0."
       },
       "replacement_factor_id": null,
@@ -2069,8 +2069,8 @@
         "GHG_Protocol_Scope2_LocationBased",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.674296",
-      "updated_at": "2026-04-23T23:56:52.674296",
+      "created_at": "2026-04-24T12:42:22.960643",
+      "updated_at": "2026-04-24T12:42:22.960643",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -2085,7 +2085,7 @@
       "source_record_id": "cea:All India:2020-21",
       "release_version": "cea-v17.0",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "CO2 Baseline Database for the Indian Power Sector, Central Electricity Authority (Government of India), CDM v20.0."
       },
       "replacement_factor_id": null,
@@ -2228,8 +2228,8 @@
         "GHG_Protocol_Scope2_LocationBased",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.675362",
-      "updated_at": "2026-04-23T23:56:52.675362",
+      "created_at": "2026-04-24T12:42:22.960643",
+      "updated_at": "2026-04-24T12:42:22.960643",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -2244,7 +2244,7 @@
       "source_record_id": "cea:NEWNE:2024-25",
       "release_version": "cea-v21.0",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "CO2 Baseline Database for the Indian Power Sector, Central Electricity Authority (Government of India), CDM v20.0.",
         "alternates_considered": [
           "EF:IN:s:2024-25:cea-v21.0",
@@ -2394,8 +2394,8 @@
         "GHG_Protocol_Scope2_LocationBased",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.675362",
-      "updated_at": "2026-04-23T23:56:52.675362",
+      "created_at": "2026-04-24T12:42:22.960643",
+      "updated_at": "2026-04-24T12:42:22.960643",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -2410,7 +2410,7 @@
       "source_record_id": "cea:S:2024-25",
       "release_version": "cea-v21.0",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "CO2 Baseline Database for the Indian Power Sector, Central Electricity Authority (Government of India), CDM v20.0.",
         "alternates_considered": [
           "EF:IN:newne:2024-25:cea-v21.0",
@@ -2560,8 +2560,8 @@
         "GHG_Protocol_Scope2_LocationBased",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.675362",
-      "updated_at": "2026-04-23T23:56:52.675362",
+      "created_at": "2026-04-24T12:42:22.960643",
+      "updated_at": "2026-04-24T12:42:22.960643",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -2576,7 +2576,7 @@
       "source_record_id": "cea:NER:2024-25",
       "release_version": "cea-v21.0",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "CO2 Baseline Database for the Indian Power Sector, Central Electricity Authority (Government of India), CDM v20.0.",
         "alternates_considered": [
           "EF:IN:newne:2024-25:cea-v21.0",
@@ -2727,8 +2727,8 @@
         "GHG_Protocol_Scope2_LocationBased",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.675362",
-      "updated_at": "2026-04-23T23:56:52.675362",
+      "created_at": "2026-04-24T12:42:22.961645",
+      "updated_at": "2026-04-24T12:42:22.961645",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -2743,7 +2743,7 @@
       "source_record_id": "cea:All India:2024-25",
       "release_version": "cea-v21.0",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "CO2 Baseline Database for the Indian Power Sector, Central Electricity Authority (Government of India), CDM v20.0.",
         "alternates_considered": [
           "EF:IN:newne:2024-25:cea-v21.0",
@@ -2893,8 +2893,8 @@
         "GHG_Protocol_Scope2_LocationBased",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.676361",
-      "updated_at": "2026-04-23T23:56:52.676361",
+      "created_at": "2026-04-24T12:42:22.961645",
+      "updated_at": "2026-04-24T12:42:22.961645",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -2909,7 +2909,7 @@
       "source_record_id": "cea:All India:2025-26",
       "release_version": "cea-v22.0",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "CO2 Baseline Database for the Indian Power Sector, Central Electricity Authority (Government of India), CDM v20.0.",
         "alternates_considered": [
           "EF:IN:newne:2025-26:cea-v22.0",
@@ -3056,8 +3056,8 @@
         "GHG_Protocol_Scope2_LocationBased",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.676361",
-      "updated_at": "2026-04-23T23:56:52.676361",
+      "created_at": "2026-04-24T12:42:22.961645",
+      "updated_at": "2026-04-24T12:42:22.961645",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -3072,7 +3072,7 @@
       "source_record_id": "cea:NEWNE:2025-26",
       "release_version": "cea-v22.0",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "CO2 Baseline Database for the Indian Power Sector, Central Electricity Authority (Government of India), CDM v20.0.",
         "alternates_considered": [
           "EF:IN:all_india:2025-26:cea-v22.0",
@@ -3219,8 +3219,8 @@
         "GHG_Protocol_Scope2_LocationBased",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.676361",
-      "updated_at": "2026-04-23T23:56:52.676361",
+      "created_at": "2026-04-24T12:42:22.961645",
+      "updated_at": "2026-04-24T12:42:22.961645",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -3235,7 +3235,7 @@
       "source_record_id": "cea:S:2025-26",
       "release_version": "cea-v22.0",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "CO2 Baseline Database for the Indian Power Sector, Central Electricity Authority (Government of India), CDM v20.0.",
         "alternates_considered": [
           "EF:IN:all_india:2025-26:cea-v22.0",
@@ -3382,8 +3382,8 @@
         "GHG_Protocol_Scope2_LocationBased",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.676361",
-      "updated_at": "2026-04-23T23:56:52.676361",
+      "created_at": "2026-04-24T12:42:22.962646",
+      "updated_at": "2026-04-24T12:42:22.962646",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -3398,7 +3398,7 @@
       "source_record_id": "cea:All India:2026-27",
       "release_version": "cea-v23.0",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "CO2 Baseline Database for the Indian Power Sector, Central Electricity Authority (Government of India), CDM v20.0.",
         "alternates_considered": [
           "EF:IN:newne:2026-27:cea-v23.0",
@@ -3549,8 +3549,8 @@
         "GHG_Protocol_Scope2_LocationBased",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.677353",
-      "updated_at": "2026-04-23T23:56:52.677353",
+      "created_at": "2026-04-24T12:42:22.962646",
+      "updated_at": "2026-04-24T12:42:22.962646",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -3565,7 +3565,7 @@
       "source_record_id": "cea:NEWNE:2026-27",
       "release_version": "cea-v23.0",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "CO2 Baseline Database for the Indian Power Sector, Central Electricity Authority (Government of India), CDM v20.0.",
         "alternates_considered": [
           "EF:IN:all_india:2026-27:cea-v23.0",
@@ -3716,8 +3716,8 @@
         "GHG_Protocol_Scope2_LocationBased",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.677353",
-      "updated_at": "2026-04-23T23:56:52.677353",
+      "created_at": "2026-04-24T12:42:22.962646",
+      "updated_at": "2026-04-24T12:42:22.962646",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -3732,7 +3732,7 @@
       "source_record_id": "cea:S:2026-27",
       "release_version": "cea-v23.0",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "CO2 Baseline Database for the Indian Power Sector, Central Electricity Authority (Government of India), CDM v20.0.",
         "alternates_considered": [
           "EF:IN:all_india:2026-27:cea-v23.0",
@@ -3883,8 +3883,8 @@
         "GHG_Protocol_Scope2_LocationBased",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.677353",
-      "updated_at": "2026-04-23T23:56:52.677353",
+      "created_at": "2026-04-24T12:42:22.963644",
+      "updated_at": "2026-04-24T12:42:22.963644",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -3899,7 +3899,7 @@
       "source_record_id": "cea:NER:2026-27",
       "release_version": "cea-v23.0",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "CO2 Baseline Database for the Indian Power Sector, Central Electricity Authority (Government of India), CDM v20.0.",
         "alternates_considered": [
           "EF:IN:all_india:2026-27:cea-v23.0",
@@ -4050,8 +4050,8 @@
         "GHG_Protocol_Scope2_LocationBased",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.677353",
-      "updated_at": "2026-04-23T23:56:52.677353",
+      "created_at": "2026-04-24T12:42:22.963644",
+      "updated_at": "2026-04-24T12:42:22.963644",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -4066,7 +4066,7 @@
       "source_record_id": "cea:N:2026-27",
       "release_version": "cea-v23.0",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "CO2 Baseline Database for the Indian Power Sector, Central Electricity Authority (Government of India), CDM v20.0.",
         "alternates_considered": [
           "EF:IN:all_india:2026-27:cea-v23.0",
@@ -4217,8 +4217,8 @@
         "GHG_Protocol_Scope2_LocationBased",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.678352",
-      "updated_at": "2026-04-23T23:56:52.678352",
+      "created_at": "2026-04-24T12:42:22.963644",
+      "updated_at": "2026-04-24T12:42:22.963644",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -4233,7 +4233,7 @@
       "source_record_id": "cea:E:2026-27",
       "release_version": "cea-v23.0",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "CO2 Baseline Database for the Indian Power Sector, Central Electricity Authority (Government of India), CDM v20.0.",
         "alternates_considered": [
           "EF:IN:all_india:2026-27:cea-v23.0",
@@ -4384,8 +4384,8 @@
         "GHG_Protocol_Scope2_LocationBased",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.678352",
-      "updated_at": "2026-04-23T23:56:52.678352",
+      "created_at": "2026-04-24T12:42:22.963644",
+      "updated_at": "2026-04-24T12:42:22.963644",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -4400,7 +4400,7 @@
       "source_record_id": "cea:W:2026-27",
       "release_version": "cea-v23.0",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "CO2 Baseline Database for the Indian Power Sector, Central Electricity Authority (Government of India), CDM v20.0.",
         "alternates_considered": [
           "EF:IN:all_india:2026-27:cea-v23.0",
@@ -4551,8 +4551,8 @@
         "GHG_Protocol_Scope2_LocationBased",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.678352",
-      "updated_at": "2026-04-23T23:56:52.678352",
+      "created_at": "2026-04-24T12:42:22.964644",
+      "updated_at": "2026-04-24T12:42:22.964644",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -4567,7 +4567,7 @@
       "source_record_id": "cea:All India:2019-20",
       "release_version": "cea-v16.0",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "CO2 Baseline Database for the Indian Power Sector, Central Electricity Authority (Government of India), CDM v20.0.",
         "alternates_considered": [
           "EF:IN:newne:2019-20:cea-v16.0",
@@ -4715,8 +4715,8 @@
         "GHG_Protocol_Scope2_LocationBased",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.678352",
-      "updated_at": "2026-04-23T23:56:52.678352",
+      "created_at": "2026-04-24T12:42:22.964644",
+      "updated_at": "2026-04-24T12:42:22.964644",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -4731,7 +4731,7 @@
       "source_record_id": "cea:NEWNE:2019-20",
       "release_version": "cea-v16.0",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "CO2 Baseline Database for the Indian Power Sector, Central Electricity Authority (Government of India), CDM v20.0.",
         "alternates_considered": [
           "EF:IN:all_india:2019-20:cea-v16.0",
@@ -4879,8 +4879,8 @@
         "GHG_Protocol_Scope2_LocationBased",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.679255",
-      "updated_at": "2026-04-23T23:56:52.679255",
+      "created_at": "2026-04-24T12:42:22.964644",
+      "updated_at": "2026-04-24T12:42:22.964644",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -4895,7 +4895,7 @@
       "source_record_id": "cea:S:2019-20",
       "release_version": "cea-v16.0",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "CO2 Baseline Database for the Indian Power Sector, Central Electricity Authority (Government of India), CDM v20.0.",
         "alternates_considered": [
           "EF:IN:all_india:2019-20:cea-v16.0",
@@ -5043,8 +5043,8 @@
         "GHG_Protocol_Scope2_LocationBased",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.679255",
-      "updated_at": "2026-04-23T23:56:52.679255",
+      "created_at": "2026-04-24T12:42:22.964644",
+      "updated_at": "2026-04-24T12:42:22.964644",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -5059,7 +5059,7 @@
       "source_record_id": "cea:NER:2019-20",
       "release_version": "cea-v16.0",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "CO2 Baseline Database for the Indian Power Sector, Central Electricity Authority (Government of India), CDM v20.0.",
         "alternates_considered": [
           "EF:IN:all_india:2019-20:cea-v16.0",
@@ -5207,8 +5207,8 @@
         "GHG_Protocol_Scope2_LocationBased",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.679255",
-      "updated_at": "2026-04-23T23:56:52.679255",
+      "created_at": "2026-04-24T12:42:22.965643",
+      "updated_at": "2026-04-24T12:42:22.965643",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -5223,7 +5223,7 @@
       "source_record_id": "cea:All India:2018-19",
       "release_version": "cea-v15.0",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "CO2 Baseline Database for the Indian Power Sector, Central Electricity Authority (Government of India), CDM v20.0.",
         "alternates_considered": [
           "EF:IN:newne:2018-19:cea-v15.0",
@@ -5370,8 +5370,8 @@
         "GHG_Protocol_Scope2_LocationBased",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.679255",
-      "updated_at": "2026-04-23T23:56:52.679255",
+      "created_at": "2026-04-24T12:42:22.965643",
+      "updated_at": "2026-04-24T12:42:22.965643",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -5386,7 +5386,7 @@
       "source_record_id": "cea:NEWNE:2018-19",
       "release_version": "cea-v15.0",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "CO2 Baseline Database for the Indian Power Sector, Central Electricity Authority (Government of India), CDM v20.0.",
         "alternates_considered": [
           "EF:IN:all_india:2018-19:cea-v15.0",
@@ -5533,8 +5533,8 @@
         "GHG_Protocol_Scope2_LocationBased",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.679255",
-      "updated_at": "2026-04-23T23:56:52.679255",
+      "created_at": "2026-04-24T12:42:22.965643",
+      "updated_at": "2026-04-24T12:42:22.965643",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -5549,7 +5549,7 @@
       "source_record_id": "cea:S:2018-19",
       "release_version": "cea-v15.0",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "CO2 Baseline Database for the Indian Power Sector, Central Electricity Authority (Government of India), CDM v20.0.",
         "alternates_considered": [
           "EF:IN:all_india:2018-19:cea-v15.0",
@@ -5696,8 +5696,8 @@
         "GHG_Protocol_Scope2_LocationBased",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.680357",
-      "updated_at": "2026-04-23T23:56:52.680357",
+      "created_at": "2026-04-24T12:42:22.965643",
+      "updated_at": "2026-04-24T12:42:22.965643",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -5712,7 +5712,7 @@
       "source_record_id": "cea:All India:2017-18",
       "release_version": "cea-v14.0",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "CO2 Baseline Database for the Indian Power Sector, Central Electricity Authority (Government of India), CDM v20.0."
       },
       "replacement_factor_id": null,
@@ -5855,8 +5855,8 @@
         "GHG_Protocol_Scope2_LocationBased",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.680357",
-      "updated_at": "2026-04-23T23:56:52.680357",
+      "created_at": "2026-04-24T12:42:22.966644",
+      "updated_at": "2026-04-24T12:42:22.966644",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -5871,7 +5871,7 @@
       "source_record_id": "cea:NEWNE:2024-25",
       "release_version": "cea-v21.0",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "CO2 Baseline Database for the Indian Power Sector, Central Electricity Authority (Government of India), CDM v20.0.",
         "alternates_considered": [
           "EF:IN:s:2024-25:cea-v21.0",
@@ -6021,8 +6021,8 @@
         "GHG_Protocol_Scope2_LocationBased",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.680357",
-      "updated_at": "2026-04-23T23:56:52.680357",
+      "created_at": "2026-04-24T12:42:22.966644",
+      "updated_at": "2026-04-24T12:42:22.966644",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -6037,7 +6037,7 @@
       "source_record_id": "cea:S:2024-25",
       "release_version": "cea-v21.0",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "CO2 Baseline Database for the Indian Power Sector, Central Electricity Authority (Government of India), CDM v20.0.",
         "alternates_considered": [
           "EF:IN:newne:2024-25:cea-v21.0",
@@ -6187,8 +6187,8 @@
         "GHG_Protocol_Scope2_LocationBased",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.680357",
-      "updated_at": "2026-04-23T23:56:52.680357",
+      "created_at": "2026-04-24T12:42:22.966644",
+      "updated_at": "2026-04-24T12:42:22.966644",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -6203,7 +6203,7 @@
       "source_record_id": "cea:All India:2024-25",
       "release_version": "cea-v21.0",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
         "attribution_text": "CO2 Baseline Database for the Indian Power Sector, Central Electricity Authority (Government of India), CDM v20.0.",
         "alternates_considered": [
           "EF:IN:newne:2024-25:cea-v21.0",

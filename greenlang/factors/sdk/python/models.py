@@ -79,7 +79,15 @@ class QualityScore(_SDKResponseModel):
 
 
 class Uncertainty(_SDKResponseModel):
-    """Uncertainty envelope for a factor or resolved result."""
+    """Uncertainty envelope for a factor or resolved result.
+
+    **v1.3 disambiguation** (see RELEASE_NOTES_v1.3.0.md):
+    the scalar ``uncertainty`` field is interpreted as an *absolute* value
+    in the factor's native unit (e.g. kg CO2e per activity unit). The
+    separate ``uncertainty_percent`` field carries the relative form
+    (0-100, where ``5.0`` means 5 %). Both fields are optional and the
+    resolver/engine emits both when it can compute them.
+    """
 
     ci_95: Optional[float] = Field(
         None, description="95% confidence interval half-width (fraction)"
@@ -89,6 +97,21 @@ class Uncertainty(_SDKResponseModel):
     )
     std_dev: Optional[float] = Field(None)
     sample_size: Optional[int] = Field(None)
+    uncertainty: Optional[float] = Field(
+        None,
+        description=(
+            "Absolute uncertainty magnitude in the factor's native unit "
+            "(e.g. kg CO2e / activity unit). See ``uncertainty_percent`` "
+            "for the relative form."
+        ),
+    )
+    uncertainty_percent: Optional[float] = Field(
+        None,
+        description=(
+            "Relative uncertainty as a percentage (0-100, where 5.0 means 5%). "
+            "Complements ``uncertainty`` which is absolute in native units."
+        ),
+    )
 
 
 class GasBreakdown(_SDKResponseModel):
@@ -241,6 +264,144 @@ class CoverageReport(_SDKResponseModel):
     edition_id: Optional[str] = Field(None)
 
 
+class MethodPackCoverage(_SDKResponseModel):
+    """Single-pack coverage entry returned under
+    :class:`MethodPackCoverageReport.packs` / ``.overall``.
+
+    v1.3 canonical shape — the same block describes an individual pack and
+    the aggregated ``overall`` roll-up.
+    """
+
+    slug: Optional[str] = Field(
+        None,
+        description=(
+            "Canonical pack slug (or ``None`` for the ``overall`` roll-up). "
+            "Aliases the legacy ``pack_id`` used in Wave 4-G emissions."
+        ),
+    )
+    version: Optional[str] = Field(None)
+    total_activities: Optional[int] = Field(None)
+    covered: Optional[int] = Field(None)
+    fraction: Optional[float] = Field(
+        None, description="covered / total_activities as a 0-1 float"
+    )
+    by_family: Dict[str, Any] = Field(default_factory=dict)
+    by_jurisdiction: Dict[str, Any] = Field(default_factory=dict)
+
+
+class MethodPackCoverageReport(_SDKResponseModel):
+    """Top-level canonical response for ``GET /v1/method-packs/coverage``.
+
+    **v1.3 canonicalization**: a single shape is used for BOTH the
+    all-packs and single-pack call (``?pack=<slug>``). Previously the
+    single-pack response returned a naked object; the SDK now wraps it
+    into ``packs=[<one entry>]`` with ``overall`` mirroring the single
+    entry so downstream code never has to branch on the call mode.
+
+    The legacy Wave 4-G response ``{packs: [...], total: N}`` is still
+    parsed (see :meth:`from_legacy_payload`). Callers who continue to
+    use the legacy fields will find them exposed under
+    :attr:`legacy_packs`.
+    """
+
+    packs: List[MethodPackCoverage] = Field(default_factory=list)
+    overall: Optional[MethodPackCoverage] = Field(
+        None, description="Roll-up across every pack in the response"
+    )
+    # Back-compat: legacy payload preserved verbatim under ``legacy_packs``.
+    legacy_packs: List[Dict[str, Any]] = Field(default_factory=list)
+
+    @classmethod
+    def from_legacy_payload(cls, payload: Any) -> "MethodPackCoverageReport":
+        """Inflate either the v1.3 canonical shape or the legacy Wave 4-G shape.
+
+        Rules:
+          * v1.3 canonical: ``{packs: [...], overall: {...}}`` — pass through.
+          * Legacy list-of-packs: ``{packs: [{pack_id, version, ...}, ...], total: N}``
+            — each entry is projected into :class:`MethodPackCoverage`
+            (``pack_id`` -> ``slug``) and the legacy dict is preserved
+            under :attr:`legacy_packs`. ``overall`` is synthesised from
+            the first entry when the caller filtered to one pack.
+          * Single-pack object: ``{pack_id: ..., ...}`` — wrapped into a
+            one-element ``packs`` list and ``overall`` is set to the same
+            entry (parity with the filtered all-packs call).
+        """
+        if not isinstance(payload, dict):
+            return cls()
+        # v1.3 canonical
+        if "overall" in payload or (
+            "packs" in payload
+            and payload["packs"]
+            and isinstance(payload["packs"][0], dict)
+            and "slug" in payload["packs"][0]
+        ):
+            return cls.model_validate(payload)
+        # Legacy single-pack object
+        if "pack_id" in payload and "packs" not in payload:
+            entry = _legacy_pack_to_canonical(payload)
+            return cls(
+                packs=[entry],
+                overall=entry,
+                legacy_packs=[dict(payload)],
+            )
+        # Legacy list-of-packs (Wave 4-G)
+        legacy_packs = payload.get("packs") or []
+        canonical = [_legacy_pack_to_canonical(p) for p in legacy_packs]
+        overall: Optional[MethodPackCoverage] = None
+        if len(canonical) == 1:
+            overall = canonical[0]
+        elif canonical:
+            # Aggregate totals across the list.
+            total_activities = sum(
+                (c.total_activities or 0) for c in canonical
+            )
+            covered = sum((c.covered or 0) for c in canonical)
+            fraction = (
+                float(covered) / float(total_activities)
+                if total_activities
+                else None
+            )
+            overall = MethodPackCoverage(
+                slug=None,
+                version=None,
+                total_activities=total_activities,
+                covered=covered,
+                fraction=fraction,
+                by_family={},
+                by_jurisdiction={},
+            )
+        return cls(
+            packs=canonical,
+            overall=overall,
+            legacy_packs=[dict(p) for p in legacy_packs if isinstance(p, dict)],
+        )
+
+
+def _legacy_pack_to_canonical(raw: Dict[str, Any]) -> MethodPackCoverage:
+    """Project a legacy Wave 4-G pack entry into the v1.3 canonical shape."""
+    slug = raw.get("slug") or raw.get("pack_id")
+    resolved = int(raw.get("resolved_case_count_7d") or 0)
+    unresolved = int(raw.get("unresolved_case_count_7d") or 0)
+    total_activities = raw.get("total_activities")
+    covered = raw.get("covered")
+    fraction = raw.get("fraction")
+    if total_activities is None:
+        total_activities = resolved + unresolved
+    if covered is None:
+        covered = resolved
+    if fraction is None and total_activities:
+        fraction = float(covered) / float(total_activities)
+    return MethodPackCoverage(
+        slug=slug,
+        version=raw.get("version"),
+        total_activities=total_activities,
+        covered=covered,
+        fraction=fraction,
+        by_family=raw.get("by_family") or {},
+        by_jurisdiction=raw.get("by_jurisdiction") or {},
+    )
+
+
 # ---------------------------------------------------------------------------
 # Resolution (7-step cascade)
 # ---------------------------------------------------------------------------
@@ -340,7 +501,16 @@ class QualityEnvelope(_SDKResponseModel):
 
 
 class UncertaintyEnvelope(_SDKResponseModel):
-    """Richer Wave 2 uncertainty envelope (superset of :class:`Uncertainty`)."""
+    """Richer Wave 2 uncertainty envelope (superset of :class:`Uncertainty`).
+
+    **v1.3 disambiguation**: ``uncertainty`` is ABSOLUTE (native unit of the
+    factor — e.g. kg CO2e / activity unit). ``uncertainty_percent`` is the
+    RELATIVE form (0-100, where ``5.0`` means 5 %). The resolver emits
+    both when it can compute them; older servers that only emit one of
+    the two leave the other ``None``. This is an additive, backward-
+    compatible change — legacy consumers that ignore the new fields keep
+    working unchanged.
+    """
 
     ci_95: Optional[float] = Field(None, description="95% CI half-width as a fraction")
     ci_lower: Optional[float] = Field(None)
@@ -349,6 +519,20 @@ class UncertaintyEnvelope(_SDKResponseModel):
     std_dev: Optional[float] = Field(None)
     sample_size: Optional[int] = Field(None)
     pedigree_matrix: Dict[str, Any] = Field(default_factory=dict)
+    uncertainty: Optional[float] = Field(
+        None,
+        description=(
+            "Absolute uncertainty magnitude in the factor's native unit. "
+            "Use ``uncertainty_percent`` for the percentage form."
+        ),
+    )
+    uncertainty_percent: Optional[float] = Field(
+        None,
+        description=(
+            "Relative uncertainty as a percentage 0-100 (``5.0`` = 5 %). "
+            "Complements the absolute ``uncertainty`` field."
+        ),
+    )
 
 
 class LicensingEnvelope(_SDKResponseModel):
@@ -365,16 +549,96 @@ class LicensingEnvelope(_SDKResponseModel):
 
 
 class DeprecationStatus(_SDKResponseModel):
-    """Structured Wave 2 deprecation status (was a bare string pre-Wave 2)."""
+    """Structured Wave 2 deprecation status (was a bare string pre-Wave 2).
+
+    **v1.3 canonicalization**: the SDK always exposes this as an object
+    even when the wire carried a bare string. Use
+    :meth:`from_any` to inflate any server emission.
+
+    Canonical shape:
+
+    .. code-block:: python
+
+        {
+            "status": "active" | "deprecated" | "sunset" | ...,
+            "successor_id": str | None,
+            "reason": str | None,
+            "deprecated_at": iso_datetime | None,
+        }
+
+    The legacy Wave 2 fields ``effective_from`` / ``effective_to`` /
+    ``replacement_factor_id`` / ``notice_url`` are still accepted on the
+    wire for backward compatibility; ``successor_id`` falls back to
+    ``replacement_factor_id`` and ``deprecated_at`` to ``effective_from``
+    when only the legacy keys are present.
+    """
 
     status: Optional[str] = Field(
-        None, description="current | scheduled | deprecated | retired"
+        None,
+        description=(
+            "active | deprecated | sunset (plus legacy values "
+            "current | scheduled | retired accepted for back-compat)"
+        ),
     )
-    effective_from: Optional[str] = Field(None)
-    effective_to: Optional[str] = Field(None)
-    replacement_factor_id: Optional[str] = Field(None)
-    reason: Optional[str] = Field(None)
-    notice_url: Optional[str] = Field(None)
+    successor_id: Optional[str] = Field(
+        None,
+        description=(
+            "Factor id that supersedes this one (``None`` if active). "
+            "Canonicalizes the legacy ``replacement_factor_id``."
+        ),
+    )
+    reason: Optional[str] = Field(None, description="Human-readable reason")
+    deprecated_at: Optional[str] = Field(
+        None,
+        description=(
+            "ISO-8601 timestamp the deprecation took effect. "
+            "Canonicalizes the legacy ``effective_from``."
+        ),
+    )
+    # Legacy Wave 2 fields retained for backward compatibility on the wire.
+    effective_from: Optional[str] = Field(None, description="Legacy alias for ``deprecated_at``")
+    effective_to: Optional[str] = Field(None, description="Legacy; no canonical equivalent")
+    replacement_factor_id: Optional[str] = Field(
+        None, description="Legacy alias for ``successor_id``"
+    )
+    notice_url: Optional[str] = Field(None, description="Legacy; optional deprecation notice URL")
+
+    @classmethod
+    def from_any(cls, raw: Any) -> Optional["DeprecationStatus"]:
+        """Inflate ANY wire shape into a :class:`DeprecationStatus`.
+
+        Accepts:
+          * ``None`` — returns ``None``.
+          * A bare string (e.g. ``"active"``, ``"deprecated"``) — inflates to
+            ``DeprecationStatus(status=<s>, successor_id=None, reason=None,
+            deprecated_at=None)``.
+          * A dict with the canonical v1.3 keys.
+          * A dict with the legacy Wave 2 keys (``replacement_factor_id``,
+            ``effective_from`` etc.) — canonical fields are populated from
+            the legacy aliases.
+          * An already-constructed :class:`DeprecationStatus`.
+        """
+        if raw is None:
+            return None
+        if isinstance(raw, cls):
+            return raw
+        if isinstance(raw, str):
+            return cls(
+                status=raw,
+                successor_id=None,
+                reason=None,
+                deprecated_at=None,
+            )
+        if isinstance(raw, dict):
+            data: Dict[str, Any] = dict(raw)
+            # Legacy -> canonical backfills (only when canonical missing).
+            if not data.get("successor_id") and data.get("replacement_factor_id"):
+                data["successor_id"] = data["replacement_factor_id"]
+            if not data.get("deprecated_at") and data.get("effective_from"):
+                data["deprecated_at"] = data["effective_from"]
+            return cls.model_validate(data)
+        # Unknown shape — stash under ``status`` as a last-resort string.
+        return cls(status=str(raw))
 
 
 class SignedReceipt(_SDKResponseModel):
@@ -497,11 +761,13 @@ class ResolvedFactor(_SDKResponseModel):
     alternates: List[Dict[str, Any]] = Field(default_factory=list)
 
     licensing: Optional[LicensingEnvelope] = Field(None)
-    deprecation_status: Optional[Any] = Field(
+    deprecation_status: Optional[DeprecationStatus] = Field(
         None,
         description=(
-            "Deprecation status — may be a plain string (pre-Wave-2) or a "
-            "structured DeprecationStatus object (Wave 2+)."
+            "Canonical v1.3 structured deprecation status. Bare strings "
+            "(pre-Wave-2) and Wave 2 legacy dicts are accepted on the wire "
+            "and inflated to a :class:`DeprecationStatus` via "
+            "``DeprecationStatus.from_any``."
         ),
     )
     deprecation_replacement: Optional[str] = Field(None)
@@ -549,6 +815,15 @@ class ResolvedFactor(_SDKResponseModel):
         if isinstance(out.get("signed_receipt"), dict):
             out["signed_receipt"] = SignedReceipt.from_response_dict(
                 out["signed_receipt"]
+            )
+        # v1.3: canonicalize ``deprecation_status`` — the wire may emit a
+        # bare string (pre-Wave-2), a Wave 2 structured dict, or the new
+        # canonical dict. All three inflate to a :class:`DeprecationStatus`.
+        if "deprecation_status" in out and not isinstance(
+            out["deprecation_status"], DeprecationStatus
+        ):
+            out["deprecation_status"] = DeprecationStatus.from_any(
+                out["deprecation_status"]
             )
         return out
 
@@ -673,6 +948,8 @@ __all__ = [
     "FactorMatch",
     "SearchResponse",
     "CoverageReport",
+    "MethodPackCoverage",
+    "MethodPackCoverageReport",
     "ResolutionRequest",
     "ResolvedFactor",
     "FactorDiff",

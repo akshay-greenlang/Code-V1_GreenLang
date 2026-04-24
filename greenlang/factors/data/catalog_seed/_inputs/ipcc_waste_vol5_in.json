@@ -1,0 +1,65 @@
+{
+  "metadata": {
+    "source": "IPCC 2006 Guidelines Vol 5 (Waste)",
+    "vintage_year": 2006,
+    "country": "IN",
+    "climate_zone": "tropical_wet",
+    "source_publication": "IPCC 2006 Guidelines for National GHG Inventories, Volume 5: Waste (Ch 2-6)",
+    "source_url": "https://www.ipcc-nggip.iges.or.jp/public/2006gl/vol5.html"
+  },
+  "_seed_note": "India-parameterised IPCC 2006 Vol 5 defaults. Climate zone 'tropical_wet' used to select Ch 2 Table 2.3 MCF (0.8 managed / 0.4 unmanaged-deep / 0.8 uncategorised), Ch 6 Table 6.3 MCFs for wastewater, and Ch 5 Table 5.2 incineration factors. Values flagged illustrative_value=true pending India NATCOM-4 reconciliation.",
+  "categories": {
+    "swds": [
+      {"stream": "msw_food", "doc_fraction": 0.15, "doc_f_fraction": 0.5, "mcf": 0.8, "kg_ch4_per_tonne": 80.0, "illustrative_value": true},
+      {"stream": "msw_garden", "doc_fraction": 0.20, "doc_f_fraction": 0.5, "mcf": 0.8, "kg_ch4_per_tonne": 107.0, "illustrative_value": true},
+      {"stream": "msw_paper", "doc_fraction": 0.40, "doc_f_fraction": 0.5, "mcf": 0.8, "kg_ch4_per_tonne": 213.0, "illustrative_value": true},
+      {"stream": "msw_wood", "doc_fraction": 0.43, "doc_f_fraction": 0.5, "mcf": 0.8, "kg_ch4_per_tonne": 229.0, "illustrative_value": true},
+      {"stream": "msw_textiles", "doc_fraction": 0.24, "doc_f_fraction": 0.5, "mcf": 0.8, "kg_ch4_per_tonne": 128.0, "illustrative_value": true},
+      {"stream": "msw_mixed", "doc_fraction": 0.17, "doc_f_fraction": 0.5, "mcf": 0.8, "kg_ch4_per_tonne": 90.7, "illustrative_value": true},
+      {"stream": "msw_unmanaged_deep", "doc_fraction": 0.17, "doc_f_fraction": 0.5, "mcf": 0.8, "kg_ch4_per_tonne": 90.7, "illustrative_value": true},
+      {"stream": "msw_unmanaged_shallow", "doc_fraction": 0.17, "doc_f_fraction": 0.5, "mcf": 0.4, "kg_ch4_per_tonne": 45.3, "illustrative_value": true},
+      {"stream": "msw_uncategorised", "doc_fraction": 0.17, "doc_f_fraction": 0.5, "mcf": 0.6, "kg_ch4_per_tonne": 68.0, "illustrative_value": true},
+      {"stream": "sludge", "doc_fraction": 0.05, "doc_f_fraction": 0.5, "mcf": 0.8, "kg_ch4_per_tonne": 26.7, "illustrative_value": true},
+      {"stream": "industrial_food_beverage", "doc_fraction": 0.30, "doc_f_fraction": 0.5, "mcf": 0.8, "kg_ch4_per_tonne": 160.0, "illustrative_value": true},
+      {"stream": "industrial_paper_pulp", "doc_fraction": 0.40, "doc_f_fraction": 0.5, "mcf": 0.8, "kg_ch4_per_tonne": 213.0, "illustrative_value": true},
+      {"stream": "industrial_textile", "doc_fraction": 0.24, "doc_f_fraction": 0.5, "mcf": 0.8, "kg_ch4_per_tonne": 128.0, "illustrative_value": true},
+      {"stream": "industrial_wood_wood_products", "doc_fraction": 0.43, "doc_f_fraction": 0.5, "mcf": 0.8, "kg_ch4_per_tonne": 229.0, "illustrative_value": true},
+      {"stream": "construction_demolition", "doc_fraction": 0.04, "doc_f_fraction": 0.5, "mcf": 0.8, "kg_ch4_per_tonne": 21.3, "illustrative_value": true}
+    ],
+    "incineration": [
+      {"stream": "msw", "kg_co2_fossil_per_tonne": 900.0, "kg_ch4_per_tonne": 0.2, "kg_n2o_per_tonne": 0.05, "fossil_fraction": 0.39, "illustrative_value": true},
+      {"stream": "msw_open_burning", "kg_co2_fossil_per_tonne": 500.0, "kg_ch4_per_tonne": 6.5, "kg_n2o_per_tonne": 0.15, "fossil_fraction": 0.39, "illustrative_value": true},
+      {"stream": "hazardous_waste", "kg_co2_fossil_per_tonne": 1100.0, "kg_ch4_per_tonne": 0.1, "kg_n2o_per_tonne": 0.1, "fossil_fraction": 0.90, "illustrative_value": true},
+      {"stream": "clinical_waste", "kg_co2_fossil_per_tonne": 850.0, "kg_ch4_per_tonne": 0.1, "kg_n2o_per_tonne": 0.08, "fossil_fraction": 0.60, "illustrative_value": true},
+      {"stream": "sewage_sludge", "kg_co2_fossil_per_tonne": 345.0, "kg_ch4_per_tonne": 0.97, "kg_n2o_per_tonne": 0.99, "fossil_fraction": 0.0, "illustrative_value": true},
+      {"stream": "industrial_waste", "kg_co2_fossil_per_tonne": 1300.0, "kg_ch4_per_tonne": 0.1, "kg_n2o_per_tonne": 0.1, "fossil_fraction": 0.80, "illustrative_value": true},
+      {"stream": "plastic", "kg_co2_fossil_per_tonne": 2700.0, "kg_ch4_per_tonne": 0.0, "kg_n2o_per_tonne": 0.0, "fossil_fraction": 1.0, "illustrative_value": true},
+      {"stream": "tyres", "kg_co2_fossil_per_tonne": 2500.0, "kg_ch4_per_tonne": 0.0, "kg_n2o_per_tonne": 0.0, "fossil_fraction": 1.0, "illustrative_value": true}
+    ],
+    "biological": [
+      {"stream": "compost_msw", "kg_ch4_per_tonne": 4.0, "kg_n2o_per_tonne": 0.3, "illustrative_value": true},
+      {"stream": "compost_garden", "kg_ch4_per_tonne": 4.0, "kg_n2o_per_tonne": 0.24, "illustrative_value": true},
+      {"stream": "compost_food", "kg_ch4_per_tonne": 4.0, "kg_n2o_per_tonne": 0.3, "illustrative_value": true},
+      {"stream": "anaerobic_digestion_msw", "kg_ch4_per_tonne": 1.0, "kg_n2o_per_tonne": 0.0, "illustrative_value": true},
+      {"stream": "anaerobic_digestion_industrial", "kg_ch4_per_tonne": 2.0, "kg_n2o_per_tonne": 0.0, "illustrative_value": true},
+      {"stream": "anaerobic_digestion_manure", "kg_ch4_per_tonne": 1.5, "kg_n2o_per_tonne": 0.0, "illustrative_value": true},
+      {"stream": "mechanical_biological_treatment", "kg_ch4_per_tonne": 2.0, "kg_n2o_per_tonne": 0.1, "illustrative_value": true}
+    ],
+    "wastewater": [
+      {"stream": "domestic_aerobic_centralised", "mcf": 0.0, "b0_kg_ch4_per_kg_bod": 0.6, "kg_ch4_per_m3": 0.02, "kg_n2o_per_m3": 0.0003, "illustrative_value": true},
+      {"stream": "domestic_aerobic_decentralised", "mcf": 0.2, "b0_kg_ch4_per_kg_bod": 0.6, "kg_ch4_per_m3": 0.072, "kg_n2o_per_m3": 0.0005, "illustrative_value": true},
+      {"stream": "domestic_anaerobic_reactor", "mcf": 0.8, "b0_kg_ch4_per_kg_bod": 0.6, "kg_ch4_per_m3": 0.288, "kg_n2o_per_m3": 0.0002, "illustrative_value": true},
+      {"stream": "domestic_anaerobic_lagoon_deep", "mcf": 0.8, "b0_kg_ch4_per_kg_bod": 0.6, "kg_ch4_per_m3": 0.288, "kg_n2o_per_m3": 0.0002, "illustrative_value": true},
+      {"stream": "domestic_anaerobic_lagoon_shallow", "mcf": 0.2, "b0_kg_ch4_per_kg_bod": 0.6, "kg_ch4_per_m3": 0.072, "kg_n2o_per_m3": 0.0002, "illustrative_value": true},
+      {"stream": "domestic_septic", "mcf": 0.5, "b0_kg_ch4_per_kg_bod": 0.6, "kg_ch4_per_m3": 0.180, "kg_n2o_per_m3": 0.0003, "illustrative_value": true},
+      {"stream": "domestic_latrine", "mcf": 0.1, "b0_kg_ch4_per_kg_bod": 0.6, "kg_ch4_per_m3": 0.036, "kg_n2o_per_m3": 0.0004, "illustrative_value": true},
+      {"stream": "domestic_open_drain_stagnant", "mcf": 0.5, "b0_kg_ch4_per_kg_bod": 0.6, "kg_ch4_per_m3": 0.180, "kg_n2o_per_m3": 0.0005, "illustrative_value": true},
+      {"stream": "industrial_dairy", "mcf": 0.8, "b0_kg_ch4_per_kg_bod": 0.25, "kg_ch4_per_m3": 0.300, "kg_n2o_per_m3": 0.0004, "illustrative_value": true},
+      {"stream": "industrial_meat_poultry", "mcf": 0.8, "b0_kg_ch4_per_kg_bod": 0.25, "kg_ch4_per_m3": 0.560, "kg_n2o_per_m3": 0.0008, "illustrative_value": true},
+      {"stream": "industrial_pulp_paper", "mcf": 0.8, "b0_kg_ch4_per_kg_bod": 0.25, "kg_ch4_per_m3": 0.200, "kg_n2o_per_m3": 0.0003, "illustrative_value": true},
+      {"stream": "industrial_sugar_refining", "mcf": 0.8, "b0_kg_ch4_per_kg_bod": 0.25, "kg_ch4_per_m3": 0.700, "kg_n2o_per_m3": 0.0010, "illustrative_value": true},
+      {"stream": "industrial_chemicals", "mcf": 0.8, "b0_kg_ch4_per_kg_bod": 0.25, "kg_ch4_per_m3": 0.500, "kg_n2o_per_m3": 0.0006, "illustrative_value": true},
+      {"stream": "industrial_textile", "mcf": 0.8, "b0_kg_ch4_per_kg_bod": 0.25, "kg_ch4_per_m3": 0.200, "kg_n2o_per_m3": 0.0003, "illustrative_value": true}
+    ]
+  }
+}

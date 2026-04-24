@@ -89,14 +89,56 @@ def score_geography(record_geo: Optional[str], request_geo: Optional[str]) -> in
     return 6
 
 
-def score_time(valid_to: Optional[date], request_date: date) -> int:
-    if valid_to is None:
+def score_time(
+    valid_to: Optional[date],
+    request_date: date,
+    valid_from: Optional[date] = None,
+) -> int:
+    """Year-proximity vintage scoring (Wave 5 — CEA FY27 fix).
+
+    Rule order:
+      1. Window CONTAINS the request date  -> 0 (best).
+      2. Window is in the PAST (valid_to < request_date)
+         -> 1 + whole_years_stale, capped at 10.
+      3. Window is in the FUTURE (valid_from > request_date)
+         -> 2 + whole_years_ahead, capped at 10. Future vintages
+         always score strictly worse than a past vintage of the same
+         calendar-year distance because they represent data the
+         caller could not yet have used at the time of the event —
+         this prevents the FY28 sibling from winning a FY27 request
+         when both are "valid" by the old one-sided ``valid_to``
+         check.
+      4. Fallback (legacy behaviour, only ``valid_to`` known)
+         -> ``valid_to >= request_date`` is 0, otherwise
+         ``1 + years_stale``.  Keeps SimpleNamespace test fixtures
+         that never declared a ``valid_from`` backward compatible.
+
+    The signal is soft — upstream cascade + method-pack filtering
+    are still responsible for hard eligibility. A future-dated
+    factor can still win if nothing else is available (the score
+    caps at 10, matching the other vintage-style signals).
+    """
+    if valid_to is None and valid_from is None:
         return 0
-    if valid_to >= request_date:
+    # Case 1: window contains the request date.
+    if (
+        valid_from is not None
+        and valid_to is not None
+        and valid_from <= request_date <= valid_to
+    ):
         return 0
-    # Stale — 1 point per full year.
-    delta_days = (request_date - valid_to).days
-    return min(10, delta_days // 365 + 1)
+    # Case 2: window is in the past.
+    if valid_to is not None and valid_to < request_date:
+        delta_days = (request_date - valid_to).days
+        return min(10, delta_days // 365 + 1)
+    # Case 3: window is in the future.
+    if valid_from is not None and valid_from > request_date:
+        delta_days = (valid_from - request_date).days
+        return min(10, delta_days // 365 + 2)
+    # Case 4: legacy fallback — only valid_to known.
+    if valid_to is not None and valid_to >= request_date:
+        return 0
+    return 0
 
 
 def score_source_authority(source_id: Optional[str]) -> int:
@@ -226,7 +268,11 @@ def build_tiebreak(
     tb.geography_distance = score_geography(
         getattr(record, "geography", None), request_geo
     )
-    tb.time_distance = score_time(getattr(record, "valid_to", None), request_date)
+    tb.time_distance = score_time(
+        getattr(record, "valid_to", None),
+        request_date,
+        getattr(record, "valid_from", None),
+    )
     tb.time_granularity_penalty = score_time_granularity(
         getattr(record, "time_granularity", None), request_granularity
     )

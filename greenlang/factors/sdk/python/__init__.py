@@ -74,6 +74,8 @@ from .models import (
     Jurisdiction,
     LicensingEnvelope,
     MethodPack,
+    MethodPackCoverage,
+    MethodPackCoverageReport,
     Override,
     QualityEnvelope,
     QualityScore,
@@ -87,16 +89,27 @@ from .models import (
     UncertaintyEnvelope,
 )
 
-__version__ = "1.2.0"
+__version__ = "1.3.0"
 """Public version string for the GreenLang Factors Python SDK.
 
-Bumped to 1.2.0 for Wave 2 / Wave 2a / Wave 2.5 envelope support:
- - Signed receipt key renames (signed_receipt / alg / payload_hash).
- - New typed envelope models (ChosenFactor, SourceDescriptor, quality
-   composite FQS 0-100, UncertaintyEnvelope, LicensingEnvelope,
-   DeprecationStatus, SignedReceipt).
- - ``audit_text`` + ``audit_text_draft`` on :class:`ResolvedFactor`.
- - :class:`FactorCannotResolveSafelyError` for resolver 422 refusals.
+Bumped to 1.3.0 (2026-04-24) for Wave 5 contract disambiguations.
+See ``RELEASE_NOTES_v1.3.0.md`` for the full changelog. Summary:
+
+ - Uncertainty unit disambiguation: ``uncertainty`` is ABSOLUTE (native
+   unit), ``uncertainty_percent`` is RELATIVE (0-100). Both fields
+   surfaced on :class:`Uncertainty` and :class:`UncertaintyEnvelope`.
+ - Deprecation-status canonicalization: the wire may carry a bare string
+   or a dict; the SDK always exposes a typed :class:`DeprecationStatus`
+   via :meth:`DeprecationStatus.from_any`. Canonical keys are
+   ``status`` / ``successor_id`` / ``reason`` / ``deprecated_at``.
+ - Coverage endpoint unification: new :class:`MethodPackCoverageReport`
+   (``{packs:[...], overall:{...}}``) returned from
+   :meth:`FactorsClient.method_pack_coverage`, regardless of whether a
+   ``?pack=<slug>`` filter was applied. The Wave 4-G legacy shape is
+   inflated transparently.
+
+All three changes are SDK-side normalizations — the wire protocol is
+backward compatible and older clients continue to work unchanged.
 """
 
 __all__ = [
@@ -132,6 +145,8 @@ __all__ = [
     "AuditBundle",
     "Override",
     "CoverageReport",
+    "MethodPackCoverage",
+    "MethodPackCoverageReport",
     "BatchJobHandle",
     # Wave 2 envelopes
     "ChosenFactor",

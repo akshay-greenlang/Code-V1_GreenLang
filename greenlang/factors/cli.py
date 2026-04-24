@@ -170,7 +170,12 @@ def _cmd_release_publish(args: argparse.Namespace) -> int:
     from greenlang.factors.watch.release_orchestrator import publish_release
 
     svc = FactorCatalogService.from_environment()
-    result = publish_release(svc.repo, args.edition_id, args.approved_by)
+    result = publish_release(
+        svc.repo,
+        args.edition_id,
+        args.approved_by,
+        auto_publish_release_notes=True,
+    )
     print(json.dumps(result, indent=2, default=str))
     return 0
 

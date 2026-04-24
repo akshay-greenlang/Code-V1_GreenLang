@@ -109,7 +109,7 @@ def _make_signed_response(
 
 
 def test_sdk_version_is_1_2_0() -> None:
-    assert __version__ == "1.2.0"
+    assert __version__ == "1.3.0"
 
 
 # ---------------------------------------------------------------------------

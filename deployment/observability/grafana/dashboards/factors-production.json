@@ -1,0 +1,550 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {"type": "datasource", "uid": "grafana"},
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      },
+      {
+        "datasource": {"type": "prometheus", "uid": "${datasource}"},
+        "enable": true,
+        "expr": "changes(kube_deployment_status_observed_generation{namespace=\"greenlang-factors\",deployment=\"factors-api\"}[1m]) > 0",
+        "iconColor": "rgba(255, 96, 96, 0.9)",
+        "name": "factors-api deploys",
+        "step": "1m",
+        "tagKeys": "deployment,namespace",
+        "textFormat": "Deploy observed",
+        "titleFormat": "factors-api deploy"
+      }
+    ]
+  },
+  "description": "GreenLang Factors API production SRE dashboard (Wave 5). Covers resolve latency/error/FQS, gold-eval quality, catalog size, signed-receipt issuance, rate-limit, webhook DLQ, batch backlog, tenant volume, and Stripe billing webhook lag. Metrics sourced from greenlang/factors/observability/prometheus_exporter.py and pushgateway (gold eval / source-watch).",
+  "editable": false,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "uid": "greenlang-factors-production",
+  "title": "GreenLang Factors — Production",
+  "tags": ["factors", "greenlang", "production", "sre", "sla"],
+  "schemaVersion": 38,
+  "style": "dark",
+  "timezone": "utc",
+  "refresh": "30s",
+  "time": {"from": "now-6h", "to": "now"},
+  "timepicker": {
+    "refresh_intervals": ["10s", "30s", "1m", "5m", "15m", "1h"]
+  },
+  "templating": {
+    "list": [
+      {
+        "name": "datasource",
+        "label": "Prometheus",
+        "type": "datasource",
+        "query": "prometheus",
+        "hide": 0,
+        "includeAll": false,
+        "multi": false,
+        "refresh": 1,
+        "skipUrlSync": false
+      },
+      {
+        "name": "tenant",
+        "label": "Tenant",
+        "type": "query",
+        "datasource": {"type": "prometheus", "uid": "${datasource}"},
+        "definition": "label_values(factors_resolve_requests_total, tenant_id)",
+        "query": {
+          "qryType": 1,
+          "query": "label_values(factors_resolve_requests_total, tenant_id)",
+          "refId": "PrometheusVariableQueryEditor-VariableQuery"
+        },
+        "refresh": 2,
+        "includeAll": true,
+        "allValue": ".*",
+        "multi": true,
+        "current": {"selected": false, "text": "All", "value": "$__all"}
+      },
+      {
+        "name": "edition",
+        "label": "Edition",
+        "type": "query",
+        "datasource": {"type": "prometheus", "uid": "${datasource}"},
+        "definition": "label_values(greenlang_factors_edition_factor_count, edition_id)",
+        "query": {
+          "qryType": 1,
+          "query": "label_values(greenlang_factors_edition_factor_count, edition_id)",
+          "refId": "PrometheusVariableQueryEditor-VariableQuery"
+        },
+        "refresh": 2,
+        "includeAll": true,
+        "allValue": ".*",
+        "multi": true,
+        "current": {"selected": false, "text": "All", "value": "$__all"}
+      },
+      {
+        "name": "tier",
+        "label": "Tier",
+        "type": "custom",
+        "query": "community, pro, consulting, platform, enterprise",
+        "current": {"selected": true, "text": "All", "value": "$__all"},
+        "includeAll": true,
+        "allValue": ".*",
+        "multi": true
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "title": "Resolve latency p50 / p95 / p99 (by tier)",
+      "type": "timeseries",
+      "datasource": {"type": "prometheus", "uid": "${datasource}"},
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+      "description": "End-to-end /v1/resolve latency, broken out by JWT tier. SLO: p95 < 500ms (warning), p95 < 2s (critical). See PrometheusRule factors-api.resolve.",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {"drawStyle": "line", "lineWidth": 2, "fillOpacity": 5, "showPoints": "never"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "orange", "value": 0.5},
+              {"color": "red", "value": 2.0}
+            ]
+          }
+        }
+      },
+      "options": {
+        "legend": {"displayMode": "table", "placement": "bottom", "calcs": ["mean", "max"]},
+        "tooltip": {"mode": "multi"}
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "histogram_quantile(0.50, sum by (le, tier) (rate(factors_resolve_latency_seconds_bucket{tier=~\"$tier\"}[$__rate_interval])))",
+          "legendFormat": "p50 {{tier}}"
+        },
+        {
+          "refId": "B",
+          "expr": "histogram_quantile(0.95, sum by (le, tier) (rate(factors_resolve_latency_seconds_bucket{tier=~\"$tier\"}[$__rate_interval])))",
+          "legendFormat": "p95 {{tier}}"
+        },
+        {
+          "refId": "C",
+          "expr": "histogram_quantile(0.99, sum by (le, tier) (rate(factors_resolve_latency_seconds_bucket{tier=~\"$tier\"}[$__rate_interval])))",
+          "legendFormat": "p99 {{tier}}"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Resolve error rate (by error class)",
+      "type": "timeseries",
+      "datasource": {"type": "prometheus", "uid": "${datasource}"},
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
+      "description": "Error rate as a fraction of total resolve calls, split by failure class: cannot_resolve_safely, entitlement_denied, 5xx, other. SLO: combined > 1% for 10m (warning), > 5% for 5m (critical).",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "custom": {"drawStyle": "line", "lineWidth": 2, "fillOpacity": 10, "showPoints": "never", "stacking": {"mode": "normal"}},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "orange", "value": 0.01},
+              {"color": "red", "value": 0.05}
+            ]
+          }
+        }
+      },
+      "options": {
+        "legend": {"displayMode": "table", "placement": "bottom", "calcs": ["mean", "last"]},
+        "tooltip": {"mode": "multi"}
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(rate(factors_resolve_requests_total{outcome=\"cannot_resolve_safely\"}[$__rate_interval])) / clamp_min(sum(rate(factors_resolve_requests_total[$__rate_interval])), 1e-9)",
+          "legendFormat": "cannot_resolve_safely"
+        },
+        {
+          "refId": "B",
+          "expr": "sum(rate(factors_resolve_requests_total{outcome=\"entitlement_denied\"}[$__rate_interval])) / clamp_min(sum(rate(factors_resolve_requests_total[$__rate_interval])), 1e-9)",
+          "legendFormat": "entitlement_denied"
+        },
+        {
+          "refId": "C",
+          "expr": "sum(rate(greenlang_factors_api_requests_total{status=~\"5..\"}[$__rate_interval])) / clamp_min(sum(rate(greenlang_factors_api_requests_total[$__rate_interval])), 1e-9)",
+          "legendFormat": "5xx"
+        },
+        {
+          "refId": "D",
+          "expr": "sum(rate(factors_resolve_requests_total{outcome=~\"error|timeout\"}[$__rate_interval])) / clamp_min(sum(rate(factors_resolve_requests_total[$__rate_interval])), 1e-9)",
+          "legendFormat": "error/timeout"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Gold-eval P@1 / R@3 (nightly)",
+      "type": "timeseries",
+      "datasource": {"type": "prometheus", "uid": "${datasource}"},
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+      "description": "Matching quality from the nightly .github/workflows/factors_gold_eval.yml cron. Pushed through pushgateway as factors_gold_eval_precision_at_1 / _recall_at_3. Wave 4 baseline: P@1=37.8%, R@3=~48%. Alert thresholds: P@1 < 33% warning, R@3 < 42% critical.",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "min": 0,
+          "max": 1,
+          "custom": {"drawStyle": "line", "lineWidth": 2, "fillOpacity": 10, "showPoints": "always"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "red", "value": null},
+              {"color": "orange", "value": 0.33},
+              {"color": "green", "value": 0.378}
+            ]
+          }
+        }
+      },
+      "options": {
+        "legend": {"displayMode": "list", "placement": "bottom"},
+        "tooltip": {"mode": "multi"}
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "factors_gold_eval_precision_at_1",
+          "legendFormat": "P@1"
+        },
+        {
+          "refId": "B",
+          "expr": "factors_gold_eval_recall_at_3",
+          "legendFormat": "R@3"
+        },
+        {
+          "refId": "C",
+          "expr": "0.378",
+          "legendFormat": "Wave 4 baseline (P@1=37.8%)"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Catalog size (by source)",
+      "type": "timeseries",
+      "datasource": {"type": "prometheus", "uid": "${datasource}"},
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+      "description": "Total factor rows currently served per edition, grouped by source. Sudden drops typically indicate a bad ingest; sudden rises a new pack promotion.",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {"drawStyle": "line", "lineWidth": 2, "fillOpacity": 5, "showPoints": "never", "stacking": {"mode": "normal"}}
+        }
+      },
+      "options": {
+        "legend": {"displayMode": "table", "placement": "bottom", "calcs": ["last", "max"]},
+        "tooltip": {"mode": "multi"}
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (source_id) (greenlang_factors_edition_factor_count{edition_id=~\"$edition\"})",
+          "legendFormat": "{{source_id}}"
+        },
+        {
+          "refId": "B",
+          "expr": "sum(greenlang_factors_edition_factor_count{edition_id=~\"$edition\"})",
+          "legendFormat": "TOTAL"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Signed-receipt issuance rate + failure rate",
+      "type": "timeseries",
+      "datasource": {"type": "prometheus", "uid": "${datasource}"},
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 16},
+      "description": "Issuance (receipts/sec) vs. signing_failure_rate. Any sustained failure > 0.1% triggers FactorsSignedReceiptFailure critical.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {"drawStyle": "line", "lineWidth": 2, "fillOpacity": 10, "showPoints": "never"}
+        }
+      },
+      "options": {
+        "legend": {"displayMode": "table", "placement": "bottom", "calcs": ["mean", "max"]},
+        "tooltip": {"mode": "multi"}
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(rate(factors_signed_receipts_issued_total[$__rate_interval]))",
+          "legendFormat": "issued /s"
+        },
+        {
+          "refId": "B",
+          "expr": "sum(rate(factors_signed_receipt_failures_total[$__rate_interval])) / clamp_min(sum(rate(factors_signed_receipts_issued_total[$__rate_interval])), 1e-9)",
+          "legendFormat": "failure rate"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "API rate-limit hits (by tier)",
+      "type": "timeseries",
+      "datasource": {"type": "prometheus", "uid": "${datasource}"},
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 16},
+      "description": "429 rate-limit responses broken out by tier. Consistent hits on pro/consulting indicate an overage opportunity; sudden spikes can indicate abuse.",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "custom": {"drawStyle": "bars", "lineWidth": 1, "fillOpacity": 50}
+        }
+      },
+      "options": {
+        "legend": {"displayMode": "table", "placement": "bottom", "calcs": ["sum", "max"]},
+        "tooltip": {"mode": "multi"}
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (tier) (rate(factors_rate_limit_hits_total{tier=~\"$tier\"}[$__rate_interval]))",
+          "legendFormat": "{{tier}}"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "title": "Webhook DLQ depth",
+      "type": "timeseries",
+      "datasource": {"type": "prometheus", "uid": "${datasource}"},
+      "gridPos": {"h": 8, "w": 8, "x": 0, "y": 24},
+      "description": "Dead-letter depth for webhook delivery. > 0 for 15m = on-call page via FactorsWebhookDLQ (in factors-api.webhooks group).",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {"drawStyle": "line", "lineWidth": 2, "fillOpacity": 20, "showPoints": "never"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "orange", "value": 1},
+              {"color": "red", "value": 25}
+            ]
+          }
+        }
+      },
+      "options": {
+        "legend": {"displayMode": "list", "placement": "bottom"},
+        "tooltip": {"mode": "multi"}
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (endpoint_kind) (factors_webhook_dlq_depth)",
+          "legendFormat": "{{endpoint_kind}}"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "title": "Batch job backlog + p95 completion time",
+      "type": "timeseries",
+      "datasource": {"type": "prometheus", "uid": "${datasource}"},
+      "gridPos": {"h": 8, "w": 8, "x": 8, "y": 24},
+      "description": "Pending jobs in factors_batch_jobs + job completion p95. Backlog > 100 for 15m triggers FactorsBatchBacklog warning.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {"drawStyle": "line", "lineWidth": 2, "fillOpacity": 10, "showPoints": "never"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "orange", "value": 100},
+              {"color": "red", "value": 1000}
+            ]
+          }
+        }
+      },
+      "options": {
+        "legend": {"displayMode": "table", "placement": "bottom", "calcs": ["mean", "max"]},
+        "tooltip": {"mode": "multi"}
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(factors_batch_jobs_pending)",
+          "legendFormat": "pending backlog"
+        },
+        {
+          "refId": "B",
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(factors_batch_job_completion_seconds_bucket[$__rate_interval])))",
+          "legendFormat": "p95 completion (s)"
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "title": "Top 10 tenants by request volume",
+      "type": "table",
+      "datasource": {"type": "prometheus", "uid": "${datasource}"},
+      "gridPos": {"h": 8, "w": 8, "x": 16, "y": 24},
+      "description": "Top 10 tenants by resolve-call volume over the selected range. Use this to spot abuse, credential sharing, or a whale getting ready to upgrade.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {"align": "auto", "cellOptions": {"type": "auto"}, "displayMode": "auto"},
+          "unit": "reqps"
+        },
+        "overrides": [
+          {
+            "matcher": {"id": "byName", "options": "Value"},
+            "properties": [
+              {"id": "unit", "value": "reqps"},
+              {"id": "custom.cellOptions", "value": {"type": "color-background", "mode": "gradient"}}
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "topk(10, sum by (tenant_id, tier) (rate(factors_resolve_requests_total{tenant_id=~\"$tenant\"}[$__rate_interval])))",
+          "instant": true,
+          "format": "table",
+          "legendFormat": "{{tenant_id}}"
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "title": "Stripe billing webhook ingestion lag",
+      "type": "timeseries",
+      "datasource": {"type": "prometheus", "uid": "${datasource}"},
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 32},
+      "description": "Lag between Stripe's event.created and our local ingest timestamp. > 15m = warning, > 1h = critical (FactorsBillingLag).",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {"drawStyle": "line", "lineWidth": 2, "fillOpacity": 10, "showPoints": "never"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "orange", "value": 900},
+              {"color": "red", "value": 3600}
+            ]
+          }
+        }
+      },
+      "options": {
+        "legend": {"displayMode": "table", "placement": "bottom", "calcs": ["mean", "max", "last"]},
+        "tooltip": {"mode": "multi"}
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "max(factors_stripe_webhook_lag_seconds)",
+          "legendFormat": "max lag"
+        },
+        {
+          "refId": "B",
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(factors_stripe_webhook_lag_seconds_bucket[$__rate_interval])))",
+          "legendFormat": "p95 lag"
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "title": "Source-watch freshness (age of last success)",
+      "type": "table",
+      "datasource": {"type": "prometheus", "uid": "${datasource}"},
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 32},
+      "description": "Age of the most recent successful source-watch run per source_id. > 36h triggers FactorsCatalogStale warning.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {"align": "auto", "cellOptions": {"type": "auto"}, "displayMode": "auto"},
+          "unit": "s",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "orange", "value": 86400},
+              {"color": "red", "value": 129600}
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {"id": "byName", "options": "Value"},
+            "properties": [
+              {"id": "unit", "value": "s"},
+              {"id": "custom.cellOptions", "value": {"type": "color-background", "mode": "gradient"}}
+            ]
+          }
+        ]
+      },
+      "options": {"showHeader": true, "cellHeight": "sm"},
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "time() - max by (source_id) (factors_source_watch_last_success_timestamp)",
+          "instant": true,
+          "format": "table",
+          "legendFormat": "{{source_id}}"
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "title": "Up / healthy replicas",
+      "type": "stat",
+      "datasource": {"type": "prometheus", "uid": "${datasource}"},
+      "gridPos": {"h": 4, "w": 24, "x": 0, "y": 40},
+      "description": "Available replicas vs. PDB minAvailable (2). Drops trigger FactorsAPIReplicasBelowPDB.",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "red", "value": null},
+              {"color": "orange", "value": 2},
+              {"color": "green", "value": 3}
+            ]
+          }
+        }
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "textMode": "value_and_name"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "kube_deployment_status_replicas_available{namespace=\"greenlang-factors\",deployment=\"factors-api\"}",
+          "legendFormat": "available replicas"
+        },
+        {
+          "refId": "B",
+          "expr": "kube_deployment_status_replicas_available{namespace=\"greenlang-factors\",deployment=\"factors-worker\"}",
+          "legendFormat": "worker replicas"
+        }
+      ]
+    }
+  ],
+  "version": 1,
+  "weekStart": ""
+}

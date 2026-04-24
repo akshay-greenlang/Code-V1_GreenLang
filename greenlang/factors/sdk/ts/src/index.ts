@@ -21,7 +21,7 @@
  * ```
  */
 
-export const SDK_VERSION = '1.2.0';
+export const SDK_VERSION = '1.3.0';
 
 // Client
 export {
@@ -49,6 +49,8 @@ export type {
   Jurisdiction,
   LicensingEnvelope,
   MethodPack,
+  MethodPackCoverage,
+  MethodPackCoverageReport,
   Override,
   QualityEnvelope,
   QualityScore,
@@ -61,7 +63,11 @@ export type {
   Uncertainty,
   UncertaintyEnvelope,
 } from './models';
-export { isTerminalBatchStatus } from './models';
+export {
+  inflateDeprecationStatus,
+  inflateMethodPackCoverage,
+  isTerminalBatchStatus,
+} from './models';
 
 // Errors
 export {

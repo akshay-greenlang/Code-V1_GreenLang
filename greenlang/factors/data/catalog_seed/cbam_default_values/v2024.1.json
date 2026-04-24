@@ -1,0 +1,5583 @@
+{
+  "source_id": "cbam_default_values",
+  "source_version": "2024.1",
+  "ingested_at": "2026-04-24T07:12:23+00:00",
+  "license_class": "public_eu",
+  "license_name": "EU-Publication",
+  "redistribution_class": "open",
+  "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
+  "factor_status_default": "certified",
+  "factor_count": 60,
+  "factors": [
+    {
+      "factor_id": "EF:CBAM:steel:CN:2024:v1",
+      "fuel_type": "cbam_steel",
+      "unit": "kg_product",
+      "geography": "CN",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 2.8000000000000003,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "EU Commission",
+        "source_publication": "CBAM Implementing Regulation (EU) 2023/1773 Annex IV \u2014 default embedded-emission values",
+        "source_year": 2024,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "version": "2024"
+      },
+      "valid_from": "2024-01-01",
+      "valid_to": "9999-12-31",
+      "uncertainty_95ci": 0.15,
+      "dqs": {
+        "temporal": 4,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 4,
+        "methodological": 4
+      },
+      "license_info": {
+        "license": "EU-Publication",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_steel",
+        "steel",
+        "embedded_emissions"
+      ],
+      "notes": "CBAM Annex IV default \u2014 steel from CN, direct=2.2 + indirect=0.6 = 2.8000000000000003 tCO2e/t-product",
+      "factor_family": "material_embodied",
+      "activity_tags": [
+        "embedded_emissions",
+        "cbam_goods",
+        "cbam_steel"
+      ],
+      "sector_tags": [
+        "cbam_steel"
+      ],
+      "source_id": "cbam_default_values",
+      "source_release": "2024",
+      "release_version": "cbam-annex-iv-2024",
+      "validation_flags": {
+        "method_pack_compat": [
+          "eu_policy",
+          "product_carbon"
+        ],
+        "cbam_default_source": "EU Commission Implementing Regulation 2023/1773 Annex IV",
+        "assumptions": [
+          "CBAM default value for steel",
+          "CBAM default direct 2.2 + indirect 0.6",
+          "embedded emissions",
+          "CN code 7208"
+        ],
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
+        "alternates_considered": [
+          "EF:CBAM:iron:CN:2024:v1",
+          "EF:CBAM:aluminium:CN:2024:v1",
+          "EF:CBAM:cement:CN:2024:v1",
+          "EF:CBAM:fertilizer:CN:2024:v1"
+        ]
+      },
+      "created_at": "2026-04-24T07:12:23+00:00",
+      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "EU_CBAM",
+        "GHG_Protocol",
+        "IPCC_2006"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_eu",
+      "redistribution_class": "open"
+    },
+    {
+      "factor_id": "EF:CBAM:steel:IN:2024:v1",
+      "fuel_type": "cbam_steel",
+      "unit": "kg_product",
+      "geography": "IN",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 3.1999999999999997,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "EU Commission",
+        "source_publication": "CBAM Implementing Regulation (EU) 2023/1773 Annex IV \u2014 default embedded-emission values",
+        "source_year": 2024,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "version": "2024"
+      },
+      "valid_from": "2024-01-01",
+      "valid_to": "9999-12-31",
+      "uncertainty_95ci": 0.15,
+      "dqs": {
+        "temporal": 4,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 4,
+        "methodological": 4
+      },
+      "license_info": {
+        "license": "EU-Publication",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_steel",
+        "steel",
+        "embedded_emissions"
+      ],
+      "notes": "CBAM Annex IV default \u2014 steel from IN, direct=2.55 + indirect=0.65 = 3.1999999999999997 tCO2e/t-product",
+      "factor_family": "material_embodied",
+      "activity_tags": [
+        "embedded_emissions",
+        "cbam_goods",
+        "cbam_steel"
+      ],
+      "sector_tags": [
+        "cbam_steel"
+      ],
+      "source_id": "cbam_default_values",
+      "source_release": "2024",
+      "release_version": "cbam-annex-iv-2024",
+      "validation_flags": {
+        "method_pack_compat": [
+          "eu_policy",
+          "product_carbon"
+        ],
+        "cbam_default_source": "EU Commission Implementing Regulation 2023/1773 Annex IV",
+        "assumptions": [
+          "CBAM default value for steel",
+          "CBAM default direct 2.55 + indirect 0.65",
+          "embedded emissions",
+          "CN code 7208"
+        ],
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
+        "alternates_considered": [
+          "EF:CBAM:iron:IN:2024:v1",
+          "EF:CBAM:aluminium:IN:2024:v1",
+          "EF:CBAM:cement:IN:2024:v1",
+          "EF:CBAM:fertilizer:IN:2024:v1"
+        ]
+      },
+      "created_at": "2026-04-24T07:12:23+00:00",
+      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "EU_CBAM",
+        "GHG_Protocol",
+        "IPCC_2006"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_eu",
+      "redistribution_class": "open"
+    },
+    {
+      "factor_id": "EF:CBAM:steel:TR:2024:v1",
+      "fuel_type": "cbam_steel",
+      "unit": "kg_product",
+      "geography": "TR",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 2.15,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "EU Commission",
+        "source_publication": "CBAM Implementing Regulation (EU) 2023/1773 Annex IV \u2014 default embedded-emission values",
+        "source_year": 2024,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "version": "2024"
+      },
+      "valid_from": "2024-01-01",
+      "valid_to": "9999-12-31",
+      "uncertainty_95ci": 0.15,
+      "dqs": {
+        "temporal": 4,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 4,
+        "methodological": 4
+      },
+      "license_info": {
+        "license": "EU-Publication",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_steel",
+        "steel",
+        "embedded_emissions"
+      ],
+      "notes": "CBAM Annex IV default \u2014 steel from TR, direct=1.85 + indirect=0.3 = 2.15 tCO2e/t-product",
+      "factor_family": "material_embodied",
+      "activity_tags": [
+        "embedded_emissions",
+        "cbam_goods",
+        "cbam_steel"
+      ],
+      "sector_tags": [
+        "cbam_steel"
+      ],
+      "source_id": "cbam_default_values",
+      "source_release": "2024",
+      "release_version": "cbam-annex-iv-2024",
+      "validation_flags": {
+        "method_pack_compat": [
+          "eu_policy",
+          "product_carbon"
+        ],
+        "cbam_default_source": "EU Commission Implementing Regulation 2023/1773 Annex IV",
+        "assumptions": [
+          "CBAM default value for steel",
+          "CBAM default direct 1.85 + indirect 0.3",
+          "embedded emissions",
+          "CN code 7208"
+        ],
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
+        "alternates_considered": [
+          "EF:CBAM:aluminium:TR:2024:v1",
+          "EF:CBAM:cement:TR:2024:v1",
+          "EF:CBAM:fertilizer:TR:2024:v1",
+          "EF:CBAM:electricity:TR:2024:v1"
+        ]
+      },
+      "created_at": "2026-04-24T07:12:23+00:00",
+      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "EU_CBAM",
+        "GHG_Protocol",
+        "IPCC_2006"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_eu",
+      "redistribution_class": "open"
+    },
+    {
+      "factor_id": "EF:CBAM:steel:RU:2024:v1",
+      "fuel_type": "cbam_steel",
+      "unit": "kg_product",
+      "geography": "RU",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 2.6500000000000004,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "EU Commission",
+        "source_publication": "CBAM Implementing Regulation (EU) 2023/1773 Annex IV \u2014 default embedded-emission values",
+        "source_year": 2024,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "version": "2024"
+      },
+      "valid_from": "2024-01-01",
+      "valid_to": "9999-12-31",
+      "uncertainty_95ci": 0.15,
+      "dqs": {
+        "temporal": 4,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 4,
+        "methodological": 4
+      },
+      "license_info": {
+        "license": "EU-Publication",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_steel",
+        "steel",
+        "embedded_emissions"
+      ],
+      "notes": "CBAM Annex IV default \u2014 steel from RU, direct=2.1 + indirect=0.55 = 2.6500000000000004 tCO2e/t-product",
+      "factor_family": "material_embodied",
+      "activity_tags": [
+        "embedded_emissions",
+        "cbam_goods",
+        "cbam_steel"
+      ],
+      "sector_tags": [
+        "cbam_steel"
+      ],
+      "source_id": "cbam_default_values",
+      "source_release": "2024",
+      "release_version": "cbam-annex-iv-2024",
+      "validation_flags": {
+        "method_pack_compat": [
+          "eu_policy",
+          "product_carbon"
+        ],
+        "cbam_default_source": "EU Commission Implementing Regulation 2023/1773 Annex IV",
+        "assumptions": [
+          "CBAM default value for steel",
+          "CBAM default direct 2.1 + indirect 0.55",
+          "embedded emissions",
+          "CN code 7208"
+        ],
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
+        "alternates_considered": [
+          "EF:CBAM:iron:RU:2024:v1",
+          "EF:CBAM:aluminium:RU:2024:v1",
+          "EF:CBAM:fertilizer:RU:2024:v1",
+          "EF:CBAM:hydrogen:RU:2024:v1"
+        ]
+      },
+      "created_at": "2026-04-24T07:12:23+00:00",
+      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "EU_CBAM",
+        "GHG_Protocol",
+        "IPCC_2006"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_eu",
+      "redistribution_class": "open"
+    },
+    {
+      "factor_id": "EF:CBAM:steel:UA:2024:v1",
+      "fuel_type": "cbam_steel",
+      "unit": "kg_product",
+      "geography": "UA",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 2.6500000000000004,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "EU Commission",
+        "source_publication": "CBAM Implementing Regulation (EU) 2023/1773 Annex IV \u2014 default embedded-emission values",
+        "source_year": 2024,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "version": "2024"
+      },
+      "valid_from": "2024-01-01",
+      "valid_to": "9999-12-31",
+      "uncertainty_95ci": 0.15,
+      "dqs": {
+        "temporal": 4,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 4,
+        "methodological": 4
+      },
+      "license_info": {
+        "license": "EU-Publication",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_steel",
+        "steel",
+        "embedded_emissions"
+      ],
+      "notes": "CBAM Annex IV default \u2014 steel from UA, direct=2.1 + indirect=0.55 = 2.6500000000000004 tCO2e/t-product",
+      "factor_family": "material_embodied",
+      "activity_tags": [
+        "embedded_emissions",
+        "cbam_goods",
+        "cbam_steel"
+      ],
+      "sector_tags": [
+        "cbam_steel"
+      ],
+      "source_id": "cbam_default_values",
+      "source_release": "2024",
+      "release_version": "cbam-annex-iv-2024",
+      "validation_flags": {
+        "method_pack_compat": [
+          "eu_policy",
+          "product_carbon"
+        ],
+        "cbam_default_source": "EU Commission Implementing Regulation 2023/1773 Annex IV",
+        "assumptions": [
+          "CBAM default value for steel",
+          "CBAM default direct 2.1 + indirect 0.55",
+          "embedded emissions",
+          "CN code 7208"
+        ],
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
+        "alternates_considered": [
+          "EF:CBAM:iron:UA:2024:v1",
+          "EF:CBAM:cement:UA:2024:v1",
+          "EF:CBAM:electricity:UA:2024:v1"
+        ]
+      },
+      "created_at": "2026-04-24T07:12:23+00:00",
+      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "EU_CBAM",
+        "GHG_Protocol",
+        "IPCC_2006"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_eu",
+      "redistribution_class": "open"
+    },
+    {
+      "factor_id": "EF:CBAM:steel:BR:2024:v1",
+      "fuel_type": "cbam_steel",
+      "unit": "kg_product",
+      "geography": "BR",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 1.9,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "EU Commission",
+        "source_publication": "CBAM Implementing Regulation (EU) 2023/1773 Annex IV \u2014 default embedded-emission values",
+        "source_year": 2024,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "version": "2024"
+      },
+      "valid_from": "2024-01-01",
+      "valid_to": "9999-12-31",
+      "uncertainty_95ci": 0.15,
+      "dqs": {
+        "temporal": 4,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 4,
+        "methodological": 4
+      },
+      "license_info": {
+        "license": "EU-Publication",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_steel",
+        "steel",
+        "embedded_emissions"
+      ],
+      "notes": "CBAM Annex IV default \u2014 steel from BR, direct=1.75 + indirect=0.15 = 1.9 tCO2e/t-product",
+      "factor_family": "material_embodied",
+      "activity_tags": [
+        "embedded_emissions",
+        "cbam_goods",
+        "cbam_steel"
+      ],
+      "sector_tags": [
+        "cbam_steel"
+      ],
+      "source_id": "cbam_default_values",
+      "source_release": "2024",
+      "release_version": "cbam-annex-iv-2024",
+      "validation_flags": {
+        "method_pack_compat": [
+          "eu_policy",
+          "product_carbon"
+        ],
+        "cbam_default_source": "EU Commission Implementing Regulation 2023/1773 Annex IV",
+        "assumptions": [
+          "CBAM default value for steel",
+          "CBAM default direct 1.75 + indirect 0.15",
+          "embedded emissions",
+          "CN code 7208"
+        ],
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
+        "alternates_considered": [
+          "EF:CBAM:iron:BR:2024:v1",
+          "EF:CBAM:cement:BR:2024:v1"
+        ]
+      },
+      "created_at": "2026-04-24T07:12:23+00:00",
+      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "EU_CBAM",
+        "GHG_Protocol",
+        "IPCC_2006"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_eu",
+      "redistribution_class": "open"
+    },
+    {
+      "factor_id": "EF:CBAM:steel:KR:2024:v1",
+      "fuel_type": "cbam_steel",
+      "unit": "kg_product",
+      "geography": "KR",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 2.3,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "EU Commission",
+        "source_publication": "CBAM Implementing Regulation (EU) 2023/1773 Annex IV \u2014 default embedded-emission values",
+        "source_year": 2024,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "version": "2024"
+      },
+      "valid_from": "2024-01-01",
+      "valid_to": "9999-12-31",
+      "uncertainty_95ci": 0.15,
+      "dqs": {
+        "temporal": 4,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 4,
+        "methodological": 4
+      },
+      "license_info": {
+        "license": "EU-Publication",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_steel",
+        "steel",
+        "embedded_emissions"
+      ],
+      "notes": "CBAM Annex IV default \u2014 steel from KR, direct=1.95 + indirect=0.35 = 2.3 tCO2e/t-product",
+      "factor_family": "material_embodied",
+      "activity_tags": [
+        "embedded_emissions",
+        "cbam_goods",
+        "cbam_steel"
+      ],
+      "sector_tags": [
+        "cbam_steel"
+      ],
+      "source_id": "cbam_default_values",
+      "source_release": "2024",
+      "release_version": "cbam-annex-iv-2024",
+      "validation_flags": {
+        "method_pack_compat": [
+          "eu_policy",
+          "product_carbon"
+        ],
+        "cbam_default_source": "EU Commission Implementing Regulation 2023/1773 Annex IV",
+        "assumptions": [
+          "CBAM default value for steel",
+          "CBAM default direct 1.95 + indirect 0.35",
+          "embedded emissions",
+          "CN code 7208"
+        ],
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values."
+      },
+      "created_at": "2026-04-24T07:12:23+00:00",
+      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "EU_CBAM",
+        "GHG_Protocol",
+        "IPCC_2006"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_eu",
+      "redistribution_class": "open"
+    },
+    {
+      "factor_id": "EF:CBAM:steel:JP:2024:v1",
+      "fuel_type": "cbam_steel",
+      "unit": "kg_product",
+      "geography": "JP",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 2.28,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "EU Commission",
+        "source_publication": "CBAM Implementing Regulation (EU) 2023/1773 Annex IV \u2014 default embedded-emission values",
+        "source_year": 2024,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "version": "2024"
+      },
+      "valid_from": "2024-01-01",
+      "valid_to": "9999-12-31",
+      "uncertainty_95ci": 0.15,
+      "dqs": {
+        "temporal": 4,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 4,
+        "methodological": 4
+      },
+      "license_info": {
+        "license": "EU-Publication",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_steel",
+        "steel",
+        "embedded_emissions"
+      ],
+      "notes": "CBAM Annex IV default \u2014 steel from JP, direct=1.98 + indirect=0.3 = 2.28 tCO2e/t-product",
+      "factor_family": "material_embodied",
+      "activity_tags": [
+        "embedded_emissions",
+        "cbam_goods",
+        "cbam_steel"
+      ],
+      "sector_tags": [
+        "cbam_steel"
+      ],
+      "source_id": "cbam_default_values",
+      "source_release": "2024",
+      "release_version": "cbam-annex-iv-2024",
+      "validation_flags": {
+        "method_pack_compat": [
+          "eu_policy",
+          "product_carbon"
+        ],
+        "cbam_default_source": "EU Commission Implementing Regulation 2023/1773 Annex IV",
+        "assumptions": [
+          "CBAM default value for steel",
+          "CBAM default direct 1.98 + indirect 0.3",
+          "embedded emissions",
+          "CN code 7208"
+        ],
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values."
+      },
+      "created_at": "2026-04-24T07:12:23+00:00",
+      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "EU_CBAM",
+        "GHG_Protocol",
+        "IPCC_2006"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_eu",
+      "redistribution_class": "open"
+    },
+    {
+      "factor_id": "EF:CBAM:steel:US:2024:v1",
+      "fuel_type": "cbam_steel",
+      "unit": "kg_product",
+      "geography": "US",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 1.8800000000000001,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "EU Commission",
+        "source_publication": "CBAM Implementing Regulation (EU) 2023/1773 Annex IV \u2014 default embedded-emission values",
+        "source_year": 2024,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "version": "2024"
+      },
+      "valid_from": "2024-01-01",
+      "valid_to": "9999-12-31",
+      "uncertainty_95ci": 0.15,
+      "dqs": {
+        "temporal": 4,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 4,
+        "methodological": 4
+      },
+      "license_info": {
+        "license": "EU-Publication",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_steel",
+        "steel",
+        "embedded_emissions"
+      ],
+      "notes": "CBAM Annex IV default \u2014 steel from US, direct=1.6 + indirect=0.28 = 1.8800000000000001 tCO2e/t-product",
+      "factor_family": "material_embodied",
+      "activity_tags": [
+        "embedded_emissions",
+        "cbam_goods",
+        "cbam_steel"
+      ],
+      "sector_tags": [
+        "cbam_steel"
+      ],
+      "source_id": "cbam_default_values",
+      "source_release": "2024",
+      "release_version": "cbam-annex-iv-2024",
+      "validation_flags": {
+        "method_pack_compat": [
+          "eu_policy",
+          "product_carbon"
+        ],
+        "cbam_default_source": "EU Commission Implementing Regulation 2023/1773 Annex IV",
+        "assumptions": [
+          "CBAM default value for steel",
+          "CBAM default direct 1.6 + indirect 0.28",
+          "embedded emissions",
+          "CN code 7208"
+        ],
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
+        "alternates_considered": [
+          "EF:CBAM:iron:US:2024:v1",
+          "EF:CBAM:aluminium:US:2024:v1"
+        ]
+      },
+      "created_at": "2026-04-24T07:12:23+00:00",
+      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "EU_CBAM",
+        "GHG_Protocol",
+        "IPCC_2006"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_eu",
+      "redistribution_class": "open"
+    },
+    {
+      "factor_id": "EF:CBAM:steel:VN:2024:v1",
+      "fuel_type": "cbam_steel",
+      "unit": "kg_product",
+      "geography": "VN",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 2.5,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "EU Commission",
+        "source_publication": "CBAM Implementing Regulation (EU) 2023/1773 Annex IV \u2014 default embedded-emission values",
+        "source_year": 2024,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "version": "2024"
+      },
+      "valid_from": "2024-01-01",
+      "valid_to": "9999-12-31",
+      "uncertainty_95ci": 0.15,
+      "dqs": {
+        "temporal": 4,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 4,
+        "methodological": 4
+      },
+      "license_info": {
+        "license": "EU-Publication",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_steel",
+        "steel",
+        "embedded_emissions"
+      ],
+      "notes": "CBAM Annex IV default \u2014 steel from VN, direct=2.05 + indirect=0.45 = 2.5 tCO2e/t-product",
+      "factor_family": "material_embodied",
+      "activity_tags": [
+        "embedded_emissions",
+        "cbam_goods",
+        "cbam_steel"
+      ],
+      "sector_tags": [
+        "cbam_steel"
+      ],
+      "source_id": "cbam_default_values",
+      "source_release": "2024",
+      "release_version": "cbam-annex-iv-2024",
+      "validation_flags": {
+        "method_pack_compat": [
+          "eu_policy",
+          "product_carbon"
+        ],
+        "cbam_default_source": "EU Commission Implementing Regulation 2023/1773 Annex IV",
+        "assumptions": [
+          "CBAM default value for steel",
+          "CBAM default direct 2.05 + indirect 0.45",
+          "embedded emissions",
+          "CN code 7208"
+        ],
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
+        "alternates_considered": [
+          "EF:CBAM:cement:VN:2024:v1"
+        ]
+      },
+      "created_at": "2026-04-24T07:12:23+00:00",
+      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "EU_CBAM",
+        "GHG_Protocol",
+        "IPCC_2006"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_eu",
+      "redistribution_class": "open"
+    },
+    {
+      "factor_id": "EF:CBAM:steel:ZA:2024:v1",
+      "fuel_type": "cbam_steel",
+      "unit": "kg_product",
+      "geography": "ZA",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 2.9,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "EU Commission",
+        "source_publication": "CBAM Implementing Regulation (EU) 2023/1773 Annex IV \u2014 default embedded-emission values",
+        "source_year": 2024,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "version": "2024"
+      },
+      "valid_from": "2024-01-01",
+      "valid_to": "9999-12-31",
+      "uncertainty_95ci": 0.15,
+      "dqs": {
+        "temporal": 4,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 4,
+        "methodological": 4
+      },
+      "license_info": {
+        "license": "EU-Publication",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_steel",
+        "steel",
+        "embedded_emissions"
+      ],
+      "notes": "CBAM Annex IV default \u2014 steel from ZA, direct=2.0 + indirect=0.9 = 2.9 tCO2e/t-product",
+      "factor_family": "material_embodied",
+      "activity_tags": [
+        "embedded_emissions",
+        "cbam_goods",
+        "cbam_steel"
+      ],
+      "sector_tags": [
+        "cbam_steel"
+      ],
+      "source_id": "cbam_default_values",
+      "source_release": "2024",
+      "release_version": "cbam-annex-iv-2024",
+      "validation_flags": {
+        "method_pack_compat": [
+          "eu_policy",
+          "product_carbon"
+        ],
+        "cbam_default_source": "EU Commission Implementing Regulation 2023/1773 Annex IV",
+        "assumptions": [
+          "CBAM default value for steel",
+          "CBAM default direct 2.0 + indirect 0.9",
+          "embedded emissions",
+          "CN code 7208"
+        ],
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values."
+      },
+      "created_at": "2026-04-24T07:12:23+00:00",
+      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "EU_CBAM",
+        "GHG_Protocol",
+        "IPCC_2006"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_eu",
+      "redistribution_class": "open"
+    },
+    {
+      "factor_id": "EF:CBAM:steel:ID:2024:v1",
+      "fuel_type": "cbam_steel",
+      "unit": "kg_product",
+      "geography": "ID",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 2.65,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "EU Commission",
+        "source_publication": "CBAM Implementing Regulation (EU) 2023/1773 Annex IV \u2014 default embedded-emission values",
+        "source_year": 2024,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "version": "2024"
+      },
+      "valid_from": "2024-01-01",
+      "valid_to": "9999-12-31",
+      "uncertainty_95ci": 0.15,
+      "dqs": {
+        "temporal": 4,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 4,
+        "methodological": 4
+      },
+      "license_info": {
+        "license": "EU-Publication",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_steel",
+        "steel",
+        "embedded_emissions"
+      ],
+      "notes": "CBAM Annex IV default \u2014 steel from ID, direct=2.15 + indirect=0.5 = 2.65 tCO2e/t-product",
+      "factor_family": "material_embodied",
+      "activity_tags": [
+        "embedded_emissions",
+        "cbam_goods",
+        "cbam_steel"
+      ],
+      "sector_tags": [
+        "cbam_steel"
+      ],
+      "source_id": "cbam_default_values",
+      "source_release": "2024",
+      "release_version": "cbam-annex-iv-2024",
+      "validation_flags": {
+        "method_pack_compat": [
+          "eu_policy",
+          "product_carbon"
+        ],
+        "cbam_default_source": "EU Commission Implementing Regulation 2023/1773 Annex IV",
+        "assumptions": [
+          "CBAM default value for steel",
+          "CBAM default direct 2.15 + indirect 0.5",
+          "embedded emissions",
+          "CN code 7208"
+        ],
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values."
+      },
+      "created_at": "2026-04-24T07:12:23+00:00",
+      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "EU_CBAM",
+        "GHG_Protocol",
+        "IPCC_2006"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_eu",
+      "redistribution_class": "open"
+    },
+    {
+      "factor_id": "EF:CBAM:iron:CN:2024:v1",
+      "fuel_type": "cbam_iron",
+      "unit": "kg_product",
+      "geography": "CN",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 2.15,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "EU Commission",
+        "source_publication": "CBAM Implementing Regulation (EU) 2023/1773 Annex IV \u2014 default embedded-emission values",
+        "source_year": 2024,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "version": "2024"
+      },
+      "valid_from": "2024-01-01",
+      "valid_to": "9999-12-31",
+      "uncertainty_95ci": 0.15,
+      "dqs": {
+        "temporal": 4,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 4,
+        "methodological": 4
+      },
+      "license_info": {
+        "license": "EU-Publication",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_iron",
+        "iron",
+        "embedded_emissions"
+      ],
+      "notes": "CBAM Annex IV default \u2014 iron from CN, direct=1.8 + indirect=0.35 = 2.15 tCO2e/t-product",
+      "factor_family": "material_embodied",
+      "activity_tags": [
+        "embedded_emissions",
+        "cbam_goods",
+        "cbam_iron"
+      ],
+      "sector_tags": [
+        "cbam_iron"
+      ],
+      "source_id": "cbam_default_values",
+      "source_release": "2024",
+      "release_version": "cbam-annex-iv-2024",
+      "validation_flags": {
+        "method_pack_compat": [
+          "eu_policy",
+          "product_carbon"
+        ],
+        "cbam_default_source": "EU Commission Implementing Regulation 2023/1773 Annex IV",
+        "assumptions": [
+          "CBAM default value for iron",
+          "CBAM default direct 1.8 + indirect 0.35",
+          "embedded emissions"
+        ],
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
+        "alternates_considered": [
+          "EF:CBAM:steel:CN:2024:v1",
+          "EF:CBAM:aluminium:CN:2024:v1",
+          "EF:CBAM:cement:CN:2024:v1",
+          "EF:CBAM:fertilizer:CN:2024:v1"
+        ]
+      },
+      "created_at": "2026-04-24T07:12:23+00:00",
+      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "EU_CBAM",
+        "GHG_Protocol",
+        "IPCC_2006"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_eu",
+      "redistribution_class": "open"
+    },
+    {
+      "factor_id": "EF:CBAM:iron:IN:2024:v1",
+      "fuel_type": "cbam_iron",
+      "unit": "kg_product",
+      "geography": "IN",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 2.5500000000000003,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "EU Commission",
+        "source_publication": "CBAM Implementing Regulation (EU) 2023/1773 Annex IV \u2014 default embedded-emission values",
+        "source_year": 2024,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "version": "2024"
+      },
+      "valid_from": "2024-01-01",
+      "valid_to": "9999-12-31",
+      "uncertainty_95ci": 0.15,
+      "dqs": {
+        "temporal": 4,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 4,
+        "methodological": 4
+      },
+      "license_info": {
+        "license": "EU-Publication",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_iron",
+        "iron",
+        "embedded_emissions"
+      ],
+      "notes": "CBAM Annex IV default \u2014 iron from IN, direct=2.1 + indirect=0.45 = 2.5500000000000003 tCO2e/t-product",
+      "factor_family": "material_embodied",
+      "activity_tags": [
+        "embedded_emissions",
+        "cbam_goods",
+        "cbam_iron"
+      ],
+      "sector_tags": [
+        "cbam_iron"
+      ],
+      "source_id": "cbam_default_values",
+      "source_release": "2024",
+      "release_version": "cbam-annex-iv-2024",
+      "validation_flags": {
+        "method_pack_compat": [
+          "eu_policy",
+          "product_carbon"
+        ],
+        "cbam_default_source": "EU Commission Implementing Regulation 2023/1773 Annex IV",
+        "assumptions": [
+          "CBAM default value for iron",
+          "CBAM default direct 2.1 + indirect 0.45",
+          "embedded emissions"
+        ],
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
+        "alternates_considered": [
+          "EF:CBAM:steel:IN:2024:v1",
+          "EF:CBAM:aluminium:IN:2024:v1",
+          "EF:CBAM:cement:IN:2024:v1",
+          "EF:CBAM:fertilizer:IN:2024:v1"
+        ]
+      },
+      "created_at": "2026-04-24T07:12:23+00:00",
+      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "EU_CBAM",
+        "GHG_Protocol",
+        "IPCC_2006"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_eu",
+      "redistribution_class": "open"
+    },
+    {
+      "factor_id": "EF:CBAM:iron:RU:2024:v1",
+      "fuel_type": "cbam_iron",
+      "unit": "kg_product",
+      "geography": "RU",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 1.95,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "EU Commission",
+        "source_publication": "CBAM Implementing Regulation (EU) 2023/1773 Annex IV \u2014 default embedded-emission values",
+        "source_year": 2024,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "version": "2024"
+      },
+      "valid_from": "2024-01-01",
+      "valid_to": "9999-12-31",
+      "uncertainty_95ci": 0.15,
+      "dqs": {
+        "temporal": 4,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 4,
+        "methodological": 4
+      },
+      "license_info": {
+        "license": "EU-Publication",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_iron",
+        "iron",
+        "embedded_emissions"
+      ],
+      "notes": "CBAM Annex IV default \u2014 iron from RU, direct=1.65 + indirect=0.3 = 1.95 tCO2e/t-product",
+      "factor_family": "material_embodied",
+      "activity_tags": [
+        "embedded_emissions",
+        "cbam_goods",
+        "cbam_iron"
+      ],
+      "sector_tags": [
+        "cbam_iron"
+      ],
+      "source_id": "cbam_default_values",
+      "source_release": "2024",
+      "release_version": "cbam-annex-iv-2024",
+      "validation_flags": {
+        "method_pack_compat": [
+          "eu_policy",
+          "product_carbon"
+        ],
+        "cbam_default_source": "EU Commission Implementing Regulation 2023/1773 Annex IV",
+        "assumptions": [
+          "CBAM default value for iron",
+          "CBAM default direct 1.65 + indirect 0.3",
+          "embedded emissions"
+        ],
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
+        "alternates_considered": [
+          "EF:CBAM:steel:RU:2024:v1",
+          "EF:CBAM:aluminium:RU:2024:v1",
+          "EF:CBAM:fertilizer:RU:2024:v1",
+          "EF:CBAM:hydrogen:RU:2024:v1"
+        ]
+      },
+      "created_at": "2026-04-24T07:12:23+00:00",
+      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "EU_CBAM",
+        "GHG_Protocol",
+        "IPCC_2006"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_eu",
+      "redistribution_class": "open"
+    },
+    {
+      "factor_id": "EF:CBAM:iron:BR:2024:v1",
+      "fuel_type": "cbam_iron",
+      "unit": "kg_product",
+      "geography": "BR",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 1.6500000000000001,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "EU Commission",
+        "source_publication": "CBAM Implementing Regulation (EU) 2023/1773 Annex IV \u2014 default embedded-emission values",
+        "source_year": 2024,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "version": "2024"
+      },
+      "valid_from": "2024-01-01",
+      "valid_to": "9999-12-31",
+      "uncertainty_95ci": 0.15,
+      "dqs": {
+        "temporal": 4,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 4,
+        "methodological": 4
+      },
+      "license_info": {
+        "license": "EU-Publication",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_iron",
+        "iron",
+        "embedded_emissions"
+      ],
+      "notes": "CBAM Annex IV default \u2014 iron from BR, direct=1.55 + indirect=0.1 = 1.6500000000000001 tCO2e/t-product",
+      "factor_family": "material_embodied",
+      "activity_tags": [
+        "embedded_emissions",
+        "cbam_goods",
+        "cbam_iron"
+      ],
+      "sector_tags": [
+        "cbam_iron"
+      ],
+      "source_id": "cbam_default_values",
+      "source_release": "2024",
+      "release_version": "cbam-annex-iv-2024",
+      "validation_flags": {
+        "method_pack_compat": [
+          "eu_policy",
+          "product_carbon"
+        ],
+        "cbam_default_source": "EU Commission Implementing Regulation 2023/1773 Annex IV",
+        "assumptions": [
+          "CBAM default value for iron",
+          "CBAM default direct 1.55 + indirect 0.1",
+          "embedded emissions"
+        ],
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
+        "alternates_considered": [
+          "EF:CBAM:steel:BR:2024:v1",
+          "EF:CBAM:cement:BR:2024:v1"
+        ]
+      },
+      "created_at": "2026-04-24T07:12:23+00:00",
+      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "EU_CBAM",
+        "GHG_Protocol",
+        "IPCC_2006"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_eu",
+      "redistribution_class": "open"
+    },
+    {
+      "factor_id": "EF:CBAM:iron:US:2024:v1",
+      "fuel_type": "cbam_iron",
+      "unit": "kg_product",
+      "geography": "US",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 1.7,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "EU Commission",
+        "source_publication": "CBAM Implementing Regulation (EU) 2023/1773 Annex IV \u2014 default embedded-emission values",
+        "source_year": 2024,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "version": "2024"
+      },
+      "valid_from": "2024-01-01",
+      "valid_to": "9999-12-31",
+      "uncertainty_95ci": 0.15,
+      "dqs": {
+        "temporal": 4,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 4,
+        "methodological": 4
+      },
+      "license_info": {
+        "license": "EU-Publication",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_iron",
+        "iron",
+        "embedded_emissions"
+      ],
+      "notes": "CBAM Annex IV default \u2014 iron from US, direct=1.5 + indirect=0.2 = 1.7 tCO2e/t-product",
+      "factor_family": "material_embodied",
+      "activity_tags": [
+        "embedded_emissions",
+        "cbam_goods",
+        "cbam_iron"
+      ],
+      "sector_tags": [
+        "cbam_iron"
+      ],
+      "source_id": "cbam_default_values",
+      "source_release": "2024",
+      "release_version": "cbam-annex-iv-2024",
+      "validation_flags": {
+        "method_pack_compat": [
+          "eu_policy",
+          "product_carbon"
+        ],
+        "cbam_default_source": "EU Commission Implementing Regulation 2023/1773 Annex IV",
+        "assumptions": [
+          "CBAM default value for iron",
+          "CBAM default direct 1.5 + indirect 0.2",
+          "embedded emissions"
+        ],
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
+        "alternates_considered": [
+          "EF:CBAM:steel:US:2024:v1",
+          "EF:CBAM:aluminium:US:2024:v1"
+        ]
+      },
+      "created_at": "2026-04-24T07:12:23+00:00",
+      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "EU_CBAM",
+        "GHG_Protocol",
+        "IPCC_2006"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_eu",
+      "redistribution_class": "open"
+    },
+    {
+      "factor_id": "EF:CBAM:iron:UA:2024:v1",
+      "fuel_type": "cbam_iron",
+      "unit": "kg_product",
+      "geography": "UA",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 2.05,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "EU Commission",
+        "source_publication": "CBAM Implementing Regulation (EU) 2023/1773 Annex IV \u2014 default embedded-emission values",
+        "source_year": 2024,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "version": "2024"
+      },
+      "valid_from": "2024-01-01",
+      "valid_to": "9999-12-31",
+      "uncertainty_95ci": 0.15,
+      "dqs": {
+        "temporal": 4,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 4,
+        "methodological": 4
+      },
+      "license_info": {
+        "license": "EU-Publication",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_iron",
+        "iron",
+        "embedded_emissions"
+      ],
+      "notes": "CBAM Annex IV default \u2014 iron from UA, direct=1.7 + indirect=0.35 = 2.05 tCO2e/t-product",
+      "factor_family": "material_embodied",
+      "activity_tags": [
+        "embedded_emissions",
+        "cbam_goods",
+        "cbam_iron"
+      ],
+      "sector_tags": [
+        "cbam_iron"
+      ],
+      "source_id": "cbam_default_values",
+      "source_release": "2024",
+      "release_version": "cbam-annex-iv-2024",
+      "validation_flags": {
+        "method_pack_compat": [
+          "eu_policy",
+          "product_carbon"
+        ],
+        "cbam_default_source": "EU Commission Implementing Regulation 2023/1773 Annex IV",
+        "assumptions": [
+          "CBAM default value for iron",
+          "CBAM default direct 1.7 + indirect 0.35",
+          "embedded emissions"
+        ],
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
+        "alternates_considered": [
+          "EF:CBAM:steel:UA:2024:v1",
+          "EF:CBAM:cement:UA:2024:v1",
+          "EF:CBAM:electricity:UA:2024:v1"
+        ]
+      },
+      "created_at": "2026-04-24T07:12:23+00:00",
+      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "EU_CBAM",
+        "GHG_Protocol",
+        "IPCC_2006"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_eu",
+      "redistribution_class": "open"
+    },
+    {
+      "factor_id": "EF:CBAM:aluminium:CN:2024:v1",
+      "fuel_type": "cbam_aluminium",
+      "unit": "kg_product",
+      "geography": "CN",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 14.9,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "EU Commission",
+        "source_publication": "CBAM Implementing Regulation (EU) 2023/1773 Annex IV \u2014 default embedded-emission values",
+        "source_year": 2024,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "version": "2024"
+      },
+      "valid_from": "2024-01-01",
+      "valid_to": "9999-12-31",
+      "uncertainty_95ci": 0.15,
+      "dqs": {
+        "temporal": 4,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 4,
+        "methodological": 4
+      },
+      "license_info": {
+        "license": "EU-Publication",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_aluminium",
+        "aluminium",
+        "embedded_emissions"
+      ],
+      "notes": "CBAM Annex IV default \u2014 aluminium from CN, direct=2.4 + indirect=12.5 = 14.9 tCO2e/t-product",
+      "factor_family": "material_embodied",
+      "activity_tags": [
+        "embedded_emissions",
+        "cbam_goods",
+        "cbam_aluminium"
+      ],
+      "sector_tags": [
+        "cbam_aluminium"
+      ],
+      "source_id": "cbam_default_values",
+      "source_release": "2024",
+      "release_version": "cbam-annex-iv-2024",
+      "validation_flags": {
+        "method_pack_compat": [
+          "eu_policy",
+          "product_carbon"
+        ],
+        "cbam_default_source": "EU Commission Implementing Regulation 2023/1773 Annex IV",
+        "assumptions": [
+          "CBAM default value for aluminium",
+          "CBAM default direct 2.4 + indirect 12.5",
+          "embedded emissions"
+        ],
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
+        "alternates_considered": [
+          "EF:CBAM:steel:CN:2024:v1",
+          "EF:CBAM:iron:CN:2024:v1",
+          "EF:CBAM:cement:CN:2024:v1",
+          "EF:CBAM:fertilizer:CN:2024:v1"
+        ]
+      },
+      "created_at": "2026-04-24T07:12:23+00:00",
+      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "EU_CBAM",
+        "GHG_Protocol",
+        "IPCC_2006"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_eu",
+      "redistribution_class": "open"
+    },
+    {
+      "factor_id": "EF:CBAM:aluminium:IN:2024:v1",
+      "fuel_type": "cbam_aluminium",
+      "unit": "kg_product",
+      "geography": "IN",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 18.05,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "EU Commission",
+        "source_publication": "CBAM Implementing Regulation (EU) 2023/1773 Annex IV \u2014 default embedded-emission values",
+        "source_year": 2024,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "version": "2024"
+      },
+      "valid_from": "2024-01-01",
+      "valid_to": "9999-12-31",
+      "uncertainty_95ci": 0.15,
+      "dqs": {
+        "temporal": 4,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 4,
+        "methodological": 4
+      },
+      "license_info": {
+        "license": "EU-Publication",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_aluminium",
+        "aluminium",
+        "embedded_emissions"
+      ],
+      "notes": "CBAM Annex IV default \u2014 aluminium from IN, direct=2.65 + indirect=15.4 = 18.05 tCO2e/t-product",
+      "factor_family": "material_embodied",
+      "activity_tags": [
+        "embedded_emissions",
+        "cbam_goods",
+        "cbam_aluminium"
+      ],
+      "sector_tags": [
+        "cbam_aluminium"
+      ],
+      "source_id": "cbam_default_values",
+      "source_release": "2024",
+      "release_version": "cbam-annex-iv-2024",
+      "validation_flags": {
+        "method_pack_compat": [
+          "eu_policy",
+          "product_carbon"
+        ],
+        "cbam_default_source": "EU Commission Implementing Regulation 2023/1773 Annex IV",
+        "assumptions": [
+          "CBAM default value for aluminium",
+          "CBAM default direct 2.65 + indirect 15.4",
+          "embedded emissions"
+        ],
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
+        "alternates_considered": [
+          "EF:CBAM:steel:IN:2024:v1",
+          "EF:CBAM:iron:IN:2024:v1",
+          "EF:CBAM:cement:IN:2024:v1",
+          "EF:CBAM:fertilizer:IN:2024:v1"
+        ]
+      },
+      "created_at": "2026-04-24T07:12:23+00:00",
+      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "EU_CBAM",
+        "GHG_Protocol",
+        "IPCC_2006"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_eu",
+      "redistribution_class": "open"
+    },
+    {
+      "factor_id": "EF:CBAM:aluminium:RU:2024:v1",
+      "fuel_type": "cbam_aluminium",
+      "unit": "kg_product",
+      "geography": "RU",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 2.95,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "EU Commission",
+        "source_publication": "CBAM Implementing Regulation (EU) 2023/1773 Annex IV \u2014 default embedded-emission values",
+        "source_year": 2024,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "version": "2024"
+      },
+      "valid_from": "2024-01-01",
+      "valid_to": "9999-12-31",
+      "uncertainty_95ci": 0.15,
+      "dqs": {
+        "temporal": 4,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 4,
+        "methodological": 4
+      },
+      "license_info": {
+        "license": "EU-Publication",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_aluminium",
+        "aluminium",
+        "embedded_emissions"
+      ],
+      "notes": "CBAM Annex IV default \u2014 aluminium from RU, direct=1.85 + indirect=1.1 = 2.95 tCO2e/t-product",
+      "factor_family": "material_embodied",
+      "activity_tags": [
+        "embedded_emissions",
+        "cbam_goods",
+        "cbam_aluminium"
+      ],
+      "sector_tags": [
+        "cbam_aluminium"
+      ],
+      "source_id": "cbam_default_values",
+      "source_release": "2024",
+      "release_version": "cbam-annex-iv-2024",
+      "validation_flags": {
+        "method_pack_compat": [
+          "eu_policy",
+          "product_carbon"
+        ],
+        "cbam_default_source": "EU Commission Implementing Regulation 2023/1773 Annex IV",
+        "assumptions": [
+          "CBAM default value for aluminium",
+          "CBAM default direct 1.85 + indirect 1.1",
+          "embedded emissions"
+        ],
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
+        "alternates_considered": [
+          "EF:CBAM:steel:RU:2024:v1",
+          "EF:CBAM:iron:RU:2024:v1",
+          "EF:CBAM:fertilizer:RU:2024:v1",
+          "EF:CBAM:hydrogen:RU:2024:v1"
+        ]
+      },
+      "created_at": "2026-04-24T07:12:23+00:00",
+      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "EU_CBAM",
+        "GHG_Protocol",
+        "IPCC_2006"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_eu",
+      "redistribution_class": "open"
+    },
+    {
+      "factor_id": "EF:CBAM:aluminium:AE:2024:v1",
+      "fuel_type": "cbam_aluminium",
+      "unit": "kg_product",
+      "geography": "AE",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 9.3,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "EU Commission",
+        "source_publication": "CBAM Implementing Regulation (EU) 2023/1773 Annex IV \u2014 default embedded-emission values",
+        "source_year": 2024,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "version": "2024"
+      },
+      "valid_from": "2024-01-01",
+      "valid_to": "9999-12-31",
+      "uncertainty_95ci": 0.15,
+      "dqs": {
+        "temporal": 4,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 4,
+        "methodological": 4
+      },
+      "license_info": {
+        "license": "EU-Publication",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_aluminium",
+        "aluminium",
+        "embedded_emissions"
+      ],
+      "notes": "CBAM Annex IV default \u2014 aluminium from AE, direct=2.1 + indirect=7.2 = 9.3 tCO2e/t-product",
+      "factor_family": "material_embodied",
+      "activity_tags": [
+        "embedded_emissions",
+        "cbam_goods",
+        "cbam_aluminium"
+      ],
+      "sector_tags": [
+        "cbam_aluminium"
+      ],
+      "source_id": "cbam_default_values",
+      "source_release": "2024",
+      "release_version": "cbam-annex-iv-2024",
+      "validation_flags": {
+        "method_pack_compat": [
+          "eu_policy",
+          "product_carbon"
+        ],
+        "cbam_default_source": "EU Commission Implementing Regulation 2023/1773 Annex IV",
+        "assumptions": [
+          "CBAM default value for aluminium",
+          "CBAM default direct 2.1 + indirect 7.2",
+          "embedded emissions"
+        ],
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
+        "alternates_considered": [
+          "EF:CBAM:hydrogen:AE:2024:v1"
+        ]
+      },
+      "created_at": "2026-04-24T07:12:23+00:00",
+      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "EU_CBAM",
+        "GHG_Protocol",
+        "IPCC_2006"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_eu",
+      "redistribution_class": "open"
+    },
+    {
+      "factor_id": "EF:CBAM:aluminium:AU:2024:v1",
+      "fuel_type": "cbam_aluminium",
+      "unit": "kg_product",
+      "geography": "AU",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 13.850000000000001,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "EU Commission",
+        "source_publication": "CBAM Implementing Regulation (EU) 2023/1773 Annex IV \u2014 default embedded-emission values",
+        "source_year": 2024,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "version": "2024"
+      },
+      "valid_from": "2024-01-01",
+      "valid_to": "9999-12-31",
+      "uncertainty_95ci": 0.15,
+      "dqs": {
+        "temporal": 4,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 4,
+        "methodological": 4
+      },
+      "license_info": {
+        "license": "EU-Publication",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_aluminium",
+        "aluminium",
+        "embedded_emissions"
+      ],
+      "notes": "CBAM Annex IV default \u2014 aluminium from AU, direct=2.05 + indirect=11.8 = 13.850000000000001 tCO2e/t-product",
+      "factor_family": "material_embodied",
+      "activity_tags": [
+        "embedded_emissions",
+        "cbam_goods",
+        "cbam_aluminium"
+      ],
+      "sector_tags": [
+        "cbam_aluminium"
+      ],
+      "source_id": "cbam_default_values",
+      "source_release": "2024",
+      "release_version": "cbam-annex-iv-2024",
+      "validation_flags": {
+        "method_pack_compat": [
+          "eu_policy",
+          "product_carbon"
+        ],
+        "cbam_default_source": "EU Commission Implementing Regulation 2023/1773 Annex IV",
+        "assumptions": [
+          "CBAM default value for aluminium",
+          "CBAM default direct 2.05 + indirect 11.8",
+          "embedded emissions"
+        ],
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values."
+      },
+      "created_at": "2026-04-24T07:12:23+00:00",
+      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "EU_CBAM",
+        "GHG_Protocol",
+        "IPCC_2006"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_eu",
+      "redistribution_class": "open"
+    },
+    {
+      "factor_id": "EF:CBAM:aluminium:IS:2024:v1",
+      "fuel_type": "cbam_aluminium",
+      "unit": "kg_product",
+      "geography": "IS",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 1.75,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "EU Commission",
+        "source_publication": "CBAM Implementing Regulation (EU) 2023/1773 Annex IV \u2014 default embedded-emission values",
+        "source_year": 2024,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "version": "2024"
+      },
+      "valid_from": "2024-01-01",
+      "valid_to": "9999-12-31",
+      "uncertainty_95ci": 0.15,
+      "dqs": {
+        "temporal": 4,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 4,
+        "methodological": 4
+      },
+      "license_info": {
+        "license": "EU-Publication",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_aluminium",
+        "aluminium",
+        "embedded_emissions"
+      ],
+      "notes": "CBAM Annex IV default \u2014 aluminium from IS, direct=1.7 + indirect=0.05 = 1.75 tCO2e/t-product",
+      "factor_family": "material_embodied",
+      "activity_tags": [
+        "embedded_emissions",
+        "cbam_goods",
+        "cbam_aluminium"
+      ],
+      "sector_tags": [
+        "cbam_aluminium"
+      ],
+      "source_id": "cbam_default_values",
+      "source_release": "2024",
+      "release_version": "cbam-annex-iv-2024",
+      "validation_flags": {
+        "method_pack_compat": [
+          "eu_policy",
+          "product_carbon"
+        ],
+        "cbam_default_source": "EU Commission Implementing Regulation 2023/1773 Annex IV",
+        "assumptions": [
+          "CBAM default value for aluminium",
+          "CBAM default direct 1.7 + indirect 0.05",
+          "embedded emissions"
+        ],
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values."
+      },
+      "created_at": "2026-04-24T07:12:23+00:00",
+      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "EU_CBAM",
+        "GHG_Protocol",
+        "IPCC_2006"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_eu",
+      "redistribution_class": "open"
+    },
+    {
+      "factor_id": "EF:CBAM:aluminium:NO:2024:v1",
+      "fuel_type": "cbam_aluminium",
+      "unit": "kg_product",
+      "geography": "NO",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 1.9500000000000002,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "EU Commission",
+        "source_publication": "CBAM Implementing Regulation (EU) 2023/1773 Annex IV \u2014 default embedded-emission values",
+        "source_year": 2024,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "version": "2024"
+      },
+      "valid_from": "2024-01-01",
+      "valid_to": "9999-12-31",
+      "uncertainty_95ci": 0.15,
+      "dqs": {
+        "temporal": 4,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 4,
+        "methodological": 4
+      },
+      "license_info": {
+        "license": "EU-Publication",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_aluminium",
+        "aluminium",
+        "embedded_emissions"
+      ],
+      "notes": "CBAM Annex IV default \u2014 aluminium from NO, direct=1.85 + indirect=0.1 = 1.9500000000000002 tCO2e/t-product",
+      "factor_family": "material_embodied",
+      "activity_tags": [
+        "embedded_emissions",
+        "cbam_goods",
+        "cbam_aluminium"
+      ],
+      "sector_tags": [
+        "cbam_aluminium"
+      ],
+      "source_id": "cbam_default_values",
+      "source_release": "2024",
+      "release_version": "cbam-annex-iv-2024",
+      "validation_flags": {
+        "method_pack_compat": [
+          "eu_policy",
+          "product_carbon"
+        ],
+        "cbam_default_source": "EU Commission Implementing Regulation 2023/1773 Annex IV",
+        "assumptions": [
+          "CBAM default value for aluminium",
+          "CBAM default direct 1.85 + indirect 0.1",
+          "embedded emissions"
+        ],
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
+        "alternates_considered": [
+          "EF:CBAM:hydrogen:NO:2024:v1"
+        ]
+      },
+      "created_at": "2026-04-24T07:12:23+00:00",
+      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "EU_CBAM",
+        "GHG_Protocol",
+        "IPCC_2006"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_eu",
+      "redistribution_class": "open"
+    },
+    {
+      "factor_id": "EF:CBAM:aluminium:CA:2024:v1",
+      "fuel_type": "cbam_aluminium",
+      "unit": "kg_product",
+      "geography": "CA",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 2.0,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "EU Commission",
+        "source_publication": "CBAM Implementing Regulation (EU) 2023/1773 Annex IV \u2014 default embedded-emission values",
+        "source_year": 2024,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "version": "2024"
+      },
+      "valid_from": "2024-01-01",
+      "valid_to": "9999-12-31",
+      "uncertainty_95ci": 0.15,
+      "dqs": {
+        "temporal": 4,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 4,
+        "methodological": 4
+      },
+      "license_info": {
+        "license": "EU-Publication",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_aluminium",
+        "aluminium",
+        "embedded_emissions"
+      ],
+      "notes": "CBAM Annex IV default \u2014 aluminium from CA, direct=1.75 + indirect=0.25 = 2.0 tCO2e/t-product",
+      "factor_family": "material_embodied",
+      "activity_tags": [
+        "embedded_emissions",
+        "cbam_goods",
+        "cbam_aluminium"
+      ],
+      "sector_tags": [
+        "cbam_aluminium"
+      ],
+      "source_id": "cbam_default_values",
+      "source_release": "2024",
+      "release_version": "cbam-annex-iv-2024",
+      "validation_flags": {
+        "method_pack_compat": [
+          "eu_policy",
+          "product_carbon"
+        ],
+        "cbam_default_source": "EU Commission Implementing Regulation 2023/1773 Annex IV",
+        "assumptions": [
+          "CBAM default value for aluminium",
+          "CBAM default direct 1.75 + indirect 0.25",
+          "embedded emissions"
+        ],
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
+        "alternates_considered": [
+          "EF:CBAM:hydrogen:CA:2024:v1"
+        ]
+      },
+      "created_at": "2026-04-24T07:12:23+00:00",
+      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "EU_CBAM",
+        "GHG_Protocol",
+        "IPCC_2006"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_eu",
+      "redistribution_class": "open"
+    },
+    {
+      "factor_id": "EF:CBAM:aluminium:US:2024:v1",
+      "fuel_type": "cbam_aluminium",
+      "unit": "kg_product",
+      "geography": "US",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 6.4,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "EU Commission",
+        "source_publication": "CBAM Implementing Regulation (EU) 2023/1773 Annex IV \u2014 default embedded-emission values",
+        "source_year": 2024,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "version": "2024"
+      },
+      "valid_from": "2024-01-01",
+      "valid_to": "9999-12-31",
+      "uncertainty_95ci": 0.15,
+      "dqs": {
+        "temporal": 4,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 4,
+        "methodological": 4
+      },
+      "license_info": {
+        "license": "EU-Publication",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_aluminium",
+        "aluminium",
+        "embedded_emissions"
+      ],
+      "notes": "CBAM Annex IV default \u2014 aluminium from US, direct=2.1 + indirect=4.3 = 6.4 tCO2e/t-product",
+      "factor_family": "material_embodied",
+      "activity_tags": [
+        "embedded_emissions",
+        "cbam_goods",
+        "cbam_aluminium"
+      ],
+      "sector_tags": [
+        "cbam_aluminium"
+      ],
+      "source_id": "cbam_default_values",
+      "source_release": "2024",
+      "release_version": "cbam-annex-iv-2024",
+      "validation_flags": {
+        "method_pack_compat": [
+          "eu_policy",
+          "product_carbon"
+        ],
+        "cbam_default_source": "EU Commission Implementing Regulation 2023/1773 Annex IV",
+        "assumptions": [
+          "CBAM default value for aluminium",
+          "CBAM default direct 2.1 + indirect 4.3",
+          "embedded emissions"
+        ],
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
+        "alternates_considered": [
+          "EF:CBAM:steel:US:2024:v1",
+          "EF:CBAM:iron:US:2024:v1"
+        ]
+      },
+      "created_at": "2026-04-24T07:12:23+00:00",
+      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "EU_CBAM",
+        "GHG_Protocol",
+        "IPCC_2006"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_eu",
+      "redistribution_class": "open"
+    },
+    {
+      "factor_id": "EF:CBAM:aluminium:BH:2024:v1",
+      "fuel_type": "cbam_aluminium",
+      "unit": "kg_product",
+      "geography": "BH",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 8.8,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "EU Commission",
+        "source_publication": "CBAM Implementing Regulation (EU) 2023/1773 Annex IV \u2014 default embedded-emission values",
+        "source_year": 2024,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "version": "2024"
+      },
+      "valid_from": "2024-01-01",
+      "valid_to": "9999-12-31",
+      "uncertainty_95ci": 0.15,
+      "dqs": {
+        "temporal": 4,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 4,
+        "methodological": 4
+      },
+      "license_info": {
+        "license": "EU-Publication",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_aluminium",
+        "aluminium",
+        "embedded_emissions"
+      ],
+      "notes": "CBAM Annex IV default \u2014 aluminium from BH, direct=2.0 + indirect=6.8 = 8.8 tCO2e/t-product",
+      "factor_family": "material_embodied",
+      "activity_tags": [
+        "embedded_emissions",
+        "cbam_goods",
+        "cbam_aluminium"
+      ],
+      "sector_tags": [
+        "cbam_aluminium"
+      ],
+      "source_id": "cbam_default_values",
+      "source_release": "2024",
+      "release_version": "cbam-annex-iv-2024",
+      "validation_flags": {
+        "method_pack_compat": [
+          "eu_policy",
+          "product_carbon"
+        ],
+        "cbam_default_source": "EU Commission Implementing Regulation 2023/1773 Annex IV",
+        "assumptions": [
+          "CBAM default value for aluminium",
+          "CBAM default direct 2.0 + indirect 6.8",
+          "embedded emissions"
+        ],
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values."
+      },
+      "created_at": "2026-04-24T07:12:23+00:00",
+      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "EU_CBAM",
+        "GHG_Protocol",
+        "IPCC_2006"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_eu",
+      "redistribution_class": "open"
+    },
+    {
+      "factor_id": "EF:CBAM:aluminium:TR:2024:v1",
+      "fuel_type": "cbam_aluminium",
+      "unit": "kg_product",
+      "geography": "TR",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 7.25,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "EU Commission",
+        "source_publication": "CBAM Implementing Regulation (EU) 2023/1773 Annex IV \u2014 default embedded-emission values",
+        "source_year": 2024,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "version": "2024"
+      },
+      "valid_from": "2024-01-01",
+      "valid_to": "9999-12-31",
+      "uncertainty_95ci": 0.15,
+      "dqs": {
+        "temporal": 4,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 4,
+        "methodological": 4
+      },
+      "license_info": {
+        "license": "EU-Publication",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_aluminium",
+        "aluminium",
+        "embedded_emissions"
+      ],
+      "notes": "CBAM Annex IV default \u2014 aluminium from TR, direct=2.15 + indirect=5.1 = 7.25 tCO2e/t-product",
+      "factor_family": "material_embodied",
+      "activity_tags": [
+        "embedded_emissions",
+        "cbam_goods",
+        "cbam_aluminium"
+      ],
+      "sector_tags": [
+        "cbam_aluminium"
+      ],
+      "source_id": "cbam_default_values",
+      "source_release": "2024",
+      "release_version": "cbam-annex-iv-2024",
+      "validation_flags": {
+        "method_pack_compat": [
+          "eu_policy",
+          "product_carbon"
+        ],
+        "cbam_default_source": "EU Commission Implementing Regulation 2023/1773 Annex IV",
+        "assumptions": [
+          "CBAM default value for aluminium",
+          "CBAM default direct 2.15 + indirect 5.1",
+          "embedded emissions"
+        ],
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
+        "alternates_considered": [
+          "EF:CBAM:steel:TR:2024:v1",
+          "EF:CBAM:cement:TR:2024:v1",
+          "EF:CBAM:fertilizer:TR:2024:v1",
+          "EF:CBAM:electricity:TR:2024:v1"
+        ]
+      },
+      "created_at": "2026-04-24T07:12:23+00:00",
+      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "EU_CBAM",
+        "GHG_Protocol",
+        "IPCC_2006"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_eu",
+      "redistribution_class": "open"
+    },
+    {
+      "factor_id": "EF:CBAM:cement:CN:2024:v1",
+      "fuel_type": "cbam_cement",
+      "unit": "kg_product",
+      "geography": "CN",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 0.84,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "EU Commission",
+        "source_publication": "CBAM Implementing Regulation (EU) 2023/1773 Annex IV \u2014 default embedded-emission values",
+        "source_year": 2024,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "version": "2024"
+      },
+      "valid_from": "2024-01-01",
+      "valid_to": "9999-12-31",
+      "uncertainty_95ci": 0.15,
+      "dqs": {
+        "temporal": 4,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 4,
+        "methodological": 4
+      },
+      "license_info": {
+        "license": "EU-Publication",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_cement",
+        "cement",
+        "embedded_emissions"
+      ],
+      "notes": "CBAM Annex IV default \u2014 cement from CN, direct=0.72 + indirect=0.12 = 0.84 tCO2e/t-product",
+      "factor_family": "material_embodied",
+      "activity_tags": [
+        "embedded_emissions",
+        "cbam_goods",
+        "cbam_cement"
+      ],
+      "sector_tags": [
+        "cbam_cement"
+      ],
+      "source_id": "cbam_default_values",
+      "source_release": "2024",
+      "release_version": "cbam-annex-iv-2024",
+      "validation_flags": {
+        "method_pack_compat": [
+          "eu_policy",
+          "product_carbon"
+        ],
+        "cbam_default_source": "EU Commission Implementing Regulation 2023/1773 Annex IV",
+        "assumptions": [
+          "CBAM default value for cement",
+          "CBAM default direct 0.72 + indirect 0.12",
+          "embedded emissions"
+        ],
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
+        "alternates_considered": [
+          "EF:CBAM:steel:CN:2024:v1",
+          "EF:CBAM:iron:CN:2024:v1",
+          "EF:CBAM:aluminium:CN:2024:v1",
+          "EF:CBAM:fertilizer:CN:2024:v1"
+        ]
+      },
+      "created_at": "2026-04-24T07:12:23+00:00",
+      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "EU_CBAM",
+        "GHG_Protocol",
+        "IPCC_2006"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_eu",
+      "redistribution_class": "open"
+    },
+    {
+      "factor_id": "EF:CBAM:cement:IN:2024:v1",
+      "fuel_type": "cbam_cement",
+      "unit": "kg_product",
+      "geography": "IN",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 0.78,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "EU Commission",
+        "source_publication": "CBAM Implementing Regulation (EU) 2023/1773 Annex IV \u2014 default embedded-emission values",
+        "source_year": 2024,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "version": "2024"
+      },
+      "valid_from": "2024-01-01",
+      "valid_to": "9999-12-31",
+      "uncertainty_95ci": 0.15,
+      "dqs": {
+        "temporal": 4,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 4,
+        "methodological": 4
+      },
+      "license_info": {
+        "license": "EU-Publication",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_cement",
+        "cement",
+        "embedded_emissions"
+      ],
+      "notes": "CBAM Annex IV default \u2014 cement from IN, direct=0.68 + indirect=0.1 = 0.78 tCO2e/t-product",
+      "factor_family": "material_embodied",
+      "activity_tags": [
+        "embedded_emissions",
+        "cbam_goods",
+        "cbam_cement"
+      ],
+      "sector_tags": [
+        "cbam_cement"
+      ],
+      "source_id": "cbam_default_values",
+      "source_release": "2024",
+      "release_version": "cbam-annex-iv-2024",
+      "validation_flags": {
+        "method_pack_compat": [
+          "eu_policy",
+          "product_carbon"
+        ],
+        "cbam_default_source": "EU Commission Implementing Regulation 2023/1773 Annex IV",
+        "assumptions": [
+          "CBAM default value for cement",
+          "CBAM default direct 0.68 + indirect 0.1",
+          "embedded emissions"
+        ],
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
+        "alternates_considered": [
+          "EF:CBAM:steel:IN:2024:v1",
+          "EF:CBAM:iron:IN:2024:v1",
+          "EF:CBAM:aluminium:IN:2024:v1",
+          "EF:CBAM:fertilizer:IN:2024:v1"
+        ]
+      },
+      "created_at": "2026-04-24T07:12:23+00:00",
+      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "EU_CBAM",
+        "GHG_Protocol",
+        "IPCC_2006"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_eu",
+      "redistribution_class": "open"
+    },
+    {
+      "factor_id": "EF:CBAM:cement:EG:2024:v1",
+      "fuel_type": "cbam_cement",
+      "unit": "kg_product",
+      "geography": "EG",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 0.83,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "EU Commission",
+        "source_publication": "CBAM Implementing Regulation (EU) 2023/1773 Annex IV \u2014 default embedded-emission values",
+        "source_year": 2024,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "version": "2024"
+      },
+      "valid_from": "2024-01-01",
+      "valid_to": "9999-12-31",
+      "uncertainty_95ci": 0.15,
+      "dqs": {
+        "temporal": 4,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 4,
+        "methodological": 4
+      },
+      "license_info": {
+        "license": "EU-Publication",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_cement",
+        "cement",
+        "embedded_emissions"
+      ],
+      "notes": "CBAM Annex IV default \u2014 cement from EG, direct=0.75 + indirect=0.08 = 0.83 tCO2e/t-product",
+      "factor_family": "material_embodied",
+      "activity_tags": [
+        "embedded_emissions",
+        "cbam_goods",
+        "cbam_cement"
+      ],
+      "sector_tags": [
+        "cbam_cement"
+      ],
+      "source_id": "cbam_default_values",
+      "source_release": "2024",
+      "release_version": "cbam-annex-iv-2024",
+      "validation_flags": {
+        "method_pack_compat": [
+          "eu_policy",
+          "product_carbon"
+        ],
+        "cbam_default_source": "EU Commission Implementing Regulation 2023/1773 Annex IV",
+        "assumptions": [
+          "CBAM default value for cement",
+          "CBAM default direct 0.75 + indirect 0.08",
+          "embedded emissions"
+        ],
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
+        "alternates_considered": [
+          "EF:CBAM:fertilizer:EG:2024:v1"
+        ]
+      },
+      "created_at": "2026-04-24T07:12:23+00:00",
+      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "EU_CBAM",
+        "GHG_Protocol",
+        "IPCC_2006"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_eu",
+      "redistribution_class": "open"
+    },
+    {
+      "factor_id": "EF:CBAM:cement:TR:2024:v1",
+      "fuel_type": "cbam_cement",
+      "unit": "kg_product",
+      "geography": "TR",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 0.71,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "EU Commission",
+        "source_publication": "CBAM Implementing Regulation (EU) 2023/1773 Annex IV \u2014 default embedded-emission values",
+        "source_year": 2024,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "version": "2024"
+      },
+      "valid_from": "2024-01-01",
+      "valid_to": "9999-12-31",
+      "uncertainty_95ci": 0.15,
+      "dqs": {
+        "temporal": 4,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 4,
+        "methodological": 4
+      },
+      "license_info": {
+        "license": "EU-Publication",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_cement",
+        "cement",
+        "embedded_emissions"
+      ],
+      "notes": "CBAM Annex IV default \u2014 cement from TR, direct=0.65 + indirect=0.06 = 0.71 tCO2e/t-product",
+      "factor_family": "material_embodied",
+      "activity_tags": [
+        "embedded_emissions",
+        "cbam_goods",
+        "cbam_cement"
+      ],
+      "sector_tags": [
+        "cbam_cement"
+      ],
+      "source_id": "cbam_default_values",
+      "source_release": "2024",
+      "release_version": "cbam-annex-iv-2024",
+      "validation_flags": {
+        "method_pack_compat": [
+          "eu_policy",
+          "product_carbon"
+        ],
+        "cbam_default_source": "EU Commission Implementing Regulation 2023/1773 Annex IV",
+        "assumptions": [
+          "CBAM default value for cement",
+          "CBAM default direct 0.65 + indirect 0.06",
+          "embedded emissions"
+        ],
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
+        "alternates_considered": [
+          "EF:CBAM:steel:TR:2024:v1",
+          "EF:CBAM:aluminium:TR:2024:v1",
+          "EF:CBAM:fertilizer:TR:2024:v1",
+          "EF:CBAM:electricity:TR:2024:v1"
+        ]
+      },
+      "created_at": "2026-04-24T07:12:23+00:00",
+      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "EU_CBAM",
+        "GHG_Protocol",
+        "IPCC_2006"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_eu",
+      "redistribution_class": "open"
+    },
+    {
+      "factor_id": "EF:CBAM:cement:VN:2024:v1",
+      "fuel_type": "cbam_cement",
+      "unit": "kg_product",
+      "geography": "VN",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 0.7999999999999999,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "EU Commission",
+        "source_publication": "CBAM Implementing Regulation (EU) 2023/1773 Annex IV \u2014 default embedded-emission values",
+        "source_year": 2024,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "version": "2024"
+      },
+      "valid_from": "2024-01-01",
+      "valid_to": "9999-12-31",
+      "uncertainty_95ci": 0.15,
+      "dqs": {
+        "temporal": 4,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 4,
+        "methodological": 4
+      },
+      "license_info": {
+        "license": "EU-Publication",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_cement",
+        "cement",
+        "embedded_emissions"
+      ],
+      "notes": "CBAM Annex IV default \u2014 cement from VN, direct=0.7 + indirect=0.1 = 0.7999999999999999 tCO2e/t-product",
+      "factor_family": "material_embodied",
+      "activity_tags": [
+        "embedded_emissions",
+        "cbam_goods",
+        "cbam_cement"
+      ],
+      "sector_tags": [
+        "cbam_cement"
+      ],
+      "source_id": "cbam_default_values",
+      "source_release": "2024",
+      "release_version": "cbam-annex-iv-2024",
+      "validation_flags": {
+        "method_pack_compat": [
+          "eu_policy",
+          "product_carbon"
+        ],
+        "cbam_default_source": "EU Commission Implementing Regulation 2023/1773 Annex IV",
+        "assumptions": [
+          "CBAM default value for cement",
+          "CBAM default direct 0.7 + indirect 0.1",
+          "embedded emissions"
+        ],
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
+        "alternates_considered": [
+          "EF:CBAM:steel:VN:2024:v1"
+        ]
+      },
+      "created_at": "2026-04-24T07:12:23+00:00",
+      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "EU_CBAM",
+        "GHG_Protocol",
+        "IPCC_2006"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_eu",
+      "redistribution_class": "open"
+    },
+    {
+      "factor_id": "EF:CBAM:cement:TN:2024:v1",
+      "fuel_type": "cbam_cement",
+      "unit": "kg_product",
+      "geography": "TN",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 0.8099999999999999,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "EU Commission",
+        "source_publication": "CBAM Implementing Regulation (EU) 2023/1773 Annex IV \u2014 default embedded-emission values",
+        "source_year": 2024,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "version": "2024"
+      },
+      "valid_from": "2024-01-01",
+      "valid_to": "9999-12-31",
+      "uncertainty_95ci": 0.15,
+      "dqs": {
+        "temporal": 4,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 4,
+        "methodological": 4
+      },
+      "license_info": {
+        "license": "EU-Publication",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_cement",
+        "cement",
+        "embedded_emissions"
+      ],
+      "notes": "CBAM Annex IV default \u2014 cement from TN, direct=0.72 + indirect=0.09 = 0.8099999999999999 tCO2e/t-product",
+      "factor_family": "material_embodied",
+      "activity_tags": [
+        "embedded_emissions",
+        "cbam_goods",
+        "cbam_cement"
+      ],
+      "sector_tags": [
+        "cbam_cement"
+      ],
+      "source_id": "cbam_default_values",
+      "source_release": "2024",
+      "release_version": "cbam-annex-iv-2024",
+      "validation_flags": {
+        "method_pack_compat": [
+          "eu_policy",
+          "product_carbon"
+        ],
+        "cbam_default_source": "EU Commission Implementing Regulation 2023/1773 Annex IV",
+        "assumptions": [
+          "CBAM default value for cement",
+          "CBAM default direct 0.72 + indirect 0.09",
+          "embedded emissions"
+        ],
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values."
+      },
+      "created_at": "2026-04-24T07:12:23+00:00",
+      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "EU_CBAM",
+        "GHG_Protocol",
+        "IPCC_2006"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_eu",
+      "redistribution_class": "open"
+    },
+    {
+      "factor_id": "EF:CBAM:cement:MA:2024:v1",
+      "fuel_type": "cbam_cement",
+      "unit": "kg_product",
+      "geography": "MA",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 0.75,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "EU Commission",
+        "source_publication": "CBAM Implementing Regulation (EU) 2023/1773 Annex IV \u2014 default embedded-emission values",
+        "source_year": 2024,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "version": "2024"
+      },
+      "valid_from": "2024-01-01",
+      "valid_to": "9999-12-31",
+      "uncertainty_95ci": 0.15,
+      "dqs": {
+        "temporal": 4,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 4,
+        "methodological": 4
+      },
+      "license_info": {
+        "license": "EU-Publication",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_cement",
+        "cement",
+        "embedded_emissions"
+      ],
+      "notes": "CBAM Annex IV default \u2014 cement from MA, direct=0.68 + indirect=0.07 = 0.75 tCO2e/t-product",
+      "factor_family": "material_embodied",
+      "activity_tags": [
+        "embedded_emissions",
+        "cbam_goods",
+        "cbam_cement"
+      ],
+      "sector_tags": [
+        "cbam_cement"
+      ],
+      "source_id": "cbam_default_values",
+      "source_release": "2024",
+      "release_version": "cbam-annex-iv-2024",
+      "validation_flags": {
+        "method_pack_compat": [
+          "eu_policy",
+          "product_carbon"
+        ],
+        "cbam_default_source": "EU Commission Implementing Regulation 2023/1773 Annex IV",
+        "assumptions": [
+          "CBAM default value for cement",
+          "CBAM default direct 0.68 + indirect 0.07",
+          "embedded emissions"
+        ],
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
+        "alternates_considered": [
+          "EF:CBAM:fertilizer:MA:2024:v1",
+          "EF:CBAM:electricity:MA:2024:v1"
+        ]
+      },
+      "created_at": "2026-04-24T07:12:23+00:00",
+      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "EU_CBAM",
+        "GHG_Protocol",
+        "IPCC_2006"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_eu",
+      "redistribution_class": "open"
+    },
+    {
+      "factor_id": "EF:CBAM:cement:UA:2024:v1",
+      "fuel_type": "cbam_cement",
+      "unit": "kg_product",
+      "geography": "UA",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 0.84,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "EU Commission",
+        "source_publication": "CBAM Implementing Regulation (EU) 2023/1773 Annex IV \u2014 default embedded-emission values",
+        "source_year": 2024,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "version": "2024"
+      },
+      "valid_from": "2024-01-01",
+      "valid_to": "9999-12-31",
+      "uncertainty_95ci": 0.15,
+      "dqs": {
+        "temporal": 4,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 4,
+        "methodological": 4
+      },
+      "license_info": {
+        "license": "EU-Publication",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_cement",
+        "cement",
+        "embedded_emissions"
+      ],
+      "notes": "CBAM Annex IV default \u2014 cement from UA, direct=0.71 + indirect=0.13 = 0.84 tCO2e/t-product",
+      "factor_family": "material_embodied",
+      "activity_tags": [
+        "embedded_emissions",
+        "cbam_goods",
+        "cbam_cement"
+      ],
+      "sector_tags": [
+        "cbam_cement"
+      ],
+      "source_id": "cbam_default_values",
+      "source_release": "2024",
+      "release_version": "cbam-annex-iv-2024",
+      "validation_flags": {
+        "method_pack_compat": [
+          "eu_policy",
+          "product_carbon"
+        ],
+        "cbam_default_source": "EU Commission Implementing Regulation 2023/1773 Annex IV",
+        "assumptions": [
+          "CBAM default value for cement",
+          "CBAM default direct 0.71 + indirect 0.13",
+          "embedded emissions"
+        ],
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
+        "alternates_considered": [
+          "EF:CBAM:steel:UA:2024:v1",
+          "EF:CBAM:iron:UA:2024:v1",
+          "EF:CBAM:electricity:UA:2024:v1"
+        ]
+      },
+      "created_at": "2026-04-24T07:12:23+00:00",
+      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "EU_CBAM",
+        "GHG_Protocol",
+        "IPCC_2006"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_eu",
+      "redistribution_class": "open"
+    },
+    {
+      "factor_id": "EF:CBAM:cement:BR:2024:v1",
+      "fuel_type": "cbam_cement",
+      "unit": "kg_product",
+      "geography": "BR",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 0.65,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "EU Commission",
+        "source_publication": "CBAM Implementing Regulation (EU) 2023/1773 Annex IV \u2014 default embedded-emission values",
+        "source_year": 2024,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "version": "2024"
+      },
+      "valid_from": "2024-01-01",
+      "valid_to": "9999-12-31",
+      "uncertainty_95ci": 0.15,
+      "dqs": {
+        "temporal": 4,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 4,
+        "methodological": 4
+      },
+      "license_info": {
+        "license": "EU-Publication",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_cement",
+        "cement",
+        "embedded_emissions"
+      ],
+      "notes": "CBAM Annex IV default \u2014 cement from BR, direct=0.6 + indirect=0.05 = 0.65 tCO2e/t-product",
+      "factor_family": "material_embodied",
+      "activity_tags": [
+        "embedded_emissions",
+        "cbam_goods",
+        "cbam_cement"
+      ],
+      "sector_tags": [
+        "cbam_cement"
+      ],
+      "source_id": "cbam_default_values",
+      "source_release": "2024",
+      "release_version": "cbam-annex-iv-2024",
+      "validation_flags": {
+        "method_pack_compat": [
+          "eu_policy",
+          "product_carbon"
+        ],
+        "cbam_default_source": "EU Commission Implementing Regulation 2023/1773 Annex IV",
+        "assumptions": [
+          "CBAM default value for cement",
+          "CBAM default direct 0.6 + indirect 0.05",
+          "embedded emissions"
+        ],
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
+        "alternates_considered": [
+          "EF:CBAM:steel:BR:2024:v1",
+          "EF:CBAM:iron:BR:2024:v1"
+        ]
+      },
+      "created_at": "2026-04-24T07:12:23+00:00",
+      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "EU_CBAM",
+        "GHG_Protocol",
+        "IPCC_2006"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_eu",
+      "redistribution_class": "open"
+    },
+    {
+      "factor_id": "EF:CBAM:fertilizer:RU:2024:v1",
+      "fuel_type": "cbam_fertilizer",
+      "unit": "kg_product",
+      "geography": "RU",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 2.25,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "EU Commission",
+        "source_publication": "CBAM Implementing Regulation (EU) 2023/1773 Annex IV \u2014 default embedded-emission values",
+        "source_year": 2024,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "version": "2024"
+      },
+      "valid_from": "2024-01-01",
+      "valid_to": "9999-12-31",
+      "uncertainty_95ci": 0.15,
+      "dqs": {
+        "temporal": 4,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 4,
+        "methodological": 4
+      },
+      "license_info": {
+        "license": "EU-Publication",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_fertilizer",
+        "fertilizer",
+        "embedded_emissions"
+      ],
+      "notes": "CBAM Annex IV default \u2014 fertilizer from RU, direct=1.9 + indirect=0.35 = 2.25 tCO2e/t-product",
+      "factor_family": "material_embodied",
+      "activity_tags": [
+        "embedded_emissions",
+        "cbam_goods",
+        "cbam_fertilizer"
+      ],
+      "sector_tags": [
+        "cbam_fertilizer"
+      ],
+      "source_id": "cbam_default_values",
+      "source_release": "2024",
+      "release_version": "cbam-annex-iv-2024",
+      "validation_flags": {
+        "method_pack_compat": [
+          "eu_policy",
+          "product_carbon"
+        ],
+        "cbam_default_source": "EU Commission Implementing Regulation 2023/1773 Annex IV",
+        "assumptions": [
+          "CBAM default value for fertilizer",
+          "CBAM default direct 1.9 + indirect 0.35",
+          "embedded emissions"
+        ],
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
+        "alternates_considered": [
+          "EF:CBAM:steel:RU:2024:v1",
+          "EF:CBAM:iron:RU:2024:v1",
+          "EF:CBAM:aluminium:RU:2024:v1",
+          "EF:CBAM:hydrogen:RU:2024:v1"
+        ]
+      },
+      "created_at": "2026-04-24T07:12:23+00:00",
+      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "EU_CBAM",
+        "GHG_Protocol",
+        "IPCC_2006"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_eu",
+      "redistribution_class": "open"
+    },
+    {
+      "factor_id": "EF:CBAM:fertilizer:EG:2024:v1",
+      "fuel_type": "cbam_fertilizer",
+      "unit": "kg_product",
+      "geography": "EG",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 2.3,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "EU Commission",
+        "source_publication": "CBAM Implementing Regulation (EU) 2023/1773 Annex IV \u2014 default embedded-emission values",
+        "source_year": 2024,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "version": "2024"
+      },
+      "valid_from": "2024-01-01",
+      "valid_to": "9999-12-31",
+      "uncertainty_95ci": 0.15,
+      "dqs": {
+        "temporal": 4,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 4,
+        "methodological": 4
+      },
+      "license_info": {
+        "license": "EU-Publication",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_fertilizer",
+        "fertilizer",
+        "embedded_emissions"
+      ],
+      "notes": "CBAM Annex IV default \u2014 fertilizer from EG, direct=2.05 + indirect=0.25 = 2.3 tCO2e/t-product",
+      "factor_family": "material_embodied",
+      "activity_tags": [
+        "embedded_emissions",
+        "cbam_goods",
+        "cbam_fertilizer"
+      ],
+      "sector_tags": [
+        "cbam_fertilizer"
+      ],
+      "source_id": "cbam_default_values",
+      "source_release": "2024",
+      "release_version": "cbam-annex-iv-2024",
+      "validation_flags": {
+        "method_pack_compat": [
+          "eu_policy",
+          "product_carbon"
+        ],
+        "cbam_default_source": "EU Commission Implementing Regulation 2023/1773 Annex IV",
+        "assumptions": [
+          "CBAM default value for fertilizer",
+          "CBAM default direct 2.05 + indirect 0.25",
+          "embedded emissions"
+        ],
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
+        "alternates_considered": [
+          "EF:CBAM:cement:EG:2024:v1"
+        ]
+      },
+      "created_at": "2026-04-24T07:12:23+00:00",
+      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "EU_CBAM",
+        "GHG_Protocol",
+        "IPCC_2006"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_eu",
+      "redistribution_class": "open"
+    },
+    {
+      "factor_id": "EF:CBAM:fertilizer:MA:2024:v1",
+      "fuel_type": "cbam_fertilizer",
+      "unit": "kg_product",
+      "geography": "MA",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 2.15,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "EU Commission",
+        "source_publication": "CBAM Implementing Regulation (EU) 2023/1773 Annex IV \u2014 default embedded-emission values",
+        "source_year": 2024,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "version": "2024"
+      },
+      "valid_from": "2024-01-01",
+      "valid_to": "9999-12-31",
+      "uncertainty_95ci": 0.15,
+      "dqs": {
+        "temporal": 4,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 4,
+        "methodological": 4
+      },
+      "license_info": {
+        "license": "EU-Publication",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_fertilizer",
+        "fertilizer",
+        "embedded_emissions"
+      ],
+      "notes": "CBAM Annex IV default \u2014 fertilizer from MA, direct=1.85 + indirect=0.3 = 2.15 tCO2e/t-product",
+      "factor_family": "material_embodied",
+      "activity_tags": [
+        "embedded_emissions",
+        "cbam_goods",
+        "cbam_fertilizer"
+      ],
+      "sector_tags": [
+        "cbam_fertilizer"
+      ],
+      "source_id": "cbam_default_values",
+      "source_release": "2024",
+      "release_version": "cbam-annex-iv-2024",
+      "validation_flags": {
+        "method_pack_compat": [
+          "eu_policy",
+          "product_carbon"
+        ],
+        "cbam_default_source": "EU Commission Implementing Regulation 2023/1773 Annex IV",
+        "assumptions": [
+          "CBAM default value for fertilizer",
+          "CBAM default direct 1.85 + indirect 0.3",
+          "embedded emissions"
+        ],
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
+        "alternates_considered": [
+          "EF:CBAM:cement:MA:2024:v1",
+          "EF:CBAM:electricity:MA:2024:v1"
+        ]
+      },
+      "created_at": "2026-04-24T07:12:23+00:00",
+      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "EU_CBAM",
+        "GHG_Protocol",
+        "IPCC_2006"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_eu",
+      "redistribution_class": "open"
+    },
+    {
+      "factor_id": "EF:CBAM:fertilizer:DZ:2024:v1",
+      "fuel_type": "cbam_fertilizer",
+      "unit": "kg_product",
+      "geography": "DZ",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 2.25,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "EU Commission",
+        "source_publication": "CBAM Implementing Regulation (EU) 2023/1773 Annex IV \u2014 default embedded-emission values",
+        "source_year": 2024,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "version": "2024"
+      },
+      "valid_from": "2024-01-01",
+      "valid_to": "9999-12-31",
+      "uncertainty_95ci": 0.15,
+      "dqs": {
+        "temporal": 4,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 4,
+        "methodological": 4
+      },
+      "license_info": {
+        "license": "EU-Publication",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_fertilizer",
+        "fertilizer",
+        "embedded_emissions"
+      ],
+      "notes": "CBAM Annex IV default \u2014 fertilizer from DZ, direct=1.95 + indirect=0.3 = 2.25 tCO2e/t-product",
+      "factor_family": "material_embodied",
+      "activity_tags": [
+        "embedded_emissions",
+        "cbam_goods",
+        "cbam_fertilizer"
+      ],
+      "sector_tags": [
+        "cbam_fertilizer"
+      ],
+      "source_id": "cbam_default_values",
+      "source_release": "2024",
+      "release_version": "cbam-annex-iv-2024",
+      "validation_flags": {
+        "method_pack_compat": [
+          "eu_policy",
+          "product_carbon"
+        ],
+        "cbam_default_source": "EU Commission Implementing Regulation 2023/1773 Annex IV",
+        "assumptions": [
+          "CBAM default value for fertilizer",
+          "CBAM default direct 1.95 + indirect 0.3",
+          "embedded emissions"
+        ],
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
+        "alternates_considered": [
+          "EF:CBAM:hydrogen:DZ:2024:v1"
+        ]
+      },
+      "created_at": "2026-04-24T07:12:23+00:00",
+      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "EU_CBAM",
+        "GHG_Protocol",
+        "IPCC_2006"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_eu",
+      "redistribution_class": "open"
+    },
+    {
+      "factor_id": "EF:CBAM:fertilizer:IN:2024:v1",
+      "fuel_type": "cbam_fertilizer",
+      "unit": "kg_product",
+      "geography": "IN",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 2.8,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "EU Commission",
+        "source_publication": "CBAM Implementing Regulation (EU) 2023/1773 Annex IV \u2014 default embedded-emission values",
+        "source_year": 2024,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "version": "2024"
+      },
+      "valid_from": "2024-01-01",
+      "valid_to": "9999-12-31",
+      "uncertainty_95ci": 0.15,
+      "dqs": {
+        "temporal": 4,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 4,
+        "methodological": 4
+      },
+      "license_info": {
+        "license": "EU-Publication",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_fertilizer",
+        "fertilizer",
+        "embedded_emissions"
+      ],
+      "notes": "CBAM Annex IV default \u2014 fertilizer from IN, direct=2.15 + indirect=0.65 = 2.8 tCO2e/t-product",
+      "factor_family": "material_embodied",
+      "activity_tags": [
+        "embedded_emissions",
+        "cbam_goods",
+        "cbam_fertilizer"
+      ],
+      "sector_tags": [
+        "cbam_fertilizer"
+      ],
+      "source_id": "cbam_default_values",
+      "source_release": "2024",
+      "release_version": "cbam-annex-iv-2024",
+      "validation_flags": {
+        "method_pack_compat": [
+          "eu_policy",
+          "product_carbon"
+        ],
+        "cbam_default_source": "EU Commission Implementing Regulation 2023/1773 Annex IV",
+        "assumptions": [
+          "CBAM default value for fertilizer",
+          "CBAM default direct 2.15 + indirect 0.65",
+          "embedded emissions"
+        ],
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
+        "alternates_considered": [
+          "EF:CBAM:steel:IN:2024:v1",
+          "EF:CBAM:iron:IN:2024:v1",
+          "EF:CBAM:aluminium:IN:2024:v1",
+          "EF:CBAM:cement:IN:2024:v1"
+        ]
+      },
+      "created_at": "2026-04-24T07:12:23+00:00",
+      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "EU_CBAM",
+        "GHG_Protocol",
+        "IPCC_2006"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_eu",
+      "redistribution_class": "open"
+    },
+    {
+      "factor_id": "EF:CBAM:fertilizer:CN:2024:v1",
+      "fuel_type": "cbam_fertilizer",
+      "unit": "kg_product",
+      "geography": "CN",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 2.8,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "EU Commission",
+        "source_publication": "CBAM Implementing Regulation (EU) 2023/1773 Annex IV \u2014 default embedded-emission values",
+        "source_year": 2024,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "version": "2024"
+      },
+      "valid_from": "2024-01-01",
+      "valid_to": "9999-12-31",
+      "uncertainty_95ci": 0.15,
+      "dqs": {
+        "temporal": 4,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 4,
+        "methodological": 4
+      },
+      "license_info": {
+        "license": "EU-Publication",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_fertilizer",
+        "fertilizer",
+        "embedded_emissions"
+      ],
+      "notes": "CBAM Annex IV default \u2014 fertilizer from CN, direct=2.25 + indirect=0.55 = 2.8 tCO2e/t-product",
+      "factor_family": "material_embodied",
+      "activity_tags": [
+        "embedded_emissions",
+        "cbam_goods",
+        "cbam_fertilizer"
+      ],
+      "sector_tags": [
+        "cbam_fertilizer"
+      ],
+      "source_id": "cbam_default_values",
+      "source_release": "2024",
+      "release_version": "cbam-annex-iv-2024",
+      "validation_flags": {
+        "method_pack_compat": [
+          "eu_policy",
+          "product_carbon"
+        ],
+        "cbam_default_source": "EU Commission Implementing Regulation 2023/1773 Annex IV",
+        "assumptions": [
+          "CBAM default value for fertilizer",
+          "CBAM default direct 2.25 + indirect 0.55",
+          "embedded emissions"
+        ],
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
+        "alternates_considered": [
+          "EF:CBAM:steel:CN:2024:v1",
+          "EF:CBAM:iron:CN:2024:v1",
+          "EF:CBAM:aluminium:CN:2024:v1",
+          "EF:CBAM:cement:CN:2024:v1"
+        ]
+      },
+      "created_at": "2026-04-24T07:12:23+00:00",
+      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "EU_CBAM",
+        "GHG_Protocol",
+        "IPCC_2006"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_eu",
+      "redistribution_class": "open"
+    },
+    {
+      "factor_id": "EF:CBAM:fertilizer:TR:2024:v1",
+      "fuel_type": "cbam_fertilizer",
+      "unit": "kg_product",
+      "geography": "TR",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 2.1,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "EU Commission",
+        "source_publication": "CBAM Implementing Regulation (EU) 2023/1773 Annex IV \u2014 default embedded-emission values",
+        "source_year": 2024,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "version": "2024"
+      },
+      "valid_from": "2024-01-01",
+      "valid_to": "9999-12-31",
+      "uncertainty_95ci": 0.15,
+      "dqs": {
+        "temporal": 4,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 4,
+        "methodological": 4
+      },
+      "license_info": {
+        "license": "EU-Publication",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_fertilizer",
+        "fertilizer",
+        "embedded_emissions"
+      ],
+      "notes": "CBAM Annex IV default \u2014 fertilizer from TR, direct=1.88 + indirect=0.22 = 2.1 tCO2e/t-product",
+      "factor_family": "material_embodied",
+      "activity_tags": [
+        "embedded_emissions",
+        "cbam_goods",
+        "cbam_fertilizer"
+      ],
+      "sector_tags": [
+        "cbam_fertilizer"
+      ],
+      "source_id": "cbam_default_values",
+      "source_release": "2024",
+      "release_version": "cbam-annex-iv-2024",
+      "validation_flags": {
+        "method_pack_compat": [
+          "eu_policy",
+          "product_carbon"
+        ],
+        "cbam_default_source": "EU Commission Implementing Regulation 2023/1773 Annex IV",
+        "assumptions": [
+          "CBAM default value for fertilizer",
+          "CBAM default direct 1.88 + indirect 0.22",
+          "embedded emissions"
+        ],
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
+        "alternates_considered": [
+          "EF:CBAM:steel:TR:2024:v1",
+          "EF:CBAM:aluminium:TR:2024:v1",
+          "EF:CBAM:cement:TR:2024:v1",
+          "EF:CBAM:electricity:TR:2024:v1"
+        ]
+      },
+      "created_at": "2026-04-24T07:12:23+00:00",
+      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "EU_CBAM",
+        "GHG_Protocol",
+        "IPCC_2006"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_eu",
+      "redistribution_class": "open"
+    },
+    {
+      "factor_id": "EF:CBAM:fertilizer:SA:2024:v1",
+      "fuel_type": "cbam_fertilizer",
+      "unit": "kg_product",
+      "geography": "SA",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 1.8,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "EU Commission",
+        "source_publication": "CBAM Implementing Regulation (EU) 2023/1773 Annex IV \u2014 default embedded-emission values",
+        "source_year": 2024,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "version": "2024"
+      },
+      "valid_from": "2024-01-01",
+      "valid_to": "9999-12-31",
+      "uncertainty_95ci": 0.15,
+      "dqs": {
+        "temporal": 4,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 4,
+        "methodological": 4
+      },
+      "license_info": {
+        "license": "EU-Publication",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_fertilizer",
+        "fertilizer",
+        "embedded_emissions"
+      ],
+      "notes": "CBAM Annex IV default \u2014 fertilizer from SA, direct=1.6 + indirect=0.2 = 1.8 tCO2e/t-product",
+      "factor_family": "material_embodied",
+      "activity_tags": [
+        "embedded_emissions",
+        "cbam_goods",
+        "cbam_fertilizer"
+      ],
+      "sector_tags": [
+        "cbam_fertilizer"
+      ],
+      "source_id": "cbam_default_values",
+      "source_release": "2024",
+      "release_version": "cbam-annex-iv-2024",
+      "validation_flags": {
+        "method_pack_compat": [
+          "eu_policy",
+          "product_carbon"
+        ],
+        "cbam_default_source": "EU Commission Implementing Regulation 2023/1773 Annex IV",
+        "assumptions": [
+          "CBAM default value for fertilizer",
+          "CBAM default direct 1.6 + indirect 0.2",
+          "embedded emissions"
+        ],
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
+        "alternates_considered": [
+          "EF:CBAM:hydrogen:SA:2024:v1"
+        ]
+      },
+      "created_at": "2026-04-24T07:12:23+00:00",
+      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "EU_CBAM",
+        "GHG_Protocol",
+        "IPCC_2006"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_eu",
+      "redistribution_class": "open"
+    },
+    {
+      "factor_id": "EF:CBAM:hydrogen:SA:2024:v1",
+      "fuel_type": "cbam_hydrogen",
+      "unit": "kg_product",
+      "geography": "SA",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 9.9,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "EU Commission",
+        "source_publication": "CBAM Implementing Regulation (EU) 2023/1773 Annex IV \u2014 default embedded-emission values",
+        "source_year": 2024,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "version": "2024"
+      },
+      "valid_from": "2024-01-01",
+      "valid_to": "9999-12-31",
+      "uncertainty_95ci": 0.15,
+      "dqs": {
+        "temporal": 4,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 4,
+        "methodological": 4
+      },
+      "license_info": {
+        "license": "EU-Publication",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_hydrogen",
+        "hydrogen",
+        "embedded_emissions"
+      ],
+      "notes": "CBAM Annex IV default \u2014 hydrogen from SA, direct=9.5 + indirect=0.4 = 9.9 tCO2e/t-product",
+      "factor_family": "material_embodied",
+      "activity_tags": [
+        "embedded_emissions",
+        "cbam_goods",
+        "cbam_hydrogen"
+      ],
+      "sector_tags": [
+        "cbam_hydrogen"
+      ],
+      "source_id": "cbam_default_values",
+      "source_release": "2024",
+      "release_version": "cbam-annex-iv-2024",
+      "validation_flags": {
+        "method_pack_compat": [
+          "eu_policy",
+          "product_carbon"
+        ],
+        "cbam_default_source": "EU Commission Implementing Regulation 2023/1773 Annex IV",
+        "assumptions": [
+          "CBAM default value for hydrogen",
+          "CBAM default direct 9.5 + indirect 0.4",
+          "embedded emissions"
+        ],
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
+        "alternates_considered": [
+          "EF:CBAM:fertilizer:SA:2024:v1"
+        ]
+      },
+      "created_at": "2026-04-24T07:12:23+00:00",
+      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "EU_CBAM",
+        "GHG_Protocol",
+        "IPCC_2006"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_eu",
+      "redistribution_class": "open"
+    },
+    {
+      "factor_id": "EF:CBAM:hydrogen:RU:2024:v1",
+      "fuel_type": "cbam_hydrogen",
+      "unit": "kg_product",
+      "geography": "RU",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 11.600000000000001,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "EU Commission",
+        "source_publication": "CBAM Implementing Regulation (EU) 2023/1773 Annex IV \u2014 default embedded-emission values",
+        "source_year": 2024,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "version": "2024"
+      },
+      "valid_from": "2024-01-01",
+      "valid_to": "9999-12-31",
+      "uncertainty_95ci": 0.15,
+      "dqs": {
+        "temporal": 4,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 4,
+        "methodological": 4
+      },
+      "license_info": {
+        "license": "EU-Publication",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_hydrogen",
+        "hydrogen",
+        "embedded_emissions"
+      ],
+      "notes": "CBAM Annex IV default \u2014 hydrogen from RU, direct=10.8 + indirect=0.8 = 11.600000000000001 tCO2e/t-product",
+      "factor_family": "material_embodied",
+      "activity_tags": [
+        "embedded_emissions",
+        "cbam_goods",
+        "cbam_hydrogen"
+      ],
+      "sector_tags": [
+        "cbam_hydrogen"
+      ],
+      "source_id": "cbam_default_values",
+      "source_release": "2024",
+      "release_version": "cbam-annex-iv-2024",
+      "validation_flags": {
+        "method_pack_compat": [
+          "eu_policy",
+          "product_carbon"
+        ],
+        "cbam_default_source": "EU Commission Implementing Regulation 2023/1773 Annex IV",
+        "assumptions": [
+          "CBAM default value for hydrogen",
+          "CBAM default direct 10.8 + indirect 0.8",
+          "embedded emissions"
+        ],
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
+        "alternates_considered": [
+          "EF:CBAM:steel:RU:2024:v1",
+          "EF:CBAM:iron:RU:2024:v1",
+          "EF:CBAM:aluminium:RU:2024:v1",
+          "EF:CBAM:fertilizer:RU:2024:v1"
+        ]
+      },
+      "created_at": "2026-04-24T07:12:23+00:00",
+      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "EU_CBAM",
+        "GHG_Protocol",
+        "IPCC_2006"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_eu",
+      "redistribution_class": "open"
+    },
+    {
+      "factor_id": "EF:CBAM:hydrogen:NO:2024:v1",
+      "fuel_type": "cbam_hydrogen",
+      "unit": "kg_product",
+      "geography": "NO",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 8.25,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "EU Commission",
+        "source_publication": "CBAM Implementing Regulation (EU) 2023/1773 Annex IV \u2014 default embedded-emission values",
+        "source_year": 2024,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "version": "2024"
+      },
+      "valid_from": "2024-01-01",
+      "valid_to": "9999-12-31",
+      "uncertainty_95ci": 0.15,
+      "dqs": {
+        "temporal": 4,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 4,
+        "methodological": 4
+      },
+      "license_info": {
+        "license": "EU-Publication",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_hydrogen",
+        "hydrogen",
+        "embedded_emissions"
+      ],
+      "notes": "CBAM Annex IV default \u2014 hydrogen from NO, direct=8.2 + indirect=0.05 = 8.25 tCO2e/t-product",
+      "factor_family": "material_embodied",
+      "activity_tags": [
+        "embedded_emissions",
+        "cbam_goods",
+        "cbam_hydrogen"
+      ],
+      "sector_tags": [
+        "cbam_hydrogen"
+      ],
+      "source_id": "cbam_default_values",
+      "source_release": "2024",
+      "release_version": "cbam-annex-iv-2024",
+      "validation_flags": {
+        "method_pack_compat": [
+          "eu_policy",
+          "product_carbon"
+        ],
+        "cbam_default_source": "EU Commission Implementing Regulation 2023/1773 Annex IV",
+        "assumptions": [
+          "CBAM default value for hydrogen",
+          "CBAM default direct 8.2 + indirect 0.05",
+          "embedded emissions"
+        ],
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
+        "alternates_considered": [
+          "EF:CBAM:aluminium:NO:2024:v1"
+        ]
+      },
+      "created_at": "2026-04-24T07:12:23+00:00",
+      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "EU_CBAM",
+        "GHG_Protocol",
+        "IPCC_2006"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_eu",
+      "redistribution_class": "open"
+    },
+    {
+      "factor_id": "EF:CBAM:hydrogen:AE:2024:v1",
+      "fuel_type": "cbam_hydrogen",
+      "unit": "kg_product",
+      "geography": "AE",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 10.3,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "EU Commission",
+        "source_publication": "CBAM Implementing Regulation (EU) 2023/1773 Annex IV \u2014 default embedded-emission values",
+        "source_year": 2024,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "version": "2024"
+      },
+      "valid_from": "2024-01-01",
+      "valid_to": "9999-12-31",
+      "uncertainty_95ci": 0.15,
+      "dqs": {
+        "temporal": 4,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 4,
+        "methodological": 4
+      },
+      "license_info": {
+        "license": "EU-Publication",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_hydrogen",
+        "hydrogen",
+        "embedded_emissions"
+      ],
+      "notes": "CBAM Annex IV default \u2014 hydrogen from AE, direct=9.8 + indirect=0.5 = 10.3 tCO2e/t-product",
+      "factor_family": "material_embodied",
+      "activity_tags": [
+        "embedded_emissions",
+        "cbam_goods",
+        "cbam_hydrogen"
+      ],
+      "sector_tags": [
+        "cbam_hydrogen"
+      ],
+      "source_id": "cbam_default_values",
+      "source_release": "2024",
+      "release_version": "cbam-annex-iv-2024",
+      "validation_flags": {
+        "method_pack_compat": [
+          "eu_policy",
+          "product_carbon"
+        ],
+        "cbam_default_source": "EU Commission Implementing Regulation 2023/1773 Annex IV",
+        "assumptions": [
+          "CBAM default value for hydrogen",
+          "CBAM default direct 9.8 + indirect 0.5",
+          "embedded emissions"
+        ],
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
+        "alternates_considered": [
+          "EF:CBAM:aluminium:AE:2024:v1"
+        ]
+      },
+      "created_at": "2026-04-24T07:12:23+00:00",
+      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "EU_CBAM",
+        "GHG_Protocol",
+        "IPCC_2006"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_eu",
+      "redistribution_class": "open"
+    },
+    {
+      "factor_id": "EF:CBAM:hydrogen:DZ:2024:v1",
+      "fuel_type": "cbam_hydrogen",
+      "unit": "kg_product",
+      "geography": "DZ",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 9.549999999999999,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "EU Commission",
+        "source_publication": "CBAM Implementing Regulation (EU) 2023/1773 Annex IV \u2014 default embedded-emission values",
+        "source_year": 2024,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "version": "2024"
+      },
+      "valid_from": "2024-01-01",
+      "valid_to": "9999-12-31",
+      "uncertainty_95ci": 0.15,
+      "dqs": {
+        "temporal": 4,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 4,
+        "methodological": 4
+      },
+      "license_info": {
+        "license": "EU-Publication",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_hydrogen",
+        "hydrogen",
+        "embedded_emissions"
+      ],
+      "notes": "CBAM Annex IV default \u2014 hydrogen from DZ, direct=9.2 + indirect=0.35 = 9.549999999999999 tCO2e/t-product",
+      "factor_family": "material_embodied",
+      "activity_tags": [
+        "embedded_emissions",
+        "cbam_goods",
+        "cbam_hydrogen"
+      ],
+      "sector_tags": [
+        "cbam_hydrogen"
+      ],
+      "source_id": "cbam_default_values",
+      "source_release": "2024",
+      "release_version": "cbam-annex-iv-2024",
+      "validation_flags": {
+        "method_pack_compat": [
+          "eu_policy",
+          "product_carbon"
+        ],
+        "cbam_default_source": "EU Commission Implementing Regulation 2023/1773 Annex IV",
+        "assumptions": [
+          "CBAM default value for hydrogen",
+          "CBAM default direct 9.2 + indirect 0.35",
+          "embedded emissions"
+        ],
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
+        "alternates_considered": [
+          "EF:CBAM:fertilizer:DZ:2024:v1"
+        ]
+      },
+      "created_at": "2026-04-24T07:12:23+00:00",
+      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "EU_CBAM",
+        "GHG_Protocol",
+        "IPCC_2006"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_eu",
+      "redistribution_class": "open"
+    },
+    {
+      "factor_id": "EF:CBAM:hydrogen:CA:2024:v1",
+      "fuel_type": "cbam_hydrogen",
+      "unit": "kg_product",
+      "geography": "CA",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 8.7,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "EU Commission",
+        "source_publication": "CBAM Implementing Regulation (EU) 2023/1773 Annex IV \u2014 default embedded-emission values",
+        "source_year": 2024,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "version": "2024"
+      },
+      "valid_from": "2024-01-01",
+      "valid_to": "9999-12-31",
+      "uncertainty_95ci": 0.15,
+      "dqs": {
+        "temporal": 4,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 4,
+        "methodological": 4
+      },
+      "license_info": {
+        "license": "EU-Publication",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_hydrogen",
+        "hydrogen",
+        "embedded_emissions"
+      ],
+      "notes": "CBAM Annex IV default \u2014 hydrogen from CA, direct=8.5 + indirect=0.2 = 8.7 tCO2e/t-product",
+      "factor_family": "material_embodied",
+      "activity_tags": [
+        "embedded_emissions",
+        "cbam_goods",
+        "cbam_hydrogen"
+      ],
+      "sector_tags": [
+        "cbam_hydrogen"
+      ],
+      "source_id": "cbam_default_values",
+      "source_release": "2024",
+      "release_version": "cbam-annex-iv-2024",
+      "validation_flags": {
+        "method_pack_compat": [
+          "eu_policy",
+          "product_carbon"
+        ],
+        "cbam_default_source": "EU Commission Implementing Regulation 2023/1773 Annex IV",
+        "assumptions": [
+          "CBAM default value for hydrogen",
+          "CBAM default direct 8.5 + indirect 0.2",
+          "embedded emissions"
+        ],
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
+        "alternates_considered": [
+          "EF:CBAM:aluminium:CA:2024:v1"
+        ]
+      },
+      "created_at": "2026-04-24T07:12:23+00:00",
+      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "EU_CBAM",
+        "GHG_Protocol",
+        "IPCC_2006"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_eu",
+      "redistribution_class": "open"
+    },
+    {
+      "factor_id": "EF:CBAM:electricity:RS:2024:v1",
+      "fuel_type": "cbam_electricity",
+      "unit": "kWh",
+      "geography": "RS",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 1.1,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "EU Commission",
+        "source_publication": "CBAM Implementing Regulation (EU) 2023/1773 Annex IV \u2014 default embedded-emission values",
+        "source_year": 2024,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "version": "2024"
+      },
+      "valid_from": "2024-01-01",
+      "valid_to": "9999-12-31",
+      "uncertainty_95ci": 0.15,
+      "dqs": {
+        "temporal": 4,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 4,
+        "methodological": 4
+      },
+      "license_info": {
+        "license": "EU-Publication",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_electricity",
+        "electricity",
+        "embedded_emissions"
+      ],
+      "notes": "CBAM Annex IV default \u2014 electricity from RS, direct=1.1 + indirect=0.0 = 1.1 tCO2e/t-product",
+      "factor_family": "material_embodied",
+      "activity_tags": [
+        "embedded_emissions",
+        "cbam_goods",
+        "cbam_electricity"
+      ],
+      "sector_tags": [
+        "cbam_electricity"
+      ],
+      "source_id": "cbam_default_values",
+      "source_release": "2024",
+      "release_version": "cbam-annex-iv-2024",
+      "validation_flags": {
+        "method_pack_compat": [
+          "eu_policy",
+          "product_carbon"
+        ],
+        "cbam_default_source": "EU Commission Implementing Regulation 2023/1773 Annex IV",
+        "assumptions": [
+          "CBAM default value for electricity",
+          "CBAM default direct 1.1 + indirect 0.0",
+          "embedded emissions"
+        ],
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values."
+      },
+      "created_at": "2026-04-24T07:12:23+00:00",
+      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "EU_CBAM",
+        "GHG_Protocol",
+        "IPCC_2006"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_eu",
+      "redistribution_class": "open"
+    },
+    {
+      "factor_id": "EF:CBAM:electricity:UA:2024:v1",
+      "fuel_type": "cbam_electricity",
+      "unit": "kWh",
+      "geography": "UA",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 0.85,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "EU Commission",
+        "source_publication": "CBAM Implementing Regulation (EU) 2023/1773 Annex IV \u2014 default embedded-emission values",
+        "source_year": 2024,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "version": "2024"
+      },
+      "valid_from": "2024-01-01",
+      "valid_to": "9999-12-31",
+      "uncertainty_95ci": 0.15,
+      "dqs": {
+        "temporal": 4,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 4,
+        "methodological": 4
+      },
+      "license_info": {
+        "license": "EU-Publication",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_electricity",
+        "electricity",
+        "embedded_emissions"
+      ],
+      "notes": "CBAM Annex IV default \u2014 electricity from UA, direct=0.85 + indirect=0.0 = 0.85 tCO2e/t-product",
+      "factor_family": "material_embodied",
+      "activity_tags": [
+        "embedded_emissions",
+        "cbam_goods",
+        "cbam_electricity"
+      ],
+      "sector_tags": [
+        "cbam_electricity"
+      ],
+      "source_id": "cbam_default_values",
+      "source_release": "2024",
+      "release_version": "cbam-annex-iv-2024",
+      "validation_flags": {
+        "method_pack_compat": [
+          "eu_policy",
+          "product_carbon"
+        ],
+        "cbam_default_source": "EU Commission Implementing Regulation 2023/1773 Annex IV",
+        "assumptions": [
+          "CBAM default value for electricity",
+          "CBAM default direct 0.85 + indirect 0.0",
+          "embedded emissions"
+        ],
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
+        "alternates_considered": [
+          "EF:CBAM:steel:UA:2024:v1",
+          "EF:CBAM:iron:UA:2024:v1",
+          "EF:CBAM:cement:UA:2024:v1"
+        ]
+      },
+      "created_at": "2026-04-24T07:12:23+00:00",
+      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "EU_CBAM",
+        "GHG_Protocol",
+        "IPCC_2006"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_eu",
+      "redistribution_class": "open"
+    },
+    {
+      "factor_id": "EF:CBAM:electricity:TR:2024:v1",
+      "fuel_type": "cbam_electricity",
+      "unit": "kWh",
+      "geography": "TR",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 0.6,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "EU Commission",
+        "source_publication": "CBAM Implementing Regulation (EU) 2023/1773 Annex IV \u2014 default embedded-emission values",
+        "source_year": 2024,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "version": "2024"
+      },
+      "valid_from": "2024-01-01",
+      "valid_to": "9999-12-31",
+      "uncertainty_95ci": 0.15,
+      "dqs": {
+        "temporal": 4,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 4,
+        "methodological": 4
+      },
+      "license_info": {
+        "license": "EU-Publication",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_electricity",
+        "electricity",
+        "embedded_emissions"
+      ],
+      "notes": "CBAM Annex IV default \u2014 electricity from TR, direct=0.6 + indirect=0.0 = 0.6 tCO2e/t-product",
+      "factor_family": "material_embodied",
+      "activity_tags": [
+        "embedded_emissions",
+        "cbam_goods",
+        "cbam_electricity"
+      ],
+      "sector_tags": [
+        "cbam_electricity"
+      ],
+      "source_id": "cbam_default_values",
+      "source_release": "2024",
+      "release_version": "cbam-annex-iv-2024",
+      "validation_flags": {
+        "method_pack_compat": [
+          "eu_policy",
+          "product_carbon"
+        ],
+        "cbam_default_source": "EU Commission Implementing Regulation 2023/1773 Annex IV",
+        "assumptions": [
+          "CBAM default value for electricity",
+          "CBAM default direct 0.6 + indirect 0.0",
+          "embedded emissions"
+        ],
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
+        "alternates_considered": [
+          "EF:CBAM:steel:TR:2024:v1",
+          "EF:CBAM:aluminium:TR:2024:v1",
+          "EF:CBAM:cement:TR:2024:v1",
+          "EF:CBAM:fertilizer:TR:2024:v1"
+        ]
+      },
+      "created_at": "2026-04-24T07:12:23+00:00",
+      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "EU_CBAM",
+        "GHG_Protocol",
+        "IPCC_2006"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_eu",
+      "redistribution_class": "open"
+    },
+    {
+      "factor_id": "EF:CBAM:electricity:BA:2024:v1",
+      "fuel_type": "cbam_electricity",
+      "unit": "kWh",
+      "geography": "BA",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 1.25,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "EU Commission",
+        "source_publication": "CBAM Implementing Regulation (EU) 2023/1773 Annex IV \u2014 default embedded-emission values",
+        "source_year": 2024,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "version": "2024"
+      },
+      "valid_from": "2024-01-01",
+      "valid_to": "9999-12-31",
+      "uncertainty_95ci": 0.15,
+      "dqs": {
+        "temporal": 4,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 4,
+        "methodological": 4
+      },
+      "license_info": {
+        "license": "EU-Publication",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_electricity",
+        "electricity",
+        "embedded_emissions"
+      ],
+      "notes": "CBAM Annex IV default \u2014 electricity from BA, direct=1.25 + indirect=0.0 = 1.25 tCO2e/t-product",
+      "factor_family": "material_embodied",
+      "activity_tags": [
+        "embedded_emissions",
+        "cbam_goods",
+        "cbam_electricity"
+      ],
+      "sector_tags": [
+        "cbam_electricity"
+      ],
+      "source_id": "cbam_default_values",
+      "source_release": "2024",
+      "release_version": "cbam-annex-iv-2024",
+      "validation_flags": {
+        "method_pack_compat": [
+          "eu_policy",
+          "product_carbon"
+        ],
+        "cbam_default_source": "EU Commission Implementing Regulation 2023/1773 Annex IV",
+        "assumptions": [
+          "CBAM default value for electricity",
+          "CBAM default direct 1.25 + indirect 0.0",
+          "embedded emissions"
+        ],
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values."
+      },
+      "created_at": "2026-04-24T07:12:23+00:00",
+      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "EU_CBAM",
+        "GHG_Protocol",
+        "IPCC_2006"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_eu",
+      "redistribution_class": "open"
+    },
+    {
+      "factor_id": "EF:CBAM:electricity:MK:2024:v1",
+      "fuel_type": "cbam_electricity",
+      "unit": "kWh",
+      "geography": "MK",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 0.95,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "EU Commission",
+        "source_publication": "CBAM Implementing Regulation (EU) 2023/1773 Annex IV \u2014 default embedded-emission values",
+        "source_year": 2024,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "version": "2024"
+      },
+      "valid_from": "2024-01-01",
+      "valid_to": "9999-12-31",
+      "uncertainty_95ci": 0.15,
+      "dqs": {
+        "temporal": 4,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 4,
+        "methodological": 4
+      },
+      "license_info": {
+        "license": "EU-Publication",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_electricity",
+        "electricity",
+        "embedded_emissions"
+      ],
+      "notes": "CBAM Annex IV default \u2014 electricity from MK, direct=0.95 + indirect=0.0 = 0.95 tCO2e/t-product",
+      "factor_family": "material_embodied",
+      "activity_tags": [
+        "embedded_emissions",
+        "cbam_goods",
+        "cbam_electricity"
+      ],
+      "sector_tags": [
+        "cbam_electricity"
+      ],
+      "source_id": "cbam_default_values",
+      "source_release": "2024",
+      "release_version": "cbam-annex-iv-2024",
+      "validation_flags": {
+        "method_pack_compat": [
+          "eu_policy",
+          "product_carbon"
+        ],
+        "cbam_default_source": "EU Commission Implementing Regulation 2023/1773 Annex IV",
+        "assumptions": [
+          "CBAM default value for electricity",
+          "CBAM default direct 0.95 + indirect 0.0",
+          "embedded emissions"
+        ],
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values."
+      },
+      "created_at": "2026-04-24T07:12:23+00:00",
+      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "EU_CBAM",
+        "GHG_Protocol",
+        "IPCC_2006"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_eu",
+      "redistribution_class": "open"
+    },
+    {
+      "factor_id": "EF:CBAM:electricity:ME:2024:v1",
+      "fuel_type": "cbam_electricity",
+      "unit": "kWh",
+      "geography": "ME",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 0.7,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "EU Commission",
+        "source_publication": "CBAM Implementing Regulation (EU) 2023/1773 Annex IV \u2014 default embedded-emission values",
+        "source_year": 2024,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "version": "2024"
+      },
+      "valid_from": "2024-01-01",
+      "valid_to": "9999-12-31",
+      "uncertainty_95ci": 0.15,
+      "dqs": {
+        "temporal": 4,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 4,
+        "methodological": 4
+      },
+      "license_info": {
+        "license": "EU-Publication",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_electricity",
+        "electricity",
+        "embedded_emissions"
+      ],
+      "notes": "CBAM Annex IV default \u2014 electricity from ME, direct=0.7 + indirect=0.0 = 0.7 tCO2e/t-product",
+      "factor_family": "material_embodied",
+      "activity_tags": [
+        "embedded_emissions",
+        "cbam_goods",
+        "cbam_electricity"
+      ],
+      "sector_tags": [
+        "cbam_electricity"
+      ],
+      "source_id": "cbam_default_values",
+      "source_release": "2024",
+      "release_version": "cbam-annex-iv-2024",
+      "validation_flags": {
+        "method_pack_compat": [
+          "eu_policy",
+          "product_carbon"
+        ],
+        "cbam_default_source": "EU Commission Implementing Regulation 2023/1773 Annex IV",
+        "assumptions": [
+          "CBAM default value for electricity",
+          "CBAM default direct 0.7 + indirect 0.0",
+          "embedded emissions"
+        ],
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values."
+      },
+      "created_at": "2026-04-24T07:12:23+00:00",
+      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "EU_CBAM",
+        "GHG_Protocol",
+        "IPCC_2006"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_eu",
+      "redistribution_class": "open"
+    },
+    {
+      "factor_id": "EF:CBAM:electricity:MA:2024:v1",
+      "fuel_type": "cbam_electricity",
+      "unit": "kWh",
+      "geography": "MA",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 0.8,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "EU Commission",
+        "source_publication": "CBAM Implementing Regulation (EU) 2023/1773 Annex IV \u2014 default embedded-emission values",
+        "source_year": 2024,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "version": "2024"
+      },
+      "valid_from": "2024-01-01",
+      "valid_to": "9999-12-31",
+      "uncertainty_95ci": 0.15,
+      "dqs": {
+        "temporal": 4,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 4,
+        "methodological": 4
+      },
+      "license_info": {
+        "license": "EU-Publication",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_electricity",
+        "electricity",
+        "embedded_emissions"
+      ],
+      "notes": "CBAM Annex IV default \u2014 electricity from MA, direct=0.8 + indirect=0.0 = 0.8 tCO2e/t-product",
+      "factor_family": "material_embodied",
+      "activity_tags": [
+        "embedded_emissions",
+        "cbam_goods",
+        "cbam_electricity"
+      ],
+      "sector_tags": [
+        "cbam_electricity"
+      ],
+      "source_id": "cbam_default_values",
+      "source_release": "2024",
+      "release_version": "cbam-annex-iv-2024",
+      "validation_flags": {
+        "method_pack_compat": [
+          "eu_policy",
+          "product_carbon"
+        ],
+        "cbam_default_source": "EU Commission Implementing Regulation 2023/1773 Annex IV",
+        "assumptions": [
+          "CBAM default value for electricity",
+          "CBAM default direct 0.8 + indirect 0.0",
+          "embedded emissions"
+        ],
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
+        "alternates_considered": [
+          "EF:CBAM:cement:MA:2024:v1",
+          "EF:CBAM:fertilizer:MA:2024:v1"
+        ]
+      },
+      "created_at": "2026-04-24T07:12:23+00:00",
+      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "EU_CBAM",
+        "GHG_Protocol",
+        "IPCC_2006"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_eu",
+      "redistribution_class": "open"
+    },
+    {
+      "factor_id": "EF:CBAM:electricity:GE:2024:v1",
+      "fuel_type": "cbam_electricity",
+      "unit": "kWh",
+      "geography": "GE",
+      "geography_level": "country",
+      "vectors": {
+        "CO2": 0.25,
+        "CH4": 0.0,
+        "N2O": 0.0
+      },
+      "gwp_100yr": {
+        "gwp_set": "IPCC_AR6_100",
+        "CH4_gwp": 28,
+        "N2O_gwp": 273
+      },
+      "scope": "3",
+      "boundary": "cradle_to_gate",
+      "provenance": {
+        "source_org": "EU Commission",
+        "source_publication": "CBAM Implementing Regulation (EU) 2023/1773 Annex IV \u2014 default embedded-emission values",
+        "source_year": 2024,
+        "methodology": "IPCC_Tier_1",
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "version": "2024"
+      },
+      "valid_from": "2024-01-01",
+      "valid_to": "9999-12-31",
+      "uncertainty_95ci": 0.15,
+      "dqs": {
+        "temporal": 4,
+        "geographical": 4,
+        "technological": 3,
+        "representativeness": 4,
+        "methodological": 4
+      },
+      "license_info": {
+        "license": "EU-Publication",
+        "redistribution_allowed": true,
+        "commercial_use_allowed": true,
+        "attribution_required": true
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_electricity",
+        "electricity",
+        "embedded_emissions"
+      ],
+      "notes": "CBAM Annex IV default \u2014 electricity from GE, direct=0.25 + indirect=0.0 = 0.25 tCO2e/t-product",
+      "factor_family": "material_embodied",
+      "activity_tags": [
+        "embedded_emissions",
+        "cbam_goods",
+        "cbam_electricity"
+      ],
+      "sector_tags": [
+        "cbam_electricity"
+      ],
+      "source_id": "cbam_default_values",
+      "source_release": "2024",
+      "release_version": "cbam-annex-iv-2024",
+      "validation_flags": {
+        "method_pack_compat": [
+          "eu_policy",
+          "product_carbon"
+        ],
+        "cbam_default_source": "EU Commission Implementing Regulation 2023/1773 Annex IV",
+        "assumptions": [
+          "CBAM default value for electricity",
+          "CBAM default direct 0.25 + indirect 0.0",
+          "embedded emissions"
+        ],
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values."
+      },
+      "created_at": "2026-04-24T07:12:23+00:00",
+      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_by": "greenlang_factors_etl",
+      "compliance_frameworks": [
+        "EU_CBAM",
+        "GHG_Protocol",
+        "IPCC_2006"
+      ],
+      "factor_status": "certified",
+      "license_class": "public_eu",
+      "redistribution_class": "open"
+    }
+  ]
+}

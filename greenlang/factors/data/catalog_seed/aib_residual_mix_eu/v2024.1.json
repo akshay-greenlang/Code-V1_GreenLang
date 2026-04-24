@@ -1,7 +1,7 @@
 {
   "source_id": "aib_residual_mix_eu",
   "source_version": "2024.1",
-  "ingested_at": "2026-04-23T18:26:52+00:00",
+  "ingested_at": "2026-04-24T07:12:23+00:00",
   "license_class": "eu_publication",
   "license_name": "AIB-Terms-Open",
   "redistribution_class": "open",
@@ -86,8 +86,8 @@
         "CSRD_E1",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.721976",
-      "updated_at": "2026-04-23T23:56:52.721976",
+      "created_at": "2026-04-24T12:42:23.024332",
+      "updated_at": "2026-04-24T12:42:23.024332",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -102,7 +102,7 @@
       "source_record_id": "aib:AT:2023",
       "release_version": "AIB-2024-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "European Residual Mixes, Association of Issuing Bodies (annual)."
       },
       "replacement_factor_id": null,
@@ -245,8 +245,8 @@
         "CSRD_E1",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.721976",
-      "updated_at": "2026-04-23T23:56:52.721976",
+      "created_at": "2026-04-24T12:42:23.024332",
+      "updated_at": "2026-04-24T12:42:23.024332",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -261,7 +261,7 @@
       "source_record_id": "aib:BE:2023",
       "release_version": "AIB-2024-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "European Residual Mixes, Association of Issuing Bodies (annual)."
       },
       "replacement_factor_id": null,
@@ -404,8 +404,8 @@
         "CSRD_E1",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.722970",
-      "updated_at": "2026-04-23T23:56:52.722970",
+      "created_at": "2026-04-24T12:42:23.024332",
+      "updated_at": "2026-04-24T12:42:23.024332",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -420,7 +420,7 @@
       "source_record_id": "aib:BG:2023",
       "release_version": "AIB-2024-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "European Residual Mixes, Association of Issuing Bodies (annual)."
       },
       "replacement_factor_id": null,
@@ -563,8 +563,8 @@
         "CSRD_E1",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.722970",
-      "updated_at": "2026-04-23T23:56:52.722970",
+      "created_at": "2026-04-24T12:42:23.025433",
+      "updated_at": "2026-04-24T12:42:23.025433",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -579,7 +579,7 @@
       "source_record_id": "aib:CH:2023",
       "release_version": "AIB-2024-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "European Residual Mixes, Association of Issuing Bodies (annual)."
       },
       "replacement_factor_id": null,
@@ -722,8 +722,8 @@
         "CSRD_E1",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.722970",
-      "updated_at": "2026-04-23T23:56:52.722970",
+      "created_at": "2026-04-24T12:42:23.025433",
+      "updated_at": "2026-04-24T12:42:23.025433",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -738,7 +738,7 @@
       "source_record_id": "aib:CY:2023",
       "release_version": "AIB-2024-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "European Residual Mixes, Association of Issuing Bodies (annual)."
       },
       "replacement_factor_id": null,
@@ -881,8 +881,8 @@
         "CSRD_E1",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.722970",
-      "updated_at": "2026-04-23T23:56:52.722970",
+      "created_at": "2026-04-24T12:42:23.025433",
+      "updated_at": "2026-04-24T12:42:23.025433",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -897,7 +897,7 @@
       "source_record_id": "aib:CZ:2023",
       "release_version": "AIB-2024-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "European Residual Mixes, Association of Issuing Bodies (annual)."
       },
       "replacement_factor_id": null,
@@ -1040,8 +1040,8 @@
         "CSRD_E1",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.723968",
-      "updated_at": "2026-04-23T23:56:52.723968",
+      "created_at": "2026-04-24T12:42:23.025433",
+      "updated_at": "2026-04-24T12:42:23.025433",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -1056,7 +1056,7 @@
       "source_record_id": "aib:DE:2023",
       "release_version": "AIB-2024-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "European Residual Mixes, Association of Issuing Bodies (annual)."
       },
       "replacement_factor_id": null,
@@ -1199,8 +1199,8 @@
         "CSRD_E1",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.723968",
-      "updated_at": "2026-04-23T23:56:52.723968",
+      "created_at": "2026-04-24T12:42:23.026438",
+      "updated_at": "2026-04-24T12:42:23.026438",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -1215,7 +1215,7 @@
       "source_record_id": "aib:DK:2023",
       "release_version": "AIB-2024-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "European Residual Mixes, Association of Issuing Bodies (annual)."
       },
       "replacement_factor_id": null,
@@ -1358,8 +1358,8 @@
         "CSRD_E1",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.723968",
-      "updated_at": "2026-04-23T23:56:52.723968",
+      "created_at": "2026-04-24T12:42:23.026438",
+      "updated_at": "2026-04-24T12:42:23.026438",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -1374,7 +1374,7 @@
       "source_record_id": "aib:EE:2023",
       "release_version": "AIB-2024-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "European Residual Mixes, Association of Issuing Bodies (annual)."
       },
       "replacement_factor_id": null,
@@ -1517,8 +1517,8 @@
         "CSRD_E1",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.723968",
-      "updated_at": "2026-04-23T23:56:52.723968",
+      "created_at": "2026-04-24T12:42:23.026438",
+      "updated_at": "2026-04-24T12:42:23.026438",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -1533,7 +1533,7 @@
       "source_record_id": "aib:ES:2023",
       "release_version": "AIB-2024-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "European Residual Mixes, Association of Issuing Bodies (annual)."
       },
       "replacement_factor_id": null,
@@ -1676,8 +1676,8 @@
         "CSRD_E1",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.724967",
-      "updated_at": "2026-04-23T23:56:52.724967",
+      "created_at": "2026-04-24T12:42:23.026438",
+      "updated_at": "2026-04-24T12:42:23.026438",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -1692,7 +1692,7 @@
       "source_record_id": "aib:FI:2023",
       "release_version": "AIB-2024-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "European Residual Mixes, Association of Issuing Bodies (annual)."
       },
       "replacement_factor_id": null,
@@ -1835,8 +1835,8 @@
         "CSRD_E1",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.724967",
-      "updated_at": "2026-04-23T23:56:52.724967",
+      "created_at": "2026-04-24T12:42:23.027446",
+      "updated_at": "2026-04-24T12:42:23.027446",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -1851,7 +1851,7 @@
       "source_record_id": "aib:FR:2023",
       "release_version": "AIB-2024-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "European Residual Mixes, Association of Issuing Bodies (annual)."
       },
       "replacement_factor_id": null,
@@ -1994,8 +1994,8 @@
         "CSRD_E1",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.724967",
-      "updated_at": "2026-04-23T23:56:52.724967",
+      "created_at": "2026-04-24T12:42:23.027446",
+      "updated_at": "2026-04-24T12:42:23.027446",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -2010,7 +2010,7 @@
       "source_record_id": "aib:GR:2023",
       "release_version": "AIB-2024-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "European Residual Mixes, Association of Issuing Bodies (annual)."
       },
       "replacement_factor_id": null,
@@ -2153,8 +2153,8 @@
         "CSRD_E1",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.724967",
-      "updated_at": "2026-04-23T23:56:52.724967",
+      "created_at": "2026-04-24T12:42:23.028334",
+      "updated_at": "2026-04-24T12:42:23.028334",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -2169,7 +2169,7 @@
       "source_record_id": "aib:HR:2023",
       "release_version": "AIB-2024-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "European Residual Mixes, Association of Issuing Bodies (annual)."
       },
       "replacement_factor_id": null,
@@ -2312,8 +2312,8 @@
         "CSRD_E1",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.725967",
-      "updated_at": "2026-04-23T23:56:52.725967",
+      "created_at": "2026-04-24T12:42:23.028334",
+      "updated_at": "2026-04-24T12:42:23.028334",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -2328,7 +2328,7 @@
       "source_record_id": "aib:HU:2023",
       "release_version": "AIB-2024-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "European Residual Mixes, Association of Issuing Bodies (annual)."
       },
       "replacement_factor_id": null,
@@ -2471,8 +2471,8 @@
         "CSRD_E1",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.725967",
-      "updated_at": "2026-04-23T23:56:52.725967",
+      "created_at": "2026-04-24T12:42:23.028334",
+      "updated_at": "2026-04-24T12:42:23.028334",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -2487,7 +2487,7 @@
       "source_record_id": "aib:IE:2023",
       "release_version": "AIB-2024-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "European Residual Mixes, Association of Issuing Bodies (annual)."
       },
       "replacement_factor_id": null,
@@ -2630,8 +2630,8 @@
         "CSRD_E1",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.725967",
-      "updated_at": "2026-04-23T23:56:52.725967",
+      "created_at": "2026-04-24T12:42:23.029331",
+      "updated_at": "2026-04-24T12:42:23.029331",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -2646,7 +2646,7 @@
       "source_record_id": "aib:IS:2023",
       "release_version": "AIB-2024-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "European Residual Mixes, Association of Issuing Bodies (annual)."
       },
       "replacement_factor_id": null,
@@ -2789,8 +2789,8 @@
         "CSRD_E1",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.725967",
-      "updated_at": "2026-04-23T23:56:52.725967",
+      "created_at": "2026-04-24T12:42:23.029331",
+      "updated_at": "2026-04-24T12:42:23.029331",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -2805,7 +2805,7 @@
       "source_record_id": "aib:IT:2023",
       "release_version": "AIB-2024-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "European Residual Mixes, Association of Issuing Bodies (annual)."
       },
       "replacement_factor_id": null,
@@ -2948,8 +2948,8 @@
         "CSRD_E1",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.726967",
-      "updated_at": "2026-04-23T23:56:52.726967",
+      "created_at": "2026-04-24T12:42:23.029331",
+      "updated_at": "2026-04-24T12:42:23.029331",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -2964,7 +2964,7 @@
       "source_record_id": "aib:LT:2023",
       "release_version": "AIB-2024-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "European Residual Mixes, Association of Issuing Bodies (annual)."
       },
       "replacement_factor_id": null,
@@ -3107,8 +3107,8 @@
         "CSRD_E1",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.726967",
-      "updated_at": "2026-04-23T23:56:52.726967",
+      "created_at": "2026-04-24T12:42:23.030331",
+      "updated_at": "2026-04-24T12:42:23.030331",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -3123,7 +3123,7 @@
       "source_record_id": "aib:LU:2023",
       "release_version": "AIB-2024-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "European Residual Mixes, Association of Issuing Bodies (annual)."
       },
       "replacement_factor_id": null,
@@ -3266,8 +3266,8 @@
         "CSRD_E1",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.726967",
-      "updated_at": "2026-04-23T23:56:52.726967",
+      "created_at": "2026-04-24T12:42:23.030331",
+      "updated_at": "2026-04-24T12:42:23.030331",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -3282,7 +3282,7 @@
       "source_record_id": "aib:LV:2023",
       "release_version": "AIB-2024-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "European Residual Mixes, Association of Issuing Bodies (annual)."
       },
       "replacement_factor_id": null,
@@ -3425,8 +3425,8 @@
         "CSRD_E1",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.726967",
-      "updated_at": "2026-04-23T23:56:52.726967",
+      "created_at": "2026-04-24T12:42:23.030331",
+      "updated_at": "2026-04-24T12:42:23.030331",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -3441,7 +3441,7 @@
       "source_record_id": "aib:NL:2023",
       "release_version": "AIB-2024-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "European Residual Mixes, Association of Issuing Bodies (annual)."
       },
       "replacement_factor_id": null,
@@ -3584,8 +3584,8 @@
         "CSRD_E1",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.727967",
-      "updated_at": "2026-04-23T23:56:52.727967",
+      "created_at": "2026-04-24T12:42:23.030331",
+      "updated_at": "2026-04-24T12:42:23.030331",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -3600,7 +3600,7 @@
       "source_record_id": "aib:NO:2023",
       "release_version": "AIB-2024-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "European Residual Mixes, Association of Issuing Bodies (annual)."
       },
       "replacement_factor_id": null,
@@ -3743,8 +3743,8 @@
         "CSRD_E1",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.727967",
-      "updated_at": "2026-04-23T23:56:52.727967",
+      "created_at": "2026-04-24T12:42:23.031346",
+      "updated_at": "2026-04-24T12:42:23.031346",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -3759,7 +3759,7 @@
       "source_record_id": "aib:PL:2023",
       "release_version": "AIB-2024-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "European Residual Mixes, Association of Issuing Bodies (annual)."
       },
       "replacement_factor_id": null,
@@ -3902,8 +3902,8 @@
         "CSRD_E1",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.727967",
-      "updated_at": "2026-04-23T23:56:52.727967",
+      "created_at": "2026-04-24T12:42:23.031346",
+      "updated_at": "2026-04-24T12:42:23.031346",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -3918,7 +3918,7 @@
       "source_record_id": "aib:PT:2023",
       "release_version": "AIB-2024-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "European Residual Mixes, Association of Issuing Bodies (annual)."
       },
       "replacement_factor_id": null,
@@ -4061,8 +4061,8 @@
         "CSRD_E1",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.728970",
-      "updated_at": "2026-04-23T23:56:52.728970",
+      "created_at": "2026-04-24T12:42:23.031346",
+      "updated_at": "2026-04-24T12:42:23.031346",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -4077,7 +4077,7 @@
       "source_record_id": "aib:RO:2023",
       "release_version": "AIB-2024-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "European Residual Mixes, Association of Issuing Bodies (annual)."
       },
       "replacement_factor_id": null,
@@ -4220,8 +4220,8 @@
         "CSRD_E1",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.728970",
-      "updated_at": "2026-04-23T23:56:52.728970",
+      "created_at": "2026-04-24T12:42:23.031346",
+      "updated_at": "2026-04-24T12:42:23.031346",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -4236,7 +4236,7 @@
       "source_record_id": "aib:SE:2023",
       "release_version": "AIB-2024-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "European Residual Mixes, Association of Issuing Bodies (annual)."
       },
       "replacement_factor_id": null,
@@ -4379,8 +4379,8 @@
         "CSRD_E1",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.728970",
-      "updated_at": "2026-04-23T23:56:52.728970",
+      "created_at": "2026-04-24T12:42:23.032345",
+      "updated_at": "2026-04-24T12:42:23.032345",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -4395,7 +4395,7 @@
       "source_record_id": "aib:SI:2023",
       "release_version": "AIB-2024-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "European Residual Mixes, Association of Issuing Bodies (annual)."
       },
       "replacement_factor_id": null,
@@ -4538,8 +4538,8 @@
         "CSRD_E1",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.728970",
-      "updated_at": "2026-04-23T23:56:52.728970",
+      "created_at": "2026-04-24T12:42:23.032345",
+      "updated_at": "2026-04-24T12:42:23.032345",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -4554,7 +4554,7 @@
       "source_record_id": "aib:SK:2023",
       "release_version": "AIB-2024-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "European Residual Mixes, Association of Issuing Bodies (annual)."
       },
       "replacement_factor_id": null,
@@ -4697,8 +4697,8 @@
         "CSRD_E1",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.729969",
-      "updated_at": "2026-04-23T23:56:52.729969",
+      "created_at": "2026-04-24T12:42:23.032345",
+      "updated_at": "2026-04-24T12:42:23.032345",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -4713,7 +4713,7 @@
       "source_record_id": "aib:AT:2022",
       "release_version": "AIB-2023-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "European Residual Mixes, Association of Issuing Bodies (annual)."
       },
       "replacement_factor_id": null,
@@ -4856,8 +4856,8 @@
         "CSRD_E1",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.729969",
-      "updated_at": "2026-04-23T23:56:52.729969",
+      "created_at": "2026-04-24T12:42:23.032345",
+      "updated_at": "2026-04-24T12:42:23.032345",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -4872,7 +4872,7 @@
       "source_record_id": "aib:BE:2022",
       "release_version": "AIB-2023-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "European Residual Mixes, Association of Issuing Bodies (annual)."
       },
       "replacement_factor_id": null,
@@ -5015,8 +5015,8 @@
         "CSRD_E1",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.730969",
-      "updated_at": "2026-04-23T23:56:52.730969",
+      "created_at": "2026-04-24T12:42:23.033346",
+      "updated_at": "2026-04-24T12:42:23.033346",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -5031,7 +5031,7 @@
       "source_record_id": "aib:BG:2022",
       "release_version": "AIB-2023-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "European Residual Mixes, Association of Issuing Bodies (annual)."
       },
       "replacement_factor_id": null,
@@ -5174,8 +5174,8 @@
         "CSRD_E1",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.730969",
-      "updated_at": "2026-04-23T23:56:52.730969",
+      "created_at": "2026-04-24T12:42:23.033346",
+      "updated_at": "2026-04-24T12:42:23.033346",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -5190,7 +5190,7 @@
       "source_record_id": "aib:DE:2022",
       "release_version": "AIB-2023-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "European Residual Mixes, Association of Issuing Bodies (annual)."
       },
       "replacement_factor_id": null,
@@ -5333,8 +5333,8 @@
         "CSRD_E1",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.730969",
-      "updated_at": "2026-04-23T23:56:52.730969",
+      "created_at": "2026-04-24T12:42:23.033346",
+      "updated_at": "2026-04-24T12:42:23.033346",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -5349,7 +5349,7 @@
       "source_record_id": "aib:FR:2022",
       "release_version": "AIB-2023-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "European Residual Mixes, Association of Issuing Bodies (annual)."
       },
       "replacement_factor_id": null,
@@ -5492,8 +5492,8 @@
         "CSRD_E1",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.730969",
-      "updated_at": "2026-04-23T23:56:52.730969",
+      "created_at": "2026-04-24T12:42:23.033346",
+      "updated_at": "2026-04-24T12:42:23.033346",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -5508,7 +5508,7 @@
       "source_record_id": "aib:NL:2022",
       "release_version": "AIB-2023-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "European Residual Mixes, Association of Issuing Bodies (annual)."
       },
       "replacement_factor_id": null,
@@ -5651,8 +5651,8 @@
         "CSRD_E1",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.731975",
-      "updated_at": "2026-04-23T23:56:52.731975",
+      "created_at": "2026-04-24T12:42:23.034345",
+      "updated_at": "2026-04-24T12:42:23.034345",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -5667,7 +5667,7 @@
       "source_record_id": "aib:SE:2022",
       "release_version": "AIB-2023-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "European Residual Mixes, Association of Issuing Bodies (annual)."
       },
       "replacement_factor_id": null,
@@ -5810,8 +5810,8 @@
         "CSRD_E1",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.731975",
-      "updated_at": "2026-04-23T23:56:52.731975",
+      "created_at": "2026-04-24T12:42:23.034345",
+      "updated_at": "2026-04-24T12:42:23.034345",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -5826,7 +5826,7 @@
       "source_record_id": "aib:CZ:2022",
       "release_version": "AIB-2023-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "European Residual Mixes, Association of Issuing Bodies (annual)."
       },
       "replacement_factor_id": null,
@@ -5969,8 +5969,8 @@
         "CSRD_E1",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.731975",
-      "updated_at": "2026-04-23T23:56:52.731975",
+      "created_at": "2026-04-24T12:42:23.034345",
+      "updated_at": "2026-04-24T12:42:23.034345",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -5985,7 +5985,7 @@
       "source_record_id": "aib:IT:2022",
       "release_version": "AIB-2023-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "European Residual Mixes, Association of Issuing Bodies (annual)."
       },
       "replacement_factor_id": null,
@@ -6128,8 +6128,8 @@
         "CSRD_E1",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.731975",
-      "updated_at": "2026-04-23T23:56:52.731975",
+      "created_at": "2026-04-24T12:42:23.034345",
+      "updated_at": "2026-04-24T12:42:23.034345",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -6144,7 +6144,7 @@
       "source_record_id": "aib:PL:2022",
       "release_version": "AIB-2023-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "European Residual Mixes, Association of Issuing Bodies (annual)."
       },
       "replacement_factor_id": null,
@@ -6287,8 +6287,8 @@
         "CSRD_E1",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.732977",
-      "updated_at": "2026-04-23T23:56:52.732977",
+      "created_at": "2026-04-24T12:42:23.035331",
+      "updated_at": "2026-04-24T12:42:23.035331",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -6303,7 +6303,7 @@
       "source_record_id": "aib:PT:2022",
       "release_version": "AIB-2023-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "European Residual Mixes, Association of Issuing Bodies (annual)."
       },
       "replacement_factor_id": null,
@@ -6446,8 +6446,8 @@
         "CSRD_E1",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.732977",
-      "updated_at": "2026-04-23T23:56:52.732977",
+      "created_at": "2026-04-24T12:42:23.035331",
+      "updated_at": "2026-04-24T12:42:23.035331",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -6462,7 +6462,7 @@
       "source_record_id": "aib:FI:2022",
       "release_version": "AIB-2023-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "European Residual Mixes, Association of Issuing Bodies (annual)."
       },
       "replacement_factor_id": null,
@@ -6605,8 +6605,8 @@
         "CSRD_E1",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.732977",
-      "updated_at": "2026-04-23T23:56:52.732977",
+      "created_at": "2026-04-24T12:42:23.035331",
+      "updated_at": "2026-04-24T12:42:23.035331",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -6621,7 +6621,7 @@
       "source_record_id": "aib:DK:2022",
       "release_version": "AIB-2023-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "European Residual Mixes, Association of Issuing Bodies (annual)."
       },
       "replacement_factor_id": null,
@@ -6764,8 +6764,8 @@
         "CSRD_E1",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.733974",
-      "updated_at": "2026-04-23T23:56:52.733974",
+      "created_at": "2026-04-24T12:42:23.035331",
+      "updated_at": "2026-04-24T12:42:23.035331",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -6780,7 +6780,7 @@
       "source_record_id": "aib:IE:2022",
       "release_version": "AIB-2023-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "European Residual Mixes, Association of Issuing Bodies (annual)."
       },
       "replacement_factor_id": null,
@@ -6923,8 +6923,8 @@
         "CSRD_E1",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.733974",
-      "updated_at": "2026-04-23T23:56:52.733974",
+      "created_at": "2026-04-24T12:42:23.036348",
+      "updated_at": "2026-04-24T12:42:23.036348",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -6939,7 +6939,7 @@
       "source_record_id": "aib:ES:2022",
       "release_version": "AIB-2023-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "European Residual Mixes, Association of Issuing Bodies (annual)."
       },
       "replacement_factor_id": null,
@@ -7082,8 +7082,8 @@
         "CSRD_E1",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.733974",
-      "updated_at": "2026-04-23T23:56:52.733974",
+      "created_at": "2026-04-24T12:42:23.036348",
+      "updated_at": "2026-04-24T12:42:23.036348",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -7098,7 +7098,7 @@
       "source_record_id": "aib:HU:2022",
       "release_version": "AIB-2023-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "European Residual Mixes, Association of Issuing Bodies (annual)."
       },
       "replacement_factor_id": null,
@@ -7241,8 +7241,8 @@
         "CSRD_E1",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.733974",
-      "updated_at": "2026-04-23T23:56:52.733974",
+      "created_at": "2026-04-24T12:42:23.036348",
+      "updated_at": "2026-04-24T12:42:23.036348",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -7257,7 +7257,7 @@
       "source_record_id": "aib:AT:2021",
       "release_version": "AIB-2022-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "European Residual Mixes, Association of Issuing Bodies (annual)."
       },
       "replacement_factor_id": null,
@@ -7400,8 +7400,8 @@
         "CSRD_E1",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.734972",
-      "updated_at": "2026-04-23T23:56:52.734972",
+      "created_at": "2026-04-24T12:42:23.036348",
+      "updated_at": "2026-04-24T12:42:23.036348",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -7416,7 +7416,7 @@
       "source_record_id": "aib:BE:2021",
       "release_version": "AIB-2022-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "European Residual Mixes, Association of Issuing Bodies (annual)."
       },
       "replacement_factor_id": null,
@@ -7559,8 +7559,8 @@
         "CSRD_E1",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.734972",
-      "updated_at": "2026-04-23T23:56:52.734972",
+      "created_at": "2026-04-24T12:42:23.036348",
+      "updated_at": "2026-04-24T12:42:23.036348",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -7575,7 +7575,7 @@
       "source_record_id": "aib:DE:2021",
       "release_version": "AIB-2022-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "European Residual Mixes, Association of Issuing Bodies (annual)."
       },
       "replacement_factor_id": null,
@@ -7718,8 +7718,8 @@
         "CSRD_E1",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.734972",
-      "updated_at": "2026-04-23T23:56:52.734972",
+      "created_at": "2026-04-24T12:42:23.037346",
+      "updated_at": "2026-04-24T12:42:23.037346",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -7734,7 +7734,7 @@
       "source_record_id": "aib:FR:2021",
       "release_version": "AIB-2022-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "European Residual Mixes, Association of Issuing Bodies (annual)."
       },
       "replacement_factor_id": null,
@@ -7877,8 +7877,8 @@
         "CSRD_E1",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.735973",
-      "updated_at": "2026-04-23T23:56:52.735973",
+      "created_at": "2026-04-24T12:42:23.037346",
+      "updated_at": "2026-04-24T12:42:23.037346",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -7893,7 +7893,7 @@
       "source_record_id": "aib:IT:2021",
       "release_version": "AIB-2022-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "European Residual Mixes, Association of Issuing Bodies (annual)."
       },
       "replacement_factor_id": null,
@@ -8036,8 +8036,8 @@
         "CSRD_E1",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.735973",
-      "updated_at": "2026-04-23T23:56:52.735973",
+      "created_at": "2026-04-24T12:42:23.037346",
+      "updated_at": "2026-04-24T12:42:23.037346",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -8052,7 +8052,7 @@
       "source_record_id": "aib:NL:2021",
       "release_version": "AIB-2022-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "European Residual Mixes, Association of Issuing Bodies (annual)."
       },
       "replacement_factor_id": null,
@@ -8195,8 +8195,8 @@
         "CSRD_E1",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.735973",
-      "updated_at": "2026-04-23T23:56:52.735973",
+      "created_at": "2026-04-24T12:42:23.037346",
+      "updated_at": "2026-04-24T12:42:23.037346",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -8211,7 +8211,7 @@
       "source_record_id": "aib:SE:2021",
       "release_version": "AIB-2022-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "European Residual Mixes, Association of Issuing Bodies (annual)."
       },
       "replacement_factor_id": null,
@@ -8354,8 +8354,8 @@
         "CSRD_E1",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.735973",
-      "updated_at": "2026-04-23T23:56:52.735973",
+      "created_at": "2026-04-24T12:42:23.038345",
+      "updated_at": "2026-04-24T12:42:23.038345",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -8370,7 +8370,7 @@
       "source_record_id": "aib:PL:2021",
       "release_version": "AIB-2022-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "European Residual Mixes, Association of Issuing Bodies (annual)."
       },
       "replacement_factor_id": null,
@@ -8513,8 +8513,8 @@
         "CSRD_E1",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.736973",
-      "updated_at": "2026-04-23T23:56:52.736973",
+      "created_at": "2026-04-24T12:42:23.038345",
+      "updated_at": "2026-04-24T12:42:23.038345",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -8529,7 +8529,7 @@
       "source_record_id": "aib:ES:2021",
       "release_version": "AIB-2022-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "European Residual Mixes, Association of Issuing Bodies (annual)."
       },
       "replacement_factor_id": null,
@@ -8672,8 +8672,8 @@
         "CSRD_E1",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.736973",
-      "updated_at": "2026-04-23T23:56:52.736973",
+      "created_at": "2026-04-24T12:42:23.038345",
+      "updated_at": "2026-04-24T12:42:23.038345",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -8688,7 +8688,7 @@
       "source_record_id": "aib:CZ:2021",
       "release_version": "AIB-2022-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "European Residual Mixes, Association of Issuing Bodies (annual)."
       },
       "replacement_factor_id": null,
@@ -8831,8 +8831,8 @@
         "CSRD_E1",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.736973",
-      "updated_at": "2026-04-23T23:56:52.736973",
+      "created_at": "2026-04-24T12:42:23.038345",
+      "updated_at": "2026-04-24T12:42:23.038345",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -8847,7 +8847,7 @@
       "source_record_id": "aib:PT:2021",
       "release_version": "AIB-2022-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "European Residual Mixes, Association of Issuing Bodies (annual)."
       },
       "replacement_factor_id": null,
@@ -8990,8 +8990,8 @@
         "CSRD_E1",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.736973",
-      "updated_at": "2026-04-23T23:56:52.736973",
+      "created_at": "2026-04-24T12:42:23.039346",
+      "updated_at": "2026-04-24T12:42:23.039346",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -9006,7 +9006,7 @@
       "source_record_id": "aib:RO:2021",
       "release_version": "AIB-2022-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "European Residual Mixes, Association of Issuing Bodies (annual)."
       },
       "replacement_factor_id": null,
@@ -9149,8 +9149,8 @@
         "CSRD_E1",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.737972",
-      "updated_at": "2026-04-23T23:56:52.737972",
+      "created_at": "2026-04-24T12:42:23.039346",
+      "updated_at": "2026-04-24T12:42:23.039346",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -9165,7 +9165,7 @@
       "source_record_id": "aib:SK:2021",
       "release_version": "AIB-2022-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "European Residual Mixes, Association of Issuing Bodies (annual)."
       },
       "replacement_factor_id": null,
@@ -9308,8 +9308,8 @@
         "CSRD_E1",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.737972",
-      "updated_at": "2026-04-23T23:56:52.737972",
+      "created_at": "2026-04-24T12:42:23.039346",
+      "updated_at": "2026-04-24T12:42:23.039346",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -9324,7 +9324,7 @@
       "source_record_id": "aib:FI:2021",
       "release_version": "AIB-2022-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "European Residual Mixes, Association of Issuing Bodies (annual)."
       },
       "replacement_factor_id": null,
@@ -9467,8 +9467,8 @@
         "CSRD_E1",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.737972",
-      "updated_at": "2026-04-23T23:56:52.737972",
+      "created_at": "2026-04-24T12:42:23.039346",
+      "updated_at": "2026-04-24T12:42:23.039346",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -9483,7 +9483,7 @@
       "source_record_id": "aib:GR:2022",
       "release_version": "AIB-2023-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "European Residual Mixes, Association of Issuing Bodies (annual)."
       },
       "replacement_factor_id": null,
@@ -9626,8 +9626,8 @@
         "CSRD_E1",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.737972",
-      "updated_at": "2026-04-23T23:56:52.737972",
+      "created_at": "2026-04-24T12:42:23.040345",
+      "updated_at": "2026-04-24T12:42:23.040345",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -9642,7 +9642,7 @@
       "source_record_id": "aib:GR:2021",
       "release_version": "AIB-2022-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "European Residual Mixes, Association of Issuing Bodies (annual)."
       },
       "replacement_factor_id": null,
@@ -9785,8 +9785,8 @@
         "CSRD_E1",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.738972",
-      "updated_at": "2026-04-23T23:56:52.738972",
+      "created_at": "2026-04-24T12:42:23.040345",
+      "updated_at": "2026-04-24T12:42:23.040345",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -9801,7 +9801,7 @@
       "source_record_id": "aib:BG:2021",
       "release_version": "AIB-2022-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "European Residual Mixes, Association of Issuing Bodies (annual)."
       },
       "replacement_factor_id": null,
@@ -9944,8 +9944,8 @@
         "CSRD_E1",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.738972",
-      "updated_at": "2026-04-23T23:56:52.738972",
+      "created_at": "2026-04-24T12:42:23.040345",
+      "updated_at": "2026-04-24T12:42:23.040345",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -9960,7 +9960,7 @@
       "source_record_id": "aib:HR:2022",
       "release_version": "AIB-2023-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "European Residual Mixes, Association of Issuing Bodies (annual)."
       },
       "replacement_factor_id": null,
@@ -10103,8 +10103,8 @@
         "CSRD_E1",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.738972",
-      "updated_at": "2026-04-23T23:56:52.738972",
+      "created_at": "2026-04-24T12:42:23.040345",
+      "updated_at": "2026-04-24T12:42:23.040345",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -10119,7 +10119,7 @@
       "source_record_id": "aib:HR:2021",
       "release_version": "AIB-2022-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "European Residual Mixes, Association of Issuing Bodies (annual)."
       },
       "replacement_factor_id": null,
@@ -10262,8 +10262,8 @@
         "CSRD_E1",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.738972",
-      "updated_at": "2026-04-23T23:56:52.738972",
+      "created_at": "2026-04-24T12:42:23.041332",
+      "updated_at": "2026-04-24T12:42:23.041332",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -10278,7 +10278,7 @@
       "source_record_id": "aib:RO:2022",
       "release_version": "AIB-2023-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "European Residual Mixes, Association of Issuing Bodies (annual)."
       },
       "replacement_factor_id": null,
@@ -10421,8 +10421,8 @@
         "CSRD_E1",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.739972",
-      "updated_at": "2026-04-23T23:56:52.739972",
+      "created_at": "2026-04-24T12:42:23.041332",
+      "updated_at": "2026-04-24T12:42:23.041332",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -10437,7 +10437,7 @@
       "source_record_id": "aib:EE:2022",
       "release_version": "AIB-2023-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "European Residual Mixes, Association of Issuing Bodies (annual)."
       },
       "replacement_factor_id": null,
@@ -10580,8 +10580,8 @@
         "CSRD_E1",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.739972",
-      "updated_at": "2026-04-23T23:56:52.739972",
+      "created_at": "2026-04-24T12:42:23.041332",
+      "updated_at": "2026-04-24T12:42:23.041332",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -10596,7 +10596,7 @@
       "source_record_id": "aib:LT:2022",
       "release_version": "AIB-2023-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "European Residual Mixes, Association of Issuing Bodies (annual)."
       },
       "replacement_factor_id": null,
@@ -10739,8 +10739,8 @@
         "CSRD_E1",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.739972",
-      "updated_at": "2026-04-23T23:56:52.739972",
+      "created_at": "2026-04-24T12:42:23.041332",
+      "updated_at": "2026-04-24T12:42:23.041332",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -10755,7 +10755,7 @@
       "source_record_id": "aib:LV:2022",
       "release_version": "AIB-2023-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "European Residual Mixes, Association of Issuing Bodies (annual)."
       },
       "replacement_factor_id": null,
@@ -10898,8 +10898,8 @@
         "CSRD_E1",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.739972",
-      "updated_at": "2026-04-23T23:56:52.739972",
+      "created_at": "2026-04-24T12:42:23.042347",
+      "updated_at": "2026-04-24T12:42:23.042347",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -10914,7 +10914,7 @@
       "source_record_id": "aib:SK:2022",
       "release_version": "AIB-2023-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "European Residual Mixes, Association of Issuing Bodies (annual)."
       },
       "replacement_factor_id": null,
@@ -11057,8 +11057,8 @@
         "CSRD_E1",
         "IFRS_S2"
       ],
-      "created_at": "2026-04-23T23:56:52.740973",
-      "updated_at": "2026-04-23T23:56:52.740973",
+      "created_at": "2026-04-24T12:42:23.042347",
+      "updated_at": "2026-04-24T12:42:23.042347",
       "created_by": "greenlang_system",
       "notes": null,
       "tags": [
@@ -11073,7 +11073,7 @@
       "source_record_id": "aib:SI:2022",
       "release_version": "AIB-2023-v1",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-23T18:26:52+00:00",
+        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
         "attribution_text": "European Residual Mixes, Association of Issuing Bodies (annual)."
       },
       "replacement_factor_id": null,
