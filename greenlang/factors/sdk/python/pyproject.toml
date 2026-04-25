@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "greenlang-factors"
-version = "1.3.0"
-description = "GreenLang Factors API client - typed Python SDK for the global emission-factor catalog (search, resolve, edition pinning, signed-receipt verification)."
+version = "0.1.0"
+description = "GreenLang Factors API client (alpha v0.1) - typed Python SDK for the GreenLang factor catalog. Read-only alpha surface: list factors, get by URN, list sources, list packs, healthz."
 readme = "README.md"
 license = {text = "MIT"}
 requires-python = ">=3.10"
@@ -37,7 +37,7 @@ keywords = [
     "sdk",
 ]
 classifiers = [
-    "Development Status :: 5 - Production/Stable",
+    "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
     "Intended Audience :: Science/Research",
     "Intended Audience :: Financial and Insurance Industry",
@@ -93,7 +93,7 @@ Changelog = "https://github.com/greenlang/greenlang/blob/master/greenlang/factor
 Repository = "https://github.com/greenlang/greenlang"
 Source = "https://github.com/greenlang/greenlang/tree/master/greenlang/factors/sdk/python"
 "Bug Tracker" = "https://github.com/greenlang/greenlang/issues"
-"Release Notes" = "https://github.com/greenlang/greenlang/blob/master/greenlang/factors/sdk/RELEASE_NOTES_v1.0.0.md"
+"Release Notes" = "https://github.com/greenlang/greenlang/blob/master/greenlang/factors/sdk/RELEASE_NOTES_v0.1.0.md"
 "Pricing" = "https://greenlang.ai/pricing"
 
 [project.scripts]

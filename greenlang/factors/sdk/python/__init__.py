@@ -50,6 +50,7 @@ from .client import (
     CertificatePinError,
     CertPinnedHTTPAdapter,
     GREENLANG_CA_PEM,
+    ProfileGatedError,
 )
 from .verify import ReceiptVerificationError, verify_receipt
 from .webhooks import (
@@ -61,18 +62,25 @@ from .webhooks import (
 )
 from .models import (
     ActivitySchema,
+    AlphaFactor,
+    AlphaPack,
+    AlphaSource,
     AuditBundle,
     BatchJobHandle,
     ChosenFactor,
+    Citation,
     CoverageReport,
     DeprecationStatus,
     Edition,
+    Extraction,
     Factor,
     FactorDiff,
     FactorMatch,
     GasBreakdown,
+    HealthResponse,
     Jurisdiction,
     LicensingEnvelope,
+    ListFactorsResponse,
     MethodPack,
     MethodPackCoverage,
     MethodPackCoverageReport,
@@ -81,6 +89,7 @@ from .models import (
     QualityScore,
     ResolutionRequest,
     ResolvedFactor,
+    Review,
     SearchResponse,
     SignedReceipt,
     Source,
@@ -89,27 +98,31 @@ from .models import (
     UncertaintyEnvelope,
 )
 
-__version__ = "1.3.0"
+__version__ = "0.1.0"
 """Public version string for the GreenLang Factors Python SDK.
 
-Bumped to 1.3.0 (2026-04-24) for Wave 5 contract disambiguations.
-See ``RELEASE_NOTES_v1.3.0.md`` for the full changelog. Summary:
+Renumbered to 0.1.0 (2026-04-25) per CTO doc §19.1 v0.1 Alpha contract.
+The 1.3.0 line was forward-development released too aggressively; the
+distribution is now collapsed to a clean 0.x alpha line. SDK is marked
+``Development Status :: 3 - Alpha``; breaking changes are expected
+until v1.0 GA.
 
- - Uncertainty unit disambiguation: ``uncertainty`` is ABSOLUTE (native
-   unit), ``uncertainty_percent`` is RELATIVE (0-100). Both fields
-   surfaced on :class:`Uncertainty` and :class:`UncertaintyEnvelope`.
- - Deprecation-status canonicalization: the wire may carry a bare string
-   or a dict; the SDK always exposes a typed :class:`DeprecationStatus`
-   via :meth:`DeprecationStatus.from_any`. Canonical keys are
-   ``status`` / ``successor_id`` / ``reason`` / ``deprecated_at``.
- - Coverage endpoint unification: new :class:`MethodPackCoverageReport`
-   (``{packs:[...], overall:{...}}``) returned from
-   :meth:`FactorsClient.method_pack_coverage`, regardless of whether a
-   ``?pack=<slug>`` filter was applied. The Wave 4-G legacy shape is
-   inflated transparently.
+The alpha surface ships ONLY the five read-only GETs declared in
+CTO doc §19.1:
 
-All three changes are SDK-side normalizations — the wire protocol is
-backward compatible and older clients continue to work unchanged.
+  * :meth:`FactorsClient.health` -> ``GET /v1/healthz``
+  * :meth:`FactorsClient.list_factors` -> ``GET /v1/factors``
+  * :meth:`FactorsClient.get_factor` -> ``GET /v1/factors/{urn}``
+  * :meth:`FactorsClient.list_sources` -> ``GET /v1/sources``
+  * :meth:`FactorsClient.list_packs` -> ``GET /v1/packs``
+
+Forward-development methods (resolve, explain, batch, edition pinning,
+signed-receipt verification) remain on the client class but are gated
+behind ``release_profile.feature_enabled(...)``; under
+``GL_FACTORS_RELEASE_PROFILE=alpha-v0.1`` they raise
+``ProfileGatedError``. They re-enable under ``beta-v0.5`` and higher.
+
+See ``RELEASE_NOTES_v0.1.0.md`` for the full alpha contract.
 """
 
 __all__ = [
@@ -156,6 +169,16 @@ __all__ = [
     "LicensingEnvelope",
     "DeprecationStatus",
     "SignedReceipt",
+    # v0.1 Alpha — URN-primary models
+    "AlphaFactor",
+    "AlphaPack",
+    "AlphaSource",
+    "Citation",
+    "Extraction",
+    "HealthResponse",
+    "ListFactorsResponse",
+    "Review",
+    "ProfileGatedError",
     # Errors
     "FactorsAPIError",
     "RateLimitError",

@@ -1,0 +1,338 @@
+[
+  {
+    "activity_tags": [
+      "embedded_emissions",
+      "cbam_goods",
+      "cbam_steel"
+    ],
+    "boundary": "cradle_to_gate",
+    "compliance_frameworks": [
+      "EU_CBAM",
+      "GHG_Protocol",
+      "IPCC_2006"
+    ],
+    "created_at": "1970-01-01T00:00:00+00:00",
+    "created_by": "greenlang_factors_etl",
+    "dqs": {
+      "geographical": 4,
+      "methodological": 4,
+      "representativeness": 4,
+      "technological": 3,
+      "temporal": 4
+    },
+    "factor_family": "material_embodied",
+    "factor_id": "EF:CBAM:steel:CN:2024:v1",
+    "fuel_type": "cbam_steel",
+    "geography": "CN",
+    "geography_level": "country",
+    "gwp_100yr": {
+      "CH4_gwp": 28,
+      "N2O_gwp": 273,
+      "gwp_set": "IPCC_AR6_100"
+    },
+    "license_info": {
+      "attribution_required": true,
+      "commercial_use_allowed": true,
+      "license": "EU-Publication",
+      "redistribution_allowed": true
+    },
+    "notes": "CBAM Annex IV default \u2014 steel from CN, direct=2.2 + indirect=0.6 = 2.8000000000000003 tCO2e/t-product",
+    "provenance": {
+      "methodology": "IPCC_Tier_1",
+      "source_org": "EU Commission",
+      "source_publication": "CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values",
+      "source_url": "https://taxation-customs.ec.europa.eu/carbon-border-adjustment-mechanism_en",
+      "source_year": 2024,
+      "version": "2024"
+    },
+    "release_version": "cbam-annex-iv-2024",
+    "scope": "3",
+    "sector_tags": [
+      "cbam_steel"
+    ],
+    "source_id": "cbam_default_values",
+    "source_release": "2024",
+    "tags": [
+      "cbam",
+      "cbam_default",
+      "cbam_2026",
+      "sector_steel",
+      "steel",
+      "embedded_emissions"
+    ],
+    "uncertainty_95ci": 0.15,
+    "unit": "kg_product",
+    "updated_at": "1970-01-01T00:00:00+00:00",
+    "valid_from": "2024-01-01",
+    "valid_to": "9999-12-31",
+    "validation_flags": {
+      "assumptions": [
+        "CBAM default value for steel",
+        "CBAM default direct 2.2 + indirect 0.6",
+        "embedded emissions"
+      ],
+      "cbam_default_source": "EU Commission Implementing Regulation 2023/1773 Annex IV",
+      "method_pack_compat": [
+        "eu_policy",
+        "product_carbon"
+      ]
+    },
+    "vectors": {
+      "CH4": 0.0,
+      "CO2": 2.8000000000000003,
+      "N2O": 0.0
+    }
+  },
+  {
+    "activity_tags": [
+      "embedded_emissions",
+      "cbam_goods",
+      "cbam_steel"
+    ],
+    "boundary": "cradle_to_gate",
+    "compliance_frameworks": [
+      "EU_CBAM",
+      "GHG_Protocol",
+      "IPCC_2006"
+    ],
+    "created_at": "1970-01-01T00:00:00+00:00",
+    "created_by": "greenlang_factors_etl",
+    "dqs": {
+      "geographical": 4,
+      "methodological": 4,
+      "representativeness": 4,
+      "technological": 3,
+      "temporal": 4
+    },
+    "factor_family": "material_embodied",
+    "factor_id": "EF:CBAM:steel:IN:2024:v1",
+    "fuel_type": "cbam_steel",
+    "geography": "IN",
+    "geography_level": "country",
+    "gwp_100yr": {
+      "CH4_gwp": 28,
+      "N2O_gwp": 273,
+      "gwp_set": "IPCC_AR6_100"
+    },
+    "license_info": {
+      "attribution_required": true,
+      "commercial_use_allowed": true,
+      "license": "EU-Publication",
+      "redistribution_allowed": true
+    },
+    "notes": "CBAM Annex IV default \u2014 steel from IN, direct=2.55 + indirect=0.65 = 3.1999999999999997 tCO2e/t-product",
+    "provenance": {
+      "methodology": "IPCC_Tier_1",
+      "source_org": "EU Commission",
+      "source_publication": "CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values",
+      "source_url": "https://taxation-customs.ec.europa.eu/carbon-border-adjustment-mechanism_en",
+      "source_year": 2024,
+      "version": "2024"
+    },
+    "release_version": "cbam-annex-iv-2024",
+    "scope": "3",
+    "sector_tags": [
+      "cbam_steel"
+    ],
+    "source_id": "cbam_default_values",
+    "source_release": "2024",
+    "tags": [
+      "cbam",
+      "cbam_default",
+      "cbam_2026",
+      "sector_steel",
+      "steel",
+      "embedded_emissions"
+    ],
+    "uncertainty_95ci": 0.15,
+    "unit": "kg_product",
+    "updated_at": "1970-01-01T00:00:00+00:00",
+    "valid_from": "2024-01-01",
+    "valid_to": "9999-12-31",
+    "validation_flags": {
+      "assumptions": [
+        "CBAM default value for steel",
+        "CBAM default direct 2.55 + indirect 0.65",
+        "embedded emissions"
+      ],
+      "cbam_default_source": "EU Commission Implementing Regulation 2023/1773 Annex IV",
+      "method_pack_compat": [
+        "eu_policy",
+        "product_carbon"
+      ]
+    },
+    "vectors": {
+      "CH4": 0.0,
+      "CO2": 3.1999999999999997,
+      "N2O": 0.0
+    }
+  },
+  {
+    "activity_tags": [
+      "embedded_emissions",
+      "cbam_goods",
+      "cbam_aluminium"
+    ],
+    "boundary": "cradle_to_gate",
+    "compliance_frameworks": [
+      "EU_CBAM",
+      "GHG_Protocol",
+      "IPCC_2006"
+    ],
+    "created_at": "1970-01-01T00:00:00+00:00",
+    "created_by": "greenlang_factors_etl",
+    "dqs": {
+      "geographical": 4,
+      "methodological": 4,
+      "representativeness": 4,
+      "technological": 3,
+      "temporal": 4
+    },
+    "factor_family": "material_embodied",
+    "factor_id": "EF:CBAM:aluminium:CN:2024:v1",
+    "fuel_type": "cbam_aluminium",
+    "geography": "CN",
+    "geography_level": "country",
+    "gwp_100yr": {
+      "CH4_gwp": 28,
+      "N2O_gwp": 273,
+      "gwp_set": "IPCC_AR6_100"
+    },
+    "license_info": {
+      "attribution_required": true,
+      "commercial_use_allowed": true,
+      "license": "EU-Publication",
+      "redistribution_allowed": true
+    },
+    "notes": "CBAM Annex IV default \u2014 aluminium from CN, direct=2.4 + indirect=12.5 = 14.9 tCO2e/t-product",
+    "provenance": {
+      "methodology": "IPCC_Tier_1",
+      "source_org": "EU Commission",
+      "source_publication": "CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values",
+      "source_url": "https://taxation-customs.ec.europa.eu/carbon-border-adjustment-mechanism_en",
+      "source_year": 2024,
+      "version": "2024"
+    },
+    "release_version": "cbam-annex-iv-2024",
+    "scope": "3",
+    "sector_tags": [
+      "cbam_aluminium"
+    ],
+    "source_id": "cbam_default_values",
+    "source_release": "2024",
+    "tags": [
+      "cbam",
+      "cbam_default",
+      "cbam_2026",
+      "sector_aluminium",
+      "aluminium",
+      "embedded_emissions"
+    ],
+    "uncertainty_95ci": 0.15,
+    "unit": "kg_product",
+    "updated_at": "1970-01-01T00:00:00+00:00",
+    "valid_from": "2024-01-01",
+    "valid_to": "9999-12-31",
+    "validation_flags": {
+      "assumptions": [
+        "CBAM default value for aluminium",
+        "CBAM default direct 2.4 + indirect 12.5",
+        "embedded emissions"
+      ],
+      "cbam_default_source": "EU Commission Implementing Regulation 2023/1773 Annex IV",
+      "method_pack_compat": [
+        "eu_policy",
+        "product_carbon"
+      ]
+    },
+    "vectors": {
+      "CH4": 0.0,
+      "CO2": 14.9,
+      "N2O": 0.0
+    }
+  },
+  {
+    "activity_tags": [
+      "embedded_emissions",
+      "cbam_goods",
+      "cbam_cement"
+    ],
+    "boundary": "cradle_to_gate",
+    "compliance_frameworks": [
+      "EU_CBAM",
+      "GHG_Protocol",
+      "IPCC_2006"
+    ],
+    "created_at": "1970-01-01T00:00:00+00:00",
+    "created_by": "greenlang_factors_etl",
+    "dqs": {
+      "geographical": 4,
+      "methodological": 4,
+      "representativeness": 4,
+      "technological": 3,
+      "temporal": 4
+    },
+    "factor_family": "material_embodied",
+    "factor_id": "EF:CBAM:cement:TR:2024:v1",
+    "fuel_type": "cbam_cement",
+    "geography": "TR",
+    "geography_level": "country",
+    "gwp_100yr": {
+      "CH4_gwp": 28,
+      "N2O_gwp": 273,
+      "gwp_set": "IPCC_AR6_100"
+    },
+    "license_info": {
+      "attribution_required": true,
+      "commercial_use_allowed": true,
+      "license": "EU-Publication",
+      "redistribution_allowed": true
+    },
+    "notes": "CBAM Annex IV default \u2014 cement from TR, direct=0.78 + indirect=0.06 = 0.8400000000000001 tCO2e/t-product",
+    "provenance": {
+      "methodology": "IPCC_Tier_1",
+      "source_org": "EU Commission",
+      "source_publication": "CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values",
+      "source_url": "https://taxation-customs.ec.europa.eu/carbon-border-adjustment-mechanism_en",
+      "source_year": 2024,
+      "version": "2024"
+    },
+    "release_version": "cbam-annex-iv-2024",
+    "scope": "3",
+    "sector_tags": [
+      "cbam_cement"
+    ],
+    "source_id": "cbam_default_values",
+    "source_release": "2024",
+    "tags": [
+      "cbam",
+      "cbam_default",
+      "cbam_2026",
+      "sector_cement",
+      "cement",
+      "embedded_emissions"
+    ],
+    "uncertainty_95ci": 0.15,
+    "unit": "kg_product",
+    "updated_at": "1970-01-01T00:00:00+00:00",
+    "valid_from": "2024-01-01",
+    "valid_to": "9999-12-31",
+    "validation_flags": {
+      "assumptions": [
+        "CBAM default value for cement",
+        "CBAM default direct 0.78 + indirect 0.06",
+        "embedded emissions"
+      ],
+      "cbam_default_source": "EU Commission Implementing Regulation 2023/1773 Annex IV",
+      "method_pack_compat": [
+        "eu_policy",
+        "product_carbon"
+      ]
+    },
+    "vectors": {
+      "CH4": 0.0,
+      "CO2": 0.8400000000000001,
+      "N2O": 0.0
+    }
+  }
+]

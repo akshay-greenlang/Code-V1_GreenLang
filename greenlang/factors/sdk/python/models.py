@@ -13,9 +13,9 @@ from __future__ import annotations
 
 import warnings
 from datetime import date, datetime
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Literal, Optional
 
-from pydantic import ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from greenlang.schemas.base import GreenLangBase
 
@@ -935,6 +935,209 @@ class BatchJobHandle(_SDKResponseModel):
         return self.status in {"completed", "failed", "cancelled"}
 
 
+# ---------------------------------------------------------------------------
+# v0.1 Alpha — URN-primary canonical models (CTO doc §19.1)
+# ---------------------------------------------------------------------------
+#
+# These models describe the canonical wire shape of the five read-only GETs
+# exposed under the alpha-v0.1 release profile. They share names with some
+# legacy v1.x models above; in those cases the legacy class is RE-USED with
+# its permissive ``extra="allow"`` config so older consumers keep working
+# without a hard rename. The new alpha-only types — Citation, Extraction,
+# Review, HealthResponse, ListFactorsResponse, AlphaFactor, AlphaPack — are
+# additive.
+#
+# AlphaFactor uses ``urn`` as the primary id. The legacy ``factor_id`` is
+# kept on the v1.x ``Factor`` model above for back-compat.
+
+
+class Citation(BaseModel):
+    """v0.1 Alpha — single citation entry on a Factor record."""
+
+    model_config = ConfigDict(extra="allow")
+
+    type: str = Field(..., description="Citation type (e.g. 'doi', 'url', 'isbn').")
+    value: str = Field(..., description="Citation value, opaque to clients.")
+
+
+class Extraction(BaseModel):
+    """v0.1 Alpha — provenance / extraction metadata for a Factor.
+
+    All 12 fields per CTO doc §19.1 are present; downstream callers that only
+    need a subset can ignore the rest.
+    """
+
+    model_config = ConfigDict(extra="allow")
+
+    source_url: str = Field(..., description="Origin URL for the raw artifact.")
+    raw_artifact_sha256: str = Field(
+        ..., description="SHA-256 of the raw upstream artifact (hex)."
+    )
+    parser_id: str = Field(..., description="Stable parser identifier.")
+    parser_version: str = Field(..., description="Parser semver.")
+    parser_commit: str = Field(..., description="Parser source commit (40-char SHA).")
+    extracted_at: Optional[datetime] = Field(
+        None, description="When the extraction ran."
+    )
+    extraction_method: Optional[str] = Field(
+        None, description="Human-readable method tag (manual | scripted | llm)."
+    )
+    raw_artifact_uri: Optional[str] = Field(
+        None,
+        description="Stable internal URI for the raw artifact (object store path).",
+    )
+    raw_artifact_size_bytes: Optional[int] = Field(
+        None, description="Bytes on disk for the raw artifact."
+    )
+    page_number: Optional[int] = Field(
+        None, description="1-based page if the source is a PDF."
+    )
+    table_id: Optional[str] = Field(
+        None, description="Logical table id within the artifact, if applicable."
+    )
+    row_id: Optional[str] = Field(
+        None, description="Stable row id within the table, if applicable."
+    )
+
+
+class Review(BaseModel):
+    """v0.1 Alpha — review state of a published factor (CTO doc §19.1)."""
+
+    model_config = ConfigDict(extra="allow")
+
+    review_status: Literal["pending", "approved", "rejected"] = Field(
+        ..., description="Current review state."
+    )
+    reviewer: str = Field(..., description="Reviewer identity (email or principal).")
+    reviewed_at: datetime = Field(..., description="When the review was recorded.")
+    approved_by: Optional[str] = Field(
+        None, description="Approver principal (only set when ``review_status='approved'``)."
+    )
+    approved_at: Optional[datetime] = Field(
+        None, description="When the approval was recorded."
+    )
+    rejection_reason: Optional[str] = Field(
+        None, description="Reason the review was rejected; non-null only when rejected."
+    )
+
+
+class AlphaFactor(BaseModel):
+    """v0.1 Alpha — canonical Factor wire shape with URN as primary id.
+
+    Distinct from the legacy :class:`Factor` model above (which keeps the
+    pre-v0.1 ``factor_id`` field for back-compat). This is the type
+    returned by :meth:`FactorsClient.get_factor` and
+    :meth:`FactorsClient.list_factors` under the alpha profile.
+    """
+
+    model_config = ConfigDict(extra="allow")
+
+    urn: str = Field(..., description="Canonical primary id (urn:gl:factor:...).")
+    factor_id_alias: Optional[str] = Field(
+        None, description="Legacy EF: identifier — non-canonical alias only."
+    )
+    source_urn: str = Field(..., description="urn:gl:source:<slug>.")
+    factor_pack_urn: str = Field(..., description="urn:gl:pack:<source>:<pack>:v<n>.")
+    name: str = Field(..., description="Human-readable factor name.")
+    description: str = Field(..., description="Human-readable description.")
+    category: Literal[
+        "scope1",
+        "scope2_location_based",
+        "scope2_market_based",
+        "grid_intensity",
+        "fuel",
+        "refrigerant",
+        "fugitive",
+        "process",
+        "cbam_default",
+    ] = Field(..., description="Coarse-grained category.")
+    value: float = Field(..., description="Emission-factor numeric value.")
+    unit_urn: str = Field(..., description="urn:gl:unit:<symbol>.")
+    gwp_basis: Literal["ar6"] = Field(..., description="GWP set used to compute CO2e.")
+    gwp_horizon: int = Field(..., description="GWP horizon in years (e.g. 100).")
+    geography_urn: str = Field(..., description="urn:gl:geo:<type>:<id>.")
+    vintage_start: date = Field(..., description="Start of factor validity (date).")
+    vintage_end: date = Field(..., description="End of factor validity (date).")
+    resolution: Literal["annual", "monthly", "hourly", "point-in-time"] = Field(
+        ..., description="Temporal resolution of the factor."
+    )
+    methodology_urn: str = Field(..., description="urn:gl:methodology:<slug>.")
+    boundary: str = Field(..., description="System boundary tag.")
+    licence: str = Field(..., description="Licence string (SPDX or human-readable).")
+    citations: List[Citation] = Field(
+        default_factory=list, description="Bibliographic citations."
+    )
+    published_at: datetime = Field(..., description="When the factor was published.")
+    extraction: Extraction = Field(..., description="Extraction provenance block.")
+    review: Review = Field(..., description="Review-state block.")
+
+
+class HealthResponse(BaseModel):
+    """v0.1 Alpha — payload returned by ``GET /v1/healthz``."""
+
+    model_config = ConfigDict(extra="allow")
+
+    status: Literal["ok", "degraded"] = Field(..., description="Service health.")
+    service: str = Field(..., description="Service name (e.g. 'greenlang-factors').")
+    release_profile: str = Field(
+        ..., description="Active release profile string (e.g. 'alpha-v0.1')."
+    )
+    schema_id: str = Field(
+        ..., description="Schema id of the served catalog (e.g. 'factor.v0.1')."
+    )
+    edition: Optional[str] = Field(None, description="Active catalog edition id.")
+    git_commit: Optional[str] = Field(
+        None, description="40-char source commit of the running service."
+    )
+
+
+class ListFactorsResponse(BaseModel):
+    """v0.1 Alpha — page envelope returned by ``GET /v1/factors``."""
+
+    model_config = ConfigDict(extra="allow")
+
+    data: List[AlphaFactor] = Field(
+        default_factory=list, description="Factors on this page."
+    )
+    next_cursor: Optional[str] = Field(
+        None, description="Opaque cursor to fetch the next page; null on last page."
+    )
+
+
+class AlphaSource(BaseModel):
+    """v0.1 Alpha — Source descriptor returned by ``GET /v1/sources``.
+
+    Distinct from the legacy :class:`Source` model above which keys on
+    ``source_id``. The alpha shape keys on ``urn``.
+    """
+
+    model_config = ConfigDict(extra="allow")
+
+    urn: str = Field(..., description="urn:gl:source:<slug>.")
+    name: str = Field(..., description="Human-readable source name.")
+    organization: Optional[str] = Field(None)
+    publication: Optional[str] = Field(None)
+    year: Optional[int] = Field(None)
+    url: Optional[str] = Field(None)
+    methodology: Optional[str] = Field(None)
+    licence: Optional[str] = Field(None)
+    version: Optional[str] = Field(None)
+
+
+class AlphaPack(BaseModel):
+    """v0.1 Alpha — Pack descriptor returned by ``GET /v1/packs``."""
+
+    model_config = ConfigDict(extra="allow")
+
+    urn: str = Field(..., description="urn:gl:pack:<source>:<pack>:v<n>.")
+    source_urn: str = Field(..., description="urn:gl:source:<slug>.")
+    version: str = Field(..., description="Pack version (e.g. 'v3').")
+    name: Optional[str] = Field(None, description="Human-readable pack name.")
+    description: Optional[str] = Field(None)
+    methodology_urn: Optional[str] = Field(None)
+    published_at: Optional[datetime] = Field(None)
+
+
 __all__ = [
     "Jurisdiction",
     "ActivitySchema",
@@ -964,4 +1167,13 @@ __all__ = [
     "LicensingEnvelope",
     "DeprecationStatus",
     "SignedReceipt",
+    # v0.1 Alpha — URN-primary models
+    "Citation",
+    "Extraction",
+    "Review",
+    "AlphaFactor",
+    "HealthResponse",
+    "ListFactorsResponse",
+    "AlphaSource",
+    "AlphaPack",
 ]

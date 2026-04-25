@@ -46,6 +46,17 @@ from greenlang.factors.ontology.chemistry import (
     build_combustion_gas_vector,
     aggregate_co2e,
 )
+from greenlang.factors.ontology.urn import (
+    GLUrn,
+    InvalidUrnError,
+    parse as parse_urn,
+    build as build_urn,
+    validate as validate_urn,
+    coerce_factor_id_to_urn,
+    URN_PREFIX,
+    ALLOWED_KINDS as URN_ALLOWED_KINDS,
+    ALLOWED_GEO_TYPES as URN_ALLOWED_GEO_TYPES,
+)
 
 __all__ = [
     # units
@@ -91,4 +102,14 @@ __all__ = [
     "model_refrigerant_leakage",
     "build_combustion_gas_vector",
     "aggregate_co2e",
+    # URN scheme (v0.1 Alpha)
+    "GLUrn",
+    "InvalidUrnError",
+    "parse_urn",
+    "build_urn",
+    "validate_urn",
+    "coerce_factor_id_to_urn",
+    "URN_PREFIX",
+    "URN_ALLOWED_KINDS",
+    "URN_ALLOWED_GEO_TYPES",
 ]

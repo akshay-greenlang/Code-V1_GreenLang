@@ -1,0 +1,19 @@
+{
+  "drill_id": "2026-Q1-desnz-parser-drift-drill",
+  "captured_at": "2026-04-25T07:59:25+00:00",
+  "fixture": "tests/factors/v0_1_alpha/drill_fixtures/desnz_2024_corrupted_v1.json",
+  "factors_parser_errors_total": {
+    "{source='desnz_ghg_conversion',error_type='DrillSimulated_KeyError_co2_factor'}": 1
+  },
+  "factors_alpha_provenance_gate_rejections_total": {
+    "{source='desnz',reason='schema_required_field_missing'}": 57
+  },
+  "totals": {
+    "parser_records_emitted": 57,
+    "normalizer_rejections_NonPositiveValueError": 57,
+    "normalizer_other_failures": 0,
+    "lifted_OK": 0,
+    "gate_assert_valid_failures_on_malformed_record": "raised AlphaProvenanceGateError"
+  },
+  "notes": "Counter values captured via a one-shot drill executor that mirrors the production backfill loop. Production-environment counters live in the Prometheus client registry; this snapshot is the in-process FallbackStore reading + an explicit summary."
+}

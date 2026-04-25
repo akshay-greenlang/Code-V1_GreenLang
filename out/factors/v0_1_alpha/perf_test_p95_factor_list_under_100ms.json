@@ -1,0 +1,18 @@
+{
+  "extra": {
+    "endpoint": "/v1/factors?limit=50"
+  },
+  "max_ms": 715.4951999982586,
+  "mean_ms": 24.611744099966018,
+  "min_ms": 13.986100006150082,
+  "n_calls": 2000,
+  "n_urns": 50,
+  "p50_ms": 23.176300004706718,
+  "p95_ms": 29.87290000601206,
+  "p99_ms": 38.02009999344591,
+  "passed": true,
+  "stddev_ms": 23.903131261157878,
+  "target_ms": 100.0,
+  "test_environment": "in-process FastAPI TestClient; single-region; no cache tier; _FakeRepo dict lookup; no Postgres, no Redis",
+  "test_name": "test_p95_factor_list_under_100ms"
+}

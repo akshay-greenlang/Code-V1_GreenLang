@@ -1,0 +1,17 @@
+{
+  "metadata": {
+    "source": "DESNZ",
+    "version": "2024",
+    "region": "UK"
+  },
+  "scope1_fuels": [
+    {"fuel_type": "Natural Gas", "unit": "kwh", "co2_factor": 0.18293, "ch4_factor": 0.00034, "n2o_factor": 0.00026},
+    {"fuel_type": "Diesel", "unit": "litres", "co2_factor": 2.70398, "ch4_factor": 0.00027, "n2o_factor": 0.02647}
+  ],
+  "scope2_electricity": [
+    {"type": "grid_average", "co2_factor": 0.20707, "ch4_factor": 0.00026, "n2o_factor": 0.00219}
+  ],
+  "scope3_freight": [
+    {"activity": "hgv_all_diesel", "unit": "tonne_km", "co2_factor": 0.10432, "ch4_factor": 0.00001, "n2o_factor": 0.00154}
+  ]
+}

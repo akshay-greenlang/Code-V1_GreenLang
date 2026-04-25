@@ -1,0 +1,15 @@
+{
+  "metadata": {
+    "source": "EPA",
+    "version": "2024",
+    "source_publication": "EPA GHG Emission Factors Hub",
+    "source_url": "https://www.epa.gov/ghgemissionfactors"
+  },
+  "stationary_combustion": [
+    {"fuel_type": "Natural Gas", "unit": "scf", "co2_factor": 0.05444, "ch4_factor": 0.00000103, "n2o_factor": 0.0000001, "geography": "US"},
+    {"fuel_type": "Distillate Fuel Oil No. 2", "unit": "gallon", "co2_factor": 10.18, "ch4_factor": 0.00041, "n2o_factor": 0.000082, "geography": "US"}
+  ],
+  "mobile_combustion": [
+    {"fuel_type": "Motor Gasoline", "unit": "gallon", "co2_factor": 8.78, "ch4_factor": 0.00035, "n2o_factor": 0.000082, "geography": "US"}
+  ]
+}

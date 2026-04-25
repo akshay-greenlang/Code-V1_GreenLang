@@ -1,0 +1,4507 @@
+{
+  "schema": "https://schemas.greenlang.io/factors/factor_record_v0_1.schema.json",
+  "source_id": "epa_hub",
+  "source_urn": "urn:gl:source:epa-hub",
+  "source_version": "2024.1",
+  "records": [
+    {
+      "urn": "urn:gl:factor:epa-hub:EPA:stat_natural_gas:US:2024:v1",
+      "factor_id_alias": "EF:EPA:stat_natural_gas:US:2024:v1",
+      "source_urn": "urn:gl:source:epa-hub",
+      "factor_pack_urn": "urn:gl:pack:epa-hub:emission-factors-hub:2024.1",
+      "name": "natural gas \u2014 US",
+      "description": "Emission emission factor for natural gas \u2014 US, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "fuel",
+      "value": 53.1153,
+      "unit_urn": "urn:gl:unit:kgco2e/mmbtu",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:us",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ipcc-tier-1-stationary-combustion",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub",
+        "source_record_id": "epa_hub;record-0",
+        "source_publication": "EPA GHG Emission Factors Hub",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/epa-hub/2024.1/seed.json",
+        "raw_artifact_sha256": "b8af7bd46fed012c57c7e0724d29e8b9b0c263918263da183a66a65d256d7949",
+        "parser_id": "greenlang.factors.ingestion.parsers.epa_ghg_hub",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-0",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_epa_hub"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "epa",
+        "stationary_combustion",
+        "natural_gas"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:epa-hub:EPA:stat_lpg:US:2024:v1",
+      "factor_id_alias": "EF:EPA:stat_lpg:US:2024:v1",
+      "source_urn": "urn:gl:source:epa-hub",
+      "factor_pack_urn": "urn:gl:pack:epa-hub:emission-factors-hub:2024.1",
+      "name": "lpg \u2014 US",
+      "description": "Emission emission factor for lpg \u2014 US, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "fuel",
+      "value": 5.698998,
+      "unit_urn": "urn:gl:unit:kgco2e/gallons",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:us",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ipcc-tier-1-stationary-combustion",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub",
+        "source_record_id": "epa_hub;record-1",
+        "source_publication": "EPA GHG Emission Factors Hub",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/epa-hub/2024.1/seed.json",
+        "raw_artifact_sha256": "7a09ea9aaed0be22c9ff4036d8d9af1e00819846c30867c04cbc3f23dfed5af9",
+        "parser_id": "greenlang.factors.ingestion.parsers.epa_ghg_hub",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-1",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_epa_hub"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "epa",
+        "stationary_combustion",
+        "lpg"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:epa-hub:EPA:stat_propane:US:2024:v1",
+      "factor_id_alias": "EF:EPA:stat_propane:US:2024:v1",
+      "source_urn": "urn:gl:source:epa-hub",
+      "factor_pack_urn": "urn:gl:pack:epa-hub:emission-factors-hub:2024.1",
+      "name": "propane \u2014 US",
+      "description": "Emission emission factor for propane \u2014 US, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "fuel",
+      "value": 5.738998,
+      "unit_urn": "urn:gl:unit:kgco2e/gallons",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:us",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ipcc-tier-1-stationary-combustion",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub",
+        "source_record_id": "epa_hub;record-2",
+        "source_publication": "EPA GHG Emission Factors Hub",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/epa-hub/2024.1/seed.json",
+        "raw_artifact_sha256": "11c06bf58630f0016203b452736f9d3acf2297555b5bd0a1029fcb1721998da3",
+        "parser_id": "greenlang.factors.ingestion.parsers.epa_ghg_hub",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-2",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_epa_hub"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "epa",
+        "stationary_combustion",
+        "propane"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:epa-hub:EPA:stat_butane:US:2024:v1",
+      "factor_id_alias": "EF:EPA:stat_butane:US:2024:v1",
+      "source_urn": "urn:gl:source:epa-hub",
+      "factor_pack_urn": "urn:gl:pack:epa-hub:emission-factors-hub:2024.1",
+      "name": "butane \u2014 US",
+      "description": "Emission emission factor for butane \u2014 US, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "fuel",
+      "value": 6.692302,
+      "unit_urn": "urn:gl:unit:kgco2e/gallons",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:us",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ipcc-tier-1-stationary-combustion",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub",
+        "source_record_id": "epa_hub;record-3",
+        "source_publication": "EPA GHG Emission Factors Hub",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/epa-hub/2024.1/seed.json",
+        "raw_artifact_sha256": "7965fd5d586ee49b20a6fc68147e5c42bd0adb986a9faae240883b05cba22523",
+        "parser_id": "greenlang.factors.ingestion.parsers.epa_ghg_hub",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-3",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_epa_hub"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "epa",
+        "stationary_combustion",
+        "butane"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:epa-hub:EPA:stat_kerosene:US:2024:v1",
+      "factor_id_alias": "EF:EPA:stat_kerosene:US:2024:v1",
+      "source_urn": "urn:gl:source:epa-hub",
+      "factor_pack_urn": "urn:gl:pack:epa-hub:emission-factors-hub:2024.1",
+      "name": "kerosene \u2014 US",
+      "description": "Emission emission factor for kerosene \u2014 US, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "fuel",
+      "value": 10.18332,
+      "unit_urn": "urn:gl:unit:kgco2e/gallons",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:us",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ipcc-tier-1-stationary-combustion",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub",
+        "source_record_id": "epa_hub;record-4",
+        "source_publication": "EPA GHG Emission Factors Hub",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/epa-hub/2024.1/seed.json",
+        "raw_artifact_sha256": "6d538b32e4632cbb103605f5e7bc3b65eda859b37b0c9bddcb6b21e50c5d21ba",
+        "parser_id": "greenlang.factors.ingestion.parsers.epa_ghg_hub",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-4",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_epa_hub"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "epa",
+        "stationary_combustion",
+        "kerosene"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:epa-hub:EPA:stat_distillate_fuel_oil_1:US:2024:v1",
+      "factor_id_alias": "EF:EPA:stat_distillate_fuel_oil_1:US:2024:v1",
+      "source_urn": "urn:gl:source:epa-hub",
+      "factor_pack_urn": "urn:gl:pack:epa-hub:emission-factors-hub:2024.1",
+      "name": "distillate fuel oil 1 \u2014 US",
+      "description": "Emission emission factor for distillate fuel oil 1 \u2014 US, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "fuel",
+      "value": 10.21332,
+      "unit_urn": "urn:gl:unit:kgco2e/gallons",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:us",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ipcc-tier-1-stationary-combustion",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub",
+        "source_record_id": "epa_hub;record-5",
+        "source_publication": "EPA GHG Emission Factors Hub",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/epa-hub/2024.1/seed.json",
+        "raw_artifact_sha256": "b769cbc1549272a2b60e6e7fac717dd5db22104096af66914196d8dd33d9cfb9",
+        "parser_id": "greenlang.factors.ingestion.parsers.epa_ghg_hub",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-5",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_epa_hub"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "epa",
+        "stationary_combustion",
+        "distillate_fuel_oil_1"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:epa-hub:EPA:stat_distillate_fuel_oil_2:US:2024:v1",
+      "factor_id_alias": "EF:EPA:stat_distillate_fuel_oil_2:US:2024:v1",
+      "source_urn": "urn:gl:source:epa-hub",
+      "factor_pack_urn": "urn:gl:pack:epa-hub:emission-factors-hub:2024.1",
+      "name": "distillate fuel oil 2 \u2014 US",
+      "description": "Emission emission factor for distillate fuel oil 2 \u2014 US, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "fuel",
+      "value": 10.24332,
+      "unit_urn": "urn:gl:unit:kgco2e/gallons",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:us",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ipcc-tier-1-stationary-combustion",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub",
+        "source_record_id": "epa_hub;record-6",
+        "source_publication": "EPA GHG Emission Factors Hub",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/epa-hub/2024.1/seed.json",
+        "raw_artifact_sha256": "c652db5384c45e6f9af1d53a59984ac3e1f438c2c88b358a1a5e7d2ecfb6247d",
+        "parser_id": "greenlang.factors.ingestion.parsers.epa_ghg_hub",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-6",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_epa_hub"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "epa",
+        "stationary_combustion",
+        "distillate_fuel_oil_2"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:epa-hub:EPA:stat_distillate_fuel_oil_4:US:2024:v1",
+      "factor_id_alias": "EF:EPA:stat_distillate_fuel_oil_4:US:2024:v1",
+      "source_urn": "urn:gl:source:epa-hub",
+      "factor_pack_urn": "urn:gl:pack:epa-hub:emission-factors-hub:2024.1",
+      "name": "distillate fuel oil 4 \u2014 US",
+      "description": "Emission emission factor for distillate fuel oil 4 \u2014 US, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "fuel",
+      "value": 10.996890000000002,
+      "unit_urn": "urn:gl:unit:kgco2e/gallons",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:us",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ipcc-tier-1-stationary-combustion",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub",
+        "source_record_id": "epa_hub;record-7",
+        "source_publication": "EPA GHG Emission Factors Hub",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/epa-hub/2024.1/seed.json",
+        "raw_artifact_sha256": "e0bac6f300cebfbb67ad3f8a7964e5ba66f2cf1244d9f23f6bb8d1eb71cbdbe9",
+        "parser_id": "greenlang.factors.ingestion.parsers.epa_ghg_hub",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-7",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_epa_hub"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "epa",
+        "stationary_combustion",
+        "distillate_fuel_oil_4"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:epa-hub:EPA:stat_residual_fuel_oil_5:US:2024:v1",
+      "factor_id_alias": "EF:EPA:stat_residual_fuel_oil_5:US:2024:v1",
+      "source_urn": "urn:gl:source:epa-hub",
+      "factor_pack_urn": "urn:gl:pack:epa-hub:emission-factors-hub:2024.1",
+      "name": "residual fuel oil 5 \u2014 US",
+      "description": "Emission emission factor for residual fuel oil 5 \u2014 US, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "fuel",
+      "value": 11.307170000000001,
+      "unit_urn": "urn:gl:unit:kgco2e/gallons",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:us",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ipcc-tier-1-stationary-combustion",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub",
+        "source_record_id": "epa_hub;record-8",
+        "source_publication": "EPA GHG Emission Factors Hub",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/epa-hub/2024.1/seed.json",
+        "raw_artifact_sha256": "bdd6dddd2127730391b9c9d65d4c31e7b8908f71aac0df36b4e4446eafbbdf49",
+        "parser_id": "greenlang.factors.ingestion.parsers.epa_ghg_hub",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-8",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_epa_hub"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "epa",
+        "stationary_combustion",
+        "residual_fuel_oil_5"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:epa-hub:EPA:stat_residual_fuel_oil_6:US:2024:v1",
+      "factor_id_alias": "EF:EPA:stat_residual_fuel_oil_6:US:2024:v1",
+      "source_urn": "urn:gl:source:epa-hub",
+      "factor_pack_urn": "urn:gl:pack:epa-hub:emission-factors-hub:2024.1",
+      "name": "residual fuel oil 6 \u2014 US",
+      "description": "Emission emission factor for residual fuel oil 6 \u2014 US, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "fuel",
+      "value": 11.827729999999999,
+      "unit_urn": "urn:gl:unit:kgco2e/gallons",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:us",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ipcc-tier-1-stationary-combustion",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub",
+        "source_record_id": "epa_hub;record-9",
+        "source_publication": "EPA GHG Emission Factors Hub",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/epa-hub/2024.1/seed.json",
+        "raw_artifact_sha256": "cc270b0c3b3cdb4fa44414b94db08224c6137dee84b83eb1da0620a66bd3bf4d",
+        "parser_id": "greenlang.factors.ingestion.parsers.epa_ghg_hub",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-9",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_epa_hub"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "epa",
+        "stationary_combustion",
+        "residual_fuel_oil_6"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:epa-hub:EPA:stat_diesel:US:2024:v1",
+      "factor_id_alias": "EF:EPA:stat_diesel:US:2024:v1",
+      "source_urn": "urn:gl:source:epa-hub",
+      "factor_pack_urn": "urn:gl:pack:epa-hub:emission-factors-hub:2024.1",
+      "name": "diesel \u2014 US",
+      "description": "Emission emission factor for diesel \u2014 US, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "fuel",
+      "value": 10.24332,
+      "unit_urn": "urn:gl:unit:kgco2e/gallons",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:us",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ipcc-tier-1-stationary-combustion",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub",
+        "source_record_id": "epa_hub;record-10",
+        "source_publication": "EPA GHG Emission Factors Hub",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/epa-hub/2024.1/seed.json",
+        "raw_artifact_sha256": "a57f0c6cbba9b9689d2745dbf6285cc8e1fbc5fb373997fcabce605cb316c8e3",
+        "parser_id": "greenlang.factors.ingestion.parsers.epa_ghg_hub",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-10",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_epa_hub"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "epa",
+        "stationary_combustion",
+        "diesel"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:epa-hub:EPA:stat_motor_gasoline:US:2024:v1",
+      "factor_id_alias": "EF:EPA:stat_motor_gasoline:US:2024:v1",
+      "source_urn": "urn:gl:source:epa-hub",
+      "factor_pack_urn": "urn:gl:pack:epa-hub:emission-factors-hub:2024.1",
+      "name": "motor gasoline \u2014 US",
+      "description": "Emission emission factor for motor gasoline \u2014 US, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "fuel",
+      "value": 8.80891,
+      "unit_urn": "urn:gl:unit:kgco2e/gallons",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:us",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ipcc-tier-1-stationary-combustion",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub",
+        "source_record_id": "epa_hub;record-11",
+        "source_publication": "EPA GHG Emission Factors Hub",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/epa-hub/2024.1/seed.json",
+        "raw_artifact_sha256": "18fdb59dac26cbf1164c2d33d5d9dbdc6025b9e1b5d7e76db898d7b5181ae8ed",
+        "parser_id": "greenlang.factors.ingestion.parsers.epa_ghg_hub",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-11",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_epa_hub"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "epa",
+        "stationary_combustion",
+        "motor_gasoline"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:epa-hub:EPA:stat_aviation_gasoline:US:2024:v1",
+      "factor_id_alias": "EF:EPA:stat_aviation_gasoline:US:2024:v1",
+      "source_urn": "urn:gl:source:epa-hub",
+      "factor_pack_urn": "urn:gl:pack:epa-hub:emission-factors-hub:2024.1",
+      "name": "aviation gasoline \u2014 US",
+      "description": "Emission emission factor for aviation gasoline \u2014 US, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "fuel",
+      "value": 8.34835,
+      "unit_urn": "urn:gl:unit:kgco2e/gallons",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:us",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ipcc-tier-1-stationary-combustion",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub",
+        "source_record_id": "epa_hub;record-12",
+        "source_publication": "EPA GHG Emission Factors Hub",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/epa-hub/2024.1/seed.json",
+        "raw_artifact_sha256": "b599a24b342c91e0c7ce0e2f94fcd46a81f31e39f138cf27149e903cdba10729",
+        "parser_id": "greenlang.factors.ingestion.parsers.epa_ghg_hub",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-12",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_epa_hub"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "epa",
+        "stationary_combustion",
+        "aviation_gasoline"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:epa-hub:EPA:stat_jet_fuel:US:2024:v1",
+      "factor_id_alias": "EF:EPA:stat_jet_fuel:US:2024:v1",
+      "source_urn": "urn:gl:source:epa-hub",
+      "factor_pack_urn": "urn:gl:pack:epa-hub:emission-factors-hub:2024.1",
+      "name": "jet fuel \u2014 US",
+      "description": "Emission emission factor for jet fuel \u2014 US, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "fuel",
+      "value": 9.78276,
+      "unit_urn": "urn:gl:unit:kgco2e/gallons",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:us",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ipcc-tier-1-stationary-combustion",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub",
+        "source_record_id": "epa_hub;record-13",
+        "source_publication": "EPA GHG Emission Factors Hub",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/epa-hub/2024.1/seed.json",
+        "raw_artifact_sha256": "1311a6d335c9dcc7f2925e49507560015d0af2ed8d55aa1dda30e02b7d8ede6f",
+        "parser_id": "greenlang.factors.ingestion.parsers.epa_ghg_hub",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-13",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_epa_hub"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "epa",
+        "stationary_combustion",
+        "jet_fuel"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:epa-hub:EPA:stat_crude_oil:US:2024:v1",
+      "factor_id_alias": "EF:EPA:stat_crude_oil:US:2024:v1",
+      "source_urn": "urn:gl:source:epa-hub",
+      "factor_pack_urn": "urn:gl:pack:epa-hub:emission-factors-hub:2024.1",
+      "name": "crude oil \u2014 US",
+      "description": "Emission emission factor for crude oil \u2014 US, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "fuel",
+      "value": 10.323319999999999,
+      "unit_urn": "urn:gl:unit:kgco2e/gallons",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:us",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ipcc-tier-1-stationary-combustion",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub",
+        "source_record_id": "epa_hub;record-14",
+        "source_publication": "EPA GHG Emission Factors Hub",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/epa-hub/2024.1/seed.json",
+        "raw_artifact_sha256": "157e418a9682362a17adc8e772e26b39e05eccb2b5db9677012e1c31c8105afc",
+        "parser_id": "greenlang.factors.ingestion.parsers.epa_ghg_hub",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-14",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_epa_hub"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "epa",
+        "stationary_combustion",
+        "crude_oil"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:epa-hub:EPA:stat_naphtha:US:2024:v1",
+      "factor_id_alias": "EF:EPA:stat_naphtha:US:2024:v1",
+      "source_urn": "urn:gl:source:epa-hub",
+      "factor_pack_urn": "urn:gl:pack:epa-hub:emission-factors-hub:2024.1",
+      "name": "naphtha \u2014 US",
+      "description": "Emission emission factor for naphtha \u2014 US, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "fuel",
+      "value": 68.2678,
+      "unit_urn": "urn:gl:unit:kgco2e/mmbtu",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:us",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ipcc-tier-1-stationary-combustion",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub",
+        "source_record_id": "epa_hub;record-15",
+        "source_publication": "EPA GHG Emission Factors Hub",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/epa-hub/2024.1/seed.json",
+        "raw_artifact_sha256": "0b8c471d6e29005becf3167f9dc9f328d324dc7527b0940b878a83bcabcdfa2d",
+        "parser_id": "greenlang.factors.ingestion.parsers.epa_ghg_hub",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-15",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_epa_hub"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "epa",
+        "stationary_combustion",
+        "naphtha"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:epa-hub:EPA:stat_petroleum_coke:US:2024:v1",
+      "factor_id_alias": "EF:EPA:stat_petroleum_coke:US:2024:v1",
+      "source_urn": "urn:gl:source:epa-hub",
+      "factor_pack_urn": "urn:gl:pack:epa-hub:emission-factors-hub:2024.1",
+      "name": "petroleum coke \u2014 US",
+      "description": "Emission emission factor for petroleum coke \u2014 US, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "fuel",
+      "value": 3143.7200000000003,
+      "unit_urn": "urn:gl:unit:kgco2e/short-tons",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:us",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ipcc-tier-1-stationary-combustion",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub",
+        "source_record_id": "epa_hub;record-16",
+        "source_publication": "EPA GHG Emission Factors Hub",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/epa-hub/2024.1/seed.json",
+        "raw_artifact_sha256": "c8890e3dbf3315fe6e3cd61d5eac7a2a3d5a0b2c041bdb03f7154c40623f05ed",
+        "parser_id": "greenlang.factors.ingestion.parsers.epa_ghg_hub",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-16",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_epa_hub"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "epa",
+        "stationary_combustion",
+        "petroleum_coke"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:epa-hub:EPA:stat_anthracite_coal:US:2024:v1",
+      "factor_id_alias": "EF:EPA:stat_anthracite_coal:US:2024:v1",
+      "source_urn": "urn:gl:source:epa-hub",
+      "factor_pack_urn": "urn:gl:pack:epa-hub:emission-factors-hub:2024.1",
+      "name": "anthracite coal \u2014 US",
+      "description": "Emission emission factor for anthracite coal \u2014 US, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "fuel",
+      "value": 2620.76,
+      "unit_urn": "urn:gl:unit:kgco2e/short-tons",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:us",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ipcc-tier-1-stationary-combustion",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub",
+        "source_record_id": "epa_hub;record-17",
+        "source_publication": "EPA GHG Emission Factors Hub",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/epa-hub/2024.1/seed.json",
+        "raw_artifact_sha256": "7435b2c581cb429b20ae5f600827d9ca3e622547ff27bdcb6b3b238cfa5ce2da",
+        "parser_id": "greenlang.factors.ingestion.parsers.epa_ghg_hub",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-17",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_epa_hub"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "epa",
+        "stationary_combustion",
+        "anthracite_coal"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:epa-hub:EPA:stat_bituminous_coal:US:2024:v1",
+      "factor_id_alias": "EF:EPA:stat_bituminous_coal:US:2024:v1",
+      "source_urn": "urn:gl:source:epa-hub",
+      "factor_pack_urn": "urn:gl:pack:epa-hub:emission-factors-hub:2024.1",
+      "name": "bituminous coal \u2014 US",
+      "description": "Emission emission factor for bituminous coal \u2014 US, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "fuel",
+      "value": 2346.76,
+      "unit_urn": "urn:gl:unit:kgco2e/short-tons",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:us",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ipcc-tier-1-stationary-combustion",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub",
+        "source_record_id": "epa_hub;record-18",
+        "source_publication": "EPA GHG Emission Factors Hub",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/epa-hub/2024.1/seed.json",
+        "raw_artifact_sha256": "bb31cc53502f16ff0169ff1d891ca4d94db0b4842581bf2f54c3158a3deaeded",
+        "parser_id": "greenlang.factors.ingestion.parsers.epa_ghg_hub",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-18",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_epa_hub"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "epa",
+        "stationary_combustion",
+        "bituminous_coal"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:epa-hub:EPA:stat_sub_bituminous_coal:US:2024:v1",
+      "factor_id_alias": "EF:EPA:stat_sub_bituminous_coal:US:2024:v1",
+      "source_urn": "urn:gl:source:epa-hub",
+      "factor_pack_urn": "urn:gl:pack:epa-hub:emission-factors-hub:2024.1",
+      "name": "sub bituminous coal \u2014 US",
+      "description": "Emission emission factor for sub bituminous coal \u2014 US, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "fuel",
+      "value": 1844.76,
+      "unit_urn": "urn:gl:unit:kgco2e/short-tons",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:us",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ipcc-tier-1-stationary-combustion",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub",
+        "source_record_id": "epa_hub;record-19",
+        "source_publication": "EPA GHG Emission Factors Hub",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/epa-hub/2024.1/seed.json",
+        "raw_artifact_sha256": "109b3371c39c4257d93550f004b5e94db0b82930ffb7fb93836db7c7c22619d4",
+        "parser_id": "greenlang.factors.ingestion.parsers.epa_ghg_hub",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-19",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_epa_hub"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "epa",
+        "stationary_combustion",
+        "sub_bituminous_coal"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:epa-hub:EPA:stat_lignite_coal:US:2024:v1",
+      "factor_id_alias": "EF:EPA:stat_lignite_coal:US:2024:v1",
+      "source_urn": "urn:gl:source:epa-hub",
+      "factor_pack_urn": "urn:gl:pack:epa-hub:emission-factors-hub:2024.1",
+      "name": "lignite coal \u2014 US",
+      "description": "Emission emission factor for lignite coal \u2014 US, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "fuel",
+      "value": 1407.76,
+      "unit_urn": "urn:gl:unit:kgco2e/short-tons",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:us",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ipcc-tier-1-stationary-combustion",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub",
+        "source_record_id": "epa_hub;record-20",
+        "source_publication": "EPA GHG Emission Factors Hub",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/epa-hub/2024.1/seed.json",
+        "raw_artifact_sha256": "fe0e58f2367a32bf34c71b9beae2590d0a693482edc425f5f9c4b41110f86f83",
+        "parser_id": "greenlang.factors.ingestion.parsers.epa_ghg_hub",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-20",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_epa_hub"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "epa",
+        "stationary_combustion",
+        "lignite_coal"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:epa-hub:EPA:stat_coke_coal:US:2024:v1",
+      "factor_id_alias": "EF:EPA:stat_coke_coal:US:2024:v1",
+      "source_urn": "urn:gl:source:epa-hub",
+      "factor_pack_urn": "urn:gl:pack:epa-hub:emission-factors-hub:2024.1",
+      "name": "coke coal \u2014 US",
+      "description": "Emission emission factor for coke coal \u2014 US, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "fuel",
+      "value": 2893.76,
+      "unit_urn": "urn:gl:unit:kgco2e/short-tons",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:us",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ipcc-tier-1-stationary-combustion",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub",
+        "source_record_id": "epa_hub;record-21",
+        "source_publication": "EPA GHG Emission Factors Hub",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/epa-hub/2024.1/seed.json",
+        "raw_artifact_sha256": "83ae3027b303b163e55747c903e7091956baaef1f02eeaaae9fc318d45f191c1",
+        "parser_id": "greenlang.factors.ingestion.parsers.epa_ghg_hub",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-21",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_epa_hub"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "epa",
+        "stationary_combustion",
+        "coke_coal"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:epa-hub:EPA:stat_wood_waste:US:2024:v1",
+      "factor_id_alias": "EF:EPA:stat_wood_waste:US:2024:v1",
+      "source_urn": "urn:gl:source:epa-hub",
+      "factor_pack_urn": "urn:gl:pack:epa-hub:emission-factors-hub:2024.1",
+      "name": "wood waste \u2014 US",
+      "description": "Emission emission factor for wood waste \u2014 US, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "fuel",
+      "value": 1874.0800000000002,
+      "unit_urn": "urn:gl:unit:kgco2e/short-tons",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:us",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ipcc-tier-1-stationary-combustion",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub",
+        "source_record_id": "epa_hub;record-22",
+        "source_publication": "EPA GHG Emission Factors Hub",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/epa-hub/2024.1/seed.json",
+        "raw_artifact_sha256": "aa00840d6e9882aea34711a9011a60dd39751e5004c0a0d1e4c1d9615efc4fa2",
+        "parser_id": "greenlang.factors.ingestion.parsers.epa_ghg_hub",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-22",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_epa_hub"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "epa",
+        "stationary_combustion",
+        "wood_waste"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:epa-hub:EPA:stat_wood_pellets:US:2024:v1",
+      "factor_id_alias": "EF:EPA:stat_wood_pellets:US:2024:v1",
+      "source_urn": "urn:gl:source:epa-hub",
+      "factor_pack_urn": "urn:gl:pack:epa-hub:emission-factors-hub:2024.1",
+      "name": "wood pellets \u2014 US",
+      "description": "Emission emission factor for wood pellets \u2014 US, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "fuel",
+      "value": 1914.82,
+      "unit_urn": "urn:gl:unit:kgco2e/short-tons",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:us",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ipcc-tier-1-stationary-combustion",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub",
+        "source_record_id": "epa_hub;record-23",
+        "source_publication": "EPA GHG Emission Factors Hub",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/epa-hub/2024.1/seed.json",
+        "raw_artifact_sha256": "6bfcf810e004131f348c36a272642971aeefeac893375e5b5ddd92b0a7599351",
+        "parser_id": "greenlang.factors.ingestion.parsers.epa_ghg_hub",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-23",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_epa_hub"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "epa",
+        "stationary_combustion",
+        "wood_pellets"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:epa-hub:EPA:stat_biogas:US:2024:v1",
+      "factor_id_alias": "EF:EPA:stat_biogas:US:2024:v1",
+      "source_urn": "urn:gl:source:epa-hub",
+      "factor_pack_urn": "urn:gl:pack:epa-hub:emission-factors-hub:2024.1",
+      "name": "biogas \u2014 US",
+      "description": "Emission emission factor for biogas \u2014 US, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "fuel",
+      "value": 52.33432,
+      "unit_urn": "urn:gl:unit:kgco2e/mmbtu",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:us",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ipcc-tier-1-stationary-combustion",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub",
+        "source_record_id": "epa_hub;record-24",
+        "source_publication": "EPA GHG Emission Factors Hub",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/epa-hub/2024.1/seed.json",
+        "raw_artifact_sha256": "f58021b149cbc69d03e08c148191d6737707f116ee5fe536152b4c6a53a00893",
+        "parser_id": "greenlang.factors.ingestion.parsers.epa_ghg_hub",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-24",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_epa_hub"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "epa",
+        "stationary_combustion",
+        "biogas"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:epa-hub:EPA:stat_landfill_gas:US:2024:v1",
+      "factor_id_alias": "EF:EPA:stat_landfill_gas:US:2024:v1",
+      "source_urn": "urn:gl:source:epa-hub",
+      "factor_pack_urn": "urn:gl:pack:epa-hub:emission-factors-hub:2024.1",
+      "name": "landfill gas \u2014 US",
+      "description": "Emission emission factor for landfill gas \u2014 US, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "fuel",
+      "value": 52.33432,
+      "unit_urn": "urn:gl:unit:kgco2e/mmbtu",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:us",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ipcc-tier-1-stationary-combustion",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub",
+        "source_record_id": "epa_hub;record-25",
+        "source_publication": "EPA GHG Emission Factors Hub",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/epa-hub/2024.1/seed.json",
+        "raw_artifact_sha256": "85df6483653a2fd1a7951b1906c220bf87a744e9f228fa7b804197f9fc9fd7e8",
+        "parser_id": "greenlang.factors.ingestion.parsers.epa_ghg_hub",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-25",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_epa_hub"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "epa",
+        "stationary_combustion",
+        "landfill_gas"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:epa-hub:EPA:stat_msw_refuse_derived_fuel:US:2024:v1",
+      "factor_id_alias": "EF:EPA:stat_msw_refuse_derived_fuel:US:2024:v1",
+      "source_urn": "urn:gl:source:epa-hub",
+      "factor_pack_urn": "urn:gl:pack:epa-hub:emission-factors-hub:2024.1",
+      "name": "msw refuse derived fuel \u2014 US",
+      "description": "Emission emission factor for msw refuse derived fuel \u2014 US, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "fuel",
+      "value": 1020.1600000000001,
+      "unit_urn": "urn:gl:unit:kgco2e/short-tons",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:us",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ipcc-tier-1-stationary-combustion",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub",
+        "source_record_id": "epa_hub;record-26",
+        "source_publication": "EPA GHG Emission Factors Hub",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/epa-hub/2024.1/seed.json",
+        "raw_artifact_sha256": "bf0eb2d6f91fd5870f16ed23bff21023f70b6f8cda1402dbbc98d1e7ab3b160b",
+        "parser_id": "greenlang.factors.ingestion.parsers.epa_ghg_hub",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-26",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_epa_hub"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "epa",
+        "stationary_combustion",
+        "msw_refuse_derived_fuel"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:epa-hub:EPA:stat_lng:US:2024:v1",
+      "factor_id_alias": "EF:EPA:stat_lng:US:2024:v1",
+      "source_urn": "urn:gl:source:epa-hub",
+      "factor_pack_urn": "urn:gl:pack:epa-hub:emission-factors-hub:2024.1",
+      "name": "lng \u2014 US",
+      "description": "Emission emission factor for lng \u2014 US, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "fuel",
+      "value": 4.464696999999999,
+      "unit_urn": "urn:gl:unit:kgco2e/gallons",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:us",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ipcc-tier-1-stationary-combustion",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub",
+        "source_record_id": "epa_hub;record-27",
+        "source_publication": "EPA GHG Emission Factors Hub",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/epa-hub/2024.1/seed.json",
+        "raw_artifact_sha256": "d999d7a1cbba62d11b061a6478413b97f454c45bf081c70da300b84d81371f65",
+        "parser_id": "greenlang.factors.ingestion.parsers.epa_ghg_hub",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-27",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_epa_hub"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "epa",
+        "stationary_combustion",
+        "lng"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:epa-hub:EPA:stat_cng:US:2024:v1",
+      "factor_id_alias": "EF:EPA:stat_cng:US:2024:v1",
+      "source_urn": "urn:gl:source:epa-hub",
+      "factor_pack_urn": "urn:gl:pack:epa-hub:emission-factors-hub:2024.1",
+      "name": "cng \u2014 US",
+      "description": "Emission emission factor for cng \u2014 US, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "fuel",
+      "value": 0.055155300000000004,
+      "unit_urn": "urn:gl:unit:kgco2e/scf",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:us",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ipcc-tier-1-stationary-combustion",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub",
+        "source_record_id": "epa_hub;record-28",
+        "source_publication": "EPA GHG Emission Factors Hub",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/epa-hub/2024.1/seed.json",
+        "raw_artifact_sha256": "497aea2efac6b31458c69a44b54fa464e3f805fc0a5c25cc9ba13b012c2d28e7",
+        "parser_id": "greenlang.factors.ingestion.parsers.epa_ghg_hub",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-28",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_epa_hub"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "epa",
+        "stationary_combustion",
+        "cng"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:epa-hub:EPA:stat_biodiesel_b100:US:2024:v1",
+      "factor_id_alias": "EF:EPA:stat_biodiesel_b100:US:2024:v1",
+      "source_urn": "urn:gl:source:epa-hub",
+      "factor_pack_urn": "urn:gl:pack:epa-hub:emission-factors-hub:2024.1",
+      "name": "biodiesel b100 \u2014 US",
+      "description": "Emission emission factor for biodiesel b100 \u2014 US, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "fuel",
+      "value": 9.48003,
+      "unit_urn": "urn:gl:unit:kgco2e/gallons",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:us",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ipcc-tier-1-stationary-combustion",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub",
+        "source_record_id": "epa_hub;record-29",
+        "source_publication": "EPA GHG Emission Factors Hub",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/epa-hub/2024.1/seed.json",
+        "raw_artifact_sha256": "0a0f7cfc81088b855a332861554841e0eb52d12d487ddb5a9e919ab29139f356",
+        "parser_id": "greenlang.factors.ingestion.parsers.epa_ghg_hub",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-29",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_epa_hub"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "epa",
+        "stationary_combustion",
+        "biodiesel_b100"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:epa-hub:EPA:stat_ethanol_e100:US:2024:v1",
+      "factor_id_alias": "EF:EPA:stat_ethanol_e100:US:2024:v1",
+      "source_urn": "urn:gl:source:epa-hub",
+      "factor_pack_urn": "urn:gl:pack:epa-hub:emission-factors-hub:2024.1",
+      "name": "ethanol e100 \u2014 US",
+      "description": "Emission emission factor for ethanol e100 \u2014 US, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "fuel",
+      "value": 5.59003,
+      "unit_urn": "urn:gl:unit:kgco2e/gallons",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:us",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ipcc-tier-1-stationary-combustion",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub",
+        "source_record_id": "epa_hub;record-30",
+        "source_publication": "EPA GHG Emission Factors Hub",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/epa-hub/2024.1/seed.json",
+        "raw_artifact_sha256": "7fb3fa06fb455773547ca3a94c16ec22f4241ae0c938ce8b02dbf2597cc5ed3b",
+        "parser_id": "greenlang.factors.ingestion.parsers.epa_ghg_hub",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-30",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_epa_hub"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "epa",
+        "stationary_combustion",
+        "ethanol_e100"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:epa-hub:EPA:stat_asphalt_road_oil:US:2024:v1",
+      "factor_id_alias": "EF:EPA:stat_asphalt_road_oil:US:2024:v1",
+      "source_urn": "urn:gl:source:epa-hub",
+      "factor_pack_urn": "urn:gl:pack:epa-hub:emission-factors-hub:2024.1",
+      "name": "asphalt road oil \u2014 US",
+      "description": "Emission emission factor for asphalt road oil \u2014 US, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "fuel",
+      "value": 75.6078,
+      "unit_urn": "urn:gl:unit:kgco2e/mmbtu",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:us",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ipcc-tier-1-stationary-combustion",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub",
+        "source_record_id": "epa_hub;record-31",
+        "source_publication": "EPA GHG Emission Factors Hub",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/epa-hub/2024.1/seed.json",
+        "raw_artifact_sha256": "113fdaf881a5781fd43ddcbf91a2129846dbe19b682fbcf7d54caa9ca333381f",
+        "parser_id": "greenlang.factors.ingestion.parsers.epa_ghg_hub",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-31",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_epa_hub"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "epa",
+        "stationary_combustion",
+        "asphalt_road_oil"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:epa-hub:EPA:stat_lubricants:US:2024:v1",
+      "factor_id_alias": "EF:EPA:stat_lubricants:US:2024:v1",
+      "source_urn": "urn:gl:source:epa-hub",
+      "factor_pack_urn": "urn:gl:pack:epa-hub:emission-factors-hub:2024.1",
+      "name": "lubricants \u2014 US",
+      "description": "Emission emission factor for lubricants \u2014 US, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "fuel",
+      "value": 74.5178,
+      "unit_urn": "urn:gl:unit:kgco2e/mmbtu",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:us",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ipcc-tier-1-stationary-combustion",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub",
+        "source_record_id": "epa_hub;record-32",
+        "source_publication": "EPA GHG Emission Factors Hub",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/epa-hub/2024.1/seed.json",
+        "raw_artifact_sha256": "34246f7a3518ceb1b548cb26a1cdf1a9395d266b7e053119d4abf99912643746",
+        "parser_id": "greenlang.factors.ingestion.parsers.epa_ghg_hub",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-32",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_epa_hub"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "epa",
+        "stationary_combustion",
+        "lubricants"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:epa-hub:EPA:stat_tires:US:2024:v1",
+      "factor_id_alias": "EF:EPA:stat_tires:US:2024:v1",
+      "source_urn": "urn:gl:source:epa-hub",
+      "factor_pack_urn": "urn:gl:pack:epa-hub:emission-factors-hub:2024.1",
+      "name": "tires \u2014 US",
+      "description": "Emission emission factor for tires \u2014 US, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "fuel",
+      "value": 2879.08,
+      "unit_urn": "urn:gl:unit:kgco2e/short-tons",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:us",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ipcc-tier-1-stationary-combustion",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub",
+        "source_record_id": "epa_hub;record-33",
+        "source_publication": "EPA GHG Emission Factors Hub",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/epa-hub/2024.1/seed.json",
+        "raw_artifact_sha256": "813d13180abe8e6b1f4f89b6a4a5ae5cb60d57578746b94e648492b6495bf09c",
+        "parser_id": "greenlang.factors.ingestion.parsers.epa_ghg_hub",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-33",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_epa_hub"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "epa",
+        "stationary_combustion",
+        "tires"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:epa-hub:EPA:mob_motor_gasoline_passenger_car:US:2024:v1",
+      "factor_id_alias": "EF:EPA:mob_motor_gasoline_passenger_car:US:2024:v1",
+      "source_urn": "urn:gl:source:epa-hub",
+      "factor_pack_urn": "urn:gl:pack:epa-hub:emission-factors-hub:2024.1",
+      "name": "motor gasoline \u2014 US",
+      "description": "Emission emission factor for motor gasoline \u2014 US, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "fuel",
+      "value": 8.802539999999999,
+      "unit_urn": "urn:gl:unit:kgco2e/gallons",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:us",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ipcc-tier-1-stationary-combustion",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub",
+        "source_record_id": "epa_hub;record-34",
+        "source_publication": "EPA GHG Emission Factors Hub",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/epa-hub/2024.1/seed.json",
+        "raw_artifact_sha256": "a7279dcf9af4d60f78559d9d1fec6e1aefbcb27bc033dcd54daac3d43f963b2a",
+        "parser_id": "greenlang.factors.ingestion.parsers.epa_ghg_hub",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-34",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_epa_hub"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "epa",
+        "mobile_combustion",
+        "motor_gasoline",
+        "passenger_car"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:epa-hub:EPA:mob_motor_gasoline_light_duty_truck:US:2024:v1",
+      "factor_id_alias": "EF:EPA:mob_motor_gasoline_light_duty_truck:US:2024:v1",
+      "source_urn": "urn:gl:source:epa-hub",
+      "factor_pack_urn": "urn:gl:pack:epa-hub:emission-factors-hub:2024.1",
+      "name": "motor gasoline \u2014 US",
+      "description": "Emission emission factor for motor gasoline \u2014 US, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "fuel",
+      "value": 8.806109999999999,
+      "unit_urn": "urn:gl:unit:kgco2e/gallons",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:us",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ipcc-tier-1-stationary-combustion",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub",
+        "source_record_id": "epa_hub;record-35",
+        "source_publication": "EPA GHG Emission Factors Hub",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/epa-hub/2024.1/seed.json",
+        "raw_artifact_sha256": "e4c08dcc854527d8d99e15eff934852b51ee801ec526d739106cb46c8cf83594",
+        "parser_id": "greenlang.factors.ingestion.parsers.epa_ghg_hub",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-35",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_epa_hub"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "epa",
+        "mobile_combustion",
+        "motor_gasoline",
+        "light_duty_truck"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:epa-hub:EPA:mob_motor_gasoline_heavy_duty_vehicle:US:2024:v1",
+      "factor_id_alias": "EF:EPA:mob_motor_gasoline_heavy_duty_vehicle:US:2024:v1",
+      "source_urn": "urn:gl:source:epa-hub",
+      "factor_pack_urn": "urn:gl:pack:epa-hub:emission-factors-hub:2024.1",
+      "name": "motor gasoline \u2014 US",
+      "description": "Emission emission factor for motor gasoline \u2014 US, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "fuel",
+      "value": 8.841809999999999,
+      "unit_urn": "urn:gl:unit:kgco2e/gallons",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:us",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ipcc-tier-1-stationary-combustion",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub",
+        "source_record_id": "epa_hub;record-36",
+        "source_publication": "EPA GHG Emission Factors Hub",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/epa-hub/2024.1/seed.json",
+        "raw_artifact_sha256": "b52eedea09231ca327854a21cbf8980a7c760cfb0d9d99f5d67819751ae599f4",
+        "parser_id": "greenlang.factors.ingestion.parsers.epa_ghg_hub",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-36",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_epa_hub"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "epa",
+        "mobile_combustion",
+        "motor_gasoline",
+        "heavy_duty_vehicle"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:epa-hub:EPA:mob_motor_gasoline_motorcycle:US:2024:v1",
+      "factor_id_alias": "EF:EPA:mob_motor_gasoline_motorcycle:US:2024:v1",
+      "source_urn": "urn:gl:source:epa-hub",
+      "factor_pack_urn": "urn:gl:pack:epa-hub:emission-factors-hub:2024.1",
+      "name": "motor gasoline \u2014 US",
+      "description": "Emission emission factor for motor gasoline \u2014 US, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "fuel",
+      "value": 8.81514,
+      "unit_urn": "urn:gl:unit:kgco2e/gallons",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:us",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ipcc-tier-1-stationary-combustion",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub",
+        "source_record_id": "epa_hub;record-37",
+        "source_publication": "EPA GHG Emission Factors Hub",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/epa-hub/2024.1/seed.json",
+        "raw_artifact_sha256": "ea89b500ce994a77996953f323ecb0808d8fa6551b6c3ec8fb53ccf5542eea23",
+        "parser_id": "greenlang.factors.ingestion.parsers.epa_ghg_hub",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-37",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_epa_hub"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "epa",
+        "mobile_combustion",
+        "motor_gasoline",
+        "motorcycle"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:epa-hub:EPA:mob_diesel_passenger_car:US:2024:v1",
+      "factor_id_alias": "EF:EPA:mob_diesel_passenger_car:US:2024:v1",
+      "source_urn": "urn:gl:source:epa-hub",
+      "factor_pack_urn": "urn:gl:pack:epa-hub:emission-factors-hub:2024.1",
+      "name": "diesel \u2014 US",
+      "description": "Emission emission factor for diesel \u2014 US, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "fuel",
+      "value": 10.222320000000002,
+      "unit_urn": "urn:gl:unit:kgco2e/gallons",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:us",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ipcc-tier-1-stationary-combustion",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub",
+        "source_record_id": "epa_hub;record-38",
+        "source_publication": "EPA GHG Emission Factors Hub",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/epa-hub/2024.1/seed.json",
+        "raw_artifact_sha256": "48213ffb740ef6810f335337fedc9e21bdf6af2364d679669d3d511b7bb11de4",
+        "parser_id": "greenlang.factors.ingestion.parsers.epa_ghg_hub",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-38",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_epa_hub"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "epa",
+        "mobile_combustion",
+        "diesel",
+        "passenger_car"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:epa-hub:EPA:mob_diesel_light_duty_truck:US:2024:v1",
+      "factor_id_alias": "EF:EPA:mob_diesel_light_duty_truck:US:2024:v1",
+      "source_urn": "urn:gl:source:epa-hub",
+      "factor_pack_urn": "urn:gl:pack:epa-hub:emission-factors-hub:2024.1",
+      "name": "diesel \u2014 US",
+      "description": "Emission emission factor for diesel \u2014 US, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "fuel",
+      "value": 10.23051,
+      "unit_urn": "urn:gl:unit:kgco2e/gallons",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:us",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ipcc-tier-1-stationary-combustion",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub",
+        "source_record_id": "epa_hub;record-39",
+        "source_publication": "EPA GHG Emission Factors Hub",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/epa-hub/2024.1/seed.json",
+        "raw_artifact_sha256": "7b10ede4bb6905a6dd09303ada16a010a85952a0761868b08f310d638448a2ee",
+        "parser_id": "greenlang.factors.ingestion.parsers.epa_ghg_hub",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-39",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_epa_hub"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "epa",
+        "mobile_combustion",
+        "diesel",
+        "light_duty_truck"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:epa-hub:EPA:mob_diesel_heavy_duty_vehicle:US:2024:v1",
+      "factor_id_alias": "EF:EPA:mob_diesel_heavy_duty_vehicle:US:2024:v1",
+      "source_urn": "urn:gl:source:epa-hub",
+      "factor_pack_urn": "urn:gl:pack:epa-hub:emission-factors-hub:2024.1",
+      "name": "diesel \u2014 US",
+      "description": "Emission emission factor for diesel \u2014 US, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "fuel",
+      "value": 10.238700000000001,
+      "unit_urn": "urn:gl:unit:kgco2e/gallons",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:us",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ipcc-tier-1-stationary-combustion",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub",
+        "source_record_id": "epa_hub;record-40",
+        "source_publication": "EPA GHG Emission Factors Hub",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/epa-hub/2024.1/seed.json",
+        "raw_artifact_sha256": "85b5eeee8ebb01a978afc974fba53aa892c80ff17dce22b8298e19242d0e4912",
+        "parser_id": "greenlang.factors.ingestion.parsers.epa_ghg_hub",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-40",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_epa_hub"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "epa",
+        "mobile_combustion",
+        "diesel",
+        "heavy_duty_vehicle"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:epa-hub:EPA:mob_diesel_bus:US:2024:v1",
+      "factor_id_alias": "EF:EPA:mob_diesel_bus:US:2024:v1",
+      "source_urn": "urn:gl:source:epa-hub",
+      "factor_pack_urn": "urn:gl:pack:epa-hub:emission-factors-hub:2024.1",
+      "name": "diesel \u2014 US",
+      "description": "Emission emission factor for diesel \u2014 US, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "fuel",
+      "value": 10.235970000000002,
+      "unit_urn": "urn:gl:unit:kgco2e/gallons",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:us",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ipcc-tier-1-stationary-combustion",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub",
+        "source_record_id": "epa_hub;record-41",
+        "source_publication": "EPA GHG Emission Factors Hub",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/epa-hub/2024.1/seed.json",
+        "raw_artifact_sha256": "bbb72c3a084d453aa5eeb91893cc3d9bb89d12c4d00403416b35e524474bb6d2",
+        "parser_id": "greenlang.factors.ingestion.parsers.epa_ghg_hub",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-41",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_epa_hub"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "epa",
+        "mobile_combustion",
+        "diesel",
+        "bus"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:epa-hub:EPA:mob_diesel_agricultural:US:2024:v1",
+      "factor_id_alias": "EF:EPA:mob_diesel_agricultural:US:2024:v1",
+      "source_urn": "urn:gl:source:epa-hub",
+      "factor_pack_urn": "urn:gl:pack:epa-hub:emission-factors-hub:2024.1",
+      "name": "diesel \u2014 US",
+      "description": "Emission emission factor for diesel \u2014 US, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "fuel",
+      "value": 10.23324,
+      "unit_urn": "urn:gl:unit:kgco2e/gallons",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:us",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ipcc-tier-1-stationary-combustion",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub",
+        "source_record_id": "epa_hub;record-42",
+        "source_publication": "EPA GHG Emission Factors Hub",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/epa-hub/2024.1/seed.json",
+        "raw_artifact_sha256": "9a79883ace73d1416fb7cefd22b8eb1145f00560d23c9c1c2616e9d3657dff68",
+        "parser_id": "greenlang.factors.ingestion.parsers.epa_ghg_hub",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-42",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_epa_hub"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "epa",
+        "mobile_combustion",
+        "diesel",
+        "agricultural"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:epa-hub:EPA:mob_diesel_construction:US:2024:v1",
+      "factor_id_alias": "EF:EPA:mob_diesel_construction:US:2024:v1",
+      "source_urn": "urn:gl:source:epa-hub",
+      "factor_pack_urn": "urn:gl:pack:epa-hub:emission-factors-hub:2024.1",
+      "name": "diesel \u2014 US",
+      "description": "Emission emission factor for diesel \u2014 US, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "fuel",
+      "value": 10.23324,
+      "unit_urn": "urn:gl:unit:kgco2e/gallons",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:us",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ipcc-tier-1-stationary-combustion",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub",
+        "source_record_id": "epa_hub;record-43",
+        "source_publication": "EPA GHG Emission Factors Hub",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/epa-hub/2024.1/seed.json",
+        "raw_artifact_sha256": "240bedd88973aa865ee16c8bff2e61e58b94c96bda58c76073d482021aeb5ec0",
+        "parser_id": "greenlang.factors.ingestion.parsers.epa_ghg_hub",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-43",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_epa_hub"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "epa",
+        "mobile_combustion",
+        "diesel",
+        "construction"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:epa-hub:EPA:mob_jet_fuel_aircraft:US:2024:v1",
+      "factor_id_alias": "EF:EPA:mob_jet_fuel_aircraft:US:2024:v1",
+      "source_urn": "urn:gl:source:epa-hub",
+      "factor_pack_urn": "urn:gl:pack:epa-hub:emission-factors-hub:2024.1",
+      "name": "jet fuel \u2014 US",
+      "description": "Emission emission factor for jet fuel \u2014 US, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "fuel",
+      "value": 9.82644,
+      "unit_urn": "urn:gl:unit:kgco2e/gallons",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:us",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ipcc-tier-1-stationary-combustion",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub",
+        "source_record_id": "epa_hub;record-44",
+        "source_publication": "EPA GHG Emission Factors Hub",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/epa-hub/2024.1/seed.json",
+        "raw_artifact_sha256": "2bcc16aeebddf9b11e2efd8b70d4cd430bfa987fb9dcd096ba51905149d50099",
+        "parser_id": "greenlang.factors.ingestion.parsers.epa_ghg_hub",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-44",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_epa_hub"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "epa",
+        "mobile_combustion",
+        "jet_fuel",
+        "aircraft"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:epa-hub:EPA:mob_aviation_gasoline_aircraft:US:2024:v1",
+      "factor_id_alias": "EF:EPA:mob_aviation_gasoline_aircraft:US:2024:v1",
+      "source_urn": "urn:gl:source:epa-hub",
+      "factor_pack_urn": "urn:gl:pack:epa-hub:emission-factors-hub:2024.1",
+      "name": "aviation gasoline \u2014 US",
+      "description": "Emission emission factor for aviation gasoline \u2014 US, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "fuel",
+      "value": 8.468259999999999,
+      "unit_urn": "urn:gl:unit:kgco2e/gallons",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:us",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ipcc-tier-1-stationary-combustion",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub",
+        "source_record_id": "epa_hub;record-45",
+        "source_publication": "EPA GHG Emission Factors Hub",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/epa-hub/2024.1/seed.json",
+        "raw_artifact_sha256": "7f1a0ded394155c77321953dceeda27d3d697af42c598e83da1b0d195b6ffa2a",
+        "parser_id": "greenlang.factors.ingestion.parsers.epa_ghg_hub",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-45",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_epa_hub"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "epa",
+        "mobile_combustion",
+        "aviation_gasoline",
+        "aircraft"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:epa-hub:EPA:mob_diesel_marine:US:2024:v1",
+      "factor_id_alias": "EF:EPA:mob_diesel_marine:US:2024:v1",
+      "source_urn": "urn:gl:source:epa-hub",
+      "factor_pack_urn": "urn:gl:pack:epa-hub:emission-factors-hub:2024.1",
+      "name": "diesel \u2014 US",
+      "description": "Emission emission factor for diesel \u2014 US, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "fuel",
+      "value": 10.306040000000001,
+      "unit_urn": "urn:gl:unit:kgco2e/gallons",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:us",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ipcc-tier-1-stationary-combustion",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub",
+        "source_record_id": "epa_hub;record-46",
+        "source_publication": "EPA GHG Emission Factors Hub",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/epa-hub/2024.1/seed.json",
+        "raw_artifact_sha256": "2eceaac65ddb3d69c211c225d44ccba9189f90b4f3bb2b8d7bdd2f1b6d9ab696",
+        "parser_id": "greenlang.factors.ingestion.parsers.epa_ghg_hub",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-46",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_epa_hub"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "epa",
+        "mobile_combustion",
+        "diesel",
+        "marine"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:epa-hub:EPA:mob_residual_fuel_oil_6_marine:US:2024:v1",
+      "factor_id_alias": "EF:EPA:mob_residual_fuel_oil_6_marine:US:2024:v1",
+      "source_urn": "urn:gl:source:epa-hub",
+      "factor_pack_urn": "urn:gl:pack:epa-hub:emission-factors-hub:2024.1",
+      "name": "residual fuel oil 6 \u2014 US",
+      "description": "Emission emission factor for residual fuel oil 6 \u2014 US, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "fuel",
+      "value": 11.88604,
+      "unit_urn": "urn:gl:unit:kgco2e/gallons",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:us",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ipcc-tier-1-stationary-combustion",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub",
+        "source_record_id": "epa_hub;record-47",
+        "source_publication": "EPA GHG Emission Factors Hub",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/epa-hub/2024.1/seed.json",
+        "raw_artifact_sha256": "f9050b6a8903f556b9a644efc4e0e73adcc55ddaa14905db36596ef31a4ca895",
+        "parser_id": "greenlang.factors.ingestion.parsers.epa_ghg_hub",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-47",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_epa_hub"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "epa",
+        "mobile_combustion",
+        "residual_fuel_oil_6",
+        "marine"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:epa-hub:EPA:mob_lpg_light_duty_truck:US:2024:v1",
+      "factor_id_alias": "EF:EPA:mob_lpg_light_duty_truck:US:2024:v1",
+      "source_urn": "urn:gl:source:epa-hub",
+      "factor_pack_urn": "urn:gl:pack:epa-hub:emission-factors-hub:2024.1",
+      "name": "lpg \u2014 US",
+      "description": "Emission emission factor for lpg \u2014 US, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "fuel",
+      "value": 5.7517499999999995,
+      "unit_urn": "urn:gl:unit:kgco2e/gallons",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:us",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ipcc-tier-1-stationary-combustion",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub",
+        "source_record_id": "epa_hub;record-48",
+        "source_publication": "EPA GHG Emission Factors Hub",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/epa-hub/2024.1/seed.json",
+        "raw_artifact_sha256": "2b6de172d1a79a7c642f8420e365825dc07887003491921411c891a9eb4a3112",
+        "parser_id": "greenlang.factors.ingestion.parsers.epa_ghg_hub",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-48",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_epa_hub"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "epa",
+        "mobile_combustion",
+        "lpg",
+        "light_duty_truck"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:epa-hub:EPA:mob_cng_heavy_duty_vehicle:US:2024:v1",
+      "factor_id_alias": "EF:EPA:mob_cng_heavy_duty_vehicle:US:2024:v1",
+      "source_urn": "urn:gl:source:epa-hub",
+      "factor_pack_urn": "urn:gl:pack:epa-hub:emission-factors-hub:2024.1",
+      "name": "cng \u2014 US",
+      "description": "Emission emission factor for cng \u2014 US, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "fuel",
+      "value": 0.056318,
+      "unit_urn": "urn:gl:unit:kgco2e/scf",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:us",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ipcc-tier-1-stationary-combustion",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub",
+        "source_record_id": "epa_hub;record-49",
+        "source_publication": "EPA GHG Emission Factors Hub",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/epa-hub/2024.1/seed.json",
+        "raw_artifact_sha256": "c4f3e6aef2e1110ee059dda0993d596b9d47f9eda9072c1f660a38a4dc775b89",
+        "parser_id": "greenlang.factors.ingestion.parsers.epa_ghg_hub",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-49",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_epa_hub"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "epa",
+        "mobile_combustion",
+        "cng",
+        "heavy_duty_vehicle"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:epa-hub:EPA:mob_lng_heavy_duty_vehicle:US:2024:v1",
+      "factor_id_alias": "EF:EPA:mob_lng_heavy_duty_vehicle:US:2024:v1",
+      "source_urn": "urn:gl:source:epa-hub",
+      "factor_pack_urn": "urn:gl:pack:epa-hub:emission-factors-hub:2024.1",
+      "name": "lng \u2014 US",
+      "description": "Emission emission factor for lng \u2014 US, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "fuel",
+      "value": 4.57088,
+      "unit_urn": "urn:gl:unit:kgco2e/gallons",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:us",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ipcc-tier-1-stationary-combustion",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub",
+        "source_record_id": "epa_hub;record-50",
+        "source_publication": "EPA GHG Emission Factors Hub",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/epa-hub/2024.1/seed.json",
+        "raw_artifact_sha256": "4936586557d5bd9eb02af5b8598242c980ec8421d79f5cd70398e4f54412464b",
+        "parser_id": "greenlang.factors.ingestion.parsers.epa_ghg_hub",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-50",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_epa_hub"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "epa",
+        "mobile_combustion",
+        "lng",
+        "heavy_duty_vehicle"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:epa-hub:EPA:mob_ethanol_e85_passenger_car:US:2024:v1",
+      "factor_id_alias": "EF:EPA:mob_ethanol_e85_passenger_car:US:2024:v1",
+      "source_urn": "urn:gl:source:epa-hub",
+      "factor_pack_urn": "urn:gl:pack:epa-hub:emission-factors-hub:2024.1",
+      "name": "ethanol e85 \u2014 US",
+      "description": "Emission emission factor for ethanol e85 \u2014 US, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "fuel",
+      "value": 1.34254,
+      "unit_urn": "urn:gl:unit:kgco2e/gallons",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:us",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ipcc-tier-1-stationary-combustion",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub",
+        "source_record_id": "epa_hub;record-51",
+        "source_publication": "EPA GHG Emission Factors Hub",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/epa-hub/2024.1/seed.json",
+        "raw_artifact_sha256": "a8b113d94a0fc708f165fd3f4b14ff3d5ca382cf5cc028c2bfb1097bb9cd0109",
+        "parser_id": "greenlang.factors.ingestion.parsers.epa_ghg_hub",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-51",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_epa_hub"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "epa",
+        "mobile_combustion",
+        "ethanol_e85",
+        "passenger_car"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:epa-hub:EPA:mob_biodiesel_b100_heavy_duty_vehicle:US:2024:v1",
+      "factor_id_alias": "EF:EPA:mob_biodiesel_b100_heavy_duty_vehicle:US:2024:v1",
+      "source_urn": "urn:gl:source:epa-hub",
+      "factor_pack_urn": "urn:gl:pack:epa-hub:emission-factors-hub:2024.1",
+      "name": "biodiesel b100 \u2014 US",
+      "description": "Emission emission factor for biodiesel b100 \u2014 US, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "fuel",
+      "value": 0.0287,
+      "unit_urn": "urn:gl:unit:kgco2e/gallons",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:us",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ipcc-tier-1-stationary-combustion",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub",
+        "source_record_id": "epa_hub;record-52",
+        "source_publication": "EPA GHG Emission Factors Hub",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/epa-hub/2024.1/seed.json",
+        "raw_artifact_sha256": "9dfdb6074e11426c6e14d3051373000640754d087b2896ea700bfcf14cbe952a",
+        "parser_id": "greenlang.factors.ingestion.parsers.epa_ghg_hub",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-52",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_epa_hub"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "epa",
+        "mobile_combustion",
+        "biodiesel_b100",
+        "heavy_duty_vehicle"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:epa-hub:EPA:elec:US_NATIONAL:2024:v1",
+      "factor_id_alias": "EF:EPA:elec:US_NATIONAL:2024:v1",
+      "source_urn": "urn:gl:source:epa-hub",
+      "factor_pack_urn": "urn:gl:pack:epa-hub:emission-factors-hub:2024.1",
+      "name": "electricity grid \u2014 US NATIONAL",
+      "description": "Emission emission factor for electricity grid \u2014 US NATIONAL, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.3830419,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:us-national",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ipcc-tier-1-stationary-combustion",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub",
+        "source_record_id": "epa_hub;record-53",
+        "source_publication": "EPA GHG Emission Factors Hub",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/epa-hub/2024.1/seed.json",
+        "raw_artifact_sha256": "d114c3101856832ddc69e28c2305d80676e307f3ebdf369a9f123568322bac67",
+        "parser_id": "greenlang.factors.ingestion.parsers.epa_ghg_hub",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-53",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_epa_hub"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "epa",
+        "electricity",
+        "grid",
+        "us_national"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:epa-hub:EPA:elec:AKGD:2024:v1",
+      "factor_id_alias": "EF:EPA:elec:AKGD:2024:v1",
+      "source_urn": "urn:gl:source:epa-hub",
+      "factor_pack_urn": "urn:gl:pack:epa-hub:emission-factors-hub:2024.1",
+      "name": "electricity grid \u2014 AKGD",
+      "description": "Emission emission factor for electricity grid \u2014 AKGD, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.506296,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:grid_zone:egrid-akgd",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ipcc-tier-1-stationary-combustion",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub",
+        "source_record_id": "epa_hub;record-54",
+        "source_publication": "EPA GHG Emission Factors Hub",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/epa-hub/2024.1/seed.json",
+        "raw_artifact_sha256": "67b2614e74c91d1e146916f71d928e086fe1e65b150edf587a6e908461c293d6",
+        "parser_id": "greenlang.factors.ingestion.parsers.epa_ghg_hub",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-54",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_epa_hub"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "epa",
+        "electricity",
+        "grid",
+        "akgd"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:epa-hub:EPA:elec:AKMS:2024:v1",
+      "factor_id_alias": "EF:EPA:elec:AKMS:2024:v1",
+      "source_urn": "urn:gl:source:epa-hub",
+      "factor_pack_urn": "urn:gl:pack:epa-hub:emission-factors-hub:2024.1",
+      "name": "electricity grid \u2014 AKMS",
+      "description": "Emission emission factor for electricity grid \u2014 AKMS, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.230022,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:grid_zone:egrid-akms",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ipcc-tier-1-stationary-combustion",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub",
+        "source_record_id": "epa_hub;record-55",
+        "source_publication": "EPA GHG Emission Factors Hub",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/epa-hub/2024.1/seed.json",
+        "raw_artifact_sha256": "eee8e379126a2167c93b58e5d9859982e131d47ecb220d9eb79cac6ae91c7aef",
+        "parser_id": "greenlang.factors.ingestion.parsers.epa_ghg_hub",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-55",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_epa_hub"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "epa",
+        "electricity",
+        "grid",
+        "akms"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:epa-hub:EPA:elec:AZNM:2024:v1",
+      "factor_id_alias": "EF:EPA:elec:AZNM:2024:v1",
+      "source_urn": "urn:gl:source:epa-hub",
+      "factor_pack_urn": "urn:gl:pack:epa-hub:emission-factors-hub:2024.1",
+      "name": "electricity grid \u2014 AZNM",
+      "description": "Emission emission factor for electricity grid \u2014 AZNM, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.382932,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:grid_zone:egrid-aznm",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ipcc-tier-1-stationary-combustion",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub",
+        "source_record_id": "epa_hub;record-56",
+        "source_publication": "EPA GHG Emission Factors Hub",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/epa-hub/2024.1/seed.json",
+        "raw_artifact_sha256": "964943cccb6cfc33b4925ecc4034219c0adca0bdf0a293fae12aa7f37f431aaf",
+        "parser_id": "greenlang.factors.ingestion.parsers.epa_ghg_hub",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-56",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_epa_hub"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "epa",
+        "electricity",
+        "grid",
+        "aznm"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:epa-hub:EPA:elec:CAMX:2024:v1",
+      "factor_id_alias": "EF:EPA:elec:CAMX:2024:v1",
+      "source_urn": "urn:gl:source:epa-hub",
+      "factor_pack_urn": "urn:gl:pack:epa-hub:emission-factors-hub:2024.1",
+      "name": "electricity grid \u2014 CAMX",
+      "description": "Emission emission factor for electricity grid \u2014 CAMX, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.216022,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:grid_zone:egrid-camx",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ipcc-tier-1-stationary-combustion",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub",
+        "source_record_id": "epa_hub;record-57",
+        "source_publication": "EPA GHG Emission Factors Hub",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/epa-hub/2024.1/seed.json",
+        "raw_artifact_sha256": "915604cea373c27c265dca95efe40046b6fd64311c2b3d148888a92fd9805ebf",
+        "parser_id": "greenlang.factors.ingestion.parsers.epa_ghg_hub",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-57",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_epa_hub"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "epa",
+        "electricity",
+        "grid",
+        "camx"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:epa-hub:EPA:elec:ERCT:2024:v1",
+      "factor_id_alias": "EF:EPA:elec:ERCT:2024:v1",
+      "source_urn": "urn:gl:source:epa-hub",
+      "factor_pack_urn": "urn:gl:pack:epa-hub:emission-factors-hub:2024.1",
+      "name": "electricity grid \u2014 ERCT",
+      "description": "Emission emission factor for electricity grid \u2014 ERCT, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.395932,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:grid_zone:egrid-erct",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ipcc-tier-1-stationary-combustion",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub",
+        "source_record_id": "epa_hub;record-58",
+        "source_publication": "EPA GHG Emission Factors Hub",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/epa-hub/2024.1/seed.json",
+        "raw_artifact_sha256": "1e4e60fb37b815b378046f8c98d8cf10e1814ec1fac769a63aa465b7e8e02560",
+        "parser_id": "greenlang.factors.ingestion.parsers.epa_ghg_hub",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-58",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_epa_hub"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "epa",
+        "electricity",
+        "grid",
+        "erct"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:epa-hub:EPA:elec:FRCC:2024:v1",
+      "factor_id_alias": "EF:EPA:elec:FRCC:2024:v1",
+      "source_urn": "urn:gl:source:epa-hub",
+      "factor_pack_urn": "urn:gl:pack:epa-hub:emission-factors-hub:2024.1",
+      "name": "electricity grid \u2014 FRCC",
+      "description": "Emission emission factor for electricity grid \u2014 FRCC, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.37990399999999996,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:grid_zone:egrid-frcc",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ipcc-tier-1-stationary-combustion",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub",
+        "source_record_id": "epa_hub;record-59",
+        "source_publication": "EPA GHG Emission Factors Hub",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/epa-hub/2024.1/seed.json",
+        "raw_artifact_sha256": "16add161a2bbf656e29c0d792806be52d020da0309fb0f609a539bbf0ab90111",
+        "parser_id": "greenlang.factors.ingestion.parsers.epa_ghg_hub",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-59",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_epa_hub"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "epa",
+        "electricity",
+        "grid",
+        "frcc"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:epa-hub:EPA:elec:HIMS:2024:v1",
+      "factor_id_alias": "EF:EPA:elec:HIMS:2024:v1",
+      "source_urn": "urn:gl:source:epa-hub",
+      "factor_pack_urn": "urn:gl:pack:epa-hub:emission-factors-hub:2024.1",
+      "name": "electricity grid \u2014 HIMS",
+      "description": "Emission emission factor for electricity grid \u2014 HIMS, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.556765,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:grid_zone:egrid-hims",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ipcc-tier-1-stationary-combustion",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub",
+        "source_record_id": "epa_hub;record-60",
+        "source_publication": "EPA GHG Emission Factors Hub",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/epa-hub/2024.1/seed.json",
+        "raw_artifact_sha256": "c1b8bbf02792d72215187b7b07a872274511071b70c698b027a1abcd3ed65927",
+        "parser_id": "greenlang.factors.ingestion.parsers.epa_ghg_hub",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-60",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_epa_hub"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "epa",
+        "electricity",
+        "grid",
+        "hims"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:epa-hub:EPA:elec:HIOA:2024:v1",
+      "factor_id_alias": "EF:EPA:elec:HIOA:2024:v1",
+      "source_urn": "urn:gl:source:epa-hub",
+      "factor_pack_urn": "urn:gl:pack:epa-hub:emission-factors-hub:2024.1",
+      "name": "electricity grid \u2014 HIOA",
+      "description": "Emission emission factor for electricity grid \u2014 HIOA, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.732318,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:grid_zone:egrid-hioa",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ipcc-tier-1-stationary-combustion",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub",
+        "source_record_id": "epa_hub;record-61",
+        "source_publication": "EPA GHG Emission Factors Hub",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/epa-hub/2024.1/seed.json",
+        "raw_artifact_sha256": "bb675edb1033a4e2bac3de0b5c6d4b1bb3108d9ea847d250a8558be30a7faa5e",
+        "parser_id": "greenlang.factors.ingestion.parsers.epa_ghg_hub",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-61",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_epa_hub"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "epa",
+        "electricity",
+        "grid",
+        "hioa"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:epa-hub:EPA:elec:MROE:2024:v1",
+      "factor_id_alias": "EF:EPA:elec:MROE:2024:v1",
+      "source_urn": "urn:gl:source:epa-hub",
+      "factor_pack_urn": "urn:gl:pack:epa-hub:emission-factors-hub:2024.1",
+      "name": "electricity grid \u2014 MROE",
+      "description": "Emission emission factor for electricity grid \u2014 MROE, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.604255,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:grid_zone:egrid-mroe",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ipcc-tier-1-stationary-combustion",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub",
+        "source_record_id": "epa_hub;record-62",
+        "source_publication": "EPA GHG Emission Factors Hub",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/epa-hub/2024.1/seed.json",
+        "raw_artifact_sha256": "15cfd5b2efe5db7a524ad8db1087a4c6302e5b92500ac5ac7e4eca9562f03dce",
+        "parser_id": "greenlang.factors.ingestion.parsers.epa_ghg_hub",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-62",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_epa_hub"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "epa",
+        "electricity",
+        "grid",
+        "mroe"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:epa-hub:EPA:elec:MROW:2024:v1",
+      "factor_id_alias": "EF:EPA:elec:MROW:2024:v1",
+      "source_urn": "urn:gl:source:epa-hub",
+      "factor_pack_urn": "urn:gl:pack:epa-hub:emission-factors-hub:2024.1",
+      "name": "electricity grid \u2014 MROW",
+      "description": "Emission emission factor for electricity grid \u2014 MROW, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.41194699999999995,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:grid_zone:egrid-mrow",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ipcc-tier-1-stationary-combustion",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub",
+        "source_record_id": "epa_hub;record-63",
+        "source_publication": "EPA GHG Emission Factors Hub",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/epa-hub/2024.1/seed.json",
+        "raw_artifact_sha256": "15edaa1a1c986be67e235e6a4e3c71f3f581d5612cd3b977c7eab9a2390099cb",
+        "parser_id": "greenlang.factors.ingestion.parsers.epa_ghg_hub",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-63",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_epa_hub"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "epa",
+        "electricity",
+        "grid",
+        "mrow"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:epa-hub:EPA:elec:NEWE:2024:v1",
+      "factor_id_alias": "EF:EPA:elec:NEWE:2024:v1",
+      "source_urn": "urn:gl:source:epa-hub",
+      "factor_pack_urn": "urn:gl:pack:epa-hub:emission-factors-hub:2024.1",
+      "name": "electricity grid \u2014 NEWE",
+      "description": "Emission emission factor for electricity grid \u2014 NEWE, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.24140699999999998,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:grid_zone:egrid-newe",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ipcc-tier-1-stationary-combustion",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub",
+        "source_record_id": "epa_hub;record-64",
+        "source_publication": "EPA GHG Emission Factors Hub",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/epa-hub/2024.1/seed.json",
+        "raw_artifact_sha256": "577131814614dc54c92a23cb517f1adaeb46d9c6192d706edd813aad9e20a9f1",
+        "parser_id": "greenlang.factors.ingestion.parsers.epa_ghg_hub",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-64",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_epa_hub"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "epa",
+        "electricity",
+        "grid",
+        "newe"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:epa-hub:EPA:elec:NWPP:2024:v1",
+      "factor_id_alias": "EF:EPA:elec:NWPP:2024:v1",
+      "source_urn": "urn:gl:source:epa-hub",
+      "factor_pack_urn": "urn:gl:pack:epa-hub:emission-factors-hub:2024.1",
+      "name": "electricity grid \u2014 NWPP",
+      "description": "Emission emission factor for electricity grid \u2014 NWPP, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.292093,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:grid_zone:egrid-nwpp",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ipcc-tier-1-stationary-combustion",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub",
+        "source_record_id": "epa_hub;record-65",
+        "source_publication": "EPA GHG Emission Factors Hub",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/epa-hub/2024.1/seed.json",
+        "raw_artifact_sha256": "a130414a84110d021a57f170ae683d7f1b6cec22329c0d82a7588c93a76e3428",
+        "parser_id": "greenlang.factors.ingestion.parsers.epa_ghg_hub",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-65",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_epa_hub"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "epa",
+        "electricity",
+        "grid",
+        "nwpp"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:epa-hub:EPA:elec:NYCW:2024:v1",
+      "factor_id_alias": "EF:EPA:elec:NYCW:2024:v1",
+      "source_urn": "urn:gl:source:epa-hub",
+      "factor_pack_urn": "urn:gl:pack:epa-hub:emission-factors-hub:2024.1",
+      "name": "electricity grid \u2014 NYCW",
+      "description": "Emission emission factor for electricity grid \u2014 NYCW, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.241078,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:grid_zone:egrid-nycw",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ipcc-tier-1-stationary-combustion",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub",
+        "source_record_id": "epa_hub;record-66",
+        "source_publication": "EPA GHG Emission Factors Hub",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/epa-hub/2024.1/seed.json",
+        "raw_artifact_sha256": "b009e1858a2f4f88cfab3ba4b89f8f7bc4805586d4fb661e85d5663d7e74588f",
+        "parser_id": "greenlang.factors.ingestion.parsers.epa_ghg_hub",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-66",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_epa_hub"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "epa",
+        "electricity",
+        "grid",
+        "nycw"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:epa-hub:EPA:elec:NYLI:2024:v1",
+      "factor_id_alias": "EF:EPA:elec:NYLI:2024:v1",
+      "source_urn": "urn:gl:source:epa-hub",
+      "factor_pack_urn": "urn:gl:pack:epa-hub:emission-factors-hub:2024.1",
+      "name": "electricity grid \u2014 NYLI",
+      "description": "Emission emission factor for electricity grid \u2014 NYLI, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.5538980000000001,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:grid_zone:egrid-nyli",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ipcc-tier-1-stationary-combustion",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub",
+        "source_record_id": "epa_hub;record-67",
+        "source_publication": "EPA GHG Emission Factors Hub",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/epa-hub/2024.1/seed.json",
+        "raw_artifact_sha256": "f009f1332162c42448a1969ccb961d749792ca9a2bc4d5979df5265f3347989b",
+        "parser_id": "greenlang.factors.ingestion.parsers.epa_ghg_hub",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-67",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_epa_hub"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "epa",
+        "electricity",
+        "grid",
+        "nyli"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:epa-hub:EPA:elec:NYUP:2024:v1",
+      "factor_id_alias": "EF:EPA:elec:NYUP:2024:v1",
+      "source_urn": "urn:gl:source:epa-hub",
+      "factor_pack_urn": "urn:gl:pack:epa-hub:emission-factors-hub:2024.1",
+      "name": "electricity grid \u2014 NYUP",
+      "description": "Emission emission factor for electricity grid \u2014 NYUP, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.117525,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:grid_zone:egrid-nyup",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ipcc-tier-1-stationary-combustion",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub",
+        "source_record_id": "epa_hub;record-68",
+        "source_publication": "EPA GHG Emission Factors Hub",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/epa-hub/2024.1/seed.json",
+        "raw_artifact_sha256": "52b8f1725b7f3678dd013650b8f47c52c0ee14bb2f71ab5ffe1000d88cb3d873",
+        "parser_id": "greenlang.factors.ingestion.parsers.epa_ghg_hub",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-68",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_epa_hub"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "epa",
+        "electricity",
+        "grid",
+        "nyup"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:epa-hub:EPA:elec:PRMS:2024:v1",
+      "factor_id_alias": "EF:EPA:elec:PRMS:2024:v1",
+      "source_urn": "urn:gl:source:epa-hub",
+      "factor_pack_urn": "urn:gl:pack:epa-hub:emission-factors-hub:2024.1",
+      "name": "electricity grid \u2014 PRMS",
+      "description": "Emission emission factor for electricity grid \u2014 PRMS, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.7318709999999999,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:grid_zone:egrid-prms",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ipcc-tier-1-stationary-combustion",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub",
+        "source_record_id": "epa_hub;record-69",
+        "source_publication": "EPA GHG Emission Factors Hub",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/epa-hub/2024.1/seed.json",
+        "raw_artifact_sha256": "56a4ed494851409394f3243a4703e6ee9770d432daa2b76869124bb92f57327e",
+        "parser_id": "greenlang.factors.ingestion.parsers.epa_ghg_hub",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-69",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_epa_hub"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "epa",
+        "electricity",
+        "grid",
+        "prms"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:epa-hub:EPA:elec:RFCE:2024:v1",
+      "factor_id_alias": "EF:EPA:elec:RFCE:2024:v1",
+      "source_urn": "urn:gl:source:epa-hub",
+      "factor_pack_urn": "urn:gl:pack:epa-hub:emission-factors-hub:2024.1",
+      "name": "electricity grid \u2014 RFCE",
+      "description": "Emission emission factor for electricity grid \u2014 RFCE, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.269407,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:grid_zone:egrid-rfce",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ipcc-tier-1-stationary-combustion",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub",
+        "source_record_id": "epa_hub;record-70",
+        "source_publication": "EPA GHG Emission Factors Hub",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/epa-hub/2024.1/seed.json",
+        "raw_artifact_sha256": "8fc5e1f88de7cff542b5e53232cc06823001909994f2ecc895e3716475a5c6ec",
+        "parser_id": "greenlang.factors.ingestion.parsers.epa_ghg_hub",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-70",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_epa_hub"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "epa",
+        "electricity",
+        "grid",
+        "rfce"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:epa-hub:EPA:elec:RFCM:2024:v1",
+      "factor_id_alias": "EF:EPA:elec:RFCM:2024:v1",
+      "source_urn": "urn:gl:source:epa-hub",
+      "factor_pack_urn": "urn:gl:pack:epa-hub:emission-factors-hub:2024.1",
+      "name": "electricity grid \u2014 RFCM",
+      "description": "Emission emission factor for electricity grid \u2014 RFCM, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.5459130000000001,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:grid_zone:egrid-rfcm",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ipcc-tier-1-stationary-combustion",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub",
+        "source_record_id": "epa_hub;record-71",
+        "source_publication": "EPA GHG Emission Factors Hub",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/epa-hub/2024.1/seed.json",
+        "raw_artifact_sha256": "d9d84a9ba7b941d7337ab96f6519bbc31c6ae17a9b26aad3f1ddd0889ce8c105",
+        "parser_id": "greenlang.factors.ingestion.parsers.epa_ghg_hub",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-71",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_epa_hub"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "epa",
+        "electricity",
+        "grid",
+        "rfcm"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:epa-hub:EPA:elec:RFCW:2024:v1",
+      "factor_id_alias": "EF:EPA:elec:RFCW:2024:v1",
+      "source_urn": "urn:gl:source:epa-hub",
+      "factor_pack_urn": "urn:gl:pack:epa-hub:emission-factors-hub:2024.1",
+      "name": "electricity grid \u2014 RFCW",
+      "description": "Emission emission factor for electricity grid \u2014 RFCW, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.488143,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:grid_zone:egrid-rfcw",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ipcc-tier-1-stationary-combustion",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub",
+        "source_record_id": "epa_hub;record-72",
+        "source_publication": "EPA GHG Emission Factors Hub",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/epa-hub/2024.1/seed.json",
+        "raw_artifact_sha256": "eff4cad95ae55c45862d1e1f4ab4717fe7a47f753f800e90cd0f28b543f985bb",
+        "parser_id": "greenlang.factors.ingestion.parsers.epa_ghg_hub",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-72",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_epa_hub"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "epa",
+        "electricity",
+        "grid",
+        "rfcw"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:epa-hub:EPA:elec:RMPA:2024:v1",
+      "factor_id_alias": "EF:EPA:elec:RMPA:2024:v1",
+      "source_urn": "urn:gl:source:epa-hub",
+      "factor_pack_urn": "urn:gl:pack:epa-hub:emission-factors-hub:2024.1",
+      "name": "electricity grid \u2014 RMPA",
+      "description": "Emission emission factor for electricity grid \u2014 RMPA, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.541444,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:grid_zone:egrid-rmpa",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ipcc-tier-1-stationary-combustion",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub",
+        "source_record_id": "epa_hub;record-73",
+        "source_publication": "EPA GHG Emission Factors Hub",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/epa-hub/2024.1/seed.json",
+        "raw_artifact_sha256": "723eacd5c263bab777124cbf6f0b55147f826210baf9d45c07f354ad0b7e93d6",
+        "parser_id": "greenlang.factors.ingestion.parsers.epa_ghg_hub",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-73",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_epa_hub"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "epa",
+        "electricity",
+        "grid",
+        "rmpa"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:epa-hub:EPA:elec:SPNO:2024:v1",
+      "factor_id_alias": "EF:EPA:elec:SPNO:2024:v1",
+      "source_urn": "urn:gl:source:epa-hub",
+      "factor_pack_urn": "urn:gl:pack:epa-hub:emission-factors-hub:2024.1",
+      "name": "electricity grid \u2014 SPNO",
+      "description": "Emission emission factor for electricity grid \u2014 SPNO, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.47511499999999995,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:grid_zone:egrid-spno",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ipcc-tier-1-stationary-combustion",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub",
+        "source_record_id": "epa_hub;record-74",
+        "source_publication": "EPA GHG Emission Factors Hub",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/epa-hub/2024.1/seed.json",
+        "raw_artifact_sha256": "0a6fb0b229498e9878f3d504d20b328eee71b7fe8fe0aba201682209bd61f2dc",
+        "parser_id": "greenlang.factors.ingestion.parsers.epa_ghg_hub",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-74",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_epa_hub"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "epa",
+        "electricity",
+        "grid",
+        "spno"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:epa-hub:EPA:elec:SPSO:2024:v1",
+      "factor_id_alias": "EF:EPA:elec:SPSO:2024:v1",
+      "source_urn": "urn:gl:source:epa-hub",
+      "factor_pack_urn": "urn:gl:pack:epa-hub:emission-factors-hub:2024.1",
+      "name": "electricity grid \u2014 SPSO",
+      "description": "Emission emission factor for electricity grid \u2014 SPSO, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.46331700000000003,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:grid_zone:egrid-spso",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ipcc-tier-1-stationary-combustion",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub",
+        "source_record_id": "epa_hub;record-75",
+        "source_publication": "EPA GHG Emission Factors Hub",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/epa-hub/2024.1/seed.json",
+        "raw_artifact_sha256": "bbab653202823b2614c414ed6ebba837f55801511d3234ccc6c617f9f2b68cf9",
+        "parser_id": "greenlang.factors.ingestion.parsers.epa_ghg_hub",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-75",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_epa_hub"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "epa",
+        "electricity",
+        "grid",
+        "spso"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:epa-hub:EPA:elec:SRMV:2024:v1",
+      "factor_id_alias": "EF:EPA:elec:SRMV:2024:v1",
+      "source_urn": "urn:gl:source:epa-hub",
+      "factor_pack_urn": "urn:gl:pack:epa-hub:emission-factors-hub:2024.1",
+      "name": "electricity grid \u2014 SRMV",
+      "description": "Emission emission factor for electricity grid \u2014 SRMV, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.39396,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:grid_zone:egrid-srmv",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ipcc-tier-1-stationary-combustion",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub",
+        "source_record_id": "epa_hub;record-76",
+        "source_publication": "EPA GHG Emission Factors Hub",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/epa-hub/2024.1/seed.json",
+        "raw_artifact_sha256": "ae8b5affa4727e550eca1c9cfbf3e9d70f8c2779273e3e71e2bea9717b1c69fe",
+        "parser_id": "greenlang.factors.ingestion.parsers.epa_ghg_hub",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-76",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_epa_hub"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "epa",
+        "electricity",
+        "grid",
+        "srmv"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:epa-hub:EPA:elec:SRMW:2024:v1",
+      "factor_id_alias": "EF:EPA:elec:SRMW:2024:v1",
+      "source_urn": "urn:gl:source:epa-hub",
+      "factor_pack_urn": "urn:gl:pack:epa-hub:emission-factors-hub:2024.1",
+      "name": "electricity grid \u2014 SRMW",
+      "description": "Emission emission factor for electricity grid \u2014 SRMW, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.7195779999999999,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:grid_zone:egrid-srmw",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ipcc-tier-1-stationary-combustion",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub",
+        "source_record_id": "epa_hub;record-77",
+        "source_publication": "EPA GHG Emission Factors Hub",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/epa-hub/2024.1/seed.json",
+        "raw_artifact_sha256": "39ab2ab979602333d9be37d4bac6b234d4beedd3e6bf0e4a6e77f9ef3b2b8627",
+        "parser_id": "greenlang.factors.ingestion.parsers.epa_ghg_hub",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-77",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_epa_hub"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "epa",
+        "electricity",
+        "grid",
+        "srmw"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:epa-hub:EPA:elec:SRSO:2024:v1",
+      "factor_id_alias": "EF:EPA:elec:SRSO:2024:v1",
+      "source_urn": "urn:gl:source:epa-hub",
+      "factor_pack_urn": "urn:gl:pack:epa-hub:emission-factors-hub:2024.1",
+      "name": "electricity grid \u2014 SRSO",
+      "description": "Emission emission factor for electricity grid \u2014 SRSO, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.387233,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:grid_zone:egrid-srso",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ipcc-tier-1-stationary-combustion",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub",
+        "source_record_id": "epa_hub;record-78",
+        "source_publication": "EPA GHG Emission Factors Hub",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/epa-hub/2024.1/seed.json",
+        "raw_artifact_sha256": "95ae1962102fbd12225f02639be96e9cb9fed111f00b671ca42a47e54c79c0b6",
+        "parser_id": "greenlang.factors.ingestion.parsers.epa_ghg_hub",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-78",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_epa_hub"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "epa",
+        "electricity",
+        "grid",
+        "srso"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:epa-hub:EPA:elec:SRTV:2024:v1",
+      "factor_id_alias": "EF:EPA:elec:SRTV:2024:v1",
+      "source_urn": "urn:gl:source:epa-hub",
+      "factor_pack_urn": "urn:gl:pack:epa-hub:emission-factors-hub:2024.1",
+      "name": "electricity grid \u2014 SRTV",
+      "description": "Emission emission factor for electricity grid \u2014 SRTV, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.413373,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:grid_zone:egrid-srtv",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ipcc-tier-1-stationary-combustion",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub",
+        "source_record_id": "epa_hub;record-79",
+        "source_publication": "EPA GHG Emission Factors Hub",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/epa-hub/2024.1/seed.json",
+        "raw_artifact_sha256": "3204b7a74a5e32d0b5120933e85fbc23672d5b2287a44413a50e0412e2862989",
+        "parser_id": "greenlang.factors.ingestion.parsers.epa_ghg_hub",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-79",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_epa_hub"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "epa",
+        "electricity",
+        "grid",
+        "srtv"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:epa-hub:EPA:elec:SRVC:2024:v1",
+      "factor_id_alias": "EF:EPA:elec:SRVC:2024:v1",
+      "source_urn": "urn:gl:source:epa-hub",
+      "factor_pack_urn": "urn:gl:pack:epa-hub:emission-factors-hub:2024.1",
+      "name": "electricity grid \u2014 SRVC",
+      "description": "Emission emission factor for electricity grid \u2014 SRVC, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.287491,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:grid_zone:egrid-srvc",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ipcc-tier-1-stationary-combustion",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub",
+        "source_record_id": "epa_hub;record-80",
+        "source_publication": "EPA GHG Emission Factors Hub",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/epa-hub/2024.1/seed.json",
+        "raw_artifact_sha256": "640e105c29f64a5a3953ebcb6b1fd2448d6434f3c15c01983f2d295a560a68b5",
+        "parser_id": "greenlang.factors.ingestion.parsers.epa_ghg_hub",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-80",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_epa_hub"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "epa",
+        "electricity",
+        "grid",
+        "srvc"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:epa-hub:EPA:heat_steam_natural_gas_boiler:US:2024:v1",
+      "factor_id_alias": "EF:EPA:heat_steam_natural_gas_boiler:US:2024:v1",
+      "source_urn": "urn:gl:source:epa-hub",
+      "factor_pack_urn": "urn:gl:pack:epa-hub:emission-factors-hub:2024.1",
+      "name": "steam natural gas boiler \u2014 US",
+      "description": "Emission emission factor for steam natural gas boiler \u2014 US, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "fuel",
+      "value": 66.3853,
+      "unit_urn": "urn:gl:unit:kgco2e/mmbtu",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:us",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ipcc-tier-1-stationary-combustion",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub",
+        "source_record_id": "epa_hub;record-81",
+        "source_publication": "EPA GHG Emission Factors Hub",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/epa-hub/2024.1/seed.json",
+        "raw_artifact_sha256": "faddd55daad425a01d94b9577a7052f15c77455d5ebf5b19d7c462a67ac69886",
+        "parser_id": "greenlang.factors.ingestion.parsers.epa_ghg_hub",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-81",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_epa_hub"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "epa",
+        "steam_heat",
+        "steam_natural_gas_boiler"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:epa-hub:EPA:heat_district_heating:US:2024:v1",
+      "factor_id_alias": "EF:EPA:heat_district_heating:US:2024:v1",
+      "source_urn": "urn:gl:source:epa-hub",
+      "factor_pack_urn": "urn:gl:pack:epa-hub:emission-factors-hub:2024.1",
+      "name": "district heating \u2014 US",
+      "description": "Emission emission factor for district heating \u2014 US, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "fuel",
+      "value": 66.3853,
+      "unit_urn": "urn:gl:unit:kgco2e/mmbtu",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:us",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ipcc-tier-1-stationary-combustion",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub",
+        "source_record_id": "epa_hub;record-82",
+        "source_publication": "EPA GHG Emission Factors Hub",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/epa-hub/2024.1/seed.json",
+        "raw_artifact_sha256": "3b84505de997cabfb62c70b0b6693ee3a0f3da9c2e8e361899622b15d1c1b145",
+        "parser_id": "greenlang.factors.ingestion.parsers.epa_ghg_hub",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-82",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_epa_hub"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "epa",
+        "steam_heat",
+        "district_heating"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:epa-hub:EPA:heat_district_cooling:US:2024:v1",
+      "factor_id_alias": "EF:EPA:heat_district_cooling:US:2024:v1",
+      "source_urn": "urn:gl:source:epa-hub",
+      "factor_pack_urn": "urn:gl:pack:epa-hub:emission-factors-hub:2024.1",
+      "name": "district cooling \u2014 US",
+      "description": "Emission emission factor for district cooling \u2014 US, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "fuel",
+      "value": 0.5803072999999999,
+      "unit_urn": "urn:gl:unit:kgco2e/ton-hour",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:us",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ipcc-tier-1-stationary-combustion",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub",
+        "source_record_id": "epa_hub;record-83",
+        "source_publication": "EPA GHG Emission Factors Hub",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/epa-hub/2024.1/seed.json",
+        "raw_artifact_sha256": "0128e2b9ea35076f1491489805aaeffa413fb9476aa11a921dabf99369e379ea",
+        "parser_id": "greenlang.factors.ingestion.parsers.epa_ghg_hub",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-83",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_epa_hub"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "epa",
+        "steam_heat",
+        "district_cooling"
+      ]
+    }
+  ]
+}

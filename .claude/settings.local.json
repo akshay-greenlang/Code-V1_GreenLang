@@ -455,7 +455,9 @@
       "Bash(npm --version)",
       "Bash(npm run *)",
       "Bash(cp greenlang/factors/catalog_repository.py /tmp/new_catalog_repo.py)",
-      "Bash(cp /tmp/orig_catalog_repo.py greenlang/factors/catalog_repository.py)"
+      "Bash(cp /tmp/orig_catalog_repo.py greenlang/factors/catalog_repository.py)",
+      "Bash(ls greenlang/factors/data/gold_set/cbam*.json)",
+      "Bash(ls greenlang/factors/data/catalog_seed/cbam_default_values/)"
     ],
     "deny": [],
     "ask": []

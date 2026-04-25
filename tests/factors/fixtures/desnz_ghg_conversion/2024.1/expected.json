@@ -1,0 +1,235 @@
+[
+  {
+    "boundary": "combustion",
+    "compliance_frameworks": [
+      "GHG_Protocol",
+      "IPCC_2006",
+      "UK_SECR",
+      "UK_ESOS"
+    ],
+    "created_at": "1970-01-01T00:00:00+00:00",
+    "created_by": "greenlang_factors_etl",
+    "dqs": {
+      "geographical": 5,
+      "methodological": 5,
+      "representativeness": 4,
+      "technological": 4,
+      "temporal": 5
+    },
+    "factor_id": "EF:DESNZ:s1_natural_gas_kwh:UK:2024:v1",
+    "fuel_type": "natural_gas",
+    "geography": "UK",
+    "geography_level": "country",
+    "gwp_100yr": {
+      "CH4_gwp": 28,
+      "N2O_gwp": 265,
+      "gwp_set": "IPCC_AR5_100"
+    },
+    "license_info": {
+      "attribution_required": true,
+      "commercial_use_allowed": true,
+      "license": "OGL-UK-v3",
+      "redistribution_allowed": true
+    },
+    "notes": null,
+    "provenance": {
+      "methodology": "IPCC_Tier_1",
+      "source_org": "DESNZ",
+      "source_publication": "UK GHG Conversion Factors 2024",
+      "source_url": "https://www.gov.uk/government/collections/government-conversion-factors-for-company-reporting-of-greenhouse-gas-emissions",
+      "source_year": 2024,
+      "version": "2024"
+    },
+    "scope": "1",
+    "tags": [
+      "desnz",
+      "scope1",
+      "stationary",
+      "natural_gas"
+    ],
+    "uncertainty_95ci": 0.05,
+    "unit": "kwh",
+    "updated_at": "1970-01-01T00:00:00+00:00",
+    "valid_from": "2024-01-01",
+    "vectors": {
+      "CH4": 0.00034,
+      "CO2": 0.18293,
+      "N2O": 0.00026
+    }
+  },
+  {
+    "boundary": "combustion",
+    "compliance_frameworks": [
+      "GHG_Protocol",
+      "IPCC_2006",
+      "UK_SECR",
+      "UK_ESOS"
+    ],
+    "created_at": "1970-01-01T00:00:00+00:00",
+    "created_by": "greenlang_factors_etl",
+    "dqs": {
+      "geographical": 5,
+      "methodological": 5,
+      "representativeness": 4,
+      "technological": 4,
+      "temporal": 5
+    },
+    "factor_id": "EF:DESNZ:s1_diesel_litres:UK:2024:v1",
+    "fuel_type": "diesel",
+    "geography": "UK",
+    "geography_level": "country",
+    "gwp_100yr": {
+      "CH4_gwp": 28,
+      "N2O_gwp": 265,
+      "gwp_set": "IPCC_AR5_100"
+    },
+    "license_info": {
+      "attribution_required": true,
+      "commercial_use_allowed": true,
+      "license": "OGL-UK-v3",
+      "redistribution_allowed": true
+    },
+    "notes": null,
+    "provenance": {
+      "methodology": "IPCC_Tier_1",
+      "source_org": "DESNZ",
+      "source_publication": "UK GHG Conversion Factors 2024",
+      "source_url": "https://www.gov.uk/government/collections/government-conversion-factors-for-company-reporting-of-greenhouse-gas-emissions",
+      "source_year": 2024,
+      "version": "2024"
+    },
+    "scope": "1",
+    "tags": [
+      "desnz",
+      "scope1",
+      "stationary",
+      "diesel"
+    ],
+    "uncertainty_95ci": 0.05,
+    "unit": "litres",
+    "updated_at": "1970-01-01T00:00:00+00:00",
+    "valid_from": "2024-01-01",
+    "vectors": {
+      "CH4": 0.00027,
+      "CO2": 2.70398,
+      "N2O": 0.02647
+    }
+  },
+  {
+    "boundary": "combustion",
+    "compliance_frameworks": [
+      "GHG_Protocol",
+      "IPCC_2006",
+      "UK_SECR",
+      "UK_ESOS"
+    ],
+    "created_at": "1970-01-01T00:00:00+00:00",
+    "created_by": "greenlang_factors_etl",
+    "dqs": {
+      "geographical": 5,
+      "methodological": 5,
+      "representativeness": 4,
+      "technological": 5,
+      "temporal": 5
+    },
+    "factor_id": "EF:DESNZ:s2_elec_grid_average:UK:2024:v1",
+    "fuel_type": "electricity_grid_average",
+    "geography": "UK",
+    "geography_level": "country",
+    "gwp_100yr": {
+      "CH4_gwp": 28,
+      "N2O_gwp": 265,
+      "gwp_set": "IPCC_AR5_100"
+    },
+    "license_info": {
+      "attribution_required": true,
+      "commercial_use_allowed": true,
+      "license": "OGL-UK-v3",
+      "redistribution_allowed": true
+    },
+    "notes": null,
+    "provenance": {
+      "methodology": "IPCC_Tier_1",
+      "source_org": "DESNZ",
+      "source_publication": "UK GHG Conversion Factors 2024",
+      "source_url": "https://www.gov.uk/government/collections/government-conversion-factors-for-company-reporting-of-greenhouse-gas-emissions",
+      "source_year": 2024,
+      "version": "2024"
+    },
+    "scope": "2",
+    "tags": [
+      "desnz",
+      "scope2",
+      "electricity",
+      "grid_average"
+    ],
+    "uncertainty_95ci": 0.03,
+    "unit": "kwh",
+    "updated_at": "1970-01-01T00:00:00+00:00",
+    "valid_from": "2024-01-01",
+    "vectors": {
+      "CH4": 0.00026,
+      "CO2": 0.20707,
+      "N2O": 0.00219
+    }
+  },
+  {
+    "boundary": "WTW",
+    "compliance_frameworks": [
+      "GHG_Protocol",
+      "IPCC_2006",
+      "UK_SECR",
+      "UK_ESOS"
+    ],
+    "created_at": "1970-01-01T00:00:00+00:00",
+    "created_by": "greenlang_factors_etl",
+    "dqs": {
+      "geographical": 4,
+      "methodological": 5,
+      "representativeness": 3,
+      "technological": 3,
+      "temporal": 4
+    },
+    "factor_id": "EF:DESNZ:s3_freight_hgv_all_diesel_tonne_km:UK:2024:v1",
+    "fuel_type": "hgv_all_diesel",
+    "geography": "UK",
+    "geography_level": "country",
+    "gwp_100yr": {
+      "CH4_gwp": 28,
+      "N2O_gwp": 265,
+      "gwp_set": "IPCC_AR5_100"
+    },
+    "license_info": {
+      "attribution_required": true,
+      "commercial_use_allowed": true,
+      "license": "OGL-UK-v3",
+      "redistribution_allowed": true
+    },
+    "notes": null,
+    "provenance": {
+      "methodology": "IPCC_Tier_1",
+      "source_org": "DESNZ",
+      "source_publication": "UK GHG Conversion Factors 2024",
+      "source_url": "https://www.gov.uk/government/collections/government-conversion-factors-for-company-reporting-of-greenhouse-gas-emissions",
+      "source_year": 2024,
+      "version": "2024"
+    },
+    "scope": "3",
+    "tags": [
+      "desnz",
+      "scope3",
+      "freight",
+      "transport",
+      "hgv_all_diesel"
+    ],
+    "uncertainty_95ci": 0.1,
+    "unit": "tonne km",
+    "updated_at": "1970-01-01T00:00:00+00:00",
+    "valid_from": "2024-01-01",
+    "vectors": {
+      "CH4": 1e-05,
+      "CO2": 0.10432,
+      "N2O": 0.00154
+    }
+  }
+]

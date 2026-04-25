@@ -1,0 +1,3368 @@
+{
+  "schema": "https://schemas.greenlang.io/factors/factor_record_v0_1.schema.json",
+  "source_id": "cbam_default_values",
+  "source_urn": "urn:gl:source:cbam-default-values",
+  "source_version": "2024.1",
+  "records": [
+    {
+      "urn": "urn:gl:factor:cbam-default-values:CBAM:steel:CN:2024:v1",
+      "factor_id_alias": "EF:CBAM:steel:CN:2024:v1",
+      "source_urn": "urn:gl:source:cbam-default-values",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "name": "cbam steel \u2014 CN",
+      "description": "Material Embodied emission factor for cbam steel \u2014 CN, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "cbam_default",
+      "value": 2.8000000000000003,
+      "unit_urn": "urn:gl:unit:kgco2e/kg-product",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:cn",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "9999-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:eu-cbam-default",
+      "boundary": "cradle_to_gate",
+      "licence": "EU-Publication",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "source_record_id": "cbam_default_values;record-0",
+        "source_publication": "EU CBAM Annex IV default embedded-emission values (flat sector rollup)",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/cbam-default-values/2024.1/seed.json",
+        "raw_artifact_sha256": "6db432eaad52a9988a1725bc5346c0590c13d134e2fc160a1b8c84c2b43d72f3",
+        "parser_id": "greenlang.factors.ingestion.parsers.cbam_default_values",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-0",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_cbam_default_values"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_steel",
+        "steel",
+        "embedded_emissions"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:cbam-default-values:CBAM:steel:IN:2024:v1",
+      "factor_id_alias": "EF:CBAM:steel:IN:2024:v1",
+      "source_urn": "urn:gl:source:cbam-default-values",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "name": "cbam steel \u2014 IN",
+      "description": "Material Embodied emission factor for cbam steel \u2014 IN, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "cbam_default",
+      "value": 3.1999999999999997,
+      "unit_urn": "urn:gl:unit:kgco2e/kg-product",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:in",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "9999-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:eu-cbam-default",
+      "boundary": "cradle_to_gate",
+      "licence": "EU-Publication",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "source_record_id": "cbam_default_values;record-1",
+        "source_publication": "EU CBAM Annex IV default embedded-emission values (flat sector rollup)",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/cbam-default-values/2024.1/seed.json",
+        "raw_artifact_sha256": "667e644ba5ee19ebfd507af61f31cde328ca4c6b3e53922d5c90da22ba28649c",
+        "parser_id": "greenlang.factors.ingestion.parsers.cbam_default_values",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-1",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_cbam_default_values"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_steel",
+        "steel",
+        "embedded_emissions"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:cbam-default-values:CBAM:steel:TR:2024:v1",
+      "factor_id_alias": "EF:CBAM:steel:TR:2024:v1",
+      "source_urn": "urn:gl:source:cbam-default-values",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "name": "cbam steel \u2014 TR",
+      "description": "Material Embodied emission factor for cbam steel \u2014 TR, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "cbam_default",
+      "value": 2.15,
+      "unit_urn": "urn:gl:unit:kgco2e/kg-product",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:tr",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "9999-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:eu-cbam-default",
+      "boundary": "cradle_to_gate",
+      "licence": "EU-Publication",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "source_record_id": "cbam_default_values;record-2",
+        "source_publication": "EU CBAM Annex IV default embedded-emission values (flat sector rollup)",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/cbam-default-values/2024.1/seed.json",
+        "raw_artifact_sha256": "21775413fbcfdc499cc8fa02b533441514be00d161def6fdaa98d285ae39da56",
+        "parser_id": "greenlang.factors.ingestion.parsers.cbam_default_values",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-2",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_cbam_default_values"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_steel",
+        "steel",
+        "embedded_emissions"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:cbam-default-values:CBAM:steel:RU:2024:v1",
+      "factor_id_alias": "EF:CBAM:steel:RU:2024:v1",
+      "source_urn": "urn:gl:source:cbam-default-values",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "name": "cbam steel \u2014 RU",
+      "description": "Material Embodied emission factor for cbam steel \u2014 RU, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "cbam_default",
+      "value": 2.6500000000000004,
+      "unit_urn": "urn:gl:unit:kgco2e/kg-product",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:ru",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "9999-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:eu-cbam-default",
+      "boundary": "cradle_to_gate",
+      "licence": "EU-Publication",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "source_record_id": "cbam_default_values;record-3",
+        "source_publication": "EU CBAM Annex IV default embedded-emission values (flat sector rollup)",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/cbam-default-values/2024.1/seed.json",
+        "raw_artifact_sha256": "fbfb233ed33b4d098a9b373cf0207dcd349d242bdefa43f7509a3927f197b89e",
+        "parser_id": "greenlang.factors.ingestion.parsers.cbam_default_values",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-3",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_cbam_default_values"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_steel",
+        "steel",
+        "embedded_emissions"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:cbam-default-values:CBAM:steel:UA:2024:v1",
+      "factor_id_alias": "EF:CBAM:steel:UA:2024:v1",
+      "source_urn": "urn:gl:source:cbam-default-values",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "name": "cbam steel \u2014 UA",
+      "description": "Material Embodied emission factor for cbam steel \u2014 UA, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "cbam_default",
+      "value": 2.6500000000000004,
+      "unit_urn": "urn:gl:unit:kgco2e/kg-product",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:ua",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "9999-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:eu-cbam-default",
+      "boundary": "cradle_to_gate",
+      "licence": "EU-Publication",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "source_record_id": "cbam_default_values;record-4",
+        "source_publication": "EU CBAM Annex IV default embedded-emission values (flat sector rollup)",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/cbam-default-values/2024.1/seed.json",
+        "raw_artifact_sha256": "640f1aa48da7e9e12a744048cacf0000e602dceab2199aa2723a60a5d729ae07",
+        "parser_id": "greenlang.factors.ingestion.parsers.cbam_default_values",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-4",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_cbam_default_values"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_steel",
+        "steel",
+        "embedded_emissions"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:cbam-default-values:CBAM:steel:BR:2024:v1",
+      "factor_id_alias": "EF:CBAM:steel:BR:2024:v1",
+      "source_urn": "urn:gl:source:cbam-default-values",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "name": "cbam steel \u2014 BR",
+      "description": "Material Embodied emission factor for cbam steel \u2014 BR, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "cbam_default",
+      "value": 1.9,
+      "unit_urn": "urn:gl:unit:kgco2e/kg-product",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:br",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "9999-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:eu-cbam-default",
+      "boundary": "cradle_to_gate",
+      "licence": "EU-Publication",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "source_record_id": "cbam_default_values;record-5",
+        "source_publication": "EU CBAM Annex IV default embedded-emission values (flat sector rollup)",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/cbam-default-values/2024.1/seed.json",
+        "raw_artifact_sha256": "0bb5ece63af87f6f8ae4282d0518b71e3ee57e242f8fc89bdce0714f894d0f0a",
+        "parser_id": "greenlang.factors.ingestion.parsers.cbam_default_values",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-5",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_cbam_default_values"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_steel",
+        "steel",
+        "embedded_emissions"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:cbam-default-values:CBAM:steel:KR:2024:v1",
+      "factor_id_alias": "EF:CBAM:steel:KR:2024:v1",
+      "source_urn": "urn:gl:source:cbam-default-values",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "name": "cbam steel \u2014 KR",
+      "description": "Material Embodied emission factor for cbam steel \u2014 KR, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "cbam_default",
+      "value": 2.3,
+      "unit_urn": "urn:gl:unit:kgco2e/kg-product",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:kr",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "9999-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:eu-cbam-default",
+      "boundary": "cradle_to_gate",
+      "licence": "EU-Publication",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "source_record_id": "cbam_default_values;record-6",
+        "source_publication": "EU CBAM Annex IV default embedded-emission values (flat sector rollup)",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/cbam-default-values/2024.1/seed.json",
+        "raw_artifact_sha256": "8df62b443eca6564ef8d98da418a31be7a4da518f849ee02ac097208560f1d70",
+        "parser_id": "greenlang.factors.ingestion.parsers.cbam_default_values",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-6",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_cbam_default_values"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_steel",
+        "steel",
+        "embedded_emissions"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:cbam-default-values:CBAM:steel:JP:2024:v1",
+      "factor_id_alias": "EF:CBAM:steel:JP:2024:v1",
+      "source_urn": "urn:gl:source:cbam-default-values",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "name": "cbam steel \u2014 JP",
+      "description": "Material Embodied emission factor for cbam steel \u2014 JP, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "cbam_default",
+      "value": 2.28,
+      "unit_urn": "urn:gl:unit:kgco2e/kg-product",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:jp",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "9999-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:eu-cbam-default",
+      "boundary": "cradle_to_gate",
+      "licence": "EU-Publication",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "source_record_id": "cbam_default_values;record-7",
+        "source_publication": "EU CBAM Annex IV default embedded-emission values (flat sector rollup)",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/cbam-default-values/2024.1/seed.json",
+        "raw_artifact_sha256": "6bf5bd38e0f06a08165e2ca96f1b837af3c7fbb11626de4c7ec61dea22060b88",
+        "parser_id": "greenlang.factors.ingestion.parsers.cbam_default_values",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-7",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_cbam_default_values"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_steel",
+        "steel",
+        "embedded_emissions"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:cbam-default-values:CBAM:steel:US:2024:v1",
+      "factor_id_alias": "EF:CBAM:steel:US:2024:v1",
+      "source_urn": "urn:gl:source:cbam-default-values",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "name": "cbam steel \u2014 US",
+      "description": "Material Embodied emission factor for cbam steel \u2014 US, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "cbam_default",
+      "value": 1.8800000000000001,
+      "unit_urn": "urn:gl:unit:kgco2e/kg-product",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:us",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "9999-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:eu-cbam-default",
+      "boundary": "cradle_to_gate",
+      "licence": "EU-Publication",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "source_record_id": "cbam_default_values;record-8",
+        "source_publication": "EU CBAM Annex IV default embedded-emission values (flat sector rollup)",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/cbam-default-values/2024.1/seed.json",
+        "raw_artifact_sha256": "1ce3750437d78e7d5627903d5dd1262377d7343b669406d14513c7dd10c75bb5",
+        "parser_id": "greenlang.factors.ingestion.parsers.cbam_default_values",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-8",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_cbam_default_values"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_steel",
+        "steel",
+        "embedded_emissions"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:cbam-default-values:CBAM:steel:VN:2024:v1",
+      "factor_id_alias": "EF:CBAM:steel:VN:2024:v1",
+      "source_urn": "urn:gl:source:cbam-default-values",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "name": "cbam steel \u2014 VN",
+      "description": "Material Embodied emission factor for cbam steel \u2014 VN, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "cbam_default",
+      "value": 2.5,
+      "unit_urn": "urn:gl:unit:kgco2e/kg-product",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:vn",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "9999-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:eu-cbam-default",
+      "boundary": "cradle_to_gate",
+      "licence": "EU-Publication",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "source_record_id": "cbam_default_values;record-9",
+        "source_publication": "EU CBAM Annex IV default embedded-emission values (flat sector rollup)",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/cbam-default-values/2024.1/seed.json",
+        "raw_artifact_sha256": "59b4a3e002f76e0c474e247298077e9e5bd51db900b3095c6bc5da87b17ea996",
+        "parser_id": "greenlang.factors.ingestion.parsers.cbam_default_values",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-9",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_cbam_default_values"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_steel",
+        "steel",
+        "embedded_emissions"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:cbam-default-values:CBAM:steel:ZA:2024:v1",
+      "factor_id_alias": "EF:CBAM:steel:ZA:2024:v1",
+      "source_urn": "urn:gl:source:cbam-default-values",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "name": "cbam steel \u2014 ZA",
+      "description": "Material Embodied emission factor for cbam steel \u2014 ZA, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "cbam_default",
+      "value": 2.9,
+      "unit_urn": "urn:gl:unit:kgco2e/kg-product",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:za",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "9999-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:eu-cbam-default",
+      "boundary": "cradle_to_gate",
+      "licence": "EU-Publication",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "source_record_id": "cbam_default_values;record-10",
+        "source_publication": "EU CBAM Annex IV default embedded-emission values (flat sector rollup)",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/cbam-default-values/2024.1/seed.json",
+        "raw_artifact_sha256": "dc878afeb1244a19856068830b426ac491521711a3b668522ea5f6c01d364674",
+        "parser_id": "greenlang.factors.ingestion.parsers.cbam_default_values",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-10",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_cbam_default_values"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_steel",
+        "steel",
+        "embedded_emissions"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:cbam-default-values:CBAM:steel:ID:2024:v1",
+      "factor_id_alias": "EF:CBAM:steel:ID:2024:v1",
+      "source_urn": "urn:gl:source:cbam-default-values",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "name": "cbam steel \u2014 ID",
+      "description": "Material Embodied emission factor for cbam steel \u2014 ID, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "cbam_default",
+      "value": 2.65,
+      "unit_urn": "urn:gl:unit:kgco2e/kg-product",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:id",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "9999-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:eu-cbam-default",
+      "boundary": "cradle_to_gate",
+      "licence": "EU-Publication",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "source_record_id": "cbam_default_values;record-11",
+        "source_publication": "EU CBAM Annex IV default embedded-emission values (flat sector rollup)",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/cbam-default-values/2024.1/seed.json",
+        "raw_artifact_sha256": "c390e6efdadba860f9bbb723c307efd9f841ce15e28303e5e40c4622ee773cc3",
+        "parser_id": "greenlang.factors.ingestion.parsers.cbam_default_values",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-11",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_cbam_default_values"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_steel",
+        "steel",
+        "embedded_emissions"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:cbam-default-values:CBAM:iron:CN:2024:v1",
+      "factor_id_alias": "EF:CBAM:iron:CN:2024:v1",
+      "source_urn": "urn:gl:source:cbam-default-values",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "name": "cbam iron \u2014 CN",
+      "description": "Material Embodied emission factor for cbam iron \u2014 CN, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "cbam_default",
+      "value": 2.15,
+      "unit_urn": "urn:gl:unit:kgco2e/kg-product",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:cn",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "9999-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:eu-cbam-default",
+      "boundary": "cradle_to_gate",
+      "licence": "EU-Publication",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "source_record_id": "cbam_default_values;record-12",
+        "source_publication": "EU CBAM Annex IV default embedded-emission values (flat sector rollup)",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/cbam-default-values/2024.1/seed.json",
+        "raw_artifact_sha256": "500c9ecb29f227d9430e1034d6e9586f8e05e047dd33906814cd7d796d7ba604",
+        "parser_id": "greenlang.factors.ingestion.parsers.cbam_default_values",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-12",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_cbam_default_values"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_iron",
+        "iron",
+        "embedded_emissions"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:cbam-default-values:CBAM:iron:IN:2024:v1",
+      "factor_id_alias": "EF:CBAM:iron:IN:2024:v1",
+      "source_urn": "urn:gl:source:cbam-default-values",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "name": "cbam iron \u2014 IN",
+      "description": "Material Embodied emission factor for cbam iron \u2014 IN, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "cbam_default",
+      "value": 2.5500000000000003,
+      "unit_urn": "urn:gl:unit:kgco2e/kg-product",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:in",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "9999-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:eu-cbam-default",
+      "boundary": "cradle_to_gate",
+      "licence": "EU-Publication",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "source_record_id": "cbam_default_values;record-13",
+        "source_publication": "EU CBAM Annex IV default embedded-emission values (flat sector rollup)",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/cbam-default-values/2024.1/seed.json",
+        "raw_artifact_sha256": "bc56d15ae0d0be3d3ebf74e017d40b2ea65f3fa675dc762fff3d6b1534dd10c1",
+        "parser_id": "greenlang.factors.ingestion.parsers.cbam_default_values",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-13",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_cbam_default_values"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_iron",
+        "iron",
+        "embedded_emissions"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:cbam-default-values:CBAM:iron:RU:2024:v1",
+      "factor_id_alias": "EF:CBAM:iron:RU:2024:v1",
+      "source_urn": "urn:gl:source:cbam-default-values",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "name": "cbam iron \u2014 RU",
+      "description": "Material Embodied emission factor for cbam iron \u2014 RU, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "cbam_default",
+      "value": 1.95,
+      "unit_urn": "urn:gl:unit:kgco2e/kg-product",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:ru",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "9999-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:eu-cbam-default",
+      "boundary": "cradle_to_gate",
+      "licence": "EU-Publication",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "source_record_id": "cbam_default_values;record-14",
+        "source_publication": "EU CBAM Annex IV default embedded-emission values (flat sector rollup)",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/cbam-default-values/2024.1/seed.json",
+        "raw_artifact_sha256": "9e2a114ca049a1d995ac4998cb0a11b173081145491c3ded09418c8c7d678c1b",
+        "parser_id": "greenlang.factors.ingestion.parsers.cbam_default_values",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-14",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_cbam_default_values"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_iron",
+        "iron",
+        "embedded_emissions"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:cbam-default-values:CBAM:iron:BR:2024:v1",
+      "factor_id_alias": "EF:CBAM:iron:BR:2024:v1",
+      "source_urn": "urn:gl:source:cbam-default-values",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "name": "cbam iron \u2014 BR",
+      "description": "Material Embodied emission factor for cbam iron \u2014 BR, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "cbam_default",
+      "value": 1.6500000000000001,
+      "unit_urn": "urn:gl:unit:kgco2e/kg-product",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:br",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "9999-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:eu-cbam-default",
+      "boundary": "cradle_to_gate",
+      "licence": "EU-Publication",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "source_record_id": "cbam_default_values;record-15",
+        "source_publication": "EU CBAM Annex IV default embedded-emission values (flat sector rollup)",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/cbam-default-values/2024.1/seed.json",
+        "raw_artifact_sha256": "7111d33de864d5879830a95a47760451c9bc8ac58225eb3c79eaddd88d4cab57",
+        "parser_id": "greenlang.factors.ingestion.parsers.cbam_default_values",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-15",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_cbam_default_values"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_iron",
+        "iron",
+        "embedded_emissions"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:cbam-default-values:CBAM:iron:US:2024:v1",
+      "factor_id_alias": "EF:CBAM:iron:US:2024:v1",
+      "source_urn": "urn:gl:source:cbam-default-values",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "name": "cbam iron \u2014 US",
+      "description": "Material Embodied emission factor for cbam iron \u2014 US, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "cbam_default",
+      "value": 1.7,
+      "unit_urn": "urn:gl:unit:kgco2e/kg-product",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:us",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "9999-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:eu-cbam-default",
+      "boundary": "cradle_to_gate",
+      "licence": "EU-Publication",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "source_record_id": "cbam_default_values;record-16",
+        "source_publication": "EU CBAM Annex IV default embedded-emission values (flat sector rollup)",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/cbam-default-values/2024.1/seed.json",
+        "raw_artifact_sha256": "905b45d2fc4ff22c95693d78bdfec7791be5afe4b2a7f984ab68bb94b7ac8922",
+        "parser_id": "greenlang.factors.ingestion.parsers.cbam_default_values",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-16",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_cbam_default_values"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_iron",
+        "iron",
+        "embedded_emissions"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:cbam-default-values:CBAM:iron:UA:2024:v1",
+      "factor_id_alias": "EF:CBAM:iron:UA:2024:v1",
+      "source_urn": "urn:gl:source:cbam-default-values",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "name": "cbam iron \u2014 UA",
+      "description": "Material Embodied emission factor for cbam iron \u2014 UA, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "cbam_default",
+      "value": 2.05,
+      "unit_urn": "urn:gl:unit:kgco2e/kg-product",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:ua",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "9999-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:eu-cbam-default",
+      "boundary": "cradle_to_gate",
+      "licence": "EU-Publication",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "source_record_id": "cbam_default_values;record-17",
+        "source_publication": "EU CBAM Annex IV default embedded-emission values (flat sector rollup)",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/cbam-default-values/2024.1/seed.json",
+        "raw_artifact_sha256": "063be624f6fb3fa23980491f85b622712ace5b97e26b1ed9f54d31957a85bbbc",
+        "parser_id": "greenlang.factors.ingestion.parsers.cbam_default_values",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-17",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_cbam_default_values"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_iron",
+        "iron",
+        "embedded_emissions"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:cbam-default-values:CBAM:aluminium:CN:2024:v1",
+      "factor_id_alias": "EF:CBAM:aluminium:CN:2024:v1",
+      "source_urn": "urn:gl:source:cbam-default-values",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "name": "cbam aluminium \u2014 CN",
+      "description": "Material Embodied emission factor for cbam aluminium \u2014 CN, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "cbam_default",
+      "value": 14.9,
+      "unit_urn": "urn:gl:unit:kgco2e/kg-product",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:cn",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "9999-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:eu-cbam-default",
+      "boundary": "cradle_to_gate",
+      "licence": "EU-Publication",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "source_record_id": "cbam_default_values;record-18",
+        "source_publication": "EU CBAM Annex IV default embedded-emission values (flat sector rollup)",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/cbam-default-values/2024.1/seed.json",
+        "raw_artifact_sha256": "952f41a4e027775a56b7d4c207fa83e5b1c0d98be68a182d9953b088c63e23c0",
+        "parser_id": "greenlang.factors.ingestion.parsers.cbam_default_values",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-18",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_cbam_default_values"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_aluminium",
+        "aluminium",
+        "embedded_emissions"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:cbam-default-values:CBAM:aluminium:IN:2024:v1",
+      "factor_id_alias": "EF:CBAM:aluminium:IN:2024:v1",
+      "source_urn": "urn:gl:source:cbam-default-values",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "name": "cbam aluminium \u2014 IN",
+      "description": "Material Embodied emission factor for cbam aluminium \u2014 IN, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "cbam_default",
+      "value": 18.05,
+      "unit_urn": "urn:gl:unit:kgco2e/kg-product",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:in",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "9999-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:eu-cbam-default",
+      "boundary": "cradle_to_gate",
+      "licence": "EU-Publication",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "source_record_id": "cbam_default_values;record-19",
+        "source_publication": "EU CBAM Annex IV default embedded-emission values (flat sector rollup)",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/cbam-default-values/2024.1/seed.json",
+        "raw_artifact_sha256": "5dea2f302b4b6803a09f7a6943b0e29120991830b9fefd85b02a17f9dd4beba8",
+        "parser_id": "greenlang.factors.ingestion.parsers.cbam_default_values",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-19",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_cbam_default_values"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_aluminium",
+        "aluminium",
+        "embedded_emissions"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:cbam-default-values:CBAM:aluminium:RU:2024:v1",
+      "factor_id_alias": "EF:CBAM:aluminium:RU:2024:v1",
+      "source_urn": "urn:gl:source:cbam-default-values",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "name": "cbam aluminium \u2014 RU",
+      "description": "Material Embodied emission factor for cbam aluminium \u2014 RU, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "cbam_default",
+      "value": 2.95,
+      "unit_urn": "urn:gl:unit:kgco2e/kg-product",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:ru",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "9999-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:eu-cbam-default",
+      "boundary": "cradle_to_gate",
+      "licence": "EU-Publication",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "source_record_id": "cbam_default_values;record-20",
+        "source_publication": "EU CBAM Annex IV default embedded-emission values (flat sector rollup)",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/cbam-default-values/2024.1/seed.json",
+        "raw_artifact_sha256": "db8e481367c4d09ec4fd15ca4f5a516673934f17e6dcc96968d458e0148db262",
+        "parser_id": "greenlang.factors.ingestion.parsers.cbam_default_values",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-20",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_cbam_default_values"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_aluminium",
+        "aluminium",
+        "embedded_emissions"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:cbam-default-values:CBAM:aluminium:AE:2024:v1",
+      "factor_id_alias": "EF:CBAM:aluminium:AE:2024:v1",
+      "source_urn": "urn:gl:source:cbam-default-values",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "name": "cbam aluminium \u2014 AE",
+      "description": "Material Embodied emission factor for cbam aluminium \u2014 AE, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "cbam_default",
+      "value": 9.3,
+      "unit_urn": "urn:gl:unit:kgco2e/kg-product",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:ae",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "9999-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:eu-cbam-default",
+      "boundary": "cradle_to_gate",
+      "licence": "EU-Publication",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "source_record_id": "cbam_default_values;record-21",
+        "source_publication": "EU CBAM Annex IV default embedded-emission values (flat sector rollup)",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/cbam-default-values/2024.1/seed.json",
+        "raw_artifact_sha256": "5749e04511d2709e5c0ae55cdad337196e97dff04e0fcab9fa76eaac2ab18d21",
+        "parser_id": "greenlang.factors.ingestion.parsers.cbam_default_values",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-21",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_cbam_default_values"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_aluminium",
+        "aluminium",
+        "embedded_emissions"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:cbam-default-values:CBAM:aluminium:AU:2024:v1",
+      "factor_id_alias": "EF:CBAM:aluminium:AU:2024:v1",
+      "source_urn": "urn:gl:source:cbam-default-values",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "name": "cbam aluminium \u2014 AU",
+      "description": "Material Embodied emission factor for cbam aluminium \u2014 AU, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "cbam_default",
+      "value": 13.850000000000001,
+      "unit_urn": "urn:gl:unit:kgco2e/kg-product",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:au",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "9999-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:eu-cbam-default",
+      "boundary": "cradle_to_gate",
+      "licence": "EU-Publication",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "source_record_id": "cbam_default_values;record-22",
+        "source_publication": "EU CBAM Annex IV default embedded-emission values (flat sector rollup)",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/cbam-default-values/2024.1/seed.json",
+        "raw_artifact_sha256": "d43a393edccda09e1dee347f57ae09b2d4329d2303f6b934dbbdf1e3fd318f07",
+        "parser_id": "greenlang.factors.ingestion.parsers.cbam_default_values",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-22",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_cbam_default_values"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_aluminium",
+        "aluminium",
+        "embedded_emissions"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:cbam-default-values:CBAM:aluminium:IS:2024:v1",
+      "factor_id_alias": "EF:CBAM:aluminium:IS:2024:v1",
+      "source_urn": "urn:gl:source:cbam-default-values",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "name": "cbam aluminium \u2014 IS",
+      "description": "Material Embodied emission factor for cbam aluminium \u2014 IS, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "cbam_default",
+      "value": 1.75,
+      "unit_urn": "urn:gl:unit:kgco2e/kg-product",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:is",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "9999-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:eu-cbam-default",
+      "boundary": "cradle_to_gate",
+      "licence": "EU-Publication",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "source_record_id": "cbam_default_values;record-23",
+        "source_publication": "EU CBAM Annex IV default embedded-emission values (flat sector rollup)",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/cbam-default-values/2024.1/seed.json",
+        "raw_artifact_sha256": "56a6339218486cfd61e6d2d25197972d1d2d4ac28ff197ce9d3b3ecba674941e",
+        "parser_id": "greenlang.factors.ingestion.parsers.cbam_default_values",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-23",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_cbam_default_values"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_aluminium",
+        "aluminium",
+        "embedded_emissions"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:cbam-default-values:CBAM:aluminium:NO:2024:v1",
+      "factor_id_alias": "EF:CBAM:aluminium:NO:2024:v1",
+      "source_urn": "urn:gl:source:cbam-default-values",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "name": "cbam aluminium \u2014 NO",
+      "description": "Material Embodied emission factor for cbam aluminium \u2014 NO, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "cbam_default",
+      "value": 1.9500000000000002,
+      "unit_urn": "urn:gl:unit:kgco2e/kg-product",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:no",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "9999-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:eu-cbam-default",
+      "boundary": "cradle_to_gate",
+      "licence": "EU-Publication",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "source_record_id": "cbam_default_values;record-24",
+        "source_publication": "EU CBAM Annex IV default embedded-emission values (flat sector rollup)",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/cbam-default-values/2024.1/seed.json",
+        "raw_artifact_sha256": "563dc70889bfd2405c9192b4c5edbc8c6f635a4f9d6a68d128c70130cd658db7",
+        "parser_id": "greenlang.factors.ingestion.parsers.cbam_default_values",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-24",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_cbam_default_values"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_aluminium",
+        "aluminium",
+        "embedded_emissions"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:cbam-default-values:CBAM:aluminium:CA:2024:v1",
+      "factor_id_alias": "EF:CBAM:aluminium:CA:2024:v1",
+      "source_urn": "urn:gl:source:cbam-default-values",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "name": "cbam aluminium \u2014 CA",
+      "description": "Material Embodied emission factor for cbam aluminium \u2014 CA, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "cbam_default",
+      "value": 2.0,
+      "unit_urn": "urn:gl:unit:kgco2e/kg-product",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:ca",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "9999-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:eu-cbam-default",
+      "boundary": "cradle_to_gate",
+      "licence": "EU-Publication",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "source_record_id": "cbam_default_values;record-25",
+        "source_publication": "EU CBAM Annex IV default embedded-emission values (flat sector rollup)",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/cbam-default-values/2024.1/seed.json",
+        "raw_artifact_sha256": "75d3a9f0249ae1e81573deb3e70dbad89411398479021633a9a4b9015a1633bf",
+        "parser_id": "greenlang.factors.ingestion.parsers.cbam_default_values",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-25",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_cbam_default_values"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_aluminium",
+        "aluminium",
+        "embedded_emissions"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:cbam-default-values:CBAM:aluminium:US:2024:v1",
+      "factor_id_alias": "EF:CBAM:aluminium:US:2024:v1",
+      "source_urn": "urn:gl:source:cbam-default-values",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "name": "cbam aluminium \u2014 US",
+      "description": "Material Embodied emission factor for cbam aluminium \u2014 US, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "cbam_default",
+      "value": 6.4,
+      "unit_urn": "urn:gl:unit:kgco2e/kg-product",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:us",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "9999-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:eu-cbam-default",
+      "boundary": "cradle_to_gate",
+      "licence": "EU-Publication",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "source_record_id": "cbam_default_values;record-26",
+        "source_publication": "EU CBAM Annex IV default embedded-emission values (flat sector rollup)",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/cbam-default-values/2024.1/seed.json",
+        "raw_artifact_sha256": "4ac5c9025ff71aa29b57c7877f6417bc10373d535274407fc05b0364d4dad138",
+        "parser_id": "greenlang.factors.ingestion.parsers.cbam_default_values",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-26",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_cbam_default_values"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_aluminium",
+        "aluminium",
+        "embedded_emissions"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:cbam-default-values:CBAM:aluminium:BH:2024:v1",
+      "factor_id_alias": "EF:CBAM:aluminium:BH:2024:v1",
+      "source_urn": "urn:gl:source:cbam-default-values",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "name": "cbam aluminium \u2014 BH",
+      "description": "Material Embodied emission factor for cbam aluminium \u2014 BH, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "cbam_default",
+      "value": 8.8,
+      "unit_urn": "urn:gl:unit:kgco2e/kg-product",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:bh",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "9999-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:eu-cbam-default",
+      "boundary": "cradle_to_gate",
+      "licence": "EU-Publication",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "source_record_id": "cbam_default_values;record-27",
+        "source_publication": "EU CBAM Annex IV default embedded-emission values (flat sector rollup)",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/cbam-default-values/2024.1/seed.json",
+        "raw_artifact_sha256": "0b26a6124fece3c8066dec05e8ef1c81b570a8613272d8649a5379cf28f27912",
+        "parser_id": "greenlang.factors.ingestion.parsers.cbam_default_values",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-27",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_cbam_default_values"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_aluminium",
+        "aluminium",
+        "embedded_emissions"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:cbam-default-values:CBAM:aluminium:TR:2024:v1",
+      "factor_id_alias": "EF:CBAM:aluminium:TR:2024:v1",
+      "source_urn": "urn:gl:source:cbam-default-values",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "name": "cbam aluminium \u2014 TR",
+      "description": "Material Embodied emission factor for cbam aluminium \u2014 TR, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "cbam_default",
+      "value": 7.25,
+      "unit_urn": "urn:gl:unit:kgco2e/kg-product",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:tr",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "9999-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:eu-cbam-default",
+      "boundary": "cradle_to_gate",
+      "licence": "EU-Publication",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "source_record_id": "cbam_default_values;record-28",
+        "source_publication": "EU CBAM Annex IV default embedded-emission values (flat sector rollup)",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/cbam-default-values/2024.1/seed.json",
+        "raw_artifact_sha256": "cf8910a3221173c72ab3d81aafed082d413b14b652519fe86836e5544ae47839",
+        "parser_id": "greenlang.factors.ingestion.parsers.cbam_default_values",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-28",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_cbam_default_values"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_aluminium",
+        "aluminium",
+        "embedded_emissions"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:cbam-default-values:CBAM:cement:CN:2024:v1",
+      "factor_id_alias": "EF:CBAM:cement:CN:2024:v1",
+      "source_urn": "urn:gl:source:cbam-default-values",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "name": "cbam cement \u2014 CN",
+      "description": "Material Embodied emission factor for cbam cement \u2014 CN, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "cbam_default",
+      "value": 0.84,
+      "unit_urn": "urn:gl:unit:kgco2e/kg-product",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:cn",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "9999-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:eu-cbam-default",
+      "boundary": "cradle_to_gate",
+      "licence": "EU-Publication",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "source_record_id": "cbam_default_values;record-29",
+        "source_publication": "EU CBAM Annex IV default embedded-emission values (flat sector rollup)",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/cbam-default-values/2024.1/seed.json",
+        "raw_artifact_sha256": "e5969724e883fcf65d0f50f0791cba872f54c2b3ae6bd56417f6fe7b6c73d6ee",
+        "parser_id": "greenlang.factors.ingestion.parsers.cbam_default_values",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-29",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_cbam_default_values"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_cement",
+        "cement",
+        "embedded_emissions"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:cbam-default-values:CBAM:cement:IN:2024:v1",
+      "factor_id_alias": "EF:CBAM:cement:IN:2024:v1",
+      "source_urn": "urn:gl:source:cbam-default-values",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "name": "cbam cement \u2014 IN",
+      "description": "Material Embodied emission factor for cbam cement \u2014 IN, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "cbam_default",
+      "value": 0.78,
+      "unit_urn": "urn:gl:unit:kgco2e/kg-product",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:in",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "9999-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:eu-cbam-default",
+      "boundary": "cradle_to_gate",
+      "licence": "EU-Publication",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "source_record_id": "cbam_default_values;record-30",
+        "source_publication": "EU CBAM Annex IV default embedded-emission values (flat sector rollup)",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/cbam-default-values/2024.1/seed.json",
+        "raw_artifact_sha256": "e9c79d5a3b3614925bcd11433bab39611ac11561d4d6130f62d0bf0ec2e32f5a",
+        "parser_id": "greenlang.factors.ingestion.parsers.cbam_default_values",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-30",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_cbam_default_values"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_cement",
+        "cement",
+        "embedded_emissions"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:cbam-default-values:CBAM:cement:EG:2024:v1",
+      "factor_id_alias": "EF:CBAM:cement:EG:2024:v1",
+      "source_urn": "urn:gl:source:cbam-default-values",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "name": "cbam cement \u2014 EG",
+      "description": "Material Embodied emission factor for cbam cement \u2014 EG, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "cbam_default",
+      "value": 0.83,
+      "unit_urn": "urn:gl:unit:kgco2e/kg-product",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:eg",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "9999-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:eu-cbam-default",
+      "boundary": "cradle_to_gate",
+      "licence": "EU-Publication",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "source_record_id": "cbam_default_values;record-31",
+        "source_publication": "EU CBAM Annex IV default embedded-emission values (flat sector rollup)",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/cbam-default-values/2024.1/seed.json",
+        "raw_artifact_sha256": "b1b77b3e9eb58b23b2e721660ffcf3f29779d43e70b78e6886c6f84f4865505f",
+        "parser_id": "greenlang.factors.ingestion.parsers.cbam_default_values",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-31",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_cbam_default_values"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_cement",
+        "cement",
+        "embedded_emissions"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:cbam-default-values:CBAM:cement:TR:2024:v1",
+      "factor_id_alias": "EF:CBAM:cement:TR:2024:v1",
+      "source_urn": "urn:gl:source:cbam-default-values",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "name": "cbam cement \u2014 TR",
+      "description": "Material Embodied emission factor for cbam cement \u2014 TR, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "cbam_default",
+      "value": 0.71,
+      "unit_urn": "urn:gl:unit:kgco2e/kg-product",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:tr",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "9999-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:eu-cbam-default",
+      "boundary": "cradle_to_gate",
+      "licence": "EU-Publication",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "source_record_id": "cbam_default_values;record-32",
+        "source_publication": "EU CBAM Annex IV default embedded-emission values (flat sector rollup)",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/cbam-default-values/2024.1/seed.json",
+        "raw_artifact_sha256": "b64d20b4f9b25bee590c58476b9e53e036c7723b7a61b206fd9511e537ab8b44",
+        "parser_id": "greenlang.factors.ingestion.parsers.cbam_default_values",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-32",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_cbam_default_values"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_cement",
+        "cement",
+        "embedded_emissions"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:cbam-default-values:CBAM:cement:VN:2024:v1",
+      "factor_id_alias": "EF:CBAM:cement:VN:2024:v1",
+      "source_urn": "urn:gl:source:cbam-default-values",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "name": "cbam cement \u2014 VN",
+      "description": "Material Embodied emission factor for cbam cement \u2014 VN, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "cbam_default",
+      "value": 0.7999999999999999,
+      "unit_urn": "urn:gl:unit:kgco2e/kg-product",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:vn",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "9999-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:eu-cbam-default",
+      "boundary": "cradle_to_gate",
+      "licence": "EU-Publication",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "source_record_id": "cbam_default_values;record-33",
+        "source_publication": "EU CBAM Annex IV default embedded-emission values (flat sector rollup)",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/cbam-default-values/2024.1/seed.json",
+        "raw_artifact_sha256": "9b94ef8711bd628687c66bee036ad023d2b91ef438c09517f8b8531341764590",
+        "parser_id": "greenlang.factors.ingestion.parsers.cbam_default_values",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-33",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_cbam_default_values"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_cement",
+        "cement",
+        "embedded_emissions"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:cbam-default-values:CBAM:cement:TN:2024:v1",
+      "factor_id_alias": "EF:CBAM:cement:TN:2024:v1",
+      "source_urn": "urn:gl:source:cbam-default-values",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "name": "cbam cement \u2014 TN",
+      "description": "Material Embodied emission factor for cbam cement \u2014 TN, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "cbam_default",
+      "value": 0.8099999999999999,
+      "unit_urn": "urn:gl:unit:kgco2e/kg-product",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:tn",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "9999-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:eu-cbam-default",
+      "boundary": "cradle_to_gate",
+      "licence": "EU-Publication",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "source_record_id": "cbam_default_values;record-34",
+        "source_publication": "EU CBAM Annex IV default embedded-emission values (flat sector rollup)",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/cbam-default-values/2024.1/seed.json",
+        "raw_artifact_sha256": "4e5c9d87f510544c289c88bb45827c49987b205437b0f0b330aca62be6193d54",
+        "parser_id": "greenlang.factors.ingestion.parsers.cbam_default_values",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-34",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_cbam_default_values"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_cement",
+        "cement",
+        "embedded_emissions"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:cbam-default-values:CBAM:cement:MA:2024:v1",
+      "factor_id_alias": "EF:CBAM:cement:MA:2024:v1",
+      "source_urn": "urn:gl:source:cbam-default-values",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "name": "cbam cement \u2014 MA",
+      "description": "Material Embodied emission factor for cbam cement \u2014 MA, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "cbam_default",
+      "value": 0.75,
+      "unit_urn": "urn:gl:unit:kgco2e/kg-product",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:ma",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "9999-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:eu-cbam-default",
+      "boundary": "cradle_to_gate",
+      "licence": "EU-Publication",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "source_record_id": "cbam_default_values;record-35",
+        "source_publication": "EU CBAM Annex IV default embedded-emission values (flat sector rollup)",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/cbam-default-values/2024.1/seed.json",
+        "raw_artifact_sha256": "0268890601c0bec47660177e49b333d0f403bf940f50b2885a06c2b74ceedbec",
+        "parser_id": "greenlang.factors.ingestion.parsers.cbam_default_values",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-35",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_cbam_default_values"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_cement",
+        "cement",
+        "embedded_emissions"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:cbam-default-values:CBAM:cement:UA:2024:v1",
+      "factor_id_alias": "EF:CBAM:cement:UA:2024:v1",
+      "source_urn": "urn:gl:source:cbam-default-values",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "name": "cbam cement \u2014 UA",
+      "description": "Material Embodied emission factor for cbam cement \u2014 UA, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "cbam_default",
+      "value": 0.84,
+      "unit_urn": "urn:gl:unit:kgco2e/kg-product",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:ua",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "9999-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:eu-cbam-default",
+      "boundary": "cradle_to_gate",
+      "licence": "EU-Publication",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "source_record_id": "cbam_default_values;record-36",
+        "source_publication": "EU CBAM Annex IV default embedded-emission values (flat sector rollup)",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/cbam-default-values/2024.1/seed.json",
+        "raw_artifact_sha256": "a919d4ba4638dce41cbc0d1bf696f01921405f4d09cd4304ceae7ec56b431a4a",
+        "parser_id": "greenlang.factors.ingestion.parsers.cbam_default_values",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-36",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_cbam_default_values"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_cement",
+        "cement",
+        "embedded_emissions"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:cbam-default-values:CBAM:cement:BR:2024:v1",
+      "factor_id_alias": "EF:CBAM:cement:BR:2024:v1",
+      "source_urn": "urn:gl:source:cbam-default-values",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "name": "cbam cement \u2014 BR",
+      "description": "Material Embodied emission factor for cbam cement \u2014 BR, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "cbam_default",
+      "value": 0.65,
+      "unit_urn": "urn:gl:unit:kgco2e/kg-product",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:br",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "9999-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:eu-cbam-default",
+      "boundary": "cradle_to_gate",
+      "licence": "EU-Publication",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "source_record_id": "cbam_default_values;record-37",
+        "source_publication": "EU CBAM Annex IV default embedded-emission values (flat sector rollup)",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/cbam-default-values/2024.1/seed.json",
+        "raw_artifact_sha256": "d052e8647fafa4590eaa868d92f3b267bb571c116db19c2b5342188f004ed9c5",
+        "parser_id": "greenlang.factors.ingestion.parsers.cbam_default_values",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-37",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_cbam_default_values"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_cement",
+        "cement",
+        "embedded_emissions"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:cbam-default-values:CBAM:fertilizer:RU:2024:v1",
+      "factor_id_alias": "EF:CBAM:fertilizer:RU:2024:v1",
+      "source_urn": "urn:gl:source:cbam-default-values",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "name": "cbam fertilizer \u2014 RU",
+      "description": "Material Embodied emission factor for cbam fertilizer \u2014 RU, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "cbam_default",
+      "value": 2.25,
+      "unit_urn": "urn:gl:unit:kgco2e/kg-product",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:ru",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "9999-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:eu-cbam-default",
+      "boundary": "cradle_to_gate",
+      "licence": "EU-Publication",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "source_record_id": "cbam_default_values;record-38",
+        "source_publication": "EU CBAM Annex IV default embedded-emission values (flat sector rollup)",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/cbam-default-values/2024.1/seed.json",
+        "raw_artifact_sha256": "777dceaaa13568998fc2e4d3ec8035e234169aa61bd42e0b1cac4a6cb498fe36",
+        "parser_id": "greenlang.factors.ingestion.parsers.cbam_default_values",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-38",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_cbam_default_values"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_fertilizer",
+        "fertilizer",
+        "embedded_emissions"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:cbam-default-values:CBAM:fertilizer:EG:2024:v1",
+      "factor_id_alias": "EF:CBAM:fertilizer:EG:2024:v1",
+      "source_urn": "urn:gl:source:cbam-default-values",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "name": "cbam fertilizer \u2014 EG",
+      "description": "Material Embodied emission factor for cbam fertilizer \u2014 EG, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "cbam_default",
+      "value": 2.3,
+      "unit_urn": "urn:gl:unit:kgco2e/kg-product",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:eg",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "9999-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:eu-cbam-default",
+      "boundary": "cradle_to_gate",
+      "licence": "EU-Publication",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "source_record_id": "cbam_default_values;record-39",
+        "source_publication": "EU CBAM Annex IV default embedded-emission values (flat sector rollup)",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/cbam-default-values/2024.1/seed.json",
+        "raw_artifact_sha256": "735acb005760174dfed2b65785d56bf8c36dfa0494b4b8cff93feaf800b9c6ca",
+        "parser_id": "greenlang.factors.ingestion.parsers.cbam_default_values",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-39",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_cbam_default_values"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_fertilizer",
+        "fertilizer",
+        "embedded_emissions"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:cbam-default-values:CBAM:fertilizer:MA:2024:v1",
+      "factor_id_alias": "EF:CBAM:fertilizer:MA:2024:v1",
+      "source_urn": "urn:gl:source:cbam-default-values",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "name": "cbam fertilizer \u2014 MA",
+      "description": "Material Embodied emission factor for cbam fertilizer \u2014 MA, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "cbam_default",
+      "value": 2.15,
+      "unit_urn": "urn:gl:unit:kgco2e/kg-product",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:ma",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "9999-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:eu-cbam-default",
+      "boundary": "cradle_to_gate",
+      "licence": "EU-Publication",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "source_record_id": "cbam_default_values;record-40",
+        "source_publication": "EU CBAM Annex IV default embedded-emission values (flat sector rollup)",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/cbam-default-values/2024.1/seed.json",
+        "raw_artifact_sha256": "a1752cc6e4a0a9b733c80f6e76e50935204cbccdadd5abe50b39fe18c5cc88fc",
+        "parser_id": "greenlang.factors.ingestion.parsers.cbam_default_values",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-40",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_cbam_default_values"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_fertilizer",
+        "fertilizer",
+        "embedded_emissions"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:cbam-default-values:CBAM:fertilizer:DZ:2024:v1",
+      "factor_id_alias": "EF:CBAM:fertilizer:DZ:2024:v1",
+      "source_urn": "urn:gl:source:cbam-default-values",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "name": "cbam fertilizer \u2014 DZ",
+      "description": "Material Embodied emission factor for cbam fertilizer \u2014 DZ, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "cbam_default",
+      "value": 2.25,
+      "unit_urn": "urn:gl:unit:kgco2e/kg-product",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:dz",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "9999-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:eu-cbam-default",
+      "boundary": "cradle_to_gate",
+      "licence": "EU-Publication",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "source_record_id": "cbam_default_values;record-41",
+        "source_publication": "EU CBAM Annex IV default embedded-emission values (flat sector rollup)",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/cbam-default-values/2024.1/seed.json",
+        "raw_artifact_sha256": "fd575ef678f646999807044105690b95d1b195217f89504b5e0dbed954c2703d",
+        "parser_id": "greenlang.factors.ingestion.parsers.cbam_default_values",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-41",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_cbam_default_values"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_fertilizer",
+        "fertilizer",
+        "embedded_emissions"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:cbam-default-values:CBAM:fertilizer:IN:2024:v1",
+      "factor_id_alias": "EF:CBAM:fertilizer:IN:2024:v1",
+      "source_urn": "urn:gl:source:cbam-default-values",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "name": "cbam fertilizer \u2014 IN",
+      "description": "Material Embodied emission factor for cbam fertilizer \u2014 IN, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "cbam_default",
+      "value": 2.8,
+      "unit_urn": "urn:gl:unit:kgco2e/kg-product",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:in",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "9999-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:eu-cbam-default",
+      "boundary": "cradle_to_gate",
+      "licence": "EU-Publication",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "source_record_id": "cbam_default_values;record-42",
+        "source_publication": "EU CBAM Annex IV default embedded-emission values (flat sector rollup)",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/cbam-default-values/2024.1/seed.json",
+        "raw_artifact_sha256": "c771e3761c38fea76e430f850e4840ca31a1dd8d8e1c5d17ab63dc5bcf7126ff",
+        "parser_id": "greenlang.factors.ingestion.parsers.cbam_default_values",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-42",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_cbam_default_values"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_fertilizer",
+        "fertilizer",
+        "embedded_emissions"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:cbam-default-values:CBAM:fertilizer:CN:2024:v1",
+      "factor_id_alias": "EF:CBAM:fertilizer:CN:2024:v1",
+      "source_urn": "urn:gl:source:cbam-default-values",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "name": "cbam fertilizer \u2014 CN",
+      "description": "Material Embodied emission factor for cbam fertilizer \u2014 CN, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "cbam_default",
+      "value": 2.8,
+      "unit_urn": "urn:gl:unit:kgco2e/kg-product",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:cn",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "9999-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:eu-cbam-default",
+      "boundary": "cradle_to_gate",
+      "licence": "EU-Publication",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "source_record_id": "cbam_default_values;record-43",
+        "source_publication": "EU CBAM Annex IV default embedded-emission values (flat sector rollup)",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/cbam-default-values/2024.1/seed.json",
+        "raw_artifact_sha256": "c6fd36bf34331f71259c28e62a3438c710662fa8900ec17c257047047e18743f",
+        "parser_id": "greenlang.factors.ingestion.parsers.cbam_default_values",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-43",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_cbam_default_values"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_fertilizer",
+        "fertilizer",
+        "embedded_emissions"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:cbam-default-values:CBAM:fertilizer:TR:2024:v1",
+      "factor_id_alias": "EF:CBAM:fertilizer:TR:2024:v1",
+      "source_urn": "urn:gl:source:cbam-default-values",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "name": "cbam fertilizer \u2014 TR",
+      "description": "Material Embodied emission factor for cbam fertilizer \u2014 TR, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "cbam_default",
+      "value": 2.1,
+      "unit_urn": "urn:gl:unit:kgco2e/kg-product",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:tr",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "9999-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:eu-cbam-default",
+      "boundary": "cradle_to_gate",
+      "licence": "EU-Publication",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "source_record_id": "cbam_default_values;record-44",
+        "source_publication": "EU CBAM Annex IV default embedded-emission values (flat sector rollup)",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/cbam-default-values/2024.1/seed.json",
+        "raw_artifact_sha256": "00a022ac18a6a004923e885ddc19a4666c4d2798e7484094d4cbc0e6d42f7a4b",
+        "parser_id": "greenlang.factors.ingestion.parsers.cbam_default_values",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-44",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_cbam_default_values"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_fertilizer",
+        "fertilizer",
+        "embedded_emissions"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:cbam-default-values:CBAM:fertilizer:SA:2024:v1",
+      "factor_id_alias": "EF:CBAM:fertilizer:SA:2024:v1",
+      "source_urn": "urn:gl:source:cbam-default-values",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "name": "cbam fertilizer \u2014 SA",
+      "description": "Material Embodied emission factor for cbam fertilizer \u2014 SA, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "cbam_default",
+      "value": 1.8,
+      "unit_urn": "urn:gl:unit:kgco2e/kg-product",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:sa",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "9999-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:eu-cbam-default",
+      "boundary": "cradle_to_gate",
+      "licence": "EU-Publication",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "source_record_id": "cbam_default_values;record-45",
+        "source_publication": "EU CBAM Annex IV default embedded-emission values (flat sector rollup)",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/cbam-default-values/2024.1/seed.json",
+        "raw_artifact_sha256": "547bb93a1b497cebcc17d07729d8cf7c1e2ac531373611f97920ad82e40e42a5",
+        "parser_id": "greenlang.factors.ingestion.parsers.cbam_default_values",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-45",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_cbam_default_values"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_fertilizer",
+        "fertilizer",
+        "embedded_emissions"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:cbam-default-values:CBAM:hydrogen:SA:2024:v1",
+      "factor_id_alias": "EF:CBAM:hydrogen:SA:2024:v1",
+      "source_urn": "urn:gl:source:cbam-default-values",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "name": "cbam hydrogen \u2014 SA",
+      "description": "Material Embodied emission factor for cbam hydrogen \u2014 SA, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "cbam_default",
+      "value": 9.9,
+      "unit_urn": "urn:gl:unit:kgco2e/kg-product",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:sa",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "9999-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:eu-cbam-default",
+      "boundary": "cradle_to_gate",
+      "licence": "EU-Publication",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "source_record_id": "cbam_default_values;record-46",
+        "source_publication": "EU CBAM Annex IV default embedded-emission values (flat sector rollup)",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/cbam-default-values/2024.1/seed.json",
+        "raw_artifact_sha256": "bf00be168c959f57ec956875abb19889a0430b6cad4fc4fb62f1981628a6af79",
+        "parser_id": "greenlang.factors.ingestion.parsers.cbam_default_values",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-46",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_cbam_default_values"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_hydrogen",
+        "hydrogen",
+        "embedded_emissions"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:cbam-default-values:CBAM:hydrogen:RU:2024:v1",
+      "factor_id_alias": "EF:CBAM:hydrogen:RU:2024:v1",
+      "source_urn": "urn:gl:source:cbam-default-values",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "name": "cbam hydrogen \u2014 RU",
+      "description": "Material Embodied emission factor for cbam hydrogen \u2014 RU, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "cbam_default",
+      "value": 11.600000000000001,
+      "unit_urn": "urn:gl:unit:kgco2e/kg-product",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:ru",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "9999-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:eu-cbam-default",
+      "boundary": "cradle_to_gate",
+      "licence": "EU-Publication",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "source_record_id": "cbam_default_values;record-47",
+        "source_publication": "EU CBAM Annex IV default embedded-emission values (flat sector rollup)",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/cbam-default-values/2024.1/seed.json",
+        "raw_artifact_sha256": "941fc8d4d363a2674911bd786c2b276e379ebff7677bbe9eb4a90d3028db9863",
+        "parser_id": "greenlang.factors.ingestion.parsers.cbam_default_values",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-47",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_cbam_default_values"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_hydrogen",
+        "hydrogen",
+        "embedded_emissions"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:cbam-default-values:CBAM:hydrogen:NO:2024:v1",
+      "factor_id_alias": "EF:CBAM:hydrogen:NO:2024:v1",
+      "source_urn": "urn:gl:source:cbam-default-values",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "name": "cbam hydrogen \u2014 NO",
+      "description": "Material Embodied emission factor for cbam hydrogen \u2014 NO, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "cbam_default",
+      "value": 8.25,
+      "unit_urn": "urn:gl:unit:kgco2e/kg-product",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:no",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "9999-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:eu-cbam-default",
+      "boundary": "cradle_to_gate",
+      "licence": "EU-Publication",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "source_record_id": "cbam_default_values;record-48",
+        "source_publication": "EU CBAM Annex IV default embedded-emission values (flat sector rollup)",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/cbam-default-values/2024.1/seed.json",
+        "raw_artifact_sha256": "ca16a04dc676b157943445746d8f31169e584e02cda9c34b41d9844430cf3083",
+        "parser_id": "greenlang.factors.ingestion.parsers.cbam_default_values",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-48",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_cbam_default_values"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_hydrogen",
+        "hydrogen",
+        "embedded_emissions"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:cbam-default-values:CBAM:hydrogen:AE:2024:v1",
+      "factor_id_alias": "EF:CBAM:hydrogen:AE:2024:v1",
+      "source_urn": "urn:gl:source:cbam-default-values",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "name": "cbam hydrogen \u2014 AE",
+      "description": "Material Embodied emission factor for cbam hydrogen \u2014 AE, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "cbam_default",
+      "value": 10.3,
+      "unit_urn": "urn:gl:unit:kgco2e/kg-product",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:ae",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "9999-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:eu-cbam-default",
+      "boundary": "cradle_to_gate",
+      "licence": "EU-Publication",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "source_record_id": "cbam_default_values;record-49",
+        "source_publication": "EU CBAM Annex IV default embedded-emission values (flat sector rollup)",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/cbam-default-values/2024.1/seed.json",
+        "raw_artifact_sha256": "f4d7c8a39f92f53ac912a1ad99bc1ef645a92b8ac40258fd64467a066fdb1b3f",
+        "parser_id": "greenlang.factors.ingestion.parsers.cbam_default_values",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-49",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_cbam_default_values"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_hydrogen",
+        "hydrogen",
+        "embedded_emissions"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:cbam-default-values:CBAM:hydrogen:DZ:2024:v1",
+      "factor_id_alias": "EF:CBAM:hydrogen:DZ:2024:v1",
+      "source_urn": "urn:gl:source:cbam-default-values",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "name": "cbam hydrogen \u2014 DZ",
+      "description": "Material Embodied emission factor for cbam hydrogen \u2014 DZ, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "cbam_default",
+      "value": 9.549999999999999,
+      "unit_urn": "urn:gl:unit:kgco2e/kg-product",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:dz",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "9999-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:eu-cbam-default",
+      "boundary": "cradle_to_gate",
+      "licence": "EU-Publication",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "source_record_id": "cbam_default_values;record-50",
+        "source_publication": "EU CBAM Annex IV default embedded-emission values (flat sector rollup)",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/cbam-default-values/2024.1/seed.json",
+        "raw_artifact_sha256": "6e5d9c4b789384bc6145c10637d23be1990238e45d7c9a2e96f6f0767c5fb867",
+        "parser_id": "greenlang.factors.ingestion.parsers.cbam_default_values",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-50",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_cbam_default_values"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_hydrogen",
+        "hydrogen",
+        "embedded_emissions"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:cbam-default-values:CBAM:hydrogen:CA:2024:v1",
+      "factor_id_alias": "EF:CBAM:hydrogen:CA:2024:v1",
+      "source_urn": "urn:gl:source:cbam-default-values",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "name": "cbam hydrogen \u2014 CA",
+      "description": "Material Embodied emission factor for cbam hydrogen \u2014 CA, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "cbam_default",
+      "value": 8.7,
+      "unit_urn": "urn:gl:unit:kgco2e/kg-product",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:ca",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "9999-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:eu-cbam-default",
+      "boundary": "cradle_to_gate",
+      "licence": "EU-Publication",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "source_record_id": "cbam_default_values;record-51",
+        "source_publication": "EU CBAM Annex IV default embedded-emission values (flat sector rollup)",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/cbam-default-values/2024.1/seed.json",
+        "raw_artifact_sha256": "eee189cbf98cea26ff3ac95e51b736c3f8a472191562b9b2b7defbdb1e4d73be",
+        "parser_id": "greenlang.factors.ingestion.parsers.cbam_default_values",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-51",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_cbam_default_values"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_hydrogen",
+        "hydrogen",
+        "embedded_emissions"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:cbam-default-values:CBAM:electricity:RS:2024:v1",
+      "factor_id_alias": "EF:CBAM:electricity:RS:2024:v1",
+      "source_urn": "urn:gl:source:cbam-default-values",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "name": "cbam electricity \u2014 RS",
+      "description": "Material Embodied emission factor for cbam electricity \u2014 RS, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "cbam_default",
+      "value": 1.1,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:rs",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "9999-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:eu-cbam-default",
+      "boundary": "cradle_to_gate",
+      "licence": "EU-Publication",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "source_record_id": "cbam_default_values;record-52",
+        "source_publication": "EU CBAM Annex IV default embedded-emission values (flat sector rollup)",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/cbam-default-values/2024.1/seed.json",
+        "raw_artifact_sha256": "10d953bd9e5304653cf286f8546f7de5f6dab11ce565e051e7b166263a1eeb79",
+        "parser_id": "greenlang.factors.ingestion.parsers.cbam_default_values",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-52",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_cbam_default_values"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_electricity",
+        "electricity",
+        "embedded_emissions"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:cbam-default-values:CBAM:electricity:UA:2024:v1",
+      "factor_id_alias": "EF:CBAM:electricity:UA:2024:v1",
+      "source_urn": "urn:gl:source:cbam-default-values",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "name": "cbam electricity \u2014 UA",
+      "description": "Material Embodied emission factor for cbam electricity \u2014 UA, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "cbam_default",
+      "value": 0.85,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:ua",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "9999-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:eu-cbam-default",
+      "boundary": "cradle_to_gate",
+      "licence": "EU-Publication",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "source_record_id": "cbam_default_values;record-53",
+        "source_publication": "EU CBAM Annex IV default embedded-emission values (flat sector rollup)",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/cbam-default-values/2024.1/seed.json",
+        "raw_artifact_sha256": "8f9256c39c2933af912d433671cd75e616f9e30e7e32cf3b46b061ef6b8d515b",
+        "parser_id": "greenlang.factors.ingestion.parsers.cbam_default_values",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-53",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_cbam_default_values"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_electricity",
+        "electricity",
+        "embedded_emissions"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:cbam-default-values:CBAM:electricity:TR:2024:v1",
+      "factor_id_alias": "EF:CBAM:electricity:TR:2024:v1",
+      "source_urn": "urn:gl:source:cbam-default-values",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "name": "cbam electricity \u2014 TR",
+      "description": "Material Embodied emission factor for cbam electricity \u2014 TR, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "cbam_default",
+      "value": 0.6,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:tr",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "9999-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:eu-cbam-default",
+      "boundary": "cradle_to_gate",
+      "licence": "EU-Publication",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "source_record_id": "cbam_default_values;record-54",
+        "source_publication": "EU CBAM Annex IV default embedded-emission values (flat sector rollup)",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/cbam-default-values/2024.1/seed.json",
+        "raw_artifact_sha256": "6e6a7e0c3bb794f2232b29b33e0ca60399a39bcf53a1bc50549eca235d4f9ea1",
+        "parser_id": "greenlang.factors.ingestion.parsers.cbam_default_values",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-54",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_cbam_default_values"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_electricity",
+        "electricity",
+        "embedded_emissions"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:cbam-default-values:CBAM:electricity:BA:2024:v1",
+      "factor_id_alias": "EF:CBAM:electricity:BA:2024:v1",
+      "source_urn": "urn:gl:source:cbam-default-values",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "name": "cbam electricity \u2014 BA",
+      "description": "Material Embodied emission factor for cbam electricity \u2014 BA, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "cbam_default",
+      "value": 1.25,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:ba",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "9999-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:eu-cbam-default",
+      "boundary": "cradle_to_gate",
+      "licence": "EU-Publication",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "source_record_id": "cbam_default_values;record-55",
+        "source_publication": "EU CBAM Annex IV default embedded-emission values (flat sector rollup)",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/cbam-default-values/2024.1/seed.json",
+        "raw_artifact_sha256": "138e91fb1b7b6ad3bf930f2867031e4e2596dd625d7fc34a716c53f42b774942",
+        "parser_id": "greenlang.factors.ingestion.parsers.cbam_default_values",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-55",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_cbam_default_values"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_electricity",
+        "electricity",
+        "embedded_emissions"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:cbam-default-values:CBAM:electricity:MK:2024:v1",
+      "factor_id_alias": "EF:CBAM:electricity:MK:2024:v1",
+      "source_urn": "urn:gl:source:cbam-default-values",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "name": "cbam electricity \u2014 MK",
+      "description": "Material Embodied emission factor for cbam electricity \u2014 MK, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "cbam_default",
+      "value": 0.95,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:mk",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "9999-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:eu-cbam-default",
+      "boundary": "cradle_to_gate",
+      "licence": "EU-Publication",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "source_record_id": "cbam_default_values;record-56",
+        "source_publication": "EU CBAM Annex IV default embedded-emission values (flat sector rollup)",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/cbam-default-values/2024.1/seed.json",
+        "raw_artifact_sha256": "dbc2d4ccbf59b03352d3555776dd6e993d748d2e489299b95b7f4b801bdba4a4",
+        "parser_id": "greenlang.factors.ingestion.parsers.cbam_default_values",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-56",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_cbam_default_values"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_electricity",
+        "electricity",
+        "embedded_emissions"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:cbam-default-values:CBAM:electricity:ME:2024:v1",
+      "factor_id_alias": "EF:CBAM:electricity:ME:2024:v1",
+      "source_urn": "urn:gl:source:cbam-default-values",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "name": "cbam electricity \u2014 ME",
+      "description": "Material Embodied emission factor for cbam electricity \u2014 ME, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "cbam_default",
+      "value": 0.7,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:me",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "9999-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:eu-cbam-default",
+      "boundary": "cradle_to_gate",
+      "licence": "EU-Publication",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "source_record_id": "cbam_default_values;record-57",
+        "source_publication": "EU CBAM Annex IV default embedded-emission values (flat sector rollup)",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/cbam-default-values/2024.1/seed.json",
+        "raw_artifact_sha256": "f4a0870dea2f92e0d99a64e56f23db69eff671b86e92ee5e03768be1df62a687",
+        "parser_id": "greenlang.factors.ingestion.parsers.cbam_default_values",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-57",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_cbam_default_values"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_electricity",
+        "electricity",
+        "embedded_emissions"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:cbam-default-values:CBAM:electricity:MA:2024:v1",
+      "factor_id_alias": "EF:CBAM:electricity:MA:2024:v1",
+      "source_urn": "urn:gl:source:cbam-default-values",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "name": "cbam electricity \u2014 MA",
+      "description": "Material Embodied emission factor for cbam electricity \u2014 MA, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "cbam_default",
+      "value": 0.8,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:ma",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "9999-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:eu-cbam-default",
+      "boundary": "cradle_to_gate",
+      "licence": "EU-Publication",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "source_record_id": "cbam_default_values;record-58",
+        "source_publication": "EU CBAM Annex IV default embedded-emission values (flat sector rollup)",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/cbam-default-values/2024.1/seed.json",
+        "raw_artifact_sha256": "27dae9845d7a82bf260d78bebd31e423cd7ec7dec00f6d0e28c182ae47bba009",
+        "parser_id": "greenlang.factors.ingestion.parsers.cbam_default_values",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-58",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_cbam_default_values"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_electricity",
+        "electricity",
+        "embedded_emissions"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:cbam-default-values:CBAM:electricity:GE:2024:v1",
+      "factor_id_alias": "EF:CBAM:electricity:GE:2024:v1",
+      "source_urn": "urn:gl:source:cbam-default-values",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "name": "cbam electricity \u2014 GE",
+      "description": "Material Embodied emission factor for cbam electricity \u2014 GE, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "cbam_default",
+      "value": 0.25,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:ge",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "9999-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:eu-cbam-default",
+      "boundary": "cradle_to_gate",
+      "licence": "EU-Publication",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773",
+        "source_record_id": "cbam_default_values;record-59",
+        "source_publication": "EU CBAM Annex IV default embedded-emission values (flat sector rollup)",
+        "source_version": "2024.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/cbam-default-values/2024.1/seed.json",
+        "raw_artifact_sha256": "a73ee90a3f0dd25b475afc77831880fcee866b7b0bd868196a9131c3ea8ab5a1",
+        "parser_id": "greenlang.factors.ingestion.parsers.cbam_default_values",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-59",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_cbam_default_values"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cbam",
+        "cbam_default",
+        "cbam_2026",
+        "sector_electricity",
+        "electricity",
+        "embedded_emissions"
+      ]
+    }
+  ]
+}

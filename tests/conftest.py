@@ -68,6 +68,7 @@ def pytest_configure(config):
     # Additional useful markers
     config.addinivalue_line("markers", "e2e: End-to-end tests")
     config.addinivalue_line("markers", "network: Tests requiring network access")
+    config.addinivalue_line("markers", "requires_postgres: Tests that need a real Postgres instance (skipped if no DSN)")
 
 
 # ============================================================================

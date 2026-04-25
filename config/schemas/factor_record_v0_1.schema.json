@@ -1,0 +1,337 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.greenlang.io/factors/factor_record_v0_1.schema.json",
+  "title": "GreenLang Factor Record v0.1 Alpha (FROZEN)",
+  "description": "FROZEN alpha contract for GreenLang Factors v0.1 Alpha (FY27 Q1). Narrower than factor_record_v1.schema.json. Every record produced by the 6 alpha-source parsers (IPCC AR6, DEFRA 2025, EPA GHG Hub 2025, EPA eGRID 2024, India CEA latest, EU CBAM defaults) MUST validate against this schema. Frozen 2026-04-25. Versioning policy: additive within v0.x; field removal/rename is a breaking change requiring a new $id (v0.2+). v1.0 GA will use a separate $id and is not substitutable for v0.1.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "urn",
+    "source_urn",
+    "factor_pack_urn",
+    "name",
+    "description",
+    "category",
+    "value",
+    "unit_urn",
+    "gwp_basis",
+    "gwp_horizon",
+    "geography_urn",
+    "vintage_start",
+    "vintage_end",
+    "resolution",
+    "methodology_urn",
+    "boundary",
+    "licence",
+    "citations",
+    "published_at",
+    "extraction",
+    "review"
+  ],
+  "properties": {
+    "urn": {
+      "type": "string",
+      "pattern": "^urn:gl:factor:[a-z0-9][a-z0-9-]*(:[A-Za-z0-9._-]+){2,4}:v[1-9][0-9]*$",
+      "description": "Canonical public id. Format: urn:gl:factor:<source>:<namespace>:<id>:v<version>. Globally unique. Never changes. Examples: urn:gl:factor:ipcc-ar6:stationary-combustion:natural-gas-residential:v1, urn:gl:factor:epa-egrid:subregion-rfcw:2024-average:v1, urn:gl:factor:defra-2025:passenger-car-petrol-medium:km:v1, urn:gl:factor:india-cea-baseline:national-grid:2024-annual:v1."
+    },
+    "factor_id_alias": {
+      "type": ["string", "null"],
+      "pattern": "^EF:[A-Za-z0-9_.:-]+$",
+      "description": "Optional non-canonical alias retained for backward compatibility with the v1 schema's EF: identifier. SDK and API responses MUST treat `urn` as primary."
+    },
+    "source_urn": {
+      "type": "string",
+      "pattern": "^urn:gl:source:[a-z0-9][a-z0-9-]*$",
+      "description": "URN of the upstream source (e.g., urn:gl:source:ipcc-ar6, urn:gl:source:defra-2025, urn:gl:source:epa-ghg-hub, urn:gl:source:epa-egrid, urn:gl:source:india-cea-baseline, urn:gl:source:eu-cbam-defaults). MUST resolve to a registered entry in greenlang/factors/data/source_registry.yaml."
+    },
+    "factor_pack_urn": {
+      "type": "string",
+      "pattern": "^urn:gl:pack:[a-z0-9][a-z0-9-]*:[a-z0-9][a-z0-9._-]*:[A-Za-z0-9._-]+$",
+      "description": "URN of the owning Factor Pack. Format: urn:gl:pack:<source>:<pack-id>:<version>. Every factor belongs to exactly one pack."
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "description": "Human-readable display name (en-US). Example: 'Grid electricity, consumption mix, India'."
+    },
+    "description": {
+      "type": "string",
+      "minLength": 30,
+      "maxLength": 2000,
+      "description": "2-3 sentence description that states the boundary and exclusions. Required for auditor readability."
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "scope1",
+        "scope2_location_based",
+        "scope2_market_based",
+        "grid_intensity",
+        "fuel",
+        "refrigerant",
+        "fugitive",
+        "process",
+        "cbam_default"
+      ],
+      "description": "Narrowed alpha category enum. Scope 3, freight, agricultural, waste, finance proxies are deferred to v0.5+. Note: v1 schema's broader factor_family enum is intentionally not adopted in alpha."
+    },
+    "value": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "description": "The numeric emission factor value, expressed in the unit identified by unit_urn. MUST be > 0."
+    },
+    "unit_urn": {
+      "type": "string",
+      "pattern": "^urn:gl:unit:[a-zA-Z0-9._/-]+$",
+      "description": "URN of the unit. Examples: urn:gl:unit:kgco2e/kwh, urn:gl:unit:kgco2e/kg, urn:gl:unit:kgco2e/tkm, urn:gl:unit:kgco2e/l."
+    },
+    "gwp_basis": {
+      "type": "string",
+      "enum": ["ar6"],
+      "description": "Alpha is AR6-only. AR4/AR5 multi-basis support is deferred to v0.5+."
+    },
+    "gwp_horizon": {
+      "type": "integer",
+      "enum": [20, 100, 500],
+      "description": "GWP time horizon in years. 100 is the default for corporate inventories; 20 for short-lived climate forcers; 500 rare. Ships pinned to 100 in alpha unless explicitly required by source."
+    },
+    "geography_urn": {
+      "type": "string",
+      "pattern": "^urn:gl:geo:(global|country|subregion|state_or_province|grid_zone|bidding_zone|balancing_authority):[a-zA-Z0-9._-]+$",
+      "description": "URN of the geography. Examples: urn:gl:geo:country:in, urn:gl:geo:country:us, urn:gl:geo:country:gb, urn:gl:geo:subregion:eu-27, urn:gl:geo:grid_zone:egrid-rfcw, urn:gl:geo:state_or_province:us-tx, urn:gl:geo:global:world."
+    },
+    "vintage_start": {
+      "type": "string",
+      "format": "date",
+      "description": "Earliest date covered by this factor (ISO 8601 YYYY-MM-DD)."
+    },
+    "vintage_end": {
+      "type": "string",
+      "format": "date",
+      "description": "Latest date covered by this factor (ISO 8601 YYYY-MM-DD). MUST be >= vintage_start."
+    },
+    "resolution": {
+      "type": "string",
+      "enum": ["annual", "monthly", "hourly", "point-in-time"],
+      "description": "Time resolution. Most alpha factors are annual; hourly grid intensity is deferred to v2.5."
+    },
+    "methodology_urn": {
+      "type": "string",
+      "pattern": "^urn:gl:methodology:[a-z0-9][a-z0-9-]*$",
+      "description": "URN of the methodology. Examples: urn:gl:methodology:ipcc-tier-1-stationary-combustion, urn:gl:methodology:ghgp-corporate-scope2-location, urn:gl:methodology:ghgp-corporate-scope2-market, urn:gl:methodology:eu-cbam-default."
+    },
+    "boundary": {
+      "type": "string",
+      "minLength": 10,
+      "maxLength": 2000,
+      "description": "Free-text statement of what is included and excluded. Auditor-facing."
+    },
+    "uncertainty": {
+      "type": ["object", "null"],
+      "description": "Optional in alpha; required from v0.9+. When present: {distribution: 'lognormal'|'normal'|'uniform'|'triangular', mean?: number, stddev?: number, p2_5?: number, p97_5?: number, pedigree?: object}.",
+      "properties": {
+        "distribution": {"type": "string", "enum": ["lognormal", "normal", "uniform", "triangular"]},
+        "mean": {"type": "number"},
+        "stddev": {"type": "number", "minimum": 0},
+        "p2_5": {"type": "number"},
+        "p97_5": {"type": "number"},
+        "pedigree": {"type": "object"}
+      },
+      "additionalProperties": false
+    },
+    "licence": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "description": "SPDX identifier (e.g., 'CC-BY-4.0', 'OGL-UK-3.0', 'public-domain-us-gov') or proprietary tag (e.g., 'EU-COMMISSION-CBAM-DEFAULTS', 'IPCC-PUBLIC')."
+    },
+    "licence_constraints": {
+      "type": ["object", "null"],
+      "description": "Optional. {redistribution: 'allowed'|'attribution'|'restricted'|'forbidden', attribution_required: bool, caching_seconds?: integer, notes?: string}."
+    },
+    "citations": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["type", "value"],
+        "properties": {
+          "type": {"type": "string", "enum": ["doi", "url", "publication", "section", "table"]},
+          "value": {"type": "string", "minLength": 1},
+          "title": {"type": "string"},
+          "page": {"type": ["integer", "string"]}
+        }
+      },
+      "description": "DOIs, URLs, publication references, table/section refs. At least one citation required."
+    },
+    "tags": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1, "maxLength": 64},
+      "description": "Optional indexed tags (e.g., ['egrid', 'us', '2024', 'subregion'])."
+    },
+    "supersedes_urn": {
+      "type": ["string", "null"],
+      "pattern": "^urn:gl:factor:[a-z0-9][a-z0-9-]*(:[A-Za-z0-9._-]+){2,4}:v[1-9][0-9]*$",
+      "description": "URN of the prior factor this record replaces. Set on revisions."
+    },
+    "published_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When this factor record was published to the production catalogue. Immutable after publish."
+    },
+    "deprecated_at": {
+      "type": ["string", "null"],
+      "format": "date-time",
+      "description": "If deprecated, when. Once set, never reset to null."
+    },
+    "extraction": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_url",
+        "source_record_id",
+        "source_publication",
+        "source_version",
+        "raw_artifact_uri",
+        "raw_artifact_sha256",
+        "parser_id",
+        "parser_version",
+        "parser_commit",
+        "row_ref",
+        "ingested_at",
+        "operator"
+      ],
+      "properties": {
+        "source_url": {
+          "type": "string",
+          "format": "uri",
+          "description": "Canonical landing URL for the source. Example: https://www.gov.uk/government/collections/government-conversion-factors-for-company-reporting-of-greenhouse-gas-emissions"
+        },
+        "source_record_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "description": "Stable identifier of the row/cell within the source artefact. Example: 'sheet=Stationary_Combustion;row=42'."
+        },
+        "source_publication": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Title or DOI of the source publication. Example: 'UK DESNZ GHG Conversion Factors 2025 - Full Set'."
+        },
+        "source_version": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Upstream version pin (e.g., '2025.1' for DEFRA, '2024.0' for eGRID, 'AR6-WG3-Annex-III' for IPCC, 'CBAM-Reg-2023/956-Annex-III'). Required for reproducibility."
+        },
+        "raw_artifact_uri": {
+          "type": "string",
+          "format": "uri",
+          "description": "S3-compatible URI to the immutable raw artefact (PDF/CSV/XLSX/JSON). Example: s3://greenlang-factors-raw/desnz/2025/conversion-factors-full.xlsx."
+        },
+        "raw_artifact_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$",
+          "description": "SHA-256 (lowercase hex) over the raw artefact bytes."
+        },
+        "parser_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Dotted module path of the parser (e.g., 'greenlang.factors.ingestion.parsers.desnz_uk')."
+        },
+        "parser_version": {
+          "type": "string",
+          "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-[A-Za-z0-9.-]+)?$",
+          "description": "Semver of the parser at extraction time."
+        },
+        "parser_commit": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{7,40}$",
+          "description": "Git commit SHA of the parser code."
+        },
+        "row_ref": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Sheet/table/page/row reference within the raw artefact. Example: 'Sheet=Refrigerants; Row=12; Column=GWP_AR6'."
+        },
+        "ingested_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the parser ingested this record."
+        },
+        "operator": {
+          "type": "string",
+          "pattern": "^(bot:[a-z0-9_.-]+|human:[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,})$",
+          "description": "Identity of who/what ran the extraction. 'bot:parser_<id>' for automated ingest; 'human:<email>' for manual hot-fix."
+        }
+      },
+      "description": "Provenance of extraction. Every field MANDATORY in alpha (CTO doc §19.1: 'provenance fields complete for alpha sources')."
+    },
+    "review": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["review_status", "reviewer", "reviewed_at"],
+      "properties": {
+        "review_status": {
+          "type": "string",
+          "enum": ["pending", "approved", "rejected"],
+          "description": "Lifecycle. Only 'approved' records are visible in production. 'pending' lives in staging namespace; 'rejected' kept for audit."
+        },
+        "reviewer": {
+          "type": "string",
+          "pattern": "^human:[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$",
+          "description": "Email of the methodology lead or delegated reviewer."
+        },
+        "reviewed_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "approved_by": {
+          "type": "string",
+          "pattern": "^human:[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$",
+          "description": "Email of the approver. REQUIRED when review_status == 'approved' (enforced by allOf below)."
+        },
+        "approved_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When approval was granted. REQUIRED when review_status == 'approved'."
+        },
+        "diff_from_source_uri": {
+          "type": ["string", "null"],
+          "format": "uri",
+          "description": "Optional URI to a diff report between the parsed record and the prior version."
+        },
+        "rejection_reason": {
+          "type": ["string", "null"],
+          "description": "Required when review_status == 'rejected' (free text)."
+        }
+      },
+      "description": "Review metadata. CTO doc §19.1 acceptance: 'Licence tagging: every factor in production carries a licence tag that matches its source' AND only methodology-lead-approved records flip to production."
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {"review": {"properties": {"review_status": {"const": "approved"}}}}
+      },
+      "then": {
+        "properties": {
+          "review": {
+            "required": ["review_status", "reviewer", "reviewed_at", "approved_by", "approved_at"]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {"review": {"properties": {"review_status": {"const": "rejected"}}}}
+      },
+      "then": {
+        "properties": {
+          "review": {"required": ["review_status", "reviewer", "reviewed_at", "rejection_reason"]}
+        }
+      }
+    }
+  ]
+}

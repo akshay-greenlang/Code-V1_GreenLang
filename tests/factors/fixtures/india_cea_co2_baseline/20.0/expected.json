@@ -1,0 +1,1034 @@
+[
+  {
+    "activity_schema": {
+      "category": "purchased_electricity",
+      "classification_codes": [
+        "NAICS:221112",
+        "ISIC:D351"
+      ],
+      "sub_category": "grid_average"
+    },
+    "activity_tags": [
+      "purchased_electricity",
+      "grid_average",
+      "india"
+    ],
+    "ash_content_pct": null,
+    "biogenic_flag": false,
+    "boundary": "combustion",
+    "change_log": [],
+    "compliance_frameworks": [
+      "GHG_Protocol_Scope2_LocationBased",
+      "IFRS_S2"
+    ],
+    "created_at": "1970-01-01T00:00:00+00:00",
+    "created_by": "greenlang_system",
+    "dqs": {
+      "geographical": 4,
+      "methodological": 5,
+      "overall_score": 4.6,
+      "rating": "excellent",
+      "representativeness": 5,
+      "technological": 4,
+      "temporal": 5,
+      "weights": {
+        "geographical": 0.2,
+        "methodological": 0.2,
+        "representativeness": 0.2,
+        "technological": 0.2,
+        "temporal": 0.2
+      }
+    },
+    "explainability": {
+      "assumptions": [
+        "Use for purchased grid electricity in India when supplier-specific factor is unavailable.",
+        "CEA methodology excludes captive-generation and auxiliary consumption.",
+        "Based on generation-weighted grid mix for the given financial year."
+      ],
+      "fallback_rank": 5,
+      "rationale": "India CEA CO2 baseline v20.0 for All-India composite grid, FY 2023-24."
+    },
+    "factor_family": "grid_intensity",
+    "factor_id": "EF:IN:all_india:2023-24:cea-v20.0",
+    "factor_name": "India grid electricity \u2014 All-India composite grid, 2023-24",
+    "factor_status": "certified",
+    "factor_version": "1.0.0",
+    "formula_type": "direct_factor",
+    "fuel_type": "electricity",
+    "geography": "IN",
+    "geography_level": "country",
+    "gwp_100yr": {
+      "CH4_gwp": 28,
+      "HFCs_gwp": null,
+      "N2O_gwp": 273,
+      "NF3_gwp": null,
+      "PFCs_gwp": null,
+      "SF6_gwp": null,
+      "co2e_total": "0.727",
+      "gwp_set": "IPCC_AR6_100"
+    },
+    "gwp_20yr": null,
+    "heating_value_basis": null,
+    "jurisdiction": {
+      "country": "IN",
+      "grid_region": null,
+      "region": null
+    },
+    "license_class": "public_in_government",
+    "license_info": {
+      "attribution_required": true,
+      "commercial_use_allowed": true,
+      "license": "Government of India \u2014 public use with attribution",
+      "license_text": null,
+      "license_url": null,
+      "redistribution_allowed": true,
+      "restrictions": []
+    },
+    "method_profile": "corporate_scope2_location_based",
+    "moisture_content_pct": null,
+    "next_review_date": null,
+    "notes": null,
+    "parameters": {
+      "biogenic_share": 0.0,
+      "electricity_basis": "location_based",
+      "residual_mix_applicable": false,
+      "scope_applicability": [
+        "scope2"
+      ],
+      "supplier_specific": false,
+      "transmission_loss_included": false,
+      "uncertainty_high": null,
+      "uncertainty_low": null
+    },
+    "pressure_bar": null,
+    "primary_data_flag": "secondary",
+    "provenance": {
+      "citation": "CEA (Central Electricity Authority, India) (2024). CO2 Baseline Database for the Indian Power Sector.",
+      "methodology": "direct_measurement",
+      "methodology_description": null,
+      "source_doi": null,
+      "source_org": "CEA (Central Electricity Authority, India)",
+      "source_publication": "CO2 Baseline Database for the Indian Power Sector",
+      "source_url": null,
+      "source_year": 2024,
+      "supersedes": null,
+      "version": "v1"
+    },
+    "raw_record_ref": null,
+    "redistribution_class": "open",
+    "reference_temperature_c": null,
+    "region_hint": null,
+    "release_version": "cea-v20.0",
+    "replacement_factor_id": null,
+    "scope": "2",
+    "sector_tags": [
+      "power_sector",
+      "utility"
+    ],
+    "source_id": "india_cea_co2_baseline",
+    "source_record_id": "cea:All India:2023-24",
+    "source_release": "v20.0",
+    "tags": [
+      "cea",
+      "india",
+      "grid",
+      "2023-24"
+    ],
+    "uncertainty_95ci": 0.05,
+    "uncertainty_distribution": "normal",
+    "unit": "kWh",
+    "updated_at": "1970-01-01T00:00:00+00:00",
+    "use_phase": null,
+    "valid_from": "2023-04-01",
+    "valid_to": "2024-03-31",
+    "validation_flags": {},
+    "vectors": {
+      "CH4": "0.0",
+      "CO2": "0.727",
+      "DECOMPOSITION_RATIOS": {
+        "anthracite": {
+          "CH4_fraction": 0.002,
+          "CO2_fraction": 0.994,
+          "N2O_fraction": 0.004
+        },
+        "biodiesel": {
+          "CH4_fraction": 0.001,
+          "CO2_fraction": 0.996,
+          "N2O_fraction": 0.003
+        },
+        "bioethanol": {
+          "CH4_fraction": 0.0015,
+          "CO2_fraction": 0.9955,
+          "N2O_fraction": 0.003
+        },
+        "biogas": {
+          "CH4_fraction": 0.012,
+          "CO2_fraction": 0.985,
+          "N2O_fraction": 0.003
+        },
+        "biomass": {
+          "CH4_fraction": 0.01,
+          "CO2_fraction": 0.985,
+          "N2O_fraction": 0.005
+        },
+        "bituminous_coal": {
+          "CH4_fraction": 0.0035,
+          "CO2_fraction": 0.9915,
+          "N2O_fraction": 0.005
+        },
+        "butane": {
+          "CH4_fraction": 0.0015,
+          "CO2_fraction": 0.995,
+          "N2O_fraction": 0.0035
+        },
+        "cng": {
+          "CH4_fraction": 0.008,
+          "CO2_fraction": 0.99,
+          "N2O_fraction": 0.002
+        },
+        "coal": {
+          "CH4_fraction": 0.003,
+          "CO2_fraction": 0.992,
+          "N2O_fraction": 0.005
+        },
+        "coke": {
+          "CH4_fraction": 0.0015,
+          "CO2_fraction": 0.995,
+          "N2O_fraction": 0.0035
+        },
+        "default": {
+          "CH4_fraction": 0.002,
+          "CO2_fraction": 0.994,
+          "N2O_fraction": 0.004
+        },
+        "diesel": {
+          "CH4_fraction": 0.0008,
+          "CO2_fraction": 0.9965,
+          "N2O_fraction": 0.0027
+        },
+        "fuel_oil": {
+          "CH4_fraction": 0.001,
+          "CO2_fraction": 0.996,
+          "N2O_fraction": 0.003
+        },
+        "gasoline": {
+          "CH4_fraction": 0.0012,
+          "CO2_fraction": 0.9958,
+          "N2O_fraction": 0.003
+        },
+        "jet_fuel": {
+          "CH4_fraction": 0.0005,
+          "CO2_fraction": 0.997,
+          "N2O_fraction": 0.0025
+        },
+        "kerosene": {
+          "CH4_fraction": 0.0005,
+          "CO2_fraction": 0.997,
+          "N2O_fraction": 0.0025
+        },
+        "lignite": {
+          "CH4_fraction": 0.004,
+          "CO2_fraction": 0.99,
+          "N2O_fraction": 0.006
+        },
+        "lng": {
+          "CH4_fraction": 0.0085,
+          "CO2_fraction": 0.9895,
+          "N2O_fraction": 0.002
+        },
+        "lpg": {
+          "CH4_fraction": 0.0015,
+          "CO2_fraction": 0.995,
+          "N2O_fraction": 0.0035
+        },
+        "natural_gas": {
+          "CH4_fraction": 0.008,
+          "CO2_fraction": 0.99,
+          "N2O_fraction": 0.002
+        },
+        "peat": {
+          "CH4_fraction": 0.005,
+          "CO2_fraction": 0.988,
+          "N2O_fraction": 0.007
+        },
+        "petrol": {
+          "CH4_fraction": 0.0012,
+          "CO2_fraction": 0.9958,
+          "N2O_fraction": 0.003
+        },
+        "propane": {
+          "CH4_fraction": 0.002,
+          "CO2_fraction": 0.9945,
+          "N2O_fraction": 0.0035
+        },
+        "wood": {
+          "CH4_fraction": 0.01,
+          "CO2_fraction": 0.985,
+          "N2O_fraction": 0.005
+        },
+        "wood_pellets": {
+          "CH4_fraction": 0.008,
+          "CO2_fraction": 0.987,
+          "N2O_fraction": 0.005
+        }
+      },
+      "GWP_VALUES": {
+        "AR4_100": {
+          "CH4": 25.0,
+          "CO2": 1.0,
+          "HFCs": 1430.0,
+          "N2O": 298.0,
+          "NF3": 17200.0,
+          "PFCs": 7390.0,
+          "SF6": 22800.0
+        },
+        "AR5_100": {
+          "CH4": 28.0,
+          "CO2": 1.0,
+          "HFCs": 1300.0,
+          "N2O": 265.0,
+          "NF3": 16100.0,
+          "PFCs": 6630.0,
+          "SF6": 23500.0
+        },
+        "AR5_20": {
+          "CH4": 84.0,
+          "CO2": 1.0,
+          "HFCs": 3710.0,
+          "N2O": 264.0,
+          "NF3": 12800.0,
+          "PFCs": 4880.0,
+          "SF6": 17500.0
+        },
+        "AR6_100": {
+          "CH4": 27.9,
+          "CO2": 1.0,
+          "HFCs": 1526.0,
+          "N2O": 273.0,
+          "NF3": 17400.0,
+          "PFCs": 7380.0,
+          "SF6": 25200.0
+        },
+        "AR6_20": {
+          "CH4": 82.5,
+          "CO2": 1.0,
+          "HFCs": 4140.0,
+          "N2O": 273.0,
+          "NF3": 13400.0,
+          "PFCs": 5300.0,
+          "SF6": 18300.0
+        },
+        "SAR_100": {
+          "CH4": 21.0,
+          "CO2": 1.0,
+          "HFCs": 1300.0,
+          "N2O": 310.0,
+          "NF3": 8000.0,
+          "PFCs": 6500.0,
+          "SF6": 23900.0
+        }
+      },
+      "HFCs": null,
+      "N2O": "0.0",
+      "NF3": null,
+      "PFCs": null,
+      "PRECISION": "1E-8",
+      "SF6": null,
+      "biogenic_CO2": null
+    },
+    "verification": {
+      "status": "regulator_approved",
+      "verification_reference": null,
+      "verified_at": null,
+      "verified_by": "Government of India \u2014 CEA"
+    }
+  },
+  {
+    "activity_schema": {
+      "category": "purchased_electricity",
+      "classification_codes": [
+        "NAICS:221112",
+        "ISIC:D351"
+      ],
+      "sub_category": "grid_average"
+    },
+    "activity_tags": [
+      "purchased_electricity",
+      "grid_average",
+      "india"
+    ],
+    "ash_content_pct": null,
+    "biogenic_flag": false,
+    "boundary": "combustion",
+    "change_log": [],
+    "compliance_frameworks": [
+      "GHG_Protocol_Scope2_LocationBased",
+      "IFRS_S2"
+    ],
+    "created_at": "1970-01-01T00:00:00+00:00",
+    "created_by": "greenlang_system",
+    "dqs": {
+      "geographical": 5,
+      "methodological": 5,
+      "overall_score": 4.8,
+      "rating": "excellent",
+      "representativeness": 5,
+      "technological": 4,
+      "temporal": 5,
+      "weights": {
+        "geographical": 0.2,
+        "methodological": 0.2,
+        "representativeness": 0.2,
+        "technological": 0.2,
+        "temporal": 0.2
+      }
+    },
+    "explainability": {
+      "assumptions": [
+        "Use for purchased grid electricity in India when supplier-specific factor is unavailable.",
+        "CEA methodology excludes captive-generation and auxiliary consumption.",
+        "Based on generation-weighted grid mix for the given financial year."
+      ],
+      "fallback_rank": 5,
+      "rationale": "India CEA CO2 baseline v20.0 for Northern + Eastern + Western + North-Eastern regional grids, FY 2023-24."
+    },
+    "factor_family": "grid_intensity",
+    "factor_id": "EF:IN:newne:2023-24:cea-v20.0",
+    "factor_name": "India grid electricity \u2014 Northern + Eastern + Western + North-Eastern regional grids, 2023-24",
+    "factor_status": "certified",
+    "factor_version": "1.0.0",
+    "formula_type": "direct_factor",
+    "fuel_type": "electricity",
+    "geography": "IN",
+    "geography_level": "grid_zone",
+    "gwp_100yr": {
+      "CH4_gwp": 28,
+      "HFCs_gwp": null,
+      "N2O_gwp": 273,
+      "NF3_gwp": null,
+      "PFCs_gwp": null,
+      "SF6_gwp": null,
+      "co2e_total": "0.825",
+      "gwp_set": "IPCC_AR6_100"
+    },
+    "gwp_20yr": null,
+    "heating_value_basis": null,
+    "jurisdiction": {
+      "country": "IN",
+      "grid_region": "NEWNE",
+      "region": null
+    },
+    "license_class": "public_in_government",
+    "license_info": {
+      "attribution_required": true,
+      "commercial_use_allowed": true,
+      "license": "Government of India \u2014 public use with attribution",
+      "license_text": null,
+      "license_url": null,
+      "redistribution_allowed": true,
+      "restrictions": []
+    },
+    "method_profile": "corporate_scope2_location_based",
+    "moisture_content_pct": null,
+    "next_review_date": null,
+    "notes": null,
+    "parameters": {
+      "biogenic_share": 0.0,
+      "electricity_basis": "location_based",
+      "residual_mix_applicable": false,
+      "scope_applicability": [
+        "scope2"
+      ],
+      "supplier_specific": false,
+      "transmission_loss_included": false,
+      "uncertainty_high": null,
+      "uncertainty_low": null
+    },
+    "pressure_bar": null,
+    "primary_data_flag": "secondary",
+    "provenance": {
+      "citation": "CEA (Central Electricity Authority, India) (2024). CO2 Baseline Database for the Indian Power Sector.",
+      "methodology": "direct_measurement",
+      "methodology_description": null,
+      "source_doi": null,
+      "source_org": "CEA (Central Electricity Authority, India)",
+      "source_publication": "CO2 Baseline Database for the Indian Power Sector",
+      "source_url": null,
+      "source_year": 2024,
+      "supersedes": null,
+      "version": "v1"
+    },
+    "raw_record_ref": null,
+    "redistribution_class": "open",
+    "reference_temperature_c": null,
+    "region_hint": "NEWNE",
+    "release_version": "cea-v20.0",
+    "replacement_factor_id": null,
+    "scope": "2",
+    "sector_tags": [
+      "power_sector",
+      "utility"
+    ],
+    "source_id": "india_cea_co2_baseline",
+    "source_record_id": "cea:NEWNE:2023-24",
+    "source_release": "v20.0",
+    "tags": [
+      "cea",
+      "india",
+      "grid",
+      "2023-24"
+    ],
+    "uncertainty_95ci": 0.05,
+    "uncertainty_distribution": "normal",
+    "unit": "kWh",
+    "updated_at": "1970-01-01T00:00:00+00:00",
+    "use_phase": null,
+    "valid_from": "2023-04-01",
+    "valid_to": "2024-03-31",
+    "validation_flags": {},
+    "vectors": {
+      "CH4": "0.0",
+      "CO2": "0.825",
+      "DECOMPOSITION_RATIOS": {
+        "anthracite": {
+          "CH4_fraction": 0.002,
+          "CO2_fraction": 0.994,
+          "N2O_fraction": 0.004
+        },
+        "biodiesel": {
+          "CH4_fraction": 0.001,
+          "CO2_fraction": 0.996,
+          "N2O_fraction": 0.003
+        },
+        "bioethanol": {
+          "CH4_fraction": 0.0015,
+          "CO2_fraction": 0.9955,
+          "N2O_fraction": 0.003
+        },
+        "biogas": {
+          "CH4_fraction": 0.012,
+          "CO2_fraction": 0.985,
+          "N2O_fraction": 0.003
+        },
+        "biomass": {
+          "CH4_fraction": 0.01,
+          "CO2_fraction": 0.985,
+          "N2O_fraction": 0.005
+        },
+        "bituminous_coal": {
+          "CH4_fraction": 0.0035,
+          "CO2_fraction": 0.9915,
+          "N2O_fraction": 0.005
+        },
+        "butane": {
+          "CH4_fraction": 0.0015,
+          "CO2_fraction": 0.995,
+          "N2O_fraction": 0.0035
+        },
+        "cng": {
+          "CH4_fraction": 0.008,
+          "CO2_fraction": 0.99,
+          "N2O_fraction": 0.002
+        },
+        "coal": {
+          "CH4_fraction": 0.003,
+          "CO2_fraction": 0.992,
+          "N2O_fraction": 0.005
+        },
+        "coke": {
+          "CH4_fraction": 0.0015,
+          "CO2_fraction": 0.995,
+          "N2O_fraction": 0.0035
+        },
+        "default": {
+          "CH4_fraction": 0.002,
+          "CO2_fraction": 0.994,
+          "N2O_fraction": 0.004
+        },
+        "diesel": {
+          "CH4_fraction": 0.0008,
+          "CO2_fraction": 0.9965,
+          "N2O_fraction": 0.0027
+        },
+        "fuel_oil": {
+          "CH4_fraction": 0.001,
+          "CO2_fraction": 0.996,
+          "N2O_fraction": 0.003
+        },
+        "gasoline": {
+          "CH4_fraction": 0.0012,
+          "CO2_fraction": 0.9958,
+          "N2O_fraction": 0.003
+        },
+        "jet_fuel": {
+          "CH4_fraction": 0.0005,
+          "CO2_fraction": 0.997,
+          "N2O_fraction": 0.0025
+        },
+        "kerosene": {
+          "CH4_fraction": 0.0005,
+          "CO2_fraction": 0.997,
+          "N2O_fraction": 0.0025
+        },
+        "lignite": {
+          "CH4_fraction": 0.004,
+          "CO2_fraction": 0.99,
+          "N2O_fraction": 0.006
+        },
+        "lng": {
+          "CH4_fraction": 0.0085,
+          "CO2_fraction": 0.9895,
+          "N2O_fraction": 0.002
+        },
+        "lpg": {
+          "CH4_fraction": 0.0015,
+          "CO2_fraction": 0.995,
+          "N2O_fraction": 0.0035
+        },
+        "natural_gas": {
+          "CH4_fraction": 0.008,
+          "CO2_fraction": 0.99,
+          "N2O_fraction": 0.002
+        },
+        "peat": {
+          "CH4_fraction": 0.005,
+          "CO2_fraction": 0.988,
+          "N2O_fraction": 0.007
+        },
+        "petrol": {
+          "CH4_fraction": 0.0012,
+          "CO2_fraction": 0.9958,
+          "N2O_fraction": 0.003
+        },
+        "propane": {
+          "CH4_fraction": 0.002,
+          "CO2_fraction": 0.9945,
+          "N2O_fraction": 0.0035
+        },
+        "wood": {
+          "CH4_fraction": 0.01,
+          "CO2_fraction": 0.985,
+          "N2O_fraction": 0.005
+        },
+        "wood_pellets": {
+          "CH4_fraction": 0.008,
+          "CO2_fraction": 0.987,
+          "N2O_fraction": 0.005
+        }
+      },
+      "GWP_VALUES": {
+        "AR4_100": {
+          "CH4": 25.0,
+          "CO2": 1.0,
+          "HFCs": 1430.0,
+          "N2O": 298.0,
+          "NF3": 17200.0,
+          "PFCs": 7390.0,
+          "SF6": 22800.0
+        },
+        "AR5_100": {
+          "CH4": 28.0,
+          "CO2": 1.0,
+          "HFCs": 1300.0,
+          "N2O": 265.0,
+          "NF3": 16100.0,
+          "PFCs": 6630.0,
+          "SF6": 23500.0
+        },
+        "AR5_20": {
+          "CH4": 84.0,
+          "CO2": 1.0,
+          "HFCs": 3710.0,
+          "N2O": 264.0,
+          "NF3": 12800.0,
+          "PFCs": 4880.0,
+          "SF6": 17500.0
+        },
+        "AR6_100": {
+          "CH4": 27.9,
+          "CO2": 1.0,
+          "HFCs": 1526.0,
+          "N2O": 273.0,
+          "NF3": 17400.0,
+          "PFCs": 7380.0,
+          "SF6": 25200.0
+        },
+        "AR6_20": {
+          "CH4": 82.5,
+          "CO2": 1.0,
+          "HFCs": 4140.0,
+          "N2O": 273.0,
+          "NF3": 13400.0,
+          "PFCs": 5300.0,
+          "SF6": 18300.0
+        },
+        "SAR_100": {
+          "CH4": 21.0,
+          "CO2": 1.0,
+          "HFCs": 1300.0,
+          "N2O": 310.0,
+          "NF3": 8000.0,
+          "PFCs": 6500.0,
+          "SF6": 23900.0
+        }
+      },
+      "HFCs": null,
+      "N2O": "0.0",
+      "NF3": null,
+      "PFCs": null,
+      "PRECISION": "1E-8",
+      "SF6": null,
+      "biogenic_CO2": null
+    },
+    "verification": {
+      "status": "regulator_approved",
+      "verification_reference": null,
+      "verified_at": null,
+      "verified_by": "Government of India \u2014 CEA"
+    }
+  },
+  {
+    "activity_schema": {
+      "category": "purchased_electricity",
+      "classification_codes": [
+        "NAICS:221112",
+        "ISIC:D351"
+      ],
+      "sub_category": "grid_average"
+    },
+    "activity_tags": [
+      "purchased_electricity",
+      "grid_average",
+      "india"
+    ],
+    "ash_content_pct": null,
+    "biogenic_flag": false,
+    "boundary": "combustion",
+    "change_log": [],
+    "compliance_frameworks": [
+      "GHG_Protocol_Scope2_LocationBased",
+      "IFRS_S2"
+    ],
+    "created_at": "1970-01-01T00:00:00+00:00",
+    "created_by": "greenlang_system",
+    "dqs": {
+      "geographical": 5,
+      "methodological": 5,
+      "overall_score": 4.8,
+      "rating": "excellent",
+      "representativeness": 5,
+      "technological": 4,
+      "temporal": 5,
+      "weights": {
+        "geographical": 0.2,
+        "methodological": 0.2,
+        "representativeness": 0.2,
+        "technological": 0.2,
+        "temporal": 0.2
+      }
+    },
+    "explainability": {
+      "assumptions": [
+        "Use for purchased grid electricity in India when supplier-specific factor is unavailable.",
+        "CEA methodology excludes captive-generation and auxiliary consumption.",
+        "Based on generation-weighted grid mix for the given financial year."
+      ],
+      "fallback_rank": 5,
+      "rationale": "India CEA CO2 baseline v20.0 for Southern regional grid, FY 2023-24."
+    },
+    "factor_family": "grid_intensity",
+    "factor_id": "EF:IN:s:2023-24:cea-v20.0",
+    "factor_name": "India grid electricity \u2014 Southern regional grid, 2023-24",
+    "factor_status": "certified",
+    "factor_version": "1.0.0",
+    "formula_type": "direct_factor",
+    "fuel_type": "electricity",
+    "geography": "IN",
+    "geography_level": "grid_zone",
+    "gwp_100yr": {
+      "CH4_gwp": 28,
+      "HFCs_gwp": null,
+      "N2O_gwp": 273,
+      "NF3_gwp": null,
+      "PFCs_gwp": null,
+      "SF6_gwp": null,
+      "co2e_total": "0.51",
+      "gwp_set": "IPCC_AR6_100"
+    },
+    "gwp_20yr": null,
+    "heating_value_basis": null,
+    "jurisdiction": {
+      "country": "IN",
+      "grid_region": "S",
+      "region": null
+    },
+    "license_class": "public_in_government",
+    "license_info": {
+      "attribution_required": true,
+      "commercial_use_allowed": true,
+      "license": "Government of India \u2014 public use with attribution",
+      "license_text": null,
+      "license_url": null,
+      "redistribution_allowed": true,
+      "restrictions": []
+    },
+    "method_profile": "corporate_scope2_location_based",
+    "moisture_content_pct": null,
+    "next_review_date": null,
+    "notes": null,
+    "parameters": {
+      "biogenic_share": 0.0,
+      "electricity_basis": "location_based",
+      "residual_mix_applicable": false,
+      "scope_applicability": [
+        "scope2"
+      ],
+      "supplier_specific": false,
+      "transmission_loss_included": false,
+      "uncertainty_high": null,
+      "uncertainty_low": null
+    },
+    "pressure_bar": null,
+    "primary_data_flag": "secondary",
+    "provenance": {
+      "citation": "CEA (Central Electricity Authority, India) (2024). CO2 Baseline Database for the Indian Power Sector.",
+      "methodology": "direct_measurement",
+      "methodology_description": null,
+      "source_doi": null,
+      "source_org": "CEA (Central Electricity Authority, India)",
+      "source_publication": "CO2 Baseline Database for the Indian Power Sector",
+      "source_url": null,
+      "source_year": 2024,
+      "supersedes": null,
+      "version": "v1"
+    },
+    "raw_record_ref": null,
+    "redistribution_class": "open",
+    "reference_temperature_c": null,
+    "region_hint": "S",
+    "release_version": "cea-v20.0",
+    "replacement_factor_id": null,
+    "scope": "2",
+    "sector_tags": [
+      "power_sector",
+      "utility"
+    ],
+    "source_id": "india_cea_co2_baseline",
+    "source_record_id": "cea:S:2023-24",
+    "source_release": "v20.0",
+    "tags": [
+      "cea",
+      "india",
+      "grid",
+      "2023-24"
+    ],
+    "uncertainty_95ci": 0.05,
+    "uncertainty_distribution": "normal",
+    "unit": "kWh",
+    "updated_at": "1970-01-01T00:00:00+00:00",
+    "use_phase": null,
+    "valid_from": "2023-04-01",
+    "valid_to": "2024-03-31",
+    "validation_flags": {},
+    "vectors": {
+      "CH4": "0.0",
+      "CO2": "0.51",
+      "DECOMPOSITION_RATIOS": {
+        "anthracite": {
+          "CH4_fraction": 0.002,
+          "CO2_fraction": 0.994,
+          "N2O_fraction": 0.004
+        },
+        "biodiesel": {
+          "CH4_fraction": 0.001,
+          "CO2_fraction": 0.996,
+          "N2O_fraction": 0.003
+        },
+        "bioethanol": {
+          "CH4_fraction": 0.0015,
+          "CO2_fraction": 0.9955,
+          "N2O_fraction": 0.003
+        },
+        "biogas": {
+          "CH4_fraction": 0.012,
+          "CO2_fraction": 0.985,
+          "N2O_fraction": 0.003
+        },
+        "biomass": {
+          "CH4_fraction": 0.01,
+          "CO2_fraction": 0.985,
+          "N2O_fraction": 0.005
+        },
+        "bituminous_coal": {
+          "CH4_fraction": 0.0035,
+          "CO2_fraction": 0.9915,
+          "N2O_fraction": 0.005
+        },
+        "butane": {
+          "CH4_fraction": 0.0015,
+          "CO2_fraction": 0.995,
+          "N2O_fraction": 0.0035
+        },
+        "cng": {
+          "CH4_fraction": 0.008,
+          "CO2_fraction": 0.99,
+          "N2O_fraction": 0.002
+        },
+        "coal": {
+          "CH4_fraction": 0.003,
+          "CO2_fraction": 0.992,
+          "N2O_fraction": 0.005
+        },
+        "coke": {
+          "CH4_fraction": 0.0015,
+          "CO2_fraction": 0.995,
+          "N2O_fraction": 0.0035
+        },
+        "default": {
+          "CH4_fraction": 0.002,
+          "CO2_fraction": 0.994,
+          "N2O_fraction": 0.004
+        },
+        "diesel": {
+          "CH4_fraction": 0.0008,
+          "CO2_fraction": 0.9965,
+          "N2O_fraction": 0.0027
+        },
+        "fuel_oil": {
+          "CH4_fraction": 0.001,
+          "CO2_fraction": 0.996,
+          "N2O_fraction": 0.003
+        },
+        "gasoline": {
+          "CH4_fraction": 0.0012,
+          "CO2_fraction": 0.9958,
+          "N2O_fraction": 0.003
+        },
+        "jet_fuel": {
+          "CH4_fraction": 0.0005,
+          "CO2_fraction": 0.997,
+          "N2O_fraction": 0.0025
+        },
+        "kerosene": {
+          "CH4_fraction": 0.0005,
+          "CO2_fraction": 0.997,
+          "N2O_fraction": 0.0025
+        },
+        "lignite": {
+          "CH4_fraction": 0.004,
+          "CO2_fraction": 0.99,
+          "N2O_fraction": 0.006
+        },
+        "lng": {
+          "CH4_fraction": 0.0085,
+          "CO2_fraction": 0.9895,
+          "N2O_fraction": 0.002
+        },
+        "lpg": {
+          "CH4_fraction": 0.0015,
+          "CO2_fraction": 0.995,
+          "N2O_fraction": 0.0035
+        },
+        "natural_gas": {
+          "CH4_fraction": 0.008,
+          "CO2_fraction": 0.99,
+          "N2O_fraction": 0.002
+        },
+        "peat": {
+          "CH4_fraction": 0.005,
+          "CO2_fraction": 0.988,
+          "N2O_fraction": 0.007
+        },
+        "petrol": {
+          "CH4_fraction": 0.0012,
+          "CO2_fraction": 0.9958,
+          "N2O_fraction": 0.003
+        },
+        "propane": {
+          "CH4_fraction": 0.002,
+          "CO2_fraction": 0.9945,
+          "N2O_fraction": 0.0035
+        },
+        "wood": {
+          "CH4_fraction": 0.01,
+          "CO2_fraction": 0.985,
+          "N2O_fraction": 0.005
+        },
+        "wood_pellets": {
+          "CH4_fraction": 0.008,
+          "CO2_fraction": 0.987,
+          "N2O_fraction": 0.005
+        }
+      },
+      "GWP_VALUES": {
+        "AR4_100": {
+          "CH4": 25.0,
+          "CO2": 1.0,
+          "HFCs": 1430.0,
+          "N2O": 298.0,
+          "NF3": 17200.0,
+          "PFCs": 7390.0,
+          "SF6": 22800.0
+        },
+        "AR5_100": {
+          "CH4": 28.0,
+          "CO2": 1.0,
+          "HFCs": 1300.0,
+          "N2O": 265.0,
+          "NF3": 16100.0,
+          "PFCs": 6630.0,
+          "SF6": 23500.0
+        },
+        "AR5_20": {
+          "CH4": 84.0,
+          "CO2": 1.0,
+          "HFCs": 3710.0,
+          "N2O": 264.0,
+          "NF3": 12800.0,
+          "PFCs": 4880.0,
+          "SF6": 17500.0
+        },
+        "AR6_100": {
+          "CH4": 27.9,
+          "CO2": 1.0,
+          "HFCs": 1526.0,
+          "N2O": 273.0,
+          "NF3": 17400.0,
+          "PFCs": 7380.0,
+          "SF6": 25200.0
+        },
+        "AR6_20": {
+          "CH4": 82.5,
+          "CO2": 1.0,
+          "HFCs": 4140.0,
+          "N2O": 273.0,
+          "NF3": 13400.0,
+          "PFCs": 5300.0,
+          "SF6": 18300.0
+        },
+        "SAR_100": {
+          "CH4": 21.0,
+          "CO2": 1.0,
+          "HFCs": 1300.0,
+          "N2O": 310.0,
+          "NF3": 8000.0,
+          "PFCs": 6500.0,
+          "SF6": 23900.0
+        }
+      },
+      "HFCs": null,
+      "N2O": "0.0",
+      "NF3": null,
+      "PFCs": null,
+      "PRECISION": "1E-8",
+      "SF6": null,
+      "biogenic_CO2": null
+    },
+    "verification": {
+      "status": "regulator_approved",
+      "verification_reference": null,
+      "verified_at": null,
+      "verified_by": "Government of India \u2014 CEA"
+    }
+  }
+]

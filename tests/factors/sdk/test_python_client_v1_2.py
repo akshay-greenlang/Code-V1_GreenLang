@@ -108,8 +108,9 @@ def _make_signed_response(
 # ---------------------------------------------------------------------------
 
 
-def test_sdk_version_is_1_2_0() -> None:
-    assert __version__ == "1.3.0"
+def test_sdk_version_is_0_1_0() -> None:
+    """Renumbered to 0.1.0 per CTO doc §19.1 v0.1 Alpha contract (2026-04-25)."""
+    assert __version__ == "0.1.0"
 
 
 # ---------------------------------------------------------------------------

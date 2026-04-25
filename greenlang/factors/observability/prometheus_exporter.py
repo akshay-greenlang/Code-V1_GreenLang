@@ -126,6 +126,37 @@ class FactorsMetrics:
                 "Cannot-resolve-safely events (N-safety gate rejection)",
                 ["pack_id", "method_profile"],
             )
+            # ---- v0.1 Alpha (WS9-T3) — minimal Grafana dashboard support ----
+            # These metrics back the 8-panel factors-v0.1-alpha dashboard. Names
+            # MUST match the PromQL in
+            # deployment/observability/grafana/dashboards/factors-v0.1-alpha.json
+            # and the alert rules in
+            # deployment/observability/prometheus/factors-v0.1-alpha-alerts.yaml.
+            self._schema_validation_failures = Counter(
+                "factors_schema_validation_failures_total",
+                "Factor record schema validation failures (alpha gate, layer 1)",
+                ["schema", "source"],
+            )
+            self._alpha_provenance_rejections = Counter(
+                "factors_alpha_provenance_gate_rejections_total",
+                "AlphaProvenanceGate.assert_valid() rejections by source + first-failure reason",
+                ["source", "reason"],
+            )
+            self._ingestion_runs = Counter(
+                "factors_ingestion_runs_total",
+                "Ingestion run completions (one per ingest_from_paths invocation) by status + source",
+                ["status", "source"],
+            )
+            self._parser_errors = Counter(
+                "factors_parser_errors_total",
+                "Parser errors raised by ETL parsers (CBAM/DEFRA/IPCC/EPA/CEA), by source + error_type",
+                ["source", "error_type"],
+            )
+            self._current_edition = Gauge(
+                "factors_current_edition_id_info",
+                "Currently-served edition id (1.0 per active edition; 0.0 otherwise)",
+                ["edition"],
+            )
 
     # ------------------------------------------------------------------
     # API metrics
@@ -264,6 +295,53 @@ class FactorsMetrics:
         else:
             k = f"cannot_resolve_safely:{pack_id}:{method_profile}"
             self._fallback.counters[k] = self._fallback.counters.get(k, 0) + 1
+
+    # ------------------------------------------------------------------
+    # v0.1 Alpha — WS9-T3 (8-panel Grafana dashboard support)
+    # ------------------------------------------------------------------
+
+    def record_schema_validation_failure(
+        self, *, schema: str = "factor_record_v0_1", source: str = "unknown"
+    ) -> None:
+        """Increment when AlphaProvenanceGate.validate() reports any schema error."""
+        if _PROM:
+            self._schema_validation_failures.labels(schema=schema, source=source).inc()
+        else:
+            k = f"schema_fail:{schema}:{source}"
+            self._fallback.counters[k] = self._fallback.counters.get(k, 0) + 1
+
+    def record_alpha_provenance_rejection(
+        self, *, source: str = "unknown", reason: str = "unknown"
+    ) -> None:
+        """Increment when AlphaProvenanceGate.assert_valid() raises (label = first failure reason)."""
+        if _PROM:
+            self._alpha_provenance_rejections.labels(source=source, reason=reason).inc()
+        else:
+            k = f"prov_reject:{source}:{reason}"
+            self._fallback.counters[k] = self._fallback.counters.get(k, 0) + 1
+
+    def record_ingestion_run(self, *, status: str, source: str) -> None:
+        """Increment at start (status=started) and end (status=success|failed) of a run."""
+        if _PROM:
+            self._ingestion_runs.labels(status=status, source=source).inc()
+        else:
+            k = f"ingest_run:{status}:{source}"
+            self._fallback.counters[k] = self._fallback.counters.get(k, 0) + 1
+
+    def record_parser_error(self, *, source: str, error_type: str) -> None:
+        """Increment when an ETL parser raises (caller catches and labels)."""
+        if _PROM:
+            self._parser_errors.labels(source=source, error_type=error_type).inc()
+        else:
+            k = f"parser_err:{source}:{error_type}"
+            self._fallback.counters[k] = self._fallback.counters.get(k, 0) + 1
+
+    def set_current_edition(self, *, edition: str, active: bool = True) -> None:
+        """Set the currently-served edition gauge to 1.0 (active) or 0.0 (retired)."""
+        if _PROM:
+            self._current_edition.labels(edition=edition).set(1.0 if active else 0.0)
+        else:
+            self._fallback.gauges[f"current_edition:{edition}"] = 1.0 if active else 0.0
 
     @property
     def fallback_store(self) -> _FallbackStore:

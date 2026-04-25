@@ -177,6 +177,7 @@ class AuthMeteringMiddleware(BaseHTTPMiddleware):
 
     PUBLIC_PATHS = {
         "/v1/health",
+        "/v1/healthz",  # alpha-v0.1 canonical health path (CTO doc §19.1)
         "/openapi.json",
         "/docs",
         "/redoc",

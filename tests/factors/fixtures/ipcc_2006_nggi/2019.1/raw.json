@@ -1,0 +1,27 @@
+{
+  "metadata": {
+    "source": "IPCC",
+    "version": "2019_refinement",
+    "source_publication": "IPCC 2006 Guidelines / 2019 Refinement",
+    "source_url": "https://www.ipcc-nggip.iges.or.jp/public/2019rf/"
+  },
+  "energy_stationary": [
+    {"category": "natural_gas", "unit": "gj", "co2_factor": 56.1, "ch4_factor": 0.001, "n2o_factor": 0.0001},
+    {"category": "anthracite", "unit": "gj", "co2_factor": 98.3, "ch4_factor": 0.001, "n2o_factor": 0.0015}
+  ],
+  "energy_mobile": [
+    {"category": "diesel_oil", "unit": "gj", "co2_factor": 74.1, "ch4_factor": 0.0039, "n2o_factor": 0.0039}
+  ],
+  "industrial_processes": [
+    {"category": "cement_clinker", "unit": "tonnes", "co2_factor": 520.0, "ch4_factor": 0.0, "n2o_factor": 0.0}
+  ],
+  "agriculture": [
+    {"category": "enteric_fermentation_cattle", "unit": "kg", "co2_factor": 0.0, "ch4_factor": 0.068, "n2o_factor": 0.0}
+  ],
+  "lulucf": [
+    {"category": "forest_land_to_cropland", "unit": "kg", "co2_factor": 0.45, "ch4_factor": 0.0, "n2o_factor": 0.0}
+  ],
+  "waste": [
+    {"category": "solid_waste_disposal", "unit": "tonnes", "co2_factor": 0.0, "ch4_factor": 58.0, "n2o_factor": 0.0}
+  ]
+}

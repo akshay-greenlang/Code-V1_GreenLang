@@ -1,0 +1,27 @@
+{
+  "metadata": {
+    "source": "EU Commission",
+    "version": "2024"
+  },
+  "sectors": {
+    "steel": {
+      "unit": "kg_product",
+      "by_country": {
+        "CN": {"direct": 2.20, "indirect": 0.60},
+        "IN": {"direct": 2.55, "indirect": 0.65}
+      }
+    },
+    "aluminium": {
+      "unit": "kg_product",
+      "by_country": {
+        "CN": {"direct": 2.40, "indirect": 12.50}
+      }
+    },
+    "cement": {
+      "unit": "kg_product",
+      "by_country": {
+        "TR": {"direct": 0.78, "indirect": 0.06}
+      }
+    }
+  }
+}

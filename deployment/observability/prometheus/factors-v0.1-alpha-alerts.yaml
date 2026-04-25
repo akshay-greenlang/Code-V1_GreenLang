@@ -1,0 +1,163 @@
+# GreenLang Factors v0.1 Alpha — Prometheus alerting rules (WS9-T3).
+#
+# Maps directly onto the 8-panel Grafana dashboard at
+#   deployment/observability/grafana/dashboards/factors-v0.1-alpha.json
+#
+# Scope: ingestion-health and minimal API SLOs only. Out of scope:
+# resolve/explain/edition selection (those live in factors-production rules).
+#
+# Severities follow the GreenLang OBS-004 convention:
+#   page    — wakes on-call
+#   warning — Slack #factors-alpha
+#   info    — silent / dashboard annotation only
+#
+# Each rule carries a `runbook_url` annotation pointing at the matching
+# panel section in docs/factors/runbooks/factors-v0.1-alpha-alerts.md.
+
+groups:
+  - name: factors-v0.1-alpha.api
+    interval: 30s
+    rules:
+      # Panel 2 — p95 latency above CTO §19.1 acceptance threshold.
+      - alert: FactorsAlphaP95LatencyHigh
+        expr: |
+          histogram_quantile(
+            0.95,
+            sum(rate(http_request_duration_seconds_bucket{job="factors",release_profile="alpha-v0.1"}[5m])) by (le, path)
+          ) > 0.1
+        for: 10m
+        labels:
+          severity: page
+          service: factors
+          release_profile: alpha-v0.1
+          panel: "2"
+        annotations:
+          summary: "Factors alpha p95 latency > 100ms on {{ $labels.path }}"
+          description: |
+            CTO doc §19.1 requires p95 < 100ms for the alpha API. The {{ $labels.path }}
+            endpoint has been above 100ms for 10m. Check the alpha pod's recent deploys,
+            pgvector index health, and the factors_resolve_latency_seconds histogram.
+          runbook_url: https://github.com/greenlang/greenlang/blob/master/docs/factors/runbooks/factors-v0.1-alpha-alerts.md#panel-2
+
+      # Panel 3 — error-rate above warn / crit thresholds.
+      - alert: FactorsAlphaErrorRateHigh
+        expr: |
+          sum(rate(http_requests_total{job="factors",release_profile="alpha-v0.1",status=~"5.."}[5m]))
+            /
+          clamp_min(sum(rate(http_requests_total{job="factors",release_profile="alpha-v0.1"}[5m])), 1e-9)
+          > 0.05
+        for: 5m
+        labels:
+          severity: page
+          service: factors
+          release_profile: alpha-v0.1
+          panel: "3"
+        annotations:
+          summary: "Factors alpha 5xx ratio > 5% for 5m"
+          description: |
+            Alpha API has been returning 5xx for > 5% of requests over 5m.
+            Page on-call. Check pod logs, recent deploys, and database health.
+          runbook_url: https://github.com/greenlang/greenlang/blob/master/docs/factors/runbooks/factors-v0.1-alpha-alerts.md#panel-3
+
+      - alert: FactorsAlphaErrorRateWarning
+        expr: |
+          sum(rate(http_requests_total{job="factors",release_profile="alpha-v0.1",status=~"4..|5.."}[5m]))
+            /
+          clamp_min(sum(rate(http_requests_total{job="factors",release_profile="alpha-v0.1"}[5m])), 1e-9)
+          > 0.01
+        for: 15m
+        labels:
+          severity: warning
+          service: factors
+          release_profile: alpha-v0.1
+          panel: "3"
+        annotations:
+          summary: "Factors alpha 4xx+5xx ratio > 1% for 15m"
+          description: |
+            Combined 4xx+5xx ratio over 1% for 15m. Could indicate a partner
+            sending malformed requests OR a regression. Review and triage.
+          runbook_url: https://github.com/greenlang/greenlang/blob/master/docs/factors/runbooks/factors-v0.1-alpha-alerts.md#panel-3
+
+  - name: factors-v0.1-alpha.ingestion
+    interval: 1m
+    rules:
+      # Panel 5 — schema validation failures.
+      - alert: FactorsAlphaSchemaValidationFailure
+        expr: |
+          sum(rate(factors_schema_validation_failures_total{schema="factor_record_v0_1"}[5m])) by (source) > 0
+        for: 5m
+        labels:
+          severity: page
+          service: factors
+          release_profile: alpha-v0.1
+          panel: "5"
+        annotations:
+          summary: "Schema validation failures for source={{ $labels.source }}"
+          description: |
+            AlphaProvenanceGate has been seeing schema validation failures for
+            {{ $labels.source }} for the last 5m. Upstream parser is producing
+            non-conforming records. Inspect the most recent ingest run's
+            validation_report.json and pin the parser commit until fixed.
+          runbook_url: https://github.com/greenlang/greenlang/blob/master/docs/factors/runbooks/factors-v0.1-alpha-alerts.md#panel-5
+
+      # Panel 6 — provenance gate rejections.
+      - alert: FactorsAlphaProvenanceGateRejecting
+        expr: |
+          sum(rate(factors_alpha_provenance_gate_rejections_total[5m])) > 0.0167
+        for: 10m
+        labels:
+          severity: page
+          service: factors
+          release_profile: alpha-v0.1
+          panel: "6"
+        annotations:
+          summary: "Provenance gate rejecting > 1 record/min for 10m"
+          description: |
+            AlphaProvenanceGate.assert_valid() has rejected records at > 1/min
+            for 10m. Check rejection-reason labels: schema_violation means a
+            parser regression; extraction_metadata / review_metadata means a
+            human reviewer skipped a step.
+          runbook_url: https://github.com/greenlang/greenlang/blob/master/docs/factors/runbooks/factors-v0.1-alpha-alerts.md#panel-6
+
+      # Panel 7 — ingestion success rate per source.
+      - alert: FactorsAlphaIngestionSuccessRateLow
+        expr: |
+          (
+            sum(rate(factors_ingestion_runs_total{status="success",source=~"ipcc-ar6|defra-2025|epa-ghg-hub|epa-egrid|india-cea-baseline|eu-cbam-defaults"}[1h])) by (source)
+              /
+            clamp_min(
+              sum(rate(factors_ingestion_runs_total{source=~"ipcc-ar6|defra-2025|epa-ghg-hub|epa-egrid|india-cea-baseline|eu-cbam-defaults"}[1h])) by (source),
+              1e-9
+            )
+          ) < 0.95
+        for: 30m
+        labels:
+          severity: warning
+          service: factors
+          release_profile: alpha-v0.1
+          panel: "7"
+        annotations:
+          summary: "Ingestion success rate for {{ $labels.source }} below 95%"
+          description: |
+            Ingestion success ratio for {{ $labels.source }} dropped below 95%
+            over the past hour. Check the source-watch logs and any 4xx/5xx
+            from the upstream provider.
+          runbook_url: https://github.com/greenlang/greenlang/blob/master/docs/factors/runbooks/factors-v0.1-alpha-alerts.md#panel-7
+
+      # Panel 8 — parser errors.
+      - alert: FactorsAlphaParserErrors
+        expr: |
+          sum(rate(factors_parser_errors_total[5m])) by (source, error_type) > 0
+        for: 5m
+        labels:
+          severity: page
+          service: factors
+          release_profile: alpha-v0.1
+          panel: "8"
+        annotations:
+          summary: "Parser errors for source={{ $labels.source }} type={{ $labels.error_type }}"
+          description: |
+            ETL parser for {{ $labels.source }} is raising {{ $labels.error_type }}
+            exceptions. Page the on-call data-eng. Pin the parser version until
+            the underlying source change is normalised.
+          runbook_url: https://github.com/greenlang/greenlang/blob/master/docs/factors/runbooks/factors-v0.1-alpha-alerts.md#panel-8

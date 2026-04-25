@@ -1,0 +1,291 @@
+[
+  {
+    "boundary": "combustion",
+    "compliance_frameworks": [
+      "GHG_Protocol",
+      "IPCC_2006",
+      "EPA_MRR",
+      "eGRID"
+    ],
+    "created_at": "1970-01-01T00:00:00+00:00",
+    "created_by": "greenlang_factors_etl",
+    "dqs": {
+      "geographical": 5,
+      "methodological": 5,
+      "representativeness": 5,
+      "technological": 5,
+      "temporal": 5
+    },
+    "factor_id": "EF:eGRID:sub_CAMX:CAMX:2022:v1",
+    "fuel_type": "electricity_grid",
+    "geography": "CAMX",
+    "geography_level": "grid_zone",
+    "gwp_100yr": {
+      "CH4_gwp": 28,
+      "N2O_gwp": 273,
+      "gwp_set": "IPCC_AR6_100"
+    },
+    "license_info": {
+      "attribution_required": true,
+      "commercial_use_allowed": true,
+      "license": "US-Public-Domain",
+      "redistribution_allowed": true
+    },
+    "notes": "eGRID subregion CAMX (WECC California)",
+    "provenance": {
+      "methodology": "direct_measurement",
+      "source_org": "EPA",
+      "source_publication": "eGRID2022",
+      "source_url": "https://www.epa.gov/egrid",
+      "source_year": 2022,
+      "version": "2022"
+    },
+    "scope": "2",
+    "tags": [
+      "egrid",
+      "electricity",
+      "subregion",
+      "camx"
+    ],
+    "uncertainty_95ci": 0.03,
+    "unit": "kwh",
+    "updated_at": "1970-01-01T00:00:00+00:00",
+    "valid_from": "2022-01-01",
+    "vectors": {
+      "CH4": 1.7236496e-05,
+      "CO2": 0.22498163200000001,
+      "N2O": 2.26796e-06
+    }
+  },
+  {
+    "boundary": "combustion",
+    "compliance_frameworks": [
+      "GHG_Protocol",
+      "IPCC_2006",
+      "EPA_MRR",
+      "eGRID"
+    ],
+    "created_at": "1970-01-01T00:00:00+00:00",
+    "created_by": "greenlang_factors_etl",
+    "dqs": {
+      "geographical": 5,
+      "methodological": 5,
+      "representativeness": 5,
+      "technological": 5,
+      "temporal": 5
+    },
+    "factor_id": "EF:eGRID:sub_ERCT:ERCT:2022:v1",
+    "fuel_type": "electricity_grid",
+    "geography": "ERCT",
+    "geography_level": "grid_zone",
+    "gwp_100yr": {
+      "CH4_gwp": 28,
+      "N2O_gwp": 273,
+      "gwp_set": "IPCC_AR6_100"
+    },
+    "license_info": {
+      "attribution_required": true,
+      "commercial_use_allowed": true,
+      "license": "US-Public-Domain",
+      "redistribution_allowed": true
+    },
+    "notes": "eGRID subregion ERCT (ERCOT All)",
+    "provenance": {
+      "methodology": "direct_measurement",
+      "source_org": "EPA",
+      "source_publication": "eGRID2022",
+      "source_url": "https://www.epa.gov/egrid",
+      "source_year": 2022,
+      "version": "2022"
+    },
+    "scope": "2",
+    "tags": [
+      "egrid",
+      "electricity",
+      "subregion",
+      "erct"
+    ],
+    "uncertainty_95ci": 0.03,
+    "unit": "kwh",
+    "updated_at": "1970-01-01T00:00:00+00:00",
+    "valid_from": "2022-01-01",
+    "vectors": {
+      "CH4": 2.4040376e-05,
+      "CO2": 0.37897611600000003,
+      "N2O": 4.082328e-06
+    }
+  },
+  {
+    "boundary": "combustion",
+    "compliance_frameworks": [
+      "GHG_Protocol",
+      "IPCC_2006",
+      "EPA_MRR",
+      "eGRID"
+    ],
+    "created_at": "1970-01-01T00:00:00+00:00",
+    "created_by": "greenlang_factors_etl",
+    "dqs": {
+      "geographical": 4,
+      "methodological": 5,
+      "representativeness": 4,
+      "technological": 5,
+      "temporal": 5
+    },
+    "factor_id": "EF:eGRID:state_CA:US-CA:2022:v1",
+    "fuel_type": "electricity_grid",
+    "geography": "US-CA",
+    "geography_level": "state",
+    "gwp_100yr": {
+      "CH4_gwp": 28,
+      "N2O_gwp": 273,
+      "gwp_set": "IPCC_AR6_100"
+    },
+    "license_info": {
+      "attribution_required": true,
+      "commercial_use_allowed": true,
+      "license": "US-Public-Domain",
+      "redistribution_allowed": true
+    },
+    "notes": "eGRID state-level average for CA",
+    "provenance": {
+      "methodology": "direct_measurement",
+      "source_org": "EPA",
+      "source_publication": "eGRID2022",
+      "source_url": "https://www.epa.gov/egrid",
+      "source_year": 2022,
+      "version": "2022"
+    },
+    "scope": "2",
+    "tags": [
+      "egrid",
+      "electricity",
+      "state",
+      "ca"
+    ],
+    "uncertainty_95ci": 0.03,
+    "unit": "kwh",
+    "updated_at": "1970-01-01T00:00:00+00:00",
+    "valid_from": "2022-01-01",
+    "vectors": {
+      "CH4": 1.4968536000000001e-05,
+      "CO2": 0.19508991920000002,
+      "N2O": 2.26796e-06
+    }
+  },
+  {
+    "boundary": "combustion",
+    "compliance_frameworks": [
+      "GHG_Protocol",
+      "IPCC_2006",
+      "EPA_MRR",
+      "eGRID"
+    ],
+    "created_at": "1970-01-01T00:00:00+00:00",
+    "created_by": "greenlang_factors_etl",
+    "dqs": {
+      "geographical": 4,
+      "methodological": 5,
+      "representativeness": 4,
+      "technological": 5,
+      "temporal": 5
+    },
+    "factor_id": "EF:eGRID:state_TX:US-TX:2022:v1",
+    "fuel_type": "electricity_grid",
+    "geography": "US-TX",
+    "geography_level": "state",
+    "gwp_100yr": {
+      "CH4_gwp": 28,
+      "N2O_gwp": 273,
+      "gwp_set": "IPCC_AR6_100"
+    },
+    "license_info": {
+      "attribution_required": true,
+      "commercial_use_allowed": true,
+      "license": "US-Public-Domain",
+      "redistribution_allowed": true
+    },
+    "notes": "eGRID state-level average for TX",
+    "provenance": {
+      "methodology": "direct_measurement",
+      "source_org": "EPA",
+      "source_publication": "eGRID2022",
+      "source_url": "https://www.epa.gov/egrid",
+      "source_year": 2022,
+      "version": "2022"
+    },
+    "scope": "2",
+    "tags": [
+      "egrid",
+      "electricity",
+      "state",
+      "tx"
+    ],
+    "uncertainty_95ci": 0.03,
+    "unit": "kwh",
+    "updated_at": "1970-01-01T00:00:00+00:00",
+    "valid_from": "2022-01-01",
+    "vectors": {
+      "CH4": 2.4040376e-05,
+      "CO2": 0.37897611600000003,
+      "N2O": 4.082328e-06
+    }
+  },
+  {
+    "boundary": "combustion",
+    "compliance_frameworks": [
+      "GHG_Protocol",
+      "IPCC_2006",
+      "EPA_MRR",
+      "eGRID"
+    ],
+    "created_at": "1970-01-01T00:00:00+00:00",
+    "created_by": "greenlang_factors_etl",
+    "dqs": {
+      "geographical": 3,
+      "methodological": 5,
+      "representativeness": 5,
+      "technological": 5,
+      "temporal": 5
+    },
+    "factor_id": "EF:eGRID:national:US:2022:v1",
+    "fuel_type": "electricity_grid",
+    "geography": "US",
+    "geography_level": "country",
+    "gwp_100yr": {
+      "CH4_gwp": 28,
+      "N2O_gwp": 273,
+      "gwp_set": "IPCC_AR6_100"
+    },
+    "license_info": {
+      "attribution_required": true,
+      "commercial_use_allowed": true,
+      "license": "US-Public-Domain",
+      "redistribution_allowed": true
+    },
+    "notes": "eGRID US national average",
+    "provenance": {
+      "methodology": "direct_measurement",
+      "source_org": "EPA",
+      "source_publication": "eGRID2022",
+      "source_url": "https://www.epa.gov/egrid",
+      "source_year": 2022,
+      "version": "2022"
+    },
+    "scope": "2",
+    "tags": [
+      "egrid",
+      "electricity",
+      "national"
+    ],
+    "uncertainty_95ci": 0.02,
+    "unit": "kwh",
+    "updated_at": "1970-01-01T00:00:00+00:00",
+    "valid_from": "2022-01-01",
+    "vectors": {
+      "CH4": 3.0390664000000002e-05,
+      "CO2": 0.3865964616,
+      "N2O": 4.53592e-06
+    }
+  }
+]

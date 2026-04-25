@@ -1,0 +1,171 @@
+[
+  {
+    "boundary": "combustion",
+    "compliance_frameworks": [
+      "GHG_Protocol",
+      "IPCC_2006",
+      "EPA_MRR"
+    ],
+    "created_at": "1970-01-01T00:00:00+00:00",
+    "created_by": "greenlang_factors_etl",
+    "dqs": {
+      "geographical": 4,
+      "methodological": 5,
+      "representativeness": 4,
+      "technological": 4,
+      "temporal": 5
+    },
+    "factor_id": "EF:EPA:stat_natural_gas:US:2024:v1",
+    "fuel_type": "natural_gas",
+    "geography": "US",
+    "geography_level": "country",
+    "gwp_100yr": {
+      "CH4_gwp": 28,
+      "N2O_gwp": 273,
+      "gwp_set": "IPCC_AR6_100"
+    },
+    "license_info": {
+      "attribution_required": true,
+      "commercial_use_allowed": true,
+      "license": "US-Public-Domain",
+      "redistribution_allowed": true
+    },
+    "notes": null,
+    "provenance": {
+      "methodology": "IPCC_Tier_1",
+      "source_org": "EPA",
+      "source_publication": "EPA GHG Emission Factors Hub",
+      "source_url": "https://www.epa.gov/ghgemissionfactors",
+      "source_year": 2024,
+      "version": "2024"
+    },
+    "scope": "1",
+    "tags": [
+      "epa",
+      "stationary_combustion",
+      "natural_gas"
+    ],
+    "uncertainty_95ci": 0.05,
+    "unit": "scf",
+    "updated_at": "1970-01-01T00:00:00+00:00",
+    "valid_from": "2024-01-01",
+    "vectors": {
+      "CH4": 1.03e-06,
+      "CO2": 0.05444,
+      "N2O": 1e-07
+    }
+  },
+  {
+    "boundary": "combustion",
+    "compliance_frameworks": [
+      "GHG_Protocol",
+      "IPCC_2006",
+      "EPA_MRR"
+    ],
+    "created_at": "1970-01-01T00:00:00+00:00",
+    "created_by": "greenlang_factors_etl",
+    "dqs": {
+      "geographical": 4,
+      "methodological": 5,
+      "representativeness": 4,
+      "technological": 4,
+      "temporal": 5
+    },
+    "factor_id": "EF:EPA:stat_diesel:US:2024:v1",
+    "fuel_type": "diesel",
+    "geography": "US",
+    "geography_level": "country",
+    "gwp_100yr": {
+      "CH4_gwp": 28,
+      "N2O_gwp": 273,
+      "gwp_set": "IPCC_AR6_100"
+    },
+    "license_info": {
+      "attribution_required": true,
+      "commercial_use_allowed": true,
+      "license": "US-Public-Domain",
+      "redistribution_allowed": true
+    },
+    "notes": null,
+    "provenance": {
+      "methodology": "IPCC_Tier_1",
+      "source_org": "EPA",
+      "source_publication": "EPA GHG Emission Factors Hub",
+      "source_url": "https://www.epa.gov/ghgemissionfactors",
+      "source_year": 2024,
+      "version": "2024"
+    },
+    "scope": "1",
+    "tags": [
+      "epa",
+      "stationary_combustion",
+      "diesel"
+    ],
+    "uncertainty_95ci": 0.05,
+    "unit": "gallons",
+    "updated_at": "1970-01-01T00:00:00+00:00",
+    "valid_from": "2024-01-01",
+    "vectors": {
+      "CH4": 0.00041,
+      "CO2": 10.18,
+      "N2O": 8.2e-05
+    }
+  },
+  {
+    "boundary": "combustion",
+    "compliance_frameworks": [
+      "GHG_Protocol",
+      "IPCC_2006",
+      "EPA_MRR"
+    ],
+    "created_at": "1970-01-01T00:00:00+00:00",
+    "created_by": "greenlang_factors_etl",
+    "dqs": {
+      "geographical": 4,
+      "methodological": 5,
+      "representativeness": 4,
+      "technological": 4,
+      "temporal": 5
+    },
+    "factor_id": "EF:EPA:mob_gasoline_all:US:2024:v1",
+    "fuel_type": "gasoline",
+    "geography": "US",
+    "geography_level": "country",
+    "gwp_100yr": {
+      "CH4_gwp": 28,
+      "N2O_gwp": 273,
+      "gwp_set": "IPCC_AR6_100"
+    },
+    "license_info": {
+      "attribution_required": true,
+      "commercial_use_allowed": true,
+      "license": "US-Public-Domain",
+      "redistribution_allowed": true
+    },
+    "notes": null,
+    "provenance": {
+      "methodology": "IPCC_Tier_1",
+      "source_org": "EPA",
+      "source_publication": "EPA GHG Emission Factors Hub",
+      "source_url": "https://www.epa.gov/ghgemissionfactors",
+      "source_year": 2024,
+      "version": "2024"
+    },
+    "scope": "1",
+    "tags": [
+      "epa",
+      "mobile_combustion",
+      "gasoline",
+      "all"
+    ],
+    "uncertainty_95ci": 0.05,
+    "unit": "gallons",
+    "updated_at": "1970-01-01T00:00:00+00:00",
+    "valid_from": "2024-01-01",
+    "vectors": {
+      "CH4": 0.00035,
+      "CO2": 8.78,
+      "N2O": 8.2e-05
+    }
+  }
+]

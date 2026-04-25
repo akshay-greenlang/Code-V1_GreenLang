@@ -1,0 +1,63 @@
+=== DESNZ parser column-shift drill — 2026-04-25T07:59:25+00:00 ===
+fixture: C:\Users\aksha\Code-V1_GreenLang\tests\factors\v0_1_alpha\drill_fixtures\desnz_2024_corrupted_v1.json
+corruption: row-level co2/ch4/n2o keys -> *_RENAMED_FOR_DRILL
+            section scope1_bioenergy -> *_RENAMED_FOR_DRILL
+            section scope2_electricity -> non-list 'NOT_A_LIST_RENAMED_FOR_DRILL'
+
+--- Stage 1: parser invocation ---
+OBSERVED: parse_desnz_uk returned 57 records (NO exception raised — parser tolerated the corruption because _safe_float() defaults missing keys to 0.0). This is action item AI-1: parser MUST validate raw record shape before lifting.
+OBSERVED: 57/57 records have all-zero vectors after row-level column rename — this is the silent-zero pattern the AlphaProvenanceGate is designed to catch.
+
+--- Stage 2: alpha_v0_1_normalizer.lift_v1_record_to_v0_1 ---
+FIRST REJECTION (rec[0]): NonPositiveValueError: record co2e value collapsed to 0.0 (not > 0); factor_id='EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1'
+Traceback (most recent call last):
+  File "C:\Users\aksha\Code-V1_GreenLang\tests\factors\v0_1_alpha\drill_fixtures\_capture_drill_output.py", line 135, in main
+    v0 = lift_v1_record_to_v0_1(rec, dict(desnz_meta), idx=i)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aksha\Code-V1_GreenLang\greenlang\factors\etl\alpha_v0_1_normalizer.py", line 941, in lift_v1_record_to_v0_1
+    value = _record_co2e_value(record)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aksha\Code-V1_GreenLang\greenlang\factors\etl\alpha_v0_1_normalizer.py", line 590, in _record_co2e_value
+    raise NonPositiveValueError(
+greenlang.factors.etl.alpha_v0_1_normalizer.NonPositiveValueError: record co2e value collapsed to 0.0 (not > 0); factor_id='EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1'
+
+
+SUMMARY: total=57 rejected=57 other_failures=0 lifted_OK=0
+
+--- Stage 3: AlphaProvenanceGate.assert_valid on malformed record ---
+OBSERVED: AlphaProvenanceGateError raised with 20 failures (top 3 below)
+  - schema[<root>]: 'factor_pack_urn' is a required property
+  - schema[<root>]: 'name' is a required property
+  - schema[<root>]: 'description' is a required property
+Traceback (most recent call last):
+  File "C:\Users\aksha\Code-V1_GreenLang\tests\factors\v0_1_alpha\drill_fixtures\_capture_drill_output.py", line 180, in main
+    gate.assert_valid(malformed)
+  File "C:\Users\aksha\Code-V1_GreenLang\greenlang\factors\quality\alpha_provenance_gate.py", line 268, in assert_valid
+    raise AlphaProvenanceGateError(failures)
+greenlang.factors.quality.alpha_provenance_gate.AlphaProvenanceGateError: AlphaProvenanceGate rejected record (20 failures):
+  - schema[<root>]: 'factor_pack_urn' is a required property
+  - schema[<root>]: 'name' is a required property
+  - schema[<root>]: 'description' is a required property
+  - schema[<root>]: 'category' is a required property
+  - schema[<root>]: 'unit_urn' is a required property
+  - schema[<root>]: 'gwp_basis' is a required property
+  - schema[<root>]: 'gwp_horizon' is a required property
+  - schema[<root>]: 'geography_urn' is a required property
+  - schema[<root>]: 'vintage_start' is a required property
+  - schema[<root>]: 'vintage_end' is a required property
+  - schema[<root>]: 'resolution' is a required property
+  - schema[<root>]: 'methodology_urn' is a required property
+  - schema[<root>]: 'boundary' is a required property
+  - schema[<root>]: 'licence' is a required property
+  - schema[<root>]: 'citations' is a required property
+  - schema[<root>]: 'published_at' is a required property
+  - schema[<root>]: 'extraction' is a required property
+  - schema[<root>]: 'review' is a required property
+  - schema[source_urn]: 'urn:gl:source:desnz_ghg_conversion' does not match '^urn:gl:source:[a-z0-9][a-z0-9-]*$'
+  - alpha[gwp_basis]: must be 'ar6' in v0.1 alpha; got None
+
+
+--- Stage 4: simulated parser-error counter emission ---
+EMITTED: factors_parser_errors_total{source='desnz_ghg_conversion',error_type='DrillSimulated_KeyError_co2_factor'} += 1
+
+=== drill complete ===

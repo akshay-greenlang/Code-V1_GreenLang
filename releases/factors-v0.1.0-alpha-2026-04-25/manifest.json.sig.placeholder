@@ -1,0 +1,3 @@
+PLACEHOLDER — needs methodology-lead Ed25519 key at production cut.
+manifest_sha256=d6694c8e0060cb070427a5a835f6e0cf3bcf64c14b74d2e88ca94fb10e7ff590
+To produce a real signature: set GL_FACTORS_ED25519_PRIVATE_KEY (PEM) and re-run the cut.

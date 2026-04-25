@@ -46,6 +46,17 @@ from typing import Any, Dict, Optional
 logger = logging.getLogger(__name__)
 
 
+def _redact_dsn(dsn: str) -> str:
+    """Hide credentials in a DSN before logging it."""
+    if "@" not in dsn or "://" not in dsn:
+        return dsn
+    scheme, rest = dsn.split("://", 1)
+    if "@" in rest:
+        _, host = rest.rsplit("@", 1)
+        return f"{scheme}://***@{host}"
+    return dsn
+
+
 def _assert_signing_keys_loaded_for_prod() -> None:
     """
     DEP2 startup guard: in staging/production, a missing Ed25519 private key
@@ -154,44 +165,109 @@ def create_factors_app(
     except Exception as exc:  # noqa: BLE001
         logger.warning("EditionPinMiddleware not mounted: %s", exc)
 
+    # --- release-profile feature gate (WS11-T1) ----------------------------
+    # Determine which surfaces are exposed for the active profile. In ``dev``
+    # every feature is on so existing tests keep passing; in ``alpha-v0.1``
+    # only the five always-on endpoints survive.
+    from greenlang.factors.release_profile import (
+        current_profile,
+        feature_enabled,
+        filter_app_routes,
+    )
+    _profile = current_profile()
+    logger.info("Factors release profile: %s", _profile.value)
+
     # --- routers -----------------------------------------------------------
-    try:
-        from greenlang.factors.api_v1_routes import api_v1_router
-        app.include_router(api_v1_router)
-    except Exception as exc:  # noqa: BLE001
-        logger.error("Failed to mount api_v1_router: %s", exc)
-        raise
+    # Alpha v0.1 short-circuit (CTO doc §19.1): under release_profile=alpha-v0.1
+    # the public surface is EXACTLY the 5 read-only GETs in api_v0_1_alpha_routes.
+    # We skip mounting api_v1_router (which carries resolve/explain/batch/edition
+    # routes that are out of scope for alpha) and instead mount only the alpha
+    # router plus the /api/v1 -> 410 Gone catch-all.
+    if _profile.value == "alpha-v0.1":
+        try:
+            from greenlang.factors.api_v0_1_alpha_routes import (
+                router as alpha_v0_1_router,
+                deprecated_router as alpha_v0_1_deprecated_router,
+            )
+            app.include_router(alpha_v0_1_router)
+            app.include_router(alpha_v0_1_deprecated_router)
+            logger.info(
+                "Mounted api_v0_1_alpha_routes (%d public GETs); skipped api_v1_router under alpha profile",
+                5,
+            )
+        except Exception as exc:  # noqa: BLE001
+            logger.error("Failed to mount api_v0_1_alpha_routes: %s", exc)
+            raise
+
+        # Wave D / TaskCreate #31: bind a real :class:`AlphaFactorRepository`
+        # so v0.1-shape records round-trip without ``_coerce_v0_1`` lossy
+        # re-shaping. Env-var precedence: GL_FACTORS_ALPHA_REPO_DSN wins;
+        # else fall back to ``sqlite:///<GL_FACTORS_SQLITE_PATH>`` if that
+        # path is set; else ``sqlite:///:memory:``.
+        try:
+            from greenlang.factors.repositories import AlphaFactorRepository
+            dsn = os.getenv("GL_FACTORS_ALPHA_REPO_DSN", "").strip()
+            if not dsn:
+                sqlite_path = os.getenv("GL_FACTORS_SQLITE_PATH", "").strip()
+                dsn = (
+                    f"sqlite:///{sqlite_path}" if sqlite_path
+                    else "sqlite:///:memory:"
+                )
+            app.state.alpha_factor_repo = AlphaFactorRepository(dsn)
+            logger.info("Wired AlphaFactorRepository (dsn=%s)", _redact_dsn(dsn))
+        except Exception as exc:  # noqa: BLE001
+            logger.warning(
+                "AlphaFactorRepository not wired: %s. Alpha router will fall "
+                "back to the legacy factors_service path.",
+                exc,
+            )
+            app.state.alpha_factor_repo = None
+    else:
+        try:
+            from greenlang.factors.api_v1_routes import api_v1_router
+            app.include_router(api_v1_router)
+        except Exception as exc:  # noqa: BLE001
+            logger.error("Failed to mount api_v1_router: %s", exc)
+            raise
 
     # W4-G / MP14: method-pack coverage endpoint (separate router to avoid
     # colliding with W4-C's api_v1_routes ownership).
-    try:
-        from greenlang.factors.method_packs.coverage_routes import (
-            method_packs_router,
-        )
-        app.include_router(method_packs_router)
-        logger.info("Mounted method_packs_router (MP14 coverage endpoint)")
-    except Exception as exc:  # noqa: BLE001
-        logger.warning("method_packs_router not mounted: %s", exc)
+    if feature_enabled("method_packs") or feature_enabled("explain_endpoint"):
+        try:
+            from greenlang.factors.method_packs.coverage_routes import (
+                method_packs_router,
+            )
+            app.include_router(method_packs_router)
+            logger.info("Mounted method_packs_router (MP14 coverage endpoint)")
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("method_packs_router not mounted: %s", exc)
+    else:
+        logger.info("method_packs_router gated by release_profile=%s", _profile.value)
 
-    if enable_admin:
+    if enable_admin and feature_enabled("admin_console"):
         try:
             from greenlang.factors.api_v1_routes import admin_router
             app.include_router(admin_router)
         except Exception as exc:  # noqa: BLE001
             logger.warning("admin_router not mounted: %s", exc)
+    elif enable_admin:
+        logger.info("admin_router gated by release_profile=%s", _profile.value)
 
     # W4-C / API15: GraphQL surface. Soft-mount so the app still boots
     # when ``strawberry-graphql`` isn't installed — calls to /v1/graphql
     # then return 503 with an install hint.
-    try:
-        from greenlang.factors.graphql import graphql_router
-        app.include_router(graphql_router)
-        logger.info("Mounted graphql_router")
-    except Exception as exc:  # noqa: BLE001
-        logger.info("graphql_router not mounted (optional): %s", exc)
+    if feature_enabled("graphql"):
+        try:
+            from greenlang.factors.graphql import graphql_router
+            app.include_router(graphql_router)
+            logger.info("Mounted graphql_router")
+        except Exception as exc:  # noqa: BLE001
+            logger.info("graphql_router not mounted (optional): %s", exc)
+    else:
+        logger.info("graphql_router gated by release_profile=%s", _profile.value)
 
     # Billing router (Agent 7 owns greenlang/factors/billing/api.py).
-    if enable_billing in (None, True):
+    if enable_billing in (None, True) and feature_enabled("billing"):
         try:
             from greenlang.factors.billing.api import billing_router  # type: ignore
             app.include_router(billing_router)
@@ -214,9 +290,11 @@ def create_factors_app(
             logger.info("Mounted billing self-serve api_routes router (W4-E)")
         except Exception as exc:  # noqa: BLE001
             logger.warning("billing self-serve api_routes not mounted: %s", exc)
+    elif enable_billing in (None, True):
+        logger.info("billing_router gated by release_profile=%s", _profile.value)
 
     # OEM router (Agent 8 owns greenlang/factors/onboarding/api.py).
-    if enable_oem in (None, True):
+    if enable_oem in (None, True) and feature_enabled("oem"):
         try:
             from greenlang.factors.onboarding.api import oem_router  # type: ignore
             app.include_router(oem_router)
@@ -226,6 +304,8 @@ def create_factors_app(
                 logger.error("oem_router required but not available: %s", exc)
             else:
                 logger.info("oem_router not available; skipping")
+    elif enable_oem in (None, True):
+        logger.info("oem_router gated by release_profile=%s", _profile.value)
 
     # Prometheus /metrics
     if enable_metrics:
@@ -238,6 +318,14 @@ def create_factors_app(
                 return _PromResponse(generate_latest(), media_type=CONTENT_TYPE_LATEST)
         except Exception as exc:  # noqa: BLE001
             logger.warning("Prometheus /metrics not mounted: %s", exc)
+
+    # Final pass: cull routes inside api_v1_router that belong to
+    # disabled features (resolve, batch, explain, coverage, fqs, edition,
+    # signed-receipt status). No-op when every feature is enabled (dev/GA).
+    try:
+        filter_app_routes(app)
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("release_profile route filter failed: %s", exc)
 
     return app
 

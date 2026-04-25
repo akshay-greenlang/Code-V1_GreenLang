@@ -1,0 +1,30 @@
+{
+  "metadata": {
+    "source": "CEA",
+    "publication_version": "v20.0",
+    "default_source_year": 2024
+  },
+  "rows": [
+    {
+      "grid": "All India",
+      "financial_year": "2023-24",
+      "co2_intensity_t_per_mwh": 0.727,
+      "publication_version": "v20.0",
+      "transmission_loss_included": false
+    },
+    {
+      "grid": "NEWNE",
+      "financial_year": "2023-24",
+      "co2_intensity_t_per_mwh": 0.825,
+      "publication_version": "v20.0",
+      "transmission_loss_included": false
+    },
+    {
+      "grid": "S",
+      "financial_year": "2023-24",
+      "co2_intensity_t_per_mwh": 0.510,
+      "publication_version": "v20.0",
+      "transmission_loss_included": false
+    }
+  ]
+}

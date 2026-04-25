@@ -1,0 +1,20 @@
+{
+  "extra": {
+    "auth": "unauthenticated",
+    "endpoint": "/v1/healthz",
+    "rate_limiter": "disabled-for-perf-loop"
+  },
+  "max_ms": 839.4662999926368,
+  "mean_ms": 45.18277357988991,
+  "min_ms": 29.665099995327182,
+  "n_calls": 5000,
+  "n_urns": 0,
+  "p50_ms": 42.126500004087575,
+  "p95_ms": 64.09049998910632,
+  "p99_ms": 80.01899998635054,
+  "passed": true,
+  "stddev_ms": 18.833705452087067,
+  "target_ms": 75.0,
+  "test_environment": "in-process FastAPI TestClient; single-region; no cache tier; _FakeRepo dict lookup; no Postgres, no Redis",
+  "test_name": "test_p95_healthz_under_50ms"
+}

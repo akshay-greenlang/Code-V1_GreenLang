@@ -36,7 +36,14 @@ import re
 import ssl
 import time
 from typing import Any, Dict, Iterator, List, Mapping, Optional, Union
-from urllib.parse import urlparse
+from urllib.parse import quote, urlparse
+
+from greenlang.factors import release_profile
+from greenlang.factors.release_profile import feature_enabled
+from greenlang.factors.ontology.urn import (
+    InvalidUrnError,
+    validate_urn as _validate_urn,
+)
 
 from .auth import APIKeyAuth, AuthProvider, JWTAuth
 from .errors import (
@@ -48,6 +55,9 @@ from .errors import (
     RateLimitError,
 )
 from .models import (
+    AlphaFactor,
+    AlphaPack,
+    AlphaSource,
     AuditBundle,
     BatchJobHandle,
     CoverageReport,
@@ -55,6 +65,8 @@ from .models import (
     Factor,
     FactorDiff,
     FactorMatch,
+    HealthResponse,
+    ListFactorsResponse,
     MethodPack,
     MethodPackCoverageReport,
     Override,
@@ -63,6 +75,41 @@ from .models import (
     SearchResponse,
     Source,
 )
+
+
+class ProfileGatedError(RuntimeError):
+    """Raised when a beta-or-later SDK method is called under the alpha-v0.1
+    release profile.
+
+    The forward-development surface (``resolve``, ``explain``, ``batch``,
+    ``edition`` pinning, signed-receipt verification, ``search``) stays in
+    the codebase but raises this error when called under
+    ``GL_FACTORS_RELEASE_PROFILE=alpha-v0.1``. Set the env var to
+    ``beta-v0.5`` (or higher) to re-enable. See CTO doc §19.1: alpha is
+    read-only.
+    """
+
+
+# v0.1 Alpha User-Agent — distinct from the legacy DEFAULT_USER_AGENT
+# the transport advertises so the v1.x integration tests keep passing.
+_ALPHA_USER_AGENT: str = "greenlang-factors-sdk/0.1.0 (python)"
+
+
+def _gate(feature: str, method_label: str) -> None:
+    """Raise :class:`ProfileGatedError` if ``feature`` is disabled.
+
+    Used by every non-alpha public method. Centralised so the error
+    message wording stays consistent and we have a single line to grep
+    across the codebase.
+    """
+    if not feature_enabled(feature):
+        raise ProfileGatedError(
+            f"FactorsClient.{method_label} requires release profile "
+            f"beta-v0.5 or higher; current profile is "
+            f"{release_profile.current_profile().value}. Set "
+            f"GL_FACTORS_RELEASE_PROFILE=beta-v0.5+ or upgrade your "
+            f"account to enable. (CTO doc §19.1: alpha is read-only.)"
+        )
 from .pagination import (
     AsyncOffsetPaginator,
     OffsetPaginator,
@@ -588,7 +635,10 @@ class FactorsClient:
                   * ``"<year>.Q<n>-<scope>"``        -> ``"2027.Q1-electricity"``
                   * ``"<year>-<month>-<day>-<scope>"`` -> ``"2027-04-01-freight"``
                   * any string starting with the letter ``"v"``       -> ``"v1.0.0"``
+            ProfileGatedError: under the v0.1 alpha release profile —
+                edition pinning is a beta-only forward-development feature.
         """
+        _gate("edition_endpoint", "pin_edition()")
         _validate_edition_id(edition_id)
         opts = dict(self._clone_opts)
         return FactorsClient(
@@ -654,7 +704,9 @@ class FactorsClient:
 
         Raises:
             ReceiptVerificationError: when the receipt cannot be verified.
+            ProfileGatedError: under the v0.1 alpha release profile.
         """
+        _gate("signed_receipts", "verify_receipt()")
         return _verify_receipt(
             response,
             secret=secret,
@@ -689,9 +741,14 @@ class FactorsClient:
         *,
         params: Optional[Dict[str, Any]] = None,
         use_cache: bool = True,
+        extra_headers: Optional[Mapping[str, str]] = None,
     ) -> TransportResponse:
         resp = self._transport.request(
-            "GET", self._path(path), params=params, use_cache=use_cache
+            "GET",
+            self._path(path),
+            params=params,
+            use_cache=use_cache,
+            extra_headers=extra_headers,
         )
         _check_edition_pin(
             pinned=self._pinned_edition, response=resp, path=self._path(path)
@@ -704,6 +761,7 @@ class FactorsClient:
         *,
         json_body: Optional[Any] = None,
         params: Optional[Dict[str, Any]] = None,
+        extra_headers: Optional[Mapping[str, str]] = None,
     ) -> TransportResponse:
         resp = self._transport.request(
             "POST",
@@ -711,6 +769,7 @@ class FactorsClient:
             params=params,
             json_body=json_body,
             use_cache=False,
+            extra_headers=extra_headers,
         )
         _check_edition_pin(
             pinned=self._pinned_edition, response=resp, path=self._path(path)
@@ -731,7 +790,12 @@ class FactorsClient:
         include_preview: Optional[bool] = None,
         include_connector: Optional[bool] = None,
     ) -> SearchResponse:
-        """GET /factors/search — full-text search."""
+        """GET /factors/search — full-text search.
+
+        Beta-only under the v0.1 alpha contract. Raises
+        :class:`ProfileGatedError` when ``GL_FACTORS_RELEASE_PROFILE=alpha-v0.1``.
+        """
+        _gate("resolve_endpoint", "search()")
         params: Dict[str, Any] = {"q": query, "limit": limit}
         if geography:
             params["geography"] = geography
@@ -768,7 +832,11 @@ class FactorsClient:
         include_preview: Optional[bool] = None,
         include_connector: Optional[bool] = None,
     ) -> SearchResponse:
-        """POST /factors/search/v2 — advanced search with sort + pagination."""
+        """POST /factors/search/v2 — advanced search with sort + pagination.
+
+        Beta-only under the v0.1 alpha contract.
+        """
+        _gate("resolve_endpoint", "search_v2()")
         body: Dict[str, Any] = {
             "query": query,
             "sort_by": sort_by,
@@ -800,7 +868,7 @@ class FactorsClient:
         resp = self._post("/factors/search/v2", json_body=body, params=params or None)
         return _build_search_response(resp.data)
 
-    def list_factors(
+    def list_factors_legacy(
         self,
         *,
         fuel_type: Optional[str] = None,
@@ -813,7 +881,13 @@ class FactorsClient:
         include_preview: Optional[bool] = None,
         include_connector: Optional[bool] = None,
     ) -> SearchResponse:
-        """GET /factors — paginated list with filters."""
+        """v1.x GET /factors — paginated list with legacy filters.
+
+        Beta-only under the v0.1 alpha contract; the alpha
+        :meth:`list_factors` replaces this with the URN-keyed shape.
+        Kept on the class for back-compat.
+        """
+        _gate("resolve_endpoint", "list_factors_legacy()")
         params: Dict[str, Any] = {"page": page, "limit": limit}
         for key, value in (
             ("fuel_type", fuel_type),
@@ -832,6 +906,77 @@ class FactorsClient:
             params["include_connector"] = ic
         resp = self._get("/factors", params=params)
         return _build_search_response(resp.data)
+
+    # =====================================================================
+    # v0.1 Alpha — five always-on read-only GETs (CTO doc §19.1)
+    # =====================================================================
+
+    def health(self) -> HealthResponse:
+        """GET /v1/healthz — service health probe (alpha-allowed).
+
+        Returns a typed :class:`HealthResponse` describing the running
+        service, the active release profile, and the catalog edition.
+        Always-on regardless of release profile.
+        """
+        resp = self._get(
+            "/healthz", extra_headers={"User-Agent": _ALPHA_USER_AGENT}
+        )
+        return HealthResponse.model_validate(resp.data)
+
+    def list_factors(
+        self,
+        *,
+        geography_urn: Optional[str] = None,
+        source_urn: Optional[str] = None,
+        pack_urn: Optional[str] = None,
+        category: Optional[str] = None,
+        vintage_start_after: Optional[str] = None,
+        vintage_end_before: Optional[str] = None,
+        cursor: Optional[str] = None,
+        limit: int = 50,
+    ) -> ListFactorsResponse:
+        """GET /v1/factors — alpha-allowed cursor-paginated factor list.
+
+        Args:
+            geography_urn: Optional ``urn:gl:geo:...`` filter.
+            source_urn: Optional ``urn:gl:source:...`` filter.
+            pack_urn: Optional ``urn:gl:pack:...`` filter.
+            category: Optional category enum string (e.g. ``"scope1"``).
+            vintage_start_after: ISO-8601 date; factors valid after this date.
+            vintage_end_before: ISO-8601 date; factors expiring before this date.
+            cursor: Opaque cursor returned by a previous page.
+            limit: Page size (default 50).
+
+        Returns:
+            :class:`ListFactorsResponse` with typed
+            :class:`AlphaFactor` rows and an optional ``next_cursor``.
+
+        Raises:
+            ValueError: when any URN argument is malformed.
+        """
+        params: Dict[str, Any] = {"limit": limit}
+        for key, value in (
+            ("geography_urn", geography_urn),
+            ("source_urn", source_urn),
+            ("pack_urn", pack_urn),
+        ):
+            if value is not None:
+                _validate_urn(value)
+                params[key] = value
+        if category is not None:
+            params["category"] = category
+        if vintage_start_after is not None:
+            params["vintage_start_after"] = vintage_start_after
+        if vintage_end_before is not None:
+            params["vintage_end_before"] = vintage_end_before
+        if cursor is not None:
+            params["cursor"] = cursor
+        resp = self._get(
+            "/factors",
+            params=params,
+            extra_headers={"User-Agent": _ALPHA_USER_AGENT},
+        )
+        return ListFactorsResponse.model_validate(resp.data)
 
     def paginate_search(
         self,
@@ -857,16 +1002,49 @@ class FactorsClient:
 
     def get_factor(
         self,
-        factor_id: str,
+        urn: str,
         *,
         edition: Optional[str] = None,
-    ) -> Factor:
-        """GET /factors/{factor_id} — fetch a factor by id."""
+    ) -> AlphaFactor:
+        """GET /v1/factors/{urn} — fetch a factor by canonical URN.
+
+        v0.1 Alpha: ``urn`` must be a well-formed
+        ``urn:gl:factor:<source>:<namespace>:<id>:v<version>`` string. The
+        URN is validated client-side BEFORE the request is sent — a
+        malformed value raises :class:`ValueError` (specifically
+        :class:`InvalidUrnError`) without ever hitting the network.
+
+        Args:
+            urn: Canonical factor URN.
+            edition: Optional edition pin (beta-only behaviour; ignored under
+                alpha). Kept on the signature so callers can switch profiles
+                without changing call sites.
+
+        Returns:
+            Typed :class:`AlphaFactor`.
+
+        Raises:
+            ValueError: when ``urn`` is not a valid GreenLang URN.
+        """
+        try:
+            _validate_urn(urn)
+        except InvalidUrnError as exc:
+            raise ValueError(
+                f"get_factor() requires a valid GreenLang URN as the "
+                f"primary id; got {urn!r} which is not a urn. ({exc})"
+            ) from exc
         params: Dict[str, Any] = {}
         if edition:
             params["edition"] = edition
-        resp = self._get(f"/factors/{factor_id}", params=params or None)
-        return Factor.model_validate(resp.data)
+        # URL-encode the URN — colons in URNs must travel as %3A on the
+        # wire so reverse proxies do not parse them as port separators.
+        encoded = quote(urn, safe="")
+        resp = self._get(
+            f"/factors/{encoded}",
+            params=params or None,
+            extra_headers={"User-Agent": _ALPHA_USER_AGENT},
+        )
+        return AlphaFactor.model_validate(resp.data)
 
     def match(
         self,
@@ -878,7 +1056,11 @@ class FactorsClient:
         limit: int = 10,
         edition: Optional[str] = None,
     ) -> List[FactorMatch]:
-        """POST /factors/match — NL-to-factor matching."""
+        """POST /factors/match — NL-to-factor matching.
+
+        Beta-only under the v0.1 alpha contract.
+        """
+        _gate("resolve_endpoint", "match()")
         body: Dict[str, Any] = {
             "activity_description": activity_description,
             "limit": limit,
@@ -903,7 +1085,11 @@ class FactorsClient:
         return [FactorMatch.model_validate(c) for c in candidates]
 
     def coverage(self, *, edition: Optional[str] = None) -> CoverageReport:
-        """GET /factors/coverage — coverage statistics."""
+        """GET /factors/coverage — coverage statistics.
+
+        Beta-only under the v0.1 alpha contract.
+        """
+        _gate("coverage_endpoint", "coverage()")
         params: Dict[str, Any] = {}
         if edition:
             params["edition"] = edition
@@ -922,7 +1108,11 @@ class FactorsClient:
         alternates: Optional[int] = None,
         edition: Optional[str] = None,
     ) -> ResolvedFactor:
-        """GET /factors/{id}/explain — Pro+ explain payload."""
+        """GET /factors/{id}/explain — Pro+ explain payload.
+
+        Beta-only under the v0.1 alpha contract.
+        """
+        _gate("explain_endpoint", "resolve_explain()")
         params: Dict[str, Any] = {}
         if method_profile:
             params["method_profile"] = method_profile
@@ -942,7 +1132,12 @@ class FactorsClient:
         include_preview: Optional[bool] = None,
         include_connector: Optional[bool] = None,
     ) -> ResolvedFactor:
-        """POST /factors/resolve-explain — Pro+ full cascade resolve."""
+        """POST /factors/resolve-explain — Pro+ full cascade resolve.
+
+        Beta-only under the v0.1 alpha contract. Raises
+        :class:`ProfileGatedError` when ``GL_FACTORS_RELEASE_PROFILE=alpha-v0.1``.
+        """
+        _gate("resolve_endpoint", "resolve()")
         if isinstance(request, ResolutionRequest):
             body = request.model_dump(exclude_none=True)
         else:
@@ -973,7 +1168,11 @@ class FactorsClient:
         include_preview: Optional[bool] = None,
         include_connector: Optional[bool] = None,
     ) -> Dict[str, Any]:
-        """GET /factors/{id}/alternates — Pro+ alternate candidates."""
+        """GET /factors/{id}/alternates — Pro+ alternate candidates.
+
+        Beta-only under the v0.1 alpha contract.
+        """
+        _gate("explain_endpoint", "alternates()")
         params: Dict[str, Any] = {}
         if method_profile:
             params["method_profile"] = method_profile
@@ -1000,7 +1199,11 @@ class FactorsClient:
         *,
         edition: Optional[str] = None,
     ) -> BatchJobHandle:
-        """POST /factors/resolve/batch — submit a batch resolution job."""
+        """POST /factors/resolve/batch — submit a batch resolution job.
+
+        Beta-only under the v0.1 alpha contract.
+        """
+        _gate("batch_endpoint", "resolve_batch()")
         items: List[Dict[str, Any]] = []
         for r in requests:
             if isinstance(r, ResolutionRequest):
@@ -1017,7 +1220,11 @@ class FactorsClient:
         return BatchJobHandle.model_validate(resp.data)
 
     def get_batch_job(self, job_id: str) -> BatchJobHandle:
-        """GET /factors/jobs/{job_id} — check batch job status."""
+        """GET /factors/jobs/{job_id} — check batch job status.
+
+        Beta-only under the v0.1 alpha contract.
+        """
+        _gate("batch_endpoint", "get_batch_job()")
         resp = self._get(f"/factors/jobs/{job_id}", use_cache=False)
         return BatchJobHandle.model_validate(resp.data)
 
@@ -1038,7 +1245,9 @@ class FactorsClient:
         Raises:
             RateLimitError: propagated from the underlying HTTP call.
             FactorsAPIError: if the poll times out or the job fails.
+            ProfileGatedError: under the v0.1 alpha release profile.
         """
+        _gate("batch_endpoint", "wait_for_batch()")
         job_id = job.job_id if isinstance(job, BatchJobHandle) else str(job)
         deadline = None if timeout is None else time.monotonic() + timeout
         while True:
@@ -1068,7 +1277,11 @@ class FactorsClient:
         *,
         include_pending: bool = True,
     ) -> List[Edition]:
-        """GET /editions — list all editions."""
+        """GET /editions — list all editions.
+
+        Beta-only under the v0.1 alpha contract.
+        """
+        _gate("edition_endpoint", "list_editions()")
         params = {"include_pending": _bool_param(include_pending)}
         resp = self._get("/editions", params=params)
         data = resp.data if isinstance(resp.data, dict) else {}
@@ -1076,7 +1289,11 @@ class FactorsClient:
         return [Edition.model_validate(e) for e in editions]
 
     def get_edition(self, edition_id: str) -> Dict[str, Any]:
-        """GET /editions/{edition_id}/changelog — edition details + changelog."""
+        """GET /editions/{edition_id}/changelog — edition details + changelog.
+
+        Beta-only under the v0.1 alpha contract.
+        """
+        _gate("edition_endpoint", "get_edition()")
         resp = self._get(f"/editions/{edition_id}/changelog")
         return resp.data if isinstance(resp.data, dict) else {"raw": resp.data}
 
@@ -1086,7 +1303,11 @@ class FactorsClient:
         left_edition: str,
         right_edition: str,
     ) -> FactorDiff:
-        """GET /factors/{id}/diff — field-level diff between editions."""
+        """GET /factors/{id}/diff — field-level diff between editions.
+
+        Beta-only under the v0.1 alpha contract.
+        """
+        _gate("edition_endpoint", "diff()")
         params = {"left_edition": left_edition, "right_edition": right_edition}
         resp = self._get(f"/factors/{factor_id}/diff", params=params)
         return FactorDiff.model_validate(resp.data)
@@ -1097,7 +1318,11 @@ class FactorsClient:
         *,
         edition: Optional[str] = None,
     ) -> AuditBundle:
-        """GET /factors/{id}/audit-bundle — Enterprise-only audit trail."""
+        """GET /factors/{id}/audit-bundle — Enterprise-only audit trail.
+
+        Beta-only under the v0.1 alpha contract.
+        """
+        _gate("signed_receipts", "audit_bundle()")
         params: Dict[str, Any] = {}
         if edition:
             params["edition"] = edition
@@ -1110,32 +1335,79 @@ class FactorsClient:
     # Sources / method packs (stubs — forwards to the catalog endpoints)
     # =====================================================================
 
-    def list_sources(
-        self,
-        *,
-        edition: Optional[str] = None,
-    ) -> List[Source]:
-        """GET /factors/source-registry — list sources."""
-        params: Dict[str, Any] = {}
-        if edition:
-            params["edition"] = edition
-        resp = self._get("/factors/source-registry", params=params or None)
+    def list_sources(self) -> List[AlphaSource]:
+        """GET /v1/sources — list catalog sources (alpha-allowed).
+
+        Always-on regardless of release profile. Returns typed
+        :class:`AlphaSource` records, each keyed on a ``urn:gl:source:...``.
+        """
+        resp = self._get(
+            "/sources",
+            extra_headers={"User-Agent": _ALPHA_USER_AGENT},
+        )
         data = resp.data
         if isinstance(data, dict):
-            rows = data.get("sources") or data.get("items") or []
+            rows = data.get("data") or data.get("sources") or data.get("items") or []
         elif isinstance(data, list):
             rows = data
         else:
             rows = []
-        return [Source.model_validate(r) for r in rows]
+        return [AlphaSource.model_validate(r) for r in rows]
+
+    def list_packs(
+        self,
+        *,
+        source_urn: Optional[str] = None,
+    ) -> List[AlphaPack]:
+        """GET /v1/packs — list factor packs (alpha-allowed).
+
+        Args:
+            source_urn: Optional ``urn:gl:source:...`` filter. Validated
+                client-side; raises :class:`ValueError` on malformed URN.
+
+        Returns:
+            List of :class:`AlphaPack`.
+        """
+        params: Dict[str, Any] = {}
+        if source_urn is not None:
+            try:
+                _validate_urn(source_urn)
+            except InvalidUrnError as exc:
+                raise ValueError(
+                    f"list_packs() source_urn must be a valid GreenLang URN; "
+                    f"got {source_urn!r}. ({exc})"
+                ) from exc
+            params["source_urn"] = source_urn
+        resp = self._get(
+            "/packs",
+            params=params or None,
+            extra_headers={"User-Agent": _ALPHA_USER_AGENT},
+        )
+        data = resp.data
+        if isinstance(data, dict):
+            rows = data.get("data") or data.get("packs") or data.get("items") or []
+        elif isinstance(data, list):
+            rows = data
+        else:
+            rows = []
+        return [AlphaPack.model_validate(r) for r in rows]
 
     def get_source(self, source_id: str) -> Source:
-        """GET /factors/sources/{source_id} — fetch a source descriptor."""
+        """GET /factors/sources/{source_id} — fetch a source descriptor.
+
+        Beta-only under the v0.1 alpha contract; alpha exposes only the
+        bulk :meth:`list_sources` endpoint.
+        """
+        _gate("resolve_endpoint", "get_source()")
         resp = self._get(f"/factors/sources/{source_id}")
         return Source.model_validate(resp.data)
 
     def list_method_packs(self) -> List[MethodPack]:
-        """GET /method-packs — list method packs."""
+        """GET /method-packs — list method packs.
+
+        Beta-only under the v0.1 alpha contract.
+        """
+        _gate("method_packs", "list_method_packs()")
         resp = self._get("/method-packs")
         data = resp.data
         if isinstance(data, dict):
@@ -1147,7 +1419,11 @@ class FactorsClient:
         return [MethodPack.model_validate(r) for r in rows]
 
     def get_method_pack(self, method_pack_id: str) -> MethodPack:
-        """GET /method-packs/{id} — fetch a method pack descriptor."""
+        """GET /method-packs/{id} — fetch a method pack descriptor.
+
+        Beta-only under the v0.1 alpha contract.
+        """
+        _gate("method_packs", "get_method_pack()")
         resp = self._get(f"/method-packs/{method_pack_id}")
         return MethodPack.model_validate(resp.data)
 
@@ -1168,7 +1444,10 @@ class FactorsClient:
         The Wave 4-G legacy payload ``{packs: [...], total: N}`` is
         inflated transparently via
         :meth:`MethodPackCoverageReport.from_legacy_payload`.
+
+        Beta-only under the v0.1 alpha contract.
         """
+        _gate("coverage_endpoint", "method_pack_coverage()")
         params: Dict[str, Any] = {}
         if pack:
             params["pack"] = pack
@@ -1183,7 +1462,11 @@ class FactorsClient:
         self,
         override: Union[Override, Dict[str, Any]],
     ) -> Override:
-        """POST /factors/overrides — create or update a tenant override."""
+        """POST /factors/overrides — create or update a tenant override.
+
+        Beta-only under the v0.1 alpha contract.
+        """
+        _gate("resolve_endpoint", "set_override()")
         body = (
             override.model_dump(exclude_none=True)
             if isinstance(override, Override)
@@ -1197,7 +1480,11 @@ class FactorsClient:
         *,
         tenant_id: Optional[str] = None,
     ) -> List[Override]:
-        """GET /factors/overrides — list tenant overrides."""
+        """GET /factors/overrides — list tenant overrides.
+
+        Beta-only under the v0.1 alpha contract.
+        """
+        _gate("resolve_endpoint", "list_overrides()")
         params: Dict[str, Any] = {}
         if tenant_id:
             params["tenant_id"] = tenant_id
@@ -1314,7 +1601,9 @@ class AsyncFactorsClient:
         Raises:
             EditionPinError: when ``edition_id`` fails validation
                 (see :func:`_validate_edition_id` for accepted formats).
+            ProfileGatedError: under the v0.1 alpha release profile.
         """
+        _gate("edition_endpoint", "pin_edition()")
         _validate_edition_id(edition_id)
         opts = dict(self._clone_opts)
         return AsyncFactorsClient(
@@ -1351,7 +1640,11 @@ class AsyncFactorsClient:
         Mirrors :meth:`FactorsClient.verify_receipt`. Synchronous because
         the verification path is pure CPU + (cached) JWKS fetch, no need
         to introduce a coroutine boundary.
+
+        Raises:
+            ProfileGatedError: under the v0.1 alpha release profile.
         """
+        _gate("signed_receipts", "verify_receipt()")
         return _verify_receipt(
             response,
             secret=secret,
@@ -1382,9 +1675,14 @@ class AsyncFactorsClient:
         *,
         params: Optional[Dict[str, Any]] = None,
         use_cache: bool = True,
+        extra_headers: Optional[Mapping[str, str]] = None,
     ) -> TransportResponse:
         resp = await self._transport.request(
-            "GET", self._path(path), params=params, use_cache=use_cache
+            "GET",
+            self._path(path),
+            params=params,
+            use_cache=use_cache,
+            extra_headers=extra_headers,
         )
         _check_edition_pin(
             pinned=self._pinned_edition, response=resp, path=self._path(path)
@@ -1397,6 +1695,7 @@ class AsyncFactorsClient:
         *,
         json_body: Optional[Any] = None,
         params: Optional[Dict[str, Any]] = None,
+        extra_headers: Optional[Mapping[str, str]] = None,
     ) -> TransportResponse:
         resp = await self._transport.request(
             "POST",
@@ -1404,6 +1703,7 @@ class AsyncFactorsClient:
             params=params,
             json_body=json_body,
             use_cache=False,
+            extra_headers=extra_headers,
         )
         _check_edition_pin(
             pinned=self._pinned_edition, response=resp, path=self._path(path)
@@ -1422,6 +1722,8 @@ class AsyncFactorsClient:
         include_preview: Optional[bool] = None,
         include_connector: Optional[bool] = None,
     ) -> SearchResponse:
+        """Beta-only under the v0.1 alpha contract."""
+        _gate("resolve_endpoint", "search() [async]")
         params: Dict[str, Any] = {"q": query, "limit": limit}
         if geography:
             params["geography"] = geography
@@ -1458,6 +1760,8 @@ class AsyncFactorsClient:
         include_preview: Optional[bool] = None,
         include_connector: Optional[bool] = None,
     ) -> SearchResponse:
+        """Beta-only under the v0.1 alpha contract."""
+        _gate("resolve_endpoint", "search_v2() [async]")
         body: Dict[str, Any] = {
             "query": query,
             "sort_by": sort_by,
@@ -1491,7 +1795,7 @@ class AsyncFactorsClient:
         )
         return _build_search_response(resp.data)
 
-    async def list_factors(
+    async def list_factors_legacy(
         self,
         *,
         fuel_type: Optional[str] = None,
@@ -1504,6 +1808,8 @@ class AsyncFactorsClient:
         include_preview: Optional[bool] = None,
         include_connector: Optional[bool] = None,
     ) -> SearchResponse:
+        """Beta-only — kept for back-compat. Use :meth:`list_factors`."""
+        _gate("resolve_endpoint", "list_factors_legacy() [async]")
         params: Dict[str, Any] = {"page": page, "limit": limit}
         for key, value in (
             ("fuel_type", fuel_type),
@@ -1522,6 +1828,82 @@ class AsyncFactorsClient:
             params["include_connector"] = ic
         resp = await self._get("/factors", params=params)
         return _build_search_response(resp.data)
+
+    # ---- v0.1 Alpha — five always-on read-only GETs ---------------------
+
+    async def health(self) -> HealthResponse:
+        """GET /v1/healthz — service health (alpha-allowed, async)."""
+        resp = await self._get(
+            "/healthz", extra_headers={"User-Agent": _ALPHA_USER_AGENT}
+        )
+        return HealthResponse.model_validate(resp.data)
+
+    async def list_factors(
+        self,
+        *,
+        geography_urn: Optional[str] = None,
+        source_urn: Optional[str] = None,
+        pack_urn: Optional[str] = None,
+        category: Optional[str] = None,
+        vintage_start_after: Optional[str] = None,
+        vintage_end_before: Optional[str] = None,
+        cursor: Optional[str] = None,
+        limit: int = 50,
+    ) -> ListFactorsResponse:
+        """GET /v1/factors — alpha-allowed cursor-paginated list (async)."""
+        params: Dict[str, Any] = {"limit": limit}
+        for key, value in (
+            ("geography_urn", geography_urn),
+            ("source_urn", source_urn),
+            ("pack_urn", pack_urn),
+        ):
+            if value is not None:
+                _validate_urn(value)
+                params[key] = value
+        if category is not None:
+            params["category"] = category
+        if vintage_start_after is not None:
+            params["vintage_start_after"] = vintage_start_after
+        if vintage_end_before is not None:
+            params["vintage_end_before"] = vintage_end_before
+        if cursor is not None:
+            params["cursor"] = cursor
+        resp = await self._get(
+            "/factors",
+            params=params,
+            extra_headers={"User-Agent": _ALPHA_USER_AGENT},
+        )
+        return ListFactorsResponse.model_validate(resp.data)
+
+    async def list_packs(
+        self,
+        *,
+        source_urn: Optional[str] = None,
+    ) -> List[AlphaPack]:
+        """GET /v1/packs — list factor packs (alpha-allowed, async)."""
+        params: Dict[str, Any] = {}
+        if source_urn is not None:
+            try:
+                _validate_urn(source_urn)
+            except InvalidUrnError as exc:
+                raise ValueError(
+                    f"list_packs() source_urn must be a valid GreenLang URN; "
+                    f"got {source_urn!r}. ({exc})"
+                ) from exc
+            params["source_urn"] = source_urn
+        resp = await self._get(
+            "/packs",
+            params=params or None,
+            extra_headers={"User-Agent": _ALPHA_USER_AGENT},
+        )
+        data = resp.data
+        if isinstance(data, dict):
+            rows = data.get("data") or data.get("packs") or data.get("items") or []
+        elif isinstance(data, list):
+            rows = data
+        else:
+            rows = []
+        return [AlphaPack.model_validate(r) for r in rows]
 
     def paginate_search(
         self,
@@ -1543,15 +1925,32 @@ class AsyncFactorsClient:
 
     async def get_factor(
         self,
-        factor_id: str,
+        urn: str,
         *,
         edition: Optional[str] = None,
-    ) -> Factor:
+    ) -> AlphaFactor:
+        """GET /v1/factors/{urn} — alpha-allowed (async).
+
+        Validates ``urn`` client-side; raises :class:`ValueError` on
+        malformed input without hitting the network.
+        """
+        try:
+            _validate_urn(urn)
+        except InvalidUrnError as exc:
+            raise ValueError(
+                f"get_factor() requires a valid GreenLang URN; got {urn!r}. "
+                f"({exc})"
+            ) from exc
         params: Dict[str, Any] = {}
         if edition:
             params["edition"] = edition
-        resp = await self._get(f"/factors/{factor_id}", params=params or None)
-        return Factor.model_validate(resp.data)
+        encoded = quote(urn, safe="")
+        resp = await self._get(
+            f"/factors/{encoded}",
+            params=params or None,
+            extra_headers={"User-Agent": _ALPHA_USER_AGENT},
+        )
+        return AlphaFactor.model_validate(resp.data)
 
     async def match(
         self,
@@ -1563,6 +1962,8 @@ class AsyncFactorsClient:
         limit: int = 10,
         edition: Optional[str] = None,
     ) -> List[FactorMatch]:
+        """Beta-only under the v0.1 alpha contract."""
+        _gate("resolve_endpoint", "match() [async]")
         body: Dict[str, Any] = {
             "activity_description": activity_description,
             "limit": limit,
@@ -1587,6 +1988,8 @@ class AsyncFactorsClient:
         return [FactorMatch.model_validate(c) for c in candidates]
 
     async def coverage(self, *, edition: Optional[str] = None) -> CoverageReport:
+        """Beta-only under the v0.1 alpha contract."""
+        _gate("coverage_endpoint", "coverage() [async]")
         params: Dict[str, Any] = {}
         if edition:
             params["edition"] = edition
@@ -1603,6 +2006,8 @@ class AsyncFactorsClient:
         alternates: Optional[int] = None,
         edition: Optional[str] = None,
     ) -> ResolvedFactor:
+        """Beta-only under the v0.1 alpha contract."""
+        _gate("explain_endpoint", "resolve_explain() [async]")
         params: Dict[str, Any] = {}
         if method_profile:
             params["method_profile"] = method_profile
@@ -1624,6 +2029,8 @@ class AsyncFactorsClient:
         include_preview: Optional[bool] = None,
         include_connector: Optional[bool] = None,
     ) -> ResolvedFactor:
+        """Beta-only under the v0.1 alpha contract."""
+        _gate("resolve_endpoint", "resolve() [async]")
         if isinstance(request, ResolutionRequest):
             body = request.model_dump(exclude_none=True)
         else:
@@ -1654,6 +2061,8 @@ class AsyncFactorsClient:
         include_preview: Optional[bool] = None,
         include_connector: Optional[bool] = None,
     ) -> Dict[str, Any]:
+        """Beta-only under the v0.1 alpha contract."""
+        _gate("explain_endpoint", "alternates() [async]")
         params: Dict[str, Any] = {}
         if method_profile:
             params["method_profile"] = method_profile
@@ -1676,6 +2085,8 @@ class AsyncFactorsClient:
         *,
         edition: Optional[str] = None,
     ) -> BatchJobHandle:
+        """Beta-only under the v0.1 alpha contract."""
+        _gate("batch_endpoint", "resolve_batch() [async]")
         items: List[Dict[str, Any]] = []
         for r in requests:
             if isinstance(r, ResolutionRequest):
@@ -1692,6 +2103,8 @@ class AsyncFactorsClient:
         return BatchJobHandle.model_validate(resp.data)
 
     async def get_batch_job(self, job_id: str) -> BatchJobHandle:
+        """Beta-only under the v0.1 alpha contract."""
+        _gate("batch_endpoint", "get_batch_job() [async]")
         resp = await self._get(f"/factors/jobs/{job_id}", use_cache=False)
         return BatchJobHandle.model_validate(resp.data)
 
@@ -1702,6 +2115,8 @@ class AsyncFactorsClient:
         poll_interval: float = 2.0,
         timeout: Optional[float] = 600.0,
     ) -> BatchJobHandle:
+        """Beta-only under the v0.1 alpha contract."""
+        _gate("batch_endpoint", "wait_for_batch() [async]")
         job_id = job.job_id if isinstance(job, BatchJobHandle) else str(job)
         loop = asyncio.get_event_loop()
         deadline = None if timeout is None else loop.time() + timeout
@@ -1730,6 +2145,8 @@ class AsyncFactorsClient:
         *,
         include_pending: bool = True,
     ) -> List[Edition]:
+        """Beta-only under the v0.1 alpha contract."""
+        _gate("edition_endpoint", "list_editions() [async]")
         params = {"include_pending": _bool_param(include_pending)}
         resp = await self._get("/editions", params=params)
         data = resp.data if isinstance(resp.data, dict) else {}
@@ -1737,6 +2154,8 @@ class AsyncFactorsClient:
         return [Edition.model_validate(e) for e in editions]
 
     async def get_edition(self, edition_id: str) -> Dict[str, Any]:
+        """Beta-only under the v0.1 alpha contract."""
+        _gate("edition_endpoint", "get_edition() [async]")
         resp = await self._get(f"/editions/{edition_id}/changelog")
         return resp.data if isinstance(resp.data, dict) else {"raw": resp.data}
 
@@ -1746,6 +2165,8 @@ class AsyncFactorsClient:
         left_edition: str,
         right_edition: str,
     ) -> FactorDiff:
+        """Beta-only under the v0.1 alpha contract."""
+        _gate("edition_endpoint", "diff() [async]")
         params = {"left_edition": left_edition, "right_edition": right_edition}
         resp = await self._get(f"/factors/{factor_id}/diff", params=params)
         return FactorDiff.model_validate(resp.data)
@@ -1756,6 +2177,8 @@ class AsyncFactorsClient:
         *,
         edition: Optional[str] = None,
     ) -> AuditBundle:
+        """Beta-only under the v0.1 alpha contract."""
+        _gate("signed_receipts", "audit_bundle() [async]")
         params: Dict[str, Any] = {}
         if edition:
             params["edition"] = edition
@@ -1766,31 +2189,30 @@ class AsyncFactorsClient:
 
     # ---- Sources / method packs -----------------------------------------
 
-    async def list_sources(
-        self,
-        *,
-        edition: Optional[str] = None,
-    ) -> List[Source]:
-        params: Dict[str, Any] = {}
-        if edition:
-            params["edition"] = edition
+    async def list_sources(self) -> List[AlphaSource]:
+        """GET /v1/sources — alpha-allowed (async)."""
         resp = await self._get(
-            "/factors/source-registry", params=params or None
+            "/sources",
+            extra_headers={"User-Agent": _ALPHA_USER_AGENT},
         )
         data = resp.data
         if isinstance(data, dict):
-            rows = data.get("sources") or data.get("items") or []
+            rows = data.get("data") or data.get("sources") or data.get("items") or []
         elif isinstance(data, list):
             rows = data
         else:
             rows = []
-        return [Source.model_validate(r) for r in rows]
+        return [AlphaSource.model_validate(r) for r in rows]
 
     async def get_source(self, source_id: str) -> Source:
+        """Beta-only under the v0.1 alpha contract."""
+        _gate("resolve_endpoint", "get_source() [async]")
         resp = await self._get(f"/factors/sources/{source_id}")
         return Source.model_validate(resp.data)
 
     async def list_method_packs(self) -> List[MethodPack]:
+        """Beta-only under the v0.1 alpha contract."""
+        _gate("method_packs", "list_method_packs() [async]")
         resp = await self._get("/method-packs")
         data = resp.data
         if isinstance(data, dict):
@@ -1802,6 +2224,8 @@ class AsyncFactorsClient:
         return [MethodPack.model_validate(r) for r in rows]
 
     async def get_method_pack(self, method_pack_id: str) -> MethodPack:
+        """Beta-only under the v0.1 alpha contract."""
+        _gate("method_packs", "get_method_pack() [async]")
         resp = await self._get(f"/method-packs/{method_pack_id}")
         return MethodPack.model_validate(resp.data)
 
@@ -1813,7 +2237,9 @@ class AsyncFactorsClient:
         """GET /method-packs/coverage — canonical v1.3 coverage report.
 
         Async mirror of :meth:`FactorsClient.method_pack_coverage`.
+        Beta-only under the v0.1 alpha contract.
         """
+        _gate("coverage_endpoint", "method_pack_coverage() [async]")
         params: Dict[str, Any] = {}
         if pack:
             params["pack"] = pack
@@ -1826,6 +2252,8 @@ class AsyncFactorsClient:
         self,
         override: Union[Override, Dict[str, Any]],
     ) -> Override:
+        """Beta-only under the v0.1 alpha contract."""
+        _gate("resolve_endpoint", "set_override() [async]")
         body = (
             override.model_dump(exclude_none=True)
             if isinstance(override, Override)
@@ -1839,6 +2267,8 @@ class AsyncFactorsClient:
         *,
         tenant_id: Optional[str] = None,
     ) -> List[Override]:
+        """Beta-only under the v0.1 alpha contract."""
+        _gate("resolve_endpoint", "list_overrides() [async]")
         params: Dict[str, Any] = {}
         if tenant_id:
             params["tenant_id"] = tenant_id
@@ -1862,4 +2292,5 @@ __all__ = [
     "PINNED_HOST_SUFFIXES",
     "build_pinned_httpx_transport",
     "ReceiptVerificationError",
+    "ProfileGatedError",
 ]

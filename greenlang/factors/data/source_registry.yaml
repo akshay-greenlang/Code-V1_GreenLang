@@ -15,6 +15,21 @@ sources:
       url: "https://www.epa.gov/ghgemissionfactors"
     approval_required_for_certified: true
     legal_signoff_artifact: null
+    # ---- v0.1 Alpha required-fields contract (WS7-T1) ----
+    urn: "urn:gl:source:epa-hub"
+    source_owner: "climate-methodology-lead"
+    parser_module: "greenlang.factors.ingestion.parsers.epa_ghg_hub"
+    parser_function: "parse_epa_ghg_hub"
+    parser_version: "0.1.0"
+    source_version: "2024.1"
+    latest_ingestion_at: "2026-04-24T07:12:22+00:00"
+    publication_url: "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+    provenance_completeness_score: 0.95
+    alpha_v0_1: true
+    # ---- Wave D / TaskCreate #9 — vintage audit ----
+    alpha_v0_1_status: preview
+    alpha_v0_1_vintage_target: "2025"
+    alpha_v0_1_methodology_exception: "docs/factors/v0_1_alpha/methodology-exceptions/epa_hub_v2024.1.md"
 
   - source_id: egrid
     display_name: eGRID
@@ -29,6 +44,29 @@ sources:
       url: "https://www.epa.gov/egrid"
     approval_required_for_certified: true
     legal_signoff_artifact: null
+    # ---- v0.1 Alpha required-fields contract (WS7-T1) ----
+    # Note: this source has TWO parsers — the canonical lb/MWh -> kg/kWh
+    # converter (parse_egrid) and the gold-pattern subregion projection
+    # (parse_egrid_subregion in egrid_subregion.py). The registry pins
+    # the canonical parser; the subregion extension runs in the same
+    # ingestion pass and is verified by the catalog test suite.
+    urn: "urn:gl:source:egrid"
+    source_owner: "climate-methodology-lead"
+    parser_module: "greenlang.factors.ingestion.parsers.egrid"
+    parser_function: "parse_egrid"
+    parser_version: "0.1.0"
+    source_version: "2022.1"
+    latest_ingestion_at: "2026-04-24T07:12:22+00:00"
+    publication_url: "https://www.epa.gov/egrid/download-data"
+    provenance_completeness_score: 0.95
+    alpha_v0_1: true
+    # ---- Wave D / TaskCreate #10 — vintage audit ----
+    alpha_v0_1_status: preview
+    alpha_v0_1_vintage_target: "2024"
+    alpha_v0_1_methodology_exception: "docs/factors/v0_1_alpha/methodology-exceptions/egrid_v2022.1.md"
+    parser_extensions:
+      - module: "greenlang.factors.ingestion.parsers.egrid_subregion"
+        function: "parse_egrid_subregion"
 
   - source_id: desnz_ghg_conversion
     display_name: DESNZ GHG conversion factors
@@ -43,6 +81,24 @@ sources:
       url: "https://www.gov.uk/government/collections/government-conversion-factors-for-company-reporting-of-greenhouse-gas-emissions"
     approval_required_for_certified: true
     legal_signoff_artifact: null
+    # ---- v0.1 Alpha required-fields contract (WS7-T1) ----
+    # Currently catalog-seeded at DESNZ 2024.1 (the 2025 spreadsheet
+    # ships in alpha-W1 once DESNZ publishes mid-2025; bump
+    # source_version to "2025.1" at that ingestion).
+    urn: "urn:gl:source:desnz-ghg-conversion"
+    source_owner: "climate-methodology-lead"
+    parser_module: "greenlang.factors.ingestion.parsers.desnz_uk"
+    parser_function: "parse_desnz_uk"
+    parser_version: "0.1.0"
+    source_version: "2024.1"
+    latest_ingestion_at: "2026-04-24T07:12:22+00:00"
+    publication_url: "https://www.gov.uk/government/publications/greenhouse-gas-reporting-conversion-factors-2024"
+    provenance_completeness_score: 0.95
+    alpha_v0_1: true
+    # ---- Wave D / TaskCreate #8 — vintage audit ----
+    alpha_v0_1_status: preview
+    alpha_v0_1_vintage_target: "2025"
+    alpha_v0_1_methodology_exception: "docs/factors/v0_1_alpha/methodology-exceptions/desnz_ghg_conversion_v2024.1.md"
 
   - source_id: tcr_grp_defaults
     display_name: TCR / GRP default factors
@@ -280,8 +336,39 @@ sources:
       url: "https://cea.nic.in/cdm-co2-baseline-database/"
     approval_required_for_certified: true
     legal_signoff_artifact: null
+    # ---- v0.1 Alpha required-fields contract (WS7-T1) ----
+    # Aliases the alpha-spec id `india_cea_baseline`. The FY27 vintage
+    # extension lives at `india_cea_fy27` (separate non-alpha row); both
+    # parsers run together at ingest time and produce overlapping
+    # factor families anchored to publication_version v20.0.
+    aliases: ["india_cea_baseline"]
+    urn: "urn:gl:source:india-cea-co2-baseline"
+    source_owner: "climate-methodology-lead"
+    parser_module: "greenlang.factors.ingestion.parsers.india_cea"
+    parser_function: "parse_india_cea_rows"
+    parser_version: "0.1.0"
+    source_version: "20.0"
+    latest_ingestion_at: "2026-04-24T07:12:22+00:00"
+    publication_url: "https://cea.nic.in/cdm-co2-baseline-database/"
+    provenance_completeness_score: 0.90
+    alpha_v0_1: true
+    # ---- Wave D / TaskCreate #11 — vintage audit ----
+    # CEA v20.0 (Dec 2024) is the most recent published edition. v21.0
+    # is expected late-2025; if available before alpha launch the methodology
+    # lead bumps source_version and re-tags as locked-current.
+    alpha_v0_1_status: locked
+    alpha_v0_1_vintage_target: "20.0"
+    alpha_v0_1_methodology_exception: null
+    parser_extensions:
+      - module: "greenlang.factors.ingestion.parsers.cea_fy27"
+        function: "parse_cea_fy27"
 
   # Slice 2 — Combustion (IPCC defaults)
+  # NOTE: alpha-spec lists "ipcc_ar6" as the canonical id; AR6 is in
+  # fact the GWP-100 set, while the *default emission factors* come from
+  # the IPCC 2006 Guidelines + 2019 Refinement (NGGI). The registry
+  # canonical id is therefore `ipcc_2006_nggi` and `ipcc_ar6` is an
+  # alpha alias (handled by validate_alpha_v0_1_completeness).
   - source_id: ipcc_2006_nggi
     display_name: IPCC 2006 Guidelines + 2019 Refinement (National GHG Inventories)
     authority: IPCC Task Force on National GHG Inventories
@@ -302,6 +389,25 @@ sources:
     approval_required_for_certified: true
     legal_notes: "IPCC guidelines are public international publications; factual default values carry no copyright restriction."
     legal_signoff_artifact: null
+    # ---- v0.1 Alpha required-fields contract (WS7-T1) ----
+    aliases: ["ipcc_ar6"]
+    urn: "urn:gl:source:ipcc-2006-nggi"
+    source_owner: "climate-methodology-lead"
+    parser_module: "greenlang.factors.ingestion.parsers.ipcc_defaults"
+    parser_function: "parse_ipcc_defaults"
+    parser_version: "0.1.0"
+    source_version: "2019.1"
+    latest_ingestion_at: "2026-04-24T07:12:23+00:00"
+    publication_url: "https://www.ipcc-nggip.iges.or.jp/public/2019rf/"
+    provenance_completeness_score: 0.90
+    alpha_v0_1: true
+    # ---- Wave D / TaskCreate #7 — vintage audit ----
+    # NGGI 2019 IS the IPCC EF source; AR6 is the GWP set, applied separately
+    # via gwp_set: IPCC_AR6_100 in factor records. No methodology exception
+    # required — the registry alias `ipcc_ar6` is the AR6 GWP layer.
+    alpha_v0_1_status: locked
+    alpha_v0_1_vintage_target: "AR6"
+    alpha_v0_1_methodology_exception: null
 
   # Slice 3 — Freight (GLEC / ISO 14083)
   - source_id: glec_framework
@@ -635,6 +741,24 @@ sources:
     approval_required_for_certified: true
     legal_notes: "EU publication (Decision 2011/833/EU); factual regulatory defaults — redistributable with attribution to the European Commission."
     legal_signoff_artifact: null
+    # ---- v0.1 Alpha required-fields contract (WS7-T1) ----
+    urn: "urn:gl:source:cbam-default-values"
+    source_owner: "climate-methodology-lead"
+    parser_module: "greenlang.factors.ingestion.parsers.cbam_default_values"
+    parser_function: "parse_cbam_default_values"
+    parser_version: "0.1.0"
+    source_version: "2024.1"
+    latest_ingestion_at: "2026-04-24T07:12:23+00:00"
+    publication_url: "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773"
+    provenance_completeness_score: 0.95
+    alpha_v0_1: true
+    # ---- Wave D / TaskCreate #12 — vintage audit ----
+    # CBAM defaults pinned at Reg 2023/1773 Annex IV (current effective
+    # period). No subsequent implementing act has revised Annex IV defaults
+    # as of audit date. No methodology exception required.
+    alpha_v0_1_status: locked
+    alpha_v0_1_vintage_target: "2024"
+    alpha_v0_1_methodology_exception: null
 
   - source_id: defra_uk_env_accounts
     display_name: UK ONS/DEFRA Environmental Accounts — atmospheric emissions by industry (SIC 2007)

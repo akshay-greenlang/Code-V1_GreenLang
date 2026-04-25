@@ -1,0 +1,88 @@
+{
+  "_drill_note": "INTENTIONALLY CORRUPTED FIXTURE — DO NOT TREAT AS REAL DATA. Created 2026-04-25 for Wave E / WS9-T4 incident-drill postmortem. Mimics the most-likely real failure mode per CTO doc §19.1 risk: 'Parser drift on DEFRA or EPA Excel workbooks (column positions shift year-over-year)'. Three layers of corruption are baked in to exercise the parser, the v0.1 normalizer, and the AlphaProvenanceGate: (1) row-level numeric column rename (co2_factor / ch4_factor / n2o_factor -> *_RENAMED_FOR_DRILL) on every scope1_fuels row, simulating a column-shift in DESNZ's published spreadsheet; (2) section-level rename on scope1_bioenergy -> scope1_bioenergy_RENAMED_FOR_DRILL, simulating a worksheet-tab rename; (3) malformed scope2_electricity payload as a non-list 'NOT_A_LIST_RENAMED_FOR_DRILL' string, simulating a corrupted CSV cell. Production data at greenlang/factors/data/catalog_seed/_inputs/desnz_uk.json is UNTOUCHED.",
+  "metadata": {
+    "source": "DESNZ",
+    "region": "UK",
+    "version": "2024",
+    "source_publication": "UK Government GHG conversion factors for company reporting 2024 (DRILL FIXTURE)",
+    "source_url": "https://www.gov.uk/government/collections/government-conversion-factors-for-company-reporting-of-greenhouse-gas-emissions"
+  },
+  "_seed_note": "DRILL: row-level co2/ch4/n2o keys renamed to *_RENAMED_FOR_DRILL — parser will fall back to 0.0 via _safe_float, normalizer will then raise NonPositiveValueError when collapsing vectors.",
+  "scope1_fuels": [
+    {"fuel_type": "natural_gas",          "unit": "kwh (net CV)", "co2_factor_RENAMED_FOR_DRILL": 0.18293, "ch4_factor_RENAMED_FOR_DRILL": 0.00021, "n2o_factor_RENAMED_FOR_DRILL": 0.00017, "notes": "Stationary combustion, net CV basis"},
+    {"fuel_type": "natural_gas",          "unit": "cubic_meter",  "co2_factor_RENAMED_FOR_DRILL": 2.0308,  "ch4_factor_RENAMED_FOR_DRILL": 0.0023,  "n2o_factor_RENAMED_FOR_DRILL": 0.0019},
+    {"fuel_type": "natural_gas",          "unit": "therms",       "co2_factor_RENAMED_FOR_DRILL": 5.3519,  "ch4_factor_RENAMED_FOR_DRILL": 0.0062,  "n2o_factor_RENAMED_FOR_DRILL": 0.0049},
+    {"fuel_type": "natural_gas_mineral",  "unit": "kwh (net CV)", "co2_factor_RENAMED_FOR_DRILL": 0.18290, "ch4_factor_RENAMED_FOR_DRILL": 0.00020, "n2o_factor_RENAMED_FOR_DRILL": 0.00017},
+    {"fuel_type": "lng",                  "unit": "tonnes",       "co2_factor_RENAMED_FOR_DRILL": 2633.0,  "ch4_factor_RENAMED_FOR_DRILL": 2.95,    "n2o_factor_RENAMED_FOR_DRILL": 2.36},
+    {"fuel_type": "lng",                  "unit": "kwh (net CV)", "co2_factor_RENAMED_FOR_DRILL": 0.18390, "ch4_factor_RENAMED_FOR_DRILL": 0.00020, "n2o_factor_RENAMED_FOR_DRILL": 0.00016},
+    {"fuel_type": "cng",                  "unit": "kwh (net CV)", "co2_factor_RENAMED_FOR_DRILL": 0.17833, "ch4_factor_RENAMED_FOR_DRILL": 0.00030, "n2o_factor_RENAMED_FOR_DRILL": 0.00020},
+    {"fuel_type": "lpg",                  "unit": "kwh (net CV)", "co2_factor_RENAMED_FOR_DRILL": 0.21448, "ch4_factor_RENAMED_FOR_DRILL": 0.00009, "n2o_factor_RENAMED_FOR_DRILL": 0.00004},
+    {"fuel_type": "lpg",                  "unit": "litres",       "co2_factor_RENAMED_FOR_DRILL": 1.5571,  "ch4_factor_RENAMED_FOR_DRILL": 0.00059, "n2o_factor_RENAMED_FOR_DRILL": 0.00028},
+    {"fuel_type": "lpg",                  "unit": "tonnes",       "co2_factor_RENAMED_FOR_DRILL": 2939.0,  "ch4_factor_RENAMED_FOR_DRILL": 1.11,    "n2o_factor_RENAMED_FOR_DRILL": 0.53},
+    {"fuel_type": "butane",               "unit": "kwh (net CV)", "co2_factor_RENAMED_FOR_DRILL": 0.22535, "ch4_factor_RENAMED_FOR_DRILL": 0.00013, "n2o_factor_RENAMED_FOR_DRILL": 0.00004},
+    {"fuel_type": "butane",               "unit": "litres",       "co2_factor_RENAMED_FOR_DRILL": 1.7444,  "ch4_factor_RENAMED_FOR_DRILL": 0.00080, "n2o_factor_RENAMED_FOR_DRILL": 0.00026},
+    {"fuel_type": "butane",               "unit": "tonnes",       "co2_factor_RENAMED_FOR_DRILL": 3028.0,  "ch4_factor_RENAMED_FOR_DRILL": 1.39,    "n2o_factor_RENAMED_FOR_DRILL": 0.45},
+    {"fuel_type": "propane",              "unit": "kwh (net CV)", "co2_factor_RENAMED_FOR_DRILL": 0.21448, "ch4_factor_RENAMED_FOR_DRILL": 0.00009, "n2o_factor_RENAMED_FOR_DRILL": 0.00004},
+    {"fuel_type": "propane",              "unit": "litres",       "co2_factor_RENAMED_FOR_DRILL": 1.5443,  "ch4_factor_RENAMED_FOR_DRILL": 0.00060, "n2o_factor_RENAMED_FOR_DRILL": 0.00029},
+    {"fuel_type": "propane",              "unit": "tonnes",       "co2_factor_RENAMED_FOR_DRILL": 2997.0,  "ch4_factor_RENAMED_FOR_DRILL": 1.18,    "n2o_factor_RENAMED_FOR_DRILL": 0.56},
+    {"fuel_type": "petrol_average",       "unit": "litres",       "co2_factor_RENAMED_FOR_DRILL": 2.1685,  "ch4_factor_RENAMED_FOR_DRILL": 0.0012,  "n2o_factor_RENAMED_FOR_DRILL": 0.0104},
+    {"fuel_type": "petrol_average",       "unit": "kwh (net CV)", "co2_factor_RENAMED_FOR_DRILL": 0.24180, "ch4_factor_RENAMED_FOR_DRILL": 0.00013, "n2o_factor_RENAMED_FOR_DRILL": 0.00115},
+    {"fuel_type": "diesel_average",       "unit": "litres",       "co2_factor_RENAMED_FOR_DRILL": 2.5095,  "ch4_factor_RENAMED_FOR_DRILL": 0.00013, "n2o_factor_RENAMED_FOR_DRILL": 0.01207},
+    {"fuel_type": "diesel_average",       "unit": "kwh (net CV)", "co2_factor_RENAMED_FOR_DRILL": 0.25662, "ch4_factor_RENAMED_FOR_DRILL": 0.00001, "n2o_factor_RENAMED_FOR_DRILL": 0.00123},
+    {"fuel_type": "diesel_ulsd",          "unit": "litres",       "co2_factor_RENAMED_FOR_DRILL": 2.5095,  "ch4_factor_RENAMED_FOR_DRILL": 0.00013, "n2o_factor_RENAMED_FOR_DRILL": 0.01207},
+    {"fuel_type": "kerosene",             "unit": "litres",       "co2_factor_RENAMED_FOR_DRILL": 2.5404,  "ch4_factor_RENAMED_FOR_DRILL": 0.00011, "n2o_factor_RENAMED_FOR_DRILL": 0.01010},
+    {"fuel_type": "kerosene",             "unit": "kwh (net CV)", "co2_factor_RENAMED_FOR_DRILL": 0.24677, "ch4_factor_RENAMED_FOR_DRILL": 0.00001, "n2o_factor_RENAMED_FOR_DRILL": 0.00098},
+    {"fuel_type": "gas_oil",              "unit": "litres",       "co2_factor_RENAMED_FOR_DRILL": 2.7562,  "ch4_factor_RENAMED_FOR_DRILL": 0.00130, "n2o_factor_RENAMED_FOR_DRILL": 0.01327},
+    {"fuel_type": "gas_oil",              "unit": "kwh (net CV)", "co2_factor_RENAMED_FOR_DRILL": 0.25717, "ch4_factor_RENAMED_FOR_DRILL": 0.00012, "n2o_factor_RENAMED_FOR_DRILL": 0.00124},
+    {"fuel_type": "fuel_oil",             "unit": "tonnes",       "co2_factor_RENAMED_FOR_DRILL": 3223.0,  "ch4_factor_RENAMED_FOR_DRILL": 0.23,    "n2o_factor_RENAMED_FOR_DRILL": 1.61},
+    {"fuel_type": "fuel_oil",             "unit": "kwh (net CV)", "co2_factor_RENAMED_FOR_DRILL": 0.26752, "ch4_factor_RENAMED_FOR_DRILL": 0.00002, "n2o_factor_RENAMED_FOR_DRILL": 0.00013},
+    {"fuel_type": "burning_oil",          "unit": "litres",       "co2_factor_RENAMED_FOR_DRILL": 2.5404,  "ch4_factor_RENAMED_FOR_DRILL": 0.00011, "n2o_factor_RENAMED_FOR_DRILL": 0.01010},
+    {"fuel_type": "residual_fuel_oil",    "unit": "tonnes",       "co2_factor_RENAMED_FOR_DRILL": 3229.0,  "ch4_factor_RENAMED_FOR_DRILL": 0.22,    "n2o_factor_RENAMED_FOR_DRILL": 1.60},
+    {"fuel_type": "naphtha",              "unit": "tonnes",       "co2_factor_RENAMED_FOR_DRILL": 3131.0,  "ch4_factor_RENAMED_FOR_DRILL": 0.13,    "n2o_factor_RENAMED_FOR_DRILL": 1.42},
+    {"fuel_type": "aviation_spirit",      "unit": "litres",       "co2_factor_RENAMED_FOR_DRILL": 2.3312,  "ch4_factor_RENAMED_FOR_DRILL": 0.0003,  "n2o_factor_RENAMED_FOR_DRILL": 0.0110},
+    {"fuel_type": "aviation_turbine_fuel","unit": "litres",       "co2_factor_RENAMED_FOR_DRILL": 2.5415,  "ch4_factor_RENAMED_FOR_DRILL": 0.0001,  "n2o_factor_RENAMED_FOR_DRILL": 0.0083},
+    {"fuel_type": "marine_gas_oil",       "unit": "litres",       "co2_factor_RENAMED_FOR_DRILL": 2.7568,  "ch4_factor_RENAMED_FOR_DRILL": 0.0015,  "n2o_factor_RENAMED_FOR_DRILL": 0.0145},
+    {"fuel_type": "marine_fuel_oil",      "unit": "tonnes",       "co2_factor_RENAMED_FOR_DRILL": 3229.1,  "ch4_factor_RENAMED_FOR_DRILL": 0.2,     "n2o_factor_RENAMED_FOR_DRILL": 1.7},
+    {"fuel_type": "coal_industrial",      "unit": "tonnes",       "co2_factor_RENAMED_FOR_DRILL": 2402.3,  "ch4_factor_RENAMED_FOR_DRILL": 6.2,     "n2o_factor_RENAMED_FOR_DRILL": 1.1},
+    {"fuel_type": "coal_electricity",     "unit": "tonnes",       "co2_factor_RENAMED_FOR_DRILL": 2252.7,  "ch4_factor_RENAMED_FOR_DRILL": 0.5,     "n2o_factor_RENAMED_FOR_DRILL": 5.1},
+    {"fuel_type": "coking_coal",          "unit": "tonnes",       "co2_factor_RENAMED_FOR_DRILL": 2864.9,  "ch4_factor_RENAMED_FOR_DRILL": 7.1,     "n2o_factor_RENAMED_FOR_DRILL": 1.2},
+    {"fuel_type": "petroleum_coke",       "unit": "tonnes",       "co2_factor_RENAMED_FOR_DRILL": 3380.5,  "ch4_factor_RENAMED_FOR_DRILL": 0.9,     "n2o_factor_RENAMED_FOR_DRILL": 5.2},
+    {"fuel_type": "peat",                 "unit": "tonnes",       "co2_factor_RENAMED_FOR_DRILL": 1055.6,  "ch4_factor_RENAMED_FOR_DRILL": 1.2,     "n2o_factor_RENAMED_FOR_DRILL": 2.2},
+    {"fuel_type": "coal_domestic",        "unit": "tonnes",       "co2_factor_RENAMED_FOR_DRILL": 2401.0,  "ch4_factor_RENAMED_FOR_DRILL": 6.1,     "n2o_factor_RENAMED_FOR_DRILL": 1.1},
+    {"fuel_type": "lubricants",           "unit": "tonnes",       "co2_factor_RENAMED_FOR_DRILL": 3170.0,  "ch4_factor_RENAMED_FOR_DRILL": 0.0,     "n2o_factor_RENAMED_FOR_DRILL": 0.1},
+    {"fuel_type": "refinery_miscellaneous","unit": "tonnes",      "co2_factor_RENAMED_FOR_DRILL": 2944.0,  "ch4_factor_RENAMED_FOR_DRILL": 0.1,     "n2o_factor_RENAMED_FOR_DRILL": 0.5},
+    {"fuel_type": "waste_oils",           "unit": "tonnes",       "co2_factor_RENAMED_FOR_DRILL": 3171.2,  "ch4_factor_RENAMED_FOR_DRILL": 0.0,     "n2o_factor_RENAMED_FOR_DRILL": 0.1},
+    {"fuel_type": "other_petroleum_gas",  "unit": "tonnes",       "co2_factor_RENAMED_FOR_DRILL": 2516.1,  "ch4_factor_RENAMED_FOR_DRILL": 1.2,     "n2o_factor_RENAMED_FOR_DRILL": 0.5}
+  ],
+  "scope1_bioenergy_RENAMED_FOR_DRILL": [
+    {"_drill_note": "section key renamed -> parser silently produces 0 records for this section; simulates a worksheet-tab rename in DESNZ's published spreadsheet."}
+  ],
+  "scope2_electricity": "NOT_A_LIST_RENAMED_FOR_DRILL",
+  "scope2_heat_steam": [
+    {"type": "district_heat_steam",   "unit": "kwh", "co2_factor_RENAMED_FOR_DRILL": 0.17095, "ch4_factor_RENAMED_FOR_DRILL": 0.00040, "n2o_factor_RENAMED_FOR_DRILL": 0.00020},
+    {"type": "district_cooling",      "unit": "kwh", "co2_factor_RENAMED_FOR_DRILL": 0.54200, "ch4_factor_RENAMED_FOR_DRILL": 0.00070, "n2o_factor_RENAMED_FOR_DRILL": 0.00030},
+    {"type": "district_heat_biomass", "unit": "kwh", "co2_factor_RENAMED_FOR_DRILL": 0.02134, "ch4_factor_RENAMED_FOR_DRILL": 0.00025, "n2o_factor_RENAMED_FOR_DRILL": 0.00015}
+  ],
+  "scope3_wtt": [
+    {"activity": "natural_gas_wtt",      "unit": "kwh (net CV)", "co2_factor_RENAMED_FOR_DRILL": 0.02707, "ch4_factor_RENAMED_FOR_DRILL": 0.00041, "n2o_factor_RENAMED_FOR_DRILL": 0.00002},
+    {"activity": "lng_wtt",              "unit": "kwh (net CV)", "co2_factor_RENAMED_FOR_DRILL": 0.03489, "ch4_factor_RENAMED_FOR_DRILL": 0.00053, "n2o_factor_RENAMED_FOR_DRILL": 0.00002},
+    {"activity": "diesel_wtt",           "unit": "litres",       "co2_factor_RENAMED_FOR_DRILL": 0.62103, "ch4_factor_RENAMED_FOR_DRILL": 0.01070, "n2o_factor_RENAMED_FOR_DRILL": 0.00029}
+  ],
+  "scope3_freight": [
+    {"activity": "hgv_rigid_avg",        "unit": "tonne_km", "co2_factor_RENAMED_FOR_DRILL": 0.19380, "ch4_factor_RENAMED_FOR_DRILL": 0.00008, "n2o_factor_RENAMED_FOR_DRILL": 0.00110},
+    {"activity": "hgv_articulated_avg",  "unit": "tonne_km", "co2_factor_RENAMED_FOR_DRILL": 0.07810, "ch4_factor_RENAMED_FOR_DRILL": 0.00003, "n2o_factor_RENAMED_FOR_DRILL": 0.00044}
+  ],
+  "scope3_business_travel": [
+    {"activity": "car_avg",              "unit": "km", "co2_factor_RENAMED_FOR_DRILL": 0.16844, "ch4_factor_RENAMED_FOR_DRILL": 0.00006, "n2o_factor_RENAMED_FOR_DRILL": 0.00115},
+    {"activity": "flight_shorthaul_econ","unit": "passenger_km", "co2_factor_RENAMED_FOR_DRILL": 0.15102, "ch4_factor_RENAMED_FOR_DRILL": 0.00002, "n2o_factor_RENAMED_FOR_DRILL": 0.00492}
+  ],
+  "scope3_water": [
+    {"activity": "water_supply",         "unit": "m3", "co2_factor_RENAMED_FOR_DRILL": 0.177, "ch4_factor_RENAMED_FOR_DRILL": 0.0, "n2o_factor_RENAMED_FOR_DRILL": 0.0}
+  ],
+  "scope3_waste": [
+    {"activity": "paper_landfill",       "unit": "tonnes", "co2_factor_RENAMED_FOR_DRILL": 1041.78, "ch4_factor_RENAMED_FOR_DRILL": 0.0, "n2o_factor_RENAMED_FOR_DRILL": 0.0}
+  ],
+  "scope3_materials": [
+    {"activity": "steel_primary",        "unit": "tonnes", "co2_factor_RENAMED_FOR_DRILL": 2890.0, "ch4_factor_RENAMED_FOR_DRILL": 0.0, "n2o_factor_RENAMED_FOR_DRILL": 0.0}
+  ]
+}

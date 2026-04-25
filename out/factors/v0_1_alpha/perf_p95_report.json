@@ -1,0 +1,20 @@
+{
+  "extra": {
+    "endpoint": "/v1/factors/{urn}",
+    "release_profile": "alpha-v0.1",
+    "warmup_calls": 200
+  },
+  "max_ms": 719.8133000056259,
+  "mean_ms": 12.839279469891334,
+  "min_ms": 5.2254000038374215,
+  "n_calls": 10000,
+  "n_urns": 100,
+  "p50_ms": 12.254649998794775,
+  "p95_ms": 18.764200009172782,
+  "p99_ms": 22.84910000162199,
+  "passed": true,
+  "stddev_ms": 12.313995121612324,
+  "target_ms": 100.0,
+  "test_environment": "in-process FastAPI TestClient; single-region; no cache tier; _FakeRepo dict lookup; no Postgres, no Redis",
+  "test_name": "test_p95_factor_lookup_under_100ms"
+}

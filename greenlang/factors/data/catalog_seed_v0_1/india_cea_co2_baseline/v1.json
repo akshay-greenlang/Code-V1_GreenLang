@@ -1,0 +1,2060 @@
+{
+  "schema": "https://schemas.greenlang.io/factors/factor_record_v0_1.schema.json",
+  "source_id": "india_cea_co2_baseline",
+  "source_urn": "urn:gl:source:india-cea-co2-baseline",
+  "source_version": "20.0",
+  "records": [
+    {
+      "urn": "urn:gl:factor:india-cea-co2-baseline:IN:all_india:2023-24:cea-v20.0:v1",
+      "factor_id_alias": "EF:IN:all_india:2023-24:cea-v20.0",
+      "source_urn": "urn:gl:source:india-cea-co2-baseline",
+      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:20.0",
+      "name": "India grid electricity \u2014 All-India composite grid, 2023-24",
+      "description": "Grid Intensity emission factor for India grid electricity \u2014 All-India composite grid, 2023-24, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "scope2_location_based",
+      "value": 0.716,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:in",
+      "vintage_start": "2023-04-01",
+      "vintage_end": "2024-03-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "Government of India \u2014 public use with attribution",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://cea.nic.in/cdm-co2-baseline-database/"
+        }
+      ],
+      "published_at": "2026-04-25T13:12:30.944105",
+      "extraction": {
+        "source_url": "https://cea.nic.in/cdm-co2-baseline-database/",
+        "source_record_id": "cea:All India:2023-24",
+        "source_publication": "India CEA CO2 Baseline Database",
+        "source_version": "20.0",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/india-cea-co2-baseline/20.0/seed.json",
+        "raw_artifact_sha256": "38d4dca6de086700f0df6fd94fd2637a1bb6e5fcf0d95566ffd597700594a2f2",
+        "parser_id": "greenlang.factors.ingestion.parsers.india_cea",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-0",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_india_cea_co2_baseline"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cea",
+        "india",
+        "grid",
+        "2023-24"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:india-cea-co2-baseline:IN:newne:2023-24:cea-v20.0:v1",
+      "factor_id_alias": "EF:IN:newne:2023-24:cea-v20.0",
+      "source_urn": "urn:gl:source:india-cea-co2-baseline",
+      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:20.0",
+      "name": "India grid electricity \u2014 Northern + Eastern + Western + North-Eastern regional grids, 2023-24",
+      "description": "Grid Intensity emission factor for India grid electricity \u2014 Northern + Eastern + Western + North-Eastern regional grids, 2023-24, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "scope2_location_based",
+      "value": 0.818,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:grid_zone:newne",
+      "vintage_start": "2023-04-01",
+      "vintage_end": "2024-03-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "Government of India \u2014 public use with attribution",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://cea.nic.in/cdm-co2-baseline-database/"
+        }
+      ],
+      "published_at": "2026-04-25T13:12:30.944105",
+      "extraction": {
+        "source_url": "https://cea.nic.in/cdm-co2-baseline-database/",
+        "source_record_id": "cea:NEWNE:2023-24",
+        "source_publication": "India CEA CO2 Baseline Database",
+        "source_version": "20.0",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/india-cea-co2-baseline/20.0/seed.json",
+        "raw_artifact_sha256": "f30d4906e6bd43a195a6f7f9c411daace685f6732c99f2218aa34d94ab2bf4dc",
+        "parser_id": "greenlang.factors.ingestion.parsers.india_cea",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-1",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_india_cea_co2_baseline"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cea",
+        "india",
+        "grid",
+        "2023-24"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:india-cea-co2-baseline:IN:s:2023-24:cea-v20.0:v1",
+      "factor_id_alias": "EF:IN:s:2023-24:cea-v20.0",
+      "source_urn": "urn:gl:source:india-cea-co2-baseline",
+      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:20.0",
+      "name": "India grid electricity \u2014 Southern regional grid, 2023-24",
+      "description": "Grid Intensity emission factor for India grid electricity \u2014 Southern regional grid, 2023-24, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "scope2_location_based",
+      "value": 0.548,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:grid_zone:s",
+      "vintage_start": "2023-04-01",
+      "vintage_end": "2024-03-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "Government of India \u2014 public use with attribution",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://cea.nic.in/cdm-co2-baseline-database/"
+        }
+      ],
+      "published_at": "2026-04-25T13:12:30.944105",
+      "extraction": {
+        "source_url": "https://cea.nic.in/cdm-co2-baseline-database/",
+        "source_record_id": "cea:S:2023-24",
+        "source_publication": "India CEA CO2 Baseline Database",
+        "source_version": "20.0",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/india-cea-co2-baseline/20.0/seed.json",
+        "raw_artifact_sha256": "ca2ec4b452ca84602bd932313d7f7ac9fc164d6c75aa7deab797dcee7f3d1488",
+        "parser_id": "greenlang.factors.ingestion.parsers.india_cea",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-2",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_india_cea_co2_baseline"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cea",
+        "india",
+        "grid",
+        "2023-24"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:india-cea-co2-baseline:IN:ner:2023-24:cea-v20.0:v1",
+      "factor_id_alias": "EF:IN:ner:2023-24:cea-v20.0",
+      "source_urn": "urn:gl:source:india-cea-co2-baseline",
+      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:20.0",
+      "name": "India grid electricity \u2014 North-Eastern regional grid (standalone), 2023-24",
+      "description": "Grid Intensity emission factor for India grid electricity \u2014 North-Eastern regional grid (standalone), 2023-24, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "scope2_location_based",
+      "value": 0.184,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:grid_zone:ner",
+      "vintage_start": "2023-04-01",
+      "vintage_end": "2024-03-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "Government of India \u2014 public use with attribution",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://cea.nic.in/cdm-co2-baseline-database/"
+        }
+      ],
+      "published_at": "2026-04-25T13:12:30.945092",
+      "extraction": {
+        "source_url": "https://cea.nic.in/cdm-co2-baseline-database/",
+        "source_record_id": "cea:NER:2023-24",
+        "source_publication": "India CEA CO2 Baseline Database",
+        "source_version": "20.0",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/india-cea-co2-baseline/20.0/seed.json",
+        "raw_artifact_sha256": "2e071578c45631e80c3a55ac05683d470f9ba64e1c0181bd4441597d6ec09ca8",
+        "parser_id": "greenlang.factors.ingestion.parsers.india_cea",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-3",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_india_cea_co2_baseline"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cea",
+        "india",
+        "grid",
+        "2023-24"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:india-cea-co2-baseline:IN:n:2023-24:cea-v20.0:v1",
+      "factor_id_alias": "EF:IN:n:2023-24:cea-v20.0",
+      "source_urn": "urn:gl:source:india-cea-co2-baseline",
+      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:20.0",
+      "name": "India grid electricity \u2014 Northern regional grid, 2023-24",
+      "description": "Grid Intensity emission factor for India grid electricity \u2014 Northern regional grid, 2023-24, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "scope2_location_based",
+      "value": 0.672,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:grid_zone:n",
+      "vintage_start": "2023-04-01",
+      "vintage_end": "2024-03-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "Government of India \u2014 public use with attribution",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://cea.nic.in/cdm-co2-baseline-database/"
+        }
+      ],
+      "published_at": "2026-04-25T13:12:30.945092",
+      "extraction": {
+        "source_url": "https://cea.nic.in/cdm-co2-baseline-database/",
+        "source_record_id": "cea:N:2023-24",
+        "source_publication": "India CEA CO2 Baseline Database",
+        "source_version": "20.0",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/india-cea-co2-baseline/20.0/seed.json",
+        "raw_artifact_sha256": "7a173a0eae51266b5e05af2fdd29bdeb06c61eac734692cbb68efe127b7ac0c7",
+        "parser_id": "greenlang.factors.ingestion.parsers.india_cea",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-4",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_india_cea_co2_baseline"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cea",
+        "india",
+        "grid",
+        "2023-24"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:india-cea-co2-baseline:IN:e:2023-24:cea-v20.0:v1",
+      "factor_id_alias": "EF:IN:e:2023-24:cea-v20.0",
+      "source_urn": "urn:gl:source:india-cea-co2-baseline",
+      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:20.0",
+      "name": "India grid electricity \u2014 Eastern regional grid, 2023-24",
+      "description": "Grid Intensity emission factor for India grid electricity \u2014 Eastern regional grid, 2023-24, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "scope2_location_based",
+      "value": 0.956,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:grid_zone:e",
+      "vintage_start": "2023-04-01",
+      "vintage_end": "2024-03-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "Government of India \u2014 public use with attribution",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://cea.nic.in/cdm-co2-baseline-database/"
+        }
+      ],
+      "published_at": "2026-04-25T13:12:30.945092",
+      "extraction": {
+        "source_url": "https://cea.nic.in/cdm-co2-baseline-database/",
+        "source_record_id": "cea:E:2023-24",
+        "source_publication": "India CEA CO2 Baseline Database",
+        "source_version": "20.0",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/india-cea-co2-baseline/20.0/seed.json",
+        "raw_artifact_sha256": "dd3381542d35d72f1bb2e49616e8473aca68e07f43e87e1f0c5d7a251b2af62b",
+        "parser_id": "greenlang.factors.ingestion.parsers.india_cea",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-5",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_india_cea_co2_baseline"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cea",
+        "india",
+        "grid",
+        "2023-24"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:india-cea-co2-baseline:IN:w:2023-24:cea-v20.0:v1",
+      "factor_id_alias": "EF:IN:w:2023-24:cea-v20.0",
+      "source_urn": "urn:gl:source:india-cea-co2-baseline",
+      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:20.0",
+      "name": "India grid electricity \u2014 Western regional grid, 2023-24",
+      "description": "Grid Intensity emission factor for India grid electricity \u2014 Western regional grid, 2023-24, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "scope2_location_based",
+      "value": 0.834,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:grid_zone:w",
+      "vintage_start": "2023-04-01",
+      "vintage_end": "2024-03-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "Government of India \u2014 public use with attribution",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://cea.nic.in/cdm-co2-baseline-database/"
+        }
+      ],
+      "published_at": "2026-04-25T13:12:30.945092",
+      "extraction": {
+        "source_url": "https://cea.nic.in/cdm-co2-baseline-database/",
+        "source_record_id": "cea:W:2023-24",
+        "source_publication": "India CEA CO2 Baseline Database",
+        "source_version": "20.0",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/india-cea-co2-baseline/20.0/seed.json",
+        "raw_artifact_sha256": "92bea59a12d03ec6fb7111fef7eec469bfbbabfe616505f6ac286775b7f8bcf9",
+        "parser_id": "greenlang.factors.ingestion.parsers.india_cea",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-6",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_india_cea_co2_baseline"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cea",
+        "india",
+        "grid",
+        "2023-24"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:india-cea-co2-baseline:IN:all_india:2022-23:cea-v19.0:v1",
+      "factor_id_alias": "EF:IN:all_india:2022-23:cea-v19.0",
+      "source_urn": "urn:gl:source:india-cea-co2-baseline",
+      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:20.0",
+      "name": "India grid electricity \u2014 All-India composite grid, 2022-23",
+      "description": "Grid Intensity emission factor for India grid electricity \u2014 All-India composite grid, 2022-23, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "scope2_location_based",
+      "value": 0.727,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:in",
+      "vintage_start": "2022-04-01",
+      "vintage_end": "2023-03-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "Government of India \u2014 public use with attribution",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://cea.nic.in/cdm-co2-baseline-database/"
+        }
+      ],
+      "published_at": "2026-04-25T13:12:30.946096",
+      "extraction": {
+        "source_url": "https://cea.nic.in/cdm-co2-baseline-database/",
+        "source_record_id": "cea:All India:2022-23",
+        "source_publication": "India CEA CO2 Baseline Database",
+        "source_version": "20.0",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/india-cea-co2-baseline/20.0/seed.json",
+        "raw_artifact_sha256": "edef96c46c4b96d0480e9de1ee1591d816f5d5d65aa670f4ba4006278a73282c",
+        "parser_id": "greenlang.factors.ingestion.parsers.india_cea",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-7",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_india_cea_co2_baseline"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cea",
+        "india",
+        "grid",
+        "2022-23"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:india-cea-co2-baseline:IN:newne:2022-23:cea-v19.0:v1",
+      "factor_id_alias": "EF:IN:newne:2022-23:cea-v19.0",
+      "source_urn": "urn:gl:source:india-cea-co2-baseline",
+      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:20.0",
+      "name": "India grid electricity \u2014 Northern + Eastern + Western + North-Eastern regional grids, 2022-23",
+      "description": "Grid Intensity emission factor for India grid electricity \u2014 Northern + Eastern + Western + North-Eastern regional grids, 2022-23, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "scope2_location_based",
+      "value": 0.835,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:grid_zone:newne",
+      "vintage_start": "2022-04-01",
+      "vintage_end": "2023-03-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "Government of India \u2014 public use with attribution",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://cea.nic.in/cdm-co2-baseline-database/"
+        }
+      ],
+      "published_at": "2026-04-25T13:12:30.946096",
+      "extraction": {
+        "source_url": "https://cea.nic.in/cdm-co2-baseline-database/",
+        "source_record_id": "cea:NEWNE:2022-23",
+        "source_publication": "India CEA CO2 Baseline Database",
+        "source_version": "20.0",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/india-cea-co2-baseline/20.0/seed.json",
+        "raw_artifact_sha256": "18a512dbc13fca3c2e6916d184b96dc43bef9694748d120eed78be1aa2a4a1d1",
+        "parser_id": "greenlang.factors.ingestion.parsers.india_cea",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-8",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_india_cea_co2_baseline"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cea",
+        "india",
+        "grid",
+        "2022-23"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:india-cea-co2-baseline:IN:s:2022-23:cea-v19.0:v1",
+      "factor_id_alias": "EF:IN:s:2022-23:cea-v19.0",
+      "source_urn": "urn:gl:source:india-cea-co2-baseline",
+      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:20.0",
+      "name": "India grid electricity \u2014 Southern regional grid, 2022-23",
+      "description": "Grid Intensity emission factor for India grid electricity \u2014 Southern regional grid, 2022-23, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "scope2_location_based",
+      "value": 0.548,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:grid_zone:s",
+      "vintage_start": "2022-04-01",
+      "vintage_end": "2023-03-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "Government of India \u2014 public use with attribution",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://cea.nic.in/cdm-co2-baseline-database/"
+        }
+      ],
+      "published_at": "2026-04-25T13:12:30.946096",
+      "extraction": {
+        "source_url": "https://cea.nic.in/cdm-co2-baseline-database/",
+        "source_record_id": "cea:S:2022-23",
+        "source_publication": "India CEA CO2 Baseline Database",
+        "source_version": "20.0",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/india-cea-co2-baseline/20.0/seed.json",
+        "raw_artifact_sha256": "b245dcc5f8bf2ab5571b33eab50157c67134826e83d07a7c27cf959c287e4e9a",
+        "parser_id": "greenlang.factors.ingestion.parsers.india_cea",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-9",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_india_cea_co2_baseline"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cea",
+        "india",
+        "grid",
+        "2022-23"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:india-cea-co2-baseline:IN:ner:2022-23:cea-v19.0:v1",
+      "factor_id_alias": "EF:IN:ner:2022-23:cea-v19.0",
+      "source_urn": "urn:gl:source:india-cea-co2-baseline",
+      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:20.0",
+      "name": "India grid electricity \u2014 North-Eastern regional grid (standalone), 2022-23",
+      "description": "Grid Intensity emission factor for India grid electricity \u2014 North-Eastern regional grid (standalone), 2022-23, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "scope2_location_based",
+      "value": 0.201,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:grid_zone:ner",
+      "vintage_start": "2022-04-01",
+      "vintage_end": "2023-03-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "Government of India \u2014 public use with attribution",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://cea.nic.in/cdm-co2-baseline-database/"
+        }
+      ],
+      "published_at": "2026-04-25T13:12:30.947072",
+      "extraction": {
+        "source_url": "https://cea.nic.in/cdm-co2-baseline-database/",
+        "source_record_id": "cea:NER:2022-23",
+        "source_publication": "India CEA CO2 Baseline Database",
+        "source_version": "20.0",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/india-cea-co2-baseline/20.0/seed.json",
+        "raw_artifact_sha256": "0067e259a915438494b7794bdf35c0168e075d964d058607b2a05df22d0f6242",
+        "parser_id": "greenlang.factors.ingestion.parsers.india_cea",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-10",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_india_cea_co2_baseline"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cea",
+        "india",
+        "grid",
+        "2022-23"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:india-cea-co2-baseline:IN:all_india:2021-22:cea-v18.0:v1",
+      "factor_id_alias": "EF:IN:all_india:2021-22:cea-v18.0",
+      "source_urn": "urn:gl:source:india-cea-co2-baseline",
+      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:20.0",
+      "name": "India grid electricity \u2014 All-India composite grid, 2021-22",
+      "description": "Grid Intensity emission factor for India grid electricity \u2014 All-India composite grid, 2021-22, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "scope2_location_based",
+      "value": 0.723,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:in",
+      "vintage_start": "2021-04-01",
+      "vintage_end": "2022-03-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "Government of India \u2014 public use with attribution",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://cea.nic.in/cdm-co2-baseline-database/"
+        }
+      ],
+      "published_at": "2026-04-25T13:12:30.947072",
+      "extraction": {
+        "source_url": "https://cea.nic.in/cdm-co2-baseline-database/",
+        "source_record_id": "cea:All India:2021-22",
+        "source_publication": "India CEA CO2 Baseline Database",
+        "source_version": "20.0",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/india-cea-co2-baseline/20.0/seed.json",
+        "raw_artifact_sha256": "772b5475aa96835870188057a75bdc00fca512ce6502dd005138322d3dc0b980",
+        "parser_id": "greenlang.factors.ingestion.parsers.india_cea",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-11",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_india_cea_co2_baseline"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cea",
+        "india",
+        "grid",
+        "2021-22"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:india-cea-co2-baseline:IN:all_india:2020-21:cea-v17.0:v1",
+      "factor_id_alias": "EF:IN:all_india:2020-21:cea-v17.0",
+      "source_urn": "urn:gl:source:india-cea-co2-baseline",
+      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:20.0",
+      "name": "India grid electricity \u2014 All-India composite grid, 2020-21",
+      "description": "Grid Intensity emission factor for India grid electricity \u2014 All-India composite grid, 2020-21, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "scope2_location_based",
+      "value": 0.71,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:in",
+      "vintage_start": "2020-04-01",
+      "vintage_end": "2021-03-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "Government of India \u2014 public use with attribution",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://cea.nic.in/cdm-co2-baseline-database/"
+        }
+      ],
+      "published_at": "2026-04-25T13:12:30.947072",
+      "extraction": {
+        "source_url": "https://cea.nic.in/cdm-co2-baseline-database/",
+        "source_record_id": "cea:All India:2020-21",
+        "source_publication": "India CEA CO2 Baseline Database",
+        "source_version": "20.0",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/india-cea-co2-baseline/20.0/seed.json",
+        "raw_artifact_sha256": "6349868ce466895978c417352f7ea147d49b8d40fea5d98327fbc65d695f996f",
+        "parser_id": "greenlang.factors.ingestion.parsers.india_cea",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-12",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_india_cea_co2_baseline"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cea",
+        "india",
+        "grid",
+        "2020-21"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:india-cea-co2-baseline:IN:newne:2024-25:cea-v21.0:v1",
+      "factor_id_alias": "EF:IN:newne:2024-25:cea-v21.0",
+      "source_urn": "urn:gl:source:india-cea-co2-baseline",
+      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:20.0",
+      "name": "India grid electricity \u2014 Northern + Eastern + Western + North-Eastern regional grids, 2024-25",
+      "description": "Grid Intensity emission factor for India grid electricity \u2014 Northern + Eastern + Western + North-Eastern regional grids, 2024-25, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "scope2_location_based",
+      "value": 0.795,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:grid_zone:newne",
+      "vintage_start": "2024-04-01",
+      "vintage_end": "2025-03-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "Government of India \u2014 public use with attribution",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://cea.nic.in/cdm-co2-baseline-database/"
+        }
+      ],
+      "published_at": "2026-04-25T13:12:30.947072",
+      "extraction": {
+        "source_url": "https://cea.nic.in/cdm-co2-baseline-database/",
+        "source_record_id": "cea:NEWNE:2024-25",
+        "source_publication": "India CEA CO2 Baseline Database",
+        "source_version": "20.0",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/india-cea-co2-baseline/20.0/seed.json",
+        "raw_artifact_sha256": "310e5638234363e019a1a5e152d057ffa5e47759e410fe94c636e9629b98db2d",
+        "parser_id": "greenlang.factors.ingestion.parsers.india_cea",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-13",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_india_cea_co2_baseline"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cea",
+        "india",
+        "grid",
+        "2024-25"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:india-cea-co2-baseline:IN:s:2024-25:cea-v21.0:v1",
+      "factor_id_alias": "EF:IN:s:2024-25:cea-v21.0",
+      "source_urn": "urn:gl:source:india-cea-co2-baseline",
+      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:20.0",
+      "name": "India grid electricity \u2014 Southern regional grid, 2024-25",
+      "description": "Grid Intensity emission factor for India grid electricity \u2014 Southern regional grid, 2024-25, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "scope2_location_based",
+      "value": 0.52,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:grid_zone:s",
+      "vintage_start": "2024-04-01",
+      "vintage_end": "2025-03-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "Government of India \u2014 public use with attribution",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://cea.nic.in/cdm-co2-baseline-database/"
+        }
+      ],
+      "published_at": "2026-04-25T13:12:30.948071",
+      "extraction": {
+        "source_url": "https://cea.nic.in/cdm-co2-baseline-database/",
+        "source_record_id": "cea:S:2024-25",
+        "source_publication": "India CEA CO2 Baseline Database",
+        "source_version": "20.0",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/india-cea-co2-baseline/20.0/seed.json",
+        "raw_artifact_sha256": "34a52d844b0ae9f3f7c02e8386f021dd46f5e772e26da1797d3a4171ff2302ab",
+        "parser_id": "greenlang.factors.ingestion.parsers.india_cea",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-14",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_india_cea_co2_baseline"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cea",
+        "india",
+        "grid",
+        "2024-25"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:india-cea-co2-baseline:IN:ner:2024-25:cea-v21.0:v1",
+      "factor_id_alias": "EF:IN:ner:2024-25:cea-v21.0",
+      "source_urn": "urn:gl:source:india-cea-co2-baseline",
+      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:20.0",
+      "name": "India grid electricity \u2014 North-Eastern regional grid (standalone), 2024-25",
+      "description": "Grid Intensity emission factor for India grid electricity \u2014 North-Eastern regional grid (standalone), 2024-25, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "scope2_location_based",
+      "value": 0.17,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:grid_zone:ner",
+      "vintage_start": "2024-04-01",
+      "vintage_end": "2025-03-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "Government of India \u2014 public use with attribution",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://cea.nic.in/cdm-co2-baseline-database/"
+        }
+      ],
+      "published_at": "2026-04-25T13:12:30.948071",
+      "extraction": {
+        "source_url": "https://cea.nic.in/cdm-co2-baseline-database/",
+        "source_record_id": "cea:NER:2024-25",
+        "source_publication": "India CEA CO2 Baseline Database",
+        "source_version": "20.0",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/india-cea-co2-baseline/20.0/seed.json",
+        "raw_artifact_sha256": "da018f90b5277503b53934e4830726ab8dd9488e68ad57a0c058f378b4ed8ec3",
+        "parser_id": "greenlang.factors.ingestion.parsers.india_cea",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-15",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_india_cea_co2_baseline"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cea",
+        "india",
+        "grid",
+        "2024-25"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:india-cea-co2-baseline:IN:all_india:2024-25:cea-v21.0:v1",
+      "factor_id_alias": "EF:IN:all_india:2024-25:cea-v21.0",
+      "source_urn": "urn:gl:source:india-cea-co2-baseline",
+      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:20.0",
+      "name": "India grid electricity \u2014 All-India composite grid, 2024-25",
+      "description": "Grid Intensity emission factor for India grid electricity \u2014 All-India composite grid, 2024-25, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "scope2_location_based",
+      "value": 0.695,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:in",
+      "vintage_start": "2024-04-01",
+      "vintage_end": "2025-03-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "Government of India \u2014 public use with attribution",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://cea.nic.in/cdm-co2-baseline-database/"
+        }
+      ],
+      "published_at": "2026-04-25T13:12:30.948071",
+      "extraction": {
+        "source_url": "https://cea.nic.in/cdm-co2-baseline-database/",
+        "source_record_id": "cea:All India:2024-25",
+        "source_publication": "India CEA CO2 Baseline Database",
+        "source_version": "20.0",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/india-cea-co2-baseline/20.0/seed.json",
+        "raw_artifact_sha256": "61fe8df534ed54bbf09529ad2575ecbdcf77109a5f133ea573cb63fe4b76c090",
+        "parser_id": "greenlang.factors.ingestion.parsers.india_cea",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-16",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_india_cea_co2_baseline"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cea",
+        "india",
+        "grid",
+        "2024-25"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:india-cea-co2-baseline:IN:all_india:2025-26:cea-v22.0:v1",
+      "factor_id_alias": "EF:IN:all_india:2025-26:cea-v22.0",
+      "source_urn": "urn:gl:source:india-cea-co2-baseline",
+      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:20.0",
+      "name": "India grid electricity \u2014 All-India composite grid, 2025-26",
+      "description": "Grid Intensity emission factor for India grid electricity \u2014 All-India composite grid, 2025-26, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "scope2_location_based",
+      "value": 0.68,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:in",
+      "vintage_start": "2025-04-01",
+      "vintage_end": "2026-03-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "Government of India \u2014 public use with attribution",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://cea.nic.in/cdm-co2-baseline-database/"
+        }
+      ],
+      "published_at": "2026-04-25T13:12:30.948071",
+      "extraction": {
+        "source_url": "https://cea.nic.in/cdm-co2-baseline-database/",
+        "source_record_id": "cea:All India:2025-26",
+        "source_publication": "India CEA CO2 Baseline Database",
+        "source_version": "20.0",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/india-cea-co2-baseline/20.0/seed.json",
+        "raw_artifact_sha256": "d1c4b9be698011dfe74acd03373a02cae2d8d7da0635e787b110194627833dec",
+        "parser_id": "greenlang.factors.ingestion.parsers.india_cea",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-17",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_india_cea_co2_baseline"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cea",
+        "india",
+        "grid",
+        "2025-26"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:india-cea-co2-baseline:IN:newne:2025-26:cea-v22.0:v1",
+      "factor_id_alias": "EF:IN:newne:2025-26:cea-v22.0",
+      "source_urn": "urn:gl:source:india-cea-co2-baseline",
+      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:20.0",
+      "name": "India grid electricity \u2014 Northern + Eastern + Western + North-Eastern regional grids, 2025-26",
+      "description": "Grid Intensity emission factor for India grid electricity \u2014 Northern + Eastern + Western + North-Eastern regional grids, 2025-26, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "scope2_location_based",
+      "value": 0.775,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:grid_zone:newne",
+      "vintage_start": "2025-04-01",
+      "vintage_end": "2026-03-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "Government of India \u2014 public use with attribution",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://cea.nic.in/cdm-co2-baseline-database/"
+        }
+      ],
+      "published_at": "2026-04-25T13:12:30.949072",
+      "extraction": {
+        "source_url": "https://cea.nic.in/cdm-co2-baseline-database/",
+        "source_record_id": "cea:NEWNE:2025-26",
+        "source_publication": "India CEA CO2 Baseline Database",
+        "source_version": "20.0",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/india-cea-co2-baseline/20.0/seed.json",
+        "raw_artifact_sha256": "c7db634a9a7c81075faef0ee7c6b42903966e871d55a91070f32681197f76662",
+        "parser_id": "greenlang.factors.ingestion.parsers.india_cea",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-18",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_india_cea_co2_baseline"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cea",
+        "india",
+        "grid",
+        "2025-26"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:india-cea-co2-baseline:IN:s:2025-26:cea-v22.0:v1",
+      "factor_id_alias": "EF:IN:s:2025-26:cea-v22.0",
+      "source_urn": "urn:gl:source:india-cea-co2-baseline",
+      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:20.0",
+      "name": "India grid electricity \u2014 Southern regional grid, 2025-26",
+      "description": "Grid Intensity emission factor for India grid electricity \u2014 Southern regional grid, 2025-26, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "scope2_location_based",
+      "value": 0.505,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:grid_zone:s",
+      "vintage_start": "2025-04-01",
+      "vintage_end": "2026-03-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "Government of India \u2014 public use with attribution",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://cea.nic.in/cdm-co2-baseline-database/"
+        }
+      ],
+      "published_at": "2026-04-25T13:12:30.949072",
+      "extraction": {
+        "source_url": "https://cea.nic.in/cdm-co2-baseline-database/",
+        "source_record_id": "cea:S:2025-26",
+        "source_publication": "India CEA CO2 Baseline Database",
+        "source_version": "20.0",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/india-cea-co2-baseline/20.0/seed.json",
+        "raw_artifact_sha256": "4ca4fbcae4f37334fe93b2e4a3f39bb7c8439717aaf492e859229e14633754c8",
+        "parser_id": "greenlang.factors.ingestion.parsers.india_cea",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-19",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_india_cea_co2_baseline"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cea",
+        "india",
+        "grid",
+        "2025-26"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:india-cea-co2-baseline:IN:all_india:2026-27:cea-v23.0:v1",
+      "factor_id_alias": "EF:IN:all_india:2026-27:cea-v23.0",
+      "source_urn": "urn:gl:source:india-cea-co2-baseline",
+      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:20.0",
+      "name": "India grid electricity \u2014 All-India composite grid, 2026-27",
+      "description": "Grid Intensity emission factor for India grid electricity \u2014 All-India composite grid, 2026-27, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "scope2_location_based",
+      "value": 0.665,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:in",
+      "vintage_start": "2026-04-01",
+      "vintage_end": "2027-03-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "Government of India \u2014 public use with attribution",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://cea.nic.in/cdm-co2-baseline-database/"
+        }
+      ],
+      "published_at": "2026-04-25T13:12:30.949072",
+      "extraction": {
+        "source_url": "https://cea.nic.in/cdm-co2-baseline-database/",
+        "source_record_id": "cea:All India:2026-27",
+        "source_publication": "India CEA CO2 Baseline Database",
+        "source_version": "20.0",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/india-cea-co2-baseline/20.0/seed.json",
+        "raw_artifact_sha256": "e3cc4c5c099b48868b7ad74c946d3239d4206ccbd6595dceca8cbc60e36e46a5",
+        "parser_id": "greenlang.factors.ingestion.parsers.india_cea",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-20",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_india_cea_co2_baseline"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cea",
+        "india",
+        "grid",
+        "2026-27"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:india-cea-co2-baseline:IN:newne:2026-27:cea-v23.0:v1",
+      "factor_id_alias": "EF:IN:newne:2026-27:cea-v23.0",
+      "source_urn": "urn:gl:source:india-cea-co2-baseline",
+      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:20.0",
+      "name": "India grid electricity \u2014 Northern + Eastern + Western + North-Eastern regional grids, 2026-27",
+      "description": "Grid Intensity emission factor for India grid electricity \u2014 Northern + Eastern + Western + North-Eastern regional grids, 2026-27, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "scope2_location_based",
+      "value": 0.755,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:grid_zone:newne",
+      "vintage_start": "2026-04-01",
+      "vintage_end": "2027-03-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "Government of India \u2014 public use with attribution",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://cea.nic.in/cdm-co2-baseline-database/"
+        }
+      ],
+      "published_at": "2026-04-25T13:12:30.950072",
+      "extraction": {
+        "source_url": "https://cea.nic.in/cdm-co2-baseline-database/",
+        "source_record_id": "cea:NEWNE:2026-27",
+        "source_publication": "India CEA CO2 Baseline Database",
+        "source_version": "20.0",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/india-cea-co2-baseline/20.0/seed.json",
+        "raw_artifact_sha256": "2278233f3c9b8e680717bfb7349002f50a6ff06c942aa9ed7b4e0d0e29aedb9f",
+        "parser_id": "greenlang.factors.ingestion.parsers.india_cea",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-21",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_india_cea_co2_baseline"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cea",
+        "india",
+        "grid",
+        "2026-27"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:india-cea-co2-baseline:IN:s:2026-27:cea-v23.0:v1",
+      "factor_id_alias": "EF:IN:s:2026-27:cea-v23.0",
+      "source_urn": "urn:gl:source:india-cea-co2-baseline",
+      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:20.0",
+      "name": "India grid electricity \u2014 Southern regional grid, 2026-27",
+      "description": "Grid Intensity emission factor for India grid electricity \u2014 Southern regional grid, 2026-27, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "scope2_location_based",
+      "value": 0.49,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:grid_zone:s",
+      "vintage_start": "2026-04-01",
+      "vintage_end": "2027-03-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "Government of India \u2014 public use with attribution",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://cea.nic.in/cdm-co2-baseline-database/"
+        }
+      ],
+      "published_at": "2026-04-25T13:12:30.950072",
+      "extraction": {
+        "source_url": "https://cea.nic.in/cdm-co2-baseline-database/",
+        "source_record_id": "cea:S:2026-27",
+        "source_publication": "India CEA CO2 Baseline Database",
+        "source_version": "20.0",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/india-cea-co2-baseline/20.0/seed.json",
+        "raw_artifact_sha256": "825ea5cacc985bffb47ffe2f516bfb7f2067dcd406434b8b7a8eea72c4ebc9f8",
+        "parser_id": "greenlang.factors.ingestion.parsers.india_cea",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-22",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_india_cea_co2_baseline"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cea",
+        "india",
+        "grid",
+        "2026-27"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:india-cea-co2-baseline:IN:ner:2026-27:cea-v23.0:v1",
+      "factor_id_alias": "EF:IN:ner:2026-27:cea-v23.0",
+      "source_urn": "urn:gl:source:india-cea-co2-baseline",
+      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:20.0",
+      "name": "India grid electricity \u2014 North-Eastern regional grid (standalone), 2026-27",
+      "description": "Grid Intensity emission factor for India grid electricity \u2014 North-Eastern regional grid (standalone), 2026-27, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "scope2_location_based",
+      "value": 0.16,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:grid_zone:ner",
+      "vintage_start": "2026-04-01",
+      "vintage_end": "2027-03-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "Government of India \u2014 public use with attribution",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://cea.nic.in/cdm-co2-baseline-database/"
+        }
+      ],
+      "published_at": "2026-04-25T13:12:30.950072",
+      "extraction": {
+        "source_url": "https://cea.nic.in/cdm-co2-baseline-database/",
+        "source_record_id": "cea:NER:2026-27",
+        "source_publication": "India CEA CO2 Baseline Database",
+        "source_version": "20.0",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/india-cea-co2-baseline/20.0/seed.json",
+        "raw_artifact_sha256": "732cb75b02d48b517173ef3153be717b7e2ca1f660c986b981ac86fbe51428a5",
+        "parser_id": "greenlang.factors.ingestion.parsers.india_cea",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-23",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_india_cea_co2_baseline"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cea",
+        "india",
+        "grid",
+        "2026-27"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:india-cea-co2-baseline:IN:n:2026-27:cea-v23.0:v1",
+      "factor_id_alias": "EF:IN:n:2026-27:cea-v23.0",
+      "source_urn": "urn:gl:source:india-cea-co2-baseline",
+      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:20.0",
+      "name": "India grid electricity \u2014 Northern regional grid, 2026-27",
+      "description": "Grid Intensity emission factor for India grid electricity \u2014 Northern regional grid, 2026-27, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "scope2_location_based",
+      "value": 0.64,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:grid_zone:n",
+      "vintage_start": "2026-04-01",
+      "vintage_end": "2027-03-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "Government of India \u2014 public use with attribution",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://cea.nic.in/cdm-co2-baseline-database/"
+        }
+      ],
+      "published_at": "2026-04-25T13:12:30.950072",
+      "extraction": {
+        "source_url": "https://cea.nic.in/cdm-co2-baseline-database/",
+        "source_record_id": "cea:N:2026-27",
+        "source_publication": "India CEA CO2 Baseline Database",
+        "source_version": "20.0",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/india-cea-co2-baseline/20.0/seed.json",
+        "raw_artifact_sha256": "6f1d43e00a06dc24d82641935c060040cadd2652a61e8972dc7cb5769dac7086",
+        "parser_id": "greenlang.factors.ingestion.parsers.india_cea",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-24",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_india_cea_co2_baseline"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cea",
+        "india",
+        "grid",
+        "2026-27"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:india-cea-co2-baseline:IN:e:2026-27:cea-v23.0:v1",
+      "factor_id_alias": "EF:IN:e:2026-27:cea-v23.0",
+      "source_urn": "urn:gl:source:india-cea-co2-baseline",
+      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:20.0",
+      "name": "India grid electricity \u2014 Eastern regional grid, 2026-27",
+      "description": "Grid Intensity emission factor for India grid electricity \u2014 Eastern regional grid, 2026-27, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "scope2_location_based",
+      "value": 0.92,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:grid_zone:e",
+      "vintage_start": "2026-04-01",
+      "vintage_end": "2027-03-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "Government of India \u2014 public use with attribution",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://cea.nic.in/cdm-co2-baseline-database/"
+        }
+      ],
+      "published_at": "2026-04-25T13:12:30.951090",
+      "extraction": {
+        "source_url": "https://cea.nic.in/cdm-co2-baseline-database/",
+        "source_record_id": "cea:E:2026-27",
+        "source_publication": "India CEA CO2 Baseline Database",
+        "source_version": "20.0",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/india-cea-co2-baseline/20.0/seed.json",
+        "raw_artifact_sha256": "3dacc312f91624105648f2728a67cf286435d23d346055e3fb12f52197ccccb7",
+        "parser_id": "greenlang.factors.ingestion.parsers.india_cea",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-25",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_india_cea_co2_baseline"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cea",
+        "india",
+        "grid",
+        "2026-27"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:india-cea-co2-baseline:IN:w:2026-27:cea-v23.0:v1",
+      "factor_id_alias": "EF:IN:w:2026-27:cea-v23.0",
+      "source_urn": "urn:gl:source:india-cea-co2-baseline",
+      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:20.0",
+      "name": "India grid electricity \u2014 Western regional grid, 2026-27",
+      "description": "Grid Intensity emission factor for India grid electricity \u2014 Western regional grid, 2026-27, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "scope2_location_based",
+      "value": 0.8,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:grid_zone:w",
+      "vintage_start": "2026-04-01",
+      "vintage_end": "2027-03-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "Government of India \u2014 public use with attribution",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://cea.nic.in/cdm-co2-baseline-database/"
+        }
+      ],
+      "published_at": "2026-04-25T13:12:30.951090",
+      "extraction": {
+        "source_url": "https://cea.nic.in/cdm-co2-baseline-database/",
+        "source_record_id": "cea:W:2026-27",
+        "source_publication": "India CEA CO2 Baseline Database",
+        "source_version": "20.0",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/india-cea-co2-baseline/20.0/seed.json",
+        "raw_artifact_sha256": "3d06677b8bdaa8e91d1d8a7d9d38f8c6d65e75ff78175532676253a351e1d6b0",
+        "parser_id": "greenlang.factors.ingestion.parsers.india_cea",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-26",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_india_cea_co2_baseline"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cea",
+        "india",
+        "grid",
+        "2026-27"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:india-cea-co2-baseline:IN:all_india:2019-20:cea-v16.0:v1",
+      "factor_id_alias": "EF:IN:all_india:2019-20:cea-v16.0",
+      "source_urn": "urn:gl:source:india-cea-co2-baseline",
+      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:20.0",
+      "name": "India grid electricity \u2014 All-India composite grid, 2019-20",
+      "description": "Grid Intensity emission factor for India grid electricity \u2014 All-India composite grid, 2019-20, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "scope2_location_based",
+      "value": 0.76,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:in",
+      "vintage_start": "2019-04-01",
+      "vintage_end": "2020-03-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "Government of India \u2014 public use with attribution",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://cea.nic.in/cdm-co2-baseline-database/"
+        }
+      ],
+      "published_at": "2026-04-25T13:12:30.951090",
+      "extraction": {
+        "source_url": "https://cea.nic.in/cdm-co2-baseline-database/",
+        "source_record_id": "cea:All India:2019-20",
+        "source_publication": "India CEA CO2 Baseline Database",
+        "source_version": "20.0",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/india-cea-co2-baseline/20.0/seed.json",
+        "raw_artifact_sha256": "c3d5c15ffd7d85ffb9566c153b7eadbaed5ac390a945ad609631e427518575c6",
+        "parser_id": "greenlang.factors.ingestion.parsers.india_cea",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-27",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_india_cea_co2_baseline"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cea",
+        "india",
+        "grid",
+        "2019-20"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:india-cea-co2-baseline:IN:newne:2019-20:cea-v16.0:v1",
+      "factor_id_alias": "EF:IN:newne:2019-20:cea-v16.0",
+      "source_urn": "urn:gl:source:india-cea-co2-baseline",
+      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:20.0",
+      "name": "India grid electricity \u2014 Northern + Eastern + Western + North-Eastern regional grids, 2019-20",
+      "description": "Grid Intensity emission factor for India grid electricity \u2014 Northern + Eastern + Western + North-Eastern regional grids, 2019-20, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "scope2_location_based",
+      "value": 0.87,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:grid_zone:newne",
+      "vintage_start": "2019-04-01",
+      "vintage_end": "2020-03-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "Government of India \u2014 public use with attribution",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://cea.nic.in/cdm-co2-baseline-database/"
+        }
+      ],
+      "published_at": "2026-04-25T13:12:30.951090",
+      "extraction": {
+        "source_url": "https://cea.nic.in/cdm-co2-baseline-database/",
+        "source_record_id": "cea:NEWNE:2019-20",
+        "source_publication": "India CEA CO2 Baseline Database",
+        "source_version": "20.0",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/india-cea-co2-baseline/20.0/seed.json",
+        "raw_artifact_sha256": "ce68ee5e54dff354fe79917f44238c9c012e57b9a4f256cc1c47b74430f9391c",
+        "parser_id": "greenlang.factors.ingestion.parsers.india_cea",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-28",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_india_cea_co2_baseline"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cea",
+        "india",
+        "grid",
+        "2019-20"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:india-cea-co2-baseline:IN:s:2019-20:cea-v16.0:v1",
+      "factor_id_alias": "EF:IN:s:2019-20:cea-v16.0",
+      "source_urn": "urn:gl:source:india-cea-co2-baseline",
+      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:20.0",
+      "name": "India grid electricity \u2014 Southern regional grid, 2019-20",
+      "description": "Grid Intensity emission factor for India grid electricity \u2014 Southern regional grid, 2019-20, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "scope2_location_based",
+      "value": 0.61,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:grid_zone:s",
+      "vintage_start": "2019-04-01",
+      "vintage_end": "2020-03-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "Government of India \u2014 public use with attribution",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://cea.nic.in/cdm-co2-baseline-database/"
+        }
+      ],
+      "published_at": "2026-04-25T13:12:30.952094",
+      "extraction": {
+        "source_url": "https://cea.nic.in/cdm-co2-baseline-database/",
+        "source_record_id": "cea:S:2019-20",
+        "source_publication": "India CEA CO2 Baseline Database",
+        "source_version": "20.0",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/india-cea-co2-baseline/20.0/seed.json",
+        "raw_artifact_sha256": "d5a5a1cb06dba51c5ff30b182d4e64cadc18101fa299457f4a820cb6d316c00d",
+        "parser_id": "greenlang.factors.ingestion.parsers.india_cea",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-29",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_india_cea_co2_baseline"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cea",
+        "india",
+        "grid",
+        "2019-20"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:india-cea-co2-baseline:IN:ner:2019-20:cea-v16.0:v1",
+      "factor_id_alias": "EF:IN:ner:2019-20:cea-v16.0",
+      "source_urn": "urn:gl:source:india-cea-co2-baseline",
+      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:20.0",
+      "name": "India grid electricity \u2014 North-Eastern regional grid (standalone), 2019-20",
+      "description": "Grid Intensity emission factor for India grid electricity \u2014 North-Eastern regional grid (standalone), 2019-20, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "scope2_location_based",
+      "value": 0.22,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:grid_zone:ner",
+      "vintage_start": "2019-04-01",
+      "vintage_end": "2020-03-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "Government of India \u2014 public use with attribution",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://cea.nic.in/cdm-co2-baseline-database/"
+        }
+      ],
+      "published_at": "2026-04-25T13:12:30.952094",
+      "extraction": {
+        "source_url": "https://cea.nic.in/cdm-co2-baseline-database/",
+        "source_record_id": "cea:NER:2019-20",
+        "source_publication": "India CEA CO2 Baseline Database",
+        "source_version": "20.0",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/india-cea-co2-baseline/20.0/seed.json",
+        "raw_artifact_sha256": "c37f255eca7179768673b0f245cac688ec38eebf660f688db4bf165bde596bfb",
+        "parser_id": "greenlang.factors.ingestion.parsers.india_cea",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-30",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_india_cea_co2_baseline"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cea",
+        "india",
+        "grid",
+        "2019-20"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:india-cea-co2-baseline:IN:all_india:2018-19:cea-v15.0:v1",
+      "factor_id_alias": "EF:IN:all_india:2018-19:cea-v15.0",
+      "source_urn": "urn:gl:source:india-cea-co2-baseline",
+      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:20.0",
+      "name": "India grid electricity \u2014 All-India composite grid, 2018-19",
+      "description": "Grid Intensity emission factor for India grid electricity \u2014 All-India composite grid, 2018-19, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "scope2_location_based",
+      "value": 0.79,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:in",
+      "vintage_start": "2018-04-01",
+      "vintage_end": "2019-03-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "Government of India \u2014 public use with attribution",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://cea.nic.in/cdm-co2-baseline-database/"
+        }
+      ],
+      "published_at": "2026-04-25T13:12:30.952094",
+      "extraction": {
+        "source_url": "https://cea.nic.in/cdm-co2-baseline-database/",
+        "source_record_id": "cea:All India:2018-19",
+        "source_publication": "India CEA CO2 Baseline Database",
+        "source_version": "20.0",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/india-cea-co2-baseline/20.0/seed.json",
+        "raw_artifact_sha256": "721f6f59b8219103ea564ff2fccd963a7d7710d5e4ecac3b608e7962f0dedac7",
+        "parser_id": "greenlang.factors.ingestion.parsers.india_cea",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-31",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_india_cea_co2_baseline"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cea",
+        "india",
+        "grid",
+        "2018-19"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:india-cea-co2-baseline:IN:newne:2018-19:cea-v15.0:v1",
+      "factor_id_alias": "EF:IN:newne:2018-19:cea-v15.0",
+      "source_urn": "urn:gl:source:india-cea-co2-baseline",
+      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:20.0",
+      "name": "India grid electricity \u2014 Northern + Eastern + Western + North-Eastern regional grids, 2018-19",
+      "description": "Grid Intensity emission factor for India grid electricity \u2014 Northern + Eastern + Western + North-Eastern regional grids, 2018-19, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "scope2_location_based",
+      "value": 0.905,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:grid_zone:newne",
+      "vintage_start": "2018-04-01",
+      "vintage_end": "2019-03-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "Government of India \u2014 public use with attribution",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://cea.nic.in/cdm-co2-baseline-database/"
+        }
+      ],
+      "published_at": "2026-04-25T13:12:30.953099",
+      "extraction": {
+        "source_url": "https://cea.nic.in/cdm-co2-baseline-database/",
+        "source_record_id": "cea:NEWNE:2018-19",
+        "source_publication": "India CEA CO2 Baseline Database",
+        "source_version": "20.0",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/india-cea-co2-baseline/20.0/seed.json",
+        "raw_artifact_sha256": "def0518ee4f722bc642b64516315427466942e617c3b53063f37188c346d700c",
+        "parser_id": "greenlang.factors.ingestion.parsers.india_cea",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-32",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_india_cea_co2_baseline"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cea",
+        "india",
+        "grid",
+        "2018-19"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:india-cea-co2-baseline:IN:s:2018-19:cea-v15.0:v1",
+      "factor_id_alias": "EF:IN:s:2018-19:cea-v15.0",
+      "source_urn": "urn:gl:source:india-cea-co2-baseline",
+      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:20.0",
+      "name": "India grid electricity \u2014 Southern regional grid, 2018-19",
+      "description": "Grid Intensity emission factor for India grid electricity \u2014 Southern regional grid, 2018-19, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "scope2_location_based",
+      "value": 0.625,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:grid_zone:s",
+      "vintage_start": "2018-04-01",
+      "vintage_end": "2019-03-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "Government of India \u2014 public use with attribution",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://cea.nic.in/cdm-co2-baseline-database/"
+        }
+      ],
+      "published_at": "2026-04-25T13:12:30.953099",
+      "extraction": {
+        "source_url": "https://cea.nic.in/cdm-co2-baseline-database/",
+        "source_record_id": "cea:S:2018-19",
+        "source_publication": "India CEA CO2 Baseline Database",
+        "source_version": "20.0",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/india-cea-co2-baseline/20.0/seed.json",
+        "raw_artifact_sha256": "6428f1a919ebfbd07db09275a5098bf3ac0601586fd17645036e40e1a945b164",
+        "parser_id": "greenlang.factors.ingestion.parsers.india_cea",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-33",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_india_cea_co2_baseline"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cea",
+        "india",
+        "grid",
+        "2018-19"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:india-cea-co2-baseline:IN:all_india:2017-18:cea-v14.0:v1",
+      "factor_id_alias": "EF:IN:all_india:2017-18:cea-v14.0",
+      "source_urn": "urn:gl:source:india-cea-co2-baseline",
+      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:20.0",
+      "name": "India grid electricity \u2014 All-India composite grid, 2017-18",
+      "description": "Grid Intensity emission factor for India grid electricity \u2014 All-India composite grid, 2017-18, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "scope2_location_based",
+      "value": 0.81,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:in",
+      "vintage_start": "2017-04-01",
+      "vintage_end": "2018-03-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "Government of India \u2014 public use with attribution",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://cea.nic.in/cdm-co2-baseline-database/"
+        }
+      ],
+      "published_at": "2026-04-25T13:12:30.953099",
+      "extraction": {
+        "source_url": "https://cea.nic.in/cdm-co2-baseline-database/",
+        "source_record_id": "cea:All India:2017-18",
+        "source_publication": "India CEA CO2 Baseline Database",
+        "source_version": "20.0",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/india-cea-co2-baseline/20.0/seed.json",
+        "raw_artifact_sha256": "5e81875ae5ac1c57d6d712e8bdd3ae916adb3dd80ca04a553fab946e4e089fa3",
+        "parser_id": "greenlang.factors.ingestion.parsers.india_cea",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-34",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_india_cea_co2_baseline"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cea",
+        "india",
+        "grid",
+        "2017-18"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:india-cea-co2-baseline:IN:newne:2024-25:cea-v21.0:v1",
+      "factor_id_alias": "EF:IN:newne:2024-25:cea-v21.0",
+      "source_urn": "urn:gl:source:india-cea-co2-baseline",
+      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:20.0",
+      "name": "India grid electricity \u2014 Northern + Eastern + Western + North-Eastern regional grids, 2024-25",
+      "description": "Grid Intensity emission factor for India grid electricity \u2014 Northern + Eastern + Western + North-Eastern regional grids, 2024-25, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "scope2_location_based",
+      "value": 0.795,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:grid_zone:newne",
+      "vintage_start": "2024-04-01",
+      "vintage_end": "2025-03-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "Government of India \u2014 public use with attribution",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://cea.nic.in/cdm-co2-baseline-database/"
+        }
+      ],
+      "published_at": "2026-04-25T13:12:30.954073",
+      "extraction": {
+        "source_url": "https://cea.nic.in/cdm-co2-baseline-database/",
+        "source_record_id": "cea:NEWNE:2024-25",
+        "source_publication": "India CEA CO2 Baseline Database",
+        "source_version": "20.0",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/india-cea-co2-baseline/20.0/seed.json",
+        "raw_artifact_sha256": "c9e24a0d95d44956b2d4c332bbe2be70573e30b4dc9f26294e7781397a3cdd98",
+        "parser_id": "greenlang.factors.ingestion.parsers.india_cea",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-35",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_india_cea_co2_baseline"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cea",
+        "india",
+        "grid",
+        "2024-25"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:india-cea-co2-baseline:IN:s:2024-25:cea-v21.0:v1",
+      "factor_id_alias": "EF:IN:s:2024-25:cea-v21.0",
+      "source_urn": "urn:gl:source:india-cea-co2-baseline",
+      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:20.0",
+      "name": "India grid electricity \u2014 Southern regional grid, 2024-25",
+      "description": "Grid Intensity emission factor for India grid electricity \u2014 Southern regional grid, 2024-25, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "scope2_location_based",
+      "value": 0.548,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:grid_zone:s",
+      "vintage_start": "2024-04-01",
+      "vintage_end": "2025-03-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "Government of India \u2014 public use with attribution",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://cea.nic.in/cdm-co2-baseline-database/"
+        }
+      ],
+      "published_at": "2026-04-25T13:12:30.954073",
+      "extraction": {
+        "source_url": "https://cea.nic.in/cdm-co2-baseline-database/",
+        "source_record_id": "cea:S:2024-25",
+        "source_publication": "India CEA CO2 Baseline Database",
+        "source_version": "20.0",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/india-cea-co2-baseline/20.0/seed.json",
+        "raw_artifact_sha256": "17d65fe4c8fd4a7d7c141a52803f80c43bd7e45cab93a6d06fcd81861769cb86",
+        "parser_id": "greenlang.factors.ingestion.parsers.india_cea",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-36",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_india_cea_co2_baseline"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cea",
+        "india",
+        "grid",
+        "2024-25"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:india-cea-co2-baseline:IN:all_india:2024-25:cea-v21.0:v1",
+      "factor_id_alias": "EF:IN:all_india:2024-25:cea-v21.0",
+      "source_urn": "urn:gl:source:india-cea-co2-baseline",
+      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:20.0",
+      "name": "India grid electricity \u2014 All-India composite grid, 2024-25",
+      "description": "Grid Intensity emission factor for India grid electricity \u2014 All-India composite grid, 2024-25, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "scope2_location_based",
+      "value": 0.73,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:in",
+      "vintage_start": "2024-04-01",
+      "vintage_end": "2025-03-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "Government of India \u2014 public use with attribution",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://cea.nic.in/cdm-co2-baseline-database/"
+        }
+      ],
+      "published_at": "2026-04-25T13:12:30.954073",
+      "extraction": {
+        "source_url": "https://cea.nic.in/cdm-co2-baseline-database/",
+        "source_record_id": "cea:All India:2024-25",
+        "source_publication": "India CEA CO2 Baseline Database",
+        "source_version": "20.0",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/india-cea-co2-baseline/20.0/seed.json",
+        "raw_artifact_sha256": "f9d82fefbdef1ff730d7b7561c13241a6ec6f871d1fc4ef06126badb44555326",
+        "parser_id": "greenlang.factors.ingestion.parsers.india_cea",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-37",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_india_cea_co2_baseline"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "cea",
+        "india",
+        "grid",
+        "2024-25"
+      ]
+    }
+  ]
+}

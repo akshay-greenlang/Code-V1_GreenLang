@@ -1,0 +1,1451 @@
+GreenLang Climate OS
+Final Product Definition & Version Roadmap
+FY27-FY31 | CTO Final Version | 36 Products | One Climate OS Substrate
+Prepared for Akshay Makar and the GreenLang founding team
+Finalized: 24 April 2026
+Source integration: this final version consolidates the two CTO product-definition drafts and aligns them to the original GreenLang Climate OS v3 Business Plan. The final pathway uses the more product-specific release timing from the Product Definitions & Version Roadmap, the stronger stage-gate/product-operating model from the Detailed Product Definition draft, and the 36-product architecture and sequencing from the business plan.
+Document structure
+Part 1 - CTO final pathway and release governance
+Part 2 - Architecture, data model, AI governance, and engineering operating model
+Part 3 - Master release matrix and fiscal-year roadmap
+Part 4 - Detailed final definitions for all 36 products
+Part 5 - Portfolio stage gates, kill/pause/merge criteria, and PRD template
+
+Part 1 - CTO Final Pathway
+This final product strategy deliberately avoids a 36-products-at-once failure mode. GreenLang should be built as one Climate OS substrate with sector applications on top. Product release dates are targets; release gates are binding. A product slips before the substrate is compromised.
+Final pathway summary
+Final CTO decisions
+Keep the full 36-product ambition, but enforce phased release gates. The calendar is the ambition; the gates are the actual ship authority.
+Stagger FY27 GA. Factors, Connect, Climate Ledger, SDK/API/CLI, CBAM, and Scope Engine can reach GA in FY27 Q4. Entity Graph, Evidence Vault, Policy Graph, Agent Runtime + Eval, and Comply should GA across FY28 Q1-Q2 because they require stronger assurance, policy, security, and workflow validation.
+Treat Comply/CBAM/Scope Engine as the beachhead, not the identity. The long-term identity is system of record, system of action, and system of trust for climate workflows.
+Build SupplierOS, PCF Studio, and DPP Hub as one data-network loop. Do not build three unrelated apps.
+Gate PlantOS and BuildingOS on measurable savings and repeatable integrations. Their job is CFO-grade ROI, not dashboard theater.
+Launch finance, MRV, and markets only after the trust layer is credible. Do not touch take-rates or transaction brokerage without legal role clarity.
+Incubate public-sector, nature, CDR, and circularity with anchor customers; do not let late-horizon products consume FY27-FY28 core engineering bandwidth.
+Non-negotiable release gates
+
+Part 2 - Architecture and Engineering Model
+Four-layer Climate OS architecture
+Canonical object model
+AI governance model
+AI agents may map messy activity data, summarize policy, draft supplier messages, triage evidence gaps, generate scenario narratives, and prepare first-draft reports.
+AI agents must never silently create regulated, financial, MRV, or assurance claims. High-stakes outputs require citations, evaluation, reviewer approval, and ledger traceability.
+Every agent release must include a pinned model, prompt version, tool-permission profile, eval suite, failure-handling path, and cost guardrail.
+The Agent Runtime is a platform service. Sector products may consume agents, but must not implement unmanaged AI workflows independently.
+Engineering operating model by FY
+
+Part 3 - Final Release Matrix
+The matrix below is the final CTO release pathway. Launch FY is when design work and alpha access begin. v1.0 GA is the first contractually-supported production release. v2.0 is a major scale/intelligence release. v3.0 is an ecosystem/network generation where appropriate. Products launched late in FY30-FY31 may not reach v2.0 or v3.0 inside this planning horizon.
+FY27 launch cohort
+FY28 launch cohort
+FY29 launch cohort
+FY30 launch cohort
+FY31 launch cohort
+Dependency rules
+Core Platform: Proceed immediately. Build this as shared infrastructure, not customer-specific services. Every sector cloud must use these shared objects and APIs; no product may fork the factor, entity, evidence, policy, or ledger model.
+Compliance Cloud: Proceed as the first commercial wedge. Keep the initial surface narrow, revenue-backed, and assurance-ready. Use Comply, CBAM, and Scope Engine to prove the data model, paid demand, and customer onboarding path.
+Supply Chain Cloud: Proceed after the compliance wedge creates supplier and product-data demand. Treat supplier, product carbon, DPP, and proof workflows as one compound loop, not separate business lines.
+Operations Cloud: Proceed only where operational data is available and the customer can quantify savings. These products must create CFO-grade ROI; delay any module that behaves like bespoke consulting rather than repeatable software.
+Mobility Cloud: Proceed through data-rich shippers, forwarders, and fleets. Do not become generic fleet or TMS software; win on verified emissions, transition planning, and embedded logistics-carbon APIs.
+Land/Water/Nature: Incubate with anchor customers or consortiums, then productize. These domains have high mission value but high data and methodology risk; release decision-support first and verified claims only after evidence and methodology review.
+Risk & Public Sector: Proceed after the Entity Graph and asset/site data are mature. Keep early risk outputs explainable and scenario-based. Public-sector products should require paid pilots or funded deployments, not free civic demos.
+Finance & Markets: Proceed after the trust substrate is credible. Keep analytics separate from regulated financial advice, require legal review for transaction/take-rate flows, and sequence MRV before marketplaces or CDR portfolios.
+Circularity: Launch late and tie tightly to DPP, PCF, SupplierOS, and evidence data. Treat circularity as a product-lifecycle extension, not a new disconnected category.
+
+Part 4 - Detailed Final Product Definitions
+Each product below is defined as a GreenLang module with a shared data/ledger/policy/evidence substrate. The detailed version roadmap uses product-specific release scopes and gates. v0.3 private alpha and v0.8 release candidate are mandatory internal gates between the listed external milestones even where the product table shows v0.1/v0.5/v0.9/v1.0 only.
+Version taxonomy applied to every product
+
+Core Platform
+Proceed immediately. Build this as shared infrastructure, not customer-specific services. Every sector cloud must use these shared objects and APIs; no product may fork the factor, entity, evidence, policy, or ledger model.
+
+1. GreenLang Factors
+CTO final pathway
+Build GreenLang Factors as a modular product on the shared substrate. The release target is FY27; GA is gated for FY27 Q4 (Jan-Mar 2027). Initial library covers priority India/EU exporter use cases before broader global coverage Every paid factor source has licensing clearance
+Why it exists
+Emission factor data is fragmented across IPCC, DEFRA, EPA, IEA, BEIS, India CEA, EDGAR, EXIOBASE, ecoinvent, and hundreds of national inventories. Every climate team rebuilds the same factor-selection logic, with no provenance, version pinning, or methodology transparency. Regulators (CBAM, CSRD, SB 253) are now demanding citable, dated, and methodology-tagged factors.
+Users and jobs to be done
+Functional scope
+Data, integrations, outputs, and evidence
+AI and automation behavior
+factor-matching assistant with confidence scores
+semantic search over factor sources
+anomaly detection for wrong-unit or wrong-region factor use
+explanation generator for auditor-facing notes
+Final version roadmap
+Internal v0.3 private-alpha and v0.8 release-candidate gates apply between the external milestones above. A product may not move to GA unless the release gates below are satisfied.
+GA, delay, and risk gates
+Initial library covers priority India/EU exporter use cases before broader global coverage
+Every paid factor source has licensing clearance
+No factor can be used in customer claims without source, version, and methodology metadata
+GA requires automated unit tests for core conversions and regression tests for historical calculations
+Key risks to actively manage
+data-source licensing ambiguity
+methodology disputes between standards
+factor staleness
+overpromising precision where uncertainty is high
+Success metrics
+API calls/month
+active developers
+factor match accuracy
+percentage of calculations with complete provenance
+enterprise factor override review time
+Dependency notes
+Upstream: none - this is the root data product.
+Downstream: Scope Engine, Comply, CBAM, PCF Studio, PlantOS, BuildingOS, FleetOS, FinanceOS, MRV Studio, and every sector cloud.
+
+2. GreenLang Connect
+CTO final pathway
+Build GreenLang Connect as a modular product on the shared substrate. The release target is FY27; GA is gated for FY27 Q4. Connector only promoted to GA after 3 repeatable implementations All transformations must be reversible and traceable
+Why it exists
+The bottleneck in climate software isn't calculation - it's data ingestion. Energy bills, ERP invoices, fuel cards, BMS/SCADA telemetry, logistics shipments, and supplier CSVs all live in different systems with different schemas, refresh cadences, and access controls. Most vendors hand-build one-off integrations per customer and charge heavily for them.
+Users and jobs to be done
+Functional scope
+Data, integrations, outputs, and evidence
+AI and automation behavior
+schema-mapping copilot
+missing-data imputation recommendation with human review
+outlier detection
+field-level lineage explanations
+Final version roadmap
+Internal v0.3 private-alpha and v0.8 release-candidate gates apply between the external milestones above. A product may not move to GA unless the release gates below are satisfied.
+GA, delay, and risk gates
+Connector only promoted to GA after 3 repeatable implementations
+All transformations must be reversible and traceable
+No silent imputation for regulated reports
+Credential and privacy review required before enterprise availability
+Key risks to actively manage
+fragile third-party APIs
+high implementation services burden
+data security concerns
+customer master-data inconsistency
+Success metrics
+time-to-first-data
+connector uptime
+sync failure rate
+mapped-record accuracy
+implementation hours per customer
+Dependency notes
+Upstream: Climate Ledger (writes here), Evidence Vault (stores raw).
+Downstream: every sector cloud depends on Connect for activity data.
+
+3. GreenLang Entity Graph
+CTO final pathway
+Build GreenLang Entity Graph as a modular product on the shared substrate. The release target is FY27; GA is gated for FY28 Q2. Entity model must support the first compliance and supplier use cases before expanding into city/finance complexity Graph changes must be auditable
+Why it exists
+Climate questions are fundamentally graph questions: Which subsidiaries ship Scope 3? Which supplier produces the aluminium in this SKU? Which building serves this DC? Which vehicle leases roll up to which BU? Without a shared entity graph, every product rebuilds its own org/facility/supplier model, and data doesn't roll up consistently.
+Users and jobs to be done
+Functional scope
+Data, integrations, outputs, and evidence
+AI and automation behavior
+entity-resolution assistant
+duplicate detection
+graph anomaly detection
+natural-language graph query interface
+Final version roadmap
+Internal v0.3 private-alpha and v0.8 release-candidate gates apply between the external milestones above. A product may not move to GA unless the release gates below are satisfied.
+GA, delay, and risk gates
+Entity model must support the first compliance and supplier use cases before expanding into city/finance complexity
+Graph changes must be auditable
+Permission inheritance must pass security review
+GA requires migration tooling for customer master data
+Key risks to actively manage
+overcomplicated ontology too early
+duplicate entity ambiguity
+sensitive supplier-network data
+permission leakage
+Success metrics
+percentage of records linked to canonical entities
+duplicate-resolution precision
+average time to model customer hierarchy
+graph query latency
+Dependency notes
+Upstream: Connect (identity data), Climate Ledger (writes tagged by entity).
+Downstream: Comply, SupplierOS, Scope Engine, FinanceOS, RiskOS - all consolidation and roll-up depends on this.
+
+4. GreenLang Climate Ledger
+CTO final pathway
+Build GreenLang Climate Ledger as a modular product on the shared substrate. The release target is FY27; GA is gated for FY27 Q4. Ledger events must be append-only or controlled-versioned Every claim links to evidence and factor/methodology metadata
+Why it exists
+Sustainability reports get restated, revised, and sometimes fabricated. Auditors need to trace every number back to source data, method, and calculation vintage. Today this happens in Excel with hand-built change logs. CSRD-grade and CBAM-grade assurance will not accept this.
+Users and jobs to be done
+Functional scope
+Data, integrations, outputs, and evidence
+AI and automation behavior
+ledger anomaly detection
+restatement impact assistant
+audit-sampling recommendation
+calculation explanation copilot
+Final version roadmap
+Internal v0.3 private-alpha and v0.8 release-candidate gates apply between the external milestones above. A product may not move to GA unless the release gates below are satisfied.
+GA, delay, and risk gates
+Ledger events must be append-only or controlled-versioned
+Every claim links to evidence and factor/methodology metadata
+GA requires disaster recovery, role-based controls, and audit export
+No GA if evidence linkage is incomplete
+Key risks to actively manage
+customers expecting legal immutability beyond product scope
+privacy/data-retention conflicts
+incorrect restatement handling
+performance at high event volume
+Success metrics
+percentage of claims with complete ledger lineage
+audit-export time
+ledger write/read latency
+restatement cycle time
+evidence-link completeness
+Dependency notes
+Upstream: Factors (for factor versions), Entity Graph (for boundary), Connect (for activity data).
+Downstream: everything - this is the system of record.
+
+5. GreenLang Evidence Vault
+CTO final pathway
+Build GreenLang Evidence Vault as a modular product on the shared substrate. The release target is FY27; GA is gated for FY28 Q2. Security and access controls pass enterprise review Evidence metadata is linked to ledger records from day one
+Why it exists
+Assurance is only as strong as the evidence behind it. CBAM, CSRD, SEC Climate, and SB 253 all require source documents on demand. Today this evidence is in email inboxes, SharePoint, Google Drive, or nowhere. Auditors waste weeks hunting for PDFs.
+Users and jobs to be done
+Functional scope
+Data, integrations, outputs, and evidence
+AI and automation behavior
+document classification
+evidence gap detection
+OCR-assisted extraction where permitted
+policy-specific evidence checklist generation
+Final version roadmap
+Internal v0.3 private-alpha and v0.8 release-candidate gates apply between the external milestones above. A product may not move to GA unless the release gates below are satisfied.
+GA, delay, and risk gates
+Security and access controls pass enterprise review
+Evidence metadata is linked to ledger records from day one
+AI extraction always shows confidence and source snippet
+GA requires retention and deletion controls
+Key risks to actively manage
+sensitive document leakage
+low-quality documents
+AI misclassification
+excess storage cost
+Success metrics
+evidence completeness
+average evidence review time
+document classification precision
+expired evidence rate
+auditor acceptance rate
+Dependency notes
+Upstream: Connect (raw documents), Ledger (claim references).
+Downstream: Proof Hub, Comply, CBAM, DPP Hub, MRV Studio.
+
+6. GreenLang Policy Graph
+CTO final pathway
+Build GreenLang Policy Graph as a modular product on the shared substrate. The release target is FY27; GA is gated for FY28 Q1. No unsupported legal advice positioning All policy guidance cites source and version
+Why it exists
+Climate rules change constantly: CBAM definitive phase, CSRD/ESRS delegated acts, SB 253 amendments, India CCTS sector expansion, EU Taxonomy delegated regulations, SBTi sector pathways. Manually tracking which rule applies to which entity, product, or report is where most vendors and consultants burn budget and get it wrong.
+Users and jobs to be done
+Functional scope
+Data, integrations, outputs, and evidence
+AI and automation behavior
+policy summarization
+change-impact analysis
+question-answering over obligations with citations
+workflow generation from policy requirements
+Final version roadmap
+Internal v0.3 private-alpha and v0.8 release-candidate gates apply between the external milestones above. A product may not move to GA unless the release gates below are satisfied.
+GA, delay, and risk gates
+No unsupported legal advice positioning
+All policy guidance cites source and version
+Human review for high-impact changes
+GA requires update cadence and owner accountability
+Key risks to actively manage
+regulatory volatility
+incorrect interpretation
+jurisdictional overreach
+customers treating software output as legal advice
+Success metrics
+policy update latency
+applicability assessment accuracy
+number of products using Policy Graph
+user trust/acceptance score
+missed-deadline incidents
+Dependency notes
+Upstream: Entity Graph (to match rules to entities).
+Downstream: Comply, CBAM, Scope Engine, RiskOS, FinanceOS.
+
+7. GreenLang Agent Runtime + Eval
+CTO final pathway
+Build GreenLang Agent Runtime + Eval as a modular product on the shared substrate. The release target is FY27; GA is gated for FY28 Q2. No high-stakes autonomous claim without review Evaluation benchmark must exist before product AI features GA
+Why it exists
+Climate work is long-tail knowledge work: mapping activity-to-factor, drafting supplier letters, interpreting regulations, preparing assurance responses, decomposing variances. LLMs can do this, but today it's ungoverned - no provenance, no eval, no policy awareness, no audit trail. Regulators and auditors will not accept black-box AI in the reporting path.
+Users and jobs to be done
+Functional scope
+Data, integrations, outputs, and evidence
+AI and automation behavior
+this product is the AI layer itself; core features include policy-aware retrieval, structured output generation, and benchmarked agents
+Final version roadmap
+Internal v0.3 private-alpha and v0.8 release-candidate gates apply between the external milestones above. A product may not move to GA unless the release gates below are satisfied.
+GA, delay, and risk gates
+No high-stakes autonomous claim without review
+Evaluation benchmark must exist before product AI features GA
+Tool permissions cannot bypass customer role controls
+AI outputs must cite ledger/evidence/policy sources
+Key risks to actively manage
+hallucinated policy or methodology guidance
+unreviewed automation in regulated workflows
+cost spikes from AI usage
+lack of measurable accuracy
+Success metrics
+task success rate
+human-review acceptance rate
+policy/evidence citation coverage
+AI cost per workflow
+eval regression pass rate
+Dependency notes
+Upstream: Factors, Ledger, Policy Graph, Entity Graph.
+Downstream: every product eventually uses Agent Runtime.
+
+8. GreenLang SDK/API/CLI
+CTO final pathway
+Build GreenLang SDK/API/CLI as a modular product on the shared substrate. The release target is FY27; GA is gated for FY27 Q4. Public API stability after core object model is stable Docs must include examples and error cases
+Why it exists
+Every large enterprise eventually wants to embed climate logic in their own data stack, not just log into a dashboard. Most climate vendors ship only UIs; a few have APIs; almost none have first-class developer ergonomics. That's where platform moats are built.
+Users and jobs to be done
+Functional scope
+Data, integrations, outputs, and evidence
+AI and automation behavior
+developer assistant for API usage
+code example generation
+integration debugging assistant
+API anomaly detection
+Final version roadmap
+Internal v0.3 private-alpha and v0.8 release-candidate gates apply between the external milestones above. A product may not move to GA unless the release gates below are satisfied.
+GA, delay, and risk gates
+Public API stability after core object model is stable
+Docs must include examples and error cases
+GA requires rate limits, key management, and changelog process
+Breaking changes require versioned migration path
+Key risks to actively manage
+unstable APIs harming developers
+support burden from free users
+security exposure through APIs
+unclear open-core boundaries
+Success metrics
+active developers
+API retention
+time-to-first-successful-call
+SDK downloads
+partner integrations
+Compliance Cloud
+Dependency notes
+Upstream: all platform services.
+Downstream: adoption of everything else in the portfolio.
+4. Compliance Cloud
+This chapter covers 3 products in the Compliance Cloud. Each product is specified at PRD-lite depth: definition, buyer, core capabilities, data/integrations, revenue model, full version roadmap, success KPIs, and upstream/downstream dependencies.
+
+Compliance Cloud
+Proceed as the first commercial wedge. Keep the initial surface narrow, revenue-backed, and assurance-ready. Use Comply, CBAM, and Scope Engine to prove the data model, paid demand, and customer onboarding path.
+
+9. GreenLang Comply
+CTO final pathway
+Build GreenLang Comply as a modular product on the shared substrate. The release target is FY27; GA is gated for FY28 Q2. Launch only on limited initial jurisdictions tied to paid demand GA requires successful paid pilot and auditor feedback
+Why it exists
+Every large enterprise is now juggling 3-7 overlapping disclosures. Workiva, Persefoni, Watershed, and a dozen consultancies all do parts of this. What's missing is a single, audit-defensible workbench that starts from the same Ledger and ends in filed reports with assurance-ready evidence.
+Users and jobs to be done
+Functional scope
+Data, integrations, outputs, and evidence
+AI and automation behavior
+policy applicability assistant
+evidence gap assistant
+draft narrative generator with citations
+control-risk summarizer
+Final version roadmap
+Internal v0.3 private-alpha and v0.8 release-candidate gates apply between the external milestones above. A product may not move to GA unless the release gates below are satisfied.
+GA, delay, and risk gates
+Launch only on limited initial jurisdictions tied to paid demand
+GA requires successful paid pilot and auditor feedback
+No unsupported legal advice; cite policy objects
+Every disclosure number must trace to ledger/evidence
+Key risks to actively manage
+selling broad compliance before data foundation is ready
+report templates changing
+long assurance cycles
+customers expecting consulting deliverables
+Success metrics
+ARR per logo
+disclosure cycle time reduction
+percentage of report items with evidence
+audit adjustments
+renewal/expansion rate
+Dependency notes
+Upstream: Ledger, Evidence Vault, Policy Graph, Entity Graph, Scope Engine.
+Downstream: FinanceOS (can read Comply outputs for disclosure-driven financing).
+
+10. GreenLang CBAM
+CTO final pathway
+Build GreenLang CBAM as a modular product on the shared substrate. The release target is FY27; GA is gated for FY27 Q4. Prioritize iron/steel, aluminum, cement, fertilizers, hydrogen, electricity only as commercially relevant GA requires validated calculation workflow with design partners
+Why it exists
+CBAM's definitive phase started 1 Jan 2026. Importers must report embedded emissions per consignment, hold certificates, and face penalties. Non-EU exporters (India, Turkey, China, North Africa) need to supply actual-emissions data to keep customers. Off-the-shelf ERP modules do not solve this; specialized software is already commanding premium prices.
+Users and jobs to be done
+Functional scope
+Data, integrations, outputs, and evidence
+AI and automation behavior
+HS/product code mapping assistant
+supplier data-gap assistant
+evidence sufficiency review
+draft importer communication
+Final version roadmap
+Internal v0.3 private-alpha and v0.8 release-candidate gates apply between the external milestones above. A product may not move to GA unless the release gates below are satisfied.
+GA, delay, and risk gates
+Prioritize iron/steel, aluminum, cement, fertilizers, hydrogen, electricity only as commercially relevant
+GA requires validated calculation workflow with design partners
+Supplier portal must be usable without full enterprise deployment
+Evidence must map to each reported field
+Key risks to actively manage
+regulatory changes
+incorrect product-code mapping
+supplier data quality gaps
+over-customization per exporter
+Success metrics
+covered product mapping accuracy
+supplier response rate
+time to prepare CBAM pack
+evidence completeness
+paid conversions from design partners
+Dependency notes
+Upstream: Factors (CBAM pack), Ledger, Evidence Vault, Policy Graph.
+Downstream: SupplierOS (CBAM is often the supplier-data-collection wedge).
+
+11. GreenLang Scope Engine
+CTO final pathway
+Build GreenLang Scope Engine as a modular product on the shared substrate. The release target is FY27; GA is gated for FY27 Q4. Scope 1/2 must be robust before broad Scope 3 expansion Every calculation must carry factor and method version
+Why it exists
+Most Scope 3 tools are black boxes. Customers and auditors cannot see why a number came out the way it did. Methodology choices (market-based vs location-based Scope 2, spend-based vs activity-based Scope 3) produce wildly different answers, and many tools silently pick one.
+Users and jobs to be done
+Functional scope
+Data, integrations, outputs, and evidence
+AI and automation behavior
+activity-to-factor mapping assistant
+variance explanation assistant
+data-gap prioritization
+auditor question-response drafting
+Final version roadmap
+Internal v0.3 private-alpha and v0.8 release-candidate gates apply between the external milestones above. A product may not move to GA unless the release gates below are satisfied.
+GA, delay, and risk gates
+Scope 1/2 must be robust before broad Scope 3 expansion
+Every calculation must carry factor and method version
+GA requires variance and audit exports
+Manual override governance required
+Key risks to actively manage
+Scope 3 complexity sprawl
+wrong factor mappings
+inventory restatements
+customer overreliance on estimated data
+Success metrics
+calculation completeness
+activity-to-factor match confidence
+audit adjustment count
+reporting cycle time
+percentage actual vs estimated data
+Supply Chain Cloud
+Dependency notes
+Upstream: Factors, Ledger, Entity Graph.
+Downstream: Comply, CBAM, SupplierOS, FinanceOS, RiskOS.
+5. Supply Chain Cloud
+This chapter covers 4 products in the Supply Chain Cloud. Each product is specified at PRD-lite depth: definition, buyer, core capabilities, data/integrations, revenue model, full version roadmap, success KPIs, and upstream/downstream dependencies.
+
+Supply Chain Cloud
+Proceed after the compliance wedge creates supplier and product-data demand. Treat supplier, product carbon, DPP, and proof workflows as one compound loop, not separate business lines.
+
+12. GreenLang SupplierOS
+CTO final pathway
+Build GreenLang SupplierOS as a modular product on the shared substrate. The release target is FY28; GA is gated for FY28 Q4. Do not GA before at least 2 enterprise buyers have active supplier campaigns Portal must be self-serve for suppliers
+Why it exists
+Scope 3 Category 1 (purchased goods) is the biggest emissions bucket for most manufacturers, and the weakest in data quality. Suppliers are spammed with conflicting questionnaires from every buyer. Buyers want primary data but end up with spend-based defaults.
+Users and jobs to be done
+Functional scope
+Data, integrations, outputs, and evidence
+AI and automation behavior
+supplier segmentation
+automated request drafting
+response-quality scoring
+data-gap and anomaly detection
+supplier help assistant
+Final version roadmap
+Internal v0.3 private-alpha and v0.8 release-candidate gates apply between the external milestones above. A product may not move to GA unless the release gates below are satisfied.
+GA, delay, and risk gates
+Do not GA before at least 2 enterprise buyers have active supplier campaigns
+Portal must be self-serve for suppliers
+Supplier data permissions must be explicit
+GA requires low-friction onboarding and multilingual basics
+Key risks to actively manage
+supplier fatigue
+low response rates
+poor data quality
+procurement teams not owning sustainability workflow
+Success metrics
+supplier activation rate
+response completeness
+time-to-first-supplier-data
+data reuse across products
+supplier campaign renewal rate
+Dependency notes
+Upstream: Entity Graph (supplier entities), Factors, Ledger, Evidence Vault.
+Downstream: Scope Engine, PCF Studio, CBAM, DPP Hub.
+
+13. GreenLang PCF Studio
+CTO final pathway
+Build GreenLang PCF Studio as a modular product on the shared substrate. The release target is FY28; GA is gated for FY28 Q4. Initial GA only for priority manufacturing segments tied to design partners Footprint methods must be transparent and configurable
+Why it exists
+Product carbon footprints are moving from 'one-off consulting project' to 'required on every SKU' (DPP, customer mandates, CBAM, retailer requirements). Traditional LCA software costs $$$ per study and takes months; customers need PCFs at scale and with methodology-conformance guarantees.
+Users and jobs to be done
+Functional scope
+Data, integrations, outputs, and evidence
+AI and automation behavior
+BOM-to-factor mapping
+allocation-rule suggestion
+primary-data gap detection
+explanation generator for customers
+Final version roadmap
+Internal v0.3 private-alpha and v0.8 release-candidate gates apply between the external milestones above. A product may not move to GA unless the release gates below are satisfied.
+GA, delay, and risk gates
+Initial GA only for priority manufacturing segments tied to design partners
+Footprint methods must be transparent and configurable
+GA requires product-level evidence trail
+Avoid deep LCA consulting dependence by standardizing templates
+Key risks to actively manage
+methodology disputes
+BOM data sensitivity
+complex allocation rules
+insufficient primary supplier data
+Success metrics
+number of active SKUs
+percentage primary data
+time to create/update PCF
+customer acceptance rate
+data-quality score improvement
+Dependency notes
+Upstream: Factors, Ledger, Entity Graph, SupplierOS.
+Downstream: DPP Hub, CBAM, Comply (Scope 3 C1/C11/C12).
+
+14. GreenLang DPP Hub
+CTO final pathway
+Build GreenLang DPP Hub as a modular product on the shared substrate. The release target is FY28; GA is gated for FY29 Q2. Do not overbuild until product categories and buyer obligations are clear GA requires stable product data schema and permission model
+Why it exists
+The EU DPP regulation (ESPR) is coming into force sector by sector from 2027 onward: batteries first, then textiles, electronics, construction products, plastics, and more. Every product needs a verifiable digital record covering origin, composition, repairability, recyclability, and carbon.
+Users and jobs to be done
+Functional scope
+Data, integrations, outputs, and evidence
+AI and automation behavior
+attribute extraction from product docs
+data-gap assistant
+passport completeness scoring
+customer/regulator response drafting
+Final version roadmap
+Internal v0.3 private-alpha and v0.8 release-candidate gates apply between the external milestones above. A product may not move to GA unless the release gates below are satisfied.
+GA, delay, and risk gates
+Do not overbuild until product categories and buyer obligations are clear
+GA requires stable product data schema and permission model
+Passport outputs must separate verified from self-declared attributes
+API and QR flows must handle product versioning
+Key risks to actively manage
+evolving DPP requirements
+customer product-data sensitivity
+category-specific complexity
+false impression of verified claims
+Success metrics
+passports created
+passport completeness
+product-data update latency
+API/QR access volume
+percentage verified attributes
+Dependency notes
+Upstream: PCF Studio, SupplierOS, Factors, Ledger, Evidence Vault.
+Downstream: Circularity Hub, regulator integrations.
+
+15. GreenLang Proof Hub
+CTO final pathway
+Build GreenLang Proof Hub as a modular product on the shared substrate. The release target is FY29; GA is gated for FY29 Q4. Launch only after enough evidence-rich workflows exist GA requires reviewer permissions and independence controls
+Why it exists
+Auditors currently work in PDFs, Excel, and email. As limited/reasonable assurance becomes mandatory under CSRD and CBAM, the assurance market is about to 5x in workload. Firms need a workbench; enterprises need lower cost of audit.
+Users and jobs to be done
+Functional scope
+Data, integrations, outputs, and evidence
+AI and automation behavior
+evidence sufficiency triage
+finding categorization
+review-question drafting
+sample selection support
+Final version roadmap
+Internal v0.3 private-alpha and v0.8 release-candidate gates apply between the external milestones above. A product may not move to GA unless the release gates below are satisfied.
+GA, delay, and risk gates
+Launch only after enough evidence-rich workflows exist
+GA requires reviewer permissions and independence controls
+No claim should appear verified unless review status is explicit
+External verifier partnerships must be established
+Key risks to actively manage
+liability around verification claims
+auditor adoption friction
+conflict-of-interest concerns
+unclear proof terminology
+Success metrics
+review cycle time
+finding closure rate
+proof status coverage
+verifier seat adoption
+claim challenge rate
+Operations Cloud
+Dependency notes
+Upstream: Ledger, Evidence Vault, Comply, Scope Engine.
+Downstream: closes the trust loop on every reporting claim.
+6. Operations Cloud
+This chapter covers 6 products in the Operations Cloud. Each product is specified at PRD-lite depth: definition, buyer, core capabilities, data/integrations, revenue model, full version roadmap, success KPIs, and upstream/downstream dependencies.
+
+Operations Cloud
+Proceed only where operational data is available and the customer can quantify savings. These products must create CFO-grade ROI; delay any module that behaves like bespoke consulting rather than repeatable software.
+
+16. GreenLang PlantOS
+CTO final pathway
+Build GreenLang PlantOS as a modular product on the shared substrate. The release target is FY28; GA is gated for FY28 Q4. Start with limited plant archetypes and design partners GA requires reliable operational data and baseline method
+Why it exists
+Industrial plants have energy bills in crores, old SCADA systems, and no single pane connecting operations to carbon intensity and unit economics. EMS tools tell you what happened; plant OS needs to tell you what to do next, with money on the line.
+Users and jobs to be done
+Functional scope
+Data, integrations, outputs, and evidence
+AI and automation behavior
+energy anomaly detection
+opportunity recommendation
+root-cause analysis support
+project business-case drafting
+Final version roadmap
+Internal v0.3 private-alpha and v0.8 release-candidate gates apply between the external milestones above. A product may not move to GA unless the release gates below are satisfied.
+GA, delay, and risk gates
+Start with limited plant archetypes and design partners
+GA requires reliable operational data and baseline method
+Performance fees only after M&V credibility is strong
+Avoid custom consulting projects that do not repeat
+Key risks to actively manage
+IoT/data integration complexity
+savings attribution disputes
+plant change-management friction
+cybersecurity requirements
+Success metrics
+energy savings identified and realized
+emissions reduction pipeline
+payback of projects
+data uptime
+expansion from compliance customers
+Dependency notes
+Upstream: Connect, Factors, Ledger, Agent Runtime.
+Downstream: Scope Engine, Comply, PowerOS.
+
+17. GreenLang BuildingOS
+CTO final pathway
+Build GreenLang BuildingOS as a modular product on the shared substrate. The release target is FY28; GA is gated for FY28 Q4. Start with portfolios that have utility/BMS data access GA requires benchmark and baseline reliability
+Why it exists
+Real estate emits ~30% of global emissions. Every building has a BMS that works at a 1990s UX. Owners and operators are now under CSRD, SB 253, LEED, NABERS, GRESB, and leasing pressure to show carbon performance. Tools today are either BMS vendor dashboards or static reporting software - not both.
+Users and jobs to be done
+Functional scope
+Data, integrations, outputs, and evidence
+AI and automation behavior
+benchmarking assistant
+retrofit recommendation
+weather-normalized anomaly detection
+tenant request drafting
+Final version roadmap
+Internal v0.3 private-alpha and v0.8 release-candidate gates apply between the external milestones above. A product may not move to GA unless the release gates below are satisfied.
+GA, delay, and risk gates
+Start with portfolios that have utility/BMS data access
+GA requires benchmark and baseline reliability
+Outcome share only where data quality supports attribution
+Do not overfit to one BMS vendor
+Key risks to actively manage
+fragmented building systems
+tenant data gaps
+retrofit execution outside software control
+savings attribution disputes
+Success metrics
+buildings onboarded
+utility data completeness
+energy savings pipeline
+M&V verified savings
+portfolio expansion rate
+Dependency notes
+Upstream: Connect, Factors, Ledger, Agent Runtime.
+Downstream: Scope Engine, Comply, PowerOS, FlexOS.
+
+18. GreenLang DataCenter CarbonOps
+CTO final pathway
+Build GreenLang DataCenter CarbonOps as a modular product on the shared substrate. The release target is FY29; GA is gated for FY29 Q4. Launch after BuildingOS and PowerOS primitives are stable GA requires at least one design partner with DCIM/BMS data access
+Why it exists
+AI workloads have put data-center power demand on a vertical climb. Hyperscalers, colos, and enterprise DCs now face 24/7 clean energy claims, customer SLAs on carbon, and jurisdictional constraints (EU EED data-center reporting, local water). Nothing integrates PUE, WUE, grid intensity, and workload carbon.
+Users and jobs to be done
+Functional scope
+Data, integrations, outputs, and evidence
+AI and automation behavior
+cooling anomaly detection
+workload carbon insight assistant
+renewable procurement scenario assistant
+customer report drafting
+Final version roadmap
+Internal v0.3 private-alpha and v0.8 release-candidate gates apply between the external milestones above. A product may not move to GA unless the release gates below are satisfied.
+GA, delay, and risk gates
+Launch after BuildingOS and PowerOS primitives are stable
+GA requires at least one design partner with DCIM/BMS data access
+Customer allocation model must be transparent
+Water metrics should be included only when reliable data exists
+Key risks to actively manage
+sensitive customer allocation data
+integration complexity
+fast-changing AI data-center needs
+regional grid-factor complexity
+Success metrics
+site capacity onboarded
+customer reports generated
+allocation accuracy
+efficiency savings pipeline
+PUE/WUE improvement tracking
+Dependency notes
+Upstream: Connect, PowerOS, WaterOS, Factors, Ledger.
+Downstream: Scope Engine, Comply.
+
+19. GreenLang PowerOS
+CTO final pathway
+Build GreenLang PowerOS as a modular product on the shared substrate. The release target is FY29; GA is gated for FY29 Q4. Do not enter transaction brokerage before legal/commercial capability exists GA requires reliable energy data and certificate evidence trail
+Why it exists
+Large corporate power buyers are moving from annual PPAs to hourly matching. PPAs are structured in Excel, RECs are tracked in PDFs, and reporting teams fight procurement about what's allowed under Scope 2 market-based methodology. GHGP Scope 2 guidance is tightening.
+Users and jobs to be done
+Functional scope
+Data, integrations, outputs, and evidence
+AI and automation behavior
+procurement scenario assistant
+tariff optimization recommendation
+certificate/evidence gap detection
+load forecasting assistant
+Final version roadmap
+Internal v0.3 private-alpha and v0.8 release-candidate gates apply between the external milestones above. A product may not move to GA unless the release gates below are satisfied.
+GA, delay, and risk gates
+Do not enter transaction brokerage before legal/commercial capability exists
+GA requires reliable energy data and certificate evidence trail
+Grid-factor methodology must be explicit
+Start with analytics before marketplace flows
+Key risks to actively manage
+energy-market complexity
+renewable-claim disputes
+regional regulatory variation
+data availability for time-based carbon
+Success metrics
+MWh under management
+renewable claims with evidence
+cost/carbon scenarios run
+PPA pipeline influenced
+expansion into FlexOS/Microgrid Planner
+Dependency notes
+Upstream: Factors, Ledger, Entity Graph.
+Downstream: Scope Engine, Comply, DataCenter CarbonOps, BuildingOS, FlexOS.
+
+20. GreenLang FlexOS
+CTO final pathway
+Build GreenLang FlexOS as a modular product on the shared substrate. The release target is FY30; GA is gated for FY30 Q4. Launch only where market/program access exists GA requires credible M&V and customer operational acceptance
+Why it exists
+Grids are going variable. Utilities and ISOs are paying for flexibility (demand response, peak shaving, frequency response). C&I sites have loads that could flex but lack the software stack to participate. Aggregators take a big cut and customers get opaque dashboards.
+Users and jobs to be done
+Functional scope
+Data, integrations, outputs, and evidence
+AI and automation behavior
+flexibility opportunity detection
+dispatch recommendation
+constraint conflict prediction
+event performance explanation
+Final version roadmap
+Internal v0.3 private-alpha and v0.8 release-candidate gates apply between the external milestones above. A product may not move to GA unless the release gates below are satisfied.
+GA, delay, and risk gates
+Launch only where market/program access exists
+GA requires credible M&V and customer operational acceptance
+Dispatch must remain human-approved initially
+Revenue-share contracts require legal review
+Key risks to actively manage
+market access barriers
+operational risk from dispatch
+M&V disputes
+low event frequency in some regions
+Success metrics
+MW/MWh flexibility enrolled
+event performance rate
+verified revenue/savings
+dispatch acceptance rate
+customer retention
+Dependency notes
+Upstream: Connect, PlantOS, BuildingOS, DataCenter CarbonOps, PowerOS.
+Downstream: Ledger, Scope Engine.
+
+21. GreenLang Microgrid Planner
+CTO final pathway
+Build GreenLang Microgrid Planner as a modular product on the shared substrate. The release target is FY30; GA is gated for FY30 Q4. Release as planner, not EPC execution platform GA requires validated modeling assumptions with engineering partners
+Why it exists
+Industrial parks, campuses, and large C&I sites want behind-the-meter solar + storage + (sometimes) wind + diesel hybrid systems. The design is done in Excel by EPCs, financing is fragmented, and nobody links design to ongoing operations. That gap creates massive value leakage.
+Users and jobs to be done
+Functional scope
+Data, integrations, outputs, and evidence
+AI and automation behavior
+scenario generation
+constraint-aware recommendation
+finance narrative drafting
+sensitivity analysis assistant
+Final version roadmap
+Internal v0.3 private-alpha and v0.8 release-candidate gates apply between the external milestones above. A product may not move to GA unless the release gates below are satisfied.
+GA, delay, and risk gates
+Release as planner, not EPC execution platform
+GA requires validated modeling assumptions with engineering partners
+Project finance handoff only after Transition Finance Studio readiness
+Avoid bespoke engineering services consuming roadmap
+Key risks to actively manage
+technical modeling liability
+project execution outside software scope
+high customization
+regional equipment/market assumptions
+Success metrics
+projects modeled
+project pipeline value
+scenario-to-approved project conversion
+partner channel usage
+customer willingness to pay per project
+Mobility Cloud
+Dependency notes
+Upstream: Factors, Ledger, PlantOS/BuildingOS (for load profiles).
+Downstream: Transition Finance Studio, FlexOS, PlantOS/BuildingOS operations.
+7. Mobility Cloud
+This chapter covers 2 products in the Mobility Cloud. Each product is specified at PRD-lite depth: definition, buyer, core capabilities, data/integrations, revenue model, full version roadmap, success KPIs, and upstream/downstream dependencies.
+
+Mobility Cloud
+Proceed through data-rich shippers, forwarders, and fleets. Do not become generic fleet or TMS software; win on verified emissions, transition planning, and embedded logistics-carbon APIs.
+
+22. GreenLang FleetOS
+CTO final pathway
+Build GreenLang FleetOS as a modular product on the shared substrate. The release target is FY29; GA is gated for FY29 Q4. Start with data-rich fleets or customers with fleet management systems GA requires repeatable telematics/fuel-card ingestion
+Why it exists
+Most fleet operators (logistics, last-mile, inter-city, utility fleets, service fleets) have telematics for operations but no integrated view on carbon, TCO, and transition planning. EV transition decisions are being made on spreadsheets.
+Users and jobs to be done
+Functional scope
+Data, integrations, outputs, and evidence
+AI and automation behavior
+EV suitability scoring
+route/fuel anomaly detection
+TCO scenario assistant
+driver coaching insights where appropriate
+Final version roadmap
+Internal v0.3 private-alpha and v0.8 release-candidate gates apply between the external milestones above. A product may not move to GA unless the release gates below are satisfied.
+GA, delay, and risk gates
+Start with data-rich fleets or customers with fleet management systems
+GA requires repeatable telematics/fuel-card ingestion
+Avoid becoming generic fleet management software
+Carbon reporting and transition planning must be differentiated
+Key risks to actively manage
+telematics integration fragmentation
+low data quality from contracted fleets
+driver privacy concerns
+EV infrastructure constraints outside product
+Success metrics
+vehicles under management
+fuel/emissions reduction opportunities
+EV transition pipeline
+data completeness
+per-vehicle ARR
+Dependency notes
+Upstream: Factors, Ledger.
+Downstream: Freight Carbon API, Scope Engine, FinanceOS.
+
+23. GreenLang Freight Carbon API
+CTO final pathway
+Build GreenLang Freight Carbon API as a modular product on the shared substrate. The release target is FY30; GA is gated for FY30 Q4. Do not GA before API/docs maturity Start with modes/regions where factors and customers exist
+Why it exists
+Every shipper customer wants shipment-level emissions to match their Scope 3 Category 4/9 data. Forwarders patchwork this with spreadsheets and internal tools. Customers (retail, industrial) are increasingly refusing to pay without verifiable numbers. GLEC and ISO 14083 set the bar.
+Users and jobs to be done
+Functional scope
+Data, integrations, outputs, and evidence
+AI and automation behavior
+route/mode optimization assistant
+carrier data-quality scoring
+shipment anomaly detection
+developer support assistant
+Final version roadmap
+Internal v0.3 private-alpha and v0.8 release-candidate gates apply between the external milestones above. A product may not move to GA unless the release gates below are satisfied.
+GA, delay, and risk gates
+Do not GA before API/docs maturity
+Start with modes/regions where factors and customers exist
+Primary-data labels must be transparent
+Avoid claiming precision beyond available shipment data
+Key risks to actively manage
+commoditized freight-carbon calculators
+data-quality disputes
+API support burden
+mode-specific complexity
+Success metrics
+API calls
+shipments calculated
+average latency
+primary-data coverage
+platform integrations
+Land/Water/Nature
+Dependency notes
+Upstream: Factors, Ledger, FleetOS.
+Downstream: Scope Engine, Comply (Scope 3 C4/C9).
+8. Land / Water / Nature
+This chapter covers 4 products in the Land / Water / Nature. Each product is specified at PRD-lite depth: definition, buyer, core capabilities, data/integrations, revenue model, full version roadmap, success KPIs, and upstream/downstream dependencies.
+
+Land / Water / Nature
+
+
+24. GreenLang AgriLandOS
+CTO final pathway
+Build GreenLang AgriLandOS as a modular product on the shared substrate. The release target is FY30; GA is gated for FY30 Q4. Launch only with strong anchor customer or consortium Avoid overprecision in farm emissions
+Why it exists
+Agrifood is ~30% of global emissions and deeply fragmented. Food brands need farm-level data for Scope 3. Co-ops and agribusinesses need monetization for regenerative practices. No platform connects farm practices to brand disclosures to carbon credits credibly.
+Users and jobs to be done
+Functional scope
+Data, integrations, outputs, and evidence
+AI and automation behavior
+field-data quality checks
+practice recommendation assistant
+farmer outreach content
+remote-sensing anomaly triage
+Final version roadmap
+Internal v0.3 private-alpha and v0.8 release-candidate gates apply between the external milestones above. A product may not move to GA unless the release gates below are satisfied.
+GA, delay, and risk gates
+Launch only with strong anchor customer or consortium
+Avoid overprecision in farm emissions
+Mobile/offline data collection must be usable by field teams
+GA requires field evidence and methodology governance
+Key risks to actively manage
+farmer data burden
+remote sensing limitations
+methodology uncertainty
+fragmented supply chains
+Success metrics
+farms/co-ops onboarded
+data completeness
+intervention adoption
+primary-data coverage
+program renewal rate
+Dependency notes
+Upstream: Factors, Ledger, Entity Graph.
+Downstream: Scope Engine, MRV Studio, Carbon Markets Hub, Methane & Nitrogen Monitor, Nature/TNFD Hub, WaterOS.
+
+25. GreenLang WaterOS
+CTO final pathway
+Build GreenLang WaterOS as a modular product on the shared substrate. The release target is FY30; GA is gated for FY30 Q4. Start where water data access is reliable GA requires clear boundary between water accounting and regulatory compliance
+Why it exists
+Water stress is a first-order operational and disclosure risk. CDP Water, CSRD E3, TNFD, India CGWA, and every city's water plan demand data. Today water data lives in SCADA, municipal systems, and spreadsheets.
+Users and jobs to be done
+Functional scope
+Data, integrations, outputs, and evidence
+AI and automation behavior
+water anomaly detection
+efficiency recommendation
+risk explanation assistant
+project prioritization assistant
+Final version roadmap
+Internal v0.3 private-alpha and v0.8 release-candidate gates apply between the external milestones above. A product may not move to GA unless the release gates below are satisfied.
+GA, delay, and risk gates
+Start where water data access is reliable
+GA requires clear boundary between water accounting and regulatory compliance
+Risk overlays must cite source/version
+Avoid promising hydrological modeling beyond product scope
+Key risks to actively manage
+regional data gaps
+complex water rights/regulation
+quality data uncertainty
+integration burden
+Success metrics
+sites under water management
+meter-data completeness
+risk assessments run
+efficiency projects created
+water savings tracked
+Dependency notes
+Upstream: Connect, Ledger, Factors.
+Downstream: Comply, DataCenter CarbonOps, PlantOS, AgriLandOS, Nature/TNFD Hub.
+
+26. GreenLang Methane & Nitrogen Monitor
+CTO final pathway
+Build GreenLang Methane & Nitrogen Monitor as a modular product on the shared substrate. The release target is FY30; GA is gated for FY30 Q4. Launch only with specialized methodology support GA requires source-specific method transparency
+Why it exists
+Methane and nitrous oxide are short-lived, high-impact GHGs with the biggest regulatory momentum. EU Methane Regulation, US EPA enforcement, OGMP 2.0, and India's CCTS sector expansion are driving measurement mandates. Today this is done with sporadic field surveys and satellite data with no workflow layer.
+Users and jobs to be done
+Functional scope
+Data, integrations, outputs, and evidence
+AI and automation behavior
+source anomaly triage
+mitigation prioritization
+field-inspection planning
+measurement-data quality checks
+Final version roadmap
+Internal v0.3 private-alpha and v0.8 release-candidate gates apply between the external milestones above. A product may not move to GA unless the release gates below are satisfied.
+GA, delay, and risk gates
+Launch only with specialized methodology support
+GA requires source-specific method transparency
+Do not claim credit-grade reductions without MRV Studio and verifier review
+Sensor partner integration must be validated
+Key risks to actively manage
+measurement uncertainty
+methodology controversies
+sensor false positives/negatives
+specialized domain complexity
+Success metrics
+sources monitored
+mitigation actions tracked
+measurement data coverage
+estimated reduction pipeline
+verifier acceptance
+Dependency notes
+Upstream: Connect, Ledger, Factors.
+Downstream: Comply, Scope Engine, MRV Studio, Carbon Markets Hub, AgriLandOS.
+
+27. GreenLang Nature/TNFD Hub
+CTO final pathway
+Build GreenLang Nature/TNFD Hub as a modular product on the shared substrate. The release target is FY31; GA is gated for FY31 Q4. Do not GA until RiskOS/WaterOS/AgriLandOS data are available Nature claims must separate screening from verified ecological impact
+Why it exists
+TNFD, CSRD E4, SBTN, and ISSB expansion into nature are moving fast. Corporates are being asked to report dependencies and impacts on biodiversity, ecosystems, and pollinators, linked to specific locations. Today this is an early-stage advisory market with almost no software infrastructure.
+Users and jobs to be done
+Functional scope
+Data, integrations, outputs, and evidence
+AI and automation behavior
+nature-risk explanation assistant
+data-gap prioritization
+action recommendation support
+disclosure drafting with citations
+Final version roadmap
+Internal v0.3 private-alpha and v0.8 release-candidate gates apply between the external milestones above. A product may not move to GA unless the release gates below are satisfied.
+GA, delay, and risk gates
+Do not GA until RiskOS/WaterOS/AgriLandOS data are available
+Nature claims must separate screening from verified ecological impact
+External datasets require source/version transparency
+Launch initially as decision support, not precise biodiversity accounting
+Key risks to actively manage
+data scarcity
+methodology uncertainty
+greenwashing concerns
+overextension beyond carbon expertise
+Success metrics
+sites/suppliers screened
+priority risks identified
+action plans created
+disclosure cycle time
+finance portfolio adoption
+Risk & Public Sector
+Dependency notes
+Upstream: Entity Graph, WaterOS, AgriLandOS, external nature datasets.
+Downstream: Comply, RiskOS, FinanceOS.
+9. Risk & Public Sector
+This chapter covers 3 products in the Risk & Public Sector. Each product is specified at PRD-lite depth: definition, buyer, core capabilities, data/integrations, revenue model, full version roadmap, success KPIs, and upstream/downstream dependencies.
+
+Risk & Public Sector
+Proceed after the Entity Graph and asset/site data are mature. Keep early risk outputs explainable and scenario-based. Public-sector products should require paid pilots or funded deployments, not free civic demos.
+
+28. GreenLang RiskOS
+CTO final pathway
+Build GreenLang RiskOS as a modular product on the shared substrate. The release target is FY29; GA is gated for FY29 Q4. Start with screening and workflow, not fully actuarial modeling GA requires dataset licensing and methodology transparency
+Why it exists
+Climate risk software is dominated by a handful of vendors (Jupiter, Risilience, Munich Re-adjacent tools). But most corporates want risk analytics embedded with their Ledger, Entity Graph, and Comply pipeline - not a siloed risk tool. Same for lenders and insurers who want asset-level views.
+Users and jobs to be done
+Functional scope
+Data, integrations, outputs, and evidence
+AI and automation behavior
+risk explanation assistant
+scenario summarizer
+data-gap prioritization
+adaptation recommendation support
+Final version roadmap
+Internal v0.3 private-alpha and v0.8 release-candidate gates apply between the external milestones above. A product may not move to GA unless the release gates below are satisfied.
+GA, delay, and risk gates
+Start with screening and workflow, not fully actuarial modeling
+GA requires dataset licensing and methodology transparency
+Risk scores must be explainable
+Do not overpromise site-level precision where data is coarse
+Key risks to actively manage
+climate model uncertainty
+liability from risk scores
+data licensing costs
+user misunderstanding of scenario outputs
+Success metrics
+assets screened
+API usage
+risk-to-adaptation conversion
+finance/customer adoption
+methodology transparency score
+Dependency notes
+Upstream: Entity Graph, Factors, external hazard models.
+Downstream: Comply, FinanceOS, Adaptation Planner, Nature/TNFD Hub.
+
+29. GreenLang Adaptation Planner
+CTO final pathway
+Build GreenLang Adaptation Planner as a modular product on the shared substrate. The release target is FY30; GA is gated for FY30 Q4. Launch after RiskOS and early WaterOS/Microgrid needs are validated GA requires measure library and finance packet templates
+Why it exists
+UNEP's adaptation gap is $187-359B/year. Cities, utilities, and infra owners are starting to act, but there's no workflow from risk analytics → prioritized adaptation projects → financed capital plans. That's the gap Adaptation Planner fills.
+Users and jobs to be done
+Functional scope
+Data, integrations, outputs, and evidence
+AI and automation behavior
+measure recommendation
+funding narrative drafting
+portfolio prioritization assistant
+implementation risk summarizer
+Final version roadmap
+Internal v0.3 private-alpha and v0.8 release-candidate gates apply between the external milestones above. A product may not move to GA unless the release gates below are satisfied.
+GA, delay, and risk gates
+Launch after RiskOS and early WaterOS/Microgrid needs are validated
+GA requires measure library and finance packet templates
+Do not become bespoke consulting practice
+Public-sector pilots should be standardized into reusable templates
+Key risks to actively manage
+services-heavy delivery
+adaptation benefits hard to quantify
+public procurement delays
+engineering liability
+Success metrics
+projects created
+adaptation capital pipeline
+plans funded
+implementation progress
+risk reduction indicators
+Dependency notes
+Upstream: RiskOS, Entity Graph, WaterOS, Nature/TNFD Hub.
+Downstream: Transition Finance Studio, CityOS, Comply.
+
+30. GreenLang CityOS
+CTO final pathway
+Build GreenLang CityOS as a modular product on the shared substrate. The release target is FY31; GA is gated for FY31 Q4. Do not launch before RiskOS and Adaptation Planner mature Requires public-sector procurement/channel partner
+Why it exists
+Cities are climate's front line but run on disconnected tools. GPC inventories are done in Excel; action plans in Word; adaptation in separate consultancy reports; resident engagement nowhere. Climate cities (C40, GCoM) are ready to consolidate on a platform.
+Users and jobs to be done
+Functional scope
+Data, integrations, outputs, and evidence
+AI and automation behavior
+public dashboard narrative drafting
+project prioritization assistant
+grant/funding application support
+department data-gap assistant
+Final version roadmap
+Internal v0.3 private-alpha and v0.8 release-candidate gates apply between the external milestones above. A product may not move to GA unless the release gates below are satisfied.
+GA, delay, and risk gates
+Do not launch before RiskOS and Adaptation Planner mature
+Requires public-sector procurement/channel partner
+Start with paid pilots, not free civic demos
+Public data sharing and privacy must be governed
+Key risks to actively manage
+slow procurement
+custom political requirements
+data fragmentation across departments
+low-margin services
+Success metrics
+multi-year licenses
+departments onboarded
+projects tracked
+public dashboards published
+renewal/funding success
+Finance & Markets
+Dependency notes
+Upstream: Ledger, Entity Graph, RiskOS, Adaptation Planner.
+Downstream: Transition Finance Studio, Comply (city-level disclosure).
+10. Finance & Markets
+This chapter covers 5 products in the Finance & Markets. Each product is specified at PRD-lite depth: definition, buyer, core capabilities, data/integrations, revenue model, full version roadmap, success KPIs, and upstream/downstream dependencies.
+
+Finance & Markets
+Proceed after the trust substrate is credible. Keep analytics separate from regulated financial advice, require legal review for transaction/take-rate flows, and sequence MRV before marketplaces or CDR portfolios.
+
+31. GreenLang FinanceOS
+CTO final pathway
+Build GreenLang FinanceOS as a modular product on the shared substrate. The release target is FY29; GA is gated for FY29 Q4. GA after enough enterprise/asset data exists to support finance-grade outputs Methodology and assumptions must be explicit
+Why it exists
+Every major financial institution must disclose financed emissions (PCAF), transition plans (GFANZ, ISSB S2), and increasingly nature risk. Today this is a patchwork of consultant spreadsheets and niche tools (OS-Climate, Manifest, Persefoni FI). The integrated substrate - portfolio + emissions + risk + engagement + disclosure - is missing.
+Users and jobs to be done
+Functional scope
+Data, integrations, outputs, and evidence
+AI and automation behavior
+borrower data-gap assistant
+portfolio summarizer
+IC memo drafting with citations
+risk/transition explanation assistant
+Final version roadmap
+Internal v0.3 private-alpha and v0.8 release-candidate gates apply between the external milestones above. A product may not move to GA unless the release gates below are satisfied.
+GA, delay, and risk gates
+GA after enough enterprise/asset data exists to support finance-grade outputs
+Methodology and assumptions must be explicit
+Do not overstate investment advice
+Borrower permissioning and confidentiality critical
+Key risks to actively manage
+finance-grade data quality expectations
+liability around investment decisions
+methodology disputes
+sensitive portfolio data
+Success metrics
+AUM/loan exposure analyzed
+portfolios onboarded
+borrower data rooms created
+reports generated
+expansion from RiskOS/customers
+Dependency notes
+Upstream: Entity Graph, Scope Engine, RiskOS, Ledger.
+Downstream: Transition Finance Studio, Carbon Markets Hub, Nature/TNFD Hub, Comply.
+
+32. GreenLang Transition Finance Studio
+CTO final pathway
+Build GreenLang Transition Finance Studio as a modular product on the shared substrate. The release target is FY30; GA is gated for FY30 Q4. Do not enter regulated financial intermediation without counsel GA requires at least one lender/finance partner channel
+Why it exists
+Green and transition finance is growing but deal origination and structuring remains bespoke. KPI selection, target calibration, second-party opinions, and post-issuance monitoring are spread across consultants and SPOs. This slows deals and limits scale.
+Users and jobs to be done
+Functional scope
+Data, integrations, outputs, and evidence
+AI and automation behavior
+deal memo drafting
+diligence gap detection
+impact narrative generator
+scenario sensitivity assistant
+Final version roadmap
+Internal v0.3 private-alpha and v0.8 release-candidate gates apply between the external milestones above. A product may not move to GA unless the release gates below are satisfied.
+GA, delay, and risk gates
+Do not enter regulated financial intermediation without counsel
+GA requires at least one lender/finance partner channel
+Project impact must trace to operational data/evidence
+Deal templates must be jurisdiction-aware
+Key risks to actively manage
+financial regulatory exposure
+project execution risk
+over-customized deal work
+lender trust barrier
+Success metrics
+projects packaged
+capital pipeline value
+deal conversion rate
+monitoring compliance
+per-deal revenue
+Dependency notes
+Upstream: Ledger, Comply, FinanceOS, Microgrid Planner (for PF), Adaptation Planner.
+Downstream: regulator/investor reporting.
+
+33. GreenLang MRV Studio
+CTO final pathway
+Build GreenLang MRV Studio as a modular product on the shared substrate. The release target is FY29; GA is gated for FY29 Q4. GA only for selected project types, not all carbon markets Methodology support must be explicit and reviewed
+Why it exists
+Voluntary and compliance carbon markets are crawling out of a trust crisis. ICVCM CCPs, VCMI, SBTi Removals, and the 2028 Article 6 implementation all demand better MRV. Today, project developers spend months on spreadsheets and auditors struggle with uneven data. Good MRV software is a chokepoint.
+Users and jobs to be done
+Functional scope
+Data, integrations, outputs, and evidence
+AI and automation behavior
+monitoring evidence triage
+methodology checklist assistant
+verification question drafting
+data anomaly detection
+Final version roadmap
+Internal v0.3 private-alpha and v0.8 release-candidate gates apply between the external milestones above. A product may not move to GA unless the release gates below are satisfied.
+GA, delay, and risk gates
+GA only for selected project types, not all carbon markets
+Methodology support must be explicit and reviewed
+Verifier workflow required before buyer-facing claims
+Avoid becoming registry unless strategically necessary
+Key risks to actively manage
+methodology complexity
+verification liability
+project-type sprawl
+carbon market credibility concerns
+Success metrics
+projects onboarded
+monitoring reports generated
+verification cycle time
+findings closure rate
+buyer/verifier acceptance
+Dependency notes
+Upstream: Ledger, Factors, Connect, Methane & Nitrogen Monitor, AgriLandOS.
+Downstream: Carbon Markets Hub, CDR Portfolio Manager, Proof Hub.
+
+34. GreenLang Carbon Markets Hub
+CTO final pathway
+Build GreenLang Carbon Markets Hub as a modular product on the shared substrate. The release target is FY30; GA is gated for FY30 Q4. No GA before MRV Studio and Proof Hub are credible Legal review required for transaction roles
+Why it exists
+Corporate buyers and traders face a fragmented, low-transparency market. CORSIA, Article 6, CCTS, EU ETS, and voluntary markets all have different units, registries, and quality bars. Good procurement infrastructure is missing.
+Users and jobs to be done
+Functional scope
+Data, integrations, outputs, and evidence
+AI and automation behavior
+credit-quality triage
+portfolio recommendation assistant
+risk flag summarizer
+claim language review
+Final version roadmap
+Internal v0.3 private-alpha and v0.8 release-candidate gates apply between the external milestones above. A product may not move to GA unless the release gates below are satisfied.
+GA, delay, and risk gates
+No GA before MRV Studio and Proof Hub are credible
+Legal review required for transaction roles
+Clear disclaimers around investment/quality advice
+Start with analytics and diligence before marketplace liquidity
+Key risks to actively manage
+carbon market reputational risk
+legal/regulatory exposure
+low-quality credits
+conflicts of interest
+Success metrics
+credits/projects analyzed
+buyer portfolios created
+transaction volume influenced
+retirement evidence completeness
+quality-risk alerts acted on
+Dependency notes
+Upstream: MRV Studio, Factors.
+Downstream: CDR Portfolio Manager, Comply, FinanceOS.
+
+35. GreenLang CDR Portfolio Manager
+CTO final pathway
+Build GreenLang CDR Portfolio Manager as a modular product on the shared substrate. The release target is FY31; GA is gated for FY31 Q4. Do not launch before CDR buyer demand and MRV/proof stack mature Start with portfolio management, not exchange operations
+Why it exists
+Durable CDR (DAC, enhanced weathering, biochar, ocean, bio-oil) is a young market where buyers are building portfolios of offtake with complex delivery timelines (5-20 years). Watershed/Frontier/Isometric provide parts of this, but buyers want integrated portfolio infrastructure.
+Users and jobs to be done
+Functional scope
+Data, integrations, outputs, and evidence
+AI and automation behavior
+portfolio risk summarizer
+supplier diligence assistant
+claim review assistant
+delivery anomaly detection
+Final version roadmap
+Internal v0.3 private-alpha and v0.8 release-candidate gates apply between the external milestones above. A product may not move to GA unless the release gates below are satisfied.
+GA, delay, and risk gates
+Do not launch before CDR buyer demand and MRV/proof stack mature
+Start with portfolio management, not exchange operations
+Claims must be evidence-backed and conservative
+Legal review for any transaction monetization
+Key risks to actively manage
+CDR market immaturity
+delivery failure risk
+permanence/quality disputes
+legal exposure around claims
+Success metrics
+tonnes under management
+delivery tracking completeness
+buyer retention
+diligence reports issued
+claim issues detected/prevented
+Circularity
+Dependency notes
+Upstream: MRV Studio, Carbon Markets Hub, Factors.
+Downstream: Comply, FinanceOS.
+11. Circularity
+This chapter covers 1 product in the Circularity. Each product is specified at PRD-lite depth: definition, buyer, core capabilities, data/integrations, revenue model, full version roadmap, success KPIs, and upstream/downstream dependencies.
+
+Circularity
+Launch late and tie tightly to DPP, PCF, SupplierOS, and evidence data. Treat circularity as a product-lifecycle extension, not a new disconnected category.
+
+36. GreenLang Circularity Hub
+CTO final pathway
+Build GreenLang Circularity Hub as a modular product on the shared substrate. The release target is FY31; GA is gated for FY31 Q4. Do not launch before DPP/PCF/SupplierOS are stable Start with packaging/materials categories tied to customers
+Why it exists
+Circularity regulation is arriving fast (ESPR, EU Packaging & Packaging Waste Regulation, EPR schemes worldwide). Brands need take-back rates, recycled content, durability, and repairability tracking. Today this is in spreadsheets and fragmented supplier systems.
+Users and jobs to be done
+Functional scope
+Data, integrations, outputs, and evidence
+AI and automation behavior
+material classification assistant
+circularity improvement recommendation
+evidence gap detection
+supplier request drafting
+Final version roadmap
+Internal v0.3 private-alpha and v0.8 release-candidate gates apply between the external milestones above. A product may not move to GA unless the release gates below are satisfied.
+GA, delay, and risk gates
+Do not launch before DPP/PCF/SupplierOS are stable
+Start with packaging/materials categories tied to customers
+Separate circularity metrics from carbon impact unless calculated
+Evidence standards must be clear
+Key risks to actively manage
+category-specific complexity
+weak data from suppliers/recyclers
+greenwashing risk
+standards fragmentation
+Success metrics
+material flows tracked
+recycled-content evidence coverage
+DPP integration rate
+circularity projects created
+supplier response rate
+Roadmap operating model
+GreenLang should run a stage-gate operating model. The product calendar is the ambition; the gates determine the actual release. This prevents execution sprawl while preserving the full Climate OS vision.
+Product squads by horizon
+Portfolio kill, pause, and merge criteria
+Kill or merge a product if it cannot identify a buyer with budget and urgency after two discovery cycles.
+Pause a product if the required substrate dependency is not stable; do not build workaround infrastructure for a single module.
+Merge a product into another module if the workflow is primarily a feature and cannot support its own packaging, P&L, or buyer motion.
+Delay GA if onboarding requires bespoke consulting, custom data models, or non-repeatable integrations for more than 70% of customers.
+Delay network/transaction products if legal role, trust model, and conflict-of-interest controls are unresolved.
+Prioritize products that increase data reuse, ACV expansion, and workflow lock-in across multiple GreenLang modules.
+Appendix A - Product bank grouped by launch year
+FY27 (2026-27)
+Core Platform: GreenLang Factors
+Core Platform: GreenLang Connect
+Core Platform: GreenLang Entity Graph
+Core Platform: GreenLang Climate Ledger
+Core Platform: GreenLang Evidence Vault
+Core Platform: GreenLang Policy Graph
+Core Platform: GreenLang Agent Runtime + Eval
+Core Platform: GreenLang SDK/API/CLI
+Compliance Cloud: GreenLang Comply
+Compliance Cloud: GreenLang CBAM
+Compliance Cloud: GreenLang Scope Engine
+FY28 (2027-28)
+Supply Chain Cloud: GreenLang SupplierOS
+Supply Chain Cloud: GreenLang PCF Studio
+Supply Chain Cloud: GreenLang DPP Hub
+Operations Cloud: GreenLang PlantOS
+Operations Cloud: GreenLang BuildingOS
+FY29 (2028-29)
+Supply Chain Cloud: GreenLang Proof Hub
+Operations Cloud: GreenLang DataCenter CarbonOps
+Operations Cloud: GreenLang PowerOS
+Mobility Cloud: GreenLang FleetOS
+Risk & Public Sector: GreenLang RiskOS
+Finance & Markets: GreenLang FinanceOS
+Finance & Markets: GreenLang MRV Studio
+FY30 (2029-30)
+Operations Cloud: GreenLang FlexOS
+Operations Cloud: GreenLang Microgrid Planner
+Mobility Cloud: GreenLang Freight Carbon API
+Land/Water/Nature: GreenLang AgriLandOS
+Land/Water/Nature: GreenLang WaterOS
+Land/Water/Nature: GreenLang Methane & Nitrogen Monitor
+Risk & Public Sector: GreenLang Adaptation Planner
+Finance & Markets: GreenLang Transition Finance Studio
+Finance & Markets: GreenLang Carbon Markets Hub
+FY31 (2030-31)
+Land/Water/Nature: GreenLang Nature/TNFD Hub
+Risk & Public Sector: GreenLang CityOS
+Finance & Markets: GreenLang CDR Portfolio Manager
+Circularity: GreenLang Circularity Hub
+Appendix B - PRD template for each product
+Appendix C - Source and traceability note
+This roadmap is derived from the uploaded GreenLang Climate OS v3 business plan. In that plan, the four-layer architecture is defined as: Layer 1 Data Foundation, Layer 2 System of Record, Layer 3 Intelligence Layer, and Layer 4 Sector Clouds. The product bank lists 36 products across Core Platform, Compliance Cloud, Supply Chain Cloud, Operations Cloud, Mobility Cloud, Land/Water/Nature, Risk & Public Sector, Finance & Markets, and Circularity. This document preserves that mapping and adds product definitions, version timing, release gates, and PRD-ready structure.
+External regulations, standards, and market assumptions should be validated again before each GA release because climate policy, disclosure requirements, carbon-market rules, and assurance practices can change materially between FY27 and FY31.
+Dependency notes
+Upstream: PCF Studio, DPP Hub, SupplierOS, Ledger.
+Downstream: Comply, regulator portals.
+12. Cross-product dependency notes
+Three dependency patterns matter for sequencing decisions:
+3.1 Substrate before sector clouds
+Factors, Connect, Entity Graph, Climate Ledger, Evidence Vault, and Policy Graph must all ship to v0.9 Public Beta before any sector cloud goes Public Beta. Skipping this discipline is how climate-tech companies end up with 30 disconnected products. The sequencing pain is real in FY27 (revenue is slower), but the architectural payoff is every subsequent product.
+3.2 The supply-chain / compliance loop
+Comply is the wedge that opens the door. CBAM and Scope Engine make the wedge concrete for manufacturers. SupplierOS, PCF Studio, and DPP Hub close the loop by turning supplier responses into structured data that flows back into Ledger and Comply. Expect most FY27-FY28 ACV to come from this loop before operations, risk, or finance become material.
+3.3 Operations outcomes feed platform stickiness
+PlantOS, BuildingOS, DataCenter CarbonOps, PowerOS, and FlexOS are the ROI-grade products that get CFO attention. Once the Ledger has verified savings flowing into it, the platform is no longer a reporting tool - it is the system of record for climate operations and the substrate on which RiskOS, FinanceOS, and Markets products stand.
+3.4 The finance-and-markets spine
+MRV Studio (FY29), FinanceOS (FY29), Transition Finance Studio (FY30), Carbon Markets Hub (FY30), and CDR Portfolio Manager (FY31) compose the finance-and-markets spine. They are deliberately sequenced after substrate and operations have hardened, because their value proposition is 'trust plus workflow' - and trust requires the substrate to be production-grade first.
+3.5 Public-sector and circularity tail
+CityOS (FY31) and Circularity Hub (FY31) are the slowest-to-revenue but highest-mission-alignment products. They are viable because by FY31 the substrate is mature, the brand is established, and partner channels (utilities, MDBs, waste-management networks) exist to distribute.
+13. Appendix - version labeling in practice
+One practical note on version labeling: the milestone labels (v0.1 Alpha, v0.5 Closed Beta, v0.9 Public Beta, v1.0 GA, v2.0, v3.0) are strategic release boundaries. Between them, products ship monthly or bi-weekly minor releases (v1.1, v1.2, v1.3, ...) as normal SaaS iterations. Those minor releases are not enumerated in this document - they are an engineering cadence decision, not a strategic one.
+Design-partner commitments should be pinned to strategic releases. A design partner who signs 'available at v0.5 Closed Beta in FY27 Q2' expects a working end-to-end workflow that quarter, not every minor iteration. A customer who signs 'GA in FY28 Q2' expects SLA and priced packaging to be live that quarter.
+For regulator- and auditor-facing products (CBAM, Comply, Scope Engine, MRV Studio, Proof Hub, Evidence Vault), v1.0 GA is gated on external attestation (successful regulator submission, audited customer filing, or verifier acceptance) rather than internal readiness. Those gates are called out in each product's version roadmap.
+Open-core products (Factors, SDK/API/CLI) follow the same milestone ladder but additionally version the open-source repos via semver independently - the community tier may hit its own v1.0 ahead of the commercial tier's GA, and that is fine as long as the commercial SLA is honest about what the community tier does and does not cover.
+
+Part 5 - Portfolio Governance and PRD Template
+Portfolio kill, pause, and merge criteria
+Kill or merge a product if it cannot identify a buyer with budget and urgency after two discovery cycles.
+Pause a product if the required substrate dependency is not stable; do not build workaround infrastructure for a single module.
+Merge a product into another module if the workflow is primarily a feature and cannot support its own packaging, P&L, or buyer motion.
+Delay GA if onboarding requires bespoke consulting, custom data models, or non-repeatable integrations for more than 70% of customers.
+Delay network/transaction products if legal role, trust model, market permissions, and conflict-of-interest controls are unresolved.
+Prioritize products that increase data reuse, ACV expansion, workflow lock-in, and repeatable implementation across multiple GreenLang modules.
+Quarterly portfolio review questions
+Standard PRD expansion template
+Final CTO note
+This document should be treated as the final product-definition baseline, not as a frozen engineering backlog. The correct discipline is to preserve the architecture, version gates, and sequencing while letting quarterly customer evidence update scope, order, and staffing. GreenLang wins by compounding one trusted substrate across many climate workflows; it loses if each cloud becomes a separate product company inside the company.

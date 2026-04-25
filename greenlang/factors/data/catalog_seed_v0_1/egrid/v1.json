@@ -1,0 +1,4273 @@
+{
+  "schema": "https://schemas.greenlang.io/factors/factor_record_v0_1.schema.json",
+  "source_id": "egrid",
+  "source_urn": "urn:gl:source:egrid",
+  "source_version": "2022.1",
+  "records": [
+    {
+      "urn": "urn:gl:factor:egrid:eGRID:sub_AKGD:AKGD:2022:v1",
+      "factor_id_alias": "EF:eGRID:sub_AKGD:AKGD:2022:v1",
+      "source_urn": "urn:gl:source:egrid",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "name": "electricity grid \u2014 AKGD",
+      "description": "Emission emission factor for electricity grid \u2014 AKGD, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.50735625976,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:grid_zone:egrid-akgd",
+      "vintage_start": "2022-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/egrid/download-data"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/egrid/download-data",
+        "source_record_id": "egrid;record-0",
+        "source_publication": "eGRID",
+        "source_version": "2022.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/egrid/2022.1/seed.json",
+        "raw_artifact_sha256": "63559986e58cf98267ea188e2a69e87a661fc1e44d50d956bb29ed41c1c943b1",
+        "parser_id": "greenlang.factors.ingestion.parsers.egrid",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-0",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_egrid"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "akgd"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:egrid:eGRID:sub_AKMS:AKMS:2022:v1",
+      "factor_id_alias": "EF:eGRID:sub_AKMS:AKMS:2022:v1",
+      "source_urn": "urn:gl:source:egrid",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "name": "electricity grid \u2014 AKMS",
+      "description": "Emission emission factor for electricity grid \u2014 AKMS, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.23019113612,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:grid_zone:egrid-akms",
+      "vintage_start": "2022-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/egrid/download-data"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/egrid/download-data",
+        "source_record_id": "egrid;record-1",
+        "source_publication": "eGRID",
+        "source_version": "2022.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/egrid/2022.1/seed.json",
+        "raw_artifact_sha256": "2ac3443cdd83e5b60c917516f55c155d6f223b43b37badb44e475382e6dbe126",
+        "parser_id": "greenlang.factors.ingestion.parsers.egrid",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-1",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_egrid"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "akms"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:egrid:eGRID:sub_AZNM:AZNM:2022:v1",
+      "factor_id_alias": "EF:eGRID:sub_AZNM:AZNM:2022:v1",
+      "source_urn": "urn:gl:source:egrid",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "name": "electricity grid \u2014 AZNM",
+      "description": "Emission emission factor for electricity grid \u2014 AZNM, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.38314462648,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:grid_zone:egrid-aznm",
+      "vintage_start": "2022-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/egrid/download-data"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/egrid/download-data",
+        "source_record_id": "egrid;record-2",
+        "source_publication": "eGRID",
+        "source_version": "2022.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/egrid/2022.1/seed.json",
+        "raw_artifact_sha256": "37f3a63dc93abfb6202cf171ac43bf17f73e1af18425facfcb672ef34a672fd8",
+        "parser_id": "greenlang.factors.ingestion.parsers.egrid",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-2",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_egrid"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "aznm"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:egrid:eGRID:sub_CAMX:CAMX:2022:v1",
+      "factor_id_alias": "EF:eGRID:sub_CAMX:CAMX:2022:v1",
+      "source_urn": "urn:gl:source:egrid",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "name": "electricity grid \u2014 CAMX",
+      "description": "Emission emission factor for electricity grid \u2014 CAMX, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.21612978412,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:grid_zone:egrid-camx",
+      "vintage_start": "2022-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/egrid/download-data"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/egrid/download-data",
+        "source_record_id": "egrid;record-3",
+        "source_publication": "eGRID",
+        "source_version": "2022.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/egrid/2022.1/seed.json",
+        "raw_artifact_sha256": "032d6dcc53ed352bc95af48fedeb1c3530faf765ce82f0acc87961c60353037e",
+        "parser_id": "greenlang.factors.ingestion.parsers.egrid",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-3",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_egrid"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "camx"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:egrid:eGRID:sub_ERCT:ERCT:2022:v1",
+      "factor_id_alias": "EF:eGRID:sub_ERCT:ERCT:2022:v1",
+      "source_urn": "urn:gl:source:egrid",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "name": "electricity grid \u2014 ERCT",
+      "description": "Emission emission factor for electricity grid \u2014 ERCT, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.396174963864,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:grid_zone:egrid-erct",
+      "vintage_start": "2022-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/egrid/download-data"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/egrid/download-data",
+        "source_record_id": "egrid;record-4",
+        "source_publication": "eGRID",
+        "source_version": "2022.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/egrid/2022.1/seed.json",
+        "raw_artifact_sha256": "fdd88501980d54e040ac153ff87ac0c41e612d597b1675e9d775e78266a2d79b",
+        "parser_id": "greenlang.factors.ingestion.parsers.egrid",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-4",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_egrid"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "erct"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:egrid:eGRID:sub_FRCC:FRCC:2022:v1",
+      "factor_id_alias": "EF:eGRID:sub_FRCC:FRCC:2022:v1",
+      "source_urn": "urn:gl:source:egrid",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "name": "electricity grid \u2014 FRCC",
+      "description": "Emission emission factor for electricity grid \u2014 FRCC, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.379594815488,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:grid_zone:egrid-frcc",
+      "vintage_start": "2022-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/egrid/download-data"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/egrid/download-data",
+        "source_record_id": "egrid;record-5",
+        "source_publication": "eGRID",
+        "source_version": "2022.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/egrid/2022.1/seed.json",
+        "raw_artifact_sha256": "634e085148183029a12a017fd904c643ed6f663e3166aad366cc9ceae3748b4c",
+        "parser_id": "greenlang.factors.ingestion.parsers.egrid",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-5",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_egrid"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "frcc"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:egrid:eGRID:sub_HIMS:HIMS:2022:v1",
+      "factor_id_alias": "EF:eGRID:sub_HIMS:HIMS:2022:v1",
+      "source_urn": "urn:gl:source:egrid",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "name": "electricity grid \u2014 HIMS",
+      "description": "Emission emission factor for electricity grid \u2014 HIMS, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.556141440136,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:grid_zone:egrid-hims",
+      "vintage_start": "2022-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/egrid/download-data"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/egrid/download-data",
+        "source_record_id": "egrid;record-6",
+        "source_publication": "eGRID",
+        "source_version": "2022.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/egrid/2022.1/seed.json",
+        "raw_artifact_sha256": "e727e3d7357a06b8d3a73dad142847fad843ee299e940bd9e5dfd23a14455413",
+        "parser_id": "greenlang.factors.ingestion.parsers.egrid",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-6",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_egrid"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "hims"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:egrid:eGRID:sub_HIOA:HIOA:2022:v1",
+      "factor_id_alias": "EF:eGRID:sub_HIOA:HIOA:2022:v1",
+      "source_urn": "urn:gl:source:egrid",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "name": "electricity grid \u2014 HIOA",
+      "description": "Emission emission factor for electricity grid \u2014 HIOA, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.732887645264,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:grid_zone:egrid-hioa",
+      "vintage_start": "2022-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/egrid/download-data"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/egrid/download-data",
+        "source_record_id": "egrid;record-7",
+        "source_publication": "eGRID",
+        "source_version": "2022.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/egrid/2022.1/seed.json",
+        "raw_artifact_sha256": "0414217b4fdc430e6e829eb1c44c60e5c1cfa71e888c8528aa0b3c5601b9e17c",
+        "parser_id": "greenlang.factors.ingestion.parsers.egrid",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-7",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_egrid"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "hioa"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:egrid:eGRID:sub_MROE:MROE:2022:v1",
+      "factor_id_alias": "EF:eGRID:sub_MROE:MROE:2022:v1",
+      "source_urn": "urn:gl:source:egrid",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "name": "electricity grid \u2014 MROE",
+      "description": "Emission emission factor for electricity grid \u2014 MROE, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.60413691684,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:grid_zone:egrid-mroe",
+      "vintage_start": "2022-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/egrid/download-data"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/egrid/download-data",
+        "source_record_id": "egrid;record-8",
+        "source_publication": "eGRID",
+        "source_version": "2022.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/egrid/2022.1/seed.json",
+        "raw_artifact_sha256": "c8272ed30acf76939232b6618005b45dc7b352be920c18e12f17e4bcd37e0d8d",
+        "parser_id": "greenlang.factors.ingestion.parsers.egrid",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-8",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_egrid"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "mroe"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:egrid:eGRID:sub_MROW:MROW:2022:v1",
+      "factor_id_alias": "EF:eGRID:sub_MROW:MROW:2022:v1",
+      "source_urn": "urn:gl:source:egrid",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "name": "electricity grid \u2014 MROW",
+      "description": "Emission emission factor for electricity grid \u2014 MROW, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.411765828088,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:grid_zone:egrid-mrow",
+      "vintage_start": "2022-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/egrid/download-data"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/egrid/download-data",
+        "source_record_id": "egrid;record-9",
+        "source_publication": "eGRID",
+        "source_version": "2022.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/egrid/2022.1/seed.json",
+        "raw_artifact_sha256": "fe03d7947de85964cb58d652dcb80abef44e8389067d6e5a5be4b593cfc684df",
+        "parser_id": "greenlang.factors.ingestion.parsers.egrid",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-9",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_egrid"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "mrow"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:egrid:eGRID:sub_NEWE:NEWE:2022:v1",
+      "factor_id_alias": "EF:eGRID:sub_NEWE:NEWE:2022:v1",
+      "source_urn": "urn:gl:source:egrid",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "name": "electricity grid \u2014 NEWE",
+      "description": "Emission emission factor for electricity grid \u2014 NEWE, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.241781772496,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:grid_zone:egrid-newe",
+      "vintage_start": "2022-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/egrid/download-data"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/egrid/download-data",
+        "source_record_id": "egrid;record-10",
+        "source_publication": "eGRID",
+        "source_version": "2022.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/egrid/2022.1/seed.json",
+        "raw_artifact_sha256": "fa6e967f8983da34b7edc1fd229ce03851528e6b9dbb10f937be3f2f466b96eb",
+        "parser_id": "greenlang.factors.ingestion.parsers.egrid",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-10",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_egrid"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "newe"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:egrid:eGRID:sub_NWPP:NWPP:2022:v1",
+      "factor_id_alias": "EF:eGRID:sub_NWPP:NWPP:2022:v1",
+      "source_urn": "urn:gl:source:egrid",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "name": "electricity grid \u2014 NWPP",
+      "description": "Emission emission factor for electricity grid \u2014 NWPP, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.292423051336,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:grid_zone:egrid-nwpp",
+      "vintage_start": "2022-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/egrid/download-data"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/egrid/download-data",
+        "source_record_id": "egrid;record-11",
+        "source_publication": "eGRID",
+        "source_version": "2022.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/egrid/2022.1/seed.json",
+        "raw_artifact_sha256": "394fb02ae1c87dc00cc43e6b7de5617a47ea6ddc037dc79173b6673535acc4df",
+        "parser_id": "greenlang.factors.ingestion.parsers.egrid",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-11",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_egrid"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "nwpp"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:egrid:eGRID:sub_NYCW:NYCW:2022:v1",
+      "factor_id_alias": "EF:eGRID:sub_NYCW:NYCW:2022:v1",
+      "source_urn": "urn:gl:source:egrid",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "name": "electricity grid \u2014 NYCW",
+      "description": "Emission emission factor for electricity grid \u2014 NYCW, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.241407105504,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:grid_zone:egrid-nycw",
+      "vintage_start": "2022-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/egrid/download-data"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/egrid/download-data",
+        "source_record_id": "egrid;record-12",
+        "source_publication": "eGRID",
+        "source_version": "2022.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/egrid/2022.1/seed.json",
+        "raw_artifact_sha256": "db2ae5c7833760e89412bc7d2364c34c4cfce60dba5b3f63fcda407ab1686b46",
+        "parser_id": "greenlang.factors.ingestion.parsers.egrid",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-12",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_egrid"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "nycw"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:egrid:eGRID:sub_NYLI:NYLI:2022:v1",
+      "factor_id_alias": "EF:eGRID:sub_NYLI:NYLI:2022:v1",
+      "source_urn": "urn:gl:source:egrid",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "name": "electricity grid \u2014 NYLI",
+      "description": "Emission emission factor for electricity grid \u2014 NYLI, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.5541179662239999,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:grid_zone:egrid-nyli",
+      "vintage_start": "2022-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/egrid/download-data"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/egrid/download-data",
+        "source_record_id": "egrid;record-13",
+        "source_publication": "eGRID",
+        "source_version": "2022.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/egrid/2022.1/seed.json",
+        "raw_artifact_sha256": "56c4487fe9b096563ced64dc2cf71d8f50058fbadaf18c9af3ebfda941207772",
+        "parser_id": "greenlang.factors.ingestion.parsers.egrid",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-13",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_egrid"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "nyli"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:egrid:eGRID:sub_NYUP:NYUP:2022:v1",
+      "factor_id_alias": "EF:eGRID:sub_NYUP:NYUP:2022:v1",
+      "source_urn": "urn:gl:source:egrid",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "name": "electricity grid \u2014 NYUP",
+      "description": "Emission emission factor for electricity grid \u2014 NYUP, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.117528408752,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:grid_zone:egrid-nyup",
+      "vintage_start": "2022-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/egrid/download-data"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/egrid/download-data",
+        "source_record_id": "egrid;record-14",
+        "source_publication": "eGRID",
+        "source_version": "2022.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/egrid/2022.1/seed.json",
+        "raw_artifact_sha256": "e954e71ad23ff16a23a54d99975c2172e9bc16daf0445e1ab31fca01893346c6",
+        "parser_id": "greenlang.factors.ingestion.parsers.egrid",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-14",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_egrid"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "nyup"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:egrid:eGRID:sub_PRMS:PRMS:2022:v1",
+      "factor_id_alias": "EF:eGRID:sub_PRMS:PRMS:2022:v1",
+      "source_urn": "urn:gl:source:egrid",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "name": "electricity grid \u2014 PRMS",
+      "description": "Emission emission factor for electricity grid \u2014 PRMS, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.7316538750239999,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:grid_zone:egrid-prms",
+      "vintage_start": "2022-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/egrid/download-data"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/egrid/download-data",
+        "source_record_id": "egrid;record-15",
+        "source_publication": "eGRID",
+        "source_version": "2022.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/egrid/2022.1/seed.json",
+        "raw_artifact_sha256": "f417fbe5df3f3a62f440e01bf61d710b1a12aab0cfd0b4599a3b5447526e8b19",
+        "parser_id": "greenlang.factors.ingestion.parsers.egrid",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-15",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_egrid"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "prms"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:egrid:eGRID:sub_RFCE:RFCE:2022:v1",
+      "factor_id_alias": "EF:eGRID:sub_RFCE:RFCE:2022:v1",
+      "source_urn": "urn:gl:source:egrid",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "name": "electricity grid \u2014 RFCE",
+      "description": "Emission emission factor for electricity grid \u2014 RFCE, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.269574715112,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:grid_zone:egrid-rfce",
+      "vintage_start": "2022-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/egrid/download-data"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/egrid/download-data",
+        "source_record_id": "egrid;record-16",
+        "source_publication": "eGRID",
+        "source_version": "2022.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/egrid/2022.1/seed.json",
+        "raw_artifact_sha256": "5672a212be38164fc8d867fe6fe21c5790a2b5c524a12ac559cec4a44ef957cc",
+        "parser_id": "greenlang.factors.ingestion.parsers.egrid",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-16",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_egrid"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "rfce"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:egrid:eGRID:sub_RFCM:RFCM:2022:v1",
+      "factor_id_alias": "EF:eGRID:sub_RFCM:RFCM:2022:v1",
+      "source_urn": "urn:gl:source:egrid",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "name": "electricity grid \u2014 RFCM",
+      "description": "Emission emission factor for electricity grid \u2014 RFCM, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.546245877064,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:grid_zone:egrid-rfcm",
+      "vintage_start": "2022-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/egrid/download-data"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/egrid/download-data",
+        "source_record_id": "egrid;record-17",
+        "source_publication": "eGRID",
+        "source_version": "2022.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/egrid/2022.1/seed.json",
+        "raw_artifact_sha256": "fab2826d13d489ed5bb4e7040698ec87ec218e43baf96b46ba30781b89cc63fd",
+        "parser_id": "greenlang.factors.ingestion.parsers.egrid",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-17",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_egrid"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "rfcm"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:egrid:eGRID:sub_RFCW:RFCW:2022:v1",
+      "factor_id_alias": "EF:eGRID:sub_RFCW:RFCW:2022:v1",
+      "source_urn": "urn:gl:source:egrid",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "name": "electricity grid \u2014 RFCW",
+      "description": "Emission emission factor for electricity grid \u2014 RFCW, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.48847095684,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:grid_zone:egrid-rfcw",
+      "vintage_start": "2022-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/egrid/download-data"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/egrid/download-data",
+        "source_record_id": "egrid;record-18",
+        "source_publication": "eGRID",
+        "source_version": "2022.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/egrid/2022.1/seed.json",
+        "raw_artifact_sha256": "81e4b45c7db211d8d5fefc9400b7d5d82fd777fe3ee271b0b75748235508eabf",
+        "parser_id": "greenlang.factors.ingestion.parsers.egrid",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-18",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_egrid"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "rfcw"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:egrid:eGRID:sub_RMPA:RMPA:2022:v1",
+      "factor_id_alias": "EF:eGRID:sub_RMPA:RMPA:2022:v1",
+      "source_urn": "urn:gl:source:egrid",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "name": "electricity grid \u2014 RMPA",
+      "description": "Emission emission factor for electricity grid \u2014 RMPA, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.5414591206880001,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:grid_zone:egrid-rmpa",
+      "vintage_start": "2022-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/egrid/download-data"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/egrid/download-data",
+        "source_record_id": "egrid;record-19",
+        "source_publication": "eGRID",
+        "source_version": "2022.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/egrid/2022.1/seed.json",
+        "raw_artifact_sha256": "3fde6b3ce7e0dd832d022dc7d5aa3a058c484fb93ab4ba7ac9bfecbe44dca986",
+        "parser_id": "greenlang.factors.ingestion.parsers.egrid",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-19",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_egrid"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "rmpa"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:egrid:eGRID:sub_SPNO:SPNO:2022:v1",
+      "factor_id_alias": "EF:eGRID:sub_SPNO:SPNO:2022:v1",
+      "source_urn": "urn:gl:source:egrid",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "name": "electricity grid \u2014 SPNO",
+      "description": "Emission emission factor for electricity grid \u2014 SPNO, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.47473619108000004,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:grid_zone:egrid-spno",
+      "vintage_start": "2022-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/egrid/download-data"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/egrid/download-data",
+        "source_record_id": "egrid;record-20",
+        "source_publication": "eGRID",
+        "source_version": "2022.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/egrid/2022.1/seed.json",
+        "raw_artifact_sha256": "da7aa3bca37251e9862f9778a66e4a1433be81236b1c05283a263310dd58a55f",
+        "parser_id": "greenlang.factors.ingestion.parsers.egrid",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-20",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_egrid"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "spno"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:egrid:eGRID:sub_SPSO:SPSO:2022:v1",
+      "factor_id_alias": "EF:eGRID:sub_SPSO:SPSO:2022:v1",
+      "source_urn": "urn:gl:source:egrid",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "name": "electricity grid \u2014 SPSO",
+      "description": "Emission emission factor for electricity grid \u2014 SPSO, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.463351485472,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:grid_zone:egrid-spso",
+      "vintage_start": "2022-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/egrid/download-data"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/egrid/download-data",
+        "source_record_id": "egrid;record-21",
+        "source_publication": "eGRID",
+        "source_version": "2022.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/egrid/2022.1/seed.json",
+        "raw_artifact_sha256": "437532084762316190efe3e5b92416439856fd133a775820dd8b5ba228c83808",
+        "parser_id": "greenlang.factors.ingestion.parsers.egrid",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-21",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_egrid"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "spso"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:egrid:eGRID:sub_SRMV:SRMV:2022:v1",
+      "factor_id_alias": "EF:eGRID:sub_SRMV:SRMV:2022:v1",
+      "source_urn": "urn:gl:source:egrid",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "name": "electricity grid \u2014 SRMV",
+      "description": "Emission emission factor for electricity grid \u2014 SRMV, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.393907003864,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:grid_zone:egrid-srmv",
+      "vintage_start": "2022-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/egrid/download-data"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/egrid/download-data",
+        "source_record_id": "egrid;record-22",
+        "source_publication": "eGRID",
+        "source_version": "2022.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/egrid/2022.1/seed.json",
+        "raw_artifact_sha256": "6457e9aa67e8dba6e0222f921f742540b649db8e84f582c950c853a9f42da609",
+        "parser_id": "greenlang.factors.ingestion.parsers.egrid",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-22",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_egrid"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "srmv"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:egrid:eGRID:sub_SRMW:SRMW:2022:v1",
+      "factor_id_alias": "EF:eGRID:sub_SRMW:SRMW:2022:v1",
+      "source_urn": "urn:gl:source:egrid",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "name": "electricity grid \u2014 SRMW",
+      "description": "Emission emission factor for electricity grid \u2014 SRMW, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.719490351952,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:grid_zone:egrid-srmw",
+      "vintage_start": "2022-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/egrid/download-data"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/egrid/download-data",
+        "source_record_id": "egrid;record-23",
+        "source_publication": "eGRID",
+        "source_version": "2022.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/egrid/2022.1/seed.json",
+        "raw_artifact_sha256": "ab706369c7f88f7d4d63011e424782665b83d4814ce6a4739a53ef74426ff893",
+        "parser_id": "greenlang.factors.ingestion.parsers.egrid",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-23",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_egrid"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "srmw"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:egrid:eGRID:sub_SRSO:SRSO:2022:v1",
+      "factor_id_alias": "EF:eGRID:sub_SRSO:SRSO:2022:v1",
+      "source_urn": "urn:gl:source:egrid",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "name": "electricity grid \u2014 SRSO",
+      "description": "Emission emission factor for electricity grid \u2014 SRSO, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.38768054647999994,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:grid_zone:egrid-srso",
+      "vintage_start": "2022-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/egrid/download-data"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/egrid/download-data",
+        "source_record_id": "egrid;record-24",
+        "source_publication": "eGRID",
+        "source_version": "2022.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/egrid/2022.1/seed.json",
+        "raw_artifact_sha256": "eb1f0c3437a2b5031e7ec8bfba0c9e629ee367e8cc2f5a08add792e719decd56",
+        "parser_id": "greenlang.factors.ingestion.parsers.egrid",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-24",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_egrid"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "srso"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:egrid:eGRID:sub_SRTV:SRTV:2022:v1",
+      "factor_id_alias": "EF:eGRID:sub_SRTV:SRTV:2022:v1",
+      "source_urn": "urn:gl:source:egrid",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "name": "electricity grid \u2014 SRTV",
+      "description": "Emission emission factor for electricity grid \u2014 SRTV, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.41345636547200004,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:grid_zone:egrid-srtv",
+      "vintage_start": "2022-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/egrid/download-data"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/egrid/download-data",
+        "source_record_id": "egrid;record-25",
+        "source_publication": "eGRID",
+        "source_version": "2022.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/egrid/2022.1/seed.json",
+        "raw_artifact_sha256": "afd8c62fb72f829f2cb944f7d924edcb3171dd8fdd7294e73d6400049c2525b6",
+        "parser_id": "greenlang.factors.ingestion.parsers.egrid",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-25",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_egrid"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "srtv"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:egrid:eGRID:sub_SRVC:SRVC:2022:v1",
+      "factor_id_alias": "EF:eGRID:sub_SRVC:SRVC:2022:v1",
+      "source_urn": "urn:gl:source:egrid",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "name": "electricity grid \u2014 SRVC",
+      "description": "Emission emission factor for electricity grid \u2014 SRVC, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.287718395112,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:grid_zone:egrid-srvc",
+      "vintage_start": "2022-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/egrid/download-data"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/egrid/download-data",
+        "source_record_id": "egrid;record-26",
+        "source_publication": "eGRID",
+        "source_version": "2022.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/egrid/2022.1/seed.json",
+        "raw_artifact_sha256": "490721d870f9b8ce22e343553e20b356208bab743714aee09f04b3f5d1212f4d",
+        "parser_id": "greenlang.factors.ingestion.parsers.egrid",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-26",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_egrid"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "subregion",
+        "srvc"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:egrid:eGRID:state_AL:US-AL:2022:v1",
+      "factor_id_alias": "EF:eGRID:state_AL:US-AL:2022:v1",
+      "source_urn": "urn:gl:source:egrid",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "name": "electricity grid \u2014 US-AL",
+      "description": "Emission emission factor for electricity grid \u2014 US-AL, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.315184751488,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:state_or_province:us-al",
+      "vintage_start": "2022-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/egrid/download-data"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/egrid/download-data",
+        "source_record_id": "egrid;record-27",
+        "source_publication": "eGRID",
+        "source_version": "2022.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/egrid/2022.1/seed.json",
+        "raw_artifact_sha256": "cc040cb76feac4d2c6ca6d1724cb010a8f91aad3def9417eb980759d5e86634f",
+        "parser_id": "greenlang.factors.ingestion.parsers.egrid",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-27",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_egrid"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "al"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:egrid:eGRID:state_AK:US-AK:2022:v1",
+      "factor_id_alias": "EF:eGRID:state_AK:US-AK:2022:v1",
+      "source_urn": "urn:gl:source:egrid",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "name": "electricity grid \u2014 US-AK",
+      "description": "Emission emission factor for electricity grid \u2014 US-AK, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.407064347008,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:state_or_province:us-ak",
+      "vintage_start": "2022-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/egrid/download-data"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/egrid/download-data",
+        "source_record_id": "egrid;record-28",
+        "source_publication": "eGRID",
+        "source_version": "2022.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/egrid/2022.1/seed.json",
+        "raw_artifact_sha256": "6cc1b0c925aeedb221a9df6b098da7925d29a1ed68c7e9f50425ab2678ba666c",
+        "parser_id": "greenlang.factors.ingestion.parsers.egrid",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-28",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_egrid"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "ak"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:egrid:eGRID:state_AZ:US-AZ:2022:v1",
+      "factor_id_alias": "EF:eGRID:state_AZ:US-AZ:2022:v1",
+      "source_urn": "urn:gl:source:egrid",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "name": "electricity grid \u2014 US-AZ",
+      "description": "Emission emission factor for electricity grid \u2014 US-AZ, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.33617381410400005,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:state_or_province:us-az",
+      "vintage_start": "2022-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/egrid/download-data"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/egrid/download-data",
+        "source_record_id": "egrid;record-29",
+        "source_publication": "eGRID",
+        "source_version": "2022.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/egrid/2022.1/seed.json",
+        "raw_artifact_sha256": "a6bc4275ffc352f5cbc79dc840de5a71f63fca6b98071199e443501012c2c945",
+        "parser_id": "greenlang.factors.ingestion.parsers.egrid",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-29",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_egrid"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "az"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:egrid:eGRID:state_AR:US-AR:2022:v1",
+      "factor_id_alias": "EF:eGRID:state_AR:US-AR:2022:v1",
+      "source_urn": "urn:gl:source:egrid",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "name": "electricity grid \u2014 US-AR",
+      "description": "Emission emission factor for electricity grid \u2014 US-AR, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.472217394704,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:state_or_province:us-ar",
+      "vintage_start": "2022-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/egrid/download-data"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/egrid/download-data",
+        "source_record_id": "egrid;record-30",
+        "source_publication": "eGRID",
+        "source_version": "2022.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/egrid/2022.1/seed.json",
+        "raw_artifact_sha256": "4a45c3238536dd97264f7c3a55db4c53fd1e1a9e60acce5fa0a235435a9a81a4",
+        "parser_id": "greenlang.factors.ingestion.parsers.egrid",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-30",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_egrid"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "ar"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:egrid:eGRID:state_CA:US-CA:2022:v1",
+      "factor_id_alias": "EF:eGRID:state_CA:US-CA:2022:v1",
+      "source_urn": "urn:gl:source:egrid",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "name": "electricity grid \u2014 US-CA",
+      "description": "Emission emission factor for electricity grid \u2014 US-CA, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.21250104811999998,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:state_or_province:us-ca",
+      "vintage_start": "2022-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/egrid/download-data"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/egrid/download-data",
+        "source_record_id": "egrid;record-31",
+        "source_publication": "eGRID",
+        "source_version": "2022.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/egrid/2022.1/seed.json",
+        "raw_artifact_sha256": "9d4def4d4b03ecc2e7c97405aa110c9d04ba6e5097fcddc14a5a6be6b1172f07",
+        "parser_id": "greenlang.factors.ingestion.parsers.egrid",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-31",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_egrid"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "ca"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:egrid:eGRID:state_CO:US-CO:2022:v1",
+      "factor_id_alias": "EF:eGRID:state_CO:US-CO:2022:v1",
+      "source_urn": "urn:gl:source:egrid",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "name": "electricity grid \u2014 US-CO",
+      "description": "Emission emission factor for electricity grid \u2014 US-CO, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.560963576688,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:state_or_province:us-co",
+      "vintage_start": "2022-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/egrid/download-data"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/egrid/download-data",
+        "source_record_id": "egrid;record-32",
+        "source_publication": "eGRID",
+        "source_version": "2022.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/egrid/2022.1/seed.json",
+        "raw_artifact_sha256": "3738626fec207aaaf943b0f7afc134f49d373af53093838d5a334df0b55628ae",
+        "parser_id": "greenlang.factors.ingestion.parsers.egrid",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-32",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_egrid"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "co"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:egrid:eGRID:state_CT:US-CT:2022:v1",
+      "factor_id_alias": "EF:eGRID:state_CT:US-CT:2022:v1",
+      "source_urn": "urn:gl:source:egrid",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "name": "electricity grid \u2014 US-CT",
+      "description": "Emission emission factor for electricity grid \u2014 US-CT, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.238606628496,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:state_or_province:us-ct",
+      "vintage_start": "2022-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/egrid/download-data"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/egrid/download-data",
+        "source_record_id": "egrid;record-33",
+        "source_publication": "eGRID",
+        "source_version": "2022.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/egrid/2022.1/seed.json",
+        "raw_artifact_sha256": "0945fc0732304df942bbc8d0dbcaba7c30d241e48d6466850182cedb6d173094",
+        "parser_id": "greenlang.factors.ingestion.parsers.egrid",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-33",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_egrid"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "ct"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:egrid:eGRID:state_DE:US-DE:2022:v1",
+      "factor_id_alias": "EF:eGRID:state_DE:US-DE:2022:v1",
+      "source_urn": "urn:gl:source:egrid",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "name": "electricity grid \u2014 US-DE",
+      "description": "Emission emission factor for electricity grid \u2014 US-DE, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.39130928247999996,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:state_or_province:us-de",
+      "vintage_start": "2022-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/egrid/download-data"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/egrid/download-data",
+        "source_record_id": "egrid;record-34",
+        "source_publication": "eGRID",
+        "source_version": "2022.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/egrid/2022.1/seed.json",
+        "raw_artifact_sha256": "9089c8e3450b7c2f3c2d36aff25dfdb87e2e347aaf1056e52c08537c827ce1d5",
+        "parser_id": "greenlang.factors.ingestion.parsers.egrid",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-34",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_egrid"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "de"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:egrid:eGRID:state_FL:US-FL:2022:v1",
+      "factor_id_alias": "EF:eGRID:state_FL:US-FL:2022:v1",
+      "source_urn": "urn:gl:source:egrid",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "name": "electricity grid \u2014 US-FL",
+      "description": "Emission emission factor for electricity grid \u2014 US-FL, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.383350557248,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:state_or_province:us-fl",
+      "vintage_start": "2022-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/egrid/download-data"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/egrid/download-data",
+        "source_record_id": "egrid;record-35",
+        "source_publication": "eGRID",
+        "source_version": "2022.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/egrid/2022.1/seed.json",
+        "raw_artifact_sha256": "95258f306d3b7f94f2d812d2b0cc2efdaf9d1ddb83f6925512a2744d6aab330c",
+        "parser_id": "greenlang.factors.ingestion.parsers.egrid",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-35",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_egrid"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "fl"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:egrid:eGRID:state_GA:US-GA:2022:v1",
+      "factor_id_alias": "EF:eGRID:state_GA:US-GA:2022:v1",
+      "source_urn": "urn:gl:source:egrid",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "name": "electricity grid \u2014 US-GA",
+      "description": "Emission emission factor for electricity grid \u2014 US-GA, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.349781574104,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:state_or_province:us-ga",
+      "vintage_start": "2022-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/egrid/download-data"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/egrid/download-data",
+        "source_record_id": "egrid;record-36",
+        "source_publication": "eGRID",
+        "source_version": "2022.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/egrid/2022.1/seed.json",
+        "raw_artifact_sha256": "758240f1e47a4b2f114077589f2f971efda0c0073a920546a2fcae740e494ebc",
+        "parser_id": "greenlang.factors.ingestion.parsers.egrid",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-36",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_egrid"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "ga"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:egrid:eGRID:state_HI:US-HI:2022:v1",
+      "factor_id_alias": "EF:eGRID:state_HI:US-HI:2022:v1",
+      "source_urn": "urn:gl:source:egrid",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "name": "electricity grid \u2014 US-HI",
+      "description": "Emission emission factor for electricity grid \u2014 US-HI, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.6916107732639999,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:state_or_province:us-hi",
+      "vintage_start": "2022-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/egrid/download-data"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/egrid/download-data",
+        "source_record_id": "egrid;record-37",
+        "source_publication": "eGRID",
+        "source_version": "2022.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/egrid/2022.1/seed.json",
+        "raw_artifact_sha256": "0620253c22c25ea8dfc44ed0efb82eec8c67c2b6b8b88a252dbd4d02c3ffc803",
+        "parser_id": "greenlang.factors.ingestion.parsers.egrid",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-37",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_egrid"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "hi"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:egrid:eGRID:state_ID:US-ID:2022:v1",
+      "factor_id_alias": "EF:eGRID:state_ID:US-ID:2022:v1",
+      "source_urn": "urn:gl:source:egrid",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "name": "electricity grid \u2014 US-ID",
+      "description": "Emission emission factor for electricity grid \u2014 US-ID, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.09406545536800001,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:state_or_province:us-id",
+      "vintage_start": "2022-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/egrid/download-data"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/egrid/download-data",
+        "source_record_id": "egrid;record-38",
+        "source_publication": "eGRID",
+        "source_version": "2022.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/egrid/2022.1/seed.json",
+        "raw_artifact_sha256": "ab2e84af56427da5b17f31a3ceb0858980b0bb56de3d38f2effafeed41afc465",
+        "parser_id": "greenlang.factors.ingestion.parsers.egrid",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-38",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_egrid"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "id"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:egrid:eGRID:state_IL:US-IL:2022:v1",
+      "factor_id_alias": "EF:eGRID:state_IL:US-IL:2022:v1",
+      "source_urn": "urn:gl:source:egrid",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "name": "electricity grid \u2014 US-IL",
+      "description": "Emission emission factor for electricity grid \u2014 US-IL, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.311679846104,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:state_or_province:us-il",
+      "vintage_start": "2022-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/egrid/download-data"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/egrid/download-data",
+        "source_record_id": "egrid;record-39",
+        "source_publication": "eGRID",
+        "source_version": "2022.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/egrid/2022.1/seed.json",
+        "raw_artifact_sha256": "b054fb1ee597e1a3469697ca3b8518b197c655d87465ec6fc6ce98dbca9a4924",
+        "parser_id": "greenlang.factors.ingestion.parsers.egrid",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-39",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_egrid"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "il"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:egrid:eGRID:state_IN:US-IN:2022:v1",
+      "factor_id_alias": "EF:eGRID:state_IN:US-IN:2022:v1",
+      "source_urn": "urn:gl:source:egrid",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "name": "electricity grid \u2014 US-IN",
+      "description": "Emission emission factor for electricity grid \u2014 US-IN, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.7619220691840001,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:state_or_province:us-in",
+      "vintage_start": "2022-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/egrid/download-data"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/egrid/download-data",
+        "source_record_id": "egrid;record-40",
+        "source_publication": "eGRID",
+        "source_version": "2022.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/egrid/2022.1/seed.json",
+        "raw_artifact_sha256": "47857004205d2b04b2d4e66c7167eca98418f742fb6f9806b26d7a1d0198c5a9",
+        "parser_id": "greenlang.factors.ingestion.parsers.egrid",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-40",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_egrid"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "in"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:egrid:eGRID:state_IA:US-IA:2022:v1",
+      "factor_id_alias": "EF:eGRID:state_IA:US-IA:2022:v1",
+      "source_urn": "urn:gl:source:egrid",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "name": "electricity grid \u2014 US-IA",
+      "description": "Emission emission factor for electricity grid \u2014 US-IA, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.389742575712,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:state_or_province:us-ia",
+      "vintage_start": "2022-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/egrid/download-data"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/egrid/download-data",
+        "source_record_id": "egrid;record-41",
+        "source_publication": "eGRID",
+        "source_version": "2022.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/egrid/2022.1/seed.json",
+        "raw_artifact_sha256": "5d84b5cb924c691299d1a9770923c66e0ee6c6c2b3d010bb3600060a583f90c5",
+        "parser_id": "greenlang.factors.ingestion.parsers.egrid",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-41",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_egrid"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "ia"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:egrid:eGRID:state_KS:US-KS:2022:v1",
+      "factor_id_alias": "EF:eGRID:state_KS:US-KS:2022:v1",
+      "source_urn": "urn:gl:source:egrid",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "name": "electricity grid \u2014 US-KS",
+      "description": "Emission emission factor for electricity grid \u2014 US-KS, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.41539456408799996,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:state_or_province:us-ks",
+      "vintage_start": "2022-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/egrid/download-data"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/egrid/download-data",
+        "source_record_id": "egrid;record-42",
+        "source_publication": "eGRID",
+        "source_version": "2022.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/egrid/2022.1/seed.json",
+        "raw_artifact_sha256": "cea9d8df71fb259a8c4e2089331f8acdc9e9d2337fbb341734f5048363b51932",
+        "parser_id": "greenlang.factors.ingestion.parsers.egrid",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-42",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_egrid"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "ks"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:egrid:eGRID:state_KY:US-KY:2022:v1",
+      "factor_id_alias": "EF:eGRID:state_KY:US-KY:2022:v1",
+      "source_urn": "urn:gl:source:egrid",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "name": "electricity grid \u2014 US-KY",
+      "description": "Emission emission factor for electricity grid \u2014 US-KY, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.80299618556,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:state_or_province:us-ky",
+      "vintage_start": "2022-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/egrid/download-data"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/egrid/download-data",
+        "source_record_id": "egrid;record-43",
+        "source_publication": "eGRID",
+        "source_version": "2022.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/egrid/2022.1/seed.json",
+        "raw_artifact_sha256": "321441941fa6cca1cbcf0b6bfced232a8ad4bfb629871dfa390d4b6585d980c6",
+        "parser_id": "greenlang.factors.ingestion.parsers.egrid",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-43",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_egrid"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "ky"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:egrid:eGRID:state_LA:US-LA:2022:v1",
+      "factor_id_alias": "EF:eGRID:state_LA:US-LA:2022:v1",
+      "source_urn": "urn:gl:source:egrid",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "name": "electricity grid \u2014 US-LA",
+      "description": "Emission emission factor for electricity grid \u2014 US-LA, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.42636287223999997,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:state_or_province:us-la",
+      "vintage_start": "2022-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/egrid/download-data"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/egrid/download-data",
+        "source_record_id": "egrid;record-44",
+        "source_publication": "eGRID",
+        "source_version": "2022.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/egrid/2022.1/seed.json",
+        "raw_artifact_sha256": "3c349132bd6b636e1069132d9946e7b9b633ebc8f202a90e4c9086326489513d",
+        "parser_id": "greenlang.factors.ingestion.parsers.egrid",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-44",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_egrid"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "la"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:egrid:eGRID:state_ME:US-ME:2022:v1",
+      "factor_id_alias": "EF:eGRID:state_ME:US-ME:2022:v1",
+      "source_urn": "urn:gl:source:egrid",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "name": "electricity grid \u2014 US-ME",
+      "description": "Emission emission factor for electricity grid \u2014 US-ME, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.090312888752,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:state_or_province:us-me",
+      "vintage_start": "2022-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/egrid/download-data"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/egrid/download-data",
+        "source_record_id": "egrid;record-45",
+        "source_publication": "eGRID",
+        "source_version": "2022.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/egrid/2022.1/seed.json",
+        "raw_artifact_sha256": "8c2787fdfbee1ed4952c7bdf3ecb3283892b7c715c49420387a6736a47568414",
+        "parser_id": "greenlang.factors.ingestion.parsers.egrid",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-45",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_egrid"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "me"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:egrid:eGRID:state_MD:US-MD:2022:v1",
+      "factor_id_alias": "EF:eGRID:state_MD:US-MD:2022:v1",
+      "source_urn": "urn:gl:source:egrid",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "name": "electricity grid \u2014 US-MD",
+      "description": "Emission emission factor for electricity grid \u2014 US-MD, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.259471860496,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:state_or_province:us-md",
+      "vintage_start": "2022-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/egrid/download-data"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/egrid/download-data",
+        "source_record_id": "egrid;record-46",
+        "source_publication": "eGRID",
+        "source_version": "2022.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/egrid/2022.1/seed.json",
+        "raw_artifact_sha256": "4e162c868b4bb8e394536d948f2172f2a220bdbbb967500777d186cd239b08fb",
+        "parser_id": "greenlang.factors.ingestion.parsers.egrid",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-46",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_egrid"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "md"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:egrid:eGRID:state_MA:US-MA:2022:v1",
+      "factor_id_alias": "EF:eGRID:state_MA:US-MA:2022:v1",
+      "source_urn": "urn:gl:source:egrid",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "name": "electricity grid \u2014 US-MA",
+      "description": "Emission emission factor for electricity grid \u2014 US-MA, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.29180072311199995,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:state_or_province:us-ma",
+      "vintage_start": "2022-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/egrid/download-data"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/egrid/download-data",
+        "source_record_id": "egrid;record-47",
+        "source_publication": "eGRID",
+        "source_version": "2022.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/egrid/2022.1/seed.json",
+        "raw_artifact_sha256": "d890cb7d2cf435b1bcc2e7dd460fac535e447e2071ffba968339f8fbc4118f1b",
+        "parser_id": "greenlang.factors.ingestion.parsers.egrid",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-47",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_egrid"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "ma"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:egrid:eGRID:state_MI:US-MI:2022:v1",
+      "factor_id_alias": "EF:eGRID:state_MI:US-MI:2022:v1",
+      "source_urn": "urn:gl:source:egrid",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "name": "electricity grid \u2014 US-MI",
+      "description": "Emission emission factor for electricity grid \u2014 US-MI, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.521954664688,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:state_or_province:us-mi",
+      "vintage_start": "2022-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/egrid/download-data"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/egrid/download-data",
+        "source_record_id": "egrid;record-48",
+        "source_publication": "eGRID",
+        "source_version": "2022.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/egrid/2022.1/seed.json",
+        "raw_artifact_sha256": "dadfc329a4c8f16e4c55135949aef8724465ee5558dfa1204be60d43cb25884a",
+        "parser_id": "greenlang.factors.ingestion.parsers.egrid",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-48",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_egrid"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "mi"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:egrid:eGRID:state_MN:US-MN:2022:v1",
+      "factor_id_alias": "EF:eGRID:state_MN:US-MN:2022:v1",
+      "source_urn": "urn:gl:source:egrid",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "name": "electricity grid \u2014 US-MN",
+      "description": "Emission emission factor for electricity grid \u2014 US-MN, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.32495784472,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:state_or_province:us-mn",
+      "vintage_start": "2022-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/egrid/download-data"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/egrid/download-data",
+        "source_record_id": "egrid;record-49",
+        "source_publication": "eGRID",
+        "source_version": "2022.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/egrid/2022.1/seed.json",
+        "raw_artifact_sha256": "dc9037ccd0a623ca51de802891c2e51cd07117ac8212f52e822d3a7fcf3c39b1",
+        "parser_id": "greenlang.factors.ingestion.parsers.egrid",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-49",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_egrid"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "mn"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:egrid:eGRID:state_MS:US-MS:2022:v1",
+      "factor_id_alias": "EF:eGRID:state_MS:US-MS:2022:v1",
+      "source_urn": "urn:gl:source:egrid",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "name": "electricity grid \u2014 US-MS",
+      "description": "Emission emission factor for electricity grid \u2014 US-MS, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.35646162348800003,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:state_or_province:us-ms",
+      "vintage_start": "2022-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/egrid/download-data"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/egrid/download-data",
+        "source_record_id": "egrid;record-50",
+        "source_publication": "eGRID",
+        "source_version": "2022.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/egrid/2022.1/seed.json",
+        "raw_artifact_sha256": "ea57b9b126247af261567b72db8d803b58d71e9bfa15dd9aa466da7f1a861926",
+        "parser_id": "greenlang.factors.ingestion.parsers.egrid",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-50",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_egrid"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "ms"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:egrid:eGRID:state_MO:US-MO:2022:v1",
+      "factor_id_alias": "EF:eGRID:state_MO:US-MO:2022:v1",
+      "source_urn": "urn:gl:source:egrid",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "name": "electricity grid \u2014 US-MO",
+      "description": "Emission emission factor for electricity grid \u2014 US-MO, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.691240642192,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:state_or_province:us-mo",
+      "vintage_start": "2022-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/egrid/download-data"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/egrid/download-data",
+        "source_record_id": "egrid;record-51",
+        "source_publication": "eGRID",
+        "source_version": "2022.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/egrid/2022.1/seed.json",
+        "raw_artifact_sha256": "08253d920caeaeb3d52d1cd5d1d8521ae83a5b6a035dfa3c8beea9a02c757435",
+        "parser_id": "greenlang.factors.ingestion.parsers.egrid",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-51",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_egrid"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "mo"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:egrid:eGRID:state_MT:US-MT:2022:v1",
+      "factor_id_alias": "EF:eGRID:state_MT:US-MT:2022:v1",
+      "source_urn": "urn:gl:source:egrid",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "name": "electricity grid \u2014 US-MT",
+      "description": "Emission emission factor for electricity grid \u2014 US-MT, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.536720445064,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:state_or_province:us-mt",
+      "vintage_start": "2022-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/egrid/download-data"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/egrid/download-data",
+        "source_record_id": "egrid;record-52",
+        "source_publication": "eGRID",
+        "source_version": "2022.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/egrid/2022.1/seed.json",
+        "raw_artifact_sha256": "b812091d332834040d5a4d6e2a252d78b42b9829fd24edab3343af5f093c9348",
+        "parser_id": "greenlang.factors.ingestion.parsers.egrid",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-52",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_egrid"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "mt"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:egrid:eGRID:state_NE:US-NE:2022:v1",
+      "factor_id_alias": "EF:eGRID:state_NE:US-NE:2022:v1",
+      "source_urn": "urn:gl:source:egrid",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "name": "electricity grid \u2014 US-NE",
+      "description": "Emission emission factor for electricity grid \u2014 US-NE, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.534985002072,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:state_or_province:us-ne",
+      "vintage_start": "2022-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/egrid/download-data"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/egrid/download-data",
+        "source_record_id": "egrid;record-53",
+        "source_publication": "eGRID",
+        "source_version": "2022.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/egrid/2022.1/seed.json",
+        "raw_artifact_sha256": "6d482f3171a35821ee23ae4c7fa0ea3581f7a0b867008f155f32bdc2207fe073",
+        "parser_id": "greenlang.factors.ingestion.parsers.egrid",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-53",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_egrid"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "ne"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:egrid:eGRID:state_NV:US-NV:2022:v1",
+      "factor_id_alias": "EF:eGRID:state_NV:US-NV:2022:v1",
+      "source_urn": "urn:gl:source:egrid",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "name": "electricity grid \u2014 US-NV",
+      "description": "Emission emission factor for electricity grid \u2014 US-NV, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.307800273728,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:state_or_province:us-nv",
+      "vintage_start": "2022-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/egrid/download-data"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/egrid/download-data",
+        "source_record_id": "egrid;record-54",
+        "source_publication": "eGRID",
+        "source_version": "2022.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/egrid/2022.1/seed.json",
+        "raw_artifact_sha256": "5246fa5bb99edb8b15ab76d9d7d6814c48f280148a99927811c3d6ea95a18926",
+        "parser_id": "greenlang.factors.ingestion.parsers.egrid",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-54",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_egrid"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "nv"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:egrid:eGRID:state_NH:US-NH:2022:v1",
+      "factor_id_alias": "EF:eGRID:state_NH:US-NH:2022:v1",
+      "source_urn": "urn:gl:source:egrid",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "name": "electricity grid \u2014 US-NH",
+      "description": "Emission emission factor for electricity grid \u2014 US-NH, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.170066155744,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:state_or_province:us-nh",
+      "vintage_start": "2022-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/egrid/download-data"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/egrid/download-data",
+        "source_record_id": "egrid;record-55",
+        "source_publication": "eGRID",
+        "source_version": "2022.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/egrid/2022.1/seed.json",
+        "raw_artifact_sha256": "9762abb5011eedd37bb15a460034a23289aac3d92213aba9051074d463f683f4",
+        "parser_id": "greenlang.factors.ingestion.parsers.egrid",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-55",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_egrid"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "nh"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:egrid:eGRID:state_NJ:US-NJ:2022:v1",
+      "factor_id_alias": "EF:eGRID:state_NJ:US-NJ:2022:v1",
+      "source_urn": "urn:gl:source:egrid",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "name": "electricity grid \u2014 US-NJ",
+      "description": "Emission emission factor for electricity grid \u2014 US-NJ, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.238026030736,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:state_or_province:us-nj",
+      "vintage_start": "2022-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/egrid/download-data"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/egrid/download-data",
+        "source_record_id": "egrid;record-56",
+        "source_publication": "eGRID",
+        "source_version": "2022.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/egrid/2022.1/seed.json",
+        "raw_artifact_sha256": "857cffeb5d3f5a53a1a638f5ada247276c6333831125e3be5c1b8c1c657f461a",
+        "parser_id": "greenlang.factors.ingestion.parsers.egrid",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-56",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_egrid"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "nj"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:egrid:eGRID:state_NM:US-NM:2022:v1",
+      "factor_id_alias": "EF:eGRID:state_NM:US-NM:2022:v1",
+      "source_urn": "urn:gl:source:egrid",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "name": "electricity grid \u2014 US-NM",
+      "description": "Emission emission factor for electricity grid \u2014 US-NM, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.5458712100719999,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:state_or_province:us-nm",
+      "vintage_start": "2022-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/egrid/download-data"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/egrid/download-data",
+        "source_record_id": "egrid;record-57",
+        "source_publication": "eGRID",
+        "source_version": "2022.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/egrid/2022.1/seed.json",
+        "raw_artifact_sha256": "ff295ab87d670806554fe7639befe8693483a481b6620363da7cc7ce526497db",
+        "parser_id": "greenlang.factors.ingestion.parsers.egrid",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-57",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_egrid"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "nm"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:egrid:eGRID:state_NY:US-NY:2022:v1",
+      "factor_id_alias": "EF:eGRID:state_NY:US-NY:2022:v1",
+      "source_urn": "urn:gl:source:egrid",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "name": "electricity grid \u2014 US-NY",
+      "description": "Emission emission factor for electricity grid \u2014 US-NY, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.21250104811999998,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:state_or_province:us-ny",
+      "vintage_start": "2022-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/egrid/download-data"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/egrid/download-data",
+        "source_record_id": "egrid;record-58",
+        "source_publication": "eGRID",
+        "source_version": "2022.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/egrid/2022.1/seed.json",
+        "raw_artifact_sha256": "c03a2fd395b35242bdeffee3ea1ecd74172fdbca83e2e604273c0e32fcdbfe36",
+        "parser_id": "greenlang.factors.ingestion.parsers.egrid",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-58",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_egrid"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "ny"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:egrid:eGRID:state_NC:US-NC:2022:v1",
+      "factor_id_alias": "EF:eGRID:state_NC:US-NC:2022:v1",
+      "source_urn": "urn:gl:source:egrid",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "name": "electricity grid \u2014 US-NC",
+      "description": "Emission emission factor for electricity grid \u2014 US-NC, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.277285779112,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:state_or_province:us-nc",
+      "vintage_start": "2022-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/egrid/download-data"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/egrid/download-data",
+        "source_record_id": "egrid;record-59",
+        "source_publication": "eGRID",
+        "source_version": "2022.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/egrid/2022.1/seed.json",
+        "raw_artifact_sha256": "47ea646892f47c8fbcd17913b59c040d293d46d53bc46c9ae50311b3fc35afe5",
+        "parser_id": "greenlang.factors.ingestion.parsers.egrid",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-59",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_egrid"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "nc"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:egrid:eGRID:state_ND:US-ND:2022:v1",
+      "factor_id_alias": "EF:eGRID:state_ND:US-ND:2022:v1",
+      "source_urn": "urn:gl:source:egrid",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "name": "electricity grid \u2014 US-ND",
+      "description": "Emission emission factor for electricity grid \u2014 US-ND, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.7049722328079999,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:state_or_province:us-nd",
+      "vintage_start": "2022-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/egrid/download-data"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/egrid/download-data",
+        "source_record_id": "egrid;record-60",
+        "source_publication": "eGRID",
+        "source_version": "2022.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/egrid/2022.1/seed.json",
+        "raw_artifact_sha256": "fdc94c24582eb40d72259150cdd49d3b6f962f0677acca834850794e2ed4e0e0",
+        "parser_id": "greenlang.factors.ingestion.parsers.egrid",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-60",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_egrid"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "nd"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:egrid:eGRID:state_OH:US-OH:2022:v1",
+      "factor_id_alias": "EF:eGRID:state_OH:US-OH:2022:v1",
+      "source_urn": "urn:gl:source:egrid",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "name": "electricity grid \u2014 US-OH",
+      "description": "Emission emission factor for electricity grid \u2014 US-OH, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.50933618884,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:state_or_province:us-oh",
+      "vintage_start": "2022-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/egrid/download-data"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/egrid/download-data",
+        "source_record_id": "egrid;record-61",
+        "source_publication": "eGRID",
+        "source_version": "2022.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/egrid/2022.1/seed.json",
+        "raw_artifact_sha256": "b1d04d881f9f9114853c467b51343fab8974e2f9c40fa1991aafc66be26ddfae",
+        "parser_id": "greenlang.factors.ingestion.parsers.egrid",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-61",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_egrid"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "oh"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:egrid:eGRID:state_OK:US-OK:2022:v1",
+      "factor_id_alias": "EF:eGRID:state_OK:US-OK:2022:v1",
+      "source_urn": "urn:gl:source:egrid",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "name": "electricity grid \u2014 US-OK",
+      "description": "Emission emission factor for electricity grid \u2014 US-OK, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.371227403864,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:state_or_province:us-ok",
+      "vintage_start": "2022-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/egrid/download-data"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/egrid/download-data",
+        "source_record_id": "egrid;record-62",
+        "source_publication": "eGRID",
+        "source_version": "2022.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/egrid/2022.1/seed.json",
+        "raw_artifact_sha256": "839d232a9a7ed3a48a15fb23d2f53e79c3f63108d72b3c4b49085af8275d63a7",
+        "parser_id": "greenlang.factors.ingestion.parsers.egrid",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-62",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_egrid"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "ok"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:egrid:eGRID:state_OR:US-OR:2022:v1",
+      "factor_id_alias": "EF:eGRID:state_OR:US-OR:2022:v1",
+      "source_urn": "urn:gl:source:egrid",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "name": "electricity grid \u2014 US-OR",
+      "description": "Emission emission factor for electricity grid \u2014 US-OR, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.138768307744,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:state_or_province:us-or",
+      "vintage_start": "2022-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/egrid/download-data"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/egrid/download-data",
+        "source_record_id": "egrid;record-63",
+        "source_publication": "eGRID",
+        "source_version": "2022.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/egrid/2022.1/seed.json",
+        "raw_artifact_sha256": "f67184d93c0c108bebb4aac3561f4480f3900c548987c3e0393d646c7e4f99ce",
+        "parser_id": "greenlang.factors.ingestion.parsers.egrid",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-63",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_egrid"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "or"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:egrid:eGRID:state_PA:US-PA:2022:v1",
+      "factor_id_alias": "EF:eGRID:state_PA:US-PA:2022:v1",
+      "source_urn": "urn:gl:source:egrid",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "name": "electricity grid \u2014 US-PA",
+      "description": "Emission emission factor for electricity grid \u2014 US-PA, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.32767939672,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:state_or_province:us-pa",
+      "vintage_start": "2022-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/egrid/download-data"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/egrid/download-data",
+        "source_record_id": "egrid;record-64",
+        "source_publication": "eGRID",
+        "source_version": "2022.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/egrid/2022.1/seed.json",
+        "raw_artifact_sha256": "30ce230177ed69b495acb3932827ec4d4f107416b9602d105cf29c27c6ba2667",
+        "parser_id": "greenlang.factors.ingestion.parsers.egrid",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-64",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_egrid"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "pa"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:egrid:eGRID:state_RI:US-RI:2022:v1",
+      "factor_id_alias": "EF:eGRID:state_RI:US-RI:2022:v1",
+      "source_urn": "urn:gl:source:egrid",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "name": "electricity grid \u2014 US-RI",
+      "description": "Emission emission factor for electricity grid \u2014 US-RI, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.40174189847999997,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:state_or_province:us-ri",
+      "vintage_start": "2022-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/egrid/download-data"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/egrid/download-data",
+        "source_record_id": "egrid;record-65",
+        "source_publication": "eGRID",
+        "source_version": "2022.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/egrid/2022.1/seed.json",
+        "raw_artifact_sha256": "8d2b3e6e5d248f6c30c6a3be7bc482e48078433fb39a210945eb38f9d33a5d3b",
+        "parser_id": "greenlang.factors.ingestion.parsers.egrid",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-65",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_egrid"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "ri"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:egrid:eGRID:state_SC:US-SC:2022:v1",
+      "factor_id_alias": "EF:eGRID:state_SC:US-SC:2022:v1",
+      "source_urn": "urn:gl:source:egrid",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "name": "electricity grid \u2014 US-SC",
+      "description": "Emission emission factor for electricity grid \u2014 US-SC, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.23575807073600002,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:state_or_province:us-sc",
+      "vintage_start": "2022-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/egrid/download-data"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/egrid/download-data",
+        "source_record_id": "egrid;record-66",
+        "source_publication": "eGRID",
+        "source_version": "2022.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/egrid/2022.1/seed.json",
+        "raw_artifact_sha256": "0ceacdeb10ed619b5e2c495b1edfd91ba4980a3a5c1479d0b21f7e304e82656c",
+        "parser_id": "greenlang.factors.ingestion.parsers.egrid",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-66",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_egrid"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "sc"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:egrid:eGRID:state_SD:US-SD:2022:v1",
+      "factor_id_alias": "EF:eGRID:state_SD:US-SD:2022:v1",
+      "source_urn": "urn:gl:source:egrid",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "name": "electricity grid \u2014 US-SD",
+      "description": "Emission emission factor for electricity grid \u2014 US-SD, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.24747253772799999,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:state_or_province:us-sd",
+      "vintage_start": "2022-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/egrid/download-data"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/egrid/download-data",
+        "source_record_id": "egrid;record-67",
+        "source_publication": "eGRID",
+        "source_version": "2022.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/egrid/2022.1/seed.json",
+        "raw_artifact_sha256": "4187d8974560ac5d3d0867731c076f8b8b220c2cb5df2a680ecfbdad2ecc2f35",
+        "parser_id": "greenlang.factors.ingestion.parsers.egrid",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-67",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_egrid"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "sd"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:egrid:eGRID:state_TN:US-TN:2022:v1",
+      "factor_id_alias": "EF:eGRID:state_TN:US-TN:2022:v1",
+      "source_urn": "urn:gl:source:egrid",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "name": "electricity grid \u2014 US-TN",
+      "description": "Emission emission factor for electricity grid \u2014 US-TN, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.303844951488,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:state_or_province:us-tn",
+      "vintage_start": "2022-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/egrid/download-data"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/egrid/download-data",
+        "source_record_id": "egrid;record-68",
+        "source_publication": "eGRID",
+        "source_version": "2022.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/egrid/2022.1/seed.json",
+        "raw_artifact_sha256": "be06e000196e791222d872de6b4836529c3c71880f1780ebdf547ee4c8e64f1d",
+        "parser_id": "greenlang.factors.ingestion.parsers.egrid",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-68",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_egrid"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "tn"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:egrid:eGRID:state_TX:US-TX:2022:v1",
+      "factor_id_alias": "EF:eGRID:state_TX:US-TX:2022:v1",
+      "source_urn": "urn:gl:source:egrid",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "name": "electricity grid \u2014 US-TX",
+      "description": "Emission emission factor for electricity grid \u2014 US-TX, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.388463899864,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:state_or_province:us-tx",
+      "vintage_start": "2022-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/egrid/download-data"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/egrid/download-data",
+        "source_record_id": "egrid;record-69",
+        "source_publication": "eGRID",
+        "source_version": "2022.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/egrid/2022.1/seed.json",
+        "raw_artifact_sha256": "a80f5e53ae58b414919a22255b9202ad796a6025ded4718c5352623900385778",
+        "parser_id": "greenlang.factors.ingestion.parsers.egrid",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-69",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_egrid"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "tx"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:egrid:eGRID:state_UT:US-UT:2022:v1",
+      "factor_id_alias": "EF:eGRID:state_UT:US-UT:2022:v1",
+      "source_urn": "urn:gl:source:egrid",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "name": "electricity grid \u2014 US-UT",
+      "description": "Emission emission factor for electricity grid \u2014 US-UT, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.64447258544,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:state_or_province:us-ut",
+      "vintage_start": "2022-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/egrid/download-data"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/egrid/download-data",
+        "source_record_id": "egrid;record-70",
+        "source_publication": "eGRID",
+        "source_version": "2022.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/egrid/2022.1/seed.json",
+        "raw_artifact_sha256": "1daf37c6bd718d3f3ce2198a89c67fb6c2b9720dd3721b8cda19220c43aae360",
+        "parser_id": "greenlang.factors.ingestion.parsers.egrid",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-70",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_egrid"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "ut"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:egrid:eGRID:state_VT:US-VT:2022:v1",
+      "factor_id_alias": "EF:eGRID:state_VT:US-VT:2022:v1",
+      "source_urn": "urn:gl:source:egrid",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "name": "electricity grid \u2014 US-VT",
+      "description": "Emission emission factor for electricity grid \u2014 US-VT, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.006350288,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:state_or_province:us-vt",
+      "vintage_start": "2022-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/egrid/download-data"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/egrid/download-data",
+        "source_record_id": "egrid;record-71",
+        "source_publication": "eGRID",
+        "source_version": "2022.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/egrid/2022.1/seed.json",
+        "raw_artifact_sha256": "44b9caf1fb8833e2bf799a8ea9b6e00f90682180fb3a225788fab63d17c71c81",
+        "parser_id": "greenlang.factors.ingestion.parsers.egrid",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-71",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_egrid"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "vt"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:egrid:eGRID:state_VA:US-VA:2022:v1",
+      "factor_id_alias": "EF:eGRID:state_VA:US-VA:2022:v1",
+      "source_urn": "urn:gl:source:egrid",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "name": "electricity grid \u2014 US-VA",
+      "description": "Emission emission factor for electricity grid \u2014 US-VA, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.30450129911199997,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:state_or_province:us-va",
+      "vintage_start": "2022-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/egrid/download-data"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/egrid/download-data",
+        "source_record_id": "egrid;record-72",
+        "source_publication": "eGRID",
+        "source_version": "2022.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/egrid/2022.1/seed.json",
+        "raw_artifact_sha256": "6db2bfdd543df1c82377faea5a3c48a4591e418dafef29d2bdcb38b84b04470b",
+        "parser_id": "greenlang.factors.ingestion.parsers.egrid",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-72",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_egrid"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "va"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:egrid:eGRID:state_WA:US-WA:2022:v1",
+      "factor_id_alias": "EF:eGRID:state_WA:US-WA:2022:v1",
+      "source_urn": "urn:gl:source:egrid",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "name": "electricity grid \u2014 US-WA",
+      "description": "Emission emission factor for electricity grid \u2014 US-WA, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.09860137536800001,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:state_or_province:us-wa",
+      "vintage_start": "2022-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/egrid/download-data"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/egrid/download-data",
+        "source_record_id": "egrid;record-73",
+        "source_publication": "eGRID",
+        "source_version": "2022.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/egrid/2022.1/seed.json",
+        "raw_artifact_sha256": "770bba58d9d0301eb1b349ead5e7745e643e5736d63f37f8c8863f88be935473",
+        "parser_id": "greenlang.factors.ingestion.parsers.egrid",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-73",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_egrid"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "wa"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:egrid:eGRID:state_WV:US-WV:2022:v1",
+      "factor_id_alias": "EF:eGRID:state_WV:US-WV:2022:v1",
+      "source_urn": "urn:gl:source:egrid",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "name": "electricity grid \u2014 US-WV",
+      "description": "Emission emission factor for electricity grid \u2014 US-WV, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.889927999544,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:state_or_province:us-wv",
+      "vintage_start": "2022-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/egrid/download-data"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/egrid/download-data",
+        "source_record_id": "egrid;record-74",
+        "source_publication": "eGRID",
+        "source_version": "2022.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/egrid/2022.1/seed.json",
+        "raw_artifact_sha256": "4bd2cea68f0e750655d278a302da7e0ecef2a8e92d27fcd1a64aa1d4045d5161",
+        "parser_id": "greenlang.factors.ingestion.parsers.egrid",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-74",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_egrid"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "wv"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:egrid:eGRID:state_WI:US-WI:2022:v1",
+      "factor_id_alias": "EF:eGRID:state_WI:US-WI:2022:v1",
+      "source_urn": "urn:gl:source:egrid",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "name": "electricity grid \u2014 US-WI",
+      "description": "Emission emission factor for electricity grid \u2014 US-WI, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.50071794084,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:state_or_province:us-wi",
+      "vintage_start": "2022-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/egrid/download-data"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/egrid/download-data",
+        "source_record_id": "egrid;record-75",
+        "source_publication": "eGRID",
+        "source_version": "2022.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/egrid/2022.1/seed.json",
+        "raw_artifact_sha256": "081f79a4e2a1d40e801fd19b3f12e906245e4a60240759ec9a41cdb8dfcd39de",
+        "parser_id": "greenlang.factors.ingestion.parsers.egrid",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-75",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_egrid"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "wi"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:egrid:eGRID:state_WY:US-WY:2022:v1",
+      "factor_id_alias": "EF:eGRID:state_WY:US-WY:2022:v1",
+      "source_urn": "urn:gl:source:egrid",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "name": "electricity grid \u2014 US-WY",
+      "description": "Emission emission factor for electricity grid \u2014 US-WY, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.8986700781600001,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:state_or_province:us-wy",
+      "vintage_start": "2022-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/egrid/download-data"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/egrid/download-data",
+        "source_record_id": "egrid;record-76",
+        "source_publication": "eGRID",
+        "source_version": "2022.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/egrid/2022.1/seed.json",
+        "raw_artifact_sha256": "b704b6f1ee4b701b162707d730551e2f2a70f5e4f6cda00bb92fd7873c0d3bb3",
+        "parser_id": "greenlang.factors.ingestion.parsers.egrid",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-76",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_egrid"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "wy"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:egrid:eGRID:state_DC:US-DC:2022:v1",
+      "factor_id_alias": "EF:eGRID:state_DC:US-DC:2022:v1",
+      "source_urn": "urn:gl:source:egrid",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "name": "electricity grid \u2014 US-DC",
+      "description": "Emission emission factor for electricity grid \u2014 US-DC, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.266275740496,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:state_or_province:us-dc",
+      "vintage_start": "2022-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/egrid/download-data"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/egrid/download-data",
+        "source_record_id": "egrid;record-77",
+        "source_publication": "eGRID",
+        "source_version": "2022.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/egrid/2022.1/seed.json",
+        "raw_artifact_sha256": "27b053775972d270c2a2422d002581fbfe331c7f8b913da279397ac3701e7bff",
+        "parser_id": "greenlang.factors.ingestion.parsers.egrid",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-77",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_egrid"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "state",
+        "dc"
+      ]
+    },
+    {
+      "urn": "urn:gl:factor:egrid:eGRID:national:US:2022:v1",
+      "factor_id_alias": "EF:eGRID:national:US:2022:v1",
+      "source_urn": "urn:gl:source:egrid",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "name": "electricity grid \u2014 US",
+      "description": "Emission emission factor for electricity grid \u2014 US, expressed in CO2e per native unit. Boundary follows source publication.",
+      "category": "grid_intensity",
+      "value": 0.38269103447999997,
+      "unit_urn": "urn:gl:unit:kgco2e/kwh",
+      "gwp_basis": "ar6",
+      "gwp_horizon": 100,
+      "geography_urn": "urn:gl:geo:country:us",
+      "vintage_start": "2022-01-01",
+      "vintage_end": "2099-12-31",
+      "resolution": "annual",
+      "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
+      "boundary": "combustion",
+      "licence": "US-Public-Domain",
+      "citations": [
+        {
+          "type": "url",
+          "value": "https://www.epa.gov/egrid/download-data"
+        }
+      ],
+      "published_at": "2026-04-25T07:42:30+00:00",
+      "extraction": {
+        "source_url": "https://www.epa.gov/egrid/download-data",
+        "source_record_id": "egrid;record-78",
+        "source_publication": "eGRID",
+        "source_version": "2022.1",
+        "raw_artifact_uri": "s3://greenlang-factors-raw/egrid/2022.1/seed.json",
+        "raw_artifact_sha256": "4538d89751368067d8657f7e7aa9aa718f67e123f0273ea3f41de6e2286d8b7a",
+        "parser_id": "greenlang.factors.ingestion.parsers.egrid",
+        "parser_version": "0.1.0",
+        "parser_commit": "72154a93917d98c30f8689fe6ad0814611736426",
+        "row_ref": "record-78",
+        "ingested_at": "2026-04-25T07:42:30Z",
+        "operator": "bot:parser_egrid"
+      },
+      "review": {
+        "review_status": "approved",
+        "reviewer": "human:methodology-lead@greenlang.io",
+        "reviewed_at": "2026-04-25T07:42:30Z",
+        "approved_by": "human:methodology-lead@greenlang.io",
+        "approved_at": "2026-04-25T07:42:30Z"
+      },
+      "tags": [
+        "egrid",
+        "electricity",
+        "national"
+      ]
+    }
+  ]
+}

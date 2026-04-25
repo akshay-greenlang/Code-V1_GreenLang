@@ -1,0 +1,2137 @@
+Final_GreenLang_Factors
+Final Product, Technical, Data, and Execution Dossier
+FY27 build plan + FY27-FY31 product and technical specification + build-ready playbooks
+Planning horizon: FY27-FY31 (April 2026-March 2031)
+Indian FY convention | Semver + FY quarters | CTO final build baseline
+
+Prepared for Akshay Makar and the GreenLang founding team
+Final build version | 24 April 2026
+
+
+Document map
+This table is intentionally static. It is a board and execution map, not an auto-generated Word field.
+
+Part 1 - Final decision and product baseline
+1. CTO final build decision
+GreenLang Factors is approved as the first production-grade Climate OS product and the root data product for the GreenLang platform. It must be built as an auditable factor operating layer, not as a static emission-factor database. The release target is v1.0 GA in FY27 Q4, subject to source licensing, provenance, quality, and security gates.
+The final pathway is trust-before-breadth. GreenLang should not compete with incumbents on raw factor count alone. It should win on provenance, versioning, deterministic serving, licensing discipline, geography/vintage awareness, API design, auditability, and deep integration with Scope Engine, CBAM, Comply, PCF Studio, PlantOS, BuildingOS, FinanceOS, MRV Studio, and future sector clouds.
+2. One-paragraph product definition
+GreenLang Factors is the canonical, programmable, versioned, citable, auditable, and license-aware factor layer for climate software. It normalizes public, commercial, private, and community factor sources into one governed catalogue; exposes deterministic search, retrieval, versioning, diff, lineage, and calculation primitives through REST, GraphQL, SQL-over-HTTP, SDKs, and CLI; and preserves every factor value with explicit source, geography, vintage, unit, GWP basis, methodology, boundary, uncertainty, licence, provenance, and review metadata.
+3. Why Factors ships first
+• Every downstream GreenLang product writes against Factors. If Factors is weak, every calculation, disclosure, PCF, CBAM pack, MRV output, finance score, and operations benchmark inherits that weakness.
+• The Climate OS strategy requires one shared substrate. Factors is the root calculation substrate alongside Connect, Entity Graph, Climate Ledger, Evidence Vault, Policy Graph, Agent Runtime + Eval, and SDK/API/CLI.
+• The beachhead use case - India-linked exporters selling into EU/global OEM supply chains - requires defensible India/EU/US factor coverage, CBAM defaults, Scope 1/2 reliability, and clear provenance.
+• Factors creates a developer wedge before long enterprise sales cycles mature. SDK/API adoption becomes top-of-funnel for Comply, CBAM, Scope Engine, and PCF Studio.
+• The data moat compounds: more sources, geographies, vintages, factors, private packs, and partner contributions make GreenLang increasingly hard to replace.
+4. Final non-negotiables
+• No factor record is published without source, version, geography, vintage, unit, GWP basis, methodology, licence, boundary, uncertainty, citations, extraction metadata, and review metadata.
+• No mutable published factors. Corrections are new versions with supersedes/superseded_by links. Downstream products can reproduce old calculations exactly.
+• No silent fallbacks. Geography, vintage, GWP basis, methodology, and licence fallbacks must be explicit, visible in the response, and logged.
+• No licensed-source leakage. Commercial and private packs are enforced at query time, backed by audit logs and entitlement checks.
+• No policy logic embedded into factor values. Numeric factors live in Factors; policy applicability lives in Policy Graph and is joined when needed.
+• No unsupported precision. Every factor carries uncertainty and confidence. Low-confidence or preview factors must be labeled as such.
+• No autonomous regulated claims. AI can suggest factors and write explanations; regulated, financial, assurance, or MRV claims require review and ledger traceability.
+5. Final coverage model: stop using vanity counts
+The 100,000-factor FY27 target is approved only when separated into quality and licensing buckets. The company should never claim that every catalogued factor is production-certified. Public messaging should use three labels: Certified, Preview, and Connector-only.
+6. Product boundaries
+
+Part 2 - Product requirements
+7. Primary users, buyers, and jobs to be done
+8. Core jobs to be done
+1. Find the best factor for a described activity, geography, vintage, unit, and methodology context.
+2. Understand why that factor was chosen and which assumptions, boundaries, uncertainty, and licence constraints apply.
+3. Pin a factor URN inside downstream calculations and reproduce the result years later.
+4. Compare alternative factors and method choices across sources, geographies, vintages, and GWP bases.
+5. Receive source-update, supersession, deprecation, and regulatory-applicability notifications.
+6. Upload, govern, and use enterprise-private factors without contaminating public or commercial factor packs.
+7. Expose factor retrieval through REST, GraphQL, SQL-over-HTTP, Python SDK, TypeScript SDK, Java SDK, CLI, notebooks, and web UI.
+9. In-scope modules
+10. User journeys
+Developer factor lookup
+1. Create API key
+2. Install SDK
+3. Search activity and geography
+4. Inspect candidates
+5. Pin URN
+6. Run calculation in downstream code
+7. Subscribe to changelog for that URN.
+Consultant methodology memo
+1. Search by activity
+2. Compare IPCC/DEFRA/EPA/local alternatives
+3. Export citation packet
+4. Attach methodology notes
+5. Generate client memo
+6. Pin selected factor to calculation workbook.
+Auditor verification
+1. Open factor lineage URL from Climate Ledger
+2. Check source and version
+3. Run factor diff if restated
+4. Review confidence/uncertainty
+5. Export audit packet.
+Private supplier factor
+1. Supplier submits data
+2. Evidence linked in Evidence Vault
+3. Private pack staged
+4. Reviewer approves
+5. Tenant entitlement applied
+6. Downstream PCF/Scope Engine can resolve private factor.
+Regulatory update
+1. Source watcher detects change
+2. Parser creates candidate records
+3. Quality engine validates
+4. Reviewer approves release
+5. Changelog emits event
+6. Affected customers receive impact list.
+11. UI surfaces
+12. Commercial packaging
+
+Part 3 - Technical architecture
+13. Ten internal services
+14. Six physical components
+15. Deployment topology
+16. Storage model
+17. Canonical object model
+The canonical model is the contract between ingestion workers, APIs, SDKs, downstream products, auditors, and future private-factor contributors. It is stable from v0.9 Public Beta onward; breaking changes after v1.0 require a versioned migration and overlap window.
+18. Factor record required fields
+19. URN scheme
+Public IDs are URNs and never change. Integer primary keys are internal implementation details only.
+urn:gl:factor:<source>:<namespace>:<id>:v<version>
+urn:gl:source:<slug>
+urn:gl:pack:<source>:<pack-id>:<version>
+urn:gl:methodology:<slug>
+urn:gl:geo:<type>:<id>
+urn:gl:unit:<symbol>
+urn:gl:activity:<slug>
+urn:gl:partner:<tenant>:<pack-id>:<version>
+urn:gl:enterprise:<tenant>:<pack-id>:<version>
+Worked examples:
+urn:gl:factor:ipcc-ar6:stationary-combustion:natural-gas-residential:v1
+urn:gl:factor:epa-egrid:subregion-rfcw:2023-average:v2
+urn:gl:factor:defra-2025:passenger-car-petrol-medium:km:v1
+urn:gl:factor:india-cea-baseline:national-grid:2024-annual:v1
+urn:gl:factor:ecoinvent-3.11:market-aluminium-ingot-in:kg:v1
+urn:gl:factor:entsoe-realtime:bz-de-lu:2027-01-14T13:00Z:v1
+20. Ingestion pipeline
+21. Quality engine
+• Structural validation: all required fields present and typed correctly.
+• Referential validation: all source, pack, geography, unit, activity, and methodology URNs resolve.
+• Dimensional validation: units match activity class and expected physical dimensions.
+• Sanity validation: values within plausible ranges; outliers flagged for review rather than silently accepted.
+• Licence validation: source licence compatible with pack tier and caller entitlement.
+• Cross-source validation: divergence against trusted alternative source computed and surfaced.
+• Regression validation: historical calculations using pinned URNs reproduce exactly after a release.
+• Parser validation: source-specific snapshot tests protect against workbook/PDF/API shape drift.
+22. API surface
+23. Response contract
+Every API response that returns a factor must include both value and trust context. Downstream products must not use only the numeric value.
+24. SDK and CLI baseline
+# Python SDK
+from greenlang.factors import FactorsClient
+
+fc = FactorsClient(api_key=os.environ["GL_API_KEY"])
+factor = fc.get("urn:gl:factor:india-cea-baseline:national-grid:2024-annual:v1")
+print(factor.value, factor.unit.symbol, factor.geography.name)
+
+candidates = fc.resolve(
+    "diesel truck, 16-tonne, highway, India",
+    geography="urn:gl:geo:country:in",
+    vintage="2026-01-01",
+    coverage="certified"
+)
+
+# CLI
+greenlang factor search --activity electricity-grid --geography in --vintage 2024
+greenlang factor diff urn:gl:...:v1 urn:gl:...:v2
+greenlang pack download urn:gl:pack:defra-2025 --format parquet --out ./defra-2025.parquet
+25. ML/NL and Agent Runtime integration
+26. Security and non-functional requirements
+
+Part 4 - Source catalog and licensing plan
+The source catalog below is the final target plan across FY27-FY31. v1.0 GA should ship with priority public and licensed sources sufficient for India/EU/US Scope 1/2, selected Scope 3, CBAM defaults, and enterprise developer adoption. Later versions expand commercial LCA, transport, financed emissions, real-time grid, agrifood, water, and community coverage.
+IPCC AR6
+Scientific authority for GWP values and Tier 1 defaults across energy, industry, agriculture, waste, refrigerants, fugitive emissions, and LULUCF. Ships v0.1 for GWP and priority defaults; full AR6 defaults by v0.9. Key risk: different regulatory contexts still use AR4/AR5; mitigation is basis-switching and explicit GWP tagging.
+DEFRA / BEIS
+UK conversion factors are broad, practical, and open for redistribution with attribution. Strong v0.1 source for fuels, electricity, business travel, freight, waste, water, and indirect factors. Parser must handle annual workbook tab drift.
+EPA GHG Hub
+US federal factor hub for stationary combustion, mobile combustion, fugitive emissions, travel, waste, and water. Public-domain baseline for US customers and SB 253-related Scope 1/2 readiness.
+EPA eGRID
+Canonical US electricity intensity source by subregion, state, NERC region, and national roll-up. v0.1 priority for US Scope 2. Need subregion rename handling and unit conversion from lb/MWh to kgCO2e/kWh.
+India CEA Baseline
+India official grid emission factors, including national and regional factors and combined/build/operating margin methodology. Critical for India-linked exporters, CCTS/BRSR, and CBAM data. Fiscal-year vintage handling is mandatory.
+EU CBAM defaults
+EU Commission default embedded-emissions values for CBAM sectors and CN-code mappings. v0.1 priority because CBAM is the sharpest early regulatory wedge. Must version by effective date.
+IEA emission factors
+Commercial global backbone for country-level electricity, heat, and fuel emission factors. Ships v0.5 commercial tier. Licence headers and query-time entitlement checks are mandatory.
+India BEE / PAT
+India industrial energy efficiency and sectoral benchmark factors. Ships v0.5 for energy-intensive sectors. Useful for PlantOS, Scope Engine, and India GTM credibility.
+UNFCCC inventories
+Official national submissions with country-specific Tier 2/3 factors and uncertainty ranges. Ships v0.9 for Annex I priority countries; non-Annex I expansion through v1.5/v2.0.
+EDGAR
+EU JRC global emissions inventory by country, sector, gas, and year. Ships v0.9 for cross-country benchmarking and implied factors. Revisions must supersede prior factors.
+GLEC Framework
+Industry-standard freight methodology aligned with ISO 14083. Ships v1.5 for Freight Carbon API and logistics Scope 3. Commercial partnership controls apply.
+PACT Network
+Supplier-reported product carbon footprints exchanged between trading partners. Ships v1.5 as private, tenant-scoped data rather than public factor records.
+ecoinvent
+Deep commercial LCA database. Initial subset can be tested at v1.5; production v2.0 licence-gated. Never exposed to community tier without entitlement.
+EXIOBASE
+MRIO and spend-based Scope 3 backbone. v2.0 commercial. Requires currency-base and deflator metadata on every factor.
+PCAF
+Financed-emissions factor and methodology backbone for FinanceOS. v2.0 alongside financial-sector products. Must preserve PCAF data-quality scoring.
+ENTSO-E / real-time grid sources
+v2.5 real-time grid intensity for EU, US, India, and key global markets. Used by PowerOS, DataCenter CarbonOps, hourly Scope 2, and 24/7 clean-energy matching.
+Community channel
+Opens v1.5 with CLA, CC-BY, peer review, tier_3 label, and revocation protocol. Useful for long-tail local factors, but never a default production source without certification.
+27. Licensing model
+
+Part 5 - Roadmap and execution plan
+28. Final version roadmap
+29. FY27 week-by-week execution plan
+30. First 30 / 60 / 90 days
+31. Team model
+32. Release gates
+33. Go-to-market pathway
+• Developer wedge: publish SDK, examples, and public factors to build trust and top-of-funnel.
+• Enterprise wedge: bundle Factors with CBAM, Scope Engine, and Comply for India-linked exporters and EU-facing manufacturers.
+• Consultant wedge: offer factor packs, exports, citation packets, and audit-ready comparison tools.
+• Platform wedge: sell hosted API and commercial factor packs to climate software teams that do not want to maintain source calendars and parsers.
+• Partner wedge: later launch contribution, connector, and premium factor-pack ecosystem with governance controls.
+34. Pricing guardrails
+• Keep community tier generous enough to build developer trust but limited enough to avoid commercial-source leakage and support overload.
+• Price enterprise by API volume, commercial packs, private packs, regions, SLA level, and support tier.
+• Avoid selling bespoke curation projects as product revenue. Custom source onboarding must either become a reusable pack or remain professional services.
+• Use commercial-source pass-through where licences have meaningful external cost.
+• Treat private packs as an enterprise expansion feature, not an early distraction from v1.0 public trust.
+
+Part 6 - Governance, risk, KPIs, and appendices
+35. Methodology governance
+• Create a Methodology Review Board consisting of CTO, climate methodology lead, product owner, security/data lead, and external advisor as needed.
+• Every new source has an owner, licence assessment, parser tests, methodology note, uncertainty policy, and update cadence before production publication.
+• Material methodology disputes are resolved through documented decision memos and reflected in factor metadata.
+• Where sources disagree, the product shows alternatives instead of silently forcing one answer.
+• Regulatory applicability questions are routed to Policy Graph; Factors stores the data and method metadata needed to answer them.
+36. Observability and instrumentation
+37. KPI baseline
+38. Risk register
+39. OpenAPI excerpt
+POST /v1/factors/resolve
+Request:
+{
+  "activity_text": "diesel truck, 16-tonne, highway, India",
+  "geography": "urn:gl:geo:country:in",
+  "vintage": "2026-01-01",
+  "coverage": "certified",
+  "methodology": null,
+  "limit": 5
+}
+Response:
+{
+  "as_of": "2027-01-15T10:30:00Z",
+  "candidates": [
+    {
+      "factor_urn": "urn:gl:factor:defra-2026:freight-road-hgv-rigid-16t:km:v1",
+      "confidence": 0.91,
+      "coverage_label": "certified",
+      "reasoning": "Matches road freight, HGV class, diesel, distance-based unit; India-specific 
+certified factor unavailable, regional fallback shown explicitly.",
+      "fallbacks": ["geography: global/regional fallback"],
+      "lineage_url": "/v1/factors/.../lineage"
+    }
+  ]
+}
+40. DDL excerpt
+CREATE TABLE factor (
+  urn                       text PRIMARY KEY,
+  source_urn                text NOT NULL REFERENCES source(urn),
+  factor_pack_urn           text NOT NULL REFERENCES factor_pack(urn),
+  name                      text NOT NULL,
+  description               text NOT NULL,
+  category                  text NOT NULL,
+  activity_taxonomy_urn     text NOT NULL REFERENCES activity(urn),
+  value                     numeric(30,12) NOT NULL,
+  unit_urn                  text NOT NULL REFERENCES unit(urn),
+  gwp_basis                 text NOT NULL CHECK (gwp_basis IN ('ar4','ar5','ar6','custom')),
+  gwp_horizon               integer NOT NULL,
+  geography_urn             text NOT NULL REFERENCES geography(urn),
+  vintage_start             date NOT NULL,
+  vintage_end               date NOT NULL,
+  resolution                text NOT NULL,
+  methodology_urn           text NOT NULL REFERENCES methodology(urn),
+  boundary                  text NOT NULL,
+  uncertainty               jsonb NOT NULL,
+  confidence_score_baseline numeric(3,2) NOT NULL,
+  licence                   text NOT NULL,
+  licence_constraints       jsonb,
+  tags                      text[] DEFAULT '{}',
+  supersedes_urn            text,
+  superseded_by_urn         text,
+  derived_from_urns         text[] DEFAULT '{}',
+  citations                 jsonb NOT NULL,
+  published_at              timestamptz NOT NULL,
+  deprecated_at             timestamptz,
+  extraction                jsonb NOT NULL,
+  review                    jsonb NOT NULL
+);
+41. Final build checklist
+42. Final CTO sign-off baseline
+GreenLang Factors is the approved first product and shared factor substrate for GreenLang Climate OS. The build decision is to ship a narrow, trusted, auditable factor operating layer in FY27 rather than an overbroad, weakly governed factor database.
+Final build authority is governed by the release gates in this document. The calendar is ambitious; the gates are binding. The product should slip before source provenance, licensing, security, reproducibility, or methodology integrity is weakened.
+The final FY27 outcome should be: production-grade v1.0 GA, stable public and commercial API, strong provenance model, source-aware licensing, validated India/EU/US priority coverage, 40,000-60,000 certified public factors, explicit preview/connector-only labels, and at least three serious design partners validating real calculations and audit workflows.
+
+Part 7 - Integrated CTO technical dossier
+The sections below carry forward the full CTO Factors technical dossier and FY27 product-development proposal content into the final build document. This preserves the complete source catalogue, source-specific ingestion notes, API surface, data model, operational playbooks, version specifications, hiring briefs, and appendices as the execution baseline.
+Where earlier sections of this final document state a stricter gate, timing, or release authority, the stricter final gate controls. Where the detailed dossier provides lower-level implementation detail, it is considered the build reference.
+
+0. Executive summary
+GreenLang Factors is the right first GreenLang product and the platform's single most important artefact for the next five years. This document is the unified plan — it merges the founder-view FY27 product-development proposal with the CTO-level technical specification that carries the build forward through FY31. It replaces both prior documents; anywhere those documents conflicted, this one is now canonical.
+The thesis is simple. Every downstream GreenLang product — Comply, CBAM, Scope Engine, SupplierOS, PCF Studio, DPP Hub, PlantOS, BuildingOS, FleetOS, FinanceOS, MRV Studio, RiskOS — writes against Factors. If Factors is sloppy, everything downstream is sloppy. If Factors is production-grade, auditable, and trusted by regulators, GreenLang has a durable moat. That is the asset to build.
+ 
+0.1 What this document is
+A single, execution-ready dossier that covers: the product definition and FY27 strategic recommendation; the FY27 month-by-month and phase-by-phase build plan; the canonical architecture and data model; every emission-factor source the platform ingests across the FY27–FY31 horizon, with licensing and update cadence; the full API, SDK, and ML/NL surface; the versioning, uncertainty, geography, and licensing regimes; non-functional requirements including SOC 2 and ISO 27001 posture; the FY28–FY31 per-milestone roadmap (v0.1 → v3.0); and appendices covering OpenAPI, DDL, SDK code samples, operational alerts, hiring briefs, and cited external references.
+0.2 Who this document is for
+Founders and CTO — use as the canonical plan and the source-of-truth for investor and board conversations about Factors.
+Founding engineers (platform lead, data engineer, backend engineer, SRE, ML engineer) — treat Parts 5–18 as the engineering specification.
+Climate-methodology lead and analysts — treat Parts 4, 9, 11, and the source catalogue in Part 6 as the curation handbook.
+Product, GTM, and commercial — treat Parts 0–3 and 14–19 as the commercial context and accept criteria for milestones.
+External auditors, regulators, and customers (under NDA) — Parts 7, 11, and 15 demonstrate the assurance and methodology-transparency posture.
+0.3 Headline recommendations
+Build a factor operating layer, not a static database. The database is one component among ten.
+Use a hybrid architecture: deterministic data normalization and calculation rules, plus AI only for source parsing, mapping assistance, change detection, and search. The production serving path is deterministic, always.
+Set three separate targets instead of one vanity number: factors catalogued (100,000+), factors QA-certified (40,000–60,000), and factors reliably usable through API in production (overlapping with certified).
+Separate emissions factors from policy applicability. A regulation change often changes which factor or method is allowed, not the numeric factor itself.
+Ship trust before you ship breadth. The category does not need another big factor list; it needs a reliable factor system.
+0.4 What changes vs. the prior two documents
+The FY27 Product-Development Proposal (16 Apr 2026) framed Year-1 strategy and discipline. The Technical Specification (24 Apr 2026, Revision 1) specified the five-year build. This document merges and reconciles them.
+The 'FY27 100,000-factor' framing from the proposal is preserved and sharpened: 40–60k certified + 20–30k preview + 20–40k connector-backed = 100k+ total at end of FY27.
+The proposal's 10-service architecture (Source Registry through Admin Console) is preserved and mapped 1-to-1 to the technical-spec's six physical components; Part 5 shows the mapping table.
+The proposal's 'do not refresh everything weekly' principle is now encoded explicitly in Part 10 (update cadence table per object type).
+The proposal's Phase 0–10 week-by-week plan is kept verbatim in Part 19 as the FY27 execution schedule, and is cross-referenced against the Technical Spec's v0.1 Alpha → v1.0 GA milestone gates in Part 20.
+The five-year build plan (v1.5 through v3.0) is carried forward from the Technical Spec in Part 20.
+All 30 sources with full ingestion detail are preserved in Part 6 and re-cross-referenced to the proposal's priority-source groups.
+The Technical Spec's DDL, OpenAPI, GraphQL SDL, uncertainty model, URN scheme, licence matrix, SLOs, and cost model are preserved in Parts 7–18 and in Appendices 30.1–30.10.
+1. Product vision and operating principles
+1.1 One-paragraph vision
+GreenLang Factors is the canonical source of truth for emission factors across every Scope, every sector, every geography, and every vintage — programmable, versioned, citable, and auditable. It is the emission-factor analogue of what OpenStreetMap is to maps or what GLEIF is to legal-entity identifiers: a durable public-good layer with a commercial, SLA-backed, regulator-trusted operator on top.
+1.2 Nine operating principles
+Non-aspirational; they are constraints on engineering and product decisions. A proposed feature that violates one of these does not ship until the violation is acknowledged and mitigated in a design review.
+Every factor record is immutable. Corrections are published as new versions with explicit supersede links. The old record never mutates. This is the foundation of auditability.
+Every factor has provenance. Source document, URL, publication date, methodology note, boundary, unit, GWP basis, uncertainty, and extraction process are all mandatory fields. Any missing field keeps the record in the staging namespace.
+Every factor has a URN: urn:gl:factor:<source>:<namespace>:<id>:v<version>. URNs never change; versions are additive; downstream products pin the exact URN they used.
+Every factor has a geography and a vintage. 'global' is an explicit geography, not an implicit fallback. 'year-2024' is an explicit vintage, not an inferred one. No silent temporal or spatial defaults.
+Every API response is deterministic for a given query plus as_of timestamp. Audit trails five years later must reproduce exactly.
+Every factor pack is licensed explicitly. Commercial packs never leak into community responses. Licensing checks happen at query time.
+Every confidence score is reproducible. Scores are computed from inspectable inputs. The ML layer never invents URNs; it chooses among retrieved candidates.
+Every change to the catalogue is announced through a subscribable changelog (RSS/Atom, webhooks, REST).
+Every deployment is regional. EU data stays in EU, India in India, US in US — unless an enterprise contract says otherwise. Residency is wired into the routing layer, not a checkbox in sales ops.
+1.3 What GreenLang Factors is not
+Scope discipline is how this product survives the first three years. Factors is explicitly not an LCA modelling tool (that is PCF Studio), not an emissions calculator (that is Scope Engine), not a reporting/disclosure tool (that is Comply), not a verification workbench (that is Proof Hub), and not a carbon-credit registry (those are Verra, Gold Standard, and others). Factors is a data product. Every request that tries to bend Factors into one of the other roles gets pushed upstream or downstream; the scope is held deliberately narrow.
+2. FY27 market context — why now
+Assuming an April–March fiscal year, FY27 began on 1 April 2026. GreenLang Factors FY27 is already in its first month. Four concurrent shifts in 2026 make this the right moment to start: the EU CBAM definitive period is active; California SB 253 has its first-year deadline; the GHG Protocol Scope 2 review is mid-stream; and incumbent datasets already exist at scale. Those shifts increase demand for defensible factor selection, provenance, and fast policy interpretation rather than just raw factor volume.
+ 
+3. Product definition
+GreenLang Factors is positioned as the auditable factor layer for climate software. It is not only a database. It is the combination of a normalized factor catalogue, factor metadata and provenance, factor search and mapping, update monitoring, versioned releases, enterprise support, and policy-aware applicability logic.
+3.1 Primary buyers
+Developers embedding carbon calculations into software products or internal tools.
+Sustainability consultants who need a trusted, searchable factor source with citations and release history.
+Climate and accounting platforms that want factor infrastructure without maintaining dozens of source calendars and parsers internally.
+Large enterprises with in-house sustainability engineering teams, especially those under CBAM, CSRD, SB 253, BRSR, or CCTS reporting obligations.
+3.2 Persona-to-engineering mapping
+ 
+3.3 Core jobs to be done
+Find the most appropriate factor for a described business activity.
+Understand why that factor was chosen and what assumptions it carries.
+Know which source, release, geography, unit, methodology, and regulatory context the factor belongs to.
+Detect when a source or policy changed and decide whether the factor catalogue or only the applicability logic needs updating.
+Serve calculations through an API and preserve reproducibility across time.
+3.4 What the v1 product is
+A versioned factor catalogue with source lineage.
+A public and enterprise API (REST + GraphQL + SQL-over-HTTP).
+A factor explorer / search interface (Studio UI).
+A factor matching service that maps user activity text to candidate factors (resolve endpoint).
+A source-watch and release pipeline.
+An enterprise support layer with SLAs and assisted onboarding.
+3.5 What the v1 product is not
+Not a full LCA suite (that is PCF Studio, ecoinvent/EXIOBASE-backed).
+Not an end-to-end product-carbon-footprinting workflow.
+Not a compliance report generator (that is Comply).
+Not a guarantee that every licensed or private dataset can be redistributed openly.
+Not a carbon-credit MRV or registry (those are MRV Studio / Verra / Gold Standard).
+4. Product strategy — open-core, source-aware, policy-aware
+GreenLang Factors ships as four layers. Any proposed feature that does not fit cleanly into one of these four is pushed back or scoped down. This is the single most important strategic principle after the nine operating principles.
+4.1 Four-layer product architecture
+ 
+ 
+4.2 Coverage labels — how we talk about the 100,000-factor target
+A number like '100,000 factors' is misleading unless qualified. Factors ships three coverage labels at launch, and every API response and every UI view discloses the label. This is non-negotiable.
+Certified — QA-complete, production-default, fully documented, stable API exposure. Default result set for most users.
+Preview — normalised and searchable but pending deeper QA or methodology review. Visible in search with a 'preview' badge; must be explicitly opted into for production serving.
+Connector-only — visible in search metadata or accessible only when a customer has the needed external licence or contract. Licensing is enforced at query time; connector-only factors never leak into the free tier.
+4.3 Recommended FY27 coverage mix
+ 
+4.4 Separation of emissions factors from policy applicability
+Regulations change often; factor numeric values change less often. A change in the GHG Protocol Scope 2 guidance or a CSRD ESRS update may change which methodology is allowed, not what the emissions-per-kWh value is. Factors encodes the distinction:
+The numeric factor lives in the `factor` table with a methodology URN.
+The policy rule ('methodology X is allowed for reporting obligation Y between dates A and B in jurisdiction Z') lives in GreenLang Policy Graph, not in Factors.
+The applicability query — 'which factor URN should I use to meet reporting obligation Y?' — is answered by joining Factors and Policy Graph.
+This separation means a regulator can announce tomorrow that CBAM now accepts a different methodology for steel, and no factor values in Factors need to change — only Policy Graph is updated, and downstream consumers see the new applicability overnight.
+5. Product architecture — ten internal services
+Factors is built as a climate data product with a strong internal object model. The database is only one component. The architecture below lists the ten internal services that the engineering team owns, then maps them to the six physical/deployable components operators run.
+5.1 Ten internal services
+Source Registry — master list of every upstream dataset, its licence class, cadence, parser type, and owner.
+Ingestion Service — fetches files, pages, API payloads, and documentation snapshots; computes checksums; stores raw artefacts.
+Parser Service — converts each source into source-specific normalized records; extracts metadata and release information.
+Canonical Normalizer — maps source-specific records into the GreenLang factor schema, unit system, geography model, and gas / GWP model.
+Quality Engine — validates units, duplicates, outliers, missing lineage, invalid date windows, and contradictory category assignments.
+Policy and Method Store — keeps accounting-method rules, scope and category applicability, jurisdiction tags, and standards references. (Integrates with Policy Graph; Factors owns the methodology table.)
+Search and Matching Service — supports keyword search, metadata filters, semantic retrieval, re-ranking, and explainable factor suggestions.
+Release Manager — creates snapshots, changelogs, deprecations, version tags, and reproducibility manifests.
+API Gateway and Developer Portal — exposes search, retrieval, metadata, citations, and version pinning; authn/authz; rate-limiting.
+Admin Console — handles approvals, overrides, source monitoring, issue triage, and enterprise support workflows.
+5.2 Six physical components
+ 
+5.3 Deployment topology (regions)
+Factors runs in three primary regions at v1.0 GA: Mumbai (ap-south-1), Frankfurt (eu-central-1), and N. Virginia (us-east-1). A fourth region (Singapore, ap-southeast-1) joins in FY29 Q3 alongside APAC GTM. A fifth (Sao Paulo or Dubai) is evaluated in FY30.
+ 
+5.4 Storage tiers
+ 
+5.5 Ten architectural decision records (summary)
+ 
+6. Canonical data model
+The data model is the contract between every ingestion worker, every API response, every SDK, every downstream product, and every auditor. It is stable from v0.9 Public Beta onward; schema changes after v1.0 GA follow a deprecation policy (minimum two-version overlap, at least 12 months). Every field below is mandatory unless explicitly marked optional.
+6.1 Factor — the central entity
+A Factor is a single numeric emission factor with all the context needed to use it correctly. Every Factor row is uniquely identified by its URN and is immutable after publication.
+ 
+6.1.1 Worked URN examples
+ 
+6.2 Source
+A Source is the upstream provider of factor data. Sources are registered once and versioned independently of the factors they contribute.
+ 
+6.3 Factor Pack and Methodology
+A Factor Pack is a versioned, licensed bundle of factors published as a unit. Examples: `defra-2025`, `egrid-2023-v2`, `ecoinvent-3.11`, `greenlang-cbam-certified-2027`. Every factor belongs to exactly one pack.
+ 
+A Methodology describes the calculation approach behind a factor. Examples: GHGP Corporate Standard Scope 2 market-based, IPCC Tier 1 stationary combustion, ecoinvent APOS (Allocation at Point of Substitution), GLEC Framework v3.0 for road freight.
+ 
+6.4 Geography
+Geography is a first-class, URN-identified entity. The geography hierarchy is explicit — no silent fallbacks from country to 'global average'. Every factor specifies exactly one geography URN; resolution logic (Part 6) walks the hierarchy when the requested geography is unavailable.
+ 
+Worked-out examples of the geography hierarchy are provided in Part 10 (Geography & Vintage system). India DISCOMs, EU bidding zones, US ISO / balancing-authority boundaries are canonical at launch.
+6.5 Vintage
+Vintage describes the time period a factor represents. Every factor has a vintage; every query can be answered for a historical `as_of` date.
+ 
+6.6 Unit
+Units are URN-identified and machine-convertible. The unit library is seeded at v0.1 from the UN CEFACT / UNECE Rec 20 and Rec 21 tables, extended with climate-specific units (kgCO2e/kWh, kgCO2e/kg, kgCO2e/tkm, etc.).
+ 
+6.7 Uncertainty
+Uncertainty is represented using the ecoinvent pedigree matrix extended with a distribution family and parameters. This supports Monte Carlo propagation from v2.0.
+pedigree.reliability — integer in [1,5].
+pedigree.completeness — integer in [1,5].
+pedigree.temporal_correlation — integer in [1,5].
+pedigree.geographic_correlation — integer in [1,5].
+pedigree.technological_correlation — integer in [1,5].
+distribution — enum: lognormal | normal | triangular | uniform | bootstrapped.
+distribution.parameters — distribution-specific (geometric_mean, geometric_stddev, etc.).
+computed.cv — coefficient of variation, cached for fast filtering.
+computed.ci_95_low / ci_95_high — pre-computed 95% confidence bounds.
+6.8 Provenance graph
+The provenance graph captures how factors relate to each other and to source artefacts. Edge types are: supersedes, derived_from, cites, substitutes, aggregated_from, disaggregated_from. The graph is queried via GraphQL (see 6.2) and via a Cypher-like DSL from v2.0.
+ 
+6.9 Activity taxonomy
+GreenLang maintains an internal taxonomy of activities against which factors are tagged. At v1.0 GA, the taxonomy has ~2,400 leaf nodes covering stationary combustion (IPCC 1A), mobile combustion (1A3), process emissions (2), agriculture (3), waste (4), LULUCF (5), electricity generation, freight modes, refrigerants, chemicals, food, textiles, and consumer goods. Each leaf carries multilingual labels (English, Hindi, Tamil, Mandarin, Spanish, French, German, Portuguese, Arabic, Indonesian, Japanese at GA) and CPC / HS / NACE crosswalks where applicable.
+ 
+6.10 Private factor pack (tenant scoping)
+From v2.0 onward, enterprises and partners upload private factor packs scoped to an Entity Graph tenant. Private packs extend but never override community or commercial packs at the global level; they are only visible in queries that pass the tenant's scope. A private pack can include a supplier-specific factor (e.g., Tata Steel Jamshedpur Scope 1 intensity for 2027) that only the entities linked to that supplier can see.
+ 
+6.11 Schema migrations policy
+Schema changes to the canonical tables after v1.0 GA follow a documented deprecation policy. Adding new nullable columns is non-breaking. Adding new required columns requires a major version bump (v2.0, v3.0) and a 12-month deprecation window where both old and new schemas are served. SDKs are pinned to a schema version; the API edge negotiates the schema via `Accept-Version` headers, defaulting to the caller's SDK pin.
+v0.x — breaking changes allowed freely.
+v1.0–v1.x — additive only; no renames, no type changes, no required-field additions.
+v2.0 — major schema step; 12-month overlap with v1 schema.
+v2.x — additive only on top of v2.0 schema.
+v3.0 — major schema step; 18-month overlap (given larger customer base).
+6.12 DDL excerpt (non-exhaustive)
+ 
+7. Source catalog
+This part catalogues every emission-factor source that GreenLang Factors ingests across the FY27–FY31 horizon. Each entry describes what the source covers, exactly what GreenLang extracts, the licensing constraints (a critical engineering concern), the update cadence, parser-specific gotchas, and the version phase in which the source first ships. Sources are grouped by type: international authority, national/regional authority, sectoral framework, industry database, real-time grid, and community. Commercial sources (ecoinvent, EXIOBASE) are documented with contract and integration detail; ingestion of commercial data is always gated by a signed licence and an engineering audit.
+At v1.0 GA, Factors ships with 12 sources covering ~85% of typical enterprise Scope 1 and 2 needs and ~60% of Scope 3 needs. Between v1.5 and v2.0 an additional 10–12 sources are added, tightening Scope 3 and adding real-time grid. Between v2.5 and v3.0 the catalogue extends to 30+ sources including sectoral databases (AGRIBALYSE, GLEC, PACT), agrifood-specific inventories, and deep national coverage.
+ 
+7.1 IPCC AR6 (Working Group III, Annex II tables)
+ 
+Overview
+IPCC AR6 is the scientific authority behind the GWP values used in every Scope 1, 2, and 3 calculation, and the source of Tier 1 default emission factors for stationary combustion, mobile combustion, fugitive emissions, refrigerant leakage, process emissions, agriculture (enteric fermentation, manure management, rice, soils), waste, and LULUCF. IPCC does not publish a single machine-readable CSV; factors are distributed across chapter annexes and the IPCC EFDB (Emission Factor Database). GreenLang ingests both paths.
+What GreenLang ingests
+GWP-100 and GWP-20 values for CO2, CH4, N2O, SF6, NF3, and the HFC/PFC families (AR6 values are the default; AR5 and AR4 retained for regulator-backward-compat queries).
+Tier 1 default emission factors for energy (IPCC 2006 Guidelines volume 2, refreshed in AR6 supplementary material).
+Tier 1 defaults for industrial processes and product use (volume 3).
+Tier 1 defaults for agriculture, forestry, and other land use (volume 4).
+Tier 1 defaults for waste (volume 5).
+EFDB factors where IPCC has peer-reviewed them.
+Parameters captured per factor
+Factor value in CO2e per activity unit (e.g., t CO2 / TJ of fuel).
+GWP basis (AR6 default; AR5 and AR4 retained for backward compatibility).
+Fuel type and sub-type where applicable (e.g., natural gas, anthracite, sub-bituminous).
+Activity type (IPCC sectoral code, e.g., 1A.1.a, 2B.5, 3A.1).
+Regional applicability (IPCC categorises as developed / developing; GreenLang expands into specific geographies where AR6 allows).
+Chapter and annex citation with DOI.
+Uncertainty ranges as published (typically ± percent ranges).
+Licensing and redistribution
+IPCC AR6 reports are free to read and distribute with attribution but are not machine-readable as a dataset. The GreenLang commercial licence includes the value we add (parsing, canonicalisation, provenance wiring). The underlying values remain IPCC's; every factor record cites the exact IPCC document and chapter, and we do not claim copyright over the values. Community tier exposes all AR6-derived factors under CC-BY with prominent IPCC attribution.
+Update cadence
+AR6 itself is a generational update (AR5 was 2014, AR6 finalised 2023). GreenLang refreshes AR6-sourced factors when IPCC publishes errata or supplementary material; we commit to ingesting errata within 30 days of publication. GWP values are versioned as factor-pack upgrades, and downstream products are notified through the changelog API.
+Parser / ingestion notes
+AR6 tables are in PDFs and Excel annexes; GreenLang uses a PDF + Excel parser built on pdfplumber and openpyxl, with per-chapter extractors because table shapes vary.
+Some tables embed chemical formulas and unit superscripts that confuse OCR; we maintain a per-chapter whitelist of pre-parsed tables that were hand-validated by the climate-methodology lead.
+The EFDB API is queried weekly and diffed against a local snapshot; diffs are reviewed by the climate-methodology lead before publication.
+Normalization and canonical mapping
+Mapped to `urn:gl:methodology:ipcc-ar6-tier1` (or tier-specific variants).
+Activity taxonomy mapped to `urn:gl:activity:ipcc:1A.*`, `urn:gl:activity:ipcc:2.*`, etc.
+GWP values are stored as a dedicated factor-pack (urn:gl:pack:ipcc-ar6:gwp:v1) so downstream products can pin a GWP basis independently of specific emission factors.
+Units normalised to GreenLang canonical units via the unit-conversion library (TJ → MJ → kWh; kg CO2 → t CO2e when GWP applied).
+Default uncertainty is populated from AR6's published ranges; where ranges are not given, pedigree matrix defaults are applied.
+Version phase in which this source ships
+IPCC AR6 ships in v0.1 Alpha as part of the foundational GWP pack and a minimal set of Tier 1 defaults for India, EU, US. Full AR6 default set ships in v0.9 Public Beta. Errata and supplementary materials are tracked continuously thereafter.
+Known risks and mitigations
+Risk: regulators increasingly require AR6 while some national inventories still use AR5. Mitigation: maintain both packs; query API accepts `gwp_basis` parameter so customers can reproduce legacy calculations.
+Risk: IPCC errata land late. Mitigation: 30-day SLA, with customer notifications through changelog webhooks.
+Risk: IPCC table PDF layout changes across chapters. Mitigation: per-chapter parsers with snapshot tests; changes detected by CI.
+7.2 DEFRA / BEIS Greenhouse Gas Conversion Factors
+ 
+Overview
+The DEFRA Conversion Factors dataset is the UK government's official emission-factor library, refreshed annually. It is the de-facto global default for many Scope 3 categories (business travel, fuels, energy, refrigerants, transport, waste, water). Because it is OGL-licensed, we can redistribute the full dataset in the community tier. For many enterprise customers outside the UK, DEFRA is the first fallback when local national factors are missing.
+What GreenLang ingests
+Full activity library: fuels (solid, liquid, gaseous), electricity (UK grid), heat and steam, transport (passenger cars by fuel and size, vans, HGVs, rail, aviation, shipping, rail, motorbike), business travel, hotel stays, freight (road, rail, air, sea), material use, waste disposal, water.
+Scope 3 categories 3, 4, 6, 7, 9 in depth.
+Indirect emissions factors (Well-to-Tank, WTT).
+Embodied material factors for construction at a basic level.
+Parameters captured per factor
+Activity identifier (DEFRA's own hierarchy, mapped to GreenLang activity taxonomy).
+Value, unit (DEFRA uses kg CO2e per <activity unit>).
+Scope classification per DEFRA's mapping.
+Vintage (annual, e.g., 2024, 2025, 2026).
+GWP basis — DEFRA moves between AR5 and AR6 depending on year; every record is tagged.
+Methodology note (inline).
+Uncertainty not provided by DEFRA; GreenLang applies pedigree defaults.
+Licensing and redistribution
+OGL v3.0 permits commercial redistribution with attribution. Community tier exposes the full dataset. Each factor record cites 'UK Government GHG Conversion Factors for Company Reporting, <year>, © Crown copyright, licensed under the Open Government Licence v3.0.'
+Update cadence
+Annual, typically July/August for the current reporting year. GreenLang commits to ingesting the new annual release within 14 days of publication. Mid-year corrections are rare but tracked.
+Parser / ingestion notes
+DEFRA publishes Excel workbooks with one tab per category. Parser is a tab-specific openpyxl script with snapshot tests.
+Tab names and column positions have shifted year-over-year; parser carries explicit handling for 2023, 2024, 2025, 2026 versions.
+Some categories (e.g., hotel stays by country) explode into thousands of factors per year; partitioning by year-vintage is essential.
+DEFRA sometimes publishes a 'flat file' derivative that is easier to parse; we prefer the authoritative workbook but fall back to the flat file for cross-validation.
+Normalization and canonical mapping
+Mapped to `urn:gl:methodology:defra-<year>`.
+Activity taxonomy mapped to GreenLang activities; where DEFRA has its own activity name not in our taxonomy, we add a new taxonomy node with a DEFRA-origin tag.
+Units normalised (miles → km, imperial gallons → litres; kg CO2e preserved).
+GWP basis tagged per annual release.
+Version phase in which this source ships
+Ships fully in v0.1 Alpha for the 2025 vintage; annual refresh for 2026, 2027, 2028, 2029, 2030, 2031.
+Known risks and mitigations
+Risk: column-position changes break the parser. Mitigation: snapshot tests per year; fuzzing on ingestion.
+Risk: DEFRA occasionally revises prior-year factors. Mitigation: treat each revision as a new factor version with supersedes edges.
+7.3 US EPA GHG Emission Factors Hub
+ 
+Overview
+The EPA Emission Factors Hub is the US federal government's curated list of factors for voluntary corporate reporting, aligned with the GHG Protocol. It is the default set for most US-based Scope 1, 2, and select Scope 3 calculations, and it is public domain — free to redistribute in the community tier.
+What GreenLang ingests
+Stationary combustion fuels (coal, natural gas, distillate fuel oil, residual fuel oil, propane, biomass).
+Mobile combustion factors (passenger cars, trucks, buses, rail, aviation, shipping).
+Fugitive emissions (refrigerants by HFC species, SF6 in electrical equipment).
+Purchased electricity (via eGRID subregions; see 4.4).
+Business travel (air, rail, hotel stays).
+Waste (landfilled, combusted, recycled).
+Water (supply, treatment — limited coverage).
+Parameters captured per factor
+Activity, value, unit, vintage (annual; latest hub year is 2025 as of this writing).
+GWP basis (EPA uses AR5 by default; AR6 values are tracked separately).
+Methodology note inline.
+Source citation within the Hub workbook.
+Licensing and redistribution
+Public domain. No attribution legally required; we attribute anyway (good practice). Community tier ships the full dataset.
+Update cadence
+Annual. EPA typically updates in March/April for the previous reporting year. GreenLang ingests within 21 days.
+Parser / ingestion notes
+Single Excel workbook with ~15 tabs. Parser per tab.
+Some tabs have merged cells and footnotes that need special handling.
+GWP table is separate and must be joined back into individual factor records.
+Normalization and canonical mapping
+Mapped to `urn:gl:methodology:epa-ghg-hub-<year>`.
+Activity taxonomy mapped to GreenLang activities with EPA crosswalk tags.
+Units normalised (MMBtu → MJ → kWh for energy equivalents; kg CO2e preserved).
+Version phase in which this source ships
+Ships fully in v0.1 Alpha for the 2025 vintage; annual refresh.
+Known risks and mitigations
+Risk: EPA methodology occasionally shifts between scope boundaries. Mitigation: parser records EPA's own boundary text verbatim.
+Risk: EPA funding changes could delay publication. Mitigation: multi-source redundancy with DEFRA and IPCC for key activities.
+7.4 US EPA eGRID (Emissions & Generation Resource Integrated Database)
+ 
+Overview
+eGRID is the canonical source of US electricity emission intensity: CO2, CH4, N2O, NOx, SO2, Hg emission rates for US power plants, aggregated to 27 eGRID subregions, states, NERC regions, and national. It supports both location-based (subregion-average) and market-based (with instrument-specific modifiers) GHG Protocol Scope 2 reporting. It is foundational for every US-facing calculator.
+What GreenLang ingests
+Subregion-level output emission rates (lb/MWh for CO2e, and species-level).
+State-level rolls-ups.
+NERC-region rolls-ups.
+National rolls-ups.
+Non-baseload emission rates (for marginal analysis).
+Historical vintages 2014 through the current year (multi-year backcasts).
+Generator-level data (plant, owner, operator) where available.
+Parameters captured per factor
+Region URN (`urn:gl:geo:grid-zone:egrid-<subregion>`), vintage year, resolution = annual.
+Emission rate CO2, CH4, N2O, CO2e (AR5 and AR6 restatements).
+Total generation and total emissions (so customers can re-derive rates).
+Non-baseload emission rate for marginal calculations.
+GWP basis (EPA publishes AR5; AR6 restated).
+Citation and plant-level tie-down where applicable.
+Licensing and redistribution
+Public domain. Community tier ships subregion/state/national factors. Plant-level detail is included in a commercial pack due to join complexity.
+Update cadence
+Annual. EPA typically publishes in Q1 for two years prior (eg in early 2026 they publish eGRID 2024). GreenLang ingests within 14 days.
+Parser / ingestion notes
+eGRID ships as a large Excel workbook; parser handles each tab (GEN, PLNT, ST, SRL, SUB, etc.).
+Plant-level data requires join across tabs; parser performs joins during ingestion and stores denormalised plant records.
+Historical vintage cross-walks are tricky because EPA has renamed subregions over time; parser tracks renames explicitly.
+Normalization and canonical mapping
+Mapped to `urn:gl:methodology:ghgp-scope2-location-based` for the subregion-average factors and `urn:gl:methodology:ghgp-scope2-non-baseload` for the marginal rates.
+Geography URNs: `urn:gl:geo:grid-zone:egrid-<subregion>` and `urn:gl:geo:state:us-<state>`.
+Units normalised from lb/MWh to kg CO2e/kWh.
+Version phase in which this source ships
+Ships fully in v0.1 Alpha for the latest available vintage; annual refresh.
+Known risks and mitigations
+Risk: eGRID vintages are always 2 years behind real time. Mitigation: the real-time grid sources (4.17–4.21) provide hourly/daily updates; eGRID remains the annual-average canonical.
+Risk: subregion rename. Mitigation: rename-aware canonical geo table with alias resolution.
+7.5 IEA Emission Factors (World Energy Outlook and Emissions from Fuel Combustion)
+ 
+Overview
+IEA publishes country-level electricity generation emission factors, heat production emission factors, and transport fuel factors across ~160 countries going back to 1990. It is the authoritative international source for non-OECD countries where local grids are not well-documented (Latin America, Africa, large parts of Asia). For India, we prefer CEA (see 4.6); for EU countries, we prefer national inventories where available; but IEA provides a consistent global backbone.
+What GreenLang ingests
+Country-level CO2 emission factors for electricity generation (gCO2/kWh) across all ~160 IEA-tracked countries.
+Heat production emission factors.
+Transport fuel factors (gasoline, diesel, jet kerosene, LPG).
+Historical time series back to 1990 (annual resolution).
+Fuel-specific conversion factors (NCVs, density) for cross-conversion.
+Parameters captured per factor
+Country URN, vintage year (annual), value, unit.
+Methodology notes from IEA (typically 'country-level aggregated production-based').
+GWP basis (IEA typically AR5 for historical series; AR6 from 2024 onward).
+Citation to the specific IEA publication.
+Licensing and redistribution
+IEA's detailed statistics require a paid subscription (the 'IEA Statistics subscription'). GreenLang holds a commercial licence and ships IEA-sourced factors only in the commercial tier. The community tier includes only the free summary-level country data.
+Update cadence
+Annual for the main emission-factors publication, typically released in Q4 for the prior year. IEA sometimes publishes mid-year updates when major country revisions land.
+Parser / ingestion notes
+IEA data is delivered as Excel and CSV downloads behind authentication. Ingestion worker authenticates with a stored credential and downloads the full dataset monthly.
+Schema varies slightly year over year; parser is version-aware.
+IEA uses ISO country codes consistently (helpful); some legacy entries use pre-1991 country names (e.g., 'USSR') — the parser resolves these to present-day country URNs with historical-entity tags.
+Normalization and canonical mapping
+Mapped to `urn:gl:methodology:iea-production-based`.
+Geography URN: `urn:gl:geo:country:<iso2>`.
+Units normalised from gCO2/kWh to kg CO2e/kWh for consistency.
+Version phase in which this source ships
+IEA ships in v0.5 Closed Beta (commercial tier only — requires signed subscription). Community-tier summary data ships in v0.9 Public Beta.
+Known risks and mitigations
+Risk: IEA schema change. Mitigation: version-aware parser; CI snapshot tests.
+Risk: licence terms restrict downstream use. Mitigation: licence-aware query engine; every IEA response carries a licence header and is logged.
+7.6 India Central Electricity Authority (CEA) CO2 Baseline Database
+ 
+Overview
+The CEA CO2 Baseline Database is India's official grid emission intensity source. It publishes national, regional (Northern, Southern, Western, Eastern, North-Eastern), and state-level combined-margin, build-margin, and operating-margin factors used under CDM and now under India CCTS. For any India-linked manufacturer reporting under CCTS, BRSR, or CBAM (as an exporter to EU), CEA is the required source.
+What GreenLang ingests
+National annual CO2 emission factor for grid electricity.
+Regional grid factors (NEWNE interconnected, SR, ER, NER).
+Combined Margin (CM), Build Margin (BM), Operating Margin (OM) per CDM methodology.
+State-level factors where published (partial coverage, expanding).
+Historical time series back to 2005-06 (the CDM era).
+Methodology notes per version (CEA typically publishes Version 1, 2, ... each year).
+Parameters captured per factor
+Geography URN (`urn:gl:geo:country:in`, `urn:gl:geo:grid-zone:india-<region>`, `urn:gl:geo:state:in-<state>`).
+Vintage (fiscal year — Indian FY April–March).
+Value and unit (kg CO2/kWh).
+Methodology (CM / BM / OM tagged separately).
+GWP basis (AR5 typically; moving to AR6).
+Version number published by CEA.
+Licensing and redistribution
+India government publications are free to use for non-commercial purposes; commercial use is allowed with attribution under the National Data Sharing and Accessibility Policy. GreenLang attributes every CEA-sourced factor and ships in the community tier.
+Update cadence
+Annual, typically published in Q2 of the Indian FY for the prior FY. CEA periodically publishes mid-year revisions.
+Parser / ingestion notes
+CEA publishes as PDF workbooks; parser extracts tables using pdfplumber with per-table snapshot tests.
+State-level coverage expands year-over-year; parser handles missing states gracefully.
+Fiscal-year handling: CEA vintages are 'FY 2024-25', which we store as vintage_start=2024-04-01, vintage_end=2025-03-31.
+Normalization and canonical mapping
+Mapped to `urn:gl:methodology:india-cea-cm` (and BM, OM variants).
+Geography URNs use the `in-` ISO 3166-2 subdivision codes for states (e.g., `urn:gl:geo:state:in-mh` for Maharashtra).
+Units normalised from kg CO2/kWh to kg CO2e/kWh (applying GWP = 1 for pure CO2 reporting; CEA does not report non-CO2 from grid).
+Version phase in which this source ships
+Ships fully in v0.1 Alpha (India is a priority geography).
+Known risks and mitigations
+Risk: state-level coverage is uneven. Mitigation: fall back to regional factor with explicit downgrade note in response.
+Risk: CEA publication delays. Mitigation: retain most recent factor; do not silently substitute.
+7.7 EDGAR (Emissions Database for Global Atmospheric Research)
+ 
+Overview
+EDGAR is the EU's flagship global emissions inventory, providing consistent country-level emissions and emission factors for CO2, CH4, N2O, HFCs, PFCs, SF6, and NF3 across IPCC sectors, from 1970 to the current year. It complements national inventories where these are inconsistent or missing and is the default cross-country benchmarking source.
+What GreenLang ingests
+Country × IPCC sector × gas × year emissions.
+Implied emission factors where calculable from the inventory.
+HFC/PFC species-level detail.
+LULUCF treatment (separate from non-LULUCF totals).
+Parameters captured per factor
+Geography URN, vintage, value, unit, IPCC sector code.
+Gas species.
+GWP basis (EDGAR typically publishes in both AR5 and AR6 from 2023 onward).
+Methodology tier (IPCC Tier 1 by default).
+Licensing and redistribution
+EU Commission open-data terms permit commercial redistribution with attribution. Community tier ships EDGAR fully.
+Update cadence
+Annual, with periodic backcast revisions. GreenLang ingests within 21 days of publication.
+Parser / ingestion notes
+EDGAR ships as CSV + NetCDF (for gridded emissions). Parser consumes CSV; gridded data is out of scope at v1.0 GA but added in v2.5 for sub-country analytics.
+Schema includes long-form country-sector-gas-year records; parser is straightforward.
+Normalization and canonical mapping
+Mapped to `urn:gl:methodology:edgar-<version>`.
+Activity taxonomy mapped via IPCC code crosswalk.
+Units normalised from Gg/yr to kg/yr for storage; converted to kg CO2e when GWP applied.
+Version phase in which this source ships
+Ships in v0.9 Public Beta.
+Known risks and mitigations
+Risk: EDGAR revisions restate prior years. Mitigation: supersede links and changelog notifications.
+7.8 UNFCCC national inventories (NIR / BUR / BTR)
+ 
+Overview
+UNFCCC National Inventory Reports (NIRs from Annex I countries, Biennial Update Reports / Biennial Transparency Reports from non-Annex I countries) are the authoritative national emissions and emission factors submitted to the UNFCCC Secretariat. They contain country-specific Tier 2 and Tier 3 factors that are often materially different from IPCC Tier 1 defaults.
+What GreenLang ingests
+Country × IPCC sector × gas emissions, with implied factors.
+Country-specific Tier 2/3 factors where national methodology exceeds IPCC Tier 1.
+Country-specific fuel calorific values and carbon contents.
+Uncertainty ranges (per Annex I reporting requirement).
+Parameters captured per factor
+Geography URN (country), vintage, value, unit, IPCC code.
+Methodology tier (Tier 1/2/3).
+National methodology reference.
+GWP basis (AR5 until 2023, AR6 increasingly from 2024).
+Uncertainty range as published.
+Licensing and redistribution
+Country-specific. Most Annex I countries use equivalent of OGL/CC-BY; commercial redistribution with attribution is generally permitted. GreenLang maintains a per-country licensing matrix.
+Update cadence
+Annual for Annex I countries (deadline 15 April each year for prior year). Biennial for non-Annex I, shifting to annual BTR starting 2024 under the Enhanced Transparency Framework.
+Parser / ingestion notes
+UNFCCC CRF (Common Reporting Format) tables are Excel; parser has per-country template handling.
+BUR/BTR are less structured (often PDF); parser uses a combination of table extraction and LLM-assisted field extraction (from v1.5), manually reviewed.
+Country-specific idiosyncrasies are extensive: parser carries a per-country adapter library.
+Normalization and canonical mapping
+Mapped to `urn:gl:methodology:unfccc-<country>-tier<n>`.
+Country URNs use ISO 3166-1 alpha-2.
+Units normalised as per IPCC and EDGAR conventions.
+Version phase in which this source ships
+Ships in v0.9 Public Beta for Annex I countries (EU-27, UK, US, Canada, Japan, Australia, Switzerland, Norway, Russia — ~40 countries). Non-Annex I BTR submissions added progressively through v1.5 and v2.0 as they become available under the ETF.
+Known risks and mitigations
+Risk: per-country format drift. Mitigation: country-adapter tests on every release; regression suite.
+Risk: some countries submit late or with errata. Mitigation: revision tracking through supersede edges.
+7.9 ecoinvent
+ 
+Overview
+ecoinvent is the most comprehensive LCA database in commercial use globally, with ~20,000+ datasets covering material production, transport, energy, construction, agriculture, and waste. Version 3.11 is the current baseline. GreenLang holds a commercial licence to redistribute a curated factor pack under controlled terms — never exposed in the community tier.
+What GreenLang ingests
+Market and production activities across industries.
+System models: APOS, consequential, cut-off (GreenLang ingests all three).
+Full LCIA method set (IPCC, ReCiPe, EF 3.1, etc.).
+Life-cycle inventory flows (for uncertainty and Monte Carlo).
+Geographic regionalisation (RoW, RER, US, CN, IN, etc.).
+Parameters captured per factor
+Activity URN in GreenLang taxonomy + ecoinvent's own identifier.
+Geography per ecoinvent's convention (RER, GLO, RoW, country-specific).
+System model (APOS / consequential / cut-off) tagged on every factor.
+LCIA method used to convert from flows to CO2e (IPCC 2021 GWP100 by default).
+Uncertainty distribution (ecoinvent publishes lognormal distributions with geometric means/stddevs).
+Licensing and redistribution
+Strict commercial licence. Factors are tenant-scoped in the private-pack model and exposed only to users whose organization holds an ecoinvent licence. GreenLang can provide an integrated licence bundle to some customers; otherwise customers bring their own. All licence checks happen at query time; the query engine rejects ecoinvent responses for unauthorised tenants.
+Update cadence
+Major versions every 12–18 months (v3.10 → v3.11 → v3.12 cadence). Errata are distributed by ecoinvent to licensees; GreenLang mirrors within 14 days.
+Parser / ingestion notes
+ecoinvent ships in EcoSpold2 XML format with tens of thousands of files. Parser uses lxml with streaming to avoid memory blowup.
+System-model join is computationally expensive; ingestion is a batch job that takes hours.
+LCIA method calculation replicates ecoinvent's published values but is recomputed for provenance (we store both the published CO2e value and our recomputed value; mismatches trigger manual review).
+Normalization and canonical mapping
+Mapped to `urn:gl:methodology:ecoinvent-<version>-<system-model>`.
+Geography URNs follow ecoinvent's convention, with crosswalks to GreenLang canonical URNs.
+Units normalised to GreenLang canonical; ecoinvent's reference units are preserved in metadata.
+Version phase in which this source ships
+Ships in v2.0 (commercial tier only, licence-gated). Initial subset ships in v1.5 for design-partner evaluation.
+Known risks and mitigations
+Risk: ecoinvent contract renegotiation. Mitigation: multi-year contract with price certainty; fallback to EXIOBASE for supply-chain analyses where licensing is unavailable.
+Risk: licence leakage (unauthorised tenant queries). Mitigation: query-time licence check; audit logs; alerting on anomalous access.
+7.10 EXIOBASE
+ 
+Overview
+EXIOBASE is a multi-regional environmentally-extended input-output database, offering product-level emission intensities across 163 industries and 200 products in 44 countries plus 5 rest-of-world regions. It is the workhorse for Scope 3 Category 1 (purchased goods) when supplier-specific data is unavailable; spend-based Scope 3 almost always resolves against EXIOBASE intensities.
+What GreenLang ingests
+Product × country × year emission intensities (kg CO2e per EUR or USD of product output).
+Full multi-regional input-output tables for upstream propagation.
+Satellite accounts for CO2, CH4, N2O, water, land use.
+Parameters captured per factor
+Product URN (GreenLang canonical), country, year, intensity, unit (kg CO2e per currency unit at a named base year).
+Currency base and deflation basis.
+Uncertainty range (EXIOBASE publishes ranges; we convert to pedigree matrix).
+Licensing and redistribution
+Commercial licence for downstream redistribution. GreenLang exposes EXIOBASE-sourced factors in the commercial tier with licence checks.
+Update cadence
+Major versions every 2–3 years; intermediate updates with methodological refinements. GreenLang commits to ingesting major releases within 30 days.
+Parser / ingestion notes
+EXIOBASE ships as large CSV/parquet files; parser handles multi-gigabyte imports.
+Currency-base normalisation is critical: EXIOBASE 3 uses EUR at the base year; GreenLang stores both EUR- and USD-base intensities via PPP conversion.
+Upstream-propagation tables are imported but not re-exposed in the factor API; they are used internally for PCF Studio (which queries Factors via a privileged internal path).
+Normalization and canonical mapping
+Mapped to `urn:gl:methodology:exiobase-<version>`.
+Currency normalisation includes: euro (EUR), US dollar (USD), Indian rupee (INR) via PPP conversion with explicit base year.
+Version phase in which this source ships
+Ships in v2.0 (commercial tier).
+Known risks and mitigations
+Risk: currency and deflator drift. Mitigation: every factor carries an explicit base year and deflation metadata; the conversion library logs every conversion.
+Risk: consortium governance changes. Mitigation: fall back to alternative input-output sources (see 4.13, PACT, and alternative IOs such as GTAP where licensable).
+7.11 Smart Freight Centre GLEC Framework
+ 
+Overview
+The GLEC Framework, recently harmonised with ISO 14083:2023, is the global standard for logistics emissions accounting. It is the backbone for Freight Carbon API (product 23). Factors cover road (multiple vehicle classes), rail, ocean, air, inland waterways, and pipeline.
+What GreenLang ingests
+Mode × vehicle-class × region × fuel intensities.
+Ocean shipping with vessel-class and size bins (container, bulk, tanker).
+Air cargo with short/medium/long-haul bins.
+Rail with electric/diesel traction bins.
+Empty-running and backhaul factors.
+Parameters captured per factor
+Mode, vehicle-class, geography, fuel type, load factor, empty-running assumption.
+Intensity value with explicit unit (gCO2e / tkm is the dominant unit).
+WTW (well-to-wheel) and TTW (tank-to-wheel) distinctions.
+ISO 14083 alignment tag.
+Licensing and redistribution
+Smart Freight Centre publishes the GLEC Framework itself openly; the associated factor library is shared with GLEC members and commercial partners. GreenLang holds a partnership licence.
+Update cadence
+Major revisions every 2 years; ISO 14083 alignment drives ongoing refinements. GreenLang ingests within 30 days of release.
+Parser / ingestion notes
+Parser ingests the GLEC factor workbook and cross-validates against ISO 14083 sample calculations.
+Vehicle-class taxonomy is extensive and varies by region; parser maintains per-region adapters.
+Normalization and canonical mapping
+Mapped to `urn:gl:methodology:glec-framework-v3` (or current version).
+Geography URNs include region-mode composites (e.g., `urn:gl:geo:glec-region:intra-eu-road`).
+Units: gCO2e/tkm is canonical; conversions to gCO2e/km, kgCO2e/container-move, kgCO2e/TEU-km preserved.
+Version phase in which this source ships
+Ships in v1.5 (commercial tier).
+Known risks and mitigations
+Risk: alignment between GLEC and ISO 14083 may shift. Mitigation: maintain both methodologies as separate URNs; let customers pin either.
+7.12 PCAF (Partnership for Carbon Accounting Financials) emission factors
+ 
+Overview
+PCAF provides emission factors and methodologies specifically for financed emissions (Scope 3 Category 15). Banks, investors, PE, insurers use these to compute portfolio GHG. GreenLang FinanceOS (product 31) depends on PCAF; Factors houses the underlying factor library.
+What GreenLang ingests
+Mortgage, commercial real estate, motor vehicle loan emission intensities by region.
+Sovereign debt emission factors by country.
+Listed equity and corporate bond attribution factors.
+Project finance methodology factors.
+Parameters captured per factor
+Asset-class taxonomy, geography, vintage, value.
+Data Quality Score (PCAF 1–5).
+Methodology (economic emissions, physical emissions, etc.).
+Attribution factor formula reference.
+Licensing and redistribution
+PCAF Global GHG Standard is publicly available. The factor database is shared with members; GreenLang is a partnership member and ships the library in the commercial tier.
+Update cadence
+Annual updates; occasional interim corrections.
+Parser / ingestion notes
+PCAF's factor database is Excel-based; parser per tab.
+Data Quality Score must be stored per factor; downstream products (FinanceOS) expose it.
+Normalization and canonical mapping
+Mapped to `urn:gl:methodology:pcaf-<version>-<asset-class>`.
+Asset-class taxonomy adds nodes to the GreenLang activity taxonomy.
+Version phase in which this source ships
+Ships in v2.0 alongside FinanceOS launch.
+Known risks and mitigations
+Risk: PCAF methodology continues to evolve. Mitigation: version each methodology URN; customers can pin.
+7.13 PACT Network (WBCSD Partnership for Carbon Transparency)
+ 
+Overview
+PACT is the WBCSD-led standard for exchanging product carbon footprints between trading partners. It is a framework and a network, not a static factor library. GreenLang integrates with PACT to pull supplier-reported PCFs into customer-scoped private packs, keyed by GS1 Digital Link identifiers.
+What GreenLang ingests
+Supplier-reported PCFs (cradle-to-gate, cradle-to-grave).
+Methodology conformance claim (ISO 14067 / GHGP Product Standard).
+Third-party verification status where available.
+Parameters captured per factor
+Product URN, supplier URN, PCF value, cradle-to-gate vs cradle-to-grave, methodology claim.
+Verification attestation (hash, verifier).
+PACT network transaction ID (for audit).
+Licensing and redistribution
+PACT factors are supplier-to-customer disclosures, not public facts; they live in private packs scoped to the receiving tenant.
+Update cadence
+Event-driven (supplier publishes, customer pulls). GreenLang subscribes to the relevant PACT network node.
+Parser / ingestion notes
+Integration is via PACT's OAuth-secured REST API (OpenAPI spec).
+GreenLang polls or subscribes for each customer tenant; incoming PCFs land in a staging namespace and require tenant review before production use.
+Normalization and canonical mapping
+Mapped to `urn:gl:methodology:pact-pcf-exchange`.
+Geography URN follows the product's country-of-origin per PACT.
+Version phase in which this source ships
+Ships in v1.5 (commercial tier, integration with SupplierOS and PCF Studio).
+Known risks and mitigations
+Risk: PACT API version changes. Mitigation: OpenAPI-driven client with integration tests.
+7.14 India Bureau of Energy Efficiency (BEE) factors
+ 
+Overview
+BEE publishes factors used in India's Perform, Achieve, and Trade (PAT) scheme and in the Energy Conservation Building Code (ECBC). For India-linked industrial plants under PAT, these are normative.
+What GreenLang ingests
+PAT-scheme conversion factors (SEC — specific energy consumption baselines).
+ECBC building energy benchmarks.
+Appliance standards and labelling factors.
+Parameters captured per factor
+Sector (cement, steel, fertilizer, pulp, thermal power, etc.), vintage (PAT cycle), value, unit.
+Methodology reference (PAT cycle rules).
+Licensing and redistribution
+Government-of-India publication; free to use and redistribute with attribution. Community tier.
+Update cadence
+Per PAT cycle (currently 3-year cycles); interim notifications.
+Parser / ingestion notes
+BEE publishes PDFs; parser extracts tables with pdfplumber.
+Normalization and canonical mapping
+Mapped to `urn:gl:methodology:india-bee-pat-<cycle>` and `urn:gl:methodology:india-bee-ecbc`.
+Version phase in which this source ships
+Ships in v0.5 Closed Beta (priority for India exporters).
+Known risks and mitigations
+7.15 EU CBAM default values
+ 
+Overview
+CBAM default values are the EU Commission's published default embedded-emission factors used when an importer cannot obtain actual data from the non-EU producer. They are periodically updated and are central to the CBAM product (product 10).
+What GreenLang ingests
+CN-code-level default embedded emissions (direct + indirect).
+Sector-specific defaults (iron & steel, aluminium, fertilizer, cement, hydrogen, electricity).
+Country-modifier tables where applied.
+Parameters captured per factor
+CN code, sector, default value, unit (tCO2e per tonne of product typically), methodology reference to the CBAM Implementing Regulation.
+Vintage (effective date ranges).
+Licensing and redistribution
+EU open data; free redistribution with attribution. Community tier.
+Update cadence
+Per Commission publication; expected updates at least annually in the definitive phase.
+Parser / ingestion notes
+Parser consumes the Commission's published workbook and cross-references with the CBAM Registry specification.
+Normalization and canonical mapping
+Mapped to `urn:gl:methodology:cbam-default`.
+Sector URNs align with CN-code crosswalks in the activity taxonomy.
+Version phase in which this source ships
+Ships in v0.1 Alpha (CBAM wedge is FY27 revenue-critical).
+Known risks and mitigations
+Risk: CBAM default values change. Mitigation: version per effective-date range; changelog notification to CBAM module customers.
+7.16 Climate TRACE
+ 
+Overview
+Climate TRACE is a satellite- and sensor-derived inventory of facility-level emissions across power, oil & gas, cement, steel, and other sectors. It is an important complement to national inventories for bottom-up verification.
+What GreenLang ingests
+Facility-level CO2, CH4, N2O emissions (modelled).
+Sector coverage: power, oil & gas, cement, steel, aviation, shipping, agriculture.
+Parameters captured per factor
+Facility ID, geography (lat/lon), sector, gas, year, value.
+Confidence / uncertainty as published.
+Model version (Climate TRACE updates models).
+Licensing and redistribution
+CC-BY-4.0; free redistribution. Community tier.
+Update cadence
+Annual major releases; near-real-time updates for select sectors.
+Parser / ingestion notes
+Parser consumes Climate TRACE CSVs and geo-joins to GreenLang Entity Graph where facilities match.
+Normalization and canonical mapping
+Mapped to `urn:gl:methodology:climate-trace-v<version>`.
+Version phase in which this source ships
+Ships in v1.5 (complements national inventories).
+Known risks and mitigations
+Risk: modelled estimates diverge from measured. Mitigation: confidence scoring downgrades modelled factors relative to measured ones.
+7.17 ENTSO-E Transparency Platform (EU real-time grid)
+ 
+Overview
+ENTSO-E publishes generation, cross-border flows, and actual generation per unit across EU bidding zones at hourly resolution (15-minute for some zones). This is the input to hourly grid-intensity calculation for 24/7 CFE reporting and for PowerOS.
+What GreenLang ingests
+Actual generation per generation type per bidding zone per hour.
+Cross-border physical flows.
+Day-ahead forecasts.
+Installed capacity per unit.
+Parameters captured per factor
+Bidding zone URN, timestamp (ISO 8601 UTC), resolution (15 min or 1 hour), generation mix.
+Computed hourly emission intensity (kg CO2e/kWh) via per-generation-type factors.
+Input-generation-mix provenance retained.
+Licensing and redistribution
+Registration required; commercial terms permit resale within aggregated products. GreenLang ships real-time factors in the commercial tier.
+Update cadence
+Continuous (near-real-time, with a 1-hour or less lag).
+Parser / ingestion notes
+Ingestion worker pulls via ENTSO-E REST API with a stored API key.
+Worker computes hourly intensity as (sum of (generation_i × factor_i)) / total generation, where factor_i is from a pinned combination-of-sources (IEA for biomass, EPA-derived for gas, etc.).
+Records are appended as point-in-time factors with resolution=hourly.
+Normalization and canonical mapping
+Mapped to `urn:gl:methodology:entsoe-marginal-mix`.
+Geography URN: `urn:gl:geo:bz:<bz-code>` e.g., `urn:gl:geo:bz:de-lu`.
+Version phase in which this source ships
+Ships in v2.5 as part of the real-time grid intensity feature.
+Known risks and mitigations
+Risk: ENTSO-E API changes. Mitigation: versioned client; integration tests; SLA monitoring.
+Risk: missing-data hours. Mitigation: explicit gap markers; callers can configure fallback behaviour.
+7.18 ElectricityMaps and WattTime (commercial real-time grid)
+ 
+Overview
+ElectricityMaps and WattTime provide curated, global, near-real-time grid intensity. Both are commercial; GreenLang holds partnership licences with both and exposes their data under commercial-tier, licence-gated access. Both are high-quality complements to ENTSO-E (Europe) and EPA eGRID (US) and fill gaps in APAC, LATAM, and Africa.
+What GreenLang ingests
+Hourly or near-real-time emission intensity per region.
+Marginal operating emission rate (MOER) from WattTime.
+Carbon-aware signal (5-minute forecasts for automation).
+Parameters captured per factor
+Region URN, timestamp, intensity value, methodology class (average vs marginal).
+Provider tag (electricitymaps | watttime) — some downstream uses care.
+Licensing and redistribution
+Both are commercial licences. GreenLang is a reseller; downstream customer queries carry provider-specific licence headers.
+Update cadence
+Continuous.
+Parser / ingestion notes
+Ingestion workers pull via each provider's REST API; Kafka pipeline buffers bursts.
+Data is deduplicated where both providers cover a region; GreenLang stores both and allows customers to pin provider.
+Normalization and canonical mapping
+Mapped to `urn:gl:methodology:electricitymaps-avg` and `urn:gl:methodology:watttime-moer`.
+Version phase in which this source ships
+Ships in v2.5.
+Known risks and mitigations
+Risk: pricing changes from providers. Mitigation: multi-provider strategy.
+7.19 US ISOs / RTOs (CAISO, ERCOT, PJM, MISO, NYISO, SPP, ISO-NE)
+ 
+Overview
+US ISOs publish generation mix and LMP data at 5-minute to hourly resolution. Together they cover ~70% of US electricity load. GreenLang ingests generation mix per ISO and computes hourly emission intensity, matching how eGRID is aggregated annually.
+What GreenLang ingests
+Actual generation by fuel type per ISO.
+Demand and load per balancing area.
+Price data (LMP) for contextual analytics (not for factor generation).
+Parameters captured per factor
+Balancing-authority URN, timestamp, generation mix, computed intensity.
+Source ISO recorded.
+Licensing and redistribution
+Public-domain data for generation mix and load; some LMP data is gated. GreenLang ships generation-derived intensities in the commercial tier.
+Update cadence
+Continuous; data lag varies by ISO (typically 30 minutes to 2 hours).
+Parser / ingestion notes
+Ingestion workers per ISO; each ISO has its own API format. Parser is ISO-specific with shared post-processing.
+Normalization and canonical mapping
+Mapped to `urn:gl:methodology:<iso>-computed-intensity`.
+Geography URNs: `urn:gl:geo:balancing-authority:<ba>` e.g., `caiso-nrth`, `pjm-west`.
+Version phase in which this source ships
+Ships in v2.5.
+Known risks and mitigations
+7.20 Grid-India (POSOCO successor) real-time
+ 
+Overview
+Grid-India publishes national and regional grid generation data in near-real time. GreenLang ingests this to compute hourly India grid intensity, enabling 24/7 CFE claims for Indian operations.
+What GreenLang ingests
+Actual generation by fuel type (national and regional).
+Demand and frequency.
+Parameters captured per factor
+Region URN (national / NEWNE / SR / ER / NER), timestamp, generation mix, computed intensity.
+Licensing and redistribution
+Government data with notification-based commercial use; GreenLang attributes every response.
+Update cadence
+Continuous (15-minute resolution publicly available).
+Parser / ingestion notes
+Parser consumes Grid-India's public CSV feeds and computes intensity using a pinned per-fuel factor basis.
+Normalization and canonical mapping
+Mapped to `urn:gl:methodology:india-realtime-intensity`.
+Version phase in which this source ships
+Ships in v2.5.
+Known risks and mitigations
+7.21 ADEME Base Empreinte
+ 
+Overview
+ADEME's Base Empreinte is France's official LCA and carbon-footprint database, widely used across EU reporting and French regulation (ACV réglementaire, Bilan Carbone).
+What GreenLang ingests
+Full product/activity LCA factors (cradle-to-gate and cradle-to-grave).
+French grid and fuel factors.
+Transport factors (road, rail, air) with French-specific vehicle classes.
+Food, buildings, and construction factors.
+Parameters captured per factor
+Activity, value, unit, vintage, methodology note.
+GWP basis (ADEME moves between AR5 and AR6; tagged per record).
+Licensing and redistribution
+Etalab Open Licence (equivalent to CC-BY). Community tier.
+Update cadence
+Annual with periodic refreshes.
+Parser / ingestion notes
+ADEME exposes a REST API + downloadable CSVs; parser uses the API.
+Normalization and canonical mapping
+Mapped to `urn:gl:methodology:ademe-base-empreinte`.
+Activity taxonomy extended with ADEME-origin tags where new nodes required.
+Version phase in which this source ships
+Ships in v1.5 (EU GTM expansion drives demand).
+Known risks and mitigations
+7.22 NIES (National Institute for Environmental Studies, Japan)
+ 
+Overview
+NIES publishes Japan's national inventory and IDEA (Inventory Database for Environmental Analysis) factors, widely used in Japanese LCA work.
+What GreenLang ingests
+Japanese national inventory factors (stationary, mobile, process).
+IDEA product-level factors (under separate commercial licence).
+Parameters captured per factor
+Activity, value, unit, vintage, methodology note.
+Licensing and redistribution
+National inventory free; IDEA commercial.
+Update cadence
+Annual.
+Parser / ingestion notes
+Parser handles Japanese-language source labels with translation-memory lookup.
+Normalization and canonical mapping
+Mapped to `urn:gl:methodology:nies-<dataset>`.
+Version phase in which this source ships
+National inventory ships in v2.0; IDEA ships in v2.5.
+Known risks and mitigations
+7.23 AGRIBALYSE (ADEME / INRAE, France)
+ 
+Overview
+AGRIBALYSE is the French public database for agricultural and food LCA; widely used for Scope 3 Category 1 in food/CPG supply chains. Feeds AgriLandOS and PCF Studio food-industry workflows.
+What GreenLang ingests
+Crop-, livestock-, and food-product LCA factors (cradle-to-farm-gate and cradle-to-retail).
+Packaging and processing factors.
+Parameters captured per factor
+Product URN, value, unit, methodology note.
+Licensing and redistribution
+Etalab Open Licence; free.
+Update cadence
+Major updates every 2–3 years.
+Parser / ingestion notes
+Parser consumes AGRIBALYSE CSVs; activity taxonomy is extended for food-specific items.
+Normalization and canonical mapping
+Mapped to `urn:gl:methodology:agribalyse`.
+Version phase in which this source ships
+Ships in v2.5 alongside AgriLandOS launch.
+Known risks and mitigations
+7.24 FAOSTAT emission statistics
+ 
+Overview
+FAOSTAT publishes per-country per-crop emissions from enteric fermentation, manure, rice cultivation, synthetic fertilizer, crop residues, burning, land use, and energy use in agrifood systems. Feeds AgriLandOS and food-sector Scope 3.
+What GreenLang ingests
+Country × crop/livestock × year × emission-category.
+Parameters captured per factor
+Country URN, activity URN, vintage, value, unit.
+Licensing and redistribution
+CC-BY-4.0. Community tier.
+Update cadence
+Annual.
+Parser / ingestion notes
+FAOSTAT API is well-documented; parser uses the REST API directly.
+Normalization and canonical mapping
+Mapped to `urn:gl:methodology:faostat-<domain>`.
+Version phase in which this source ships
+Ships in v2.5.
+Known risks and mitigations
+7.25 WRI Aqueduct (water stress overlays, cross-reference)
+ 
+Overview
+Aqueduct is WRI's water-risk dataset. It is not an emission-factor source in the strict sense, but it provides the basin-level risk overlays that WaterOS (product 25) uses and that Factors surfaces when customers query water-footprint factors alongside emissions.
+What GreenLang ingests
+Basin-level water stress, seasonal variability, groundwater stress.
+Parameters captured per factor
+Basin URN, indicator, value, date.
+Licensing and redistribution
+CC-BY-4.0.
+Update cadence
+Major releases every 2–3 years.
+Parser / ingestion notes
+Parser consumes Aqueduct shapefiles; Factors stores basin metadata as geography records.
+Normalization and canonical mapping
+Mapped as geography metadata; not as emission factors.
+Version phase in which this source ships
+Ships in v2.0 alongside WaterOS.
+Known risks and mitigations
+7.26 ASHRAE / AHRI refrigerant emission factors
+ 
+Overview
+Building and process cooling uses hundreds of refrigerant species (R-410A, R-32, R-1234yf, R-717, many more). GWPs, blend compositions, and leakage-rate norms come from ASHRAE and AHRI references.
+What GreenLang ingests
+Refrigerant species and blend GWPs.
+Typical leakage rates per equipment class (chillers, supermarket refrigeration, automotive AC).
+Parameters captured per factor
+Species identifier, GWP-100 (AR5/AR6), typical charge, typical leakage rate per equipment class.
+Licensing and redistribution
+Standards-body commercial. GreenLang holds a licence for redistribution in the commercial tier.
+Update cadence
+Occasional updates tied to new refrigerant approvals.
+Parser / ingestion notes
+Parser maintains a curated table of species with machine-readable references.
+Normalization and canonical mapping
+Mapped to `urn:gl:methodology:ashrae-refrigerants`.
+Version phase in which this source ships
+Ships in v1.5.
+Known risks and mitigations
+7.27 GHG Protocol Product Standard reference data
+ 
+Overview
+The GHGP Product Standard does not publish factors per se; it defines methodology. GreenLang encodes the methodology so that PCF Studio can claim conformance and factor records can be tagged with `ghgp-product` methodology where applicable.
+What GreenLang ingests
+Allocation rules (physical, economic, system expansion).
+Boundary definitions.
+Uncertainty guidance.
+Parameters captured per factor
+Methodology URN, reference URL, boundary template, allocation rules.
+Licensing and redistribution
+CC-BY-NC for documentation; methodology itself is free to implement.
+Update cadence
+Major revisions at multi-year cadence.
+Parser / ingestion notes
+Encoded manually by the climate-methodology team; kept in a versioned repository.
+Normalization and canonical mapping
+Mapped to `urn:gl:methodology:ghgp-product-v<version>`.
+Version phase in which this source ships
+Ships in v0.1 Alpha (needed to tag factors methodologically).
+Known risks and mitigations
+7.28 ISO 14083 transport chain emissions methodology
+ 
+Overview
+ISO 14083 is the international standard for quantifying transport-chain emissions; GLEC Framework is the implementation. Factors cross-references ISO 14083 for methodology conformance claims on transport-related factors.
+What GreenLang ingests
+Methodology reference.
+Reference values for limited cases.
+Parameters captured per factor
+Methodology URN, reference.
+Licensing and redistribution
+ISO is commercial; document access via ISO purchase. Methodology claims in Factors do not redistribute ISO content.
+Update cadence
+ISO revisions at multi-year cadence.
+Parser / ingestion notes
+Methodology is encoded manually; factor values come via GLEC (4.11).
+Normalization and canonical mapping
+Mapped to `urn:gl:methodology:iso-14083`.
+Version phase in which this source ships
+Ships in v1.5 alongside GLEC.
+Known risks and mitigations
+7.29 DEFRA indirect / Scope 3 default pack (well-to-tank)
+ 
+Overview
+DEFRA's annual release includes indirect emission factors (well-to-tank, transmission & distribution, business travel upstream, etc.). GreenLang maintains a separate pack URN (`urn:gl:pack:defra-indirect:<year>`) so downstream products can pin indirect factors independently.
+What GreenLang ingests
+WTT (well-to-tank) factors for all fuels.
+Transmission & distribution losses for grid electricity.
+Upstream business travel, hotel stays, water supply.
+Parameters captured per factor
+Activity, value, unit, vintage; Scope classification (often Scope 3 Category 3 or 7).
+Licensing and redistribution
+OGL v3.0.
+Update cadence
+Annual (tied to 4.2).
+Parser / ingestion notes
+Same parser as 4.2; sub-pack split by tab filtering.
+Normalization and canonical mapping
+Mapped to `urn:gl:methodology:defra-wtt-<year>`.
+Version phase in which this source ships
+Ships in v0.1 Alpha.
+Known risks and mitigations
+7.30 Community contributions (GreenLang OSS factor channel)
+ 
+Overview
+The community channel is where academics, NGOs, sectoral associations, and individual contributors can publish factors that do not yet have an authoritative upstream. It is critical for domains where national inventories lag (informal-sector emissions, regional micro-grids, local agriculture). Factors go through peer review before reaching the production catalogue and are always tier-3.
+What GreenLang ingests
+Contributor-submitted factors with full metadata.
+Parameters captured per factor
+Same schema as other sources; additionally: contributor identity, ORCID where given, peer-review chain.
+Licensing and redistribution
+CC-BY-4.0; CLA signed by every contributor.
+Update cadence
+Continuous.
+Parser / ingestion notes
+PR workflow on GitHub; automated validation checks; two-reviewer policy; climate-methodology lead final sign-off.
+Normalization and canonical mapping
+Mapped to `urn:gl:methodology:community-<slug>` with strict methodology metadata.
+Version phase in which this source ships
+Channel opens in v1.5 with an initial cohort of ~20 trusted contributors.
+Known risks and mitigations
+Risk: bad-faith contributions. Mitigation: peer review; CLA; revocation protocol if a contributor is later found to have fabricated data.
+7.31 Source-to-version roll-up (at a glance)
+ 
+8. Ingestion pipeline
+The ingestion pipeline is the hardest-working system in Factors. It runs over 30 sources at wildly different cadences (annual PDFs from IPCC, hourly API feeds from ENTSO-E, event-driven PACT webhooks from trading partners, continuous updates from commercial providers) and turns them all into canonical, immutable, URN-identified factor records. Correctness beats throughput. A bad batch entering the production catalogue is a multi-week customer-trust incident; a slow batch is merely a ticket in backlog.
+8.1 Pipeline stages
+Every source goes through the same seven-stage pipeline. Stages are independently retryable; each stage emits events to the orchestrator, which is Prefect at v0.1 Alpha through v1.0 GA and either Prefect or Dagster from v1.5 onward based on scale experience.
+Fetch — acquire the raw artefact (HTTP GET, SFTP pull, API call, email ingestion, manual upload). Always writes to the raw store before any processing.
+Parse — convert the raw artefact into a structured intermediate representation (IR) — a stream of candidate factor records.
+Normalize — map source-native fields onto the canonical schema: URN construction, geography resolution, unit normalisation, methodology tagging, GWP-basis tagging.
+Validate — enforce invariants: required fields, unit dimensional consistency, vintage sanity, uncertainty parseability, URN uniqueness, referential integrity to Source / Pack / Methodology / Geography / Activity.
+Dedupe — check for existing records that match on activity × geography × vintage × methodology. Duplicates become new versions via supersede edges.
+Stage — load into the staging namespace, where downstream products cannot see the records. Produce a diff report vs. the existing catalogue.
+Review and publish — for tier-1 sources with trusted automation, publish proceeds automatically on green CI. For tier-2/3 or commercial sources with licensing subtleties, a human reviewer (climate-methodology team) sign-offs before publish. Publish atomically flips visibility and emits changelog events.
+8.2 Connector framework
+Every source has its own Connector class implementing a narrow contract. This is the extension point that lets the climate-methodology team add sources without touching the pipeline core. The Connector interface is intentionally small — most complexity lives in source-specific parsers.
+ 
+8.3 Parsers per source format
+Each source format gets a specialist parser, written once and maintained with snapshot tests against known-good artefacts. The parser layer is where most ingestion bugs land, so investment in regression testing is disproportionately high.
+ 
+8.4 Normalization rules
+Normalization turns source-native fields into the canonical schema. The rules below are non-negotiable; violation blocks publish.
+URN construction. Every factor must have a deterministic URN derived from (source_slug, pack_slug, canonical_activity_id, canonical_geo_id, vintage_start, version). Two parsers on the same artefact must produce identical URNs.
+Geography resolution. Every geography reference must resolve to an existing geography URN. Unrecognised geographies block the candidate and emit a ticket to the geography-curation queue.
+Unit conversion. Source-native units are converted to GreenLang canonical units using the unit-conversion library. All conversions are logged. Dimensional mismatches (e.g., source reports kg CO2/m3, target expects kg CO2/kWh) block the candidate.
+GWP-basis tagging. Every factor must carry an explicit GWP basis (AR4 / AR5 / AR6 / custom). If the source does not state, the parser sets a source-default with a `gwp_basis_inferred=true` flag; the reviewer confirms at publish time.
+Vintage handling. Indian FY values are stored as vintage_start=Apr 1, vintage_end=Mar 31. Calendar-year values use Jan 1 / Dec 31. Irregular vintages (e.g., 2024-H1, 2025-Q3) are stored with explicit start/end dates.
+Methodology tagging. Every factor must be tagged with a methodology URN. If the source does not specify, the parser defaults to the source's known methodology (e.g., DEFRA factors map to `defra-<year>`); if neither is possible, the candidate is blocked.
+Activity taxonomy mapping. Every factor must map to an activity-taxonomy node. Unmapped activities enter a curation queue; the climate-methodology team adds new nodes or the candidate is rejected.
+Uncertainty population. Every factor must have an uncertainty record. If the source provides ranges, those are stored directly. If not, pedigree-matrix defaults per source tier are applied.
+8.5 Unit conversion library
+The unit-conversion library is a first-class asset and is published as an OSS sub-package (`greenlang.units`) that other GreenLang products depend on. It supports:
+Mass (g, kg, t, Mt, Gt) with prefix normalisation.
+Energy (J, kJ, MJ, GJ, TJ, kWh, MWh, GWh, TWh, Btu, MMBtu, therm, kcal).
+Volume (m3, litre, gallon-US, gallon-imperial).
+Distance (m, km, mile, nautical-mile).
+Activity-unit (tkm, pkm, container-move, TEU-km, passenger-km, vehicle-km).
+Currency (EUR, USD, GBP, INR, CNY, JPY, ...) with explicit base-year conversion via PPP or market rates (for EXIOBASE-style spend-based factors).
+Composite units (kg CO2e / kWh, g CO2e / MJ, kg CO2e / tonne-km, ...).
+Conversion is dimension-safe: the library refuses to convert between incompatible dimensions. Every conversion is logged with input, output, factor used, and source of the conversion factor.
+8.6 Deduplication and supersession
+Two factors are duplicates if they share the same (source_slug, pack_slug, canonical_activity_id, canonical_geo_id, vintage_start, methodology_urn). When a new version arrives for an existing key, the old factor is superseded: the old record remains in the catalogue (immutable) but its `superseded_by_urn` points to the new record. Downstream queries that pin the old URN continue to resolve; queries that ask for 'latest' route to the new record.
+Supersession edges are published to the changelog so downstream products can react. PCF Studio, for example, subscribes to supersession events for any factor it has referenced in a published PCF and alerts the product owner.
+8.7 Validation
+Validation runs on every candidate in the staging namespace. Categories of checks:
+Structural — all required fields present, types correct, lengths within bounds.
+Referential — every URN reference resolves to an existing record.
+Dimensional — unit dimensions are consistent with the activity category (e.g., Scope 2 grid factors must be energy-based units; freight factors must be activity-unit-based).
+Sanity — values within reasonable bounds (e.g., grid intensity between 0 and 2,000 g CO2e/kWh; if outside, reviewer flag).
+Licence — source licence compatible with the pack's tier (commercial-only factors cannot leak into community pack).
+Uniqueness — URN not already published.
+Cross-source — if another trusted source has a published factor for the same (activity, geography, vintage), the divergence is calculated; >10% divergence flags reviewer attention.
+8.8 Orchestration and scheduling
+Ingestion is orchestrated by Prefect (v0.1 through v1.0) and evaluated for a possible move to Dagster from v1.5 (dependent on workflow authoring ergonomics at scale). Flows are defined per source; each flow has a schedule (cron for polling sources; webhook for event-driven; manual for ad-hoc).
+Annual sources (DEFRA, EPA, CEA) — cron at publication window plus daily staleness check.
+Real-time sources (ENTSO-E, ISOs, Grid-India) — continuous workers with backpressure via Kafka.
+Event-driven sources (PACT, partner uploads) — webhook handlers that enqueue a flow run.
+Ad-hoc (IPCC errata) — manual trigger by the climate-methodology lead.
+8.9 Backfill
+Historical backfills happen when a new source is added or when an existing source revises prior years. The backfill pipeline is the same pipeline, run against historical artefacts, with the 'published_at' set to the original publication date and a `backfilled=true` flag so downstream consumers know the factor was loaded late. Backfills are quota-controlled to avoid overwhelming reviewers.
+8.10 Idempotence and correctness guarantees
+Every stage is idempotent. Re-running any stage on an artefact produces the same output. Stages write to a staging schema first; atomic swap to production happens only on successful publish. The canonical store has no 'update' operation on published factors — only inserts, and superseded_by edges. This is how we give five-year audit guarantees.
+8.11 Observability of ingestion
+Prefect UI surfaces flow success/failure per source.
+Per-source dashboards in Grafana: latency from publication to catalogue, factor count delta per ingestion, reviewer queue depth.
+Every candidate emits a structured log with lineage fields; logs feed ClickHouse for ad-hoc querying.
+Slack alerts for: ingestion failure on tier_1 source; reviewer queue depth > threshold; sanity-check failure; cross-source divergence spike.
+9. Query engine and API layer
+The API layer is the customer-facing surface. It must feel fast, honest, and stable across five years. Stability is achieved by strict versioning, additive-only schema changes, and explicit deprecation policies. Speed is achieved by a Redis hot-cache fronting a per-region Postgres read replica, with a Go/Rust query engine in between. Honesty is achieved by lineage headers on every response and explicit `as_of` semantics.
+9.1 Endpoint inventory (REST)
+The REST surface is the primary developer interface. Every endpoint is versioned under /v1/, /v2/, etc. A few representative endpoints:
+ 
+9.2 GraphQL schema (SDL excerpt)
+ 
+9.3 SQL-over-HTTP
+Many enterprise customers want SQL access to the catalogue — for analytics, for embedding in dbt models, for joining against internal data. Direct Postgres exposure is not an option (multi-tenant safety, licence enforcement, rate limiting). Instead, Factors exposes a read-only SQL endpoint that translates customer SQL against a DuckDB proxy that reads from Postgres views.
+/v1/sql — POST a SQL string; response is JSON rows or Arrow IPC.
+The SQL parser enforces: read-only, no DDL, no joins to non-exposed tables, explicit tenant and licence predicates injected.
+Query complexity is bounded (CPU-seconds per request; hard timeout at 30s).
+Result set is paginated via cursor.
+Views exposed: factor_latest, factor_versioned, source, factor_pack, geography, activity, unit, methodology, changelog.
+9.4 Python SDK (`greenlang-factors`)
+The Python SDK is the primary developer surface. It has to feel idiomatic, strict, and fast. Published on PyPI under `greenlang-factors`. Backwards compatibility guarantee at v1.0 GA: no breaking changes for 24 months.
+ 
+9.5 TypeScript SDK (`@greenlang/factors`)
+TypeScript SDK follows the same shape as Python, with idiomatic TS patterns (Promises, strict types from GraphQL codegen, zod validation for untyped fallback paths).
+ 
+9.6 Java SDK
+Java SDK (`io.greenlang:factors-sdk`) ships in v2.0 to serve enterprise customers on JVM stacks (Gradle and Maven publication). Feature parity with Python and TypeScript, with appropriate Java idioms.
+9.7 CLI (`greenlang`)
+The CLI is multiplexed across all GreenLang products; for Factors it exposes factor search, download, convert, and diff. Zero-dependency single-binary distribution via GoReleaser. Homebrew, apt, and a Windows MSI installer.
+ 
+9.8 Authentication and authorization
+Community tier — no authentication required; anonymous rate-limited access to public factors. Optional API key for higher limits.
+Commercial tier — API key (with optional mTLS for enterprise), scoped by org and product tier.
+SSO-backed tokens — OAuth 2.0 with PKCE, supported for web dashboards (GreenLang Studio).
+Machine-to-machine — OAuth 2.0 client credentials flow.
+Per-factor licence checks happen in the query engine, based on the caller's licence entitlements (cached on token issuance, refreshed every 5 minutes).
+Private packs are tenant-scoped; queries carry the tenant URN and the engine refuses to return private-pack factors outside scope.
+Audit log on every licence check and every private-pack access.
+9.9 Rate limiting
+ 
+9.10 Caching strategy
+Redis hot-cache fronts the query engine. Key space: `factor:<urn>:as_of=<iso>`, TTL 1 hour for current vintages, indefinite for historical vintages.
+CDN edge cache on read-only endpoints with a max-age of 5 minutes for non-as_of'd queries and 30 days for as_of'd queries (they are immutable by construction).
+SDK local cache (disk + memory) for offline/laptop use; TTL configurable; cache validation against server ETags.
+Invalidation triggers: changelog events from ingestion. Redis entries are actively evicted on supersede; CDN is invalidated via soft-purge.
+9.11 Pagination
+All list endpoints use cursor-based pagination. Cursors are opaque base64 strings, stable across pages for the same query and `as_of`. Max page size is 200. Deep pagination past 10k items requires the SQL endpoint instead.
+9.12 Errors and error codes
+ 
+9.13 Response envelope and lineage headers
+Every response includes an envelope with the factor payload plus lineage metadata headers. Response hashing is deterministic: two callers at the same `as_of` receive identical payloads.
+ 
+9.14 Webhooks and streaming
+Changelog events can be subscribed to via webhook, SSE, or Kafka topic (enterprise). Event types: factor.published, factor.superseded, factor.deprecated, pack.released, pack.retired, source.added, source.contact_changed.
+9.15 Observability on the read path
+Per-endpoint p50/p95/p99 latency in Prometheus.
+Per-tenant QPS, rate-limit hits, licence-violation rate.
+Factor-level hit counts surfaced in the Studio dashboard (aggregated, not leaking tenant data).
+Tracing (OpenTelemetry) across API edge → query engine → Postgres → Redis.
+Audit log separate from application log; write-only; 7-year retention.
+10. Natural-language and machine-learning layer
+Factors is a data product first and an AI product second. The ML layer exists to improve three specific jobs: mapping messy activity descriptions to the right factor URN (`resolve`), suggesting alternative factors when the exact match is missing, and assisting parsers in extracting factors from unstructured or poorly structured source documents. It never invents factor values. Every ML-derived output is a pointer into the canonical catalogue with a confidence score, not a freshly hallucinated number.
+10.1 Activity-to-factor mapping (`resolve`)
+The `resolve` endpoint takes natural-language activity descriptions — 'natural gas used for office heating in Munich, 2025', 'diesel delivery truck 7.5t, urban Europe', 'cement clinker produced in Tamil Nadu' — and returns a ranked list of candidate factor URNs with confidence scores. This is how non-expert users get correct factors without learning the taxonomy.
+10.1.1 Pipeline
+Tokenize and classify the query (language, activity-category heuristic, geography hints, vintage hints).
+Embed the query via a local sentence-transformers model (at v1.5; upgrading to a dedicated climate-domain embedder at v2.0).
+Retrieve top-k candidates by vector-cosine search against pre-computed activity taxonomy embeddings (k=50).
+Enrich candidates with metadata: geography, vintage, methodology compatibility.
+Re-rank with a lightweight LambdaMART / GBDT model trained on expert-labelled data.
+Apply business rules (licensing entitlement, residency, explicit methodology pin).
+Return top-n (default 5) with confidence, reasoning, and alternate-factor suggestions.
+10.1.2 Confidence score
+Confidence is a scalar in [0,1] computed from: vector similarity, metadata alignment (geography exact match > neighbour > fallback), vintage proximity, methodology match, source-tier prior, and historical calibration (how often this activity→factor mapping has been confirmed by reviewers or customers). The score is reproducible — callers can request the inputs to the score computation via `?explain=true`.
+10.1.3 Evaluation harness
+The eval harness is co-owned with Agent Runtime + Eval (product 7). Factors maintains a domain-specific eval suite: ~5,000 expert-labelled (activity_text, expected_factor_urn) pairs across Scopes and sectors, with monthly additions. Regression tests run before every model or ranking-function change. Metrics: top-1 accuracy, top-5 accuracy (retrieval), mean-reciprocal-rank. Target at v2.0: top-1 > 85%, top-5 > 95%. A separate adversarial suite (~500 trick queries such as ambiguous activities, unusual units, regulator-sensitive geographies) must have 0 regressions between releases.
+10.2 Embedding strategy
+At v1.5, embeddings are produced by an open-weight sentence-transformer model (nominally `BAAI/bge-m3` or similar), hosted on GreenLang GPU infrastructure. Output vectors are 1024-dimensional and stored in pgvector with IVF-Flat indexing until scale demands HNSW or an OpenSearch kNN move in v2.0.
+From v2.0, GreenLang trains a climate-domain embedder on the contributed and proprietary activity-taxonomy corpus (with appropriate licensing review). The domain embedder yields substantially higher recall on non-English activity descriptions and on messy trade-specific terminology.
+10.3 LLM integration via Agent Runtime + Eval
+LLMs assist in three places:
+Ingestion parsing — LLMs post-process OCR output from scanned PDFs (older IPCC/UNFCCC docs), extract structured fields from prose-heavy methodology sections, and normalise colloquial unit descriptions.
+Resolve re-ranking — when top-k vector retrieval returns low-confidence candidates, an LLM call can be optionally used to explain ranking differences and adjust the order. The LLM never invents URNs; it chooses among the top-k retrieved.
+Natural-language changelog summaries — auto-draft changelog entries when packs update, reviewed by humans.
+Every LLM call is governed by Agent Runtime + Eval: model-agnostic routing (Anthropic, OpenAI, Azure OpenAI, self-hosted), prompt versioning, eval-suite regression, cost budgets per tenant, and full provenance of the LLM's role in the answer. Any response that reaches a customer carries a header `X-GL-LLM-Used: true|false`.
+10.4 Alternative-factor suggestion
+When `resolve` cannot achieve high confidence, the response includes suggested alternatives ordered by deviation from the caller's constraints. Example: if the query asks for 'India 2024 grid electricity market-based' but only location-based factors exist, the response suggests location-based factors with an explicit flag `methodology_mismatch=true` and the reasoning.
+10.5 Model governance and registry
+Every model in production has a Model Card with training data description, eval results, known biases, and intended use.
+Models are versioned (v0.1-m1, v0.1-m2, ...) and pinned to factor-pack queries via the `as_of` mechanism.
+Model deprecations follow the same policy as schema deprecations.
+Per-tenant model override is supported for enterprise tier (customers who want a reproducible model across their lifetime).
+10.6 Privacy and data handling in ML
+Training data for the domain embedder comes only from sources with appropriate licensing (community-tier factors, our own curated content, partner contributions with explicit consent).
+Private packs never enter any shared training set. Private-pack embeddings are computed per-tenant and stored in tenant-scoped indexes.
+LLM calls never include private-pack content unless the caller is within scope; a safety gate enforces this at the Agent Runtime boundary.
+10.7 Evaluation cadence
+Regression suite — every model change and every prompt change.
+Adversarial suite — every model change and monthly regardless.
+Human evaluation — quarterly, panels of 3 climate-methodology experts scoring a sample of 200 resolutions.
+Customer-reported issues — escalation path; every reported mis-mapping becomes an eval test case.
+11. Versioning, lineage, and changelog
+Factors makes three durable promises about versioning. First, every factor URN is forever — once published, it never disappears and never mutates. Second, every query with an `as_of` timestamp is reproducible — the same query returns the same answer five years later. Third, every change to the catalogue is announced through a structured, subscribable changelog — customers and downstream products never get surprised.
+11.1 Immutability model
+The canonical factor table is effectively append-only at the level downstream products see. Internally we keep a small 'correction window' (24 hours post-publish) where trivial metadata fixes are permitted (typos in descriptions, citation URL corrections) without a version bump. After that window, any change is a new URN with a supersedes edge to the old one. Correction-window changes are logged and included in the factor's `review` field.
+11.2 URN scheme in detail
+Every URN has the shape `urn:gl:factor:<source-slug>:<pack-slug>:<canonical-id>:v<integer>`. Source slug is stable and matches the Source URN (minus `urn:gl:source:`). Pack slug is stable and matches the Pack URN. Canonical ID is deterministically derived from (activity-URN, geography-URN, vintage-start, methodology-URN) and is human-readable where possible. Version is a monotonically increasing integer within the canonical ID. Leading zeros are not used. Example: `urn:gl:factor:india-cea-baseline:cea-v12:national-grid:v1` followed by `...:v2` when CEA publishes its next annual revision.
+Non-factor URNs follow the same scheme: `urn:gl:source:<slug>`, `urn:gl:pack:<source>:<pack-id>:<version>`, `urn:gl:methodology:<slug>`, `urn:gl:geo:<type>:<id>`, `urn:gl:unit:<symbol>`, `urn:gl:activity:<slug>`.
+11.3 Factor-diff API
+The /v1/factors/diff endpoint accepts two URNs and returns a structured diff: value delta, unit delta, methodology delta, boundary delta, uncertainty delta, and narrative description. Auditors use this when verifying a customer's restatement; downstream products use it to flag material changes that might trigger alerts to product owners.
+ 
+11.4 Public changelog
+The changelog is a first-class product surface. It has a human-readable web view (Studio → Factors → Changelog), an RSS/Atom feed, a webhook fan-out, and a REST endpoint. Entries include: new factor packs, new factor versions, supersedes, deprecations, retired packs, model updates (for the resolve engine). Enterprise customers can filter changelog entries by source, pack, tenant relevance (limited to factors they have historically used), and subscribe via per-tenant webhook.
+11.5 Regulatory pinning
+Regulators and auditors often require that a particular report uses a specific factor version for the entire reporting period. Factors supports this through 'pinning' — the caller specifies a pack URN or a factor URN explicitly in queries, and the engine guarantees that pinned URN for the duration. Pinning survives across SDK major versions and across API versions by virtue of URN immutability. A pinned URN is the lowest-friction audit artefact in the product.
+12. Uncertainty and methodology
+Emission factors come with meaningful uncertainty. Auditors, scientists, and regulators all demand that uncertainty be quantified and propagated. Factors encodes uncertainty using an extended ecoinvent pedigree matrix combined with a parametric distribution. Propagation is supported from v2.0 via a Monte Carlo API.
+12.1 Pedigree matrix
+Pedigree attributes are integers 1–5 (1 best, 5 worst):
+ 
+12.2 Distribution families
+Factors store uncertainty as a distribution family plus parameters. Lognormal is the default (matching ecoinvent convention), with geometric mean and geometric standard deviation. Other supported distributions: normal (with mean and stddev), triangular (with min/mode/max), uniform (with min/max), bootstrapped (array of samples).
+12.3 Monte Carlo propagation API (v2.0+)
+ 
+12.4 GWP values and basis switching
+GWP values evolve with IPCC assessment reports. Factors stores GWPs as a dedicated pack (`urn:gl:pack:ipcc-ar6:gwp:v1` and predecessors `urn:gl:pack:ipcc-ar5:gwp:v1`). Every factor has a `gwp_basis` field so the caller knows which pack was used at factor construction. Callers can request GWP-basis switching when the underlying species-level data permits (e.g., methane-only factors can be expressed in AR4, AR5, or AR6 on the fly); factors that collapse multiple species into one CO2e number cannot be re-based without reingestion.
+12.5 Methodology metadata
+Every factor is tagged with a `methodology_urn` that resolves to a Methodology record (see 3.3). Methodologies carry framework, tier, approach, boundary_template, and allocation_rules. Downstream products query methodologies to display human-readable explanations (e.g., PCF Studio surfaces 'GHGP Product Standard — mass allocation' when showing how a PCF was constructed).
+12.6 Boundary definitions
+Every factor has a free-text boundary field that states exactly what is included and excluded. Boundary statements are regulated in tone: imperative, unambiguous, and short. Methodology URNs provide a default boundary template; individual factors override when source documents state something more specific.
+12.7 Allocation rules
+Allocation matters for co-products (e.g., oil refining yielding gasoline + diesel + bitumen). Methodologies list the permissible allocation bases (physical, mass, economic, system expansion, substitution). For ecoinvent, the system model (APOS, consequential, cut-off) is first-class and selectable; Factors surfaces the model explicitly on every ecoinvent-derived record.
+13. Geography and vintage system
+Geography and vintage are where most bugs hide. Customers report in a business year; grids are defined on fiscal years or calendar years; factors are published per-country or per-subregion; CBAM treats CN codes, not countries. This section specifies the canonical hierarchy and the resolution rules.
+13.1 Geographic hierarchy
+The geography table is a DAG, not a strict tree, because some geographies belong to multiple parents (a plant sits in both a state and a grid zone). Node types:
+ 
+13.2 India specifics
+Grid regions: `urn:gl:geo:grid-zone:india-newne` (Northern–Western interconnection), `...:india-sr`, `...:india-er`, `...:india-ner`.
+States: 28 states + 8 UTs. E.g., `urn:gl:geo:state:in-mh` (Maharashtra), `urn:gl:geo:state:in-tn` (Tamil Nadu).
+DISCOMs: each state has 1–N distribution companies; codified as `urn:gl:geo:grid-zone:india-discom-<state>-<company>`.
+Cities: major metros covered at launch (Mumbai, Delhi, Bengaluru, Chennai, Kolkata, Hyderabad, Ahmedabad, Pune, Jaipur, Surat, Lucknow, Kanpur, Coimbatore, Visakhapatnam); long tail added as customers onboard.
+13.3 EU specifics
+Bidding zones: e.g., `urn:gl:geo:bz:de-lu` (Germany–Luxembourg), `urn:gl:geo:bz:fr` (France), `urn:gl:geo:bz:it-nord`.
+Member states: ISO 3166-2 codes (e.g., `urn:gl:geo:country:de`, `urn:gl:geo:country:fr`).
+EU-27 aggregate: `urn:gl:geo:subregion:eu-27`.
+UK: `urn:gl:geo:country:gb` with the constituent nations as children (`en`, `sc`, `wa`, `ni`).
+13.4 US specifics
+eGRID subregions: 27 subregions (e.g., `urn:gl:geo:grid-zone:egrid-rfcw`, `...:egrid-cali`).
+NERC regions: `urn:gl:geo:grid-zone:nerc-mro`, `...:nerc-rfc`, etc.
+ISO/RTO balancing areas: `urn:gl:geo:balancing-authority:pjm-west`, `...:caiso-nrth`, etc.
+States: ISO 3166-2, e.g., `urn:gl:geo:state:us-ca`.
+County and utility: added in v2.0 when customer demand justifies the curation cost.
+13.5 Vintage resolution
+Vintages are represented as (start, end, resolution). Resolution values:
+ 
+13.6 Resolution logic
+When a caller asks for a factor for (activity, geography, vintage), the engine searches in the following order:
+Exact match on (activity, geography, vintage) with the caller's preferred methodology.
+Exact (activity, geography) with closest vintage (prefer same vintage; then most recent preceding; then most recent succeeding).
+(activity, parent-geography) with closest vintage.
+(activity, sibling-geography) only if explicitly allowed via 'fallback_policy=relaxed'.
+Global default (only if activity permits).
+The response always states which rule fired. Callers can disable rules 3–5 via 'strict_mode=true'.
+13.7 Interpolation
+Interpolation between vintages is disabled by default. Factors are discrete, not continuous. If a caller wants an interpolated factor, they must opt in via 'interpolation=linear|step|curve'. Interpolated factors carry a computed URN (`urn:gl:factor:interp:...`) and a note that they are derived and should not be cited as a source factor. This discipline prevents silent fabrication of non-existent factors.
+14. Open-core packaging and licensing
+The open-core strategy is: SDK, CLI, schema, and activity taxonomy are Apache 2.0. Community-licensed factor packs (IPCC, DEFRA, EPA, CEA, EDGAR, CBAM defaults, national inventories) ship with the community tier at CC-BY-4.0 with original-source attribution preserved. Commercial packs (IEA, ecoinvent, EXIOBASE, PCAF, GLEC, real-time grid partners) ship only with commercial entitlements. Private packs are tenant-scoped.
+14.1 Licensing matrix
+ 
+14.2 Community contribution workflow
+Community contributions flow through a GitHub PR workflow against the factor-community repo (`github.com/greenlang/factors-community`). Contributions must:
+Be accompanied by a signed Contributor Licence Agreement (Developer Certificate of Origin + explicit CLA for non-trivial contributions).
+Include full metadata per the canonical schema (no partial records).
+Cite primary sources (peer-reviewed publication, government document, sectoral body).
+Pass automated validation (CI: schema, referential integrity, dimensional consistency, sanity checks).
+Receive two expert reviewers' approvals and the climate-methodology lead's final sign-off.
+Contributors are credited in the factor's `review.contributors` field and appear on the public contributors page. The community tier always bears the CC-BY-4.0 licence on contributed factors. Factors found to be fabricated or negligently wrong can be revoked; a revocation emits a changelog event and inserts a 'revoked' marker on the URN (the URN continues to exist for audit continuity but is marked non-recommended).
+14.3 Commercial packaging tiers
+ 
+15. Non-functional requirements
+15.1 Performance SLOs (at v1.0 GA)
+ 
+15.2 Availability SLOs
+ 
+15.3 Durability and backup
+Raw store: 11 nines durability (S3-compatible), versioned objects, cross-region replication.
+Postgres: point-in-time recovery (PITR) with 30-day retention; daily logical backups; monthly snapshot to cold storage.
+Redis: ephemeral; cache misses degrade to Postgres.
+Audit logs: 7-year retention; WORM-locked cold storage.
+Evidence Vault integration for regulated packs from v1.0.
+15.4 Security
+All traffic TLS 1.3 with modern ciphers. Internal service-to-service mTLS.
+Secrets in a KMS-backed store (AWS KMS, GCP KMS, or HashiCorp Vault depending on deployment).
+IAM with least privilege; per-service roles; per-region roles.
+Audit trail on every privileged action.
+SOC 2 Type I target: v1.0 GA (FY27 Q4). Type II: v1.5 (FY28 Q3).
+ISO 27001 target: FY29.
+Dependency scanning (Dependabot / Renovate); SBOMs generated on every build.
+Signed container images (cosign); provenance via SLSA level 3 target by v2.0.
+Data-at-rest encryption (AES-256) on all stores.
+Bring-Your-Own-Key (BYOK) for enterprise customers from v2.0 via KMS integration.
+15.5 Data residency
+Residency is enforced at the routing layer. API keys carry a residency tag (IN / EU / US / APAC / enterprise-custom). The edge refuses to serve a request whose tag does not match its region. Writes are forwarded to the primary region until v2.0, when multi-master writes land. Enterprise customers can negotiate region-locked contracts where no traffic ever leaves the region, including for ML inference (per-region GPU pools).
+15.6 Regulatory compliance
+GDPR (EU): factor data is not personal data; but customer metadata (audit logs, user identity) is processed under GDPR. DPA with SCCs for cross-border transfers.
+India DPDP Act: same treatment; India-regional deployment for DPDP-governed customers.
+US SB 253 / SEC Climate: Factors is a data source in the reporting path; audit trail and evidence chain align with regulator expectations.
+CBAM: dedicated pack `greenlang-cbam-certified` with a commitment to maintain within 14 days of EU Commission publication of default values.
+CSRD / ESRS: Factors is a methodology-transparent data source; Comply integration surfaces full lineage on every disclosure datapoint.
+16. Observability
+16.1 Metrics
+Prometheus scraping. Standard RED (Request rate, Error rate, Duration) metrics on every service.
+USE (Utilisation, Saturation, Errors) metrics on every stateful service.
+Per-tenant QPS and error rate for commercial/enterprise customers.
+Per-source ingestion lag (time from source publication to catalogue publish).
+Per-pack query volume and hit rate.
+Per-LLM-vendor spend and latency.
+16.2 Logging
+Structured JSON logs (no free-text log messages in production code paths).
+Per-request correlation ID propagated across services.
+Sensitive fields (API keys, tenant URNs) redacted in application logs.
+Log retention: 30 days hot, 1 year warm, 7 years cold (audit logs only).
+16.3 Tracing
+OpenTelemetry tracing on every hop.
+Sampled in community tier (10% sampling); full tracing for commercial and enterprise tiers.
+Traces joined with metrics and logs via correlation ID.
+16.4 Alerting
+ 
+16.5 Internal dashboards
+Ingestion overview: per-source lag, success rate, review-queue depth.
+API edge: request rate, error rate, p95/p99 latency per region and per tenant tier.
+Factor catalogue: total factors, new factors this week, superseded this week, deprecated this week, most-queried factors.
+Licensing: active entitlements per tenant, query volume per pack, flagged licence violations.
+Model performance: resolve top-1/top-5 accuracy trends, evaluation-suite pass rate.
+Changelog fan-out: webhook deliveries, delivery latency, failure rate per subscriber.
+17. Cost model
+Factors has three cost drivers: storage (relatively small), compute (dominated by query engine and ML inference), and third-party licensing (dominated by ecoinvent, EXIOBASE, IEA, and real-time grid providers).
+17.1 Cost by component (illustrative, v1.0 GA year-1 scale)
+ 
+17.2 Cost scaling with versions
+v0.1–v0.9: single-region, modest scale. Infrastructure ~$10k/month; team is the dominant cost.
+v1.0 GA: three regions, SOC 2 Type I posture. Infrastructure ~$25–35k/month.
+v1.5: community channel opens; modest ingestion-queue growth; infrastructure ~$35–45k/month.
+v2.0: ecoinvent/EXIOBASE/PCAF online; commercial licensing step-function; infrastructure + licensing ~$70–100k/month.
+v2.5: real-time grid feeds across US/EU/IN/APAC; infrastructure ~$120k/month.
+v3.0: platform scale, Foundation-aligned community governance; infrastructure $150–200k/month, licensing negotiated down per-unit as volume grows.
+17.3 Third-party licensing cost strategy
+ecoinvent: multi-year contract with price certainty; pass-through pricing to enterprise customers.
+EXIOBASE: consortium licence; cost controlled within GreenLang membership.
+IEA: annual subscription; bundled into commercial tier.
+ElectricityMaps / WattTime: per-call pricing with committed-volume discount; two providers give negotiation leverage.
+PACT, PCAF, GLEC: partnership terms; cost is modest relative to value.
+Strategy: no single third-party exceeds 15% of Factors' total cost base by v3.0. Diversification is both financial discipline and moat — we never become dependent on any one upstream.
+18. FY27 execution plan — phases, cadence, and discipline
+This part is the founder-view operating plan for FY27. It is deliberately more tactical than the five-year milestone plan in Part 19: it names the weeks, the phases, the update cadence per object type, the 30 / 60 / 90-day checkpoints, the workstream-ID checklist that can be imported into a project tracker, and the disciplined FY27 launch scope. Everything here is rooted in the founder recommendation to ship trust before breadth.
+18.1 The update model — weekly monitoring, not weekly refresh
+A weekly operating rhythm is good. A universal weekly-refresh rule is not. Most factor sources are not updated weekly. Some are annual. Some are seasonal. Some are ad hoc. Real-time electricity is a different class entirely. Regulations change applicability rules more often than they change factor values. The table below is the canonical cadence per object type and is wired into the ingestion orchestrator (Prefect/Dagster).
+ 
+ 
+18.2 Phase plan — Weeks 1–52 of FY27
+Ten phases running roughly in sequence with deliberate overlap. Each phase has its own owner (named in Part 21 team section) and exit criteria. Phases are calendar-weeks inside FY27 (Apr 2026 – Mar 2027).
+18.2.0 Phase 0 — Product framing and operating setup (Weeks 1–2, Apr 2026)
+Write the product charter: buyer, job-to-be-done, launch scope, non-scope, FY27 success metrics.
+Define the factor taxonomy and status model: certified, preview, connector-only, deprecated.
+Create the source-rights policy: what can be redistributed openly, what requires a connector, what requires customer-provided licence evidence.
+Stand up repositories, issue templates, schema versioning rules, and release naming convention.
+Appoint explicit owners: product, methodology, data ingestion, QA, API.
+Exit: charter signed off by founding team; rights-policy reviewed by fractional legal advisor; repositories and CI live.
+18.2.1 Phase 1 — Source census and licensing guardrails (Weeks 3–5, Apr–May 2026)
+Create the source inventory with cadence, file types, geography, factor classes, licence class, ingestion difficulty (covering the 30 sources catalogued in Part 7).
+Classify every source as public-open, public-usable-with-attribution, restricted, licensed, or partner-only.
+Create a rights matrix that legal can sign off on before engineering publishes anything.
+Prioritise launch sources for Scope 1 and Scope 2 before adding materials / LCA-heavy catalogues.
+Write parser specifications for the first 5–8 sources (IPCC AR6 GWP + Tier-1; DEFRA 2025; EPA GHG Hub 2025; EPA eGRID latest; India CEA latest; DEFRA WTT; GHGP Product Standard methodology; CBAM defaults).
+Exit: rights matrix signed; parser specs in review; ingestion-service skeleton in CI.
+18.2.2 Phase 2 — Canonical schema and ontology (Weeks 6–8, May–Jun 2026)
+Finalise GreenLang factor schema v0.1 (Part 6); lock mandatory fields.
+Ship the unit ontology and conversion engine covering energy, mass, distance, volume, currency, and passenger / freight units.
+Ship the geography ontology: country, subnational, eGRID subregion, grid zone, bidding zone, balancing authority, route corridor, supplier region where relevant.
+Ship the methodology ontology: direct vs upstream, location-based vs market-based, residual mix, spend-based vs activity-based, GWP basis (AR4 / AR5 / AR6).
+Ship the deprecation model and replacement pointers.
+Exit: schema v0.1 frozen; DDL in the DB; ontology tables seeded.
+18.2.3 Phase 3 — Raw ingestion framework (Weeks 9–11, Jun 2026)
+Build source fetchers for web pages, XLSX, CSV, API endpoints, documentation PDFs.
+Store all raw source artefacts in immutable object storage with checksums and retrieval timestamps.
+Create parser harnesses with source-specific tests and failure alerts.
+Implement ingestion metadata tables: source version detected, parse status, row counts, anomalies, ownership.
+Exit: five source fetchers run on schedule; raw-artefact store populated; parse failures alerting into Slack.
+18.2.4 Phase 4 — Normalization and lineage (Weeks 12–14, Jul 2026)
+Map raw records into canonical factor objects.
+Normalise units and retain original raw values and units in lineage fields.
+Attach release dates, validity windows, source URLs, and citation text.
+Compute duplicate fingerprints and candidate-duplicate clusters.
+Persist lineage links so every canonical factor can be traced back to raw source rows or files.
+Exit: the first 1,000+ canonical factor records live in staging; every record has complete lineage.
+18.2.5 Phase 5 — Quality engine and methodology review (Weeks 15–18, Jul–Aug 2026)
+Build validation checks: missing fields, invalid units, impossible zero or negative outliers, impossible date windows, broken geography codes.
+Create a methodology-review workflow for factors needing human approval.
+Build QA dashboards: counts by source, by status, by failing validation rule, drift vs previous releases.
+Create the first audit-package template for a factor: raw evidence, parser logs, normalized record, QA result, reviewer decision.
+Exit: first production promotion of certified factors (~10,000); QA dashboards live; first audit-package template filed.
+18.2.6 Phase 6 — Search, retrieval, and factor matching (Weeks 19–22, Aug–Sep 2026)
+Build faceted search on scope, category, geography, year, unit, methodology, source.
+Build semantic index over factor names, descriptions, tags, source notes.
+Build candidate re-ranking and confidence scoring.
+Create a gold-label evaluation set from 300–500 real-world activity descriptions across initial categories.
+Add explanations: why this factor is suggested, what assumptions it implies, what alternatives exist.
+Exit: internal resolve endpoint passes on 80%+ of the gold set at top-5 recall; UI behind login with design partners.
+18.2.7 Phase 7 — API, developer portal, and version pinning (Weeks 23–26, Sep–Oct 2026)
+Ship read APIs: search factors, get factor by ID, list releases, compare releases, retrieve lineage, retrieve deprecation chain.
+Ship write / admin APIs for source monitoring, QA overrides, and issue management.
+Add version pinning so users can reproduce results across time.
+Write developer docs with code samples, factor-selection guidance, source limitations.
+Add usage logging and API-key management.
+Exit: v0.9 Public Beta opens with invite-managed sign-up; docs.greenlang.io live; status.greenlang.io live.
+18.2.8 Phase 8 — Update engine and policy watch (Weeks 27–30, Oct–Nov 2026)
+Automated watch jobs for official source pages, downloads, and documentation changes (cadence per Part 18.1).
+Document-diff jobs for standards and regulations that can affect applicability logic.
+Change-classification workflow: numeric factor change, metadata change, policy change, parser breakage, documentation-only change.
+Generate release notes automatically; require human approval before publishing.
+Exit: daily source-watch running; policy-diff queue operating weekly; monthly release tag for November 2026 published on schedule.
+18.2.9 Phase 9 — Design-partner pilots (Weeks 31–38, Nov 2026–Jan 2027)
+Run pilots with 3–5 partner types: a consultant, a climate SaaS platform, an internal enterprise sustainability team, optionally a developer-tooling partner.
+Collect real activity descriptions and failed searches to improve matching precision.
+Measure time-to-factor, mismatch rate, support tickets, and citation completeness.
+Decide which preview categories should be promoted to certified status.
+Exit: 3+ pilots running in production; written feedback filed; certified-promotion decisions documented.
+18.2.10 Phase 10 — GA and enterprise hardening (Weeks 39–52, Jan–Mar 2027)
+Add SLA monitoring, enterprise support runbooks, outage communication templates, backup / restore tests.
+Ship audit exports, changelog exports, source-diff views for enterprise users.
+Create pricing tiers and contract terms (Starter, Growth, Enterprise — see Part 14).
+Launch public docs, docs examples, community contribution guidelines.
+Publish v1.0 GA release and the 90-day post-launch roadmap.
+Exit: v1.0 GA in FY27 Q4; first paying customer invoice paid; SOC 2 Type I attestation received; auditor methodology sign-off letter on file.
+18.3 Quarter-by-quarter FY27 view
+ 
+18.4 30 / 60 / 90 day plan (measured from FY27 Q1 start)
+18.4.1 First 30 days
+Freeze product scope for v1.
+Write schema v0.1 and rights matrix.
+Set up source registry and raw-artefact storage.
+Build first parsers for EPA, DESNZ (DEFRA), and one electricity-specific source.
+Define release semantics and issue taxonomy.
+18.4.2 Days 31–60
+Ship canonical normalization and first certified-factor set.
+Stand up QA dashboards and validator library.
+Create the first factor-explorer internal UI.
+Start assembling gold-labelled factor-matching evaluation set.
+Run first design-partner reviews on data fields, not UI polish.
+18.4.3 Days 61–90
+Release internal alpha API.
+Add semantic retrieval and candidate ranking.
+Stand up weekly source-watch jobs and diff workflow.
+Create changelog and deprecation pipeline.
+Prepare the first enterprise pilot package.
+18.5 Workstream checklist — import into the project tracker
+This is the flat execution backlog that maps to the phases above. Every ID is a parent-level ticket; subtasks live inside the tracker. The seven workstreams parallel the product's layered architecture.
+18.5.1 Product and methodology
+ 
+18.5.2 Source rights and governance
+ 
+18.5.3 Data engineering
+ 
+18.5.4 Quality and trust
+ 
+18.5.5 Search and matching
+ 
+18.5.6 API and developer experience
+ 
+18.5.7 Update and policy watch
+ 
+18.5.8 Commercial readiness
+ 
+18.6 Recommended FY27 GA launch scope
+Ship disciplined breadth. Include the items in the first table; defer or keep connector-only the items in the second. Everything else waits for v1.5 or later.
+ 
+ 
+18.7 FY27 KPIs (operational)
+ 
+18.8 Selected external references used in FY27 planning
+References were used to calibrate regulatory timing, factor-source cadence, licensing constraints, and competitive baseline. They are current as of 24 April 2026 and carried forward from the proposal appendix.
+R1. US EPA GHG Emission Factors Hub; 2025 annual update with purchased electricity (eGRID), transport, travel, T&D-loss updates. https://www.epa.gov/climateleadership/ghg-emission-factors-hub
+R2. US EPA eGRID; latest update to 2023 data. https://www.epa.gov/egrid
+R3. UK DESNZ greenhouse gas reporting conversion factors 2025 (official annual). https://www.gov.uk/government/publications/greenhouse-gas-reporting-conversion-factors-2025
+R4. The Climate Registry General Reporting Protocol 3.0 (Jun 2025); TCR compiles default emission factors and updates annually in CRIS.
+R5. Center for Resource Solutions residual-mix rate tables; Green-e residual-mix emissions rates published every spring. https://resource-solutions.org/residual-mix/
+R6. 2025 Green-e residual-mix release (29 Jan 2026). https://resource-solutions.org/2025-residual-mix/
+R7. Electricity Maps platform; historical, real-time, and forecasted data across 190+ countries. https://www.electricitymaps.com/
+R8. GHG Protocol public consultations page; Scope 2 and consequential electricity accounting consultations ran to 31 Jan 2026. https://ghgprotocol.org/ghg-protocol-public-consultations
+R9. EU Access2Markets on start of CBAM definitive period (1 Jan 2026). https://trade.ec.europa.eu/access-to-markets/en/news/start-definitive-period-cbam-eu
+R10. CARB note on 10 Aug 2026 first-year SB 253 reporting deadline; Scope 1/2-only in first year. https://ww2.arb.ca.gov/news/carb-approves-climate-transparency-regulation-entities-doing-business-california
+R11. Climatiq public homepage (competitive benchmark) — 944k+ scientifically vetted emission factors and 300+ data sources. https://www.climatiq.io/
+R12. ecoinvent licence page; annual licences via ecoQuery. https://ecoinvent.org/licenses/
+R13. IEA Emissions Factors 2025 product page; annual electricity / heat factors, licensing restrictions, yearly September release schedule. https://www.iea.org/data-and-statistics/data-product/emissions-factors-2025
+R14. India PIB press note; ~490 obligated entities across 7 energy-intensive sectors under CCTS. https://www.pib.gov.in/PressReleasePage.aspx?PRID=2243377
+R15. UNEP Adaptation Gap Report 2024; adaptation finance gap $187–359B/yr.
+R16. World Bank State and Trends of Carbon Pricing 2025; carbon pricing covers ~28% of global emissions and raised >$100B in 2024.
+R17. SBTi 10,000-company validation milestone (2025).
+R18. PCAF Annual Impact Report (2025) — 719 financial institutions, ~$100T AUM.
+R19. Climate Bonds — $6.9T cumulative GSS+/SLB volume by end-2024; record 2024.
+R20. UNEP Global Status Report for Buildings & Construction 2024/2025 — buildings and construction 32% of energy use and 34% of CO2 emissions.
+18.9 Non-negotiable final judgment
+Start GreenLang with Factors. It is the right first wedge. But build it as a climate-data operating layer with provenance, source rights, policy logic, and deterministic serving. Reduce it to a 100,000-row spreadsheet updated every Friday and it will break under its own weight. The strongest single recommendation in this entire document: ship trust before breadth. The category does not need another big factor list; it needs a reliable factor system.
+19. Per-version development specification
+This is the build plan. Each of the eight version milestones is specified at the level a staff engineer can pick up and sequence against: goals, explicit out-of-scope, deliverables, team composition, acceptance criteria, migration path, and top risks. The sequencing is tight — FY27 alone shipsfour milestones (v0.1 through v1.0 GA) — because Factors is the root of the whole platform and every downstream product is blocked on it. Slippage here is the CTO's first budget item.
+19.0 Release cadence principle
+Within each strategic milestone, the engineering team ships continuous minor releases (v0.1.1, v0.1.2, … v0.9.7, …) at a weekly or bi-weekly cadence. The milestones below are boundary events tied to contracts, external attestations, and customer commitments; they are not the only releases, just the ones with names and promises.
+19.1 v0.1 Alpha — FY27 Q1 (Apr–Jun 2026)
+Target release: FY27 Q1.
+Primary goals
+Stand up the ingestion pipeline end-to-end against five priority sources: IPCC AR6, DEFRA 2025, EPA GHG Hub 2025, EPA eGRID 2024, India CEA latest vintage.
+Ship the Python SDK with strict typing, tests, and PyPI publication.
+Make 2 design partners (one India-linked exporter, one EU-facing manufacturer) productive on the SDK within their own environments.
+Establish the release engineering backbone: CI, snapshot tests per source, staging namespace, publish pipeline.
+Land the URN scheme, factor schema, and API surface as v0 contracts.
+Explicitly out of scope
+No public website; documentation is a GitHub README plus Sphinx-hosted API docs on a subdomain.
+No commercial tier; design partners sign MSAs but pricing packaging is not live.
+No TypeScript SDK, no CLI, no GraphQL endpoint, no SQL-over-HTTP.
+No ML layer; the resolve endpoint is not shipped yet.
+No real-time grid; no commercial packs (ecoinvent, EXIOBASE, IEA).
+Single-region deployment (Mumbai). No EU/US residency yet.
+No auditor sign-off; SOC 2 work has not yet started.
+Deliverables
+Canonical schema v0 live in Postgres; DDL is version-controlled; migration tool (Alembic) committed.
+Connectors for IPCC AR6, DEFRA 2025, EPA GHG Hub 2025, EPA eGRID 2024, India CEA latest — each with snapshot tests and a successful publish to the staging namespace.
+REST endpoints: GET /v1/factors, GET /v1/factors/{urn}, GET /v1/sources, GET /v1/packs, GET /v1/healthz.
+Python SDK `greenlang-factors` published to PyPI (v0.1.0) with the GET endpoints above, urnized factor retrieval, and basic filtering.
+Runbook for a manual 'publish to production namespace' step: climate-methodology lead reviews staging diffs and flips visibility.
+Prometheus metrics and structured logs live on every service; minimal Grafana dashboards for ingestion health.
+Two design-partner accounts live with API keys; each has signed MSA + NDA; each has at least one successful SDK-based calculation in their own environment.
+Engineering wiki (Notion or equivalent) with runbooks, source inventory, and on-call rotation.
+Team composition for this milestone
+Platform/data lead (1 senior engineer, CTO-adjacent).
+Backend engineer (1 mid-to-senior).
+Climate-methodology lead (1 subject-matter expert; foundational role).
+Data engineer (1 mid-to-senior, focused on parsers).
+Shared: product lead, founding CTO, design-partner success coordinator.
+Acceptance criteria
+All 5 source connectors pass snapshot tests against known-good artefacts.
+End-to-end test: publish a factor from IPCC AR6 via the pipeline, fetch it by URN via the Python SDK, verify all metadata fields are correct.
+Documented URN scheme with worked examples; climate-methodology lead signs off that the scheme covers tier-1 sources without compromise.
+Two design partners have completed at least one calculation flow using the SDK and have signed off on usability (brief written feedback memo; not a vendor NPS).
+Postmortem from the first real-incident drill (intentional ingestion fail) completed and filed.
+Metrics show p95 lookup latency under 100 ms (single-region; no caching tier yet).
+Licence tagging: every factor in production carries a licence tag that matches its source.
+Top risks for this milestone
+Parser drift on DEFRA or EPA Excel workbooks (column positions shift year-over-year). Mitigation: snapshot tests on prior-year fixtures; parser CI that fails loudly on column-shape changes.
+Under-specified methodology field on early factors. Mitigation: mandatory methodology URN; no null methodologies allowed in publish.
+Over-commitment to SDK API before contracts are stable. Mitigation: SDK marked 0.x, with a clear note that breaking changes are expected until v1.0 GA.
+Design partner expectations outrun the product. Mitigation: narrow success criteria written into the MSA; monthly review.
+19.2 v0.5 Closed Beta — FY27 Q2 (Jul–Sep 2026)
+Target release: FY27 Q2.
+Primary goals
+Extend source coverage to India BEE, CBAM defaults, and (under commercial licence) IEA.
+Ship TypeScript SDK; add basic CLI.
+Cohort expansion: graduate from 2 design partners to 5–8.
+Introduce staging → production promotion via an audited publish workflow (not just a manual flip).
+First cross-source divergence dashboards live; first regulatory-mapping signal (factor → regulation applicability) via Policy Graph integration.
+Implement changelog emission on publish (internal only; public-facing in v0.9).
+Explicitly out of scope
+No public changelog yet; changelog is internal.
+No resolve endpoint (ML layer); still in design.
+No multi-region writes; reads are mirrored to EU read replica but writes are single-primary.
+No partner-contribution channel.
+Commercial pricing still under private negotiation; no self-serve sign-up.
+Deliverables
+Connectors for India BEE, CBAM defaults, IEA country-level factors (commercial licence required for test-scope access).
+TypeScript SDK `@greenlang/factors` published to npm (v0.5.x) with parity for GET endpoints, type-safe factor shapes, and Promise-based ergonomics.
+CLI `greenlang factor get`, `greenlang factor search`, `greenlang units convert`.
+Audited publish workflow: staging → diff review → climate-methodology lead approval → atomic flip; all actions recorded in audit log.
+Cross-source divergence dashboard live (Grafana) showing (activity × geography × vintage) cells where multiple trusted sources disagree by >10%.
+Policy Graph → Factors integration: given a regulation URN, list factors in scope. Preliminary coverage for CBAM, CSRD E1, BRSR.
+Rate limiting enforced at API edge (token-bucket, per API key).
+Two additional design partners onboarded; total cohort 5–8; cohort-level roadmap meeting cadence established (monthly).
+Team composition for this milestone
+Above team plus:
+Second backend engineer (moves the SDK split across Python + TS).
+SRE (part-time, ensuring the single-region posture is production-worthy).
+Developer advocate begins (part-time, writes first public examples even though docs stay private).
+Acceptance criteria
+TS SDK parity: every Python endpoint has a TS equivalent with types generated from OpenAPI.
+IEA commercial-pack licence check works: unauthorised tenant cannot retrieve IEA factors; audit log records every IEA access.
+Staging → production promotion cannot be bypassed; attempts to bypass throw typed errors in service logs.
+Cross-source divergence dashboard surfaces ≥ 3 real divergences found during this quarter (the product needs to demonstrate it catches real discrepancies).
+Cohort retrospective: at least 5 of 8 design partners rate the product a 4+ out of 5 on 'I can do meaningful climate work with this today.'
+Engineering run-book covers an on-call shift: every alert is actionable; every escalation path is documented.
+Migration and compatibility
+Python SDK continues to evolve; consumers are warned about potential breaking changes; a deprecation shim is added for any actual breaking renames.
+Top risks for this milestone
+IEA licence terms restrict some kinds of redistribution. Mitigation: licence-aware query engine; licence unit tests.
+Design-partner cohort management overhead. Mitigation: one named success coordinator; weekly office hours.
+Scope creep from partners (asking for resolve, CLI completeness, private packs). Mitigation: roadmap held in a single document visible to the cohort; 'not-in-this-milestone' is a valid answer.
+19.3 v0.9 Public Beta — FY27 Q3 (Oct–Dec 2026)
+Target release: FY27 Q3.
+Primary goals
+Open an invite-managed public beta: anyone can sign up; an operator approves.
+Ship EDGAR and UNFCCC NIR/BUR connectors; expand Scope 3 default coverage (DEFRA WTT, selected Scope 3 categories).
+Ship public changelog (with RSS/Atom); subscribe-by-webhook.
+Add EU read replica to primary (Frankfurt). EU customers now read from EU; writes still forward to Mumbai.
+Introduce confidence scoring on factor lookups (baseline score; not yet ML-driven).
+Documentation site (docs.greenlang.io) live with guides, API reference, examples.
+Auditor pre-engagement: initial methodology-transparency assessment with one Big 4 firm; target outcome is a written 'ready for limited-assurance pilot' memo.
+Explicitly out of scope
+No GA SLA; availability target is 99.5% but not contractually enforced.
+No commercial pricing page; pricing is negotiated one-by-one.
+No ecoinvent / EXIOBASE / PCAF yet; those are v2.0.
+No resolve endpoint (held for v1.5).
+No US region yet; US customers read from EU or Mumbai with latency warning.
+Deliverables
+Connectors: EDGAR, UNFCCC NIR/BUR (Annex I countries at minimum), DEFRA WTT indirect, additional Scope 3 packs.
+Frankfurt read replica live; routing layer enforces residency for residency-tagged API keys.
+Confidence scoring v0 (baseline heuristic; not ML): inputs are source trust tier, vintage freshness, geography specificity.
+Public changelog at changelog.greenlang.io; RSS/Atom feed; webhook subscriptions per tenant.
+Public docs at docs.greenlang.io with: Getting Started, SDK reference (Python + TS), CLI reference, API reference, 10+ cookbook examples (India grid calc, CBAM importer, DEFRA road transport, EDGAR country comparison, etc.).
+Publicly visible sign-up that routes through operator approval (no bots; climate-methodology team maintains a small allowlist for commercial evaluators).
+Status page (status.greenlang.io) with incident history.
+Security baseline: pen test results addressed; public security.txt; responsible-disclosure programme live.
+Team composition for this milestone
+Above team plus:
+Second climate-methodology subject expert (regional balance — add an EU-focused role).
+Technical writer (contractor; documentation sprint).
+Full-time SRE (on-call rotation begins).
+Acceptance criteria
+Public sign-up works end-to-end. First 10 community-tier users are onboarded within 48 hours of beta opening.
+Residency enforcement verified by automated test: EU-tagged key cannot retrieve factors from Mumbai region endpoint.
+Changelog webhooks deliver events within 30 seconds of publish p95.
+Docs pass a usability review by 3 external developers (brief written review).
+Auditor pre-engagement memo received and filed: 'methodology transparency is acceptable for limited-assurance pilot at GA.'
+All eight foundational Core Platform products (Factors, Connect, Entity Graph, Climate Ledger, Evidence Vault, Policy Graph, Agent Runtime, SDK) are at or beyond v0.9 Public Beta — this is the substrate gate before any sector cloud goes public beta.
+Migration and compatibility
+SDK major version still 0.x; no backwards-compat guarantee yet.
+Factors published under Apache 2.0 SDK + community-tier data; commercial tiers still under one-off contracts.
+Top risks for this milestone
+Cohort influx overwhelms reviewer queue. Mitigation: automated validation widened; reviewer hours logged; head-count for a junior climate-methodology analyst in v1.0 plan.
+Auditor feedback lands in Q4, too late to address before v1.0 GA. Mitigation: pre-engagement starts early in Q3; interim memo requested mid-quarter.
+19.4 v1.0 GA — FY27 Q4 (Jan–Mar 2027)
+Target release: FY27 Q4.
+Primary goals
+Production SLA live. Commercial pricing packaged and self-serve for Starter / Growth tiers; Enterprise remains negotiated.
+US read replica (N. Virginia) online. Factors is now three-region.
+SOC 2 Type I attestation obtained. Policies, controls, evidence archive all live.
+Auditor methodology sign-off: one Big 4 firm issues a written note affirming that Factors' methodology transparency is acceptable for a limited-assurance engagement on a customer's CBAM or CSRD E1 filing that uses Factors.
+Backwards-compatibility lock: no breaking changes to the v1 API surface for 24 months. SDK majors pinned; schema deprecation policy enforced.
+Scale target: catalogue at ~5M factor records across all published packs.
+Explicitly out of scope
+No resolve / ML layer. Deferred to v1.5.
+No ecoinvent / EXIOBASE / PCAF / real-time grid. Deferred to v2.0 / v2.5.
+No partner-contribution channel. Opens in v1.5.
+No multi-master writes; writes still forward to Mumbai.
+No APAC region beyond the India primary; Singapore comes in v2.0.
+Deliverables
+Three regions live; residency routing verified in all three.
+Commercial pricing page: Starter $12k–$30k/yr, Growth $60k–$150k/yr, Enterprise on request. Stripe-backed billing; entitlements wired into the licence-check path.
+SOC 2 Type I report issued; report available under NDA to customers on request.
+Backwards-compat test suite blocks any schema or API-shape change that would break v1 clients.
+Public SLA page; incident-response process documented; first-year SLO target 99.9% for commercial tier.
+First paying customer in production (live payment, signed commercial contract, paid invoice).
+Auditor letter filed: methodology transparency is acceptable for limited-assurance CBAM/CSRD work.
+Scale: at least 5M factor records across published packs; at least 20 active factor packs; at least 12 connectors in production.
+Developer-platform metrics baseline: monthly-active SDK installs, paid API calls per month, top-quality-factor lookups percentage.
+Team composition for this milestone
+Above team plus:
+Engineering manager for Factors (promote from within or hire).
+Second SRE; on-call now covers 24x5.
+Climate-methodology analyst (junior, offloads factor curation queue).
+Customer-engineering / solutions engineer (1, becomes the primary technical contact for Enterprise pilots).
+Acceptance criteria
+First paying customer live; invoice paid.
+SOC 2 Type I letter in hand.
+Auditor methodology sign-off in hand.
+24-month backwards-compat promise published; automated test gate in CI.
+Three-region deployment verified: residency enforcement holds; failover from secondary to tertiary region completes within 15 minutes (tested).
+Core Platform is GA: Factors, Ledger, Evidence Vault, Policy Graph, Connect, Entity Graph, Agent Runtime, SDK all hit v1.0 GA. This is the gate that unlocks FY28 expansion into SupplierOS, PCF Studio, DPP Hub, PlantOS, BuildingOS.
+Migration and compatibility
+v1 SDK is the frozen baseline. Consumers on v0.x are notified of the deprecation timeline: v0.x removed from PyPI/npm 18 months after v1.0 GA.
+Breaking changes post-GA: none, per policy.
+Top risks for this milestone
+SOC 2 Type I attestation is blocking for commercial sales; any slippage means v1.0 GA slips. Mitigation: begin audit prep in v0.5; dedicated compliance owner.
+First paying customer may unexpectedly demand Enterprise tier before we're ready (e.g., for private packs). Mitigation: Enterprise tier terms drafted in v0.9; private-pack tech exists but scoped out of v1.0 GA — a first Enterprise deal is allowed to slip to v1.2 or v2.0.
+Backwards-compat promise risks tying our hands. Mitigation: additive-only schema policy is engineering-tested; schema changes that break v1 clients fail CI.
+19.5 v1.5 — FY28 Q3 (Oct–Dec 2027)
+Target release: FY28 Q3.
+Primary goals
+Ship the ML-assisted resolve endpoint with confidence scoring and alternative-factor suggestion.
+Open the community-contribution channel.
+Issue the CBAM-certified factor pack (GreenLang signs a commitment to publish within 14 days of EU Commission updates; pack receives an auditor attestation that it is suitable for definitive-phase CBAM submissions).
+Add GLEC Framework, ISO 14083 methodology, ADEME Base Empreinte, ASHRAE refrigerants, Climate TRACE, PACT Network integrations.
+SOC 2 Type II attestation (12 months of Type I evidence now available).
+API SDK majors: Python v1.1 / TS v1.1 (additive only).
+Explicitly out of scope
+No ecoinvent or EXIOBASE yet (v2.0).
+No real-time grid yet (v2.5).
+No private factor packs yet (v2.0).
+Java SDK not yet shipped (v2.0).
+Deliverables
+Resolve endpoint live: POST /v1/factors/resolve with natural-language activity input, returning ranked candidates with confidence and reasoning.
+Embedding pipeline: sentence-transformers (BGE-M3 or equivalent) hosted on shared GPU pool; activity-taxonomy embeddings pre-computed and indexed in pgvector.
+Re-ranking model (LambdaMART / gradient-boosted): trained on expert-labelled pairs; held-out eval suite >5,000 pairs; top-1 accuracy ≥ 75% at launch, top-5 ≥ 90%.
+Community-contribution channel live: GitHub PR workflow; CLA signed via GitHub bot; automated validation; two-reviewer policy; first 20 trusted contributors onboarded.
+CBAM-certified factor pack (`urn:gl:pack:greenlang-cbam-certified:<vintage>`): auditor attestation letter on file; 14-day SLA from EU Commission publication.
+New source connectors live: GLEC Framework, ISO 14083 (method), ADEME Base Empreinte, ASHRAE refrigerants, Climate TRACE, PACT Network event-driven.
+SOC 2 Type II report; ISO 27001 gap assessment completed.
+Developer-platform metrics: MAU on SDK, median time-from-sign-up to first successful query (target < 10 min).
+Team composition for this milestone
+Above team plus:
+ML engineer (1, owns embeddings + ranker + eval harness; coordinates with Agent Runtime team).
+Community manager (part-time; oversees contribution channel and contributor communications).
+Product engineer (1, owns resolve UX in SDKs and CLI).
+Climate-methodology specialist adds one region-specific hire (EU focus deepens).
+Acceptance criteria
+Resolve top-1 accuracy ≥ 75%, top-5 ≥ 90% on the held-out eval suite; adversarial suite has zero regressions since the previous milestone.
+Community channel: ≥ 20 contributors signed CLAs; ≥ 100 community factors published through the channel.
+CBAM-certified pack: one customer has filed a successful CBAM definitive-phase submission using the pack, with assurance accepted by the verifier.
+All new source connectors pass snapshot tests; each has at least one paying customer querying it in production.
+Resolve endpoint p95 ≤ 400 ms.
+SOC 2 Type II in hand.
+Migration and compatibility
+Resolve endpoint is new, so its response shape is versioned under v1; any changes to the response JSON will trigger a new minor version and a deprecation window.
+SDK additions (Python v1.1 / TS v1.1) are purely additive.
+Top risks for this milestone
+Model accuracy regressions on edge cases (rare geographies, multilingual queries). Mitigation: adversarial suite; weekly human eval; customer-reported issues flow directly into the eval set.
+Community contributions include low-quality submissions. Mitigation: strict reviewer policy; revocation workflow in place; contributors can be put on hold after two rejected submissions.
+CBAM regulation updates arrive faster than 14-day SLA. Mitigation: regulatory-tracking process owned by climate-methodology lead; rapid-response protocol tested quarterly.
+19.6 v2.0 — FY29 Q2 (Jul–Sep 2028)
+Target release: FY29 Q2.
+Primary goals
+Ship ecoinvent and EXIOBASE commercial integrations (licence-gated).
+Ship PCAF emission-factor database (alongside FinanceOS GA).
+Introduce private factor packs (tenant-scoped).
+Introduce Java SDK.
+Multi-master writes across regions (remove the Mumbai-primary bottleneck).
+Uncertainty propagation API (Monte Carlo).
+Schema step: v2.0 schema adds a handful of required fields; 12-month overlap with v1 schema (callers must migrate by FY30 Q2).
+Add NIES (Japan national inventory), WRI Aqueduct (as geography overlay).
+Singapore region online.
+Explicitly out of scope
+No real-time grid yet (v2.5).
+No CityOS / Circularity Hub integrations yet (those products launch FY31).
+No federated / multi-org ledger joins (v3.0).
+Deliverables
+ecoinvent 3.11 integration: commercial licence signed; EcoSpold2 parser with APOS / consequential / cut-off system-model support; licence checks at query time; first customer completes ecoinvent-based PCF via Factors + PCF Studio.
+EXIOBASE integration: MRIO tables imported; product-country-year intensities exposed; currency base-year normalisation tested.
+PCAF database integration: asset-class factors live; FinanceOS (product 31) depends on these for day-one use.
+Private factor packs: tenant-scoped; Entity Graph integration; ingest path for customer-uploaded supplier-specific factors; reviewer workflow for attested private packs.
+Java SDK `io.greenlang:factors-sdk` live on Maven Central.
+Multi-master writes: each region accepts writes; conflict-resolution strategy documented (publish-idempotence + URN uniqueness).
+/v1/factors/propagate endpoint with Monte Carlo; seedable; samples-ref returned for reproducibility.
+Schema v2.0 live: required additions documented; 12-month v1/v2 overlap period begins.
+New connectors: NIES (Japan), WRI Aqueduct (geography), additional Annex I NIR coverage.
+Singapore region live; APAC customers read from ap-southeast-1.
+Team composition for this milestone
+Above team plus:
+Senior backend engineer (multi-master consistency work).
+Data-ops engineer (ecoinvent / EXIOBASE ingestion at scale).
+Java engineer (contractor or permanent; owns Java SDK).
+Enterprise CSM (FinanceOS customers have high-touch support needs).
+Acceptance criteria
+ecoinvent licence enforcement: zero leaks to unauthorised tenants; audit log shows 100% coverage.
+Private packs: first customer-uploaded private pack live; reviewer turnaround < 5 business days.
+Schema v2.0 dual-serving works: v1 clients see v1 shape; v2 clients see v2 shape; shared storage; migration tool available.
+Multi-master writes: no data loss, no silent conflicts, no broken URN uniqueness in stress testing (simulated region partition).
+Singapore region: data-residency verified; latency for SG customers < 100 ms p95 to local endpoints.
+ACV milestone: first $250k+ Enterprise contract live, using private packs and ecoinvent.
+Migration and compatibility
+v1 schema is deprecated but continues to serve; callers have 12 months to migrate. Automated migration script generated for downstream products.
+Top risks for this milestone
+ecoinvent licensing is complex and evolving. Mitigation: multi-year contract in hand by v1.5; compliance-officer review at every tier definition.
+Multi-master writes are where distributed-systems bugs hide. Mitigation: dedicated SRE; chaos-testing in staging; gradual roll-out region-by-region.
+v2.0 schema step risks community-tier fragmentation. Mitigation: v1/v2 dual-serve period; SDK auto-detects preferred version.
+19.7 v2.5 — FY30 Q2 (Jul–Sep 2029)
+Target release: FY30 Q2.
+Primary goals
+Ship real-time grid intensity across EU, US, India, APAC (ENTSO-E, ElectricityMaps, WattTime, US ISOs, Grid-India).
+Ship NIES IDEA (commercial), AGRIBALYSE, FAOSTAT (for agrifood / AgriLandOS).
+Introduce factor provenance graph as a first-class product surface (dedicated /v1/lineage endpoints with visual renderers).
+ISO 27001 certified.
+Catalogue scale: 25M+ factor records.
+Hourly resolution pipelines tested at scale; customer count on real-time feeds justifies dedicated capacity.
+Explicitly out of scope
+No AI-native factor engine yet (v3.0).
+No factor-market take-rate yet (v3.0).
+Deliverables
+Real-time grid pipelines live: ENTSO-E, ElectricityMaps, WattTime, CAISO, ERCOT, PJM, MISO, NYISO, SPP, ISO-NE, Grid-India.
+Hourly factor records in Postgres (partitioned; estimated 50–100M hourly records per year after geography explosion).
+Factor-retrieval endpoint supports hourly resolution with ≤ 100 ms p95 latency on cached reads.
+24/7 CFE utility endpoints live (hourly matching gap analysis) for DataCenter CarbonOps, PowerOS, BuildingOS consumption.
+NIES IDEA commercial pack; AGRIBALYSE and FAOSTAT community packs.
+Provenance-graph UI in Studio (read-only; query-driven; exportable).
+ISO 27001 certificate in hand.
+Public-sector pilot: at least one India- or EU-national regulator directly reads from Factors through a scoped API key.
+Team composition for this milestone
+Above team plus:
+Streaming / real-time engineering pod (2 engineers, Kafka / pipeline focus).
+SRE role for real-time reliability (3rd SRE for sustained 24x7 coverage).
+Data-science engineer (works on resolve v2.0 improvements; handoffs to Agent Runtime team).
+Acceptance criteria
+Real-time feed lag: p95 ≤ 10 minutes from source publication.
+Downstream customers (DataCenter CarbonOps, PowerOS) verify 24/7 CFE reporting flows end-to-end.
+ISO 27001 certification obtained.
+Resolve top-1 accuracy ≥ 88%; top-5 ≥ 97% on the current eval suite; language coverage reaches 11 languages with acceptable quality.
+Provenance-graph UI tested with auditors: at least one Big 4 engagement uses the UI for audit sampling.
+Migration and compatibility
+Hourly-resolution query shapes are new; API behaviour documented under v1.2 minor; no breaking changes.
+Top risks for this milestone
+Real-time feeds increase operational load dramatically. Mitigation: additional SRE head-count in advance; dedicated alerting; runbook exercises quarterly.
+Hourly storage grows factor count by ~50×. Mitigation: partitioning strategy finalised in v2.0 planning; cold-tier move for aged hourly data.
+Licensing cost on real-time providers is substantial. Mitigation: multi-provider contracts; commercial-tier pass-through pricing.
+19.8 v3.0 — FY31 Q1 (Apr–Jun 2030)
+Target release: FY31 Q1.
+Primary goals
+AI-native factor engine: LLM agents (running on Agent Runtime + Eval) auto-map activity descriptions to factor URNs, propose alternative factors, and flag plausible factor gaps. Every agent action is reviewable and auditable.
+Factor-market take-rate: curated premium packs (industry-specific, high-touch) are sold through a marketplace with take-rate revenue to GreenLang.
+Community governance via Foundation: the GreenLang Foundation (launched FY29–FY30) stewards the community schema, taxonomy, and open packs. Factors is first product to operate under the Foundation-plus-operating-company model in full.
+Cross-organization ledger joins (preview): supplier attestations flow from supplier tenants into customer tenants as verifiable credentials. Factors captures the verifiable-credential verification path.
+Second schema step (v3.0): 18-month overlap with v2.
+Catalogue scale: 50M+ factor records; 350k developers on the platform; 3,000+ contributors.
+Explicitly out of scope
+No completely autonomous ingestion (humans remain in the loop for tier-1 and commercial sources).
+Cross-organization ledger joins remain a preview with limited partners; GA in a later release.
+Deliverables
+Agent-native factor ops: ingestion parsing uses agentic extraction on unstructured sources with human review; resolve endpoint uses agentic reasoning for top-k re-ranking; changelog summaries are agent-drafted and human-approved.
+Factor-market UI in Studio; first 10 premium packs available; take-rate revenue begins.
+Foundation governance: schema changes go through Foundation review; contributors vote on taxonomy changes; Foundation board includes academic, industry, and operator representatives.
+Cross-org ledger joins preview live with 5 supplier-customer pairs; verifiable-credential verification integrated with Proof Hub.
+Schema v3.0 live with 18-month v2/v3 overlap.
+50M+ factor records; 3,000+ contributors; 350k developers as reported by FY31 base-case metrics.
+Regulator-grade 'direct-read' interfaces live with at least 3 regulators (for example, CBAM authority, one EU member-state regulator, one Indian authority).
+Team composition for this milestone
+Full Factors org (15–20 people by FY31): engineering manager, 4–6 engineers, 3 SREs, 2–3 climate-methodology experts, 1 community manager, 1 ML engineer, 1 data-ops engineer, 1 compliance officer, 1–2 solutions engineers.
+Foundation staff (separate): 2–3 roles for schema and taxonomy stewardship.
+Acceptance criteria
+Agent-native ingestion has zero regressions on tier-1 quality; human-review sampling shows ≥ 99% accuracy on agent-extracted fields.
+Foundation is operating: first 12 months of schema decisions are documented and public.
+Factor-market: $1M+ GAAP revenue from take-rate packs in the first year.
+Cross-org ledger joins preview: at least 5 end-to-end verified-credential flows in production.
+50M+ factor records; no material query-latency regression.
+Migration and compatibility
+v2 schema remains supported for 18 months from v3.0 GA; migration tool regenerated.
+Top risks for this milestone
+Agent-native operations introduce new risk surfaces (prompt injection, factor-injection attacks). Mitigation: dedicated model-governance team; red-team quarterly.
+Foundation governance can slow decision-making. Mitigation: Foundation scope limited to schema/taxonomy/community packs; commercial operations remain under the operating company.
+Take-rate marketplace introduces new regulatory questions (transaction records, taxes, cross-border). Mitigation: commercial/legal review; marketplace limited initially to enterprise buyers with full KYC.
+19.9 Cross-version artefacts maintained continuously
+Canonical schema (DDL in version-controlled repo; every change reviewed).
+Activity taxonomy (living document; contributions via PR).
+Unit conversion library (`greenlang.units`; independent release cadence).
+URN resolver service (internal).
+Changelog (customer-facing; RSS/Atom/webhooks).
+Eval harness (resolve + adversarial suites; grows with every release).
+Factor-pack distribution (CDN-hosted; signed by release tooling).
+Contributor directory (public; linked to ORCIDs where available).
+Regulatory-tracking briefs (quarterly; circulated to commercial and enterprise customers).
+20. Team and operating model
+Factors is a small-team discipline until FY29 and then scales deliberately. The operating model has three pillars: engineering (platform, SRE, data-ops), climate methodology (subject-matter experts, curation), and community (developer relations, contribution review). Hiring discipline is stricter here than in sector-cloud products because quality of the catalogue is what keeps every downstream product trustworthy.
+20.1 Roles by phase
+ 
+20.2 On-call
+v0.1–v0.9: no formal on-call; best-effort business-hours coverage by the platform lead.
+v1.0 GA: 24x5 on-call (Mumbai business-hours primary + EU secondary); 2-person rotation (platform lead + SRE).
+v1.5: 24x7 on-call; 4-person rotation (platform lead + 2 SREs + engineering manager).
+v2.0: 24x7 with a follow-the-sun rotation (India + EU + US); 6-person rotation.
+v2.5+: dedicated SRE leadership; formal SLOs with error budgets; monthly SRE reviews.
+20.3 Run-books
+Runbooks are maintained in the engineering wiki and referenced from every paging alert. The core set:
+RB-001 Ingestion failure on a tier-1 source.
+RB-002 Publish rollback (pull a bad factor pack from production).
+RB-003 Licence-violation incident response.
+RB-004 Region failover and recovery.
+RB-005 Postgres primary failure / promotion.
+RB-006 Redis cluster failure.
+RB-007 CBAM rapid-response protocol.
+RB-008 Regulator or auditor escalation (inbound letter or audit query).
+RB-009 Community-contribution revocation.
+RB-010 Customer data-residency escalation.
+RB-011 Cross-source divergence spike.
+RB-012 LLM-vendor outage (Agent Runtime affected paths).
+20.4 Decision-making model
+Every factor pack ships through a documented review chain (climate-methodology lead signs off on content; platform lead signs off on engineering; compliance officer signs off on licence).
+ADR (Architecture Decision Records) are the default for any non-trivial engineering decision; reviewed in weekly arch meeting.
+Schema changes go through a written change proposal with backwards-compat impact analysis.
+Commercial-licensing decisions require co-sign from CTO + CFO (to ensure financial discipline in licensing cost.
+Regulatory-affairs changes (CBAM, CSRD, SB 253 responses) are owned by climate-methodology lead with CTO co-sign.
+21. Risks and mitigations
+A structured view of what can kill or severely damage Factors. Every risk has a probability × impact assessment (low/med/high), an owner, and an explicit mitigation. This register is reviewed quarterly with the CTO.
+21.1 Strategic risks
+ 
+21.2 Engineering risks
+ 
+21.3 Compliance / security risks
+ 
+22. KPIs and instrumentation
+KPIs are instrumented at the source of truth and dashboarded. Targets below are v1.0 GA unless otherwise stated.
+22.1 Platform health KPIs
+ 
+22.2 Business KPIs
+ 
+22.3 Quality KPIs
+ 
+23. Glossary
+A condensed glossary for engineers new to the climate-data space. Defined the way a GreenLang engineer uses them, not textbook-style.
+ 
+24. Appendices
+24.1 Appendix A — OpenAPI excerpt
+ 
+24.2 Appendix B — DDL full schema excerpt
+ 
+24.3 Appendix C — Source-to-schema mapping table (summary)
+ 
+24.4 Appendix D — Licensing summary table
+ 
+24.5 Appendix E — SDK example: end-to-end CBAM calculation
+ 
+24.6 Appendix F — SDK example: confidence-aware resolve
+ 
+24.7 Appendix G — Operational alerts catalog (excerpt)
+ 
+24.8 Appendix H — Hiring briefs (short)
+ 
+24.9 Appendix I — Reading list for new engineers
+GHG Protocol Corporate Standard, Scope 2 Guidance, Scope 3 Standard (methodology foundations).
+IPCC 2006 Guidelines for National GHG Inventories + AR6 supplementary material (the factor science).
+ISO 14067 (product carbon footprints) and GHGP Product Standard (parallel documents).
+CBAM Regulation (EU 2023/956) and the Implementing Regulation for reporting requirements.
+CSRD + ESRS E1 (first EU climate disclosure standard).
+ecoinvent v3 system-model overview (understand APOS vs consequential vs cut-off).
+GLEC Framework (for logistics emissions).
+PCAF Global GHG Standard (for financed emissions).
+24.10 Appendix J — Document revision history
+ 
+25. Closing note
+Factors is the product that most quietly determines whether GreenLang becomes a platform or a calculator. The temptation every quarter will be to add one more sector cloud, one more integration, one more AI feature — and to short-change the factor catalogue. The engineering discipline described in this dossier is designed to resist that temptation. Five years from now, the thing that makes GreenLang unassailable is not the dashboards, the sales team, or even the customer list. It is 50 million factor records, each with perfect provenance, published in a durable catalogue that regulators, auditors, and engineers everywhere trust. That is what this document is the plan for.

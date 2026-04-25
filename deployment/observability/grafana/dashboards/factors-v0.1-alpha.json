@@ -1,0 +1,319 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {"type": "datasource", "uid": "grafana"},
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "description": "GreenLang Factors v0.1 Alpha — minimal ingestion-health dashboard (CTO doc §19.1). 8 panels, scoped strictly to the alpha API surface (no resolve/explain/edition selection, no billing, no entitlements). Alpha promQL uses {release_profile=\"alpha-v0.1\"} where applicable; ingestion / schema / parser metrics are emitted by greenlang.factors.observability.prometheus_exporter (added WS9-T3).",
+  "editable": false,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "uid": "greenlang-factors-v0-1-alpha",
+  "title": "GreenLang Factors — v0.1 Alpha",
+  "tags": ["greenlang", "factors", "alpha", "v0.1"],
+  "schemaVersion": 39,
+  "style": "dark",
+  "timezone": "utc",
+  "refresh": "30s",
+  "time": {"from": "now-1h", "to": "now"},
+  "timepicker": {
+    "refresh_intervals": ["10s", "30s", "1m", "5m", "15m", "1h"]
+  },
+  "templating": {
+    "list": [
+      {
+        "name": "datasource",
+        "label": "Prometheus",
+        "type": "datasource",
+        "query": "prometheus",
+        "hide": 0,
+        "includeAll": false,
+        "multi": false,
+        "refresh": 1,
+        "skipUrlSync": false
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "title": "Alpha API request rate",
+      "type": "timeseries",
+      "datasource": {"type": "prometheus", "uid": "${datasource}"},
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+      "description": "Per-path request rate (req/s) for the alpha API (release_profile=\"alpha-v0.1\"). Informational only — no threshold. Runbook: https://github.com/greenlang/greenlang/blob/master/docs/factors/runbooks/factors-v0.1-alpha-alerts.md#panel-1",
+      "runbook_url": "https://github.com/greenlang/greenlang/blob/master/docs/factors/runbooks/factors-v0.1-alpha-alerts.md#panel-1",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "custom": {"drawStyle": "line", "lineWidth": 2, "fillOpacity": 5, "showPoints": "never"}
+        }
+      },
+      "options": {
+        "legend": {"displayMode": "table", "placement": "bottom", "calcs": ["mean", "last"]},
+        "tooltip": {"mode": "multi"}
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(rate(http_requests_total{job=\"factors\",release_profile=\"alpha-v0.1\"}[5m])) by (path)",
+          "legendFormat": "{{path}}"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Alpha API p50 / p95 / p99 latency (per endpoint)",
+      "type": "timeseries",
+      "datasource": {"type": "prometheus", "uid": "${datasource}"},
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
+      "description": "p50/p95/p99 latency per endpoint. CTO doc §19.1 acceptance criterion: p95 < 100ms. Red threshold at p95 > 0.1s. Runbook: https://github.com/greenlang/greenlang/blob/master/docs/factors/runbooks/factors-v0.1-alpha-alerts.md#panel-2",
+      "runbook_url": "https://github.com/greenlang/greenlang/blob/master/docs/factors/runbooks/factors-v0.1-alpha-alerts.md#panel-2",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {"drawStyle": "line", "lineWidth": 2, "fillOpacity": 5, "showPoints": "never"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "red", "value": 0.1}
+            ]
+          }
+        }
+      },
+      "options": {
+        "legend": {"displayMode": "table", "placement": "bottom", "calcs": ["mean", "max"]},
+        "tooltip": {"mode": "multi"}
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "histogram_quantile(0.50, sum(rate(http_request_duration_seconds_bucket{job=\"factors\",release_profile=\"alpha-v0.1\"}[5m])) by (le, path))",
+          "legendFormat": "p50 {{path}}"
+        },
+        {
+          "refId": "B",
+          "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{job=\"factors\",release_profile=\"alpha-v0.1\"}[5m])) by (le, path))",
+          "legendFormat": "p95 {{path}}"
+        },
+        {
+          "refId": "C",
+          "expr": "histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket{job=\"factors\",release_profile=\"alpha-v0.1\"}[5m])) by (le, path))",
+          "legendFormat": "p99 {{path}}"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Alpha API error rate (4xx / 5xx)",
+      "type": "timeseries",
+      "datasource": {"type": "prometheus", "uid": "${datasource}"},
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+      "description": "Errored alpha API responses split by status class. Warn > 1%, crit > 5%. Runbook: https://github.com/greenlang/greenlang/blob/master/docs/factors/runbooks/factors-v0.1-alpha-alerts.md#panel-3",
+      "runbook_url": "https://github.com/greenlang/greenlang/blob/master/docs/factors/runbooks/factors-v0.1-alpha-alerts.md#panel-3",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "custom": {"drawStyle": "line", "lineWidth": 2, "fillOpacity": 10, "showPoints": "never"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "orange", "value": 0.01},
+              {"color": "red", "value": 0.05}
+            ]
+          }
+        }
+      },
+      "options": {
+        "legend": {"displayMode": "table", "placement": "bottom", "calcs": ["mean", "last"]},
+        "tooltip": {"mode": "multi"}
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(rate(http_requests_total{job=\"factors\",release_profile=\"alpha-v0.1\",status=~\"4..|5..\"}[5m])) by (status)",
+          "legendFormat": "{{status}}"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Edition served (current edition_id)",
+      "type": "stat",
+      "datasource": {"type": "prometheus", "uid": "${datasource}"},
+      "gridPos": {"h": 6, "w": 12, "x": 12, "y": 8},
+      "description": "Currently-served edition id. Single value, expected to be stable between cuts (e.g. 'alpha-v0.1.0'). Runbook: https://github.com/greenlang/greenlang/blob/master/docs/factors/runbooks/factors-v0.1-alpha-alerts.md#panel-4",
+      "runbook_url": "https://github.com/greenlang/greenlang/blob/master/docs/factors/runbooks/factors-v0.1-alpha-alerts.md#panel-4",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]}
+        }
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "textMode": "value_and_name"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "max(factors_current_edition_id_info) by (edition)",
+          "legendFormat": "{{edition}}",
+          "instant": true
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Schema validation failure rate",
+      "type": "timeseries",
+      "datasource": {"type": "prometheus", "uid": "${datasource}"},
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 16},
+      "description": "Rate of factor_record_v0_1 schema validation failures emitted by AlphaProvenanceGate.validate(). Any sustained non-zero rate is critical — means upstream parser is producing non-conforming records. Runbook: https://github.com/greenlang/greenlang/blob/master/docs/factors/runbooks/factors-v0.1-alpha-alerts.md#panel-5",
+      "runbook_url": "https://github.com/greenlang/greenlang/blob/master/docs/factors/runbooks/factors-v0.1-alpha-alerts.md#panel-5",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "custom": {"drawStyle": "line", "lineWidth": 2, "fillOpacity": 10, "showPoints": "never"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "red", "value": 0.0001}
+            ]
+          }
+        }
+      },
+      "options": {
+        "legend": {"displayMode": "table", "placement": "bottom", "calcs": ["sum", "max"]},
+        "tooltip": {"mode": "multi"}
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(rate(factors_schema_validation_failures_total{schema=\"factor_record_v0_1\"}[5m])) by (source)",
+          "legendFormat": "{{source}}"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Provenance gate rejection rate",
+      "type": "timeseries",
+      "datasource": {"type": "prometheus", "uid": "${datasource}"},
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 16},
+      "description": "AlphaProvenanceGate.assert_valid() rejections per source + first-failure reason. Crit > 1/min sustained. Runbook: https://github.com/greenlang/greenlang/blob/master/docs/factors/runbooks/factors-v0.1-alpha-alerts.md#panel-6",
+      "runbook_url": "https://github.com/greenlang/greenlang/blob/master/docs/factors/runbooks/factors-v0.1-alpha-alerts.md#panel-6",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "custom": {"drawStyle": "line", "lineWidth": 2, "fillOpacity": 10, "showPoints": "never"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "red", "value": 0.0167}
+            ]
+          }
+        }
+      },
+      "options": {
+        "legend": {"displayMode": "table", "placement": "bottom", "calcs": ["sum", "max"]},
+        "tooltip": {"mode": "multi"}
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(rate(factors_alpha_provenance_gate_rejections_total[5m])) by (source, reason)",
+          "legendFormat": "{{source}} / {{reason}}"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "title": "Ingestion success rate per source",
+      "type": "stat",
+      "datasource": {"type": "prometheus", "uid": "${datasource}"},
+      "gridPos": {"h": 6, "w": 12, "x": 0, "y": 24},
+      "description": "Successful ingestion runs/hour per alpha source (whitelist: ipcc-ar6, defra-2025, epa-ghg-hub, epa-egrid, india-cea-baseline, eu-cbam-defaults). Crit when < 0.95 (i.e. < 95% success ratio). Runbook: https://github.com/greenlang/greenlang/blob/master/docs/factors/runbooks/factors-v0.1-alpha-alerts.md#panel-7",
+      "runbook_url": "https://github.com/greenlang/greenlang/blob/master/docs/factors/runbooks/factors-v0.1-alpha-alerts.md#panel-7",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "red", "value": null},
+              {"color": "orange", "value": 0.95},
+              {"color": "green", "value": 0.99}
+            ]
+          }
+        }
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "textMode": "value_and_name"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(rate(factors_ingestion_runs_total{status=\"success\",source=~\"ipcc-ar6|defra-2025|epa-ghg-hub|epa-egrid|india-cea-baseline|eu-cbam-defaults\"}[1h])) by (source)",
+          "legendFormat": "{{source}}",
+          "instant": true
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "title": "Parser error rate",
+      "type": "timeseries",
+      "datasource": {"type": "prometheus", "uid": "${datasource}"},
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 24},
+      "description": "Rate of parser exceptions raised by ETL parsers (CBAM/DEFRA/IPCC/EPA/CEA), grouped by source + error_type. Any non-zero rate is critical. Runbook: https://github.com/greenlang/greenlang/blob/master/docs/factors/runbooks/factors-v0.1-alpha-alerts.md#panel-8",
+      "runbook_url": "https://github.com/greenlang/greenlang/blob/master/docs/factors/runbooks/factors-v0.1-alpha-alerts.md#panel-8",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "custom": {"drawStyle": "line", "lineWidth": 2, "fillOpacity": 10, "showPoints": "never"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "red", "value": 0.0001}
+            ]
+          }
+        }
+      },
+      "options": {
+        "legend": {"displayMode": "table", "placement": "bottom", "calcs": ["sum", "max"]},
+        "tooltip": {"mode": "multi"}
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(rate(factors_parser_errors_total[5m])) by (source, error_type)",
+          "legendFormat": "{{source}} / {{error_type}}"
+        }
+      ]
+    }
+  ],
+  "version": 1,
+  "weekStart": ""
+}

@@ -1,0 +1,156 @@
+# =============================================================================
+# GreenLang Factors v0.1 Alpha — Nightly Performance Budget
+# CTO doc §19.1 acceptance criterion: p95 lookup < 100ms
+# =============================================================================
+# Runs the @pytest.mark.perf suite under tests/factors/v0_1_alpha/ on a
+# nightly cadence (or manual dispatch). The default Factors CI job
+# (.github/workflows/factors-tests.yml) excludes perf tests so PRs stay
+# fast; this workflow is the dedicated guard for the latency budget.
+#
+# DEPLOYMENT NOTE
+# ---------------
+# This file is currently ENABLED for manual dispatch only and runs the
+# nightly schedule on master. If the runner pool is constrained and
+# nightly cron is undesirable, comment out the `schedule:` block — the
+# `workflow_dispatch` trigger will keep the job runnable on demand.
+# Wave D / TaskCreate #28 / WS10-T2 — initial spec.
+# =============================================================================
+
+name: Factors v0.1 Alpha — Perf Budget (p95 < 100ms)
+
+on:
+  # Nightly run at 03:17 UTC (off-peak; avoids the 00:00 burst).
+  schedule:
+    - cron: "17 3 * * *"
+
+  # Manual trigger from the Actions tab. Useful when investigating a
+  # perf regression PR locally and wanting a clean-runner re-attempt.
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: "Why are we running this manually?"
+        required: false
+        default: "manual perf re-run"
+
+  # Run on PRs that touch the alpha API or its perf test only — avoids
+  # spending nightly-budget runners on every PR but catches obvious
+  # latency regressions in the routes themselves.
+  pull_request:
+    paths:
+      - "greenlang/factors/api_v0_1_alpha_routes.py"
+      - "greenlang/factors/api_v0_1_alpha_models.py"
+      - "greenlang/factors/factors_app.py"
+      - "tests/factors/v0_1_alpha/test_perf_p95_lookup.py"
+      - "tests/factors/v0_1_alpha/_e2e_helpers.py"
+      - ".github/workflows/factors-alpha-perf.yml"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHON_VERSION: "3.11"
+  GL_FACTORS_RELEASE_PROFILE: "alpha-v0.1"
+  # Opt the conftest auto-skip in — the perf-marked tests require this
+  # env var (or `-m perf`) before they will execute.
+  GL_RUN_PERF: "1"
+
+jobs:
+  # ---------------------------------------------------------------------
+  # Job 1: Run the perf suite, capture the JSON report, fail on budget miss.
+  # ---------------------------------------------------------------------
+  perf-budget:
+    name: p95 Lookup Latency Budget
+    runs-on: ubuntu-latest
+    # Single-threaded — perf measurements need a quiet box. Don't matrix
+    # this job; concurrent runners on the same VM skew percentiles.
+    timeout-minutes: 20
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          pip install -e ".[dev]" 2>/dev/null || pip install \
+            pytest \
+            pytest-asyncio \
+            pydantic \
+            fastapi \
+            httpx \
+            psycopg \
+            redis \
+            pyyaml \
+            jsonschema
+
+      - name: Show runner perf profile
+        # Dump runner CPU + load + memory so a noisy-neighbour failure
+        # is debuggable from the artefact alone.
+        run: |
+          echo "=== /proc/cpuinfo (model name only) ==="
+          grep -m1 "model name" /proc/cpuinfo || true
+          echo "=== nproc ==="
+          nproc
+          echo "=== free -h ==="
+          free -h
+          echo "=== uptime ==="
+          uptime
+
+      - name: Run alpha perf suite
+        run: |
+          pytest -m perf tests/factors/v0_1_alpha/ \
+            -v \
+            --tb=short \
+            --no-header \
+            -o addopts= \
+            --junitxml=junit-factors-perf.xml
+
+      - name: Upload perf report (JSON)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: factors-alpha-perf-report
+          path: |
+            out/factors/v0_1_alpha/perf_p95_report.json
+            out/factors/v0_1_alpha/perf_*.json
+            junit-factors-perf.xml
+          if-no-files-found: warn
+
+      - name: Summarise perf result
+        if: always()
+        run: |
+          if [ -f "out/factors/v0_1_alpha/perf_p95_report.json" ]; then
+            echo "=== p95 lookup acceptance report ==="
+            cat out/factors/v0_1_alpha/perf_p95_report.json
+            echo ""
+            echo "=== Sibling reports ==="
+            ls -la out/factors/v0_1_alpha/ || true
+          else
+            echo "ERROR: No perf report produced — perf suite likely failed before write_report."
+            exit 0  # Don't double-fail; the pytest step already failed.
+          fi
+
+      # ---- Budget-miss escalation hook -----------------------------------
+      # When this workflow runs on schedule (nightly) and fails, the SRE
+      # on-call should be paged. Wire this up to PagerDuty / Slack via a
+      # repo secret if desired. Left as a documented stub so the
+      # workflow doesn't silently fan out to a webhook that doesn't
+      # exist yet.
+      #
+      # - name: Page SRE on nightly perf miss
+      #   if: failure() && github.event_name == 'schedule'
+      #   uses: slackapi/slack-github-action@v1
+      #   with:
+      #     payload: |
+      #       {
+      #         "text": "GreenLang Factors v0.1 alpha p95 budget miss",
+      #         "blocks": [...]
+      #       }
+      #   env:
+      #     SLACK_WEBHOOK_URL: ${{ secrets.SLACK_PERF_WEBHOOK }}
+      # --------------------------------------------------------------------

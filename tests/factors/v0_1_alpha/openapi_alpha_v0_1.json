@@ -1,0 +1,983 @@
+{
+  "components": {
+    "schemas": {
+      "ErrorResponse": {
+        "description": "Stable error payload shape for the alpha surface.",
+        "properties": {
+          "allowed": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Allowed"
+          },
+          "error": {
+            "title": "Error",
+            "type": "string"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          },
+          "urn": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Urn"
+          }
+        },
+        "required": [
+          "error",
+          "message"
+        ],
+        "title": "ErrorResponse",
+        "type": "object"
+      },
+      "FactorListResponse": {
+        "description": "Cursor-paginated list response for ``GET /v1/factors``.",
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/FactorV0_1"
+            },
+            "title": "Data",
+            "type": "array"
+          },
+          "edition": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Edition"
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Cursor"
+          }
+        },
+        "title": "FactorListResponse",
+        "type": "object"
+      },
+      "FactorV0_1": {
+        "description": "Single factor record in the v0.1 alpha shape.\n\nKeys mirror the JSON-Schema required list. Values are best-effort\ncoerced from the legacy ``EmissionFactorRecord`` via\n:func:`greenlang.factors.api_v0_1_alpha_routes._coerce_v0_1`. None is\npermitted on every field except ``urn`` so a missing back-fill never\ncrashes ``/v1/factors``.",
+        "properties": {
+          "boundary": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Boundary"
+          },
+          "category": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category"
+          },
+          "citations": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Citations",
+            "type": "array"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "extraction": {
+            "additionalProperties": true,
+            "title": "Extraction",
+            "type": "object"
+          },
+          "factor_id_alias": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Factor Id Alias"
+          },
+          "factor_pack_urn": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Factor Pack Urn"
+          },
+          "geography_urn": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Geography Urn"
+          },
+          "gwp_basis": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Gwp Basis"
+          },
+          "gwp_horizon": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Gwp Horizon"
+          },
+          "licence": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Licence"
+          },
+          "methodology_urn": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Methodology Urn"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "published_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Published At"
+          },
+          "resolution": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resolution"
+          },
+          "review": {
+            "additionalProperties": true,
+            "title": "Review",
+            "type": "object"
+          },
+          "source_urn": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Urn"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Tags",
+            "type": "array"
+          },
+          "unit_urn": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit Urn"
+          },
+          "urn": {
+            "description": "Canonical factor URN.",
+            "title": "Urn",
+            "type": "string"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          },
+          "vintage_end": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Vintage End"
+          },
+          "vintage_start": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Vintage Start"
+          }
+        },
+        "required": [
+          "urn"
+        ],
+        "title": "FactorV0_1",
+        "type": "object"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "title": "Detail",
+            "type": "array"
+          }
+        },
+        "title": "HTTPValidationError",
+        "type": "object"
+      },
+      "HealthzResponse": {
+        "description": "Response shape for ``GET /v1/healthz``.",
+        "properties": {
+          "edition": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Edition"
+          },
+          "git_commit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Git Commit"
+          },
+          "release_profile": {
+            "title": "Release Profile",
+            "type": "string"
+          },
+          "schema_id": {
+            "title": "Schema Id",
+            "type": "string"
+          },
+          "service": {
+            "title": "Service",
+            "type": "string"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "version": {
+            "default": "0.1.0",
+            "title": "Version",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "service",
+          "release_profile",
+          "schema_id"
+        ],
+        "title": "HealthzResponse",
+        "type": "object"
+      },
+      "PackListResponse": {
+        "description": "Response shape for ``GET /v1/packs``.",
+        "properties": {
+          "count": {
+            "default": 0,
+            "title": "Count",
+            "type": "integer"
+          },
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/PackV0_1"
+            },
+            "title": "Data",
+            "type": "array"
+          }
+        },
+        "title": "PackListResponse",
+        "type": "object"
+      },
+      "PackV0_1": {
+        "description": "Factor pack (alpha shape) \u2014 derived from source registry + factor counts.",
+        "properties": {
+          "display_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Display Name"
+          },
+          "factor_count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Factor Count"
+          },
+          "pack_id": {
+            "title": "Pack Id",
+            "type": "string"
+          },
+          "source_urn": {
+            "title": "Source Urn",
+            "type": "string"
+          },
+          "urn": {
+            "title": "Urn",
+            "type": "string"
+          },
+          "version": {
+            "title": "Version",
+            "type": "string"
+          }
+        },
+        "required": [
+          "urn",
+          "source_urn",
+          "pack_id",
+          "version"
+        ],
+        "title": "PackV0_1",
+        "type": "object"
+      },
+      "SourceListResponse": {
+        "description": "Response shape for ``GET /v1/sources``.",
+        "properties": {
+          "count": {
+            "default": 0,
+            "title": "Count",
+            "type": "integer"
+          },
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/SourceV0_1"
+            },
+            "title": "Data",
+            "type": "array"
+          }
+        },
+        "title": "SourceListResponse",
+        "type": "object"
+      },
+      "SourceV0_1": {
+        "description": "Public source registry entry in the v0.1 shape.",
+        "properties": {
+          "cadence": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cadence"
+          },
+          "citation_text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Citation Text"
+          },
+          "display_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Display Name"
+          },
+          "jurisdiction": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Jurisdiction"
+          },
+          "latest_ingestion_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latest Ingestion At"
+          },
+          "license_class": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "License Class"
+          },
+          "provenance_completeness_score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provenance Completeness Score"
+          },
+          "publication_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Publication Url"
+          },
+          "publisher": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Publisher"
+          },
+          "source_id": {
+            "title": "Source Id",
+            "type": "string"
+          },
+          "source_version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Version"
+          },
+          "urn": {
+            "title": "Urn",
+            "type": "string"
+          }
+        },
+        "required": [
+          "urn",
+          "source_id"
+        ],
+        "title": "SourceV0_1",
+        "type": "object"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "title": "Location",
+            "type": "array"
+          },
+          "msg": {
+            "title": "Message",
+            "type": "string"
+          },
+          "type": {
+            "title": "Error Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError",
+        "type": "object"
+      }
+    }
+  },
+  "info": {
+    "description": "Canonical climate reference layer. Resolve emissions factors with full provenance, version pinning, and signed receipts. Every factor response includes an `explain` block by default; pass `?compact=true` to opt out. See https://developers.greenlang.ai.",
+    "title": "GreenLang Factors API",
+    "version": "1.0.0"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/v1/factors": {
+      "get": {
+        "description": "Read-only listing of every factor visible to the alpha tier. Filtering is the alpha-spec subset only: by geography URN, source URN, pack URN, category enum, and vintage window. Pagination is cursor-based (opaque next_cursor; pass it back verbatim). Resolve / explain payloads are intentionally excluded.",
+        "operationId": "list_factors_v1_factors_get",
+        "parameters": [
+          {
+            "description": "Filter by geography URN.",
+            "in": "query",
+            "name": "geography_urn",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by geography URN.",
+              "title": "Geography Urn"
+            }
+          },
+          {
+            "description": "Filter by source URN.",
+            "in": "query",
+            "name": "source_urn",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by source URN.",
+              "title": "Source Urn"
+            }
+          },
+          {
+            "description": "Filter by factor pack URN.",
+            "in": "query",
+            "name": "pack_urn",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by factor pack URN.",
+              "title": "Pack Urn"
+            }
+          },
+          {
+            "description": "One of ['scope1', 'scope2_location_based', 'scope2_market_based', 'grid_intensity', 'fuel', 'refrigerant', 'fugitive', 'process', 'cbam_default'].",
+            "in": "query",
+            "name": "category",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "One of ['scope1', 'scope2_location_based', 'scope2_market_based', 'grid_intensity', 'fuel', 'refrigerant', 'fugitive', 'process', 'cbam_default'].",
+              "title": "Category"
+            }
+          },
+          {
+            "description": "ISO date; only factors with vintage_start > this.",
+            "in": "query",
+            "name": "vintage_start_after",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "ISO date; only factors with vintage_start > this.",
+              "title": "Vintage Start After"
+            }
+          },
+          {
+            "description": "ISO date; only factors with vintage_end < this.",
+            "in": "query",
+            "name": "vintage_end_before",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "ISO date; only factors with vintage_end < this.",
+              "title": "Vintage End Before"
+            }
+          },
+          {
+            "description": "Opaque pagination cursor.",
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Opaque pagination cursor.",
+              "title": "Cursor"
+            }
+          },
+          {
+            "description": "Page size (1-200).",
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "description": "Page size (1-200).",
+              "maximum": 200,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FactorListResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List factors (cursor-paginated, filtered)",
+        "tags": [
+          "factors-v0.1-alpha"
+        ]
+      }
+    },
+    "/v1/factors/{urn}": {
+      "get": {
+        "description": "URL-encoded canonical URN (urn:gl:factor:<source>:<ns>:<id>:v<n>). Returns a 404 with a stable JSON error body if the URN is unknown in the active edition.",
+        "operationId": "get_factor_v1_factors__urn__get",
+        "parameters": [
+          {
+            "description": "URL-encoded factor URN.",
+            "in": "path",
+            "name": "urn",
+            "required": true,
+            "schema": {
+              "description": "URL-encoded factor URN.",
+              "title": "Urn",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FactorV0_1"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Factor not found in the active edition."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get one factor by URN",
+        "tags": [
+          "factors-v0.1-alpha"
+        ]
+      }
+    },
+    "/v1/healthz": {
+      "get": {
+        "description": "Unauthenticated liveness probe for v0.1 alpha. Returns the active release profile, the schema id every factor record validates against, the active edition id (when a catalog is loaded), and the build commit SHA when available.",
+        "operationId": "healthz_v1_healthz_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthzResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Service health + edition id",
+        "tags": [
+          "factors-v0.1-alpha"
+        ]
+      }
+    },
+    "/v1/packs": {
+      "get": {
+        "description": "One synthetic pack per alpha source until task #2 publishes the full pack registry. Filtering by source_urn returns only that source's packs.",
+        "operationId": "list_packs_v1_packs_get",
+        "parameters": [
+          {
+            "description": "Filter by source URN.",
+            "in": "query",
+            "name": "source_urn",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by source URN.",
+              "title": "Source Urn"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PackListResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List factor packs grouped by source",
+        "tags": [
+          "factors-v0.1-alpha"
+        ]
+      }
+    },
+    "/v1/sources": {
+      "get": {
+        "description": "Returns the 6 alpha-flagged sources from greenlang/factors/data/source_registry.yaml. Connector-only and beta+ sources are excluded.",
+        "operationId": "list_sources_v1_sources_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SourceListResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List registered alpha sources",
+        "tags": [
+          "factors-v0.1-alpha"
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,4 @@
+# This directory exists only as a structural placeholder.
+# NO real API keys are ever committed to this repo.
+# Real keys are stored in Vault at: secret/factors/alpha/<partner-slug>
+# Only SHA-256 first-16-hex prefixes are recorded, in each partner's profile file.

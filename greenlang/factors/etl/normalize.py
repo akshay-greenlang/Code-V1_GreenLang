@@ -7,9 +7,15 @@ CBAM and DEFRA Agent-Factory shapes are supported as row expansion (not full LCA
 
 from __future__ import annotations
 
+import json
+import logging
+import os
 import re
 from datetime import date, datetime, timezone
-from typing import Any, Dict, Iterator, List, Optional
+from pathlib import Path
+from typing import Any, Dict, Iterable, Iterator, List, Optional
+
+logger = logging.getLogger(__name__)
 
 from greenlang.data.emission_factor_record import (
     Boundary,
@@ -226,3 +232,91 @@ def dict_to_emission_factor_record(data: Dict[str, Any]) -> Any:
     from greenlang.data.emission_factor_record import EmissionFactorRecord
 
     return EmissionFactorRecord.from_dict(dict(data))
+
+
+# ---------------------------------------------------------------------------
+# Alpha Provenance Gate hook (Wave B / TaskCreate #5 / WS2-T1)
+# ---------------------------------------------------------------------------
+
+
+def run_alpha_provenance_gate(
+    records: Iterable[Dict[str, Any]],
+    output_dir: Optional[Path] = None,
+    *,
+    default_on: Optional[bool] = None,
+    report_filename: str = "validation_report.json",
+) -> Dict[str, Any]:
+    """Run the v0.1 Alpha Provenance Gate over a batch of normalised records.
+
+    Collects every failure into ``validation_report.json`` written to
+    ``output_dir`` (when supplied) and returns the report as a dict.
+
+    The gate is opt-in/opt-out via ``GL_FACTORS_ALPHA_PROVENANCE_GATE``; if
+    that env var is unset the gate runs iff the active release profile is
+    ``alpha-v0.1`` (override via ``default_on=True/False``).
+    """
+    from greenlang.factors.quality.alpha_provenance_gate import (
+        AlphaProvenanceGate,
+        alpha_gate_enabled,
+    )
+
+    if default_on is None:
+        try:
+            from greenlang.factors.release_profile import (
+                ReleaseProfile,
+                current_profile,
+            )
+
+            default_on = current_profile() == ReleaseProfile.ALPHA_V0_1
+        except Exception:  # noqa: BLE001
+            default_on = False
+
+    rec_list = list(records)
+
+    if not alpha_gate_enabled(default_on=default_on):
+        report = {
+            "gate": "alpha_provenance_gate",
+            "enabled": False,
+            "total_records": len(rec_list),
+            "passed": len(rec_list),
+            "failed": 0,
+            "failures": [],
+        }
+    else:
+        gate = AlphaProvenanceGate()
+        failures: List[Dict[str, Any]] = []
+        for idx, rec in enumerate(rec_list):
+            errs = gate.validate(rec)
+            if errs:
+                failures.append(
+                    {
+                        "record_index": idx,
+                        "factor_urn": rec.get("urn") if isinstance(rec, dict) else None,
+                        "failures": errs,
+                    }
+                )
+        report = {
+            "gate": "alpha_provenance_gate",
+            "enabled": True,
+            "total_records": len(rec_list),
+            "passed": len(rec_list) - len(failures),
+            "failed": len(failures),
+            "failures": failures,
+        }
+
+    if output_dir is not None:
+        out = Path(output_dir)
+        try:
+            out.mkdir(parents=True, exist_ok=True)
+            (out / report_filename).write_text(
+                json.dumps(report, indent=2, default=str), encoding="utf-8"
+            )
+        except OSError as exc:
+            logger.warning(
+                "alpha_provenance_gate: could not write %s/%s: %s",
+                out,
+                report_filename,
+                exc,
+            )
+
+    return report

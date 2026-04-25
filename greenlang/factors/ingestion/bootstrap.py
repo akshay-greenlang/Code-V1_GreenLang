@@ -688,6 +688,72 @@ def _enforce_n5(rec: Dict[str, Any], source_id: str) -> None:
 
 
 # ---------------------------------------------------------------------------
+# Alpha Provenance Gate (Wave B / TaskCreate #5 / WS2-T1)
+# ---------------------------------------------------------------------------
+# Stricter, schema-driven gate that REJECTS any record missing the v0.1 alpha
+# provenance/review metadata. Runs *side-by-side* with the legacy N5 gate;
+# the N5 gate is unchanged. Controlled by ``GL_FACTORS_ALPHA_PROVENANCE_GATE``;
+# when unset, defaults to ON iff the active release_profile is ALPHA_V0_1.
+
+_ALPHA_GATE_SINGLETON = None  # type: ignore[var-annotated]
+
+
+def _alpha_gate_default_on() -> bool:
+    """Default the alpha gate ON when running under the alpha-v0.1 profile."""
+    try:
+        from greenlang.factors.release_profile import (
+            ReleaseProfile,
+            current_profile,
+        )
+    except Exception:  # noqa: BLE001
+        return False
+    try:
+        return current_profile() == ReleaseProfile.ALPHA_V0_1
+    except Exception:  # noqa: BLE001
+        return False
+
+
+def _maybe_run_alpha_gate(rec: Dict[str, Any], source_id: str) -> None:
+    """Run the Alpha Provenance Gate if it is enabled.
+
+    The gate FAILS LOUD: any failure raises ``N5GateError`` so the existing
+    bootstrap error-collection path catches it (no refactor of ``_run_one``
+    needed). The legacy N5 gate stays as it is and runs first.
+
+    Records that do not carry the alpha ``extraction`` / ``review`` blocks
+    (e.g. the legacy v1-shape catalog seed envelopes) are skipped silently
+    so this hook never breaks pre-alpha bootstrap pipelines.
+    """
+    from greenlang.factors.quality.alpha_provenance_gate import (
+        AlphaProvenanceGate,
+        AlphaProvenanceGateError,
+        alpha_gate_enabled,
+    )
+
+    if not alpha_gate_enabled(default_on=_alpha_gate_default_on()):
+        return
+
+    # Only enforce on records that have the alpha v0.1 shape — i.e., they
+    # already carry an ``extraction`` block. Legacy v1-shape records (which
+    # the bootstrap pipeline still emits today) are out of scope and stay
+    # under the N5 gate exclusively.
+    if "extraction" not in rec or "urn" not in rec:
+        return
+
+    global _ALPHA_GATE_SINGLETON
+    if _ALPHA_GATE_SINGLETON is None:
+        _ALPHA_GATE_SINGLETON = AlphaProvenanceGate()
+
+    try:
+        _ALPHA_GATE_SINGLETON.assert_valid(rec)
+    except AlphaProvenanceGateError as exc:
+        raise N5GateError(
+            f"[{source_id}] factor_id={rec.get('factor_id')!r} alpha "
+            f"provenance gate failed: {exc}"
+        ) from exc
+
+
+# ---------------------------------------------------------------------------
 # Parser dispatch
 # ---------------------------------------------------------------------------
 
@@ -913,6 +979,10 @@ def _run_one(spec: SourceSpec) -> SourceRunResult:
             d = _record_to_dict(item)
             d = _apply_source_overlays(d, spec)
             _enforce_n5(d, spec.source_id)
+            # Wave B / WS2-T1 alpha provenance gate (opt-in via env var;
+            # defaults ON under release_profile=alpha-v0.1). Runs side-by-side
+            # with the N5 gate above; legacy v1-shape records are ignored.
+            _maybe_run_alpha_gate(d, spec.source_id)
             kept.append(d)
         except Exception as exc:  # noqa: BLE001
             errors.append(f"record {i}: {type(exc).__name__}: {exc}")

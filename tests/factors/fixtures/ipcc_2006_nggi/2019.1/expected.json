@@ -1,0 +1,412 @@
+[
+  {
+    "boundary": "combustion",
+    "compliance_frameworks": [
+      "GHG_Protocol",
+      "IPCC_2006",
+      "ISO_14064"
+    ],
+    "created_at": "1970-01-01T00:00:00+00:00",
+    "created_by": "greenlang_factors_etl",
+    "dqs": {
+      "geographical": 2,
+      "methodological": 5,
+      "representativeness": 3,
+      "technological": 3,
+      "temporal": 3
+    },
+    "factor_id": "EF:IPCC:en_stat_natural_gas_unknown_gj:GLOBAL:2019:v1",
+    "fuel_type": "natural_gas",
+    "geography": "GLOBAL",
+    "geography_level": "global",
+    "gwp_100yr": {
+      "CH4_gwp": 28,
+      "N2O_gwp": 273,
+      "gwp_set": "IPCC_AR6_100"
+    },
+    "license_info": {
+      "attribution_required": true,
+      "commercial_use_allowed": true,
+      "license": "IPCC-Guideline",
+      "redistribution_allowed": true
+    },
+    "notes": null,
+    "provenance": {
+      "methodology": "IPCC_Tier_1",
+      "source_org": "IPCC",
+      "source_publication": "IPCC 2006 Guidelines / 2019 Refinement",
+      "source_url": "https://www.ipcc-nggip.iges.or.jp/public/2019rf/",
+      "source_year": 2019,
+      "version": "2019_refinement"
+    },
+    "scope": "1",
+    "tags": [
+      "ipcc",
+      "tier1",
+      "energy",
+      "stationary",
+      "natural_gas",
+      "unknown"
+    ],
+    "uncertainty_95ci": 0.15,
+    "unit": "gj",
+    "updated_at": "1970-01-01T00:00:00+00:00",
+    "valid_from": "2019-01-01",
+    "vectors": {
+      "CH4": 0.001,
+      "CO2": 56.1,
+      "N2O": 0.0001
+    }
+  },
+  {
+    "boundary": "combustion",
+    "compliance_frameworks": [
+      "GHG_Protocol",
+      "IPCC_2006",
+      "ISO_14064"
+    ],
+    "created_at": "1970-01-01T00:00:00+00:00",
+    "created_by": "greenlang_factors_etl",
+    "dqs": {
+      "geographical": 2,
+      "methodological": 5,
+      "representativeness": 3,
+      "technological": 3,
+      "temporal": 3
+    },
+    "factor_id": "EF:IPCC:en_stat_anthracite_unknown_gj:GLOBAL:2019:v1",
+    "fuel_type": "anthracite",
+    "geography": "GLOBAL",
+    "geography_level": "global",
+    "gwp_100yr": {
+      "CH4_gwp": 28,
+      "N2O_gwp": 273,
+      "gwp_set": "IPCC_AR6_100"
+    },
+    "license_info": {
+      "attribution_required": true,
+      "commercial_use_allowed": true,
+      "license": "IPCC-Guideline",
+      "redistribution_allowed": true
+    },
+    "notes": null,
+    "provenance": {
+      "methodology": "IPCC_Tier_1",
+      "source_org": "IPCC",
+      "source_publication": "IPCC 2006 Guidelines / 2019 Refinement",
+      "source_url": "https://www.ipcc-nggip.iges.or.jp/public/2019rf/",
+      "source_year": 2019,
+      "version": "2019_refinement"
+    },
+    "scope": "1",
+    "tags": [
+      "ipcc",
+      "tier1",
+      "energy",
+      "stationary",
+      "anthracite",
+      "unknown"
+    ],
+    "uncertainty_95ci": 0.15,
+    "unit": "gj",
+    "updated_at": "1970-01-01T00:00:00+00:00",
+    "valid_from": "2019-01-01",
+    "vectors": {
+      "CH4": 0.001,
+      "CO2": 98.3,
+      "N2O": 0.0015
+    }
+  },
+  {
+    "boundary": "combustion",
+    "compliance_frameworks": [
+      "GHG_Protocol",
+      "IPCC_2006",
+      "ISO_14064"
+    ],
+    "created_at": "1970-01-01T00:00:00+00:00",
+    "created_by": "greenlang_factors_etl",
+    "dqs": {
+      "geographical": 2,
+      "methodological": 5,
+      "representativeness": 3,
+      "technological": 3,
+      "temporal": 3
+    },
+    "factor_id": "EF:IPCC:en_mob_diesel_oil_unknown_gj:GLOBAL:2019:v1",
+    "fuel_type": "diesel_oil",
+    "geography": "GLOBAL",
+    "geography_level": "global",
+    "gwp_100yr": {
+      "CH4_gwp": 28,
+      "N2O_gwp": 273,
+      "gwp_set": "IPCC_AR6_100"
+    },
+    "license_info": {
+      "attribution_required": true,
+      "commercial_use_allowed": true,
+      "license": "IPCC-Guideline",
+      "redistribution_allowed": true
+    },
+    "notes": null,
+    "provenance": {
+      "methodology": "IPCC_Tier_1",
+      "source_org": "IPCC",
+      "source_publication": "IPCC 2006 Guidelines / 2019 Refinement",
+      "source_url": "https://www.ipcc-nggip.iges.or.jp/public/2019rf/",
+      "source_year": 2019,
+      "version": "2019_refinement"
+    },
+    "scope": "1",
+    "tags": [
+      "ipcc",
+      "tier1",
+      "energy",
+      "mobile",
+      "diesel_oil",
+      "unknown"
+    ],
+    "uncertainty_95ci": 0.15,
+    "unit": "gj",
+    "updated_at": "1970-01-01T00:00:00+00:00",
+    "valid_from": "2019-01-01",
+    "vectors": {
+      "CH4": 0.0039,
+      "CO2": 74.1,
+      "N2O": 0.0039
+    }
+  },
+  {
+    "boundary": "cradle_to_gate",
+    "compliance_frameworks": [
+      "GHG_Protocol",
+      "IPCC_2006",
+      "ISO_14064"
+    ],
+    "created_at": "1970-01-01T00:00:00+00:00",
+    "created_by": "greenlang_factors_etl",
+    "dqs": {
+      "geographical": 2,
+      "methodological": 5,
+      "representativeness": 3,
+      "technological": 3,
+      "temporal": 3
+    },
+    "factor_id": "EF:IPCC:ind_cement_clinker_unknown_tonnes:GLOBAL:2019:v1",
+    "fuel_type": "cement_clinker",
+    "geography": "GLOBAL",
+    "geography_level": "global",
+    "gwp_100yr": {
+      "CH4_gwp": 28,
+      "N2O_gwp": 273,
+      "gwp_set": "IPCC_AR6_100"
+    },
+    "license_info": {
+      "attribution_required": true,
+      "commercial_use_allowed": true,
+      "license": "IPCC-Guideline",
+      "redistribution_allowed": true
+    },
+    "notes": null,
+    "provenance": {
+      "methodology": "IPCC_Tier_1",
+      "source_org": "IPCC",
+      "source_publication": "IPCC 2006 Guidelines / 2019 Refinement",
+      "source_url": "https://www.ipcc-nggip.iges.or.jp/public/2019rf/",
+      "source_year": 2019,
+      "version": "2019_refinement"
+    },
+    "scope": "1",
+    "tags": [
+      "ipcc",
+      "tier1",
+      "industrial",
+      "cement_clinker",
+      "unknown"
+    ],
+    "uncertainty_95ci": 0.15,
+    "unit": "tonnes",
+    "updated_at": "1970-01-01T00:00:00+00:00",
+    "valid_from": "2019-01-01",
+    "vectors": {
+      "CH4": 0.0,
+      "CO2": 520.0,
+      "N2O": 0.0
+    }
+  },
+  {
+    "boundary": "combustion",
+    "compliance_frameworks": [
+      "GHG_Protocol",
+      "IPCC_2006",
+      "ISO_14064"
+    ],
+    "created_at": "1970-01-01T00:00:00+00:00",
+    "created_by": "greenlang_factors_etl",
+    "dqs": {
+      "geographical": 2,
+      "methodological": 5,
+      "representativeness": 3,
+      "technological": 3,
+      "temporal": 3
+    },
+    "factor_id": "EF:IPCC:ag_enteric_fermentation_cattle_unknown_kg:GLOBAL:2019:v1",
+    "fuel_type": "enteric_fermentation_cattle",
+    "geography": "GLOBAL",
+    "geography_level": "global",
+    "gwp_100yr": {
+      "CH4_gwp": 28,
+      "N2O_gwp": 273,
+      "gwp_set": "IPCC_AR6_100"
+    },
+    "license_info": {
+      "attribution_required": true,
+      "commercial_use_allowed": true,
+      "license": "IPCC-Guideline",
+      "redistribution_allowed": true
+    },
+    "notes": null,
+    "provenance": {
+      "methodology": "IPCC_Tier_1",
+      "source_org": "IPCC",
+      "source_publication": "IPCC 2006 Guidelines / 2019 Refinement",
+      "source_url": "https://www.ipcc-nggip.iges.or.jp/public/2019rf/",
+      "source_year": 2019,
+      "version": "2019_refinement"
+    },
+    "scope": "1",
+    "tags": [
+      "ipcc",
+      "tier1",
+      "agriculture",
+      "enteric_fermentation_cattle",
+      "unknown"
+    ],
+    "uncertainty_95ci": 0.15,
+    "unit": "kg",
+    "updated_at": "1970-01-01T00:00:00+00:00",
+    "valid_from": "2019-01-01",
+    "vectors": {
+      "CH4": 0.068,
+      "CO2": 0.0,
+      "N2O": 0.0
+    }
+  },
+  {
+    "boundary": "cradle_to_gate",
+    "compliance_frameworks": [
+      "GHG_Protocol",
+      "IPCC_2006",
+      "ISO_14064"
+    ],
+    "created_at": "1970-01-01T00:00:00+00:00",
+    "created_by": "greenlang_factors_etl",
+    "dqs": {
+      "geographical": 2,
+      "methodological": 5,
+      "representativeness": 3,
+      "technological": 3,
+      "temporal": 3
+    },
+    "factor_id": "EF:IPCC:lu_forest_land_to_cropland_unknown_kg:GLOBAL:2019:v1",
+    "fuel_type": "forest_land_to_cropland",
+    "geography": "GLOBAL",
+    "geography_level": "global",
+    "gwp_100yr": {
+      "CH4_gwp": 28,
+      "N2O_gwp": 273,
+      "gwp_set": "IPCC_AR6_100"
+    },
+    "license_info": {
+      "attribution_required": true,
+      "commercial_use_allowed": true,
+      "license": "IPCC-Guideline",
+      "redistribution_allowed": true
+    },
+    "notes": null,
+    "provenance": {
+      "methodology": "IPCC_Tier_1",
+      "source_org": "IPCC",
+      "source_publication": "IPCC 2006 Guidelines / 2019 Refinement",
+      "source_url": "https://www.ipcc-nggip.iges.or.jp/public/2019rf/",
+      "source_year": 2019,
+      "version": "2019_refinement"
+    },
+    "scope": "1",
+    "tags": [
+      "ipcc",
+      "tier1",
+      "lulucf",
+      "land_use",
+      "forest_land_to_cropland",
+      "unknown"
+    ],
+    "uncertainty_95ci": 0.15,
+    "unit": "kg",
+    "updated_at": "1970-01-01T00:00:00+00:00",
+    "valid_from": "2019-01-01",
+    "vectors": {
+      "CH4": 0.0,
+      "CO2": 0.45,
+      "N2O": 0.0
+    }
+  },
+  {
+    "boundary": "cradle_to_gate",
+    "compliance_frameworks": [
+      "GHG_Protocol",
+      "IPCC_2006",
+      "ISO_14064"
+    ],
+    "created_at": "1970-01-01T00:00:00+00:00",
+    "created_by": "greenlang_factors_etl",
+    "dqs": {
+      "geographical": 2,
+      "methodological": 5,
+      "representativeness": 3,
+      "technological": 3,
+      "temporal": 3
+    },
+    "factor_id": "EF:IPCC:waste_solid_waste_disposal_unknown_tonnes:GLOBAL:2019:v1",
+    "fuel_type": "solid_waste_disposal",
+    "geography": "GLOBAL",
+    "geography_level": "global",
+    "gwp_100yr": {
+      "CH4_gwp": 28,
+      "N2O_gwp": 273,
+      "gwp_set": "IPCC_AR6_100"
+    },
+    "license_info": {
+      "attribution_required": true,
+      "commercial_use_allowed": true,
+      "license": "IPCC-Guideline",
+      "redistribution_allowed": true
+    },
+    "notes": null,
+    "provenance": {
+      "methodology": "IPCC_Tier_1",
+      "source_org": "IPCC",
+      "source_publication": "IPCC 2006 Guidelines / 2019 Refinement",
+      "source_url": "https://www.ipcc-nggip.iges.or.jp/public/2019rf/",
+      "source_year": 2019,
+      "version": "2019_refinement"
+    },
+    "scope": "3",
+    "tags": [
+      "ipcc",
+      "tier1",
+      "waste",
+      "solid_waste_disposal",
+      "unknown"
+    ],
+    "uncertainty_95ci": 0.15,
+    "unit": "tonnes",
+    "updated_at": "1970-01-01T00:00:00+00:00",
+    "valid_from": "2019-01-01",
+    "vectors": {
+      "CH4": 58.0,
+      "CO2": 0.0,
+      "N2O": 0.0
+    }
+  }
+]
