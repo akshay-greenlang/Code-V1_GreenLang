@@ -312,15 +312,16 @@ factors-test = [
   # --- HTTP / ASGI test plumbing ------------------------------------------
   "httpx>=0.28.1",
   "anyio>=4.0",
-  "fastapi>=0.109.2",
+  "fastapi==0.124.0",
   "uvicorn[standard]>=0.27.1",
-  "starlette>=0.36",
-  "pydantic>=2.0",
+  "starlette==0.50.0",
+  "pydantic==2.12.5",
   # --- Datastore drivers (real PG via Docker, fakeredis fallback) ---------
   "psycopg[binary,pool]>=3.1",
   "redis>=5.0.1",
   "pgvector>=0.2",
   "fakeredis>=2.20",
+  "alembic>=1.13.1",
   # --- Payloads / serialization -------------------------------------------
   "numpy>=1.26.3",
   "pyyaml>=6.0.1",
@@ -328,6 +329,7 @@ factors-test = [
   "stripe>=7.0",
   "python-jose[cryptography]>=3.4.0",  # offline signed-receipt verification
   "cryptography>=42.0",
+  "prometheus-client>=0.20",
   # --- HTTP mocking for SDK + connector tests -----------------------------
   "respx>=0.20",
   "responses>=0.24.1",
