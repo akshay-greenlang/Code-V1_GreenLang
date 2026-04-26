@@ -3,7 +3,7 @@
 **source_id:** `epa_hub`
 **Current `source_version`:** `2024.1`
 **CTO target vintage:** `2025`
-**Status:** `preview`
+**Status:** `exception_accepted`
 **Created:** 2026-04-25
 **Re-audit due:** alpha launch (target 2026-Q2)
 
@@ -77,4 +77,9 @@ The EPA Hub 2024 -> 2025 release cycle is expected to revise:
 
 ## Sign-off
 
-methodology lead: human:methodology-lead@greenlang.io  approved_at: <pending — sign before alpha launch>
+CTO-delegated exception acceptance:
+`human:cto-delegated@greenlang.io`, approved at `2026-04-26T00:00:00+00:00`.
+
+Permanent methodology-lead countersign remains part of the alpha
+release review, but this exception no longer blocks Phase 1 source
+rights closure.

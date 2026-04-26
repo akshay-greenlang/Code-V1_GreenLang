@@ -1,0 +1,108 @@
+# GreenLang Factors v0.1 Alpha — entitlement records
+#
+# Phase 1 source-level entitlement ledger. v0.1 alpha is public-only:
+# all 6 alpha sources are `community_open`, so no entitlement records
+# are required for the alpha launch. The two named partners
+# (IN-EXPORT-01 and EU-MFG-01) get a SOURCE_ACCESS row each, so that
+# when a v0.5 commercial source enters their tenant view a single
+# DDL change here promotes them to entitled access without code
+# changes.
+#
+# Loaded by `greenlang.factors.rights.entitlements.load_alpha_entitlements`.
+# Schema mirrors `EntitlementRecord` in that module.
+#
+# A real production deployment will move this to a database table
+# (greenlang/factors/rights/entitlements_db.py — v0.5+); this file
+# IS the source of truth for alpha.
+
+entitlements:
+  # IN-EXPORT-01 — India textile exporter (alpha partner)
+  # Allow-listed alpha sources (read access, no expiry within alpha
+  # window). Community-open sources are accessible without any
+  # entitlement; these rows future-proof for the commercial
+  # `iea_emission_factors` source when it ships at v0.5.
+  - tenant_id: IN-EXPORT-01
+    source_urn: urn:gl:source:india-cea-co2-baseline
+    pack_urn: null
+    entitlement_type: source_access
+    status: active
+    valid_from: "2026-04-26T00:00:00Z"
+    valid_until: null
+    approved_by: human:cto-delegated@greenlang.io
+    contract_ref: alpha-msa-2026-04-IN-EXPORT-01
+    notes: "Alpha partner. India CEA Scope 2 location-based access."
+  - tenant_id: IN-EXPORT-01
+    source_urn: urn:gl:source:cbam-default-values
+    pack_urn: null
+    entitlement_type: source_access
+    status: active
+    valid_from: "2026-04-26T00:00:00Z"
+    valid_until: null
+    approved_by: human:cto-delegated@greenlang.io
+    contract_ref: alpha-msa-2026-04-IN-EXPORT-01
+    notes: "CBAM exporter view."
+  - tenant_id: IN-EXPORT-01
+    source_urn: urn:gl:source:desnz-ghg-conversion
+    pack_urn: null
+    entitlement_type: source_access
+    status: active
+    valid_from: "2026-04-26T00:00:00Z"
+    valid_until: null
+    approved_by: human:cto-delegated@greenlang.io
+    contract_ref: alpha-msa-2026-04-IN-EXPORT-01
+
+  # EU-MFG-01 — EU cement manufacturer (alpha partner)
+  - tenant_id: EU-MFG-01
+    source_urn: urn:gl:source:cbam-default-values
+    pack_urn: null
+    entitlement_type: source_access
+    status: active
+    valid_from: "2026-04-26T00:00:00Z"
+    valid_until: null
+    approved_by: human:cto-delegated@greenlang.io
+    contract_ref: alpha-msa-2026-04-EU-MFG-01
+    notes: "CBAM cement clinker default lookup."
+  - tenant_id: EU-MFG-01
+    source_urn: urn:gl:source:desnz-ghg-conversion
+    pack_urn: null
+    entitlement_type: source_access
+    status: active
+    valid_from: "2026-04-26T00:00:00Z"
+    valid_until: null
+    approved_by: human:cto-delegated@greenlang.io
+    contract_ref: alpha-msa-2026-04-EU-MFG-01
+
+  # ----- Test fixtures (live in alpha env so test_source_rights_*.py
+  # can exercise the full lifecycle without requiring a DB).
+  # These tenants are NOT real partners; they are referenced only by
+  # the Phase 1 enforcement tests. -----
+  - tenant_id: TEST-ENTITLED-COMMERCIAL
+    source_urn: urn:gl:source:iea-emission-factors
+    pack_urn: null
+    entitlement_type: source_access
+    status: active
+    valid_from: "2026-01-01T00:00:00Z"
+    valid_until: null
+    approved_by: human:test-fixture@greenlang.io
+    contract_ref: test-fixture-iea-2026
+    notes: "Test fixture — proves the entitled-tenant path returns commercial values."
+  - tenant_id: TEST-EXPIRED-COMMERCIAL
+    source_urn: urn:gl:source:iea-emission-factors
+    pack_urn: null
+    entitlement_type: source_access
+    status: expired
+    valid_from: "2024-01-01T00:00:00Z"
+    valid_until: "2025-01-01T00:00:00Z"
+    approved_by: human:test-fixture@greenlang.io
+    contract_ref: test-fixture-iea-expired
+    notes: "Test fixture — proves expired entitlements deny."
+  - tenant_id: TEST-PRIVATE-OWNER
+    source_urn: urn:gl:source:test-private-source
+    pack_urn: null
+    entitlement_type: private_owner
+    status: active
+    valid_from: "2026-01-01T00:00:00Z"
+    valid_until: null
+    approved_by: human:test-fixture@greenlang.io
+    contract_ref: test-fixture-private-owner
+    notes: "Test fixture — owns a synthetic private source for tenant-isolation tests."

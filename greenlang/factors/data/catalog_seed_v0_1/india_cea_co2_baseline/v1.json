@@ -5,10 +5,10 @@
   "source_version": "20.0",
   "records": [
     {
-      "urn": "urn:gl:factor:india-cea-co2-baseline:IN:all_india:2023-24:cea-v20.0:v1",
+      "urn": "urn:gl:factor:india-cea-co2-baseline:in:all_india:2023-24:cea-v20.0:v1",
       "factor_id_alias": "EF:IN:all_india:2023-24:cea-v20.0",
       "source_urn": "urn:gl:source:india-cea-co2-baseline",
-      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:20.0",
+      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:v1",
       "name": "India grid electricity \u2014 All-India composite grid, 2023-24",
       "description": "Grid Intensity emission factor for India grid electricity \u2014 All-India composite grid, 2023-24, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "scope2_location_based",
@@ -22,7 +22,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "Government of India \u2014 public use with attribution",
+      "licence": "GoI-Public-Use",
       "citations": [
         {
           "type": "url",
@@ -59,10 +59,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:india-cea-co2-baseline:IN:newne:2023-24:cea-v20.0:v1",
+      "urn": "urn:gl:factor:india-cea-co2-baseline:in:newne:2023-24:cea-v20.0:v1",
       "factor_id_alias": "EF:IN:newne:2023-24:cea-v20.0",
       "source_urn": "urn:gl:source:india-cea-co2-baseline",
-      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:20.0",
+      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:v1",
       "name": "India grid electricity \u2014 Northern + Eastern + Western + North-Eastern regional grids, 2023-24",
       "description": "Grid Intensity emission factor for India grid electricity \u2014 Northern + Eastern + Western + North-Eastern regional grids, 2023-24, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "scope2_location_based",
@@ -76,7 +76,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "Government of India \u2014 public use with attribution",
+      "licence": "GoI-Public-Use",
       "citations": [
         {
           "type": "url",
@@ -113,10 +113,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:india-cea-co2-baseline:IN:s:2023-24:cea-v20.0:v1",
+      "urn": "urn:gl:factor:india-cea-co2-baseline:in:s:2023-24:cea-v20.0:v1",
       "factor_id_alias": "EF:IN:s:2023-24:cea-v20.0",
       "source_urn": "urn:gl:source:india-cea-co2-baseline",
-      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:20.0",
+      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:v1",
       "name": "India grid electricity \u2014 Southern regional grid, 2023-24",
       "description": "Grid Intensity emission factor for India grid electricity \u2014 Southern regional grid, 2023-24, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "scope2_location_based",
@@ -130,7 +130,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "Government of India \u2014 public use with attribution",
+      "licence": "GoI-Public-Use",
       "citations": [
         {
           "type": "url",
@@ -167,10 +167,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:india-cea-co2-baseline:IN:ner:2023-24:cea-v20.0:v1",
+      "urn": "urn:gl:factor:india-cea-co2-baseline:in:ner:2023-24:cea-v20.0:v1",
       "factor_id_alias": "EF:IN:ner:2023-24:cea-v20.0",
       "source_urn": "urn:gl:source:india-cea-co2-baseline",
-      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:20.0",
+      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:v1",
       "name": "India grid electricity \u2014 North-Eastern regional grid (standalone), 2023-24",
       "description": "Grid Intensity emission factor for India grid electricity \u2014 North-Eastern regional grid (standalone), 2023-24, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "scope2_location_based",
@@ -184,7 +184,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "Government of India \u2014 public use with attribution",
+      "licence": "GoI-Public-Use",
       "citations": [
         {
           "type": "url",
@@ -221,10 +221,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:india-cea-co2-baseline:IN:n:2023-24:cea-v20.0:v1",
+      "urn": "urn:gl:factor:india-cea-co2-baseline:in:n:2023-24:cea-v20.0:v1",
       "factor_id_alias": "EF:IN:n:2023-24:cea-v20.0",
       "source_urn": "urn:gl:source:india-cea-co2-baseline",
-      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:20.0",
+      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:v1",
       "name": "India grid electricity \u2014 Northern regional grid, 2023-24",
       "description": "Grid Intensity emission factor for India grid electricity \u2014 Northern regional grid, 2023-24, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "scope2_location_based",
@@ -238,7 +238,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "Government of India \u2014 public use with attribution",
+      "licence": "GoI-Public-Use",
       "citations": [
         {
           "type": "url",
@@ -275,10 +275,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:india-cea-co2-baseline:IN:e:2023-24:cea-v20.0:v1",
+      "urn": "urn:gl:factor:india-cea-co2-baseline:in:e:2023-24:cea-v20.0:v1",
       "factor_id_alias": "EF:IN:e:2023-24:cea-v20.0",
       "source_urn": "urn:gl:source:india-cea-co2-baseline",
-      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:20.0",
+      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:v1",
       "name": "India grid electricity \u2014 Eastern regional grid, 2023-24",
       "description": "Grid Intensity emission factor for India grid electricity \u2014 Eastern regional grid, 2023-24, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "scope2_location_based",
@@ -292,7 +292,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "Government of India \u2014 public use with attribution",
+      "licence": "GoI-Public-Use",
       "citations": [
         {
           "type": "url",
@@ -329,10 +329,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:india-cea-co2-baseline:IN:w:2023-24:cea-v20.0:v1",
+      "urn": "urn:gl:factor:india-cea-co2-baseline:in:w:2023-24:cea-v20.0:v1",
       "factor_id_alias": "EF:IN:w:2023-24:cea-v20.0",
       "source_urn": "urn:gl:source:india-cea-co2-baseline",
-      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:20.0",
+      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:v1",
       "name": "India grid electricity \u2014 Western regional grid, 2023-24",
       "description": "Grid Intensity emission factor for India grid electricity \u2014 Western regional grid, 2023-24, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "scope2_location_based",
@@ -346,7 +346,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "Government of India \u2014 public use with attribution",
+      "licence": "GoI-Public-Use",
       "citations": [
         {
           "type": "url",
@@ -383,10 +383,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:india-cea-co2-baseline:IN:all_india:2022-23:cea-v19.0:v1",
+      "urn": "urn:gl:factor:india-cea-co2-baseline:in:all_india:2022-23:cea-v19.0:v1",
       "factor_id_alias": "EF:IN:all_india:2022-23:cea-v19.0",
       "source_urn": "urn:gl:source:india-cea-co2-baseline",
-      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:20.0",
+      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:v1",
       "name": "India grid electricity \u2014 All-India composite grid, 2022-23",
       "description": "Grid Intensity emission factor for India grid electricity \u2014 All-India composite grid, 2022-23, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "scope2_location_based",
@@ -400,7 +400,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "Government of India \u2014 public use with attribution",
+      "licence": "GoI-Public-Use",
       "citations": [
         {
           "type": "url",
@@ -437,10 +437,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:india-cea-co2-baseline:IN:newne:2022-23:cea-v19.0:v1",
+      "urn": "urn:gl:factor:india-cea-co2-baseline:in:newne:2022-23:cea-v19.0:v1",
       "factor_id_alias": "EF:IN:newne:2022-23:cea-v19.0",
       "source_urn": "urn:gl:source:india-cea-co2-baseline",
-      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:20.0",
+      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:v1",
       "name": "India grid electricity \u2014 Northern + Eastern + Western + North-Eastern regional grids, 2022-23",
       "description": "Grid Intensity emission factor for India grid electricity \u2014 Northern + Eastern + Western + North-Eastern regional grids, 2022-23, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "scope2_location_based",
@@ -454,7 +454,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "Government of India \u2014 public use with attribution",
+      "licence": "GoI-Public-Use",
       "citations": [
         {
           "type": "url",
@@ -491,10 +491,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:india-cea-co2-baseline:IN:s:2022-23:cea-v19.0:v1",
+      "urn": "urn:gl:factor:india-cea-co2-baseline:in:s:2022-23:cea-v19.0:v1",
       "factor_id_alias": "EF:IN:s:2022-23:cea-v19.0",
       "source_urn": "urn:gl:source:india-cea-co2-baseline",
-      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:20.0",
+      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:v1",
       "name": "India grid electricity \u2014 Southern regional grid, 2022-23",
       "description": "Grid Intensity emission factor for India grid electricity \u2014 Southern regional grid, 2022-23, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "scope2_location_based",
@@ -508,7 +508,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "Government of India \u2014 public use with attribution",
+      "licence": "GoI-Public-Use",
       "citations": [
         {
           "type": "url",
@@ -545,10 +545,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:india-cea-co2-baseline:IN:ner:2022-23:cea-v19.0:v1",
+      "urn": "urn:gl:factor:india-cea-co2-baseline:in:ner:2022-23:cea-v19.0:v1",
       "factor_id_alias": "EF:IN:ner:2022-23:cea-v19.0",
       "source_urn": "urn:gl:source:india-cea-co2-baseline",
-      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:20.0",
+      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:v1",
       "name": "India grid electricity \u2014 North-Eastern regional grid (standalone), 2022-23",
       "description": "Grid Intensity emission factor for India grid electricity \u2014 North-Eastern regional grid (standalone), 2022-23, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "scope2_location_based",
@@ -562,7 +562,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "Government of India \u2014 public use with attribution",
+      "licence": "GoI-Public-Use",
       "citations": [
         {
           "type": "url",
@@ -599,10 +599,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:india-cea-co2-baseline:IN:all_india:2021-22:cea-v18.0:v1",
+      "urn": "urn:gl:factor:india-cea-co2-baseline:in:all_india:2021-22:cea-v18.0:v1",
       "factor_id_alias": "EF:IN:all_india:2021-22:cea-v18.0",
       "source_urn": "urn:gl:source:india-cea-co2-baseline",
-      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:20.0",
+      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:v1",
       "name": "India grid electricity \u2014 All-India composite grid, 2021-22",
       "description": "Grid Intensity emission factor for India grid electricity \u2014 All-India composite grid, 2021-22, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "scope2_location_based",
@@ -616,7 +616,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "Government of India \u2014 public use with attribution",
+      "licence": "GoI-Public-Use",
       "citations": [
         {
           "type": "url",
@@ -653,10 +653,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:india-cea-co2-baseline:IN:all_india:2020-21:cea-v17.0:v1",
+      "urn": "urn:gl:factor:india-cea-co2-baseline:in:all_india:2020-21:cea-v17.0:v1",
       "factor_id_alias": "EF:IN:all_india:2020-21:cea-v17.0",
       "source_urn": "urn:gl:source:india-cea-co2-baseline",
-      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:20.0",
+      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:v1",
       "name": "India grid electricity \u2014 All-India composite grid, 2020-21",
       "description": "Grid Intensity emission factor for India grid electricity \u2014 All-India composite grid, 2020-21, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "scope2_location_based",
@@ -670,7 +670,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "Government of India \u2014 public use with attribution",
+      "licence": "GoI-Public-Use",
       "citations": [
         {
           "type": "url",
@@ -707,10 +707,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:india-cea-co2-baseline:IN:newne:2024-25:cea-v21.0:v1",
+      "urn": "urn:gl:factor:india-cea-co2-baseline:in:newne:2024-25:cea-v21.0:v1",
       "factor_id_alias": "EF:IN:newne:2024-25:cea-v21.0",
       "source_urn": "urn:gl:source:india-cea-co2-baseline",
-      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:20.0",
+      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:v1",
       "name": "India grid electricity \u2014 Northern + Eastern + Western + North-Eastern regional grids, 2024-25",
       "description": "Grid Intensity emission factor for India grid electricity \u2014 Northern + Eastern + Western + North-Eastern regional grids, 2024-25, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "scope2_location_based",
@@ -724,7 +724,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "Government of India \u2014 public use with attribution",
+      "licence": "GoI-Public-Use",
       "citations": [
         {
           "type": "url",
@@ -761,10 +761,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:india-cea-co2-baseline:IN:s:2024-25:cea-v21.0:v1",
+      "urn": "urn:gl:factor:india-cea-co2-baseline:in:s:2024-25:cea-v21.0:v1",
       "factor_id_alias": "EF:IN:s:2024-25:cea-v21.0",
       "source_urn": "urn:gl:source:india-cea-co2-baseline",
-      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:20.0",
+      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:v1",
       "name": "India grid electricity \u2014 Southern regional grid, 2024-25",
       "description": "Grid Intensity emission factor for India grid electricity \u2014 Southern regional grid, 2024-25, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "scope2_location_based",
@@ -778,7 +778,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "Government of India \u2014 public use with attribution",
+      "licence": "GoI-Public-Use",
       "citations": [
         {
           "type": "url",
@@ -815,10 +815,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:india-cea-co2-baseline:IN:ner:2024-25:cea-v21.0:v1",
+      "urn": "urn:gl:factor:india-cea-co2-baseline:in:ner:2024-25:cea-v21.0:v1",
       "factor_id_alias": "EF:IN:ner:2024-25:cea-v21.0",
       "source_urn": "urn:gl:source:india-cea-co2-baseline",
-      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:20.0",
+      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:v1",
       "name": "India grid electricity \u2014 North-Eastern regional grid (standalone), 2024-25",
       "description": "Grid Intensity emission factor for India grid electricity \u2014 North-Eastern regional grid (standalone), 2024-25, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "scope2_location_based",
@@ -832,7 +832,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "Government of India \u2014 public use with attribution",
+      "licence": "GoI-Public-Use",
       "citations": [
         {
           "type": "url",
@@ -869,10 +869,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:india-cea-co2-baseline:IN:all_india:2024-25:cea-v21.0:v1",
+      "urn": "urn:gl:factor:india-cea-co2-baseline:in:all_india:2024-25:cea-v21.0:v1",
       "factor_id_alias": "EF:IN:all_india:2024-25:cea-v21.0",
       "source_urn": "urn:gl:source:india-cea-co2-baseline",
-      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:20.0",
+      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:v1",
       "name": "India grid electricity \u2014 All-India composite grid, 2024-25",
       "description": "Grid Intensity emission factor for India grid electricity \u2014 All-India composite grid, 2024-25, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "scope2_location_based",
@@ -886,7 +886,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "Government of India \u2014 public use with attribution",
+      "licence": "GoI-Public-Use",
       "citations": [
         {
           "type": "url",
@@ -923,10 +923,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:india-cea-co2-baseline:IN:all_india:2025-26:cea-v22.0:v1",
+      "urn": "urn:gl:factor:india-cea-co2-baseline:in:all_india:2025-26:cea-v22.0:v1",
       "factor_id_alias": "EF:IN:all_india:2025-26:cea-v22.0",
       "source_urn": "urn:gl:source:india-cea-co2-baseline",
-      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:20.0",
+      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:v1",
       "name": "India grid electricity \u2014 All-India composite grid, 2025-26",
       "description": "Grid Intensity emission factor for India grid electricity \u2014 All-India composite grid, 2025-26, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "scope2_location_based",
@@ -940,7 +940,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "Government of India \u2014 public use with attribution",
+      "licence": "GoI-Public-Use",
       "citations": [
         {
           "type": "url",
@@ -977,10 +977,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:india-cea-co2-baseline:IN:newne:2025-26:cea-v22.0:v1",
+      "urn": "urn:gl:factor:india-cea-co2-baseline:in:newne:2025-26:cea-v22.0:v1",
       "factor_id_alias": "EF:IN:newne:2025-26:cea-v22.0",
       "source_urn": "urn:gl:source:india-cea-co2-baseline",
-      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:20.0",
+      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:v1",
       "name": "India grid electricity \u2014 Northern + Eastern + Western + North-Eastern regional grids, 2025-26",
       "description": "Grid Intensity emission factor for India grid electricity \u2014 Northern + Eastern + Western + North-Eastern regional grids, 2025-26, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "scope2_location_based",
@@ -994,7 +994,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "Government of India \u2014 public use with attribution",
+      "licence": "GoI-Public-Use",
       "citations": [
         {
           "type": "url",
@@ -1031,10 +1031,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:india-cea-co2-baseline:IN:s:2025-26:cea-v22.0:v1",
+      "urn": "urn:gl:factor:india-cea-co2-baseline:in:s:2025-26:cea-v22.0:v1",
       "factor_id_alias": "EF:IN:s:2025-26:cea-v22.0",
       "source_urn": "urn:gl:source:india-cea-co2-baseline",
-      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:20.0",
+      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:v1",
       "name": "India grid electricity \u2014 Southern regional grid, 2025-26",
       "description": "Grid Intensity emission factor for India grid electricity \u2014 Southern regional grid, 2025-26, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "scope2_location_based",
@@ -1048,7 +1048,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "Government of India \u2014 public use with attribution",
+      "licence": "GoI-Public-Use",
       "citations": [
         {
           "type": "url",
@@ -1085,10 +1085,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:india-cea-co2-baseline:IN:all_india:2026-27:cea-v23.0:v1",
+      "urn": "urn:gl:factor:india-cea-co2-baseline:in:all_india:2026-27:cea-v23.0:v1",
       "factor_id_alias": "EF:IN:all_india:2026-27:cea-v23.0",
       "source_urn": "urn:gl:source:india-cea-co2-baseline",
-      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:20.0",
+      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:v1",
       "name": "India grid electricity \u2014 All-India composite grid, 2026-27",
       "description": "Grid Intensity emission factor for India grid electricity \u2014 All-India composite grid, 2026-27, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "scope2_location_based",
@@ -1102,7 +1102,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "Government of India \u2014 public use with attribution",
+      "licence": "GoI-Public-Use",
       "citations": [
         {
           "type": "url",
@@ -1139,10 +1139,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:india-cea-co2-baseline:IN:newne:2026-27:cea-v23.0:v1",
+      "urn": "urn:gl:factor:india-cea-co2-baseline:in:newne:2026-27:cea-v23.0:v1",
       "factor_id_alias": "EF:IN:newne:2026-27:cea-v23.0",
       "source_urn": "urn:gl:source:india-cea-co2-baseline",
-      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:20.0",
+      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:v1",
       "name": "India grid electricity \u2014 Northern + Eastern + Western + North-Eastern regional grids, 2026-27",
       "description": "Grid Intensity emission factor for India grid electricity \u2014 Northern + Eastern + Western + North-Eastern regional grids, 2026-27, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "scope2_location_based",
@@ -1156,7 +1156,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "Government of India \u2014 public use with attribution",
+      "licence": "GoI-Public-Use",
       "citations": [
         {
           "type": "url",
@@ -1193,10 +1193,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:india-cea-co2-baseline:IN:s:2026-27:cea-v23.0:v1",
+      "urn": "urn:gl:factor:india-cea-co2-baseline:in:s:2026-27:cea-v23.0:v1",
       "factor_id_alias": "EF:IN:s:2026-27:cea-v23.0",
       "source_urn": "urn:gl:source:india-cea-co2-baseline",
-      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:20.0",
+      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:v1",
       "name": "India grid electricity \u2014 Southern regional grid, 2026-27",
       "description": "Grid Intensity emission factor for India grid electricity \u2014 Southern regional grid, 2026-27, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "scope2_location_based",
@@ -1210,7 +1210,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "Government of India \u2014 public use with attribution",
+      "licence": "GoI-Public-Use",
       "citations": [
         {
           "type": "url",
@@ -1247,10 +1247,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:india-cea-co2-baseline:IN:ner:2026-27:cea-v23.0:v1",
+      "urn": "urn:gl:factor:india-cea-co2-baseline:in:ner:2026-27:cea-v23.0:v1",
       "factor_id_alias": "EF:IN:ner:2026-27:cea-v23.0",
       "source_urn": "urn:gl:source:india-cea-co2-baseline",
-      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:20.0",
+      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:v1",
       "name": "India grid electricity \u2014 North-Eastern regional grid (standalone), 2026-27",
       "description": "Grid Intensity emission factor for India grid electricity \u2014 North-Eastern regional grid (standalone), 2026-27, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "scope2_location_based",
@@ -1264,7 +1264,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "Government of India \u2014 public use with attribution",
+      "licence": "GoI-Public-Use",
       "citations": [
         {
           "type": "url",
@@ -1301,10 +1301,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:india-cea-co2-baseline:IN:n:2026-27:cea-v23.0:v1",
+      "urn": "urn:gl:factor:india-cea-co2-baseline:in:n:2026-27:cea-v23.0:v1",
       "factor_id_alias": "EF:IN:n:2026-27:cea-v23.0",
       "source_urn": "urn:gl:source:india-cea-co2-baseline",
-      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:20.0",
+      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:v1",
       "name": "India grid electricity \u2014 Northern regional grid, 2026-27",
       "description": "Grid Intensity emission factor for India grid electricity \u2014 Northern regional grid, 2026-27, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "scope2_location_based",
@@ -1318,7 +1318,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "Government of India \u2014 public use with attribution",
+      "licence": "GoI-Public-Use",
       "citations": [
         {
           "type": "url",
@@ -1355,10 +1355,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:india-cea-co2-baseline:IN:e:2026-27:cea-v23.0:v1",
+      "urn": "urn:gl:factor:india-cea-co2-baseline:in:e:2026-27:cea-v23.0:v1",
       "factor_id_alias": "EF:IN:e:2026-27:cea-v23.0",
       "source_urn": "urn:gl:source:india-cea-co2-baseline",
-      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:20.0",
+      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:v1",
       "name": "India grid electricity \u2014 Eastern regional grid, 2026-27",
       "description": "Grid Intensity emission factor for India grid electricity \u2014 Eastern regional grid, 2026-27, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "scope2_location_based",
@@ -1372,7 +1372,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "Government of India \u2014 public use with attribution",
+      "licence": "GoI-Public-Use",
       "citations": [
         {
           "type": "url",
@@ -1409,10 +1409,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:india-cea-co2-baseline:IN:w:2026-27:cea-v23.0:v1",
+      "urn": "urn:gl:factor:india-cea-co2-baseline:in:w:2026-27:cea-v23.0:v1",
       "factor_id_alias": "EF:IN:w:2026-27:cea-v23.0",
       "source_urn": "urn:gl:source:india-cea-co2-baseline",
-      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:20.0",
+      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:v1",
       "name": "India grid electricity \u2014 Western regional grid, 2026-27",
       "description": "Grid Intensity emission factor for India grid electricity \u2014 Western regional grid, 2026-27, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "scope2_location_based",
@@ -1426,7 +1426,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "Government of India \u2014 public use with attribution",
+      "licence": "GoI-Public-Use",
       "citations": [
         {
           "type": "url",
@@ -1463,10 +1463,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:india-cea-co2-baseline:IN:all_india:2019-20:cea-v16.0:v1",
+      "urn": "urn:gl:factor:india-cea-co2-baseline:in:all_india:2019-20:cea-v16.0:v1",
       "factor_id_alias": "EF:IN:all_india:2019-20:cea-v16.0",
       "source_urn": "urn:gl:source:india-cea-co2-baseline",
-      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:20.0",
+      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:v1",
       "name": "India grid electricity \u2014 All-India composite grid, 2019-20",
       "description": "Grid Intensity emission factor for India grid electricity \u2014 All-India composite grid, 2019-20, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "scope2_location_based",
@@ -1480,7 +1480,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "Government of India \u2014 public use with attribution",
+      "licence": "GoI-Public-Use",
       "citations": [
         {
           "type": "url",
@@ -1517,10 +1517,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:india-cea-co2-baseline:IN:newne:2019-20:cea-v16.0:v1",
+      "urn": "urn:gl:factor:india-cea-co2-baseline:in:newne:2019-20:cea-v16.0:v1",
       "factor_id_alias": "EF:IN:newne:2019-20:cea-v16.0",
       "source_urn": "urn:gl:source:india-cea-co2-baseline",
-      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:20.0",
+      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:v1",
       "name": "India grid electricity \u2014 Northern + Eastern + Western + North-Eastern regional grids, 2019-20",
       "description": "Grid Intensity emission factor for India grid electricity \u2014 Northern + Eastern + Western + North-Eastern regional grids, 2019-20, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "scope2_location_based",
@@ -1534,7 +1534,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "Government of India \u2014 public use with attribution",
+      "licence": "GoI-Public-Use",
       "citations": [
         {
           "type": "url",
@@ -1571,10 +1571,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:india-cea-co2-baseline:IN:s:2019-20:cea-v16.0:v1",
+      "urn": "urn:gl:factor:india-cea-co2-baseline:in:s:2019-20:cea-v16.0:v1",
       "factor_id_alias": "EF:IN:s:2019-20:cea-v16.0",
       "source_urn": "urn:gl:source:india-cea-co2-baseline",
-      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:20.0",
+      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:v1",
       "name": "India grid electricity \u2014 Southern regional grid, 2019-20",
       "description": "Grid Intensity emission factor for India grid electricity \u2014 Southern regional grid, 2019-20, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "scope2_location_based",
@@ -1588,7 +1588,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "Government of India \u2014 public use with attribution",
+      "licence": "GoI-Public-Use",
       "citations": [
         {
           "type": "url",
@@ -1625,10 +1625,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:india-cea-co2-baseline:IN:ner:2019-20:cea-v16.0:v1",
+      "urn": "urn:gl:factor:india-cea-co2-baseline:in:ner:2019-20:cea-v16.0:v1",
       "factor_id_alias": "EF:IN:ner:2019-20:cea-v16.0",
       "source_urn": "urn:gl:source:india-cea-co2-baseline",
-      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:20.0",
+      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:v1",
       "name": "India grid electricity \u2014 North-Eastern regional grid (standalone), 2019-20",
       "description": "Grid Intensity emission factor for India grid electricity \u2014 North-Eastern regional grid (standalone), 2019-20, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "scope2_location_based",
@@ -1642,7 +1642,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "Government of India \u2014 public use with attribution",
+      "licence": "GoI-Public-Use",
       "citations": [
         {
           "type": "url",
@@ -1679,10 +1679,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:india-cea-co2-baseline:IN:all_india:2018-19:cea-v15.0:v1",
+      "urn": "urn:gl:factor:india-cea-co2-baseline:in:all_india:2018-19:cea-v15.0:v1",
       "factor_id_alias": "EF:IN:all_india:2018-19:cea-v15.0",
       "source_urn": "urn:gl:source:india-cea-co2-baseline",
-      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:20.0",
+      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:v1",
       "name": "India grid electricity \u2014 All-India composite grid, 2018-19",
       "description": "Grid Intensity emission factor for India grid electricity \u2014 All-India composite grid, 2018-19, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "scope2_location_based",
@@ -1696,7 +1696,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "Government of India \u2014 public use with attribution",
+      "licence": "GoI-Public-Use",
       "citations": [
         {
           "type": "url",
@@ -1733,10 +1733,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:india-cea-co2-baseline:IN:newne:2018-19:cea-v15.0:v1",
+      "urn": "urn:gl:factor:india-cea-co2-baseline:in:newne:2018-19:cea-v15.0:v1",
       "factor_id_alias": "EF:IN:newne:2018-19:cea-v15.0",
       "source_urn": "urn:gl:source:india-cea-co2-baseline",
-      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:20.0",
+      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:v1",
       "name": "India grid electricity \u2014 Northern + Eastern + Western + North-Eastern regional grids, 2018-19",
       "description": "Grid Intensity emission factor for India grid electricity \u2014 Northern + Eastern + Western + North-Eastern regional grids, 2018-19, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "scope2_location_based",
@@ -1750,7 +1750,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "Government of India \u2014 public use with attribution",
+      "licence": "GoI-Public-Use",
       "citations": [
         {
           "type": "url",
@@ -1787,10 +1787,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:india-cea-co2-baseline:IN:s:2018-19:cea-v15.0:v1",
+      "urn": "urn:gl:factor:india-cea-co2-baseline:in:s:2018-19:cea-v15.0:v1",
       "factor_id_alias": "EF:IN:s:2018-19:cea-v15.0",
       "source_urn": "urn:gl:source:india-cea-co2-baseline",
-      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:20.0",
+      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:v1",
       "name": "India grid electricity \u2014 Southern regional grid, 2018-19",
       "description": "Grid Intensity emission factor for India grid electricity \u2014 Southern regional grid, 2018-19, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "scope2_location_based",
@@ -1804,7 +1804,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "Government of India \u2014 public use with attribution",
+      "licence": "GoI-Public-Use",
       "citations": [
         {
           "type": "url",
@@ -1841,10 +1841,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:india-cea-co2-baseline:IN:all_india:2017-18:cea-v14.0:v1",
+      "urn": "urn:gl:factor:india-cea-co2-baseline:in:all_india:2017-18:cea-v14.0:v1",
       "factor_id_alias": "EF:IN:all_india:2017-18:cea-v14.0",
       "source_urn": "urn:gl:source:india-cea-co2-baseline",
-      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:20.0",
+      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:v1",
       "name": "India grid electricity \u2014 All-India composite grid, 2017-18",
       "description": "Grid Intensity emission factor for India grid electricity \u2014 All-India composite grid, 2017-18, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "scope2_location_based",
@@ -1858,7 +1858,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "Government of India \u2014 public use with attribution",
+      "licence": "GoI-Public-Use",
       "citations": [
         {
           "type": "url",
@@ -1895,10 +1895,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:india-cea-co2-baseline:IN:newne:2024-25:cea-v21.0:v1",
+      "urn": "urn:gl:factor:india-cea-co2-baseline:in:newne:2024-25:cea-v21.0:v1",
       "factor_id_alias": "EF:IN:newne:2024-25:cea-v21.0",
       "source_urn": "urn:gl:source:india-cea-co2-baseline",
-      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:20.0",
+      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:v1",
       "name": "India grid electricity \u2014 Northern + Eastern + Western + North-Eastern regional grids, 2024-25",
       "description": "Grid Intensity emission factor for India grid electricity \u2014 Northern + Eastern + Western + North-Eastern regional grids, 2024-25, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "scope2_location_based",
@@ -1912,7 +1912,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "Government of India \u2014 public use with attribution",
+      "licence": "GoI-Public-Use",
       "citations": [
         {
           "type": "url",
@@ -1949,10 +1949,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:india-cea-co2-baseline:IN:s:2024-25:cea-v21.0:v1",
+      "urn": "urn:gl:factor:india-cea-co2-baseline:in:s:2024-25:cea-v21.0:v1",
       "factor_id_alias": "EF:IN:s:2024-25:cea-v21.0",
       "source_urn": "urn:gl:source:india-cea-co2-baseline",
-      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:20.0",
+      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:v1",
       "name": "India grid electricity \u2014 Southern regional grid, 2024-25",
       "description": "Grid Intensity emission factor for India grid electricity \u2014 Southern regional grid, 2024-25, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "scope2_location_based",
@@ -1966,7 +1966,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "Government of India \u2014 public use with attribution",
+      "licence": "GoI-Public-Use",
       "citations": [
         {
           "type": "url",
@@ -2003,10 +2003,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:india-cea-co2-baseline:IN:all_india:2024-25:cea-v21.0:v1",
+      "urn": "urn:gl:factor:india-cea-co2-baseline:in:all_india:2024-25:cea-v21.0:v1",
       "factor_id_alias": "EF:IN:all_india:2024-25:cea-v21.0",
       "source_urn": "urn:gl:source:india-cea-co2-baseline",
-      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:20.0",
+      "factor_pack_urn": "urn:gl:pack:india-cea-co2-baseline:national-grid:v1",
       "name": "India grid electricity \u2014 All-India composite grid, 2024-25",
       "description": "Grid Intensity emission factor for India grid electricity \u2014 All-India composite grid, 2024-25, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "scope2_location_based",
@@ -2020,7 +2020,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "Government of India \u2014 public use with attribution",
+      "licence": "GoI-Public-Use",
       "citations": [
         {
           "type": "url",
@@ -2058,3 +2058,4 @@
     }
   ]
 }
+

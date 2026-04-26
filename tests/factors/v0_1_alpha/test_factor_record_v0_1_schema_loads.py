@@ -41,7 +41,7 @@ def good_factor() -> dict:
         "urn": "urn:gl:factor:ipcc-ar6:stationary-combustion:natural-gas-residential:v1",
         "factor_id_alias": "EF:IPCC:stationary-combustion:natural-gas-residential:v1",
         "source_urn": "urn:gl:source:ipcc-ar6",
-        "factor_pack_urn": "urn:gl:pack:ipcc-ar6:tier-1-defaults:2021.0",
+        "factor_pack_urn": "urn:gl:pack:ipcc-ar6:tier-1-defaults:v1",
         "name": "Stationary combustion of natural gas (residential), CO2e",
         "description": (
             "Default Tier 1 emission factor for residential stationary combustion of "

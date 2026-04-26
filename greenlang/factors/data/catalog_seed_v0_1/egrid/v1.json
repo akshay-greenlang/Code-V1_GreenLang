@@ -5,10 +5,10 @@
   "source_version": "2022.1",
   "records": [
     {
-      "urn": "urn:gl:factor:egrid:eGRID:sub_AKGD:AKGD:2022:v1",
+      "urn": "urn:gl:factor:egrid:egrid:sub_akgd:akgd:2022:v1",
       "factor_id_alias": "EF:eGRID:sub_AKGD:AKGD:2022:v1",
       "source_urn": "urn:gl:source:egrid",
-      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:v1",
       "name": "electricity grid \u2014 AKGD",
       "description": "Emission emission factor for electricity grid \u2014 AKGD, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "grid_intensity",
@@ -22,7 +22,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "US-Public-Domain",
+      "licence": "public-domain-us-gov",
       "citations": [
         {
           "type": "url",
@@ -59,10 +59,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:egrid:eGRID:sub_AKMS:AKMS:2022:v1",
+      "urn": "urn:gl:factor:egrid:egrid:sub_akms:akms:2022:v1",
       "factor_id_alias": "EF:eGRID:sub_AKMS:AKMS:2022:v1",
       "source_urn": "urn:gl:source:egrid",
-      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:v1",
       "name": "electricity grid \u2014 AKMS",
       "description": "Emission emission factor for electricity grid \u2014 AKMS, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "grid_intensity",
@@ -76,7 +76,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "US-Public-Domain",
+      "licence": "public-domain-us-gov",
       "citations": [
         {
           "type": "url",
@@ -113,10 +113,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:egrid:eGRID:sub_AZNM:AZNM:2022:v1",
+      "urn": "urn:gl:factor:egrid:egrid:sub_aznm:aznm:2022:v1",
       "factor_id_alias": "EF:eGRID:sub_AZNM:AZNM:2022:v1",
       "source_urn": "urn:gl:source:egrid",
-      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:v1",
       "name": "electricity grid \u2014 AZNM",
       "description": "Emission emission factor for electricity grid \u2014 AZNM, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "grid_intensity",
@@ -130,7 +130,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "US-Public-Domain",
+      "licence": "public-domain-us-gov",
       "citations": [
         {
           "type": "url",
@@ -167,10 +167,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:egrid:eGRID:sub_CAMX:CAMX:2022:v1",
+      "urn": "urn:gl:factor:egrid:egrid:sub_camx:camx:2022:v1",
       "factor_id_alias": "EF:eGRID:sub_CAMX:CAMX:2022:v1",
       "source_urn": "urn:gl:source:egrid",
-      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:v1",
       "name": "electricity grid \u2014 CAMX",
       "description": "Emission emission factor for electricity grid \u2014 CAMX, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "grid_intensity",
@@ -184,7 +184,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "US-Public-Domain",
+      "licence": "public-domain-us-gov",
       "citations": [
         {
           "type": "url",
@@ -221,10 +221,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:egrid:eGRID:sub_ERCT:ERCT:2022:v1",
+      "urn": "urn:gl:factor:egrid:egrid:sub_erct:erct:2022:v1",
       "factor_id_alias": "EF:eGRID:sub_ERCT:ERCT:2022:v1",
       "source_urn": "urn:gl:source:egrid",
-      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:v1",
       "name": "electricity grid \u2014 ERCT",
       "description": "Emission emission factor for electricity grid \u2014 ERCT, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "grid_intensity",
@@ -238,7 +238,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "US-Public-Domain",
+      "licence": "public-domain-us-gov",
       "citations": [
         {
           "type": "url",
@@ -275,10 +275,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:egrid:eGRID:sub_FRCC:FRCC:2022:v1",
+      "urn": "urn:gl:factor:egrid:egrid:sub_frcc:frcc:2022:v1",
       "factor_id_alias": "EF:eGRID:sub_FRCC:FRCC:2022:v1",
       "source_urn": "urn:gl:source:egrid",
-      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:v1",
       "name": "electricity grid \u2014 FRCC",
       "description": "Emission emission factor for electricity grid \u2014 FRCC, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "grid_intensity",
@@ -292,7 +292,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "US-Public-Domain",
+      "licence": "public-domain-us-gov",
       "citations": [
         {
           "type": "url",
@@ -329,10 +329,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:egrid:eGRID:sub_HIMS:HIMS:2022:v1",
+      "urn": "urn:gl:factor:egrid:egrid:sub_hims:hims:2022:v1",
       "factor_id_alias": "EF:eGRID:sub_HIMS:HIMS:2022:v1",
       "source_urn": "urn:gl:source:egrid",
-      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:v1",
       "name": "electricity grid \u2014 HIMS",
       "description": "Emission emission factor for electricity grid \u2014 HIMS, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "grid_intensity",
@@ -346,7 +346,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "US-Public-Domain",
+      "licence": "public-domain-us-gov",
       "citations": [
         {
           "type": "url",
@@ -383,10 +383,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:egrid:eGRID:sub_HIOA:HIOA:2022:v1",
+      "urn": "urn:gl:factor:egrid:egrid:sub_hioa:hioa:2022:v1",
       "factor_id_alias": "EF:eGRID:sub_HIOA:HIOA:2022:v1",
       "source_urn": "urn:gl:source:egrid",
-      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:v1",
       "name": "electricity grid \u2014 HIOA",
       "description": "Emission emission factor for electricity grid \u2014 HIOA, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "grid_intensity",
@@ -400,7 +400,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "US-Public-Domain",
+      "licence": "public-domain-us-gov",
       "citations": [
         {
           "type": "url",
@@ -437,10 +437,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:egrid:eGRID:sub_MROE:MROE:2022:v1",
+      "urn": "urn:gl:factor:egrid:egrid:sub_mroe:mroe:2022:v1",
       "factor_id_alias": "EF:eGRID:sub_MROE:MROE:2022:v1",
       "source_urn": "urn:gl:source:egrid",
-      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:v1",
       "name": "electricity grid \u2014 MROE",
       "description": "Emission emission factor for electricity grid \u2014 MROE, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "grid_intensity",
@@ -454,7 +454,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "US-Public-Domain",
+      "licence": "public-domain-us-gov",
       "citations": [
         {
           "type": "url",
@@ -491,10 +491,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:egrid:eGRID:sub_MROW:MROW:2022:v1",
+      "urn": "urn:gl:factor:egrid:egrid:sub_mrow:mrow:2022:v1",
       "factor_id_alias": "EF:eGRID:sub_MROW:MROW:2022:v1",
       "source_urn": "urn:gl:source:egrid",
-      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:v1",
       "name": "electricity grid \u2014 MROW",
       "description": "Emission emission factor for electricity grid \u2014 MROW, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "grid_intensity",
@@ -508,7 +508,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "US-Public-Domain",
+      "licence": "public-domain-us-gov",
       "citations": [
         {
           "type": "url",
@@ -545,10 +545,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:egrid:eGRID:sub_NEWE:NEWE:2022:v1",
+      "urn": "urn:gl:factor:egrid:egrid:sub_newe:newe:2022:v1",
       "factor_id_alias": "EF:eGRID:sub_NEWE:NEWE:2022:v1",
       "source_urn": "urn:gl:source:egrid",
-      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:v1",
       "name": "electricity grid \u2014 NEWE",
       "description": "Emission emission factor for electricity grid \u2014 NEWE, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "grid_intensity",
@@ -562,7 +562,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "US-Public-Domain",
+      "licence": "public-domain-us-gov",
       "citations": [
         {
           "type": "url",
@@ -599,10 +599,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:egrid:eGRID:sub_NWPP:NWPP:2022:v1",
+      "urn": "urn:gl:factor:egrid:egrid:sub_nwpp:nwpp:2022:v1",
       "factor_id_alias": "EF:eGRID:sub_NWPP:NWPP:2022:v1",
       "source_urn": "urn:gl:source:egrid",
-      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:v1",
       "name": "electricity grid \u2014 NWPP",
       "description": "Emission emission factor for electricity grid \u2014 NWPP, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "grid_intensity",
@@ -616,7 +616,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "US-Public-Domain",
+      "licence": "public-domain-us-gov",
       "citations": [
         {
           "type": "url",
@@ -653,10 +653,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:egrid:eGRID:sub_NYCW:NYCW:2022:v1",
+      "urn": "urn:gl:factor:egrid:egrid:sub_nycw:nycw:2022:v1",
       "factor_id_alias": "EF:eGRID:sub_NYCW:NYCW:2022:v1",
       "source_urn": "urn:gl:source:egrid",
-      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:v1",
       "name": "electricity grid \u2014 NYCW",
       "description": "Emission emission factor for electricity grid \u2014 NYCW, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "grid_intensity",
@@ -670,7 +670,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "US-Public-Domain",
+      "licence": "public-domain-us-gov",
       "citations": [
         {
           "type": "url",
@@ -707,10 +707,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:egrid:eGRID:sub_NYLI:NYLI:2022:v1",
+      "urn": "urn:gl:factor:egrid:egrid:sub_nyli:nyli:2022:v1",
       "factor_id_alias": "EF:eGRID:sub_NYLI:NYLI:2022:v1",
       "source_urn": "urn:gl:source:egrid",
-      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:v1",
       "name": "electricity grid \u2014 NYLI",
       "description": "Emission emission factor for electricity grid \u2014 NYLI, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "grid_intensity",
@@ -724,7 +724,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "US-Public-Domain",
+      "licence": "public-domain-us-gov",
       "citations": [
         {
           "type": "url",
@@ -761,10 +761,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:egrid:eGRID:sub_NYUP:NYUP:2022:v1",
+      "urn": "urn:gl:factor:egrid:egrid:sub_nyup:nyup:2022:v1",
       "factor_id_alias": "EF:eGRID:sub_NYUP:NYUP:2022:v1",
       "source_urn": "urn:gl:source:egrid",
-      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:v1",
       "name": "electricity grid \u2014 NYUP",
       "description": "Emission emission factor for electricity grid \u2014 NYUP, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "grid_intensity",
@@ -778,7 +778,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "US-Public-Domain",
+      "licence": "public-domain-us-gov",
       "citations": [
         {
           "type": "url",
@@ -815,10 +815,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:egrid:eGRID:sub_PRMS:PRMS:2022:v1",
+      "urn": "urn:gl:factor:egrid:egrid:sub_prms:prms:2022:v1",
       "factor_id_alias": "EF:eGRID:sub_PRMS:PRMS:2022:v1",
       "source_urn": "urn:gl:source:egrid",
-      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:v1",
       "name": "electricity grid \u2014 PRMS",
       "description": "Emission emission factor for electricity grid \u2014 PRMS, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "grid_intensity",
@@ -832,7 +832,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "US-Public-Domain",
+      "licence": "public-domain-us-gov",
       "citations": [
         {
           "type": "url",
@@ -869,10 +869,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:egrid:eGRID:sub_RFCE:RFCE:2022:v1",
+      "urn": "urn:gl:factor:egrid:egrid:sub_rfce:rfce:2022:v1",
       "factor_id_alias": "EF:eGRID:sub_RFCE:RFCE:2022:v1",
       "source_urn": "urn:gl:source:egrid",
-      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:v1",
       "name": "electricity grid \u2014 RFCE",
       "description": "Emission emission factor for electricity grid \u2014 RFCE, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "grid_intensity",
@@ -886,7 +886,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "US-Public-Domain",
+      "licence": "public-domain-us-gov",
       "citations": [
         {
           "type": "url",
@@ -923,10 +923,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:egrid:eGRID:sub_RFCM:RFCM:2022:v1",
+      "urn": "urn:gl:factor:egrid:egrid:sub_rfcm:rfcm:2022:v1",
       "factor_id_alias": "EF:eGRID:sub_RFCM:RFCM:2022:v1",
       "source_urn": "urn:gl:source:egrid",
-      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:v1",
       "name": "electricity grid \u2014 RFCM",
       "description": "Emission emission factor for electricity grid \u2014 RFCM, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "grid_intensity",
@@ -940,7 +940,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "US-Public-Domain",
+      "licence": "public-domain-us-gov",
       "citations": [
         {
           "type": "url",
@@ -977,10 +977,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:egrid:eGRID:sub_RFCW:RFCW:2022:v1",
+      "urn": "urn:gl:factor:egrid:egrid:sub_rfcw:rfcw:2022:v1",
       "factor_id_alias": "EF:eGRID:sub_RFCW:RFCW:2022:v1",
       "source_urn": "urn:gl:source:egrid",
-      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:v1",
       "name": "electricity grid \u2014 RFCW",
       "description": "Emission emission factor for electricity grid \u2014 RFCW, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "grid_intensity",
@@ -994,7 +994,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "US-Public-Domain",
+      "licence": "public-domain-us-gov",
       "citations": [
         {
           "type": "url",
@@ -1031,10 +1031,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:egrid:eGRID:sub_RMPA:RMPA:2022:v1",
+      "urn": "urn:gl:factor:egrid:egrid:sub_rmpa:rmpa:2022:v1",
       "factor_id_alias": "EF:eGRID:sub_RMPA:RMPA:2022:v1",
       "source_urn": "urn:gl:source:egrid",
-      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:v1",
       "name": "electricity grid \u2014 RMPA",
       "description": "Emission emission factor for electricity grid \u2014 RMPA, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "grid_intensity",
@@ -1048,7 +1048,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "US-Public-Domain",
+      "licence": "public-domain-us-gov",
       "citations": [
         {
           "type": "url",
@@ -1085,10 +1085,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:egrid:eGRID:sub_SPNO:SPNO:2022:v1",
+      "urn": "urn:gl:factor:egrid:egrid:sub_spno:spno:2022:v1",
       "factor_id_alias": "EF:eGRID:sub_SPNO:SPNO:2022:v1",
       "source_urn": "urn:gl:source:egrid",
-      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:v1",
       "name": "electricity grid \u2014 SPNO",
       "description": "Emission emission factor for electricity grid \u2014 SPNO, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "grid_intensity",
@@ -1102,7 +1102,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "US-Public-Domain",
+      "licence": "public-domain-us-gov",
       "citations": [
         {
           "type": "url",
@@ -1139,10 +1139,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:egrid:eGRID:sub_SPSO:SPSO:2022:v1",
+      "urn": "urn:gl:factor:egrid:egrid:sub_spso:spso:2022:v1",
       "factor_id_alias": "EF:eGRID:sub_SPSO:SPSO:2022:v1",
       "source_urn": "urn:gl:source:egrid",
-      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:v1",
       "name": "electricity grid \u2014 SPSO",
       "description": "Emission emission factor for electricity grid \u2014 SPSO, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "grid_intensity",
@@ -1156,7 +1156,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "US-Public-Domain",
+      "licence": "public-domain-us-gov",
       "citations": [
         {
           "type": "url",
@@ -1193,10 +1193,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:egrid:eGRID:sub_SRMV:SRMV:2022:v1",
+      "urn": "urn:gl:factor:egrid:egrid:sub_srmv:srmv:2022:v1",
       "factor_id_alias": "EF:eGRID:sub_SRMV:SRMV:2022:v1",
       "source_urn": "urn:gl:source:egrid",
-      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:v1",
       "name": "electricity grid \u2014 SRMV",
       "description": "Emission emission factor for electricity grid \u2014 SRMV, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "grid_intensity",
@@ -1210,7 +1210,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "US-Public-Domain",
+      "licence": "public-domain-us-gov",
       "citations": [
         {
           "type": "url",
@@ -1247,10 +1247,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:egrid:eGRID:sub_SRMW:SRMW:2022:v1",
+      "urn": "urn:gl:factor:egrid:egrid:sub_srmw:srmw:2022:v1",
       "factor_id_alias": "EF:eGRID:sub_SRMW:SRMW:2022:v1",
       "source_urn": "urn:gl:source:egrid",
-      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:v1",
       "name": "electricity grid \u2014 SRMW",
       "description": "Emission emission factor for electricity grid \u2014 SRMW, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "grid_intensity",
@@ -1264,7 +1264,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "US-Public-Domain",
+      "licence": "public-domain-us-gov",
       "citations": [
         {
           "type": "url",
@@ -1301,10 +1301,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:egrid:eGRID:sub_SRSO:SRSO:2022:v1",
+      "urn": "urn:gl:factor:egrid:egrid:sub_srso:srso:2022:v1",
       "factor_id_alias": "EF:eGRID:sub_SRSO:SRSO:2022:v1",
       "source_urn": "urn:gl:source:egrid",
-      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:v1",
       "name": "electricity grid \u2014 SRSO",
       "description": "Emission emission factor for electricity grid \u2014 SRSO, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "grid_intensity",
@@ -1318,7 +1318,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "US-Public-Domain",
+      "licence": "public-domain-us-gov",
       "citations": [
         {
           "type": "url",
@@ -1355,10 +1355,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:egrid:eGRID:sub_SRTV:SRTV:2022:v1",
+      "urn": "urn:gl:factor:egrid:egrid:sub_srtv:srtv:2022:v1",
       "factor_id_alias": "EF:eGRID:sub_SRTV:SRTV:2022:v1",
       "source_urn": "urn:gl:source:egrid",
-      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:v1",
       "name": "electricity grid \u2014 SRTV",
       "description": "Emission emission factor for electricity grid \u2014 SRTV, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "grid_intensity",
@@ -1372,7 +1372,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "US-Public-Domain",
+      "licence": "public-domain-us-gov",
       "citations": [
         {
           "type": "url",
@@ -1409,10 +1409,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:egrid:eGRID:sub_SRVC:SRVC:2022:v1",
+      "urn": "urn:gl:factor:egrid:egrid:sub_srvc:srvc:2022:v1",
       "factor_id_alias": "EF:eGRID:sub_SRVC:SRVC:2022:v1",
       "source_urn": "urn:gl:source:egrid",
-      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:v1",
       "name": "electricity grid \u2014 SRVC",
       "description": "Emission emission factor for electricity grid \u2014 SRVC, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "grid_intensity",
@@ -1426,7 +1426,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "US-Public-Domain",
+      "licence": "public-domain-us-gov",
       "citations": [
         {
           "type": "url",
@@ -1463,10 +1463,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:egrid:eGRID:state_AL:US-AL:2022:v1",
+      "urn": "urn:gl:factor:egrid:egrid:state_al:us-al:2022:v1",
       "factor_id_alias": "EF:eGRID:state_AL:US-AL:2022:v1",
       "source_urn": "urn:gl:source:egrid",
-      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:v1",
       "name": "electricity grid \u2014 US-AL",
       "description": "Emission emission factor for electricity grid \u2014 US-AL, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "grid_intensity",
@@ -1480,7 +1480,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "US-Public-Domain",
+      "licence": "public-domain-us-gov",
       "citations": [
         {
           "type": "url",
@@ -1517,10 +1517,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:egrid:eGRID:state_AK:US-AK:2022:v1",
+      "urn": "urn:gl:factor:egrid:egrid:state_ak:us-ak:2022:v1",
       "factor_id_alias": "EF:eGRID:state_AK:US-AK:2022:v1",
       "source_urn": "urn:gl:source:egrid",
-      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:v1",
       "name": "electricity grid \u2014 US-AK",
       "description": "Emission emission factor for electricity grid \u2014 US-AK, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "grid_intensity",
@@ -1534,7 +1534,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "US-Public-Domain",
+      "licence": "public-domain-us-gov",
       "citations": [
         {
           "type": "url",
@@ -1571,10 +1571,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:egrid:eGRID:state_AZ:US-AZ:2022:v1",
+      "urn": "urn:gl:factor:egrid:egrid:state_az:us-az:2022:v1",
       "factor_id_alias": "EF:eGRID:state_AZ:US-AZ:2022:v1",
       "source_urn": "urn:gl:source:egrid",
-      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:v1",
       "name": "electricity grid \u2014 US-AZ",
       "description": "Emission emission factor for electricity grid \u2014 US-AZ, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "grid_intensity",
@@ -1588,7 +1588,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "US-Public-Domain",
+      "licence": "public-domain-us-gov",
       "citations": [
         {
           "type": "url",
@@ -1625,10 +1625,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:egrid:eGRID:state_AR:US-AR:2022:v1",
+      "urn": "urn:gl:factor:egrid:egrid:state_ar:us-ar:2022:v1",
       "factor_id_alias": "EF:eGRID:state_AR:US-AR:2022:v1",
       "source_urn": "urn:gl:source:egrid",
-      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:v1",
       "name": "electricity grid \u2014 US-AR",
       "description": "Emission emission factor for electricity grid \u2014 US-AR, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "grid_intensity",
@@ -1642,7 +1642,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "US-Public-Domain",
+      "licence": "public-domain-us-gov",
       "citations": [
         {
           "type": "url",
@@ -1679,10 +1679,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:egrid:eGRID:state_CA:US-CA:2022:v1",
+      "urn": "urn:gl:factor:egrid:egrid:state_ca:us-ca:2022:v1",
       "factor_id_alias": "EF:eGRID:state_CA:US-CA:2022:v1",
       "source_urn": "urn:gl:source:egrid",
-      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:v1",
       "name": "electricity grid \u2014 US-CA",
       "description": "Emission emission factor for electricity grid \u2014 US-CA, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "grid_intensity",
@@ -1696,7 +1696,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "US-Public-Domain",
+      "licence": "public-domain-us-gov",
       "citations": [
         {
           "type": "url",
@@ -1733,10 +1733,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:egrid:eGRID:state_CO:US-CO:2022:v1",
+      "urn": "urn:gl:factor:egrid:egrid:state_co:us-co:2022:v1",
       "factor_id_alias": "EF:eGRID:state_CO:US-CO:2022:v1",
       "source_urn": "urn:gl:source:egrid",
-      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:v1",
       "name": "electricity grid \u2014 US-CO",
       "description": "Emission emission factor for electricity grid \u2014 US-CO, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "grid_intensity",
@@ -1750,7 +1750,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "US-Public-Domain",
+      "licence": "public-domain-us-gov",
       "citations": [
         {
           "type": "url",
@@ -1787,10 +1787,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:egrid:eGRID:state_CT:US-CT:2022:v1",
+      "urn": "urn:gl:factor:egrid:egrid:state_ct:us-ct:2022:v1",
       "factor_id_alias": "EF:eGRID:state_CT:US-CT:2022:v1",
       "source_urn": "urn:gl:source:egrid",
-      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:v1",
       "name": "electricity grid \u2014 US-CT",
       "description": "Emission emission factor for electricity grid \u2014 US-CT, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "grid_intensity",
@@ -1804,7 +1804,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "US-Public-Domain",
+      "licence": "public-domain-us-gov",
       "citations": [
         {
           "type": "url",
@@ -1841,10 +1841,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:egrid:eGRID:state_DE:US-DE:2022:v1",
+      "urn": "urn:gl:factor:egrid:egrid:state_de:us-de:2022:v1",
       "factor_id_alias": "EF:eGRID:state_DE:US-DE:2022:v1",
       "source_urn": "urn:gl:source:egrid",
-      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:v1",
       "name": "electricity grid \u2014 US-DE",
       "description": "Emission emission factor for electricity grid \u2014 US-DE, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "grid_intensity",
@@ -1858,7 +1858,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "US-Public-Domain",
+      "licence": "public-domain-us-gov",
       "citations": [
         {
           "type": "url",
@@ -1895,10 +1895,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:egrid:eGRID:state_FL:US-FL:2022:v1",
+      "urn": "urn:gl:factor:egrid:egrid:state_fl:us-fl:2022:v1",
       "factor_id_alias": "EF:eGRID:state_FL:US-FL:2022:v1",
       "source_urn": "urn:gl:source:egrid",
-      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:v1",
       "name": "electricity grid \u2014 US-FL",
       "description": "Emission emission factor for electricity grid \u2014 US-FL, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "grid_intensity",
@@ -1912,7 +1912,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "US-Public-Domain",
+      "licence": "public-domain-us-gov",
       "citations": [
         {
           "type": "url",
@@ -1949,10 +1949,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:egrid:eGRID:state_GA:US-GA:2022:v1",
+      "urn": "urn:gl:factor:egrid:egrid:state_ga:us-ga:2022:v1",
       "factor_id_alias": "EF:eGRID:state_GA:US-GA:2022:v1",
       "source_urn": "urn:gl:source:egrid",
-      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:v1",
       "name": "electricity grid \u2014 US-GA",
       "description": "Emission emission factor for electricity grid \u2014 US-GA, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "grid_intensity",
@@ -1966,7 +1966,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "US-Public-Domain",
+      "licence": "public-domain-us-gov",
       "citations": [
         {
           "type": "url",
@@ -2003,10 +2003,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:egrid:eGRID:state_HI:US-HI:2022:v1",
+      "urn": "urn:gl:factor:egrid:egrid:state_hi:us-hi:2022:v1",
       "factor_id_alias": "EF:eGRID:state_HI:US-HI:2022:v1",
       "source_urn": "urn:gl:source:egrid",
-      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:v1",
       "name": "electricity grid \u2014 US-HI",
       "description": "Emission emission factor for electricity grid \u2014 US-HI, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "grid_intensity",
@@ -2020,7 +2020,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "US-Public-Domain",
+      "licence": "public-domain-us-gov",
       "citations": [
         {
           "type": "url",
@@ -2057,10 +2057,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:egrid:eGRID:state_ID:US-ID:2022:v1",
+      "urn": "urn:gl:factor:egrid:egrid:state_id:us-id:2022:v1",
       "factor_id_alias": "EF:eGRID:state_ID:US-ID:2022:v1",
       "source_urn": "urn:gl:source:egrid",
-      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:v1",
       "name": "electricity grid \u2014 US-ID",
       "description": "Emission emission factor for electricity grid \u2014 US-ID, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "grid_intensity",
@@ -2074,7 +2074,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "US-Public-Domain",
+      "licence": "public-domain-us-gov",
       "citations": [
         {
           "type": "url",
@@ -2111,10 +2111,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:egrid:eGRID:state_IL:US-IL:2022:v1",
+      "urn": "urn:gl:factor:egrid:egrid:state_il:us-il:2022:v1",
       "factor_id_alias": "EF:eGRID:state_IL:US-IL:2022:v1",
       "source_urn": "urn:gl:source:egrid",
-      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:v1",
       "name": "electricity grid \u2014 US-IL",
       "description": "Emission emission factor for electricity grid \u2014 US-IL, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "grid_intensity",
@@ -2128,7 +2128,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "US-Public-Domain",
+      "licence": "public-domain-us-gov",
       "citations": [
         {
           "type": "url",
@@ -2165,10 +2165,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:egrid:eGRID:state_IN:US-IN:2022:v1",
+      "urn": "urn:gl:factor:egrid:egrid:state_in:us-in:2022:v1",
       "factor_id_alias": "EF:eGRID:state_IN:US-IN:2022:v1",
       "source_urn": "urn:gl:source:egrid",
-      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:v1",
       "name": "electricity grid \u2014 US-IN",
       "description": "Emission emission factor for electricity grid \u2014 US-IN, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "grid_intensity",
@@ -2182,7 +2182,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "US-Public-Domain",
+      "licence": "public-domain-us-gov",
       "citations": [
         {
           "type": "url",
@@ -2219,10 +2219,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:egrid:eGRID:state_IA:US-IA:2022:v1",
+      "urn": "urn:gl:factor:egrid:egrid:state_ia:us-ia:2022:v1",
       "factor_id_alias": "EF:eGRID:state_IA:US-IA:2022:v1",
       "source_urn": "urn:gl:source:egrid",
-      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:v1",
       "name": "electricity grid \u2014 US-IA",
       "description": "Emission emission factor for electricity grid \u2014 US-IA, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "grid_intensity",
@@ -2236,7 +2236,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "US-Public-Domain",
+      "licence": "public-domain-us-gov",
       "citations": [
         {
           "type": "url",
@@ -2273,10 +2273,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:egrid:eGRID:state_KS:US-KS:2022:v1",
+      "urn": "urn:gl:factor:egrid:egrid:state_ks:us-ks:2022:v1",
       "factor_id_alias": "EF:eGRID:state_KS:US-KS:2022:v1",
       "source_urn": "urn:gl:source:egrid",
-      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:v1",
       "name": "electricity grid \u2014 US-KS",
       "description": "Emission emission factor for electricity grid \u2014 US-KS, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "grid_intensity",
@@ -2290,7 +2290,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "US-Public-Domain",
+      "licence": "public-domain-us-gov",
       "citations": [
         {
           "type": "url",
@@ -2327,10 +2327,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:egrid:eGRID:state_KY:US-KY:2022:v1",
+      "urn": "urn:gl:factor:egrid:egrid:state_ky:us-ky:2022:v1",
       "factor_id_alias": "EF:eGRID:state_KY:US-KY:2022:v1",
       "source_urn": "urn:gl:source:egrid",
-      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:v1",
       "name": "electricity grid \u2014 US-KY",
       "description": "Emission emission factor for electricity grid \u2014 US-KY, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "grid_intensity",
@@ -2344,7 +2344,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "US-Public-Domain",
+      "licence": "public-domain-us-gov",
       "citations": [
         {
           "type": "url",
@@ -2381,10 +2381,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:egrid:eGRID:state_LA:US-LA:2022:v1",
+      "urn": "urn:gl:factor:egrid:egrid:state_la:us-la:2022:v1",
       "factor_id_alias": "EF:eGRID:state_LA:US-LA:2022:v1",
       "source_urn": "urn:gl:source:egrid",
-      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:v1",
       "name": "electricity grid \u2014 US-LA",
       "description": "Emission emission factor for electricity grid \u2014 US-LA, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "grid_intensity",
@@ -2398,7 +2398,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "US-Public-Domain",
+      "licence": "public-domain-us-gov",
       "citations": [
         {
           "type": "url",
@@ -2435,10 +2435,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:egrid:eGRID:state_ME:US-ME:2022:v1",
+      "urn": "urn:gl:factor:egrid:egrid:state_me:us-me:2022:v1",
       "factor_id_alias": "EF:eGRID:state_ME:US-ME:2022:v1",
       "source_urn": "urn:gl:source:egrid",
-      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:v1",
       "name": "electricity grid \u2014 US-ME",
       "description": "Emission emission factor for electricity grid \u2014 US-ME, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "grid_intensity",
@@ -2452,7 +2452,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "US-Public-Domain",
+      "licence": "public-domain-us-gov",
       "citations": [
         {
           "type": "url",
@@ -2489,10 +2489,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:egrid:eGRID:state_MD:US-MD:2022:v1",
+      "urn": "urn:gl:factor:egrid:egrid:state_md:us-md:2022:v1",
       "factor_id_alias": "EF:eGRID:state_MD:US-MD:2022:v1",
       "source_urn": "urn:gl:source:egrid",
-      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:v1",
       "name": "electricity grid \u2014 US-MD",
       "description": "Emission emission factor for electricity grid \u2014 US-MD, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "grid_intensity",
@@ -2506,7 +2506,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "US-Public-Domain",
+      "licence": "public-domain-us-gov",
       "citations": [
         {
           "type": "url",
@@ -2543,10 +2543,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:egrid:eGRID:state_MA:US-MA:2022:v1",
+      "urn": "urn:gl:factor:egrid:egrid:state_ma:us-ma:2022:v1",
       "factor_id_alias": "EF:eGRID:state_MA:US-MA:2022:v1",
       "source_urn": "urn:gl:source:egrid",
-      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:v1",
       "name": "electricity grid \u2014 US-MA",
       "description": "Emission emission factor for electricity grid \u2014 US-MA, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "grid_intensity",
@@ -2560,7 +2560,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "US-Public-Domain",
+      "licence": "public-domain-us-gov",
       "citations": [
         {
           "type": "url",
@@ -2597,10 +2597,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:egrid:eGRID:state_MI:US-MI:2022:v1",
+      "urn": "urn:gl:factor:egrid:egrid:state_mi:us-mi:2022:v1",
       "factor_id_alias": "EF:eGRID:state_MI:US-MI:2022:v1",
       "source_urn": "urn:gl:source:egrid",
-      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:v1",
       "name": "electricity grid \u2014 US-MI",
       "description": "Emission emission factor for electricity grid \u2014 US-MI, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "grid_intensity",
@@ -2614,7 +2614,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "US-Public-Domain",
+      "licence": "public-domain-us-gov",
       "citations": [
         {
           "type": "url",
@@ -2651,10 +2651,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:egrid:eGRID:state_MN:US-MN:2022:v1",
+      "urn": "urn:gl:factor:egrid:egrid:state_mn:us-mn:2022:v1",
       "factor_id_alias": "EF:eGRID:state_MN:US-MN:2022:v1",
       "source_urn": "urn:gl:source:egrid",
-      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:v1",
       "name": "electricity grid \u2014 US-MN",
       "description": "Emission emission factor for electricity grid \u2014 US-MN, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "grid_intensity",
@@ -2668,7 +2668,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "US-Public-Domain",
+      "licence": "public-domain-us-gov",
       "citations": [
         {
           "type": "url",
@@ -2705,10 +2705,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:egrid:eGRID:state_MS:US-MS:2022:v1",
+      "urn": "urn:gl:factor:egrid:egrid:state_ms:us-ms:2022:v1",
       "factor_id_alias": "EF:eGRID:state_MS:US-MS:2022:v1",
       "source_urn": "urn:gl:source:egrid",
-      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:v1",
       "name": "electricity grid \u2014 US-MS",
       "description": "Emission emission factor for electricity grid \u2014 US-MS, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "grid_intensity",
@@ -2722,7 +2722,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "US-Public-Domain",
+      "licence": "public-domain-us-gov",
       "citations": [
         {
           "type": "url",
@@ -2759,10 +2759,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:egrid:eGRID:state_MO:US-MO:2022:v1",
+      "urn": "urn:gl:factor:egrid:egrid:state_mo:us-mo:2022:v1",
       "factor_id_alias": "EF:eGRID:state_MO:US-MO:2022:v1",
       "source_urn": "urn:gl:source:egrid",
-      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:v1",
       "name": "electricity grid \u2014 US-MO",
       "description": "Emission emission factor for electricity grid \u2014 US-MO, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "grid_intensity",
@@ -2776,7 +2776,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "US-Public-Domain",
+      "licence": "public-domain-us-gov",
       "citations": [
         {
           "type": "url",
@@ -2813,10 +2813,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:egrid:eGRID:state_MT:US-MT:2022:v1",
+      "urn": "urn:gl:factor:egrid:egrid:state_mt:us-mt:2022:v1",
       "factor_id_alias": "EF:eGRID:state_MT:US-MT:2022:v1",
       "source_urn": "urn:gl:source:egrid",
-      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:v1",
       "name": "electricity grid \u2014 US-MT",
       "description": "Emission emission factor for electricity grid \u2014 US-MT, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "grid_intensity",
@@ -2830,7 +2830,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "US-Public-Domain",
+      "licence": "public-domain-us-gov",
       "citations": [
         {
           "type": "url",
@@ -2867,10 +2867,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:egrid:eGRID:state_NE:US-NE:2022:v1",
+      "urn": "urn:gl:factor:egrid:egrid:state_ne:us-ne:2022:v1",
       "factor_id_alias": "EF:eGRID:state_NE:US-NE:2022:v1",
       "source_urn": "urn:gl:source:egrid",
-      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:v1",
       "name": "electricity grid \u2014 US-NE",
       "description": "Emission emission factor for electricity grid \u2014 US-NE, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "grid_intensity",
@@ -2884,7 +2884,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "US-Public-Domain",
+      "licence": "public-domain-us-gov",
       "citations": [
         {
           "type": "url",
@@ -2921,10 +2921,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:egrid:eGRID:state_NV:US-NV:2022:v1",
+      "urn": "urn:gl:factor:egrid:egrid:state_nv:us-nv:2022:v1",
       "factor_id_alias": "EF:eGRID:state_NV:US-NV:2022:v1",
       "source_urn": "urn:gl:source:egrid",
-      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:v1",
       "name": "electricity grid \u2014 US-NV",
       "description": "Emission emission factor for electricity grid \u2014 US-NV, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "grid_intensity",
@@ -2938,7 +2938,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "US-Public-Domain",
+      "licence": "public-domain-us-gov",
       "citations": [
         {
           "type": "url",
@@ -2975,10 +2975,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:egrid:eGRID:state_NH:US-NH:2022:v1",
+      "urn": "urn:gl:factor:egrid:egrid:state_nh:us-nh:2022:v1",
       "factor_id_alias": "EF:eGRID:state_NH:US-NH:2022:v1",
       "source_urn": "urn:gl:source:egrid",
-      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:v1",
       "name": "electricity grid \u2014 US-NH",
       "description": "Emission emission factor for electricity grid \u2014 US-NH, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "grid_intensity",
@@ -2992,7 +2992,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "US-Public-Domain",
+      "licence": "public-domain-us-gov",
       "citations": [
         {
           "type": "url",
@@ -3029,10 +3029,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:egrid:eGRID:state_NJ:US-NJ:2022:v1",
+      "urn": "urn:gl:factor:egrid:egrid:state_nj:us-nj:2022:v1",
       "factor_id_alias": "EF:eGRID:state_NJ:US-NJ:2022:v1",
       "source_urn": "urn:gl:source:egrid",
-      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:v1",
       "name": "electricity grid \u2014 US-NJ",
       "description": "Emission emission factor for electricity grid \u2014 US-NJ, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "grid_intensity",
@@ -3046,7 +3046,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "US-Public-Domain",
+      "licence": "public-domain-us-gov",
       "citations": [
         {
           "type": "url",
@@ -3083,10 +3083,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:egrid:eGRID:state_NM:US-NM:2022:v1",
+      "urn": "urn:gl:factor:egrid:egrid:state_nm:us-nm:2022:v1",
       "factor_id_alias": "EF:eGRID:state_NM:US-NM:2022:v1",
       "source_urn": "urn:gl:source:egrid",
-      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:v1",
       "name": "electricity grid \u2014 US-NM",
       "description": "Emission emission factor for electricity grid \u2014 US-NM, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "grid_intensity",
@@ -3100,7 +3100,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "US-Public-Domain",
+      "licence": "public-domain-us-gov",
       "citations": [
         {
           "type": "url",
@@ -3137,10 +3137,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:egrid:eGRID:state_NY:US-NY:2022:v1",
+      "urn": "urn:gl:factor:egrid:egrid:state_ny:us-ny:2022:v1",
       "factor_id_alias": "EF:eGRID:state_NY:US-NY:2022:v1",
       "source_urn": "urn:gl:source:egrid",
-      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:v1",
       "name": "electricity grid \u2014 US-NY",
       "description": "Emission emission factor for electricity grid \u2014 US-NY, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "grid_intensity",
@@ -3154,7 +3154,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "US-Public-Domain",
+      "licence": "public-domain-us-gov",
       "citations": [
         {
           "type": "url",
@@ -3191,10 +3191,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:egrid:eGRID:state_NC:US-NC:2022:v1",
+      "urn": "urn:gl:factor:egrid:egrid:state_nc:us-nc:2022:v1",
       "factor_id_alias": "EF:eGRID:state_NC:US-NC:2022:v1",
       "source_urn": "urn:gl:source:egrid",
-      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:v1",
       "name": "electricity grid \u2014 US-NC",
       "description": "Emission emission factor for electricity grid \u2014 US-NC, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "grid_intensity",
@@ -3208,7 +3208,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "US-Public-Domain",
+      "licence": "public-domain-us-gov",
       "citations": [
         {
           "type": "url",
@@ -3245,10 +3245,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:egrid:eGRID:state_ND:US-ND:2022:v1",
+      "urn": "urn:gl:factor:egrid:egrid:state_nd:us-nd:2022:v1",
       "factor_id_alias": "EF:eGRID:state_ND:US-ND:2022:v1",
       "source_urn": "urn:gl:source:egrid",
-      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:v1",
       "name": "electricity grid \u2014 US-ND",
       "description": "Emission emission factor for electricity grid \u2014 US-ND, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "grid_intensity",
@@ -3262,7 +3262,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "US-Public-Domain",
+      "licence": "public-domain-us-gov",
       "citations": [
         {
           "type": "url",
@@ -3299,10 +3299,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:egrid:eGRID:state_OH:US-OH:2022:v1",
+      "urn": "urn:gl:factor:egrid:egrid:state_oh:us-oh:2022:v1",
       "factor_id_alias": "EF:eGRID:state_OH:US-OH:2022:v1",
       "source_urn": "urn:gl:source:egrid",
-      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:v1",
       "name": "electricity grid \u2014 US-OH",
       "description": "Emission emission factor for electricity grid \u2014 US-OH, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "grid_intensity",
@@ -3316,7 +3316,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "US-Public-Domain",
+      "licence": "public-domain-us-gov",
       "citations": [
         {
           "type": "url",
@@ -3353,10 +3353,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:egrid:eGRID:state_OK:US-OK:2022:v1",
+      "urn": "urn:gl:factor:egrid:egrid:state_ok:us-ok:2022:v1",
       "factor_id_alias": "EF:eGRID:state_OK:US-OK:2022:v1",
       "source_urn": "urn:gl:source:egrid",
-      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:v1",
       "name": "electricity grid \u2014 US-OK",
       "description": "Emission emission factor for electricity grid \u2014 US-OK, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "grid_intensity",
@@ -3370,7 +3370,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "US-Public-Domain",
+      "licence": "public-domain-us-gov",
       "citations": [
         {
           "type": "url",
@@ -3407,10 +3407,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:egrid:eGRID:state_OR:US-OR:2022:v1",
+      "urn": "urn:gl:factor:egrid:egrid:state_or:us-or:2022:v1",
       "factor_id_alias": "EF:eGRID:state_OR:US-OR:2022:v1",
       "source_urn": "urn:gl:source:egrid",
-      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:v1",
       "name": "electricity grid \u2014 US-OR",
       "description": "Emission emission factor for electricity grid \u2014 US-OR, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "grid_intensity",
@@ -3424,7 +3424,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "US-Public-Domain",
+      "licence": "public-domain-us-gov",
       "citations": [
         {
           "type": "url",
@@ -3461,10 +3461,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:egrid:eGRID:state_PA:US-PA:2022:v1",
+      "urn": "urn:gl:factor:egrid:egrid:state_pa:us-pa:2022:v1",
       "factor_id_alias": "EF:eGRID:state_PA:US-PA:2022:v1",
       "source_urn": "urn:gl:source:egrid",
-      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:v1",
       "name": "electricity grid \u2014 US-PA",
       "description": "Emission emission factor for electricity grid \u2014 US-PA, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "grid_intensity",
@@ -3478,7 +3478,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "US-Public-Domain",
+      "licence": "public-domain-us-gov",
       "citations": [
         {
           "type": "url",
@@ -3515,10 +3515,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:egrid:eGRID:state_RI:US-RI:2022:v1",
+      "urn": "urn:gl:factor:egrid:egrid:state_ri:us-ri:2022:v1",
       "factor_id_alias": "EF:eGRID:state_RI:US-RI:2022:v1",
       "source_urn": "urn:gl:source:egrid",
-      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:v1",
       "name": "electricity grid \u2014 US-RI",
       "description": "Emission emission factor for electricity grid \u2014 US-RI, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "grid_intensity",
@@ -3532,7 +3532,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "US-Public-Domain",
+      "licence": "public-domain-us-gov",
       "citations": [
         {
           "type": "url",
@@ -3569,10 +3569,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:egrid:eGRID:state_SC:US-SC:2022:v1",
+      "urn": "urn:gl:factor:egrid:egrid:state_sc:us-sc:2022:v1",
       "factor_id_alias": "EF:eGRID:state_SC:US-SC:2022:v1",
       "source_urn": "urn:gl:source:egrid",
-      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:v1",
       "name": "electricity grid \u2014 US-SC",
       "description": "Emission emission factor for electricity grid \u2014 US-SC, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "grid_intensity",
@@ -3586,7 +3586,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "US-Public-Domain",
+      "licence": "public-domain-us-gov",
       "citations": [
         {
           "type": "url",
@@ -3623,10 +3623,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:egrid:eGRID:state_SD:US-SD:2022:v1",
+      "urn": "urn:gl:factor:egrid:egrid:state_sd:us-sd:2022:v1",
       "factor_id_alias": "EF:eGRID:state_SD:US-SD:2022:v1",
       "source_urn": "urn:gl:source:egrid",
-      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:v1",
       "name": "electricity grid \u2014 US-SD",
       "description": "Emission emission factor for electricity grid \u2014 US-SD, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "grid_intensity",
@@ -3640,7 +3640,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "US-Public-Domain",
+      "licence": "public-domain-us-gov",
       "citations": [
         {
           "type": "url",
@@ -3677,10 +3677,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:egrid:eGRID:state_TN:US-TN:2022:v1",
+      "urn": "urn:gl:factor:egrid:egrid:state_tn:us-tn:2022:v1",
       "factor_id_alias": "EF:eGRID:state_TN:US-TN:2022:v1",
       "source_urn": "urn:gl:source:egrid",
-      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:v1",
       "name": "electricity grid \u2014 US-TN",
       "description": "Emission emission factor for electricity grid \u2014 US-TN, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "grid_intensity",
@@ -3694,7 +3694,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "US-Public-Domain",
+      "licence": "public-domain-us-gov",
       "citations": [
         {
           "type": "url",
@@ -3731,10 +3731,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:egrid:eGRID:state_TX:US-TX:2022:v1",
+      "urn": "urn:gl:factor:egrid:egrid:state_tx:us-tx:2022:v1",
       "factor_id_alias": "EF:eGRID:state_TX:US-TX:2022:v1",
       "source_urn": "urn:gl:source:egrid",
-      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:v1",
       "name": "electricity grid \u2014 US-TX",
       "description": "Emission emission factor for electricity grid \u2014 US-TX, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "grid_intensity",
@@ -3748,7 +3748,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "US-Public-Domain",
+      "licence": "public-domain-us-gov",
       "citations": [
         {
           "type": "url",
@@ -3785,10 +3785,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:egrid:eGRID:state_UT:US-UT:2022:v1",
+      "urn": "urn:gl:factor:egrid:egrid:state_ut:us-ut:2022:v1",
       "factor_id_alias": "EF:eGRID:state_UT:US-UT:2022:v1",
       "source_urn": "urn:gl:source:egrid",
-      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:v1",
       "name": "electricity grid \u2014 US-UT",
       "description": "Emission emission factor for electricity grid \u2014 US-UT, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "grid_intensity",
@@ -3802,7 +3802,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "US-Public-Domain",
+      "licence": "public-domain-us-gov",
       "citations": [
         {
           "type": "url",
@@ -3839,10 +3839,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:egrid:eGRID:state_VT:US-VT:2022:v1",
+      "urn": "urn:gl:factor:egrid:egrid:state_vt:us-vt:2022:v1",
       "factor_id_alias": "EF:eGRID:state_VT:US-VT:2022:v1",
       "source_urn": "urn:gl:source:egrid",
-      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:v1",
       "name": "electricity grid \u2014 US-VT",
       "description": "Emission emission factor for electricity grid \u2014 US-VT, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "grid_intensity",
@@ -3856,7 +3856,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "US-Public-Domain",
+      "licence": "public-domain-us-gov",
       "citations": [
         {
           "type": "url",
@@ -3893,10 +3893,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:egrid:eGRID:state_VA:US-VA:2022:v1",
+      "urn": "urn:gl:factor:egrid:egrid:state_va:us-va:2022:v1",
       "factor_id_alias": "EF:eGRID:state_VA:US-VA:2022:v1",
       "source_urn": "urn:gl:source:egrid",
-      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:v1",
       "name": "electricity grid \u2014 US-VA",
       "description": "Emission emission factor for electricity grid \u2014 US-VA, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "grid_intensity",
@@ -3910,7 +3910,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "US-Public-Domain",
+      "licence": "public-domain-us-gov",
       "citations": [
         {
           "type": "url",
@@ -3947,10 +3947,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:egrid:eGRID:state_WA:US-WA:2022:v1",
+      "urn": "urn:gl:factor:egrid:egrid:state_wa:us-wa:2022:v1",
       "factor_id_alias": "EF:eGRID:state_WA:US-WA:2022:v1",
       "source_urn": "urn:gl:source:egrid",
-      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:v1",
       "name": "electricity grid \u2014 US-WA",
       "description": "Emission emission factor for electricity grid \u2014 US-WA, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "grid_intensity",
@@ -3964,7 +3964,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "US-Public-Domain",
+      "licence": "public-domain-us-gov",
       "citations": [
         {
           "type": "url",
@@ -4001,10 +4001,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:egrid:eGRID:state_WV:US-WV:2022:v1",
+      "urn": "urn:gl:factor:egrid:egrid:state_wv:us-wv:2022:v1",
       "factor_id_alias": "EF:eGRID:state_WV:US-WV:2022:v1",
       "source_urn": "urn:gl:source:egrid",
-      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:v1",
       "name": "electricity grid \u2014 US-WV",
       "description": "Emission emission factor for electricity grid \u2014 US-WV, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "grid_intensity",
@@ -4018,7 +4018,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "US-Public-Domain",
+      "licence": "public-domain-us-gov",
       "citations": [
         {
           "type": "url",
@@ -4055,10 +4055,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:egrid:eGRID:state_WI:US-WI:2022:v1",
+      "urn": "urn:gl:factor:egrid:egrid:state_wi:us-wi:2022:v1",
       "factor_id_alias": "EF:eGRID:state_WI:US-WI:2022:v1",
       "source_urn": "urn:gl:source:egrid",
-      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:v1",
       "name": "electricity grid \u2014 US-WI",
       "description": "Emission emission factor for electricity grid \u2014 US-WI, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "grid_intensity",
@@ -4072,7 +4072,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "US-Public-Domain",
+      "licence": "public-domain-us-gov",
       "citations": [
         {
           "type": "url",
@@ -4109,10 +4109,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:egrid:eGRID:state_WY:US-WY:2022:v1",
+      "urn": "urn:gl:factor:egrid:egrid:state_wy:us-wy:2022:v1",
       "factor_id_alias": "EF:eGRID:state_WY:US-WY:2022:v1",
       "source_urn": "urn:gl:source:egrid",
-      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:v1",
       "name": "electricity grid \u2014 US-WY",
       "description": "Emission emission factor for electricity grid \u2014 US-WY, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "grid_intensity",
@@ -4126,7 +4126,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "US-Public-Domain",
+      "licence": "public-domain-us-gov",
       "citations": [
         {
           "type": "url",
@@ -4163,10 +4163,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:egrid:eGRID:state_DC:US-DC:2022:v1",
+      "urn": "urn:gl:factor:egrid:egrid:state_dc:us-dc:2022:v1",
       "factor_id_alias": "EF:eGRID:state_DC:US-DC:2022:v1",
       "source_urn": "urn:gl:source:egrid",
-      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:v1",
       "name": "electricity grid \u2014 US-DC",
       "description": "Emission emission factor for electricity grid \u2014 US-DC, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "grid_intensity",
@@ -4180,7 +4180,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "US-Public-Domain",
+      "licence": "public-domain-us-gov",
       "citations": [
         {
           "type": "url",
@@ -4217,10 +4217,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:egrid:eGRID:national:US:2022:v1",
+      "urn": "urn:gl:factor:egrid:egrid:national:us:2022:v1",
       "factor_id_alias": "EF:eGRID:national:US:2022:v1",
       "source_urn": "urn:gl:source:egrid",
-      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:2022.1",
+      "factor_pack_urn": "urn:gl:pack:egrid:subregion-rates:v1",
       "name": "electricity grid \u2014 US",
       "description": "Emission emission factor for electricity grid \u2014 US, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "grid_intensity",
@@ -4234,7 +4234,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:ghgp-corporate-scope2-location",
       "boundary": "combustion",
-      "licence": "US-Public-Domain",
+      "licence": "public-domain-us-gov",
       "citations": [
         {
           "type": "url",
@@ -4271,3 +4271,4 @@
     }
   ]
 }
+

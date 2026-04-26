@@ -261,7 +261,7 @@ def test_alpha_source_parser_snapshot(
 @pytest.mark.alpha_v0_1_acceptance
 def test_all_six_alpha_sources_have_status(registry: Dict[str, Dict[str, Any]]) -> None:
     """Sanity: every alpha source carries the Wave D vintage-audit fields."""
-    valid_status = {"locked", "preview", "update_pending"}
+    valid_status = {"locked", "preview", "update_pending", "exception_accepted"}
     for source_id, _vintage in ALPHA_SOURCES:
         src = registry[source_id]
         assert src.get("alpha_v0_1") is True, (

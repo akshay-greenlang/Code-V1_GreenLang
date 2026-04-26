@@ -168,6 +168,31 @@ def test_lift_combustion_record_passes_gate(gate: AlphaProvenanceGate) -> None:
     assert out["geography_urn"] == "urn:gl:geo:country:us"
 
 
+def test_registry_licence_pin_overrides_parser_label(
+    gate: AlphaProvenanceGate,
+) -> None:
+    """Phase 1 keeps the registry as the source of truth for factor
+    licence tags, even when parser records carry older upstream labels.
+    """
+    rec = _v1_combustion_record()
+    rec["license_info"]["license"] = "US-Public-Domain"
+    out = lift_v1_record_to_v0_1(
+        rec,
+        _src_meta(
+            source_id="epa_hub",
+            urn="urn:gl:source:epa-hub",
+            parser_module="greenlang.factors.ingestion.parsers.epa_ghg_hub",
+            parser_function="parse_epa_ghg_hub",
+            source_version="2024.1",
+            publication_url="https://www.epa.gov/climateleadership/ghg-emission-factors-hub",
+            licence="public-domain-us-gov",
+        ),
+        idx=0,
+    )
+    assert gate.validate(out) == []
+    assert out["licence"] == "public-domain-us-gov"
+
+
 def test_lift_electricity_record_indian_grid(gate: AlphaProvenanceGate) -> None:
     rec = _v1_electricity_record()
     out = lift_v1_record_to_v0_1(
@@ -236,7 +261,8 @@ def test_lift_refrigerant_record(gate: AlphaProvenanceGate) -> None:
     out = lift_v1_record_to_v0_1(rec, _src_meta(), idx=0)
     assert gate.validate(out) == []
     assert out["category"] == "refrigerant"
-    assert "ar6-refrigerants" in out["factor_pack_urn"] or out["factor_pack_urn"].endswith(":2019.1")
+    assert out["factor_pack_urn"].startswith("urn:gl:pack:ipcc-2006-nggi:")
+    assert out["factor_pack_urn"].endswith(":v1")
 
 
 # ---------------------------------------------------------------------------
@@ -272,8 +298,12 @@ def test_coerce_category_mapping(family: str, profile: str, expected: str) -> No
 # ---------------------------------------------------------------------------
 
 
+# Updated 2026-04-26 (Phase 0 audit): namespace + id segments MUST be
+# lowercase per CTO doc §6.1.1 / canonical URN parser at
+# ``greenlang.factors.ontology.urn``. The schema regex was tightened to
+# match — uppercase letters in those segments are no longer accepted.
 _URN_FACTOR_RE = re.compile(
-    r"^urn:gl:factor:[a-z0-9][a-z0-9-]*(:[A-Za-z0-9._-]+){2,4}:v[1-9][0-9]*$"
+    r"^urn:gl:factor:[a-z0-9][a-z0-9-]*(:[a-z0-9][a-z0-9._-]*){2,4}:v[1-9][0-9]*$"
 )
 
 
@@ -288,8 +318,11 @@ def test_coerce_factor_id_to_urn_is_deterministic() -> None:
 
 
 def test_coerce_factor_id_to_urn_strips_ef_prefix() -> None:
+    # Phase 0 audit (2026-04-26): output is lowercased to comply with the
+    # canonical URN spec. The legacy uppercase form is kept by the
+    # ``factor_id_alias`` field, not the ``urn`` field.
     urn = coerce_factor_id_to_urn("EF:CBAM:steel:CN:2024:v1", "cbam-default-values")
-    assert urn == "urn:gl:factor:cbam-default-values:CBAM:steel:CN:2024:v1"
+    assert urn == "urn:gl:factor:cbam-default-values:cbam:steel:cn:2024:v1"
 
 
 def test_coerce_factor_id_to_urn_handles_no_ef_prefix() -> None:
@@ -544,7 +577,7 @@ def test_factor_pack_urn_uses_source_override() -> None:
         idx=0,
     )
     # Per _SOURCE_ID_TO_PACK_ID: epa_hub -> emission-factors-hub
-    assert out["factor_pack_urn"] == "urn:gl:pack:epa-hub:emission-factors-hub:2024.1"
+    assert out["factor_pack_urn"] == "urn:gl:pack:epa-hub:emission-factors-hub:v1"
 
 
 def test_factor_pack_urn_unknown_source_falls_back_to_default() -> None:

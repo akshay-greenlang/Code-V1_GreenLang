@@ -69,7 +69,7 @@ identical in shape; the values differ per source.
 
 * Lift `factor_id` (`EF:CBAM:steel:CN:2024:v1`) into `urn:gl:factor:eu-cbam-defaults:<sector>:<country>-<year>:v1` via `coerce_factor_id_to_urn`.
 * Set `source_urn = "urn:gl:source:cbam-default-values"`.
-* Add `factor_pack_urn = "urn:gl:pack:eu-cbam-defaults:cbam-annex-iv:2024.1"`.
+* Add `factor_pack_urn = "urn:gl:pack:cbam-default-values:cbam-annex-iv:v1"`.
 * Map `vectors` -> top-level `value`, `unit_urn`.
 * Project `provenance` block -> `extraction` (commit, sha256, parser_id, parser_version, operator).
 * Stamp `review = {review_status: "pending", reviewer: "human:methodology-lead@greenlang.io", reviewed_at: <ingest_ts>}` until methodology lead approves.
@@ -79,34 +79,34 @@ identical in shape; the values differ per source.
 ### 2. `desnz_ghg_conversion` — 196 records
 
 * Same translation as above; `source_urn = "urn:gl:source:desnz-ghg-conversion"`.
-* `factor_pack_urn = "urn:gl:pack:desnz-ghg-conversion:conversion-factors:2024.1"`.
+* `factor_pack_urn = "urn:gl:pack:desnz-ghg-conversion:conversion-factors:v1"`.
 * `category` mapping: `electricity` -> `grid_intensity`, `combustion` -> `fuel`, `refrigerant` -> `refrigerant`, fugitive -> `fugitive`.
 
 ### 3. `egrid` — 79 records
 
 * `source_urn = "urn:gl:source:egrid"`.
-* `factor_pack_urn = "urn:gl:pack:epa-egrid:subregion-rates:2022.1"`.
+* `factor_pack_urn = "urn:gl:pack:egrid:subregion-rates:v1"`.
 * `category = "scope2_location_based"` for subregion rows; `grid_intensity` for state/national rollups.
 * eGRID rows are pre-converted from lb/MWh -> kg/kWh — preserve the `unit_urn = "urn:gl:unit:kgco2e/kwh"`.
 
 ### 4. `epa_hub` — 84 records
 
 * `source_urn = "urn:gl:source:epa-hub"`.
-* `factor_pack_urn = "urn:gl:pack:epa-hub:emission-factors-hub:2024.1"`.
+* `factor_pack_urn = "urn:gl:pack:epa-hub:emission-factors-hub:v1"`.
 * `category = "fuel"` for stationary/mobile combustion rows; `scope2_location_based` for the electricity section.
 
 ### 5. `india_cea_co2_baseline` — 38 records
 
 * Parser currently returns `EmissionFactorRecord` instances; `_record_to_dict` already calls `.to_dict()`.
 * `source_urn = "urn:gl:source:india-cea-co2-baseline"`.
-* `factor_pack_urn = "urn:gl:pack:india-cea-baseline:national-grid:v20.0"`.
+* `factor_pack_urn = "urn:gl:pack:india-cea-co2-baseline:national-grid:v1"`.
 * `category = "grid_intensity"`.
 * `geography_urn = "urn:gl:geo:country:in"` (or regional grid URNs for sub-grids).
 
 ### 6. `ipcc_2006_nggi` — 244 records
 
 * `source_urn = "urn:gl:source:ipcc-2006-nggi"`.
-* `factor_pack_urn = "urn:gl:pack:ipcc-2006-nggi:tier-1-defaults:2019.1"` (2019 Refinement vintage).
+* `factor_pack_urn = "urn:gl:pack:ipcc-2006-nggi:tier-1-defaults:v1"` (2019 Refinement vintage stays in `extraction.source_version`).
 * `category = "fuel"` for combustion sections; `process` for IPPU; `fugitive` for fugitive sections.
 * `methodology_urn = "urn:gl:methodology:ipcc-tier-1-stationary-combustion"` (or the relevant Vol/Chap-specific tier-1 methodology).
 

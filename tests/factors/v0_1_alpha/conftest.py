@@ -14,6 +14,18 @@ from __future__ import annotations
 import pytest
 
 
+# Phase 1: opt the test environment into rights-fail-OPEN mode by
+# default. Existing alpha-publish + e2e tests use synthetic source URNs
+# (`urn:gl:source:ipcc-ar6` etc.) that do not match the registry; the
+# rights gate is fail-open on UNKNOWN sources by design (the provenance
+# gate is canonical), but a runtime rights-service error in those tests
+# would otherwise fail closed (=AlphaPublisherError). Tests can opt in
+# to fail-CLOSED locally by setting GL_FACTORS_RIGHTS_FAIL_OPEN=0
+# (see test_phase1_publish_fail_closed.py).
+import os as _os
+_os.environ.setdefault("GL_FACTORS_RIGHTS_FAIL_OPEN", "1")
+
+
 def pytest_addoption(parser: pytest.Parser) -> None:
     # Wave D / TaskCreate #7-#12 — alpha-source snapshot tests support
     # an opt-in regenerate flag. Defined here (vs in the test module)

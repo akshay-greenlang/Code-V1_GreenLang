@@ -68,7 +68,7 @@ def _record(
     base["urn"] = f"urn:gl:factor:{source}:stationary-combustion:{leaf}:v1"
     base["factor_id_alias"] = f"EF:{source}:stationary-combustion:{leaf}:v1"
     base["source_urn"] = f"urn:gl:source:{source}"
-    base["factor_pack_urn"] = f"urn:gl:pack:{source}:{pack}:2021.0"
+    base["factor_pack_urn"] = f"urn:gl:pack:{source}:{pack}:v1"
     base["category"] = category
     base["geography_urn"] = geo
     base["published_at"] = published_at

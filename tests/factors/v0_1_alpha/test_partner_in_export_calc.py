@@ -22,9 +22,13 @@ Calc scenario (from the partner doc, §7 "Expected SDK Calculation"):
 
 The factor we end up using:
 
-    urn:gl:factor:india-cea-co2-baseline:IN:all_india:2025-26:cea-v22.0:v1
+    urn:gl:factor:india-cea-co2-baseline:in:all_india:2025-26:cea-v22.0:v1
     value=0.68 kgCO2e / kWh, vintage 2025-04-01 .. 2026-03-31,
     methodology=urn:gl:methodology:ghgp-corporate-scope2-location.
+
+(Phase 0 audit, 2026-04-26: the namespace segment is ``in``, lowercase,
+per CTO doc §6.1.1. The legacy uppercase ``IN`` country code lives in
+the ``factor_id_alias`` field as ``EF:IN:all_india:...`` only.)
 
 Rationale for this URN: the partner doc §7 calls for a "national grid"
 India CEA factor for FY2026. The published India CEA CO2 Baseline
@@ -61,14 +65,14 @@ def _fetch_alpha_factor_via_testclient(
 ) -> AlphaFactor:
     """Fetch a factor via ``GET /v1/factors/{urn}`` using FastAPI TestClient.
 
-    The seeded catalog records use the legacy multi-segment factor id
-    layout (e.g. ``...:IN:all_india:2025-26:cea-v22.0:v1``) which the
-    server-side router accepts but the SDK's strict client-side URN
-    parser rejects (lowercase-namespace constraint). This is a known
-    v0.1 alpha catalog/SDK drift, scheduled for an SDK patch in v0.2.
-    For the partner golden test we side-step the client-side validator
-    by calling the route directly while still validating the server's
-    on-the-wire response with the canonical :class:`AlphaFactor` model.
+    Historical note (Phase 0 audit, 2026-04-26): the first batch of
+    catalog records used uppercase namespace segments
+    (``...:IN:all_india:...``) which the SDK's strict URN parser
+    rejected. The Phase 0 cleanup lowercased the seeds to
+    ``...:in:all_india:...`` so the SDK now accepts them. The
+    TestClient path is retained because some downstream URN-encoding
+    edge cases (path-percent-encoding of repeated ``:``) are easier to
+    cover with the raw transport.
     """
     from fastapi.testclient import TestClient
 
@@ -89,8 +93,11 @@ PARTNER_SLUG = "IN-EXPORT-01"
 # (which IS the Indian convention's "FY2026"). If a future seed regen
 # reshuffles the URN slug, the helper below will still find a sane match
 # via the resolution helper at the bottom of this file.
+# Phase 0 audit (2026-04-26): namespace + id segments are lowercase per
+# CTO doc §6.1.1. The legacy uppercase ``IN`` country code lives in the
+# separate ``factor_id_alias`` field (``EF:IN:...``).
 _EXPECTED_FACTOR_URN = (
-    "urn:gl:factor:india-cea-co2-baseline:IN:all_india:2025-26:cea-v22.0:v1"
+    "urn:gl:factor:india-cea-co2-baseline:in:all_india:2025-26:cea-v22.0:v1"
 )
 _EXPECTED_SOURCE_URN = "urn:gl:source:india-cea-co2-baseline"
 

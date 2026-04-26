@@ -27,7 +27,7 @@ from __future__ import annotations
 import logging
 import os
 import subprocess
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 from fastapi import APIRouter, Depends, HTTPException, Path, Query, Request, Response
 from fastapi.responses import JSONResponse
@@ -418,6 +418,11 @@ def list_factors(
         except Exception as exc:  # noqa: BLE001
             logger.warning("alpha_factor_repo.list_factors failed: %s", exc)
             rows, next_cursor = [], None
+        # Phase 1 rights gate: drop commercial / private / pending /
+        # blocked / errored records before model validation. Audit
+        # events for non-community_open sources are emitted inside
+        # _phase1_rights_filter_list.
+        rows = _phase1_rights_filter_list(request, rows)
         edition_tag = os.getenv("GL_FACTORS_ALPHA_EDITION_ID", "alpha-v0.1")
         # When the legacy service is also bound, prefer its edition id so
         # the SDK e2e demo's pinned edition surfaces correctly.
@@ -454,7 +459,7 @@ def list_factors(
         return FactorListResponse(data=[], next_cursor=None, edition=edition)
 
     # Apply the alpha filters in Python (cheap at alpha scale).
-    out: List[FactorV0_1] = []
+    coerced_rows: List[Dict[str, Any]] = []
     for r in rows:
         coerced = _coerce_v0_1(r)
         if geography_urn and coerced.get("geography_urn") != geography_urn:
@@ -471,7 +476,12 @@ def list_factors(
             vend = coerced.get("vintage_end")
             if not vend or vend >= vintage_end_before:
                 continue
-        out.append(FactorV0_1.model_validate(coerced))
+        coerced_rows.append(coerced)
+
+    # Phase 1 rights gate: drop denied / metadata-only / errored
+    # records before model validation.
+    coerced_rows = _phase1_rights_filter_list(request, coerced_rows)
+    out: List[FactorV0_1] = [FactorV0_1.model_validate(c) for c in coerced_rows]
 
     next_cursor = None
     # Cheap "more pages?" check — total may be unreliable, so we also keep
@@ -538,6 +548,9 @@ def get_factor(
             logger.warning("alpha_factor_repo.get_by_urn failed: %s", exc)
             rec = None
         if rec is not None:
+            denied = _phase1_rights_filter_one(request, rec)
+            if denied is not None:
+                return denied
             return FactorV0_1.model_validate(rec)
         # Fall through to legacy lookup so a partially-populated repo can
         # still surface records the legacy service knows about.
@@ -570,7 +583,208 @@ def get_factor(
         )
 
     coerced = _strip_internal(_coerce_v0_1(record))
+    denied = _phase1_rights_filter_one(request, coerced)
+    if denied is not None:
+        return denied
     return FactorV0_1.model_validate(coerced)
+
+
+def _phase1_rights_evaluate(
+    request: Request, record: Dict[str, Any], *, action: str
+) -> Tuple[str, Optional[str], Dict[str, Any]]:
+    """Core Phase 1 source-rights evaluation shared by single-read +
+    list paths.
+
+    Returns ``(verdict, error_payload_or_none, audit_meta)``. The
+    ``verdict`` is one of:
+
+      * ``"allow"``    — caller may surface the record verbatim.
+      * ``"deny"``     — caller must refuse / filter out (audit emitted).
+      * ``"metadata"`` — caller must refuse on bulk paths (audit emitted).
+      * ``"error"``    — rights service raised at runtime; caller MUST
+        fail closed (return 503 in production / hide the record in
+        list paths).
+
+    The ``error_payload`` is a JSON dict suitable for the response body
+    when verdict is ``deny`` / ``metadata`` / ``error`` and the caller
+    is the single-read path. List callers ignore it and just drop the
+    record.
+
+    Audit emission is performed inline for non-``community_open``
+    sources (allow / deny / metadata / error) so callers don't need
+    to remember to fire audit events.
+
+    Fail-closed contract: any exception raised by the rights service
+    OR an import failure of the rights module yields verdict
+    ``"error"`` (NOT ``"allow"``). The *unknown source* case (no row
+    in the rights registry) is a deliberate ``"allow"`` per the
+    SourceRightsService docstring — the provenance gate is the
+    canonical "is this a registered source" check.
+    """
+    audit_meta: Dict[str, Any] = {}
+    source_urn = (
+        record.get("source_urn") if isinstance(record, dict) else None
+    )
+    factor_urn = record.get("urn") if isinstance(record, dict) else None
+    audit_meta["source_urn"] = source_urn
+    audit_meta["factor_urn"] = factor_urn
+    if not isinstance(source_urn, str) or not source_urn:
+        # No source URN to evaluate — fail open (provenance gate
+        # rejects records without a source_urn).
+        return ("allow", None, audit_meta)
+
+    user = getattr(request.state, "user", None) or {}
+    tenant_id = user.get("tenant_id") if isinstance(user, dict) else None
+    api_key_id = user.get("api_key_id") if isinstance(user, dict) else None
+    audit_meta["tenant_id"] = tenant_id
+    audit_meta["api_key_id"] = api_key_id
+
+    try:
+        from greenlang.factors.rights import (
+            audit_licensed_access,
+            default_service,
+        )
+        from greenlang.factors.rights.audit import AuditDecision
+    except Exception as exc:  # noqa: BLE001
+        logger.error(
+            "phase1 rights gate import failed: %s — failing CLOSED", exc
+        )
+        return (
+            "error",
+            {
+                "error": "rights_unavailable",
+                "message": "source-rights subsystem unavailable",
+                "source_urn": source_urn,
+                "factor_urn": factor_urn,
+            },
+            audit_meta,
+        )
+    try:
+        decision = default_service().check_factor_read_allowed(
+            tenant_id, source_urn, action=action
+        )
+    except Exception as exc:  # noqa: BLE001
+        logger.error(
+            "phase1 rights gate raised on %s: %s — failing CLOSED",
+            source_urn, exc,
+        )
+        try:
+            audit_licensed_access(
+                tenant_id=tenant_id,
+                api_key_id=api_key_id,
+                source_urn=source_urn,
+                factor_urn=factor_urn,
+                licence_class=None,
+                decision=AuditDecision.DENY,
+                reason=f"rights gate runtime error: {exc}",
+                request_id=request.headers.get("X-Request-Id"),
+                action=action,
+            )
+        except Exception:  # noqa: BLE001
+            pass
+        return (
+            "error",
+            {
+                "error": "rights_unavailable",
+                "message": "source-rights evaluation failed",
+                "source_urn": source_urn,
+                "factor_urn": factor_urn,
+            },
+            audit_meta,
+        )
+
+    licence_class = decision.licence_class
+    audit_meta["licence_class"] = licence_class
+    audit_meta["reason"] = decision.reason
+
+    # Audit every non-community_open access (allow / deny / metadata).
+    if licence_class and licence_class != "community_open":
+        audit_licensed_access(
+            tenant_id=tenant_id,
+            api_key_id=api_key_id,
+            source_urn=source_urn,
+            factor_urn=factor_urn,
+            licence_class=licence_class,
+            decision=(
+                AuditDecision.ALLOW if decision.allowed
+                else (
+                    AuditDecision.METADATA_ONLY if decision.metadata_only
+                    else AuditDecision.DENY
+                )
+            ),
+            reason=decision.reason,
+            request_id=request.headers.get("X-Request-Id"),
+            action=action,
+        )
+
+    if decision.denied:
+        return (
+            "deny",
+            {
+                "error": "rights_denied",
+                "message": decision.reason,
+                "source_urn": source_urn,
+                "factor_urn": factor_urn,
+            },
+            audit_meta,
+        )
+    if decision.metadata_only:
+        return (
+            "metadata",
+            {
+                "error": "rights_metadata_only",
+                "message": decision.reason,
+                "source_urn": source_urn,
+            },
+            audit_meta,
+        )
+    return ("allow", None, audit_meta)
+
+
+def _phase1_rights_filter_one(
+    request: Request, record: Dict[str, Any]
+) -> Optional[JSONResponse]:
+    """Single-factor read gate.
+
+    Returns ``None`` when allowed; a 403 (rights_denied / rights_metadata_only)
+    or 503 (rights_unavailable) JSONResponse otherwise.
+    """
+    verdict, payload, _meta = _phase1_rights_evaluate(
+        request, record, action="read"
+    )
+    if verdict == "allow":
+        return None
+    status = 503 if verdict == "error" else 403
+    return JSONResponse(status_code=status, content=payload or {})
+
+
+def _phase1_rights_filter_list(
+    request: Request, records: Iterable[Dict[str, Any]]
+) -> List[Dict[str, Any]]:
+    """List-query gate.
+
+    Drops every record that the rights service denies / flags as
+    metadata-only / errors out on. Audit events are emitted inside
+    :func:`_phase1_rights_evaluate` so the route layer just consumes
+    the filtered list.
+
+    Critical: this MUST be applied before the records are model_validated
+    or returned, otherwise commercial / private / pending-source rows
+    can leak through ``GET /v1/factors``.
+    """
+    out: List[Dict[str, Any]] = []
+    for r in records:
+        if not isinstance(r, dict):
+            continue
+        verdict, _payload, _meta = _phase1_rights_evaluate(
+            request, r, action="list"
+        )
+        if verdict == "allow":
+            out.append(r)
+        # deny / metadata / error → silently drop. Audit was emitted
+        # inside the evaluator for non-community_open sources; for the
+        # error case the evaluator already logged at ERROR.
+    return out
 
 
 def _lookup_factor(svc: Any, edition: str, urn: str) -> Any:
