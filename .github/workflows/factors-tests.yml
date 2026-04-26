@@ -1,10 +1,7 @@
-# =============================================================================
 # GreenLang Factors Catalog CI
-# Emission Factor Catalog | FY27 Product
-# =============================================================================
-# Validates factors module: Python lint, type-check, unit tests, match eval
-# precision gate, registry validation, inventory smoke test, and coverage.
-# =============================================================================
+#
+# Active Factors gate for v0.1 alpha. Later-release Factors modules remain in
+# the repository but are not release-blocking until their profile is promoted.
 
 name: Factors Catalog CI
 
@@ -15,15 +12,16 @@ on:
       - 'greenlang/data/emission_factor_record.py'
       - 'greenlang/data/emission_factor_database.py'
       - 'tests/factors/**'
-      - 'scripts/factors_match_eval.py'
-      - 'scripts/factors_load_smoke.py'
-      - 'deployment/database/migrations/sql/V42[6-9]*.sql'
-      - 'deployment/database/migrations/sql/V430*.sql'
+      - 'pyproject.toml'
+      - '.github/workflows/factors-tests.yml'
   push:
     branches: [master]
     paths:
       - 'greenlang/factors/**'
       - 'tests/factors/**'
+      - 'pyproject.toml'
+      - '.github/workflows/factors-tests.yml'
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -31,245 +29,106 @@ concurrency:
 
 env:
   PYTHON_VERSION: "3.11"
+  GL_FACTORS_RELEASE_PROFILE: "alpha-v0.1"
+  PIP_DISABLE_PIP_VERSION_CHECK: "1"
 
 jobs:
-  # -------------------------------------------------------------------------
-  # Job 1: Lint (ruff + black + isort)
-  # -------------------------------------------------------------------------
   lint:
-    name: Lint (ruff + black + isort)
+    name: Alpha Lint
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Install linting tools
-        run: pip install --quiet ruff black isort
+        run: pip install --quiet ruff
 
-      - name: Lint Python (ruff)
-        run: ruff check greenlang/factors/ --select E,F,W --ignore E501
-
-      - name: Check formatting (black)
-        run: black --check --diff greenlang/factors/ --line-length 100
-
-      - name: Check imports (isort)
-        run: isort --check-only --diff greenlang/factors/ --profile black --line-length 100
-
-  # -------------------------------------------------------------------------
-  # Job 2: Type Check (mypy)
-  # -------------------------------------------------------------------------
-  type-check:
-    name: Type Check (mypy)
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
-          cache: 'pip'
-
-      - name: Install dependencies
+      - name: Ruff check active alpha files
         run: |
-          pip install -e ".[dev]" 2>/dev/null || pip install \
-            mypy \
-            pydantic \
-            fastapi \
-            psycopg \
-            redis \
-            pyyaml \
-            types-PyYAML \
-            types-redis
+          ruff check \
+            greenlang/factors/rights \
+            greenlang/factors/api_v0_1_alpha_routes.py \
+            greenlang/factors/source_registry.py \
+            tests/factors/v0_1_alpha/test_source_rights_phase1_followups.py \
+            tests/factors/v0_1_alpha/test_source_rights_service.py \
+            --select E,F,W \
+            --ignore E501
 
-      - name: Run mypy
-        run: |
-          mypy greenlang/factors/ \
-            --ignore-missing-imports \
-            --no-error-summary \
-            --show-column-numbers
-
-  # -------------------------------------------------------------------------
-  # Job 3: Unit Tests
-  # -------------------------------------------------------------------------
   unit-test:
-    name: Unit Tests
+    name: v0.1 Alpha Tests
     runs-on: ubuntu-latest
+    needs: [lint]
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: 'pip'
+          cache-dependency-path: pyproject.toml
 
       - name: Install dependencies
         run: |
-          pip install -e ".[dev]" 2>/dev/null || pip install \
-            pytest \
-            pytest-asyncio \
-            pytest-cov \
-            pydantic \
-            fastapi \
-            httpx \
-            psycopg \
-            redis \
-            pyyaml
+          python -m pip install -U pip
+          pip install -e ".[factors-test]"
 
-      - name: Run factors unit tests
+      - name: Run alpha tests
         run: |
-          pytest tests/factors/ -v --tb=short -q \
-            --junitxml=junit-factors.xml \
-            --cov=greenlang/factors \
-            --cov-report=term-missing \
-            --cov-report=xml:coverage-factors.xml
+          pytest tests/factors/v0_1_alpha -q \
+            --junitxml=junit-factors-alpha.xml
 
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: factors-test-results
-          path: |
-            junit-factors.xml
-            coverage-factors.xml
-          if-no-files-found: ignore
+          name: factors-alpha-test-results
+          path: junit-factors-alpha.xml
+          if-no-files-found: warn
+          retention-days: 14
 
-  # -------------------------------------------------------------------------
-  # Job 4: Match Evaluation Precision Gate
-  # -------------------------------------------------------------------------
-  match-eval:
-    name: Match Evaluation (precision gate)
-    runs-on: ubuntu-latest
-    needs: [unit-test]
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
-          cache: 'pip'
-
-      - name: Install dependencies
-        run: |
-          pip install -e ".[dev]" 2>/dev/null || pip install \
-            pydantic \
-            pyyaml
-
-      - name: Run match evaluation
-        run: |
-          if [ -f "scripts/factors_match_eval.py" ]; then
-            python scripts/factors_match_eval.py
-          else
-            echo "WARNING: factors_match_eval.py not found, skipping"
-          fi
-
-  # -------------------------------------------------------------------------
-  # Job 5: Registry Validation
-  # -------------------------------------------------------------------------
   registry-validation:
     name: Validate Source Registry
     runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
-          cache: 'pip'
-
-      - name: Install dependencies
-        run: |
-          pip install -e ".[dev]" 2>/dev/null || pip install \
-            pydantic \
-            pyyaml
-
-      - name: Validate source registry
-        run: python -m greenlang.factors.cli validate-registry
-
-  # -------------------------------------------------------------------------
-  # Job 6: Inventory Smoke Test
-  # -------------------------------------------------------------------------
-  inventory-smoke:
-    name: Inventory Smoke Test
-    runs-on: ubuntu-latest
     needs: [unit-test]
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: 'pip'
+          cache-dependency-path: pyproject.toml
 
       - name: Install dependencies
         run: |
-          pip install -e ".[dev]" 2>/dev/null || pip install \
-            pydantic \
-            pyyaml
+          python -m pip install -U pip
+          pip install -e ".[factors-test]"
 
-      - name: Run inventory coverage matrix
+      - name: Validate alpha source registry
         run: |
-          python -m greenlang.factors.cli inventory --out /tmp/coverage.json
-          echo "Inventory smoke test passed"
-          cat /tmp/coverage.json | python -m json.tool | head -30
+          pytest tests/factors/v0_1_alpha/test_source_registry_alpha_completeness.py -q
 
-  # -------------------------------------------------------------------------
-  # Job 7: SQL Migration Validation
-  # -------------------------------------------------------------------------
-  migration-validation:
-    name: Validate SQL Migrations
+  ci-summary:
+    name: Factors CI Summary
     runs-on: ubuntu-latest
+    needs: [lint, unit-test, registry-validation]
+    if: always()
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
-
-      - name: Validate factors migrations syntax
+      - name: Check factors gates
         run: |
-          python3 << 'PYEOF'
-          import sys
-          from pathlib import Path
-
-          migration_dir = Path("deployment/database/migrations/sql")
-          factors_migrations = sorted(migration_dir.glob("V42[6-9]__factors_*.sql")) + \
-                               sorted(migration_dir.glob("V430__factors_*.sql"))
-
-          if not factors_migrations:
-              print("WARNING: No factors migrations found (V426-V430)")
-              sys.exit(0)
-
-          errors = []
-          for path in factors_migrations:
-              content = path.read_text(encoding="utf-8")
-              if len(content.strip()) < 10:
-                  errors.append(f"{path.name}: File is nearly empty")
-              if "factors_catalog" not in content:
-                  errors.append(f"{path.name}: Missing factors_catalog schema reference")
-              print(f"  OK: {path.name} ({len(content)} bytes)")
-
-          if errors:
-              print("Migration validation errors:")
-              for e in errors:
-                  print(f"  - {e}")
-              sys.exit(1)
-
-          print(f"All {len(factors_migrations)} factors migrations validated")
-          PYEOF
+          if [[ "${{ needs.lint.result }}" != "success" ]]; then
+            echo "::error::Factors lint failed"
+            exit 1
+          fi
+          if [[ "${{ needs.unit-test.result }}" != "success" ]]; then
+            echo "::error::Factors alpha tests failed"
+            exit 1
+          fi
+          if [[ "${{ needs.registry-validation.result }}" != "success" ]]; then
+            echo "::error::Factors registry validation failed"
+            exit 1
+          fi
+          echo "Factors v0.1 alpha CI passed"

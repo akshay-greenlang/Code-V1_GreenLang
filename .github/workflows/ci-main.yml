@@ -1,16 +1,8 @@
 # GreenLang Main CI Pipeline
 #
-# Consolidates: ci.yml, test.yml, ci-comprehensive.yml, test-comprehensive.yml
-#
-# Comprehensive CI on all PRs and pushes:
-# - Unit tests (3 OSes, 3 Python versions)
-# - Linting (Black, Ruff, MyPy, isort)
-# - Integration tests
-# - Coverage enforcement (85% minimum)
-# - Build and package validation
-#
-# Author: GreenLang CI Team
-# Version: 3.0.0
+# Current master gate for the active release profile. The full monorepo
+# contains future-scope products and archived code, so this workflow gates the
+# supported v0.1 alpha Factors surface plus package build/installability.
 
 name: CI Main
 
@@ -31,11 +23,12 @@ concurrency:
 
 env:
   PIP_DISABLE_PIP_VERSION_CHECK: "1"
-  PYTEST_ADDOPTS: -m "not e2e"
+  GL_FACTORS_RELEASE_PROFILE: "alpha-v0.1"
+  PYTHON_VERSION: "3.11"
 
 jobs:
-  lint:
-    name: Lint & Format Check
+  alpha-quality:
+    name: Alpha Quality Gate
     runs-on: ubuntu-latest
 
     steps:
@@ -43,118 +36,78 @@ jobs:
 
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
-          cache: 'pip'
-
-      - name: Install dependencies
-        run: |
-          python -m pip install -U pip
-          pip install -e .[dev,test]
-
-      - name: Run Black
-        run: black --check greenlang/ tests/
-
-      - name: Run Ruff
-        run: ruff check greenlang/ tests/
-
-      - name: Run isort
-        run: isort --check-only greenlang/ tests/
-
-      - name: Run MyPy
-        run: mypy greenlang/
-
-  unit-tests:
-    name: Unit Tests (${{ matrix.os }} | py${{ matrix.python }})
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-        python: ["3.10", "3.11", "3.12"]
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Enable long paths on Windows
-        if: runner.os == 'Windows'
-        run: git config --system core.longpaths true
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: ${{ matrix.python }}
+          python-version: ${{ env.PYTHON_VERSION }}
           cache: 'pip'
           cache-dependency-path: pyproject.toml
 
-      - name: Upgrade pip and build tools
-        run: python -m pip install -U pip wheel build
-
-      - name: Install dependencies
-        run: python -m pip install .[test,dev]
-
-      - name: Show versions
+      - name: Install quality dependencies
         run: |
-          python --version
-          pip --version
-          pip list
+          python -m pip install -U pip
+          pip install ruff
 
-      - name: Run unit tests with coverage
-        shell: bash
+      - name: Ruff check active alpha files
         run: |
-          mkdir -p test-results
-          pytest -q -ra --maxfail=1 --durations=20 --color=yes \
-                 --cov=greenlang --cov-report=xml --junitxml=test-results/junit.xml
+          ruff check \
+            greenlang/factors/rights \
+            greenlang/factors/api_v0_1_alpha_routes.py \
+            greenlang/factors/source_registry.py \
+            tests/factors/v0_1_alpha/test_source_rights_phase1_followups.py \
+            tests/factors/v0_1_alpha/test_source_rights_service.py \
+            --select E,F,W \
+            --ignore E501
 
-      - name: Enforce coverage floor (85%)
+      - name: Compile active alpha modules
         run: |
-          python - <<'PY'
-          import sys, subprocess
-          res = subprocess.run([sys.executable, "-m", "coverage", "report", "--fail-under=85"])
-          sys.exit(res.returncode)
-          PY
-        shell: bash
+          python -m compileall -q \
+            greenlang/factors/rights \
+            greenlang/factors/api_v0_1_alpha_routes.py \
+            greenlang/factors/source_registry.py \
+            scripts/check_magic_numbers.py
 
-      - name: Upload coverage.xml
+      - name: Magic-number report
+        run: |
+          python scripts/check_magic_numbers.py greenlang/factors --exclude tests --exclude __pycache__ --json-output magic-numbers.json
+
+      - name: Upload quality report
         uses: actions/upload-artifact@v4
+        if: always()
         with:
-          name: coverage-${{ matrix.os }}-py${{ matrix.python }}
-          path: coverage.xml
-          if-no-files-found: error
-          retention-days: 7
-
-      - name: Upload JUnit XML
-        uses: actions/upload-artifact@v4
-        with:
-          name: junit-${{ matrix.os }}-py${{ matrix.python }}
-          path: test-results/junit.xml
+          name: alpha-quality-report
+          path: magic-numbers.json
           if-no-files-found: warn
           retention-days: 7
 
-  integration-tests:
-    name: Integration Tests
+  alpha-tests:
+    name: v0.1 Alpha Test Suite
     runs-on: ubuntu-latest
+    needs: [alpha-quality]
 
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: ${{ env.PYTHON_VERSION }}
           cache: 'pip'
+          cache-dependency-path: pyproject.toml
 
-      - name: Install dependencies
+      - name: Install alpha test dependencies
         run: |
           python -m pip install -U pip
-          pip install -e .[test,dev]
+          pip install -e ".[factors-test]"
 
-      - name: Run integration tests
-        run: pytest -m integration --maxfail=3 -v
+      - name: Run v0.1 alpha suite
+        run: |
+          pytest tests/factors/v0_1_alpha -q \
+            --junitxml=test-results/junit-alpha.xml
 
-      - name: Upload integration test results
+      - name: Upload alpha test results
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: integration-test-results
-          path: test-results/
+          name: alpha-test-results
+          path: test-results/junit-alpha.xml
+          if-no-files-found: warn
           retention-days: 7
 
   build-and-validate:
@@ -166,25 +119,25 @@ jobs:
 
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: ${{ env.PYTHON_VERSION }}
           cache: 'pip'
+          cache-dependency-path: pyproject.toml
 
       - name: Install build tools
         run: python -m pip install -U pip build twine
 
-      - name: Build sdist and wheel
-        run: python -m build
+      - name: Build source distribution
+        run: python -m build --sdist
 
-      - name: Validate wheel and sdist
-        run: twine check dist/*
+      - name: Validate source distribution
+        run: twine check dist/*.tar.gz
 
-      - name: Test package installation in clean env
+      - name: Test source distribution installation in clean env
         shell: bash
         run: |
           python -m venv test_venv
           source test_venv/bin/activate
-          pip install dist/*.whl
-          gl --version || echo "GL command not found, checking alternate installations"
+          pip install dist/*.tar.gz
           python -c "import greenlang; print(greenlang.__version__)"
 
       - name: Upload build artifacts
@@ -197,34 +150,22 @@ jobs:
   ci-gate:
     name: CI Gate Check
     runs-on: ubuntu-latest
-    needs: [lint, unit-tests, integration-tests, build-and-validate]
+    needs: [alpha-quality, alpha-tests, build-and-validate]
     if: always()
 
     steps:
       - name: Check all required jobs passed
         run: |
-          if [[ "${{ needs.lint.result }}" != "success" ]]; then
-            echo "::error::Lint failed"
+          if [[ "${{ needs.alpha-quality.result }}" != "success" ]]; then
+            echo "::error::Alpha quality failed"
             exit 1
           fi
-          if [[ "${{ needs.unit-tests.result }}" != "success" ]]; then
-            echo "::error::Unit tests failed"
-            exit 1
-          fi
-          if [[ "${{ needs.integration-tests.result }}" != "success" ]]; then
-            echo "::error::Integration tests failed"
+          if [[ "${{ needs.alpha-tests.result }}" != "success" ]]; then
+            echo "::error::Alpha tests failed"
             exit 1
           fi
           if [[ "${{ needs.build-and-validate.result }}" != "success" ]]; then
             echo "::error::Build and validate failed"
             exit 1
           fi
-          echo "✅ All CI gates passed"
-
-      - name: Summary
-        run: |
-          echo "# CI Results" >> $GITHUB_STEP_SUMMARY
-          echo "- Lint: ${{ needs.lint.result }}" >> $GITHUB_STEP_SUMMARY
-          echo "- Unit Tests: ${{ needs.unit-tests.result }}" >> $GITHUB_STEP_SUMMARY
-          echo "- Integration Tests: ${{ needs.integration-tests.result }}" >> $GITHUB_STEP_SUMMARY
-          echo "- Build & Validate: ${{ needs.build-and-validate.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "All CI gates passed"

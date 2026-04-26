@@ -63,14 +63,13 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install flake8 and plugins
+      - name: Install flake8
         run: |
-          pip install flake8 flake8-no-magic-numbers
+          pip install flake8
 
       - name: Check for magic numbers
         run: |
-          flake8 greenlang/ --select=FL --exclude=tests,__init__.py || true
-          flake8 greenlang/ --select=FL --exclude=tests,__init__.py --exit-zero --format=json > magic-numbers.json
+          python scripts/check_magic_numbers.py greenlang --exclude tests --exclude __pycache__ --json-output magic-numbers.json
 
       - name: Report magic numbers
         run: |
@@ -128,7 +127,9 @@ jobs:
 
       - name: Run determinism tests
         run: |
-          pytest tests/determinism/ -v --tb=short
+          pytest tests/factors/v0_1_alpha/test_seed_urns_canonical_parse.py \
+            tests/factors/v0_1_alpha/test_alpha_source_snapshots.py \
+            -q --tb=short
 
       - name: Verify reproducible builds
         run: |
@@ -153,32 +154,42 @@ jobs:
 
       - name: Check version consistency
         run: |
-          # Extract versions from different sources
-          PYPROJECT_VERSION=$(grep '^version = ' pyproject.toml | sed 's/version = "\(.*\)"/\1/')
+          python - <<'PY'
+          import pathlib
+          import re
+          import sys
+          import tomllib
 
-          if [ -f "VERSION" ]; then
-            FILE_VERSION=$(cat VERSION | tr -d '\n\r ')
-          else
-            FILE_VERSION=$PYPROJECT_VERSION
-          fi
+          pyproject_version = tomllib.loads(pathlib.Path("pyproject.toml").read_text())["project"]["version"]
+          version_file = pathlib.Path("VERSION")
+          file_version = version_file.read_text().strip() if version_file.exists() else pyproject_version
 
-          if [ -f "greenlang/__init__.py" ]; then
-            INIT_VERSION=$(grep '__version__' greenlang/__init__.py | sed "s/__version__ = ['\"]\\(.*\\)['\"]/\\1/")
-          else
-            INIT_VERSION=$PYPROJECT_VERSION
-          fi
+          version_py = pathlib.Path("greenlang/_version.py").read_text()
+          fallback_match = re.search(r'__version__\s*=\s*["\']([^"\']+)["\']\s*# Fallback version', version_py)
+          fallback_version = fallback_match.group(1) if fallback_match else pyproject_version
 
-          echo "## Version Consistency" >> $GITHUB_STEP_SUMMARY
-          echo "- pyproject.toml: $PYPROJECT_VERSION" >> $GITHUB_STEP_SUMMARY
-          echo "- VERSION file: $FILE_VERSION" >> $GITHUB_STEP_SUMMARY
-          echo "- __init__.py: $INIT_VERSION" >> $GITHUB_STEP_SUMMARY
+          init_exports_version = "__version__" in pathlib.Path("greenlang/__init__.py").read_text()
+          versions = {
+              "pyproject.toml": pyproject_version,
+              "VERSION": file_version,
+              "greenlang/_version.py fallback": fallback_version,
+          }
 
-          if [[ "$PYPROJECT_VERSION" != "$FILE_VERSION" ]] || [[ "$PYPROJECT_VERSION" != "$INIT_VERSION" ]]; then
-            echo "::error::Version mismatch detected!"
-            exit 1
-          fi
+          with open("version-summary.md", "w", encoding="utf-8") as summary:
+              summary.write("## Version Consistency\n")
+              for source, version in versions.items():
+                  summary.write(f"- {source}: {version}\n")
+              summary.write(f"- greenlang/__init__.py exports __version__: {init_exports_version}\n")
 
-          echo "✅ All versions consistent: $PYPROJECT_VERSION"
+          if not init_exports_version or len(set(versions.values())) != 1:
+              print("::error::Version mismatch detected!")
+              print(versions)
+              print(f"greenlang/__init__.py exports __version__: {init_exports_version}")
+              sys.exit(1)
+
+          print(f"All versions consistent: {pyproject_version}")
+          PY
+          cat version-summary.md >> "$GITHUB_STEP_SUMMARY"
 
   governance-gate:
     name: Governance Gate Check

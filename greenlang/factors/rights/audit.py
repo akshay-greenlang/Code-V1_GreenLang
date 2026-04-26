@@ -15,9 +15,9 @@ from __future__ import annotations
 import enum
 import logging
 import threading
-from dataclasses import asdict, dataclass, field
+from dataclasses import dataclass
 from datetime import datetime, timezone
-from typing import Any, Callable, List, Optional
+from typing import Callable, List, Optional
 
 logger = logging.getLogger("greenlang.factors.rights.audit")
 

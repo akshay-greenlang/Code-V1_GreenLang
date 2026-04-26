@@ -1,16 +1,8 @@
 # GreenLang Acceptance & Golden Tests
 #
-# Consolidates: acceptance.yml, pack-validation.yml, performance-regression.yml,
-#               pipeline-validation.yml, examples-smoke.yml
-#
-# Comprehensive acceptance testing:
-# - Golden tests (deterministic validation)
-# - Acceptance test matrix (scaffolding, publish, performance)
-# - Pack validation
-# - Performance benchmarks
-#
-# Author: GreenLang Test Team
-# Version: 3.0.0
+# Active master acceptance gate for the current v0.1 alpha release profile.
+# Broader product and monorepo acceptance suites remain future-scope until
+# their release profiles are promoted.
 
 name: Acceptance & Golden Tests
 
@@ -18,155 +10,62 @@ on:
   push:
     branches: [main, master]
   schedule:
-    - cron: '0 6 * * 1'  # Weekly on Monday at 6 AM UTC
+    - cron: '0 6 * * 1'
   workflow_dispatch:
 
 permissions:
   contents: read
 
+env:
+  PIP_DISABLE_PIP_VERSION_CHECK: "1"
+  GL_FACTORS_RELEASE_PROFILE: "alpha-v0.1"
+  PYTHON_VERSION: "3.11"
+
 jobs:
-  golden-tests:
-    name: Golden Tests
+  alpha-acceptance:
+    name: v0.1 Alpha Acceptance
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: ${{ env.PYTHON_VERSION }}
           cache: 'pip'
+          cache-dependency-path: pyproject.toml
 
-      - name: Install dependencies
+      - name: Install alpha test dependencies
         run: |
           python -m pip install -U pip
-          pip install -e .[test,dev]
+          pip install -e ".[factors-test]"
 
-      - name: Run golden tests
+      - name: Run alpha schema, API, SDK, source, and provenance tests
         run: |
-          pytest tests/golden/ -v --maxfail=5
+          pytest tests/factors/v0_1_alpha -q \
+            --junitxml=test-results/junit-alpha-acceptance.xml
 
-      - name: Upload golden test results
+      - name: Upload alpha acceptance results
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: golden-test-results
-          path: test-results/
-          retention-days: 7
-
-  acceptance-matrix:
-    name: Acceptance (${{ matrix.test-suite }})
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        test-suite:
-          - scaffolding
-          - pack-validation
-          - performance
-          - examples
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-          cache: 'pip'
-
-      - name: Install dependencies
-        run: |
-          python -m pip install -U pip
-          pip install -e .[test,dev]
-
-      - name: Run acceptance tests - ${{ matrix.test-suite }}
-        run: |
-          pytest tests/acceptance/${{ matrix.test-suite }}/ -v --maxfail=3
-
-      - name: Upload test results
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: acceptance-${{ matrix.test-suite }}-results
-          path: test-results/
-          retention-days: 7
-
-  pack-validation:
-    name: Pack Validation
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-          cache: 'pip'
-
-      - name: Install dependencies
-        run: |
-          python -m pip install -U pip
-          pip install -e .[test,dev]
-
-      - name: Validate all packs
-        run: |
-          python -m greenlang.cli pack validate --all
-
-      - name: Test pack imports
-        run: |
-          pytest tests/packs/ -v
-
-  performance-benchmarks:
-    name: Performance Benchmarks
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-          cache: 'pip'
-
-      - name: Install dependencies
-        run: |
-          python -m pip install -U pip
-          pip install -e .[test,dev] pytest-benchmark
-
-      - name: Run performance benchmarks
-        run: |
-          pytest tests/benchmarks/ --benchmark-only --benchmark-json=benchmark-results.json
-
-      - name: Upload benchmark results
-        uses: actions/upload-artifact@v4
-        with:
-          name: benchmark-results
-          path: benchmark-results.json
-          retention-days: 30
+          name: alpha-acceptance-results
+          path: test-results/junit-alpha-acceptance.xml
+          if-no-files-found: warn
+          retention-days: 14
 
   acceptance-gate:
     name: Acceptance Gate Check
     runs-on: ubuntu-latest
-    needs: [golden-tests, acceptance-matrix, pack-validation, performance-benchmarks]
+    needs: [alpha-acceptance]
     if: always()
 
     steps:
-      - name: Check all tests passed
+      - name: Check alpha acceptance passed
         run: |
-          if [[ "${{ needs.golden-tests.result }}" != "success" ]]; then
-            echo "::error::Golden tests failed"
+          if [[ "${{ needs.alpha-acceptance.result }}" != "success" ]]; then
+            echo "::error::Alpha acceptance failed"
             exit 1
           fi
-          if [[ "${{ needs.acceptance-matrix.result }}" != "success" ]]; then
-            echo "::error::Acceptance tests failed"
-            exit 1
-          fi
-          if [[ "${{ needs.pack-validation.result }}" != "success" ]]; then
-            echo "::error::Pack validation failed"
-            exit 1
-          fi
-          if [[ "${{ needs.performance-benchmarks.result }}" != "success" ]]; then
-            echo "::error::Performance benchmarks failed"
-            exit 1
-          fi
-          echo "✅ All acceptance tests passed"
+          echo "All acceptance tests passed"

@@ -19,11 +19,8 @@ from __future__ import annotations
 from typing import Any, Dict, List
 
 import pytest
-from fastapi import FastAPI, Request
-from fastapi.testclient import TestClient
 
 from greenlang.factors.api_v0_1_alpha_routes import (
-    _phase1_rights_evaluate,
     _phase1_rights_filter_list,
     _phase1_rights_filter_one,
 )
@@ -33,11 +30,9 @@ from greenlang.factors.rights import (
     EntitlementStore,
     EntitlementType,
     SourceRightsService,
-    audit_licensed_access,
     get_audit_log,
 )
 from greenlang.factors.rights.audit import AuditDecision
-from greenlang.factors.rights.service import Outcome
 
 
 # ---------------------------------------------------------------------------
@@ -321,7 +316,6 @@ def test_publish_rejects_record_with_mismatched_licence(monkeypatch, tmp_path) -
     """When the registry pins a `licence` value, a record carrying a
     different `licence` must be REJECTED via LicenceMismatch.
     """
-    import os
     monkeypatch.setenv("GL_FACTORS_RIGHTS_FAIL_OPEN", "0")  # production semantic
 
     registry = {
@@ -351,7 +345,6 @@ def test_publish_rejects_record_with_mismatched_licence(monkeypatch, tmp_path) -
     )
     from greenlang.factors.release.alpha_publisher import (
         AlphaPublisher,
-        AlphaPublisherError,
     )
     from greenlang.factors.rights import LicenceMismatch
 

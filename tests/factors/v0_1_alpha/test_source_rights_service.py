@@ -28,13 +28,11 @@ from greenlang.factors.rights import (
     EntitlementStore,
     EntitlementType,
     IngestionBlocked,
-    Decision,
     SourceRightsService,
     audit_licensed_access,
     get_audit_log,
 )
 from greenlang.factors.rights.audit import AuditDecision
-from greenlang.factors.rights.service import Outcome
 
 
 # ---------------------------------------------------------------------------

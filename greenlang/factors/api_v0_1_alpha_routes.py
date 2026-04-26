@@ -29,7 +29,7 @@ import os
 import subprocess
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
-from fastapi import APIRouter, Depends, HTTPException, Path, Query, Request, Response
+from fastapi import APIRouter, Depends, Path, Query, Request, Response
 from fastapi.responses import JSONResponse
 
 from greenlang.factors.api_v0_1_alpha_models import (

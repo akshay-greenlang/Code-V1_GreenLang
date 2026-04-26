@@ -15,11 +15,10 @@ import logging
 import threading
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, Iterable, Optional, Tuple as _Tuple
+from typing import Any, Dict, Optional, Tuple as _Tuple
 
-from .audit import AuditDecision, audit_licensed_access
 from .entitlements import EntitlementStore, load_alpha_entitlements
-from .errors import IngestionBlocked, LicenceMismatch, RightsDenied
+from .errors import IngestionBlocked, RightsDenied
 
 logger = logging.getLogger(__name__)
 
