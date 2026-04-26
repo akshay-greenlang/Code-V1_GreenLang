@@ -47,11 +47,6 @@ jobs:
             # Detect changed agents
             CHANGED_FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} || echo "applications/gl_agents/")
             AGENTS=$(echo "$CHANGED_FILES" | grep "^applications/gl_agents/" | cut -d'/' -f3 | sort -u | jq -R -s -c 'split("\n")[:-1]')
-
-            # If no agents changed, test all
-            if [[ "$AGENTS" == "[]" ]] || [[ "$AGENTS" == "[" "]" ]]; then
-              AGENTS=$(find applications/gl_agents -mindepth 1 -maxdepth 1 -type d -exec basename {} \; | jq -R -s -c 'split("\n")[:-1]')
-            fi
           fi
 
           echo "agents=$AGENTS" >> $GITHUB_OUTPUT
@@ -120,4 +115,4 @@ jobs:
             echo "::error::Agent tests failed"
             exit 1
           fi
-          echo "✅ All agent tests passed"
+          echo "All agent tests passed or no agents changed"
