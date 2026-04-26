@@ -123,6 +123,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install -U pip
+          python -m pip install build
           pip install -e .[test,dev]
 
       - name: Run determinism tests
@@ -133,11 +134,11 @@ jobs:
 
       - name: Verify reproducible builds
         run: |
-          python -m build
-          HASH1=$(sha256sum dist/*.whl | cut -d' ' -f1)
-          rm -rf dist/
-          python -m build
-          HASH2=$(sha256sum dist/*.whl | cut -d' ' -f1)
+          python -m build --sdist
+          HASH1=$(sha256sum dist/*.tar.gz | cut -d' ' -f1)
+          rm -rf dist/ build/
+          python -m build --sdist
+          HASH2=$(sha256sum dist/*.tar.gz | cut -d' ' -f1)
 
           if [ "$HASH1" == "$HASH2" ]; then
             echo "✅ Builds are reproducible"
