@@ -202,3 +202,10 @@ PYPI_UPLOAD_DIAGNOSIS.md
 
 # V2 shell Storybook static output (local builds)
 frontend/storybook-static/
+
+# Local-only audit archive retained temporarily for Phase 0 governance.
+# Contains a nested .git directory and node_modules; do not vendor into this repo.
+_archive/11_ralphy_and_extras/ralphy-agent/
+
+# Codex/Claude local scheduler lock files.
+.claude/*.lock

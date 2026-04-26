@@ -134,18 +134,6 @@ _METHOD_PROFILE_TO_METHODOLOGY_SLUG: Dict[str, str] = {
 }
 
 
-# Source-id -> licence override (SPDX-ish tag) used when the parser's
-# license_info.license is non-canonical for v0.1 alpha.
-_SOURCE_ID_TO_LICENCE: Dict[str, str] = {
-    "epa_hub":                 "public-domain-us-gov",
-    "egrid":                   "public-domain-us-gov",
-    "desnz_ghg_conversion":    "OGL-UK-3.0",
-    "india_cea_co2_baseline":  "GoI-Public-Use",
-    "ipcc_2006_nggi":          "IPCC-PUBLIC",
-    "cbam_default_values":     "EU-COMMISSION-CBAM-DEFAULTS",
-}
-
-
 # AR6 GWP-100 defaults used to collapse vectors -> CO2e when the parser
 # omits a `co2e` field.
 _AR6_GWP100_CH4 = 28
@@ -163,7 +151,11 @@ _RESOLUTION_DEFAULT = "annual"
 # ---------------------------------------------------------------------------
 
 _URN_FACTOR_RE = re.compile(
-    r"^urn:gl:factor:[a-z0-9][a-z0-9-]*(:[A-Za-z0-9._-]+){2,4}:v[1-9][0-9]*$"
+    # Source slug + lowercase namespace + 1-3 lowercase id segments + version.
+    # Namespace MUST be lowercase per URN spec (greenlang.factors.ontology.urn).
+    # Id segments MUST be lowercase too (we don't have ISO-8601 timestamped
+    # factor ids in alpha; v0.5+ may relax this for hourly grid factors).
+    r"^urn:gl:factor:[a-z0-9][a-z0-9-]*(:[a-z0-9][a-z0-9._-]*){2,4}:v[1-9][0-9]*$"
 )
 _URN_GEO_RE = re.compile(
     r"^urn:gl:geo:(global|country|subregion|state_or_province|grid_zone|"
@@ -326,7 +318,11 @@ def coerce_factor_id_to_urn(
 
     cleaned: List[str] = []
     for p in parts:
-        seg = re.sub(r"[^A-Za-z0-9._-]+", "-", p).strip("-")
+        # Lowercase per CTO doc Section 6.1.1 — namespace and id segments
+        # MUST be lowercase (parser allows uppercase 'T'/'Z' only as
+        # ISO-8601 timestamp markers within the id; we have no timestamped
+        # factors in alpha so we lowercase unconditionally).
+        seg = re.sub(r"[^A-Za-z0-9._-]+", "-", p).strip("-").lower()
         if seg:
             cleaned.append(seg)
 
@@ -335,9 +331,10 @@ def coerce_factor_id_to_urn(
             f"factor_id {factor_id!r} produced zero usable segments"
         )
 
-    # If a namespace is supplied, prepend it.
+    # If a namespace is supplied, prepend it. Namespace MUST be lowercase
+    # per the canonical URN spec (greenlang.factors.ontology.urn).
     if namespace:
-        ns_seg = re.sub(r"[^A-Za-z0-9._-]+", "-", namespace).strip("-")
+        ns_seg = re.sub(r"[^A-Za-z0-9._-]+", "-", namespace).strip("-").lower()
         if ns_seg:
             cleaned.insert(0, ns_seg)
 
@@ -355,8 +352,8 @@ def coerce_factor_id_to_urn(
 
     urn = f"urn:gl:factor:{src}:" + ":".join(cleaned) + f":v{version}"
     if not _URN_FACTOR_RE.match(urn):
-        # Last-resort defence: replace any stray illegal char.
-        safe = re.sub(r"[^A-Za-z0-9._-]+", "-", ":".join(cleaned))
+        # Last-resort defence: replace any stray illegal char and re-lowercase.
+        safe = re.sub(r"[^A-Za-z0-9._-]+", "-", ":".join(cleaned)).lower()
         urn = f"urn:gl:factor:{src}:{safe}:v{version}"
     if not _URN_FACTOR_RE.match(urn):
         raise NormalizerError(
@@ -504,26 +501,31 @@ def _factor_pack_urn(
     source_meta: Dict[str, Any],
     record: Dict[str, Any],
 ) -> str:
-    """Compose the ``factor_pack_urn`` per WS2-T2 spec.
+    """Compose the canonical public ``factor_pack_urn``.
 
-    ``urn:gl:pack:<source-slug>:<pack-id>:<source_version>``. ``pack_id``
+    ``urn:gl:pack:<source-slug>:<pack-id>:v<int>``. ``pack_id``
     is sourced (in priority order) from:
 
       1. an explicit per-source override in ``_SOURCE_ID_TO_PACK_ID``
       2. the record's ``factor_family`` mapped via
          ``_FACTOR_FAMILY_TO_PACK_ID``
       3. ``"default-pack"`` as a last resort.
+
+    Upstream source vintages remain in ``extraction.source_version``.
+    They are not part of the public pack URN version segment.
     """
     source_id = str(source_meta.get("source_id") or "")
     src_slug = _urn_slug(source_meta)
-    src_version = str(source_meta.get("source_version") or "0.0.0").strip()
+    pack_version = str(source_meta.get("factor_pack_version") or "v1").strip().lower()
+    if not re.fullmatch(r"v[1-9][0-9]*", pack_version):
+        pack_version = "v1"
 
     pack_id = _SOURCE_ID_TO_PACK_ID.get(source_id)
     if not pack_id:
         family = (record.get("factor_family") or "").strip().lower()
         pack_id = _FACTOR_FAMILY_TO_PACK_ID.get(family) or "default-pack"
 
-    return f"urn:gl:pack:{src_slug}:{slugify(pack_id)}:{src_version}"
+    return f"urn:gl:pack:{src_slug}:{slugify(pack_id)}:{pack_version}"
 
 
 # ---------------------------------------------------------------------------
@@ -737,6 +739,13 @@ def _boundary(record: Dict[str, Any]) -> str:
 
 
 def _licence(record: Dict[str, Any], source_meta: Dict[str, Any]) -> str:
+    # Phase 1 source-rights contract: the registry owns the canonical
+    # public licence tag. Parser-level license_info may use upstream
+    # labels that are not stable enough for factor-record equality.
+    registry_licence = source_meta.get("licence")
+    if isinstance(registry_licence, str) and registry_licence.strip():
+        return registry_licence.strip()[:128]
+
     lic_info = record.get("license_info") or {}
     if isinstance(lic_info, dict):
         name = lic_info.get("license") or lic_info.get("license_name")
@@ -747,9 +756,6 @@ def _licence(record: Dict[str, Any], source_meta: Dict[str, Any]) -> str:
         name = licensing.get("license_name")
         if isinstance(name, str) and name.strip():
             return name.strip()[:128]
-    source_id = str(source_meta.get("source_id") or "")
-    if source_id in _SOURCE_ID_TO_LICENCE:
-        return _SOURCE_ID_TO_LICENCE[source_id]
     lc = source_meta.get("license_class") or "unknown"
     return str(lc)[:128]
 

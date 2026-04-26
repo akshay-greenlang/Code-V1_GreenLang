@@ -5,10 +5,10 @@
   "source_version": "2024.1",
   "records": [
     {
-      "urn": "urn:gl:factor:cbam-default-values:CBAM:steel:CN:2024:v1",
+      "urn": "urn:gl:factor:cbam-default-values:cbam:steel:cn:2024:v1",
       "factor_id_alias": "EF:CBAM:steel:CN:2024:v1",
       "source_urn": "urn:gl:source:cbam-default-values",
-      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:v1",
       "name": "cbam steel \u2014 CN",
       "description": "Material Embodied emission factor for cbam steel \u2014 CN, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "cbam_default",
@@ -22,7 +22,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:eu-cbam-default",
       "boundary": "cradle_to_gate",
-      "licence": "EU-Publication",
+      "licence": "EU-COMMISSION-CBAM-DEFAULTS",
       "citations": [
         {
           "type": "url",
@@ -61,10 +61,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:cbam-default-values:CBAM:steel:IN:2024:v1",
+      "urn": "urn:gl:factor:cbam-default-values:cbam:steel:in:2024:v1",
       "factor_id_alias": "EF:CBAM:steel:IN:2024:v1",
       "source_urn": "urn:gl:source:cbam-default-values",
-      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:v1",
       "name": "cbam steel \u2014 IN",
       "description": "Material Embodied emission factor for cbam steel \u2014 IN, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "cbam_default",
@@ -78,7 +78,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:eu-cbam-default",
       "boundary": "cradle_to_gate",
-      "licence": "EU-Publication",
+      "licence": "EU-COMMISSION-CBAM-DEFAULTS",
       "citations": [
         {
           "type": "url",
@@ -117,10 +117,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:cbam-default-values:CBAM:steel:TR:2024:v1",
+      "urn": "urn:gl:factor:cbam-default-values:cbam:steel:tr:2024:v1",
       "factor_id_alias": "EF:CBAM:steel:TR:2024:v1",
       "source_urn": "urn:gl:source:cbam-default-values",
-      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:v1",
       "name": "cbam steel \u2014 TR",
       "description": "Material Embodied emission factor for cbam steel \u2014 TR, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "cbam_default",
@@ -134,7 +134,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:eu-cbam-default",
       "boundary": "cradle_to_gate",
-      "licence": "EU-Publication",
+      "licence": "EU-COMMISSION-CBAM-DEFAULTS",
       "citations": [
         {
           "type": "url",
@@ -173,10 +173,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:cbam-default-values:CBAM:steel:RU:2024:v1",
+      "urn": "urn:gl:factor:cbam-default-values:cbam:steel:ru:2024:v1",
       "factor_id_alias": "EF:CBAM:steel:RU:2024:v1",
       "source_urn": "urn:gl:source:cbam-default-values",
-      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:v1",
       "name": "cbam steel \u2014 RU",
       "description": "Material Embodied emission factor for cbam steel \u2014 RU, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "cbam_default",
@@ -190,7 +190,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:eu-cbam-default",
       "boundary": "cradle_to_gate",
-      "licence": "EU-Publication",
+      "licence": "EU-COMMISSION-CBAM-DEFAULTS",
       "citations": [
         {
           "type": "url",
@@ -229,10 +229,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:cbam-default-values:CBAM:steel:UA:2024:v1",
+      "urn": "urn:gl:factor:cbam-default-values:cbam:steel:ua:2024:v1",
       "factor_id_alias": "EF:CBAM:steel:UA:2024:v1",
       "source_urn": "urn:gl:source:cbam-default-values",
-      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:v1",
       "name": "cbam steel \u2014 UA",
       "description": "Material Embodied emission factor for cbam steel \u2014 UA, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "cbam_default",
@@ -246,7 +246,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:eu-cbam-default",
       "boundary": "cradle_to_gate",
-      "licence": "EU-Publication",
+      "licence": "EU-COMMISSION-CBAM-DEFAULTS",
       "citations": [
         {
           "type": "url",
@@ -285,10 +285,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:cbam-default-values:CBAM:steel:BR:2024:v1",
+      "urn": "urn:gl:factor:cbam-default-values:cbam:steel:br:2024:v1",
       "factor_id_alias": "EF:CBAM:steel:BR:2024:v1",
       "source_urn": "urn:gl:source:cbam-default-values",
-      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:v1",
       "name": "cbam steel \u2014 BR",
       "description": "Material Embodied emission factor for cbam steel \u2014 BR, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "cbam_default",
@@ -302,7 +302,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:eu-cbam-default",
       "boundary": "cradle_to_gate",
-      "licence": "EU-Publication",
+      "licence": "EU-COMMISSION-CBAM-DEFAULTS",
       "citations": [
         {
           "type": "url",
@@ -341,10 +341,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:cbam-default-values:CBAM:steel:KR:2024:v1",
+      "urn": "urn:gl:factor:cbam-default-values:cbam:steel:kr:2024:v1",
       "factor_id_alias": "EF:CBAM:steel:KR:2024:v1",
       "source_urn": "urn:gl:source:cbam-default-values",
-      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:v1",
       "name": "cbam steel \u2014 KR",
       "description": "Material Embodied emission factor for cbam steel \u2014 KR, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "cbam_default",
@@ -358,7 +358,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:eu-cbam-default",
       "boundary": "cradle_to_gate",
-      "licence": "EU-Publication",
+      "licence": "EU-COMMISSION-CBAM-DEFAULTS",
       "citations": [
         {
           "type": "url",
@@ -397,10 +397,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:cbam-default-values:CBAM:steel:JP:2024:v1",
+      "urn": "urn:gl:factor:cbam-default-values:cbam:steel:jp:2024:v1",
       "factor_id_alias": "EF:CBAM:steel:JP:2024:v1",
       "source_urn": "urn:gl:source:cbam-default-values",
-      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:v1",
       "name": "cbam steel \u2014 JP",
       "description": "Material Embodied emission factor for cbam steel \u2014 JP, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "cbam_default",
@@ -414,7 +414,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:eu-cbam-default",
       "boundary": "cradle_to_gate",
-      "licence": "EU-Publication",
+      "licence": "EU-COMMISSION-CBAM-DEFAULTS",
       "citations": [
         {
           "type": "url",
@@ -453,10 +453,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:cbam-default-values:CBAM:steel:US:2024:v1",
+      "urn": "urn:gl:factor:cbam-default-values:cbam:steel:us:2024:v1",
       "factor_id_alias": "EF:CBAM:steel:US:2024:v1",
       "source_urn": "urn:gl:source:cbam-default-values",
-      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:v1",
       "name": "cbam steel \u2014 US",
       "description": "Material Embodied emission factor for cbam steel \u2014 US, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "cbam_default",
@@ -470,7 +470,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:eu-cbam-default",
       "boundary": "cradle_to_gate",
-      "licence": "EU-Publication",
+      "licence": "EU-COMMISSION-CBAM-DEFAULTS",
       "citations": [
         {
           "type": "url",
@@ -509,10 +509,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:cbam-default-values:CBAM:steel:VN:2024:v1",
+      "urn": "urn:gl:factor:cbam-default-values:cbam:steel:vn:2024:v1",
       "factor_id_alias": "EF:CBAM:steel:VN:2024:v1",
       "source_urn": "urn:gl:source:cbam-default-values",
-      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:v1",
       "name": "cbam steel \u2014 VN",
       "description": "Material Embodied emission factor for cbam steel \u2014 VN, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "cbam_default",
@@ -526,7 +526,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:eu-cbam-default",
       "boundary": "cradle_to_gate",
-      "licence": "EU-Publication",
+      "licence": "EU-COMMISSION-CBAM-DEFAULTS",
       "citations": [
         {
           "type": "url",
@@ -565,10 +565,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:cbam-default-values:CBAM:steel:ZA:2024:v1",
+      "urn": "urn:gl:factor:cbam-default-values:cbam:steel:za:2024:v1",
       "factor_id_alias": "EF:CBAM:steel:ZA:2024:v1",
       "source_urn": "urn:gl:source:cbam-default-values",
-      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:v1",
       "name": "cbam steel \u2014 ZA",
       "description": "Material Embodied emission factor for cbam steel \u2014 ZA, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "cbam_default",
@@ -582,7 +582,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:eu-cbam-default",
       "boundary": "cradle_to_gate",
-      "licence": "EU-Publication",
+      "licence": "EU-COMMISSION-CBAM-DEFAULTS",
       "citations": [
         {
           "type": "url",
@@ -621,10 +621,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:cbam-default-values:CBAM:steel:ID:2024:v1",
+      "urn": "urn:gl:factor:cbam-default-values:cbam:steel:id:2024:v1",
       "factor_id_alias": "EF:CBAM:steel:ID:2024:v1",
       "source_urn": "urn:gl:source:cbam-default-values",
-      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:v1",
       "name": "cbam steel \u2014 ID",
       "description": "Material Embodied emission factor for cbam steel \u2014 ID, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "cbam_default",
@@ -638,7 +638,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:eu-cbam-default",
       "boundary": "cradle_to_gate",
-      "licence": "EU-Publication",
+      "licence": "EU-COMMISSION-CBAM-DEFAULTS",
       "citations": [
         {
           "type": "url",
@@ -677,10 +677,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:cbam-default-values:CBAM:iron:CN:2024:v1",
+      "urn": "urn:gl:factor:cbam-default-values:cbam:iron:cn:2024:v1",
       "factor_id_alias": "EF:CBAM:iron:CN:2024:v1",
       "source_urn": "urn:gl:source:cbam-default-values",
-      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:v1",
       "name": "cbam iron \u2014 CN",
       "description": "Material Embodied emission factor for cbam iron \u2014 CN, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "cbam_default",
@@ -694,7 +694,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:eu-cbam-default",
       "boundary": "cradle_to_gate",
-      "licence": "EU-Publication",
+      "licence": "EU-COMMISSION-CBAM-DEFAULTS",
       "citations": [
         {
           "type": "url",
@@ -733,10 +733,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:cbam-default-values:CBAM:iron:IN:2024:v1",
+      "urn": "urn:gl:factor:cbam-default-values:cbam:iron:in:2024:v1",
       "factor_id_alias": "EF:CBAM:iron:IN:2024:v1",
       "source_urn": "urn:gl:source:cbam-default-values",
-      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:v1",
       "name": "cbam iron \u2014 IN",
       "description": "Material Embodied emission factor for cbam iron \u2014 IN, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "cbam_default",
@@ -750,7 +750,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:eu-cbam-default",
       "boundary": "cradle_to_gate",
-      "licence": "EU-Publication",
+      "licence": "EU-COMMISSION-CBAM-DEFAULTS",
       "citations": [
         {
           "type": "url",
@@ -789,10 +789,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:cbam-default-values:CBAM:iron:RU:2024:v1",
+      "urn": "urn:gl:factor:cbam-default-values:cbam:iron:ru:2024:v1",
       "factor_id_alias": "EF:CBAM:iron:RU:2024:v1",
       "source_urn": "urn:gl:source:cbam-default-values",
-      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:v1",
       "name": "cbam iron \u2014 RU",
       "description": "Material Embodied emission factor for cbam iron \u2014 RU, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "cbam_default",
@@ -806,7 +806,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:eu-cbam-default",
       "boundary": "cradle_to_gate",
-      "licence": "EU-Publication",
+      "licence": "EU-COMMISSION-CBAM-DEFAULTS",
       "citations": [
         {
           "type": "url",
@@ -845,10 +845,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:cbam-default-values:CBAM:iron:BR:2024:v1",
+      "urn": "urn:gl:factor:cbam-default-values:cbam:iron:br:2024:v1",
       "factor_id_alias": "EF:CBAM:iron:BR:2024:v1",
       "source_urn": "urn:gl:source:cbam-default-values",
-      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:v1",
       "name": "cbam iron \u2014 BR",
       "description": "Material Embodied emission factor for cbam iron \u2014 BR, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "cbam_default",
@@ -862,7 +862,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:eu-cbam-default",
       "boundary": "cradle_to_gate",
-      "licence": "EU-Publication",
+      "licence": "EU-COMMISSION-CBAM-DEFAULTS",
       "citations": [
         {
           "type": "url",
@@ -901,10 +901,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:cbam-default-values:CBAM:iron:US:2024:v1",
+      "urn": "urn:gl:factor:cbam-default-values:cbam:iron:us:2024:v1",
       "factor_id_alias": "EF:CBAM:iron:US:2024:v1",
       "source_urn": "urn:gl:source:cbam-default-values",
-      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:v1",
       "name": "cbam iron \u2014 US",
       "description": "Material Embodied emission factor for cbam iron \u2014 US, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "cbam_default",
@@ -918,7 +918,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:eu-cbam-default",
       "boundary": "cradle_to_gate",
-      "licence": "EU-Publication",
+      "licence": "EU-COMMISSION-CBAM-DEFAULTS",
       "citations": [
         {
           "type": "url",
@@ -957,10 +957,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:cbam-default-values:CBAM:iron:UA:2024:v1",
+      "urn": "urn:gl:factor:cbam-default-values:cbam:iron:ua:2024:v1",
       "factor_id_alias": "EF:CBAM:iron:UA:2024:v1",
       "source_urn": "urn:gl:source:cbam-default-values",
-      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:v1",
       "name": "cbam iron \u2014 UA",
       "description": "Material Embodied emission factor for cbam iron \u2014 UA, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "cbam_default",
@@ -974,7 +974,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:eu-cbam-default",
       "boundary": "cradle_to_gate",
-      "licence": "EU-Publication",
+      "licence": "EU-COMMISSION-CBAM-DEFAULTS",
       "citations": [
         {
           "type": "url",
@@ -1013,10 +1013,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:cbam-default-values:CBAM:aluminium:CN:2024:v1",
+      "urn": "urn:gl:factor:cbam-default-values:cbam:aluminium:cn:2024:v1",
       "factor_id_alias": "EF:CBAM:aluminium:CN:2024:v1",
       "source_urn": "urn:gl:source:cbam-default-values",
-      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:v1",
       "name": "cbam aluminium \u2014 CN",
       "description": "Material Embodied emission factor for cbam aluminium \u2014 CN, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "cbam_default",
@@ -1030,7 +1030,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:eu-cbam-default",
       "boundary": "cradle_to_gate",
-      "licence": "EU-Publication",
+      "licence": "EU-COMMISSION-CBAM-DEFAULTS",
       "citations": [
         {
           "type": "url",
@@ -1069,10 +1069,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:cbam-default-values:CBAM:aluminium:IN:2024:v1",
+      "urn": "urn:gl:factor:cbam-default-values:cbam:aluminium:in:2024:v1",
       "factor_id_alias": "EF:CBAM:aluminium:IN:2024:v1",
       "source_urn": "urn:gl:source:cbam-default-values",
-      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:v1",
       "name": "cbam aluminium \u2014 IN",
       "description": "Material Embodied emission factor for cbam aluminium \u2014 IN, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "cbam_default",
@@ -1086,7 +1086,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:eu-cbam-default",
       "boundary": "cradle_to_gate",
-      "licence": "EU-Publication",
+      "licence": "EU-COMMISSION-CBAM-DEFAULTS",
       "citations": [
         {
           "type": "url",
@@ -1125,10 +1125,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:cbam-default-values:CBAM:aluminium:RU:2024:v1",
+      "urn": "urn:gl:factor:cbam-default-values:cbam:aluminium:ru:2024:v1",
       "factor_id_alias": "EF:CBAM:aluminium:RU:2024:v1",
       "source_urn": "urn:gl:source:cbam-default-values",
-      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:v1",
       "name": "cbam aluminium \u2014 RU",
       "description": "Material Embodied emission factor for cbam aluminium \u2014 RU, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "cbam_default",
@@ -1142,7 +1142,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:eu-cbam-default",
       "boundary": "cradle_to_gate",
-      "licence": "EU-Publication",
+      "licence": "EU-COMMISSION-CBAM-DEFAULTS",
       "citations": [
         {
           "type": "url",
@@ -1181,10 +1181,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:cbam-default-values:CBAM:aluminium:AE:2024:v1",
+      "urn": "urn:gl:factor:cbam-default-values:cbam:aluminium:ae:2024:v1",
       "factor_id_alias": "EF:CBAM:aluminium:AE:2024:v1",
       "source_urn": "urn:gl:source:cbam-default-values",
-      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:v1",
       "name": "cbam aluminium \u2014 AE",
       "description": "Material Embodied emission factor for cbam aluminium \u2014 AE, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "cbam_default",
@@ -1198,7 +1198,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:eu-cbam-default",
       "boundary": "cradle_to_gate",
-      "licence": "EU-Publication",
+      "licence": "EU-COMMISSION-CBAM-DEFAULTS",
       "citations": [
         {
           "type": "url",
@@ -1237,10 +1237,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:cbam-default-values:CBAM:aluminium:AU:2024:v1",
+      "urn": "urn:gl:factor:cbam-default-values:cbam:aluminium:au:2024:v1",
       "factor_id_alias": "EF:CBAM:aluminium:AU:2024:v1",
       "source_urn": "urn:gl:source:cbam-default-values",
-      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:v1",
       "name": "cbam aluminium \u2014 AU",
       "description": "Material Embodied emission factor for cbam aluminium \u2014 AU, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "cbam_default",
@@ -1254,7 +1254,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:eu-cbam-default",
       "boundary": "cradle_to_gate",
-      "licence": "EU-Publication",
+      "licence": "EU-COMMISSION-CBAM-DEFAULTS",
       "citations": [
         {
           "type": "url",
@@ -1293,10 +1293,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:cbam-default-values:CBAM:aluminium:IS:2024:v1",
+      "urn": "urn:gl:factor:cbam-default-values:cbam:aluminium:is:2024:v1",
       "factor_id_alias": "EF:CBAM:aluminium:IS:2024:v1",
       "source_urn": "urn:gl:source:cbam-default-values",
-      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:v1",
       "name": "cbam aluminium \u2014 IS",
       "description": "Material Embodied emission factor for cbam aluminium \u2014 IS, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "cbam_default",
@@ -1310,7 +1310,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:eu-cbam-default",
       "boundary": "cradle_to_gate",
-      "licence": "EU-Publication",
+      "licence": "EU-COMMISSION-CBAM-DEFAULTS",
       "citations": [
         {
           "type": "url",
@@ -1349,10 +1349,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:cbam-default-values:CBAM:aluminium:NO:2024:v1",
+      "urn": "urn:gl:factor:cbam-default-values:cbam:aluminium:no:2024:v1",
       "factor_id_alias": "EF:CBAM:aluminium:NO:2024:v1",
       "source_urn": "urn:gl:source:cbam-default-values",
-      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:v1",
       "name": "cbam aluminium \u2014 NO",
       "description": "Material Embodied emission factor for cbam aluminium \u2014 NO, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "cbam_default",
@@ -1366,7 +1366,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:eu-cbam-default",
       "boundary": "cradle_to_gate",
-      "licence": "EU-Publication",
+      "licence": "EU-COMMISSION-CBAM-DEFAULTS",
       "citations": [
         {
           "type": "url",
@@ -1405,10 +1405,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:cbam-default-values:CBAM:aluminium:CA:2024:v1",
+      "urn": "urn:gl:factor:cbam-default-values:cbam:aluminium:ca:2024:v1",
       "factor_id_alias": "EF:CBAM:aluminium:CA:2024:v1",
       "source_urn": "urn:gl:source:cbam-default-values",
-      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:v1",
       "name": "cbam aluminium \u2014 CA",
       "description": "Material Embodied emission factor for cbam aluminium \u2014 CA, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "cbam_default",
@@ -1422,7 +1422,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:eu-cbam-default",
       "boundary": "cradle_to_gate",
-      "licence": "EU-Publication",
+      "licence": "EU-COMMISSION-CBAM-DEFAULTS",
       "citations": [
         {
           "type": "url",
@@ -1461,10 +1461,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:cbam-default-values:CBAM:aluminium:US:2024:v1",
+      "urn": "urn:gl:factor:cbam-default-values:cbam:aluminium:us:2024:v1",
       "factor_id_alias": "EF:CBAM:aluminium:US:2024:v1",
       "source_urn": "urn:gl:source:cbam-default-values",
-      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:v1",
       "name": "cbam aluminium \u2014 US",
       "description": "Material Embodied emission factor for cbam aluminium \u2014 US, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "cbam_default",
@@ -1478,7 +1478,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:eu-cbam-default",
       "boundary": "cradle_to_gate",
-      "licence": "EU-Publication",
+      "licence": "EU-COMMISSION-CBAM-DEFAULTS",
       "citations": [
         {
           "type": "url",
@@ -1517,10 +1517,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:cbam-default-values:CBAM:aluminium:BH:2024:v1",
+      "urn": "urn:gl:factor:cbam-default-values:cbam:aluminium:bh:2024:v1",
       "factor_id_alias": "EF:CBAM:aluminium:BH:2024:v1",
       "source_urn": "urn:gl:source:cbam-default-values",
-      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:v1",
       "name": "cbam aluminium \u2014 BH",
       "description": "Material Embodied emission factor for cbam aluminium \u2014 BH, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "cbam_default",
@@ -1534,7 +1534,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:eu-cbam-default",
       "boundary": "cradle_to_gate",
-      "licence": "EU-Publication",
+      "licence": "EU-COMMISSION-CBAM-DEFAULTS",
       "citations": [
         {
           "type": "url",
@@ -1573,10 +1573,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:cbam-default-values:CBAM:aluminium:TR:2024:v1",
+      "urn": "urn:gl:factor:cbam-default-values:cbam:aluminium:tr:2024:v1",
       "factor_id_alias": "EF:CBAM:aluminium:TR:2024:v1",
       "source_urn": "urn:gl:source:cbam-default-values",
-      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:v1",
       "name": "cbam aluminium \u2014 TR",
       "description": "Material Embodied emission factor for cbam aluminium \u2014 TR, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "cbam_default",
@@ -1590,7 +1590,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:eu-cbam-default",
       "boundary": "cradle_to_gate",
-      "licence": "EU-Publication",
+      "licence": "EU-COMMISSION-CBAM-DEFAULTS",
       "citations": [
         {
           "type": "url",
@@ -1629,10 +1629,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:cbam-default-values:CBAM:cement:CN:2024:v1",
+      "urn": "urn:gl:factor:cbam-default-values:cbam:cement:cn:2024:v1",
       "factor_id_alias": "EF:CBAM:cement:CN:2024:v1",
       "source_urn": "urn:gl:source:cbam-default-values",
-      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:v1",
       "name": "cbam cement \u2014 CN",
       "description": "Material Embodied emission factor for cbam cement \u2014 CN, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "cbam_default",
@@ -1646,7 +1646,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:eu-cbam-default",
       "boundary": "cradle_to_gate",
-      "licence": "EU-Publication",
+      "licence": "EU-COMMISSION-CBAM-DEFAULTS",
       "citations": [
         {
           "type": "url",
@@ -1685,10 +1685,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:cbam-default-values:CBAM:cement:IN:2024:v1",
+      "urn": "urn:gl:factor:cbam-default-values:cbam:cement:in:2024:v1",
       "factor_id_alias": "EF:CBAM:cement:IN:2024:v1",
       "source_urn": "urn:gl:source:cbam-default-values",
-      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:v1",
       "name": "cbam cement \u2014 IN",
       "description": "Material Embodied emission factor for cbam cement \u2014 IN, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "cbam_default",
@@ -1702,7 +1702,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:eu-cbam-default",
       "boundary": "cradle_to_gate",
-      "licence": "EU-Publication",
+      "licence": "EU-COMMISSION-CBAM-DEFAULTS",
       "citations": [
         {
           "type": "url",
@@ -1741,10 +1741,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:cbam-default-values:CBAM:cement:EG:2024:v1",
+      "urn": "urn:gl:factor:cbam-default-values:cbam:cement:eg:2024:v1",
       "factor_id_alias": "EF:CBAM:cement:EG:2024:v1",
       "source_urn": "urn:gl:source:cbam-default-values",
-      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:v1",
       "name": "cbam cement \u2014 EG",
       "description": "Material Embodied emission factor for cbam cement \u2014 EG, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "cbam_default",
@@ -1758,7 +1758,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:eu-cbam-default",
       "boundary": "cradle_to_gate",
-      "licence": "EU-Publication",
+      "licence": "EU-COMMISSION-CBAM-DEFAULTS",
       "citations": [
         {
           "type": "url",
@@ -1797,10 +1797,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:cbam-default-values:CBAM:cement:TR:2024:v1",
+      "urn": "urn:gl:factor:cbam-default-values:cbam:cement:tr:2024:v1",
       "factor_id_alias": "EF:CBAM:cement:TR:2024:v1",
       "source_urn": "urn:gl:source:cbam-default-values",
-      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:v1",
       "name": "cbam cement \u2014 TR",
       "description": "Material Embodied emission factor for cbam cement \u2014 TR, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "cbam_default",
@@ -1814,7 +1814,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:eu-cbam-default",
       "boundary": "cradle_to_gate",
-      "licence": "EU-Publication",
+      "licence": "EU-COMMISSION-CBAM-DEFAULTS",
       "citations": [
         {
           "type": "url",
@@ -1853,10 +1853,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:cbam-default-values:CBAM:cement:VN:2024:v1",
+      "urn": "urn:gl:factor:cbam-default-values:cbam:cement:vn:2024:v1",
       "factor_id_alias": "EF:CBAM:cement:VN:2024:v1",
       "source_urn": "urn:gl:source:cbam-default-values",
-      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:v1",
       "name": "cbam cement \u2014 VN",
       "description": "Material Embodied emission factor for cbam cement \u2014 VN, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "cbam_default",
@@ -1870,7 +1870,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:eu-cbam-default",
       "boundary": "cradle_to_gate",
-      "licence": "EU-Publication",
+      "licence": "EU-COMMISSION-CBAM-DEFAULTS",
       "citations": [
         {
           "type": "url",
@@ -1909,10 +1909,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:cbam-default-values:CBAM:cement:TN:2024:v1",
+      "urn": "urn:gl:factor:cbam-default-values:cbam:cement:tn:2024:v1",
       "factor_id_alias": "EF:CBAM:cement:TN:2024:v1",
       "source_urn": "urn:gl:source:cbam-default-values",
-      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:v1",
       "name": "cbam cement \u2014 TN",
       "description": "Material Embodied emission factor for cbam cement \u2014 TN, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "cbam_default",
@@ -1926,7 +1926,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:eu-cbam-default",
       "boundary": "cradle_to_gate",
-      "licence": "EU-Publication",
+      "licence": "EU-COMMISSION-CBAM-DEFAULTS",
       "citations": [
         {
           "type": "url",
@@ -1965,10 +1965,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:cbam-default-values:CBAM:cement:MA:2024:v1",
+      "urn": "urn:gl:factor:cbam-default-values:cbam:cement:ma:2024:v1",
       "factor_id_alias": "EF:CBAM:cement:MA:2024:v1",
       "source_urn": "urn:gl:source:cbam-default-values",
-      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:v1",
       "name": "cbam cement \u2014 MA",
       "description": "Material Embodied emission factor for cbam cement \u2014 MA, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "cbam_default",
@@ -1982,7 +1982,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:eu-cbam-default",
       "boundary": "cradle_to_gate",
-      "licence": "EU-Publication",
+      "licence": "EU-COMMISSION-CBAM-DEFAULTS",
       "citations": [
         {
           "type": "url",
@@ -2021,10 +2021,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:cbam-default-values:CBAM:cement:UA:2024:v1",
+      "urn": "urn:gl:factor:cbam-default-values:cbam:cement:ua:2024:v1",
       "factor_id_alias": "EF:CBAM:cement:UA:2024:v1",
       "source_urn": "urn:gl:source:cbam-default-values",
-      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:v1",
       "name": "cbam cement \u2014 UA",
       "description": "Material Embodied emission factor for cbam cement \u2014 UA, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "cbam_default",
@@ -2038,7 +2038,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:eu-cbam-default",
       "boundary": "cradle_to_gate",
-      "licence": "EU-Publication",
+      "licence": "EU-COMMISSION-CBAM-DEFAULTS",
       "citations": [
         {
           "type": "url",
@@ -2077,10 +2077,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:cbam-default-values:CBAM:cement:BR:2024:v1",
+      "urn": "urn:gl:factor:cbam-default-values:cbam:cement:br:2024:v1",
       "factor_id_alias": "EF:CBAM:cement:BR:2024:v1",
       "source_urn": "urn:gl:source:cbam-default-values",
-      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:v1",
       "name": "cbam cement \u2014 BR",
       "description": "Material Embodied emission factor for cbam cement \u2014 BR, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "cbam_default",
@@ -2094,7 +2094,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:eu-cbam-default",
       "boundary": "cradle_to_gate",
-      "licence": "EU-Publication",
+      "licence": "EU-COMMISSION-CBAM-DEFAULTS",
       "citations": [
         {
           "type": "url",
@@ -2133,10 +2133,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:cbam-default-values:CBAM:fertilizer:RU:2024:v1",
+      "urn": "urn:gl:factor:cbam-default-values:cbam:fertilizer:ru:2024:v1",
       "factor_id_alias": "EF:CBAM:fertilizer:RU:2024:v1",
       "source_urn": "urn:gl:source:cbam-default-values",
-      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:v1",
       "name": "cbam fertilizer \u2014 RU",
       "description": "Material Embodied emission factor for cbam fertilizer \u2014 RU, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "cbam_default",
@@ -2150,7 +2150,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:eu-cbam-default",
       "boundary": "cradle_to_gate",
-      "licence": "EU-Publication",
+      "licence": "EU-COMMISSION-CBAM-DEFAULTS",
       "citations": [
         {
           "type": "url",
@@ -2189,10 +2189,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:cbam-default-values:CBAM:fertilizer:EG:2024:v1",
+      "urn": "urn:gl:factor:cbam-default-values:cbam:fertilizer:eg:2024:v1",
       "factor_id_alias": "EF:CBAM:fertilizer:EG:2024:v1",
       "source_urn": "urn:gl:source:cbam-default-values",
-      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:v1",
       "name": "cbam fertilizer \u2014 EG",
       "description": "Material Embodied emission factor for cbam fertilizer \u2014 EG, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "cbam_default",
@@ -2206,7 +2206,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:eu-cbam-default",
       "boundary": "cradle_to_gate",
-      "licence": "EU-Publication",
+      "licence": "EU-COMMISSION-CBAM-DEFAULTS",
       "citations": [
         {
           "type": "url",
@@ -2245,10 +2245,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:cbam-default-values:CBAM:fertilizer:MA:2024:v1",
+      "urn": "urn:gl:factor:cbam-default-values:cbam:fertilizer:ma:2024:v1",
       "factor_id_alias": "EF:CBAM:fertilizer:MA:2024:v1",
       "source_urn": "urn:gl:source:cbam-default-values",
-      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:v1",
       "name": "cbam fertilizer \u2014 MA",
       "description": "Material Embodied emission factor for cbam fertilizer \u2014 MA, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "cbam_default",
@@ -2262,7 +2262,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:eu-cbam-default",
       "boundary": "cradle_to_gate",
-      "licence": "EU-Publication",
+      "licence": "EU-COMMISSION-CBAM-DEFAULTS",
       "citations": [
         {
           "type": "url",
@@ -2301,10 +2301,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:cbam-default-values:CBAM:fertilizer:DZ:2024:v1",
+      "urn": "urn:gl:factor:cbam-default-values:cbam:fertilizer:dz:2024:v1",
       "factor_id_alias": "EF:CBAM:fertilizer:DZ:2024:v1",
       "source_urn": "urn:gl:source:cbam-default-values",
-      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:v1",
       "name": "cbam fertilizer \u2014 DZ",
       "description": "Material Embodied emission factor for cbam fertilizer \u2014 DZ, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "cbam_default",
@@ -2318,7 +2318,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:eu-cbam-default",
       "boundary": "cradle_to_gate",
-      "licence": "EU-Publication",
+      "licence": "EU-COMMISSION-CBAM-DEFAULTS",
       "citations": [
         {
           "type": "url",
@@ -2357,10 +2357,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:cbam-default-values:CBAM:fertilizer:IN:2024:v1",
+      "urn": "urn:gl:factor:cbam-default-values:cbam:fertilizer:in:2024:v1",
       "factor_id_alias": "EF:CBAM:fertilizer:IN:2024:v1",
       "source_urn": "urn:gl:source:cbam-default-values",
-      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:v1",
       "name": "cbam fertilizer \u2014 IN",
       "description": "Material Embodied emission factor for cbam fertilizer \u2014 IN, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "cbam_default",
@@ -2374,7 +2374,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:eu-cbam-default",
       "boundary": "cradle_to_gate",
-      "licence": "EU-Publication",
+      "licence": "EU-COMMISSION-CBAM-DEFAULTS",
       "citations": [
         {
           "type": "url",
@@ -2413,10 +2413,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:cbam-default-values:CBAM:fertilizer:CN:2024:v1",
+      "urn": "urn:gl:factor:cbam-default-values:cbam:fertilizer:cn:2024:v1",
       "factor_id_alias": "EF:CBAM:fertilizer:CN:2024:v1",
       "source_urn": "urn:gl:source:cbam-default-values",
-      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:v1",
       "name": "cbam fertilizer \u2014 CN",
       "description": "Material Embodied emission factor for cbam fertilizer \u2014 CN, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "cbam_default",
@@ -2430,7 +2430,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:eu-cbam-default",
       "boundary": "cradle_to_gate",
-      "licence": "EU-Publication",
+      "licence": "EU-COMMISSION-CBAM-DEFAULTS",
       "citations": [
         {
           "type": "url",
@@ -2469,10 +2469,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:cbam-default-values:CBAM:fertilizer:TR:2024:v1",
+      "urn": "urn:gl:factor:cbam-default-values:cbam:fertilizer:tr:2024:v1",
       "factor_id_alias": "EF:CBAM:fertilizer:TR:2024:v1",
       "source_urn": "urn:gl:source:cbam-default-values",
-      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:v1",
       "name": "cbam fertilizer \u2014 TR",
       "description": "Material Embodied emission factor for cbam fertilizer \u2014 TR, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "cbam_default",
@@ -2486,7 +2486,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:eu-cbam-default",
       "boundary": "cradle_to_gate",
-      "licence": "EU-Publication",
+      "licence": "EU-COMMISSION-CBAM-DEFAULTS",
       "citations": [
         {
           "type": "url",
@@ -2525,10 +2525,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:cbam-default-values:CBAM:fertilizer:SA:2024:v1",
+      "urn": "urn:gl:factor:cbam-default-values:cbam:fertilizer:sa:2024:v1",
       "factor_id_alias": "EF:CBAM:fertilizer:SA:2024:v1",
       "source_urn": "urn:gl:source:cbam-default-values",
-      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:v1",
       "name": "cbam fertilizer \u2014 SA",
       "description": "Material Embodied emission factor for cbam fertilizer \u2014 SA, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "cbam_default",
@@ -2542,7 +2542,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:eu-cbam-default",
       "boundary": "cradle_to_gate",
-      "licence": "EU-Publication",
+      "licence": "EU-COMMISSION-CBAM-DEFAULTS",
       "citations": [
         {
           "type": "url",
@@ -2581,10 +2581,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:cbam-default-values:CBAM:hydrogen:SA:2024:v1",
+      "urn": "urn:gl:factor:cbam-default-values:cbam:hydrogen:sa:2024:v1",
       "factor_id_alias": "EF:CBAM:hydrogen:SA:2024:v1",
       "source_urn": "urn:gl:source:cbam-default-values",
-      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:v1",
       "name": "cbam hydrogen \u2014 SA",
       "description": "Material Embodied emission factor for cbam hydrogen \u2014 SA, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "cbam_default",
@@ -2598,7 +2598,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:eu-cbam-default",
       "boundary": "cradle_to_gate",
-      "licence": "EU-Publication",
+      "licence": "EU-COMMISSION-CBAM-DEFAULTS",
       "citations": [
         {
           "type": "url",
@@ -2637,10 +2637,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:cbam-default-values:CBAM:hydrogen:RU:2024:v1",
+      "urn": "urn:gl:factor:cbam-default-values:cbam:hydrogen:ru:2024:v1",
       "factor_id_alias": "EF:CBAM:hydrogen:RU:2024:v1",
       "source_urn": "urn:gl:source:cbam-default-values",
-      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:v1",
       "name": "cbam hydrogen \u2014 RU",
       "description": "Material Embodied emission factor for cbam hydrogen \u2014 RU, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "cbam_default",
@@ -2654,7 +2654,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:eu-cbam-default",
       "boundary": "cradle_to_gate",
-      "licence": "EU-Publication",
+      "licence": "EU-COMMISSION-CBAM-DEFAULTS",
       "citations": [
         {
           "type": "url",
@@ -2693,10 +2693,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:cbam-default-values:CBAM:hydrogen:NO:2024:v1",
+      "urn": "urn:gl:factor:cbam-default-values:cbam:hydrogen:no:2024:v1",
       "factor_id_alias": "EF:CBAM:hydrogen:NO:2024:v1",
       "source_urn": "urn:gl:source:cbam-default-values",
-      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:v1",
       "name": "cbam hydrogen \u2014 NO",
       "description": "Material Embodied emission factor for cbam hydrogen \u2014 NO, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "cbam_default",
@@ -2710,7 +2710,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:eu-cbam-default",
       "boundary": "cradle_to_gate",
-      "licence": "EU-Publication",
+      "licence": "EU-COMMISSION-CBAM-DEFAULTS",
       "citations": [
         {
           "type": "url",
@@ -2749,10 +2749,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:cbam-default-values:CBAM:hydrogen:AE:2024:v1",
+      "urn": "urn:gl:factor:cbam-default-values:cbam:hydrogen:ae:2024:v1",
       "factor_id_alias": "EF:CBAM:hydrogen:AE:2024:v1",
       "source_urn": "urn:gl:source:cbam-default-values",
-      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:v1",
       "name": "cbam hydrogen \u2014 AE",
       "description": "Material Embodied emission factor for cbam hydrogen \u2014 AE, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "cbam_default",
@@ -2766,7 +2766,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:eu-cbam-default",
       "boundary": "cradle_to_gate",
-      "licence": "EU-Publication",
+      "licence": "EU-COMMISSION-CBAM-DEFAULTS",
       "citations": [
         {
           "type": "url",
@@ -2805,10 +2805,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:cbam-default-values:CBAM:hydrogen:DZ:2024:v1",
+      "urn": "urn:gl:factor:cbam-default-values:cbam:hydrogen:dz:2024:v1",
       "factor_id_alias": "EF:CBAM:hydrogen:DZ:2024:v1",
       "source_urn": "urn:gl:source:cbam-default-values",
-      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:v1",
       "name": "cbam hydrogen \u2014 DZ",
       "description": "Material Embodied emission factor for cbam hydrogen \u2014 DZ, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "cbam_default",
@@ -2822,7 +2822,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:eu-cbam-default",
       "boundary": "cradle_to_gate",
-      "licence": "EU-Publication",
+      "licence": "EU-COMMISSION-CBAM-DEFAULTS",
       "citations": [
         {
           "type": "url",
@@ -2861,10 +2861,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:cbam-default-values:CBAM:hydrogen:CA:2024:v1",
+      "urn": "urn:gl:factor:cbam-default-values:cbam:hydrogen:ca:2024:v1",
       "factor_id_alias": "EF:CBAM:hydrogen:CA:2024:v1",
       "source_urn": "urn:gl:source:cbam-default-values",
-      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:v1",
       "name": "cbam hydrogen \u2014 CA",
       "description": "Material Embodied emission factor for cbam hydrogen \u2014 CA, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "cbam_default",
@@ -2878,7 +2878,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:eu-cbam-default",
       "boundary": "cradle_to_gate",
-      "licence": "EU-Publication",
+      "licence": "EU-COMMISSION-CBAM-DEFAULTS",
       "citations": [
         {
           "type": "url",
@@ -2917,10 +2917,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:cbam-default-values:CBAM:electricity:RS:2024:v1",
+      "urn": "urn:gl:factor:cbam-default-values:cbam:electricity:rs:2024:v1",
       "factor_id_alias": "EF:CBAM:electricity:RS:2024:v1",
       "source_urn": "urn:gl:source:cbam-default-values",
-      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:v1",
       "name": "cbam electricity \u2014 RS",
       "description": "Material Embodied emission factor for cbam electricity \u2014 RS, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "cbam_default",
@@ -2934,7 +2934,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:eu-cbam-default",
       "boundary": "cradle_to_gate",
-      "licence": "EU-Publication",
+      "licence": "EU-COMMISSION-CBAM-DEFAULTS",
       "citations": [
         {
           "type": "url",
@@ -2973,10 +2973,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:cbam-default-values:CBAM:electricity:UA:2024:v1",
+      "urn": "urn:gl:factor:cbam-default-values:cbam:electricity:ua:2024:v1",
       "factor_id_alias": "EF:CBAM:electricity:UA:2024:v1",
       "source_urn": "urn:gl:source:cbam-default-values",
-      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:v1",
       "name": "cbam electricity \u2014 UA",
       "description": "Material Embodied emission factor for cbam electricity \u2014 UA, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "cbam_default",
@@ -2990,7 +2990,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:eu-cbam-default",
       "boundary": "cradle_to_gate",
-      "licence": "EU-Publication",
+      "licence": "EU-COMMISSION-CBAM-DEFAULTS",
       "citations": [
         {
           "type": "url",
@@ -3029,10 +3029,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:cbam-default-values:CBAM:electricity:TR:2024:v1",
+      "urn": "urn:gl:factor:cbam-default-values:cbam:electricity:tr:2024:v1",
       "factor_id_alias": "EF:CBAM:electricity:TR:2024:v1",
       "source_urn": "urn:gl:source:cbam-default-values",
-      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:v1",
       "name": "cbam electricity \u2014 TR",
       "description": "Material Embodied emission factor for cbam electricity \u2014 TR, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "cbam_default",
@@ -3046,7 +3046,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:eu-cbam-default",
       "boundary": "cradle_to_gate",
-      "licence": "EU-Publication",
+      "licence": "EU-COMMISSION-CBAM-DEFAULTS",
       "citations": [
         {
           "type": "url",
@@ -3085,10 +3085,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:cbam-default-values:CBAM:electricity:BA:2024:v1",
+      "urn": "urn:gl:factor:cbam-default-values:cbam:electricity:ba:2024:v1",
       "factor_id_alias": "EF:CBAM:electricity:BA:2024:v1",
       "source_urn": "urn:gl:source:cbam-default-values",
-      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:v1",
       "name": "cbam electricity \u2014 BA",
       "description": "Material Embodied emission factor for cbam electricity \u2014 BA, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "cbam_default",
@@ -3102,7 +3102,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:eu-cbam-default",
       "boundary": "cradle_to_gate",
-      "licence": "EU-Publication",
+      "licence": "EU-COMMISSION-CBAM-DEFAULTS",
       "citations": [
         {
           "type": "url",
@@ -3141,10 +3141,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:cbam-default-values:CBAM:electricity:MK:2024:v1",
+      "urn": "urn:gl:factor:cbam-default-values:cbam:electricity:mk:2024:v1",
       "factor_id_alias": "EF:CBAM:electricity:MK:2024:v1",
       "source_urn": "urn:gl:source:cbam-default-values",
-      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:v1",
       "name": "cbam electricity \u2014 MK",
       "description": "Material Embodied emission factor for cbam electricity \u2014 MK, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "cbam_default",
@@ -3158,7 +3158,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:eu-cbam-default",
       "boundary": "cradle_to_gate",
-      "licence": "EU-Publication",
+      "licence": "EU-COMMISSION-CBAM-DEFAULTS",
       "citations": [
         {
           "type": "url",
@@ -3197,10 +3197,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:cbam-default-values:CBAM:electricity:ME:2024:v1",
+      "urn": "urn:gl:factor:cbam-default-values:cbam:electricity:me:2024:v1",
       "factor_id_alias": "EF:CBAM:electricity:ME:2024:v1",
       "source_urn": "urn:gl:source:cbam-default-values",
-      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:v1",
       "name": "cbam electricity \u2014 ME",
       "description": "Material Embodied emission factor for cbam electricity \u2014 ME, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "cbam_default",
@@ -3214,7 +3214,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:eu-cbam-default",
       "boundary": "cradle_to_gate",
-      "licence": "EU-Publication",
+      "licence": "EU-COMMISSION-CBAM-DEFAULTS",
       "citations": [
         {
           "type": "url",
@@ -3253,10 +3253,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:cbam-default-values:CBAM:electricity:MA:2024:v1",
+      "urn": "urn:gl:factor:cbam-default-values:cbam:electricity:ma:2024:v1",
       "factor_id_alias": "EF:CBAM:electricity:MA:2024:v1",
       "source_urn": "urn:gl:source:cbam-default-values",
-      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:v1",
       "name": "cbam electricity \u2014 MA",
       "description": "Material Embodied emission factor for cbam electricity \u2014 MA, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "cbam_default",
@@ -3270,7 +3270,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:eu-cbam-default",
       "boundary": "cradle_to_gate",
-      "licence": "EU-Publication",
+      "licence": "EU-COMMISSION-CBAM-DEFAULTS",
       "citations": [
         {
           "type": "url",
@@ -3309,10 +3309,10 @@
       ]
     },
     {
-      "urn": "urn:gl:factor:cbam-default-values:CBAM:electricity:GE:2024:v1",
+      "urn": "urn:gl:factor:cbam-default-values:cbam:electricity:ge:2024:v1",
       "factor_id_alias": "EF:CBAM:electricity:GE:2024:v1",
       "source_urn": "urn:gl:source:cbam-default-values",
-      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:2024.1",
+      "factor_pack_urn": "urn:gl:pack:cbam-default-values:cbam-annex-iv:v1",
       "name": "cbam electricity \u2014 GE",
       "description": "Material Embodied emission factor for cbam electricity \u2014 GE, expressed in CO2e per native unit. Boundary follows source publication.",
       "category": "cbam_default",
@@ -3326,7 +3326,7 @@
       "resolution": "annual",
       "methodology_urn": "urn:gl:methodology:eu-cbam-default",
       "boundary": "cradle_to_gate",
-      "licence": "EU-Publication",
+      "licence": "EU-COMMISSION-CBAM-DEFAULTS",
       "citations": [
         {
           "type": "url",
@@ -3366,3 +3366,4 @@
     }
   ]
 }
+
