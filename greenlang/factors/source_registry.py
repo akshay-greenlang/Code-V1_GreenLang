@@ -31,6 +31,7 @@ ALPHA_V0_1_REQUIRED_FIELDS: Tuple[str, ...] = (
     "parser_version",
     "cadence",
     "license_class",
+    "licence",
     "source_version",
     "latest_ingestion_at",
     "legal_signoff_artifact",

@@ -114,7 +114,7 @@ def test_alpha_urns_well_formed(alpha_sources: Dict[str, Dict[str, Any]]) -> Non
 # Auxiliary structural tests                                                  #
 # --------------------------------------------------------------------------- #
 def test_required_fields_contract_locked() -> None:
-    """The alpha required-fields contract must contain the 14 named fields."""
+    """The alpha required-fields contract must contain the 15 named fields."""
     expected = {
         "source_id",
         "urn",
@@ -124,6 +124,7 @@ def test_required_fields_contract_locked() -> None:
         "parser_version",
         "cadence",
         "license_class",
+        "licence",
         "source_version",
         "latest_ingestion_at",
         "legal_signoff_artifact",
@@ -132,7 +133,7 @@ def test_required_fields_contract_locked() -> None:
         "alpha_v0_1",
     }
     assert set(ALPHA_V0_1_REQUIRED_FIELDS) == expected
-    assert len(ALPHA_V0_1_REQUIRED_FIELDS) == 14
+    assert len(ALPHA_V0_1_REQUIRED_FIELDS) == 15
 
 
 def test_alpha_parser_versions_are_semver(

@@ -37,6 +37,7 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 import sqlite3
 import threading
 import uuid
@@ -278,9 +279,93 @@ class AlphaPublisher:
         column has that as the default, we set it explicitly so a future
         schema change can't accidentally promote staging writes.
 
+        Phase 1: the SourceRightsService also runs an ingestion gate
+        BEFORE the provenance gate. It rejects records whose source
+        is `blocked`, missing from the registry, has a non-`approved`
+        legal_signoff, or whose release_milestone is later than the
+        running release_profile.
+
         Returns:
             The canonical URN of the published record.
         """
+        # Phase 1 ingestion-rights gate. Runs first so blocked / pending
+        # legal sources never even hit schema validation.
+        #
+        # Fail-closed contract: any rights-service runtime error raises
+        # AlphaPublisherError so the record is NEVER published. Tests
+        # and dev environments may opt into fail-open by setting
+        # GL_FACTORS_RIGHTS_FAIL_OPEN=1 (e.g. in conftest); production
+        # MUST not set this.
+        source_urn = record.get("source_urn") if isinstance(record, dict) else None
+        record_licence = record.get("licence") if isinstance(record, dict) else None
+        if isinstance(source_urn, str) and source_urn:
+            _fail_open = os.getenv("GL_FACTORS_RIGHTS_FAIL_OPEN", "0").lower() in (
+                "1", "true", "yes"
+            )
+            try:
+                from greenlang.factors.rights import (
+                    IngestionBlocked,
+                    LicenceMismatch,
+                    default_service,
+                )
+            except Exception as exc:  # noqa: BLE001
+                if _fail_open:
+                    logger.warning(
+                        "alpha_publisher: rights subsystem import failed (%s); GL_FACTORS_RIGHTS_FAIL_OPEN set, proceeding without source-rights check",
+                        exc,
+                    )
+                else:
+                    raise AlphaPublisherError(
+                        f"alpha_publisher: rights subsystem unavailable ({exc}); refusing to publish (set GL_FACTORS_RIGHTS_FAIL_OPEN=1 only in dev/test)"
+                    )
+            else:
+                try:
+                    svc = default_service()
+                    decision = svc.check_ingestion_allowed(source_urn)
+                except IngestionBlocked:
+                    raise
+                except Exception as exc:  # noqa: BLE001
+                    if _fail_open:
+                        logger.warning(
+                            "alpha_publisher: rights gate raised (%s); GL_FACTORS_RIGHTS_FAIL_OPEN set, proceeding",
+                            exc,
+                        )
+                    else:
+                        raise AlphaPublisherError(
+                            f"alpha_publisher: rights gate runtime error ({exc}); refusing to publish"
+                        )
+                else:
+                    if decision.denied:
+                        raise IngestionBlocked(
+                            f"alpha_publisher: ingestion blocked — {decision.reason}"
+                        )
+                    # Licence-tag check: if the record carries a `licence`
+                    # field AND the registry pins one for the source, they
+                    # MUST match. Records without `licence` are tolerated
+                    # here because the schema/provenance gate may add it
+                    # downstream; LicenceMismatch is reserved for explicit
+                    # mismatch.
+                    if record_licence:
+                        try:
+                            ld = svc.check_record_licence_matches_registry(
+                                source_urn, record_licence
+                            )
+                        except Exception as exc:  # noqa: BLE001
+                            if _fail_open:
+                                logger.warning(
+                                    "alpha_publisher: licence-tag check raised (%s); GL_FACTORS_RIGHTS_FAIL_OPEN set, proceeding",
+                                    exc,
+                                )
+                            else:
+                                raise AlphaPublisherError(
+                                    f"alpha_publisher: licence-tag check runtime error ({exc}); refusing to publish"
+                                )
+                        else:
+                            if ld.denied:
+                                raise LicenceMismatch(
+                                    f"alpha_publisher: record licence does not match registry — {ld.reason}"
+                                )
+
         # Run gate via the repo's publish() helper for shared validation.
         # The repo's publish() also writes the row; our job is to ensure
         # the row's namespace ends up explicitly 'staging' afterwards.

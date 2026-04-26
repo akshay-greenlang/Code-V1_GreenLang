@@ -148,7 +148,7 @@ CREATE TABLE unit (
 CREATE TABLE factor_pack (
     pk_id              BIGSERIAL PRIMARY KEY,
     urn                TEXT NOT NULL UNIQUE
-        CONSTRAINT factor_pack_urn_pattern CHECK (urn ~ '^urn:gl:pack:[a-z0-9][a-z0-9-]*:[a-z0-9][a-z0-9._-]*:[A-Za-z0-9._-]+$'),
+        CONSTRAINT factor_pack_urn_pattern CHECK (urn ~ '^urn:gl:pack:[a-z0-9][a-z0-9-]*:[a-z0-9][a-z0-9._-]*:v[1-9][0-9]*$'),
     name               TEXT NOT NULL,
     source_urn         TEXT NOT NULL REFERENCES source(urn),
     version            TEXT NOT NULL,

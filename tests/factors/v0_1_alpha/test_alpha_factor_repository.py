@@ -61,7 +61,7 @@ def _record(
     base["urn"] = f"urn:gl:factor:{source}:stationary-combustion:{leaf}:v1"
     base["factor_id_alias"] = f"EF:{source}:stationary-combustion:{leaf}:v1"
     base["source_urn"] = f"urn:gl:source:{source}"
-    base["factor_pack_urn"] = f"urn:gl:pack:{source}:{pack}:2021.0"
+    base["factor_pack_urn"] = f"urn:gl:pack:{source}:{pack}:v1"
     base["category"] = category
     base["geography_urn"] = geo
     base["vintage_start"] = vintage_start
@@ -207,7 +207,7 @@ def populated_repo() -> AlphaFactorRepository:
     "kwarg, value, expected_count",
     [
         ("source_urn", "urn:gl:source:ipcc-ar6", 2),
-        ("pack_urn", "urn:gl:pack:ipcc-ar6:tier-1-defaults:2021.0", 2),
+        ("pack_urn", "urn:gl:pack:ipcc-ar6:tier-1-defaults:v1", 2),
         ("category", "refrigerant", 1),
         ("geography_urn", "urn:gl:geo:country:gb", 2),
         ("vintage_start_after", "2023-01-01", 1),  # only grid-uk (2024)

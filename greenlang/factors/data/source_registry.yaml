@@ -1,846 +1,2175 @@
-# Source registry (G1–G6). Legal sign-off: path in legal_signoff_artifact; optional legal_signoff_version.
-# connector_only: true → never in public bulk export; API may return metadata only without values.
-
 sources:
-  - source_id: epa_hub
-    display_name: EPA GHG Emission Factors Hub
-    connector_only: false
-    license_class: public_us_government
-    redistribution_allowed: true
-    attribution_required: true
-    citation_text: "U.S. Environmental Protection Agency, GHG Emission Factors Hub."
-    cadence: quarterly
-    watch:
-      mechanism: http_head
-      url: "https://www.epa.gov/ghgemissionfactors"
-    approval_required_for_certified: true
-    legal_signoff_artifact: null
-    # ---- v0.1 Alpha required-fields contract (WS7-T1) ----
-    urn: "urn:gl:source:epa-hub"
-    source_owner: "climate-methodology-lead"
-    parser_module: "greenlang.factors.ingestion.parsers.epa_ghg_hub"
-    parser_function: "parse_epa_ghg_hub"
-    parser_version: "0.1.0"
-    source_version: "2024.1"
-    latest_ingestion_at: "2026-04-24T07:12:22+00:00"
-    publication_url: "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
-    provenance_completeness_score: 0.95
-    alpha_v0_1: true
-    # ---- Wave D / TaskCreate #9 — vintage audit ----
-    alpha_v0_1_status: preview
-    alpha_v0_1_vintage_target: "2025"
-    alpha_v0_1_methodology_exception: "docs/factors/v0_1_alpha/methodology-exceptions/epa_hub_v2024.1.md"
-
-  - source_id: egrid
-    display_name: eGRID
-    connector_only: false
-    license_class: public_us_government
-    redistribution_allowed: true
-    attribution_required: true
-    citation_text: "U.S. EPA eGRID subregion emission rates."
-    cadence: annual
-    watch:
-      mechanism: http_head
-      url: "https://www.epa.gov/egrid"
-    approval_required_for_certified: true
-    legal_signoff_artifact: null
-    # ---- v0.1 Alpha required-fields contract (WS7-T1) ----
-    # Note: this source has TWO parsers — the canonical lb/MWh -> kg/kWh
-    # converter (parse_egrid) and the gold-pattern subregion projection
-    # (parse_egrid_subregion in egrid_subregion.py). The registry pins
-    # the canonical parser; the subregion extension runs in the same
-    # ingestion pass and is verified by the catalog test suite.
-    urn: "urn:gl:source:egrid"
-    source_owner: "climate-methodology-lead"
-    parser_module: "greenlang.factors.ingestion.parsers.egrid"
-    parser_function: "parse_egrid"
-    parser_version: "0.1.0"
-    source_version: "2022.1"
-    latest_ingestion_at: "2026-04-24T07:12:22+00:00"
-    publication_url: "https://www.epa.gov/egrid/download-data"
-    provenance_completeness_score: 0.95
-    alpha_v0_1: true
-    # ---- Wave D / TaskCreate #10 — vintage audit ----
-    alpha_v0_1_status: preview
-    alpha_v0_1_vintage_target: "2024"
-    alpha_v0_1_methodology_exception: "docs/factors/v0_1_alpha/methodology-exceptions/egrid_v2022.1.md"
-    parser_extensions:
-      - module: "greenlang.factors.ingestion.parsers.egrid_subregion"
-        function: "parse_egrid_subregion"
-
-  - source_id: desnz_ghg_conversion
-    display_name: DESNZ GHG conversion factors
-    connector_only: false
-    license_class: uk_open_government
-    redistribution_allowed: true
-    attribution_required: true
-    citation_text: "UK Department for Energy Security and Net Zero, GHG conversion factors."
-    cadence: annual
-    watch:
-      mechanism: http_head
-      url: "https://www.gov.uk/government/collections/government-conversion-factors-for-company-reporting-of-greenhouse-gas-emissions"
-    approval_required_for_certified: true
-    legal_signoff_artifact: null
-    # ---- v0.1 Alpha required-fields contract (WS7-T1) ----
-    # Currently catalog-seeded at DESNZ 2024.1 (the 2025 spreadsheet
-    # ships in alpha-W1 once DESNZ publishes mid-2025; bump
-    # source_version to "2025.1" at that ingestion).
-    urn: "urn:gl:source:desnz-ghg-conversion"
-    source_owner: "climate-methodology-lead"
-    parser_module: "greenlang.factors.ingestion.parsers.desnz_uk"
-    parser_function: "parse_desnz_uk"
-    parser_version: "0.1.0"
-    source_version: "2024.1"
-    latest_ingestion_at: "2026-04-24T07:12:22+00:00"
-    publication_url: "https://www.gov.uk/government/publications/greenhouse-gas-reporting-conversion-factors-2024"
-    provenance_completeness_score: 0.95
-    alpha_v0_1: true
-    # ---- Wave D / TaskCreate #8 — vintage audit ----
-    alpha_v0_1_status: preview
-    alpha_v0_1_vintage_target: "2025"
-    alpha_v0_1_methodology_exception: "docs/factors/v0_1_alpha/methodology-exceptions/desnz_ghg_conversion_v2024.1.md"
-
-  - source_id: tcr_grp_defaults
-    display_name: TCR / GRP default factors
-    connector_only: false
-    license_class: registry_terms
-    redistribution_allowed: false
-    attribution_required: true
-    citation_text: "Per The Climate Registry / GHGRP guidance; verify current terms."
-    cadence: annual
-    watch:
-      mechanism: manual
-      url: null
-    approval_required_for_certified: true
-    legal_signoff_artifact: null
-
-  - source_id: green_e_residual
-    display_name: Green-e residual mix
-    connector_only: true
-    license_class: commercial_connector
-    redistribution_allowed: false
-    attribution_required: true
-    citation_text: "Green-e; values via licensed connector only."
-    cadence: annual
-    watch:
-      mechanism: api
-      url: null
-    approval_required_for_certified: true
-    legal_signoff_artifact: null
-
-  # -------------------------------------------------------------------------
-  # GAP-10 Wave 2 — residual-mix expansion to US/CA, AU, JP
-  # -------------------------------------------------------------------------
-  - source_id: green_e_residual_mix
-    display_name: Green-e Energy Residual Mix
-    authority: Green-e (Center for Resource Solutions)
-    publisher: Center for Resource Solutions
-    jurisdiction: [US, CA]
-    connector_only: false
-    license_class: restricted
-    redistribution_class: restricted
-    redistribution_allowed: false
-    attribution_required: true
-    verification_status: external_verified
-    citation_text: "Green-e Energy Residual Mix, Center for Resource Solutions (annual)."
-    publication_frequency: annual
-    cadence: annual
-    watch:
-      mechanism: http_head
-      url: "https://www.green-e.org/residual-mix"
-    approval_required_for_certified: true
-    legal_notes: "Attribution required; no commercial redistribution without license"
-    legal_signoff_artifact: null
-
-  - source_id: australia_nga_factors
-    display_name: Australian National Greenhouse Accounts Factors
-    authority: Australian DCCEEW
-    publisher: Department of Climate Change, Energy, the Environment and Water
-    jurisdiction: [AU]
-    connector_only: false
-    license_class: open
-    redistribution_class: open
-    redistribution_allowed: true
-    attribution_required: true
-    verification_status: regulator_approved
-    citation_text: "National Greenhouse Accounts Factors, Australian Government DCCEEW (annual)."
-    publication_frequency: annual
-    cadence: annual
-    watch:
-      mechanism: http_head
-      url: "https://www.dcceew.gov.au/climate-change/publications/national-greenhouse-accounts-factors"
-    approval_required_for_certified: true
-    legal_signoff_artifact: null
-
-  - source_id: japan_meti_electric_emission_factors
-    display_name: Japan METI Electric Utility Emission Factors
-    authority: Japan METI
-    publisher: Ministry of Economy, Trade and Industry
-    jurisdiction: [JP]
-    connector_only: false
-    license_class: open
-    redistribution_class: open
-    redistribution_allowed: true
-    attribution_required: true
-    verification_status: regulator_approved
-    citation_text: "Electric Utility Emission Factors, Japan METI & MOEJ (annual)."
-    publication_frequency: annual
-    cadence: annual
-    watch:
-      mechanism: http_head
-      url: "https://ghg-santeikohyo.env.go.jp/calc"
-    approval_required_for_certified: true
-    legal_signoff_artifact: null
-
-  - source_id: ghgp_method_refs
-    display_name: GHG Protocol methodological references
-    connector_only: false
-    license_class: wri_wbcsd_terms
-    redistribution_allowed: false
-    attribution_required: true
-    citation_text: "GHG Protocol (WRI/WBCSD)."
-    cadence: ad_hoc
-    watch:
-      mechanism: html_diff
-      url: "https://ghgprotocol.org/"
-    approval_required_for_certified: true
-    legal_signoff_artifact: null
-
-  - source_id: electricity_maps
-    display_name: Electricity Maps (connector)
-    connector_only: true
-    license_class: commercial_connector
-    redistribution_allowed: false
-    attribution_required: true
-    citation_text: "Electricity Maps; via connector under customer license."
-    cadence: daily
-    watch:
-      mechanism: api
-      url: null
-    approval_required_for_certified: true
-    legal_signoff_artifact: null
-
-  - source_id: iea
-    display_name: IEA statistics / factors
-    connector_only: true
-    license_class: commercial_connector
-    redistribution_allowed: false
-    attribution_required: true
-    citation_text: "International Energy Agency; licensed use only."
-    cadence: annual
-    watch:
-      mechanism: manual
-      url: null
-    approval_required_for_certified: true
-    legal_signoff_artifact: null
-
-  - source_id: ecoinvent
-    display_name: ecoinvent database
-    connector_only: true
-    license_class: commercial_connector
-    redistribution_allowed: false
-    attribution_required: true
-    citation_text: "ecoinvent Association; licensed use only."
-    cadence: quarterly
-    watch:
-      mechanism: manual
-      url: null
-    approval_required_for_certified: true
-    legal_signoff_artifact: null
-
-  - source_id: defra_conversion
-    display_name: DEFRA environmental reporting factors
-    connector_only: false
-    license_class: uk_open_government
-    redistribution_allowed: true
-    attribution_required: true
-    citation_text: "UK DEFRA/DESNZ environmental reporting factors."
-    cadence: annual
-    watch:
-      mechanism: http_head
-      url: "https://www.gov.uk/government/publications/greenhouse-gas-reporting-conversion-factors-2025"
-    approval_required_for_certified: true
-    legal_signoff_artifact: null
-
-  - source_id: eu_cbam
-    display_name: EU CBAM default values
-    connector_only: false
-    license_class: eu_publication
-    redistribution_allowed: true
-    attribution_required: true
-    citation_text: "European Commission, CBAM default values."
-    cadence: event_driven
-    watch:
-      mechanism: http_head
-      url: "https://taxation-customs.ec.europa.eu/carbon-border-adjustment-mechanism_en"
-    approval_required_for_certified: true
-    legal_signoff_artifact: null
-
-  - source_id: greenlang_builtin
-    display_name: GreenLang curated built-in factors
-    connector_only: false
-    license_class: greenlang_terms
-    redistribution_allowed: true
-    attribution_required: true
-    citation_text: "GreenLang Factors curated edition."
-    cadence: on_release
-    watch:
-      mechanism: internal
-      url: null
-    approval_required_for_certified: true
-    legal_signoff_artifact: null
-
-  # =========================================================================
-  # v1 Certified edition new rows (added 2026-04-22 per
-  # docs/editions/v1-certified-cutlist.md §13)
-  # =========================================================================
-  # Slice 1 — Electricity (blocking: ELECTRICITY_RESIDUAL_MIX_EU uses this id)
-  - source_id: aib_residual_mix_eu
-    display_name: AIB European Residual Mix
-    authority: Association of Issuing Bodies
-    publisher: Association of Issuing Bodies (AIB)
-    jurisdiction: [EU, EEA]
-    connector_only: false
-    license_class: eu_publication
-    redistribution_class: open
-    redistribution_allowed: true
-    attribution_required: true
-    verification_status: external_verified
-    citation_text: "European Residual Mixes, Association of Issuing Bodies (annual)."
-    publication_frequency: annual
-    cadence: annual
-    watch:
-      mechanism: http_head
-      url: "https://www.aib-net.org/facts/european-residual-mix"
-    approval_required_for_certified: true
-    legal_notes: "Attribution required per AIB Terms of Use; public PDF redistribution allowed with citation."
-    legal_signoff_artifact: null
-
-  # Slice 1 — Electricity (India)
-  - source_id: india_cea_co2_baseline
-    display_name: India CEA CO2 Baseline Database
-    authority: Central Electricity Authority, Government of India
-    publisher: Central Electricity Authority
-    jurisdiction: [IN]
-    connector_only: false
-    license_class: public_in_government
-    redistribution_class: open
-    redistribution_allowed: true
-    attribution_required: true
-    verification_status: regulator_approved
-    citation_text: "CO2 Baseline Database for the Indian Power Sector, Central Electricity Authority (Government of India), latest edition."
-    publication_frequency: annual
-    cadence: annual
-    watch:
-      mechanism: http_head
-      url: "https://cea.nic.in/cdm-co2-baseline-database/"
-    approval_required_for_certified: true
-    legal_signoff_artifact: null
-    # ---- v0.1 Alpha required-fields contract (WS7-T1) ----
-    # Aliases the alpha-spec id `india_cea_baseline`. The FY27 vintage
-    # extension lives at `india_cea_fy27` (separate non-alpha row); both
-    # parsers run together at ingest time and produce overlapping
-    # factor families anchored to publication_version v20.0.
-    aliases: ["india_cea_baseline"]
-    urn: "urn:gl:source:india-cea-co2-baseline"
-    source_owner: "climate-methodology-lead"
-    parser_module: "greenlang.factors.ingestion.parsers.india_cea"
-    parser_function: "parse_india_cea_rows"
-    parser_version: "0.1.0"
-    source_version: "20.0"
-    latest_ingestion_at: "2026-04-24T07:12:22+00:00"
-    publication_url: "https://cea.nic.in/cdm-co2-baseline-database/"
-    provenance_completeness_score: 0.90
-    alpha_v0_1: true
-    # ---- Wave D / TaskCreate #11 — vintage audit ----
-    # CEA v20.0 (Dec 2024) is the most recent published edition. v21.0
-    # is expected late-2025; if available before alpha launch the methodology
-    # lead bumps source_version and re-tags as locked-current.
-    alpha_v0_1_status: locked
-    alpha_v0_1_vintage_target: "20.0"
-    alpha_v0_1_methodology_exception: null
-    parser_extensions:
-      - module: "greenlang.factors.ingestion.parsers.cea_fy27"
-        function: "parse_cea_fy27"
-
-  # Slice 2 — Combustion (IPCC defaults)
-  # NOTE: alpha-spec lists "ipcc_ar6" as the canonical id; AR6 is in
-  # fact the GWP-100 set, while the *default emission factors* come from
-  # the IPCC 2006 Guidelines + 2019 Refinement (NGGI). The registry
-  # canonical id is therefore `ipcc_2006_nggi` and `ipcc_ar6` is an
-  # alpha alias (handled by validate_alpha_v0_1_completeness).
-  - source_id: ipcc_2006_nggi
-    display_name: IPCC 2006 Guidelines + 2019 Refinement (National GHG Inventories)
-    authority: IPCC Task Force on National GHG Inventories
-    publisher: Intergovernmental Panel on Climate Change
-    jurisdiction: [GLOBAL]
-    connector_only: false
-    license_class: public_international
-    redistribution_class: open
-    redistribution_allowed: true
-    attribution_required: true
-    verification_status: external_verified
-    citation_text: "IPCC 2006 Guidelines for National GHG Inventories and the 2019 Refinement."
-    publication_frequency: ad_hoc
-    cadence: ad_hoc
-    watch:
-      mechanism: html_diff
-      url: "https://www.ipcc-nggip.iges.or.jp/public/2006gl/"
-    approval_required_for_certified: true
-    legal_notes: "IPCC guidelines are public international publications; factual default values carry no copyright restriction."
-    legal_signoff_artifact: null
-    # ---- v0.1 Alpha required-fields contract (WS7-T1) ----
-    aliases: ["ipcc_ar6"]
-    urn: "urn:gl:source:ipcc-2006-nggi"
-    source_owner: "climate-methodology-lead"
-    parser_module: "greenlang.factors.ingestion.parsers.ipcc_defaults"
-    parser_function: "parse_ipcc_defaults"
-    parser_version: "0.1.0"
-    source_version: "2019.1"
-    latest_ingestion_at: "2026-04-24T07:12:23+00:00"
-    publication_url: "https://www.ipcc-nggip.iges.or.jp/public/2019rf/"
-    provenance_completeness_score: 0.90
-    alpha_v0_1: true
-    # ---- Wave D / TaskCreate #7 — vintage audit ----
-    # NGGI 2019 IS the IPCC EF source; AR6 is the GWP set, applied separately
-    # via gwp_set: IPCC_AR6_100 in factor records. No methodology exception
-    # required — the registry alias `ipcc_ar6` is the AR6 GWP layer.
-    alpha_v0_1_status: locked
-    alpha_v0_1_vintage_target: "AR6"
-    alpha_v0_1_methodology_exception: null
-
-  # Slice 3 — Freight (GLEC / ISO 14083)
-  - source_id: glec_framework
-    display_name: GLEC Framework v3.0 (ISO 14083-aligned)
-    authority: Smart Freight Centre
-    publisher: Smart Freight Centre
-    jurisdiction: [GLOBAL]
-    connector_only: false
-    license_class: smart_freight_terms
-    redistribution_class: restricted
-    redistribution_allowed: false
-    attribution_required: true
-    verification_status: external_verified
-    citation_text: "GLEC Framework for Logistics Emissions Accounting and Reporting, Smart Freight Centre, v3.0 (2023)."
-    publication_frequency: triennial
-    cadence: on_release
-    watch:
-      mechanism: http_head
-      url: "https://www.smartfreightcentre.org/en/our-programs/global-logistics-emissions-council/"
-    approval_required_for_certified: true
-    legal_notes: "Redistribution requires Smart Freight Buyer Group membership attribution; values allowed via API only for non-members."
-    legal_signoff_artifact: null
-
-  # Slice 4 — Materials / CBAM (EPDs)
-  - source_id: ec3_buildings_epd
-    display_name: Building Transparency EC3 EPD library
-    authority: Building Transparency
-    publisher: Building Transparency (non-profit)
-    jurisdiction: [GLOBAL]
-    connector_only: true
-    license_class: commercial_connector
-    redistribution_class: restricted
-    redistribution_allowed: false
-    attribution_required: true
-    verification_status: external_verified
-    citation_text: "Embodied Carbon in Construction Calculator (EC3), Building Transparency."
-    publication_frequency: continuous
-    cadence: continuous
-    watch:
-      mechanism: api
-      url: "https://buildingtransparency.org/api"
-    approval_required_for_certified: true
-    legal_notes: "EC3 API access is permissioned; customers must hold their own EC3 token or consume via GreenLang Premium Construction/EPD pack."
-    legal_signoff_artifact: null
-
-  # Slice 5 — Land / Removals (IPCC AFOLU)
-  - source_id: ipcc_2006_afolu_v2019
-    display_name: IPCC 2006 Guidelines Vol 4 — AFOLU (2019 Refinement)
-    authority: IPCC Task Force on National GHG Inventories
-    publisher: Intergovernmental Panel on Climate Change
-    jurisdiction: [GLOBAL]
-    connector_only: false
-    license_class: public_international
-    redistribution_class: open
-    redistribution_allowed: true
-    attribution_required: true
-    verification_status: external_verified
-    citation_text: "IPCC 2006 Guidelines Volume 4 — Agriculture, Forestry and Other Land Use (AFOLU), 2019 Refinement."
-    publication_frequency: ad_hoc
-    cadence: ad_hoc
-    watch:
-      mechanism: html_diff
-      url: "https://www.ipcc-nggip.iges.or.jp/public/2019rf/vol4.html"
-    approval_required_for_certified: true
-    legal_signoff_artifact: null
-
-  # Slice 6 — Product Carbon (PACT Pathfinder framework)
-  - source_id: pact_pathfinder
-    display_name: WBCSD PACT Pathfinder Framework v3
-    authority: WBCSD Partnership for Carbon Transparency
-    publisher: World Business Council for Sustainable Development
-    jurisdiction: [GLOBAL]
-    connector_only: false
-    license_class: wri_wbcsd_terms
-    redistribution_class: restricted
-    redistribution_allowed: false
-    attribution_required: true
-    verification_status: external_verified
-    citation_text: "WBCSD, Pathfinder Framework: Guidance for the Accounting and Exchange of Product Life Cycle Emissions, v3.0."
-    publication_frequency: biennial
-    cadence: on_release
-    watch:
-      mechanism: http_head
-      url: "https://www.carbon-transparency.com/"
-    approval_required_for_certified: true
-    legal_notes: "Framework is public; Pathfinder data objects exchanged between customers require PACT network membership per §6 of the framework."
-    legal_signoff_artifact: null
-
-  # Slice 6 — Product Carbon (EU JRC EF 3.1 secondary datasets for PEF)
-  - source_id: ef_3_1_secondary
-    display_name: EU JRC Environmental Footprint 3.1 Secondary Datasets
-    authority: European Commission Joint Research Centre
-    publisher: European Commission Joint Research Centre (JRC)
-    jurisdiction: [EU]
-    connector_only: false
-    license_class: eu_publication
-    redistribution_class: open
-    redistribution_allowed: true
-    attribution_required: true
-    verification_status: external_verified
-    citation_text: "European Commission JRC, Environmental Footprint (EF) 3.1 reference package."
-    publication_frequency: ad_hoc
-    cadence: on_release
-    watch:
-      mechanism: http_head
-      url: "https://eplca.jrc.ec.europa.eu/LCDN/developerEF.xhtml"
-    approval_required_for_certified: true
-    legal_signoff_artifact: null
-
-  # Slice 7 — Finance Proxy (PCAF Global Standard v2)
-  - source_id: pcaf_global_std_v2
-    display_name: PCAF Global GHG Accounting & Reporting Standard v2 (Parts A + B)
-    authority: Partnership for Carbon Accounting Financials
-    publisher: PCAF (Platform Carbon Accounting Financials)
-    jurisdiction: [GLOBAL]
-    connector_only: false
-    license_class: pcaf_attribution
-    redistribution_class: restricted
-    redistribution_allowed: false
-    attribution_required: true
-    verification_status: external_verified
-    citation_text: "PCAF, The Global GHG Accounting and Reporting Standard for the Financial Industry, Part A (v2.0) & Part B."
-    publication_frequency: biennial
-    cadence: on_release
-    watch:
-      mechanism: http_head
-      url: "https://carbonaccountingfinancials.com/standard"
-    approval_required_for_certified: true
-    legal_notes: "Methodology text is public; derived proxy factors redistributable via GreenLang Premium Finance pack only."
-    legal_signoff_artifact: null
-
-  # Slice 7 — Finance Proxy (US EPA SUSEEIO input-output)
-  - source_id: us_epa_suseeio
-    display_name: US EPA SUSEEIO v2
-    authority: US EPA National Risk Management Research Laboratory
-    publisher: US Environmental Protection Agency
-    jurisdiction: [US]
-    connector_only: false
-    license_class: public_us_government
-    redistribution_class: open
-    redistribution_allowed: true
-    attribution_required: true
-    verification_status: regulator_approved
-    citation_text: "US EPA, Supply Chain GHG Emission Factors for US Industries and Commodities (SUSEEIO), v2."
-    publication_frequency: ad_hoc
-    cadence: ad_hoc
-    watch:
-      mechanism: http_head
-      url: "https://catalog.data.gov/dataset/supply-chain-greenhouse-gas-emission-factors"
-    approval_required_for_certified: true
-    legal_signoff_artifact: null
-
-  # Slice 7 — Finance Proxy (EXIOBASE EEIO)
-  - source_id: exiobase_v3
-    display_name: EXIOBASE v3 multi-regional environmentally extended IO
-    authority: EXIOBASE Consortium (TU Wien / NTNU / UTwente)
-    publisher: EXIOBASE Consortium
-    jurisdiction: [GLOBAL]
-    connector_only: true
-    license_class: academic_research
-    redistribution_class: restricted
-    redistribution_allowed: false
-    attribution_required: true
-    verification_status: external_verified
-    citation_text: "EXIOBASE v3, EXIOBASE Consortium (2024)."
-    publication_frequency: annual
-    cadence: annual
-    watch:
-      mechanism: manual
-      url: "https://www.exiobase.eu/"
-    approval_required_for_certified: true
-    legal_notes: "Research access is free; commercial redistribution requires EXIOBASE Consortium license."
-    legal_signoff_artifact: null
-
-  # Slice 7 — Finance Proxy (CEDA / UT Austin — commercial EEIO)
-  - source_id: ceda_pbe
-    display_name: Profundo CEDA / PBE (Comprehensive Environmental Data Archive)
-    authority: Profundo Research BV
-    publisher: Profundo Research BV
-    jurisdiction: [GLOBAL]
-    connector_only: true
-    license_class: commercial_connector
-    redistribution_class: licensed
-    redistribution_allowed: false
-    attribution_required: true
-    verification_status: external_verified
-    citation_text: "CEDA environmentally extended IO database, Profundo Research BV."
-    publication_frequency: annual
-    cadence: annual
-    watch:
-      mechanism: manual
-      url: "https://www.profundo.nl/"
-    approval_required_for_certified: true
-    legal_notes: "Customer must present own CEDA license or subscribe to GreenLang Premium Finance pack (OEM redistribution rights negotiated)."
-    legal_signoff_artifact: null
-
-  # =========================================================================
-  # Regulatory-gap closure (2026-04-22) — FACTORS-V1-REGULATORY-COVERAGE §4
-  # =========================================================================
-
-  # India CCTS sector-baseline benchmarks (gap-closure #10)
-  - source_id: india_ccts_baselines
-    display_name: India Carbon Credit Trading Scheme (CCTS) sectoral baselines
-    authority: Bureau of Energy Efficiency (BEE) under MoEFCC
-    publisher: Bureau of Energy Efficiency, Government of India
-    jurisdiction: [IN]
-    connector_only: false
-    license_class: public_in_government
-    redistribution_class: open
-    redistribution_allowed: true
-    attribution_required: true
-    verification_status: regulator_approved
-    citation_text: "Carbon Credit Trading Scheme baseline emission intensities, Bureau of Energy Efficiency, Ministry of Environment, Forest and Climate Change (MoEFCC), Government of India, notified under G.S.R. 443(E) dated 28 June 2023 and subsequent BEE sector notifications."
-    publication_frequency: triennial
-    cadence: annual
-    watch:
-      mechanism: http_head
-      url: "https://beeindia.gov.in/en/programmes/carbon-credit-trading-scheme"
-    approval_required_for_certified: true
-    legal_notes: "Government of India notifications are public documents with attribution required; sectoral baselines revised triennially per BEE."
-    legal_signoff_artifact: null
-
-  # Canada CER provincial residual mix (gap-closure #1)
-  - source_id: cer_canada_residual
-    display_name: Canada Energy Regulator — Provincial Electricity Residual Mix
-    authority: Canada Energy Regulator (CER)
-    publisher: Canada Energy Regulator
-    jurisdiction: [CA]
-    connector_only: false
-    license_class: open
-    redistribution_class: open
-    redistribution_allowed: true
-    attribution_required: true
-    verification_status: regulator_approved
-    citation_text: "Provincial Electricity Intensity Factors, Canada Energy Regulator; with residual-mix adjustment per ECCC National Inventory Report surrendered-instrument accounting."
-    publication_frequency: annual
-    cadence: annual
-    watch:
-      mechanism: http_head
-      url: "https://www.cer-rec.gc.ca/en/data-analysis/energy-commodities/electricity/"
-    approval_required_for_certified: true
-    legal_notes: "Open Government Licence - Canada 2.0 (OGL-CA-2.0); attribution required."
-    legal_signoff_artifact: null
-
-  # UK BEIS / DESNZ national residual mix (gap-closure #1)
-  - source_id: beis_uk_residual
-    display_name: UK DESNZ (formerly BEIS) national electricity residual mix
-    authority: UK Department for Energy Security and Net Zero
-    publisher: UK Department for Energy Security and Net Zero (DESNZ)
-    jurisdiction: [UK, GB]
-    connector_only: false
-    license_class: uk_open_government
-    redistribution_class: open
-    redistribution_allowed: true
-    attribution_required: true
-    verification_status: regulator_approved
-    citation_text: "UK national residual-mix factor, UK Department for Energy Security and Net Zero (DESNZ); derived from the UK GHG conversion factors + Ofgem REGO surrender data."
-    publication_frequency: annual
-    cadence: annual
-    watch:
-      mechanism: http_head
-      url: "https://www.gov.uk/government/collections/government-conversion-factors-for-company-reporting-of-greenhouse-gas-emissions"
-    approval_required_for_certified: true
-    legal_notes: "UK Open Government Licence v3.0; attribution required."
-    legal_signoff_artifact: null
-
-  # Australia NGER state-level residual (gap-closure #1)
-  - source_id: nger_au_state_residual
-    display_name: Australian NGER state-level residual mix (DCCEEW)
-    authority: Australian Clean Energy Regulator / DCCEEW
-    publisher: Department of Climate Change, Energy, the Environment and Water
-    jurisdiction: [AU]
-    connector_only: false
-    license_class: open
-    redistribution_class: open
-    redistribution_allowed: true
-    attribution_required: true
-    verification_status: regulator_approved
-    citation_text: "NGER (National Greenhouse and Energy Reporting) state-level residual emission factors, Australian Clean Energy Regulator and DCCEEW, derived from NGA factors with Large-scale Generation Certificate (LGC) surrender netting."
-    publication_frequency: annual
-    cadence: annual
-    watch:
-      mechanism: http_head
-      url: "https://www.cleanenergyregulator.gov.au/NGER"
-    approval_required_for_certified: true
-    legal_notes: "Australian Government Creative Commons Attribution 4.0 licence."
-    legal_signoff_artifact: null
-
-  # Korea KEMCO residual (gap-closure #1)
-  - source_id: kemco_korea_residual
-    display_name: Korea KEMCO electricity residual mix
-    authority: Korea Energy Management Corporation (KEMCO)
-    publisher: Korea Energy Agency / Ministry of Environment (Republic of Korea)
-    jurisdiction: [KR]
-    connector_only: false
-    license_class: open
-    redistribution_class: open
-    redistribution_allowed: true
-    attribution_required: true
-    verification_status: regulator_approved
-    citation_text: "Republic of Korea national electricity residual mix factor, Korea Energy Management Corporation (KEMCO) / Korea Energy Agency; derived from the Greenhouse Gas Inventory and Research Center (GIR) national inventory with KEC (Korea Energy Certificate) surrender netting."
-    publication_frequency: annual
-    cadence: annual
-    watch:
-      mechanism: http_head
-      url: "https://www.gir.go.kr/eng/"
-    approval_required_for_certified: true
-    legal_notes: "Republic of Korea public information - Act on Disclosure of Information by Public Agencies; attribution required."
-    legal_signoff_artifact: null
-
-  # =========================================================================
-  # Wave 5 catalog expansion (2026-04-24) — four new Safe-to-Certify rows
-  # =========================================================================
-  - source_id: cbam_default_values
-    display_name: EU CBAM Annex IV default embedded-emission values (flat sector rollup)
-    authority: European Commission DG TAXUD
-    publisher: European Commission
-    jurisdiction: [EU]
-    connector_only: false
-    license_class: public_eu
-    redistribution_class: open
-    redistribution_allowed: true
-    attribution_required: true
-    verification_status: regulator_approved
-    citation_text: "EU Commission Implementing Regulation (EU) 2023/1773 Annex IV, default embedded-emission values for CBAM goods."
-    publication_frequency: event_driven
-    cadence: event_driven
-    watch:
-      mechanism: http_head
-      url: "https://taxation-customs.ec.europa.eu/carbon-border-adjustment-mechanism_en"
-    approval_required_for_certified: true
-    legal_notes: "EU publication (Decision 2011/833/EU); factual regulatory defaults — redistributable with attribution to the European Commission."
-    legal_signoff_artifact: null
-    # ---- v0.1 Alpha required-fields contract (WS7-T1) ----
-    urn: "urn:gl:source:cbam-default-values"
-    source_owner: "climate-methodology-lead"
-    parser_module: "greenlang.factors.ingestion.parsers.cbam_default_values"
-    parser_function: "parse_cbam_default_values"
-    parser_version: "0.1.0"
-    source_version: "2024.1"
-    latest_ingestion_at: "2026-04-24T07:12:23+00:00"
-    publication_url: "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773"
-    provenance_completeness_score: 0.95
-    alpha_v0_1: true
-    # ---- Wave D / TaskCreate #12 — vintage audit ----
-    # CBAM defaults pinned at Reg 2023/1773 Annex IV (current effective
-    # period). No subsequent implementing act has revised Annex IV defaults
-    # as of audit date. No methodology exception required.
-    alpha_v0_1_status: locked
-    alpha_v0_1_vintage_target: "2024"
-    alpha_v0_1_methodology_exception: null
-
-  - source_id: defra_uk_env_accounts
-    display_name: UK ONS/DEFRA Environmental Accounts — atmospheric emissions by industry (SIC 2007)
-    authority: UK Office for National Statistics / DEFRA
-    publisher: UK Office for National Statistics
-    jurisdiction: [UK, GB]
-    connector_only: false
-    license_class: uk_open_government
-    redistribution_class: open
-    redistribution_allowed: true
-    attribution_required: true
-    verification_status: regulator_approved
-    citation_text: "ONS UK Environmental Accounts — atmospheric emissions: greenhouse gas emissions by SIC industry and gas, Office for National Statistics / DEFRA."
-    publication_frequency: annual
-    cadence: annual
-    watch:
-      mechanism: http_head
-      url: "https://www.ons.gov.uk/economy/environmentalaccounts"
-    approval_required_for_certified: true
-    legal_notes: "Open Government Licence v3.0 (UK); attribution required."
-    legal_signoff_artifact: null
-
-  - source_id: eea_waste_stats
-    display_name: European Environment Agency — European waste statistics GHG intensities
-    authority: European Environment Agency
-    publisher: European Environment Agency (EEA)
-    jurisdiction: [EU, EEA]
-    connector_only: false
-    license_class: public_eu
-    redistribution_class: open
-    redistribution_allowed: true
-    attribution_required: true
-    verification_status: regulator_approved
-    citation_text: "European Environment Agency, European waste statistics — per-treatment GHG intensity series (annual)."
-    publication_frequency: annual
-    cadence: annual
-    watch:
-      mechanism: http_head
-      url: "https://www.eea.europa.eu/en/topics/in-depth/waste-and-recycling"
-    approval_required_for_certified: true
-    legal_notes: "EU publication (Decision 2011/833/EU); redistribution allowed with attribution to the EEA."
-    legal_signoff_artifact: null
-
-  - source_id: ipcc_waste_vol5_in
-    display_name: IPCC 2006 Vol 5 (Waste) — India-parameterised default factors
-    authority: IPCC Task Force on National GHG Inventories
-    publisher: Intergovernmental Panel on Climate Change
-    jurisdiction: [IN]
-    connector_only: false
-    license_class: ipcc_reference
-    redistribution_class: open
-    redistribution_allowed: true
-    attribution_required: true
-    verification_status: external_verified
-    citation_text: "IPCC 2006 Guidelines for National GHG Inventories, Volume 5 (Waste), default values parameterised for India (tropical-wet climate zone)."
-    publication_frequency: ad_hoc
-    cadence: ad_hoc
-    watch:
-      mechanism: html_diff
-      url: "https://www.ipcc-nggip.iges.or.jp/public/2006gl/vol5.html"
-    approval_required_for_certified: true
-    legal_notes: "IPCC guidelines are public international publications; numerical default values carry no copyright restriction and are redistributable with attribution."
-    legal_signoff_artifact: null
-
-  # Singapore EMA residual (gap-closure #1)
-  - source_id: ema_singapore_residual
-    display_name: Singapore EMA Grid Emission Factor
-    authority: Singapore Energy Market Authority (EMA)
-    publisher: Singapore Energy Market Authority
-    jurisdiction: [SG]
-    connector_only: false
-    license_class: open
-    redistribution_class: open
-    redistribution_allowed: true
-    attribution_required: true
-    verification_status: regulator_approved
-    citation_text: "Grid Emission Factor, Singapore Energy Market Authority (EMA); published alongside the Singapore Energy Statistics (SES) annual report with REC surrender netting for residual-mix derivation."
-    publication_frequency: annual
-    cadence: annual
-    watch:
-      mechanism: http_head
-      url: "https://www.ema.gov.sg/singapore-energy-statistics"
-    approval_required_for_certified: true
-    legal_notes: "Singapore Open Data Licence v1.0; attribution required."
-    legal_signoff_artifact: null
+- source_id: epa_hub
+  display_name: EPA GHG Emission Factors Hub
+  connector_only: false
+  license_class: public_us_government
+  redistribution_allowed: true
+  attribution_required: true
+  citation_text: U.S. Environmental Protection Agency, GHG Emission Factors Hub.
+  cadence: quarterly
+  watch:
+    mechanism: http_head
+    url: https://www.epa.gov/ghgemissionfactors
+  approval_required_for_certified: true
+  legal_signoff_artifact: null
+  urn: urn:gl:source:epa-hub
+  source_owner: climate-methodology-lead
+  parser_module: greenlang.factors.ingestion.parsers.epa_ghg_hub
+  parser_function: parse_epa_ghg_hub
+  parser_version: 0.1.0
+  source_version: '2024.1'
+  latest_ingestion_at: '2026-04-24T07:12:22+00:00'
+  publication_url: https://www.epa.gov/climateleadership/ghg-emission-factors-hub
+  provenance_completeness_score: 0.95
+  alpha_v0_1: true
+  alpha_v0_1_status: exception_accepted
+  alpha_v0_1_vintage_target: '2025'
+  alpha_v0_1_methodology_exception: docs/factors/v0_1_alpha/methodology-exceptions/epa_hub_v2024.1.md
+  licence_class: community_open
+  licence: public-domain-us-gov
+  redistribution_class: attribution_required
+  entitlement_rules:
+    model: public_no_entitlement
+    metadata_visibility: public
+  trust_tier: community_curated
+  release_milestone: v0.1
+  authority: U.S. Environmental Protection Agency
+  publisher: U.S. Environmental Protection Agency
+  parser:
+    module: greenlang.factors.ingestion.parsers.epa_ghg_hub
+    function: parse_epa_ghg_hub
+    version: 0.1.0
+  legal_signoff:
+    status: approved
+    reviewed_by: human:cto-delegated@greenlang.io
+    reviewed_at: '2026-04-26T00:00:00+00:00'
+    evidence_uri: docs/factors/source-rights/legal-notes/epa_hub.md
+    rationale: U.S. federal government publication. Public-domain factual data per
+      17 U.S.C. § 105. Attribution required per registry citation_text.
+  latest_source_version: '2024.1'
+  latest_ingestion_timestamp: '2026-04-24T07:12:22+00:00'
+- source_id: egrid
+  display_name: eGRID
+  connector_only: false
+  license_class: public_us_government
+  redistribution_allowed: true
+  attribution_required: true
+  citation_text: U.S. EPA eGRID subregion emission rates.
+  cadence: annual
+  watch:
+    mechanism: http_head
+    url: https://www.epa.gov/egrid
+  approval_required_for_certified: true
+  legal_signoff_artifact: null
+  urn: urn:gl:source:egrid
+  source_owner: climate-methodology-lead
+  parser_module: greenlang.factors.ingestion.parsers.egrid
+  parser_function: parse_egrid
+  parser_version: 0.1.0
+  source_version: '2022.1'
+  latest_ingestion_at: '2026-04-24T07:12:22+00:00'
+  publication_url: https://www.epa.gov/egrid/download-data
+  provenance_completeness_score: 0.95
+  alpha_v0_1: true
+  alpha_v0_1_status: exception_accepted
+  alpha_v0_1_vintage_target: '2024'
+  alpha_v0_1_methodology_exception: docs/factors/v0_1_alpha/methodology-exceptions/egrid_v2022.1.md
+  parser_extensions:
+  - module: greenlang.factors.ingestion.parsers.egrid_subregion
+    function: parse_egrid_subregion
+  licence_class: community_open
+  licence: public-domain-us-gov
+  redistribution_class: attribution_required
+  entitlement_rules:
+    model: public_no_entitlement
+    metadata_visibility: public
+  trust_tier: community_curated
+  release_milestone: v0.1
+  authority: U.S. Environmental Protection Agency
+  publisher: U.S. Environmental Protection Agency
+  parser:
+    module: greenlang.factors.ingestion.parsers.egrid
+    function: parse_egrid
+    version: 0.1.0
+  legal_signoff:
+    status: approved
+    reviewed_by: human:cto-delegated@greenlang.io
+    reviewed_at: '2026-04-26T00:00:00+00:00'
+    evidence_uri: docs/factors/source-rights/legal-notes/egrid.md
+    rationale: U.S. federal government publication. Public-domain factual data per
+      17 U.S.C. § 105. Attribution required.
+  latest_source_version: '2022.1'
+  latest_ingestion_timestamp: '2026-04-24T07:12:22+00:00'
+- source_id: desnz_ghg_conversion
+  display_name: DESNZ GHG conversion factors
+  connector_only: false
+  license_class: uk_open_government
+  redistribution_allowed: true
+  attribution_required: true
+  citation_text: UK Department for Energy Security and Net Zero, GHG conversion factors.
+  cadence: annual
+  watch:
+    mechanism: http_head
+    url: https://www.gov.uk/government/collections/government-conversion-factors-for-company-reporting-of-greenhouse-gas-emissions
+  approval_required_for_certified: true
+  legal_signoff_artifact: null
+  urn: urn:gl:source:desnz-ghg-conversion
+  source_owner: climate-methodology-lead
+  parser_module: greenlang.factors.ingestion.parsers.desnz_uk
+  parser_function: parse_desnz_uk
+  parser_version: 0.1.0
+  source_version: '2024.1'
+  latest_ingestion_at: '2026-04-24T07:12:22+00:00'
+  publication_url: https://www.gov.uk/government/publications/greenhouse-gas-reporting-conversion-factors-2024
+  provenance_completeness_score: 0.95
+  alpha_v0_1: true
+  alpha_v0_1_status: exception_accepted
+  alpha_v0_1_vintage_target: '2025'
+  alpha_v0_1_methodology_exception: docs/factors/v0_1_alpha/methodology-exceptions/desnz_ghg_conversion_v2024.1.md
+  licence_class: community_open
+  licence: OGL-UK-3.0
+  redistribution_class: attribution_required
+  entitlement_rules:
+    model: public_no_entitlement
+    metadata_visibility: public
+  trust_tier: community_curated
+  release_milestone: v0.1
+  authority: UK Department for Energy Security and Net Zero (DESNZ)
+  publisher: UK Department for Energy Security and Net Zero (DESNZ)
+  parser:
+    module: greenlang.factors.ingestion.parsers.desnz_uk
+    function: parse_desnz_uk
+    version: 0.1.0
+  legal_signoff:
+    status: approved
+    reviewed_by: human:cto-delegated@greenlang.io
+    reviewed_at: '2026-04-26T00:00:00+00:00'
+    evidence_uri: docs/factors/source-rights/legal-notes/desnz_ghg_conversion.md
+    rationale: UK government publication under Open Government Licence v3.0 (OGL-3.0).
+      Redistribution allowed with attribution.
+  latest_source_version: '2024.1'
+  latest_ingestion_timestamp: '2026-04-24T07:12:22+00:00'
+- source_id: tcr_grp_defaults
+  display_name: TCR / GRP default factors
+  connector_only: false
+  license_class: registry_terms
+  redistribution_allowed: false
+  attribution_required: true
+  citation_text: Per The Climate Registry / GHGRP guidance; verify current terms.
+  cadence: annual
+  watch:
+    mechanism: manual
+    url: null
+  approval_required_for_certified: true
+  legal_signoff_artifact: null
+  licence_class: method_only
+  redistribution_class: metadata_only
+  entitlement_rules:
+    model: public_no_entitlement
+    metadata_visibility: public
+  trust_tier: community_curated
+  release_milestone: v1.0
+  authority: The Climate Registry / GHGRP
+  publisher: The Climate Registry / GHGRP
+  source_owner: climate-methodology-lead
+  legal_signoff:
+    status: pending_legal_review
+    reviewed_by: null
+    reviewed_at: null
+    evidence_uri: null
+  urn: urn:gl:source:tcr-grp-defaults
+  latest_source_version: null
+  latest_ingestion_timestamp: null
+  parser:
+    module: tbd.placeholder
+    function: tbd_placeholder
+    version: 0.0.0
+  publication_url: https://greenlang.io/docs/factors/source-rights/pending-publication-url
+- source_id: green_e_residual
+  display_name: Green-e residual mix
+  connector_only: true
+  license_class: commercial_connector
+  redistribution_allowed: false
+  attribution_required: true
+  citation_text: Green-e; values via licensed connector only.
+  cadence: annual
+  watch:
+    mechanism: api
+    url: null
+  approval_required_for_certified: true
+  legal_signoff_artifact: null
+  licence_class: connector_only
+  redistribution_class: metadata_only
+  entitlement_rules:
+    model: connector_only_no_bulk
+    metadata_visibility: public
+  trust_tier: community_curated
+  release_milestone: v1.0
+  authority: Green-e (Center for Resource Solutions)
+  publisher: Green-e (Center for Resource Solutions)
+  source_owner: climate-methodology-lead
+  legal_signoff:
+    status: pending_legal_review
+    reviewed_by: null
+    reviewed_at: null
+    evidence_uri: null
+  urn: urn:gl:source:green-e-residual
+  latest_source_version: null
+  latest_ingestion_timestamp: null
+  parser:
+    module: tbd.placeholder
+    function: tbd_placeholder
+    version: 0.0.0
+  publication_url: https://greenlang.io/docs/factors/source-rights/pending-publication-url
+- source_id: green_e_residual_mix
+  display_name: Green-e Energy Residual Mix
+  authority: Green-e (Center for Resource Solutions)
+  publisher: Center for Resource Solutions
+  jurisdiction:
+  - US
+  - CA
+  connector_only: false
+  license_class: restricted
+  redistribution_class: tenant_entitled_only
+  redistribution_allowed: false
+  attribution_required: true
+  verification_status: external_verified
+  citation_text: Green-e Energy Residual Mix, Center for Resource Solutions (annual).
+  publication_frequency: annual
+  cadence: annual
+  watch:
+    mechanism: http_head
+    url: https://www.green-e.org/residual-mix
+  approval_required_for_certified: true
+  legal_notes: Attribution required; no commercial redistribution without license
+  legal_signoff_artifact: null
+  licence_class: commercial_licensed
+  entitlement_rules:
+    model: tenant_entitlement_required
+    metadata_visibility: public
+  trust_tier: external_verified
+  release_milestone: v1.0
+  source_owner: climate-methodology-lead
+  legal_signoff:
+    status: pending_legal_review
+    reviewed_by: null
+    reviewed_at: null
+    evidence_uri: null
+  publication_url: https://www.green-e.org/residual-mix
+  urn: urn:gl:source:green-e-residual-mix
+  latest_source_version: null
+  latest_ingestion_timestamp: null
+  parser:
+    module: tbd.placeholder
+    function: tbd_placeholder
+    version: 0.0.0
+- source_id: australia_nga_factors
+  display_name: Australian National Greenhouse Accounts Factors
+  authority: Australian DCCEEW
+  publisher: Department of Climate Change, Energy, the Environment and Water
+  jurisdiction:
+  - AU
+  connector_only: false
+  license_class: open
+  redistribution_class: redistribution_allowed
+  redistribution_allowed: true
+  attribution_required: true
+  verification_status: regulator_approved
+  citation_text: National Greenhouse Accounts Factors, Australian Government DCCEEW
+    (annual).
+  publication_frequency: annual
+  cadence: annual
+  watch:
+    mechanism: http_head
+    url: https://www.dcceew.gov.au/climate-change/publications/national-greenhouse-accounts-factors
+  approval_required_for_certified: true
+  legal_signoff_artifact: null
+  licence_class: community_open
+  entitlement_rules:
+    model: public_no_entitlement
+    metadata_visibility: public
+  trust_tier: regulator_approved
+  release_milestone: v1.0
+  source_owner: climate-methodology-lead
+  legal_signoff:
+    status: pending_legal_review
+    reviewed_by: null
+    reviewed_at: null
+    evidence_uri: null
+  publication_url: https://www.dcceew.gov.au/climate-change/publications/national-greenhouse-accounts-factors
+  urn: urn:gl:source:australia-nga-factors
+  latest_source_version: null
+  latest_ingestion_timestamp: null
+  parser:
+    module: tbd.placeholder
+    function: tbd_placeholder
+    version: 0.0.0
+- source_id: japan_meti_electric_emission_factors
+  display_name: Japan METI Electric Utility Emission Factors
+  authority: Japan METI
+  publisher: Ministry of Economy, Trade and Industry
+  jurisdiction:
+  - JP
+  connector_only: false
+  license_class: open
+  redistribution_class: redistribution_allowed
+  redistribution_allowed: true
+  attribution_required: true
+  verification_status: regulator_approved
+  citation_text: Electric Utility Emission Factors, Japan METI & MOEJ (annual).
+  publication_frequency: annual
+  cadence: annual
+  watch:
+    mechanism: http_head
+    url: https://ghg-santeikohyo.env.go.jp/calc
+  approval_required_for_certified: true
+  legal_signoff_artifact: null
+  licence_class: community_open
+  entitlement_rules:
+    model: public_no_entitlement
+    metadata_visibility: public
+  trust_tier: regulator_approved
+  release_milestone: v1.0
+  source_owner: climate-methodology-lead
+  legal_signoff:
+    status: pending_legal_review
+    reviewed_by: null
+    reviewed_at: null
+    evidence_uri: null
+  publication_url: https://ghg-santeikohyo.env.go.jp/calc
+  urn: urn:gl:source:japan-meti-electric-emission-factors
+  latest_source_version: null
+  latest_ingestion_timestamp: null
+  parser:
+    module: tbd.placeholder
+    function: tbd_placeholder
+    version: 0.0.0
+- source_id: ghgp_method_refs
+  display_name: GHG Protocol methodological references
+  connector_only: false
+  license_class: wri_wbcsd_terms
+  redistribution_allowed: false
+  attribution_required: true
+  citation_text: GHG Protocol (WRI/WBCSD).
+  cadence: ad_hoc
+  watch:
+    mechanism: html_diff
+    url: https://ghgprotocol.org/
+  approval_required_for_certified: true
+  legal_signoff_artifact: null
+  licence_class: method_only
+  licence: GHGP-METHOD-REFERENCE
+  redistribution_class: metadata_only
+  entitlement_rules:
+    model: public_no_entitlement
+    metadata_visibility: public
+  trust_tier: community_curated
+  release_milestone: v1.0
+  phase1_licensing_scope: v0.1-method-reference
+  authority: World Resources Institute / WBCSD (GHG Protocol)
+  publisher: World Resources Institute / WBCSD (GHG Protocol)
+  source_owner: climate-methodology-lead
+  legal_signoff:
+    status: approved
+    reviewed_by: human:cto-delegated@greenlang.io
+    reviewed_at: '2026-04-26T00:00:00+00:00'
+    evidence_uri: docs/factors/source-rights/legal-notes/ghgp_method_refs.md
+    rationale: Method-reference-only approval for citation and metadata. No redistribution
+      of copyrighted standard text or paywalled licensed values.
+  publication_url: https://ghgprotocol.org/
+  urn: urn:gl:source:ghgp-method-refs
+  latest_source_version: null
+  latest_ingestion_timestamp: null
+  parser:
+    module: tbd.placeholder
+    function: tbd_placeholder
+    version: 0.0.0
+- source_id: electricity_maps
+  display_name: Electricity Maps (connector)
+  connector_only: true
+  license_class: commercial_connector
+  redistribution_allowed: false
+  attribution_required: true
+  citation_text: Electricity Maps; via connector under customer license.
+  cadence: daily
+  watch:
+    mechanism: api
+    url: null
+  approval_required_for_certified: true
+  legal_signoff_artifact: null
+  licence_class: connector_only
+  redistribution_class: metadata_only
+  entitlement_rules:
+    model: connector_only_no_bulk
+    metadata_visibility: public
+  trust_tier: community_curated
+  release_milestone: v2.5
+  authority: Electricity Maps ApS
+  publisher: Electricity Maps ApS
+  source_owner: climate-methodology-lead
+  legal_signoff:
+    status: pending_legal_review
+    reviewed_by: null
+    reviewed_at: null
+    evidence_uri: null
+  urn: urn:gl:source:electricity-maps
+  latest_source_version: null
+  latest_ingestion_timestamp: null
+  parser:
+    module: tbd.placeholder
+    function: tbd_placeholder
+    version: 0.0.0
+  publication_url: https://greenlang.io/docs/factors/source-rights/pending-publication-url
+- source_id: iea
+  display_name: IEA statistics / factors
+  connector_only: true
+  license_class: commercial_connector
+  redistribution_allowed: false
+  attribution_required: true
+  citation_text: International Energy Agency; licensed use only.
+  cadence: annual
+  watch:
+    mechanism: manual
+    url: null
+  approval_required_for_certified: true
+  legal_signoff_artifact: null
+  licence_class: connector_only
+  redistribution_class: metadata_only
+  entitlement_rules:
+    model: connector_only_no_bulk
+    metadata_visibility: public
+  trust_tier: community_curated
+  release_milestone: v0.5
+  authority: International Energy Agency
+  publisher: International Energy Agency
+  source_owner: climate-methodology-lead
+  legal_signoff:
+    status: pending_legal_review
+    reviewed_by: null
+    reviewed_at: null
+    evidence_uri: null
+  urn: urn:gl:source:iea
+  latest_source_version: null
+  latest_ingestion_timestamp: null
+  parser:
+    module: tbd.placeholder
+    function: tbd_placeholder
+    version: 0.0.0
+  publication_url: https://greenlang.io/docs/factors/source-rights/pending-publication-url
+- source_id: ecoinvent
+  display_name: ecoinvent database
+  connector_only: true
+  license_class: commercial_connector
+  redistribution_allowed: false
+  attribution_required: true
+  citation_text: ecoinvent Association; licensed use only.
+  cadence: quarterly
+  watch:
+    mechanism: manual
+    url: null
+  approval_required_for_certified: true
+  legal_signoff_artifact: null
+  licence_class: connector_only
+  redistribution_class: metadata_only
+  entitlement_rules:
+    model: connector_only_no_bulk
+    metadata_visibility: public
+  trust_tier: community_curated
+  release_milestone: v2.0
+  authority: ecoinvent Association
+  publisher: ecoinvent Association
+  source_owner: climate-methodology-lead
+  legal_signoff:
+    status: pending_legal_review
+    reviewed_by: null
+    reviewed_at: null
+    evidence_uri: null
+  urn: urn:gl:source:ecoinvent
+  latest_source_version: null
+  latest_ingestion_timestamp: null
+  parser:
+    module: tbd.placeholder
+    function: tbd_placeholder
+    version: 0.0.0
+  publication_url: https://greenlang.io/docs/factors/source-rights/pending-publication-url
+- source_id: defra_conversion
+  display_name: DEFRA environmental reporting factors
+  connector_only: false
+  license_class: uk_open_government
+  redistribution_allowed: true
+  attribution_required: true
+  citation_text: UK DEFRA/DESNZ environmental reporting factors.
+  cadence: annual
+  watch:
+    mechanism: http_head
+    url: https://www.gov.uk/government/publications/greenhouse-gas-reporting-conversion-factors-2025
+  approval_required_for_certified: true
+  legal_signoff_artifact: null
+  licence_class: community_open
+  licence: OGL-UK-3.0
+  redistribution_class: attribution_required
+  entitlement_rules:
+    model: public_no_entitlement
+    metadata_visibility: public
+  trust_tier: community_curated
+  release_milestone: v1.0
+  authority: UK Department for Environment, Food and Rural Affairs
+  publisher: UK Department for Environment, Food and Rural Affairs
+  source_owner: climate-methodology-lead
+  legal_signoff:
+    status: pending_legal_review
+    reviewed_by: null
+    reviewed_at: null
+    evidence_uri: null
+  publication_url: https://www.gov.uk/government/publications/greenhouse-gas-reporting-conversion-factors-2025
+  urn: urn:gl:source:defra-conversion
+  latest_source_version: null
+  latest_ingestion_timestamp: null
+  parser:
+    module: tbd.placeholder
+    function: tbd_placeholder
+    version: 0.0.0
+- source_id: eu_cbam
+  display_name: EU CBAM default values
+  connector_only: false
+  license_class: eu_publication
+  redistribution_allowed: true
+  attribution_required: true
+  citation_text: European Commission, CBAM default values.
+  cadence: event_driven
+  watch:
+    mechanism: http_head
+    url: https://taxation-customs.ec.europa.eu/carbon-border-adjustment-mechanism_en
+  approval_required_for_certified: true
+  legal_signoff_artifact: null
+  licence_class: community_open
+  redistribution_class: attribution_required
+  entitlement_rules:
+    model: public_no_entitlement
+    metadata_visibility: public
+  trust_tier: community_curated
+  release_milestone: v1.0
+  authority: European Commission DG TAXUD
+  publisher: European Commission DG TAXUD
+  source_owner: climate-methodology-lead
+  legal_signoff:
+    status: pending_legal_review
+    reviewed_by: null
+    reviewed_at: null
+    evidence_uri: null
+  publication_url: https://taxation-customs.ec.europa.eu/carbon-border-adjustment-mechanism_en
+  urn: urn:gl:source:eu-cbam
+  latest_source_version: null
+  latest_ingestion_timestamp: null
+  parser:
+    module: tbd.placeholder
+    function: tbd_placeholder
+    version: 0.0.0
+- source_id: greenlang_builtin
+  display_name: GreenLang curated built-in factors
+  connector_only: false
+  license_class: greenlang_terms
+  redistribution_allowed: true
+  attribution_required: true
+  citation_text: GreenLang Factors curated edition.
+  cadence: on_release
+  watch:
+    mechanism: internal
+    url: null
+  approval_required_for_certified: true
+  legal_signoff_artifact: null
+  licence_class: community_open
+  redistribution_class: attribution_required
+  entitlement_rules:
+    model: public_no_entitlement
+    metadata_visibility: public
+  trust_tier: community_curated
+  release_milestone: v1.0
+  authority: GreenLang
+  publisher: GreenLang
+  source_owner: climate-methodology-lead
+  legal_signoff:
+    status: pending_legal_review
+    reviewed_by: null
+    reviewed_at: null
+    evidence_uri: null
+  urn: urn:gl:source:greenlang-builtin
+  latest_source_version: null
+  latest_ingestion_timestamp: null
+  parser:
+    module: tbd.placeholder
+    function: tbd_placeholder
+    version: 0.0.0
+  publication_url: https://greenlang.io/docs/factors/source-rights/pending-publication-url
+- source_id: aib_residual_mix_eu
+  display_name: AIB European Residual Mix
+  authority: Association of Issuing Bodies
+  publisher: Association of Issuing Bodies (AIB)
+  jurisdiction:
+  - EU
+  - EEA
+  connector_only: false
+  license_class: eu_publication
+  redistribution_class: redistribution_allowed
+  redistribution_allowed: true
+  attribution_required: true
+  verification_status: external_verified
+  citation_text: European Residual Mixes, Association of Issuing Bodies (annual).
+  publication_frequency: annual
+  cadence: annual
+  watch:
+    mechanism: http_head
+    url: https://www.aib-net.org/facts/european-residual-mix
+  approval_required_for_certified: true
+  legal_notes: Attribution required per AIB Terms of Use; public PDF redistribution
+    allowed with citation.
+  legal_signoff_artifact: null
+  licence_class: community_open
+  entitlement_rules:
+    model: public_no_entitlement
+    metadata_visibility: public
+  trust_tier: external_verified
+  release_milestone: v1.0
+  source_owner: climate-methodology-lead
+  legal_signoff:
+    status: pending_legal_review
+    reviewed_by: null
+    reviewed_at: null
+    evidence_uri: null
+  publication_url: https://www.aib-net.org/facts/european-residual-mix
+  urn: urn:gl:source:aib-residual-mix-eu
+  latest_source_version: null
+  latest_ingestion_timestamp: null
+  parser:
+    module: tbd.placeholder
+    function: tbd_placeholder
+    version: 0.0.0
+- source_id: india_cea_co2_baseline
+  display_name: India CEA CO2 Baseline Database
+  authority: Central Electricity Authority, Government of India
+  publisher: Central Electricity Authority
+  jurisdiction:
+  - IN
+  connector_only: false
+  license_class: public_in_government
+  redistribution_class: redistribution_allowed
+  redistribution_allowed: true
+  attribution_required: true
+  verification_status: regulator_approved
+  citation_text: CO2 Baseline Database for the Indian Power Sector, Central Electricity
+    Authority (Government of India), latest edition.
+  publication_frequency: annual
+  cadence: annual
+  watch:
+    mechanism: http_head
+    url: https://cea.nic.in/cdm-co2-baseline-database/
+  approval_required_for_certified: true
+  legal_signoff_artifact: null
+  aliases:
+  - india_cea_baseline
+  urn: urn:gl:source:india-cea-co2-baseline
+  source_owner: climate-methodology-lead
+  parser_module: greenlang.factors.ingestion.parsers.india_cea
+  parser_function: parse_india_cea_rows
+  parser_version: 0.1.0
+  source_version: '20.0'
+  latest_ingestion_at: '2026-04-24T07:12:22+00:00'
+  publication_url: https://cea.nic.in/cdm-co2-baseline-database/
+  provenance_completeness_score: 0.9
+  alpha_v0_1: true
+  alpha_v0_1_status: locked
+  alpha_v0_1_vintage_target: '20.0'
+  alpha_v0_1_methodology_exception: null
+  parser_extensions:
+  - module: greenlang.factors.ingestion.parsers.cea_fy27
+    function: parse_cea_fy27
+  licence_class: community_open
+  licence: GoI-Public-Use
+  entitlement_rules:
+    model: public_no_entitlement
+    metadata_visibility: public
+  trust_tier: regulator_approved
+  release_milestone: v0.1
+  parser:
+    module: greenlang.factors.ingestion.parsers.india_cea
+    function: parse_india_cea_rows
+    version: 0.1.0
+  legal_signoff:
+    status: approved
+    reviewed_by: human:cto-delegated@greenlang.io
+    reviewed_at: '2026-04-26T00:00:00+00:00'
+    evidence_uri: docs/factors/source-rights/legal-notes/india_cea_co2_baseline.md
+    rationale: Government of India publication. Public-use factual data with attribution
+      per CEA terms; no copyright restriction on factual baseline values.
+  latest_source_version: '20.0'
+  latest_ingestion_timestamp: '2026-04-24T07:12:22+00:00'
+- source_id: ipcc_2006_nggi
+  display_name: IPCC 2006 Guidelines + 2019 Refinement (National GHG Inventories)
+  authority: IPCC Task Force on National GHG Inventories
+  publisher: Intergovernmental Panel on Climate Change
+  jurisdiction:
+  - GLOBAL
+  connector_only: false
+  license_class: public_international
+  redistribution_class: redistribution_allowed
+  redistribution_allowed: true
+  attribution_required: true
+  verification_status: external_verified
+  citation_text: IPCC 2006 Guidelines for National GHG Inventories and the 2019 Refinement.
+  publication_frequency: ad_hoc
+  cadence: ad_hoc
+  watch:
+    mechanism: html_diff
+    url: https://www.ipcc-nggip.iges.or.jp/public/2006gl/
+  approval_required_for_certified: true
+  legal_notes: IPCC guidelines are public international publications; factual default
+    values carry no copyright restriction.
+  legal_signoff_artifact: null
+  aliases:
+  - ipcc_ar6
+  urn: urn:gl:source:ipcc-2006-nggi
+  source_owner: climate-methodology-lead
+  parser_module: greenlang.factors.ingestion.parsers.ipcc_defaults
+  parser_function: parse_ipcc_defaults
+  parser_version: 0.1.0
+  source_version: '2019.1'
+  latest_ingestion_at: '2026-04-24T07:12:23+00:00'
+  publication_url: https://www.ipcc-nggip.iges.or.jp/public/2019rf/
+  provenance_completeness_score: 0.9
+  alpha_v0_1: true
+  alpha_v0_1_status: locked
+  alpha_v0_1_vintage_target: AR6
+  alpha_v0_1_methodology_exception: null
+  licence_class: community_open
+  licence: IPCC-PUBLIC
+  entitlement_rules:
+    model: public_no_entitlement
+    metadata_visibility: public
+  trust_tier: external_verified
+  release_milestone: v0.1
+  parser:
+    module: greenlang.factors.ingestion.parsers.ipcc_defaults
+    function: parse_ipcc_defaults
+    version: 0.1.0
+  legal_signoff:
+    status: approved
+    reviewed_by: human:cto-delegated@greenlang.io
+    reviewed_at: '2026-04-26T00:00:00+00:00'
+    evidence_uri: docs/factors/source-rights/legal-notes/ipcc_2006_nggi.md
+    rationale: IPCC public international publication. Numerical default values carry
+      no copyright restriction; redistribution allowed with attribution.
+  latest_source_version: '2019.1'
+  latest_ingestion_timestamp: '2026-04-24T07:12:23+00:00'
+- source_id: glec_framework
+  display_name: GLEC Framework v3.0 (ISO 14083-aligned)
+  authority: Smart Freight Centre
+  publisher: Smart Freight Centre
+  jurisdiction:
+  - GLOBAL
+  connector_only: false
+  license_class: smart_freight_terms
+  redistribution_class: tenant_entitled_only
+  redistribution_allowed: false
+  attribution_required: true
+  verification_status: external_verified
+  citation_text: GLEC Framework for Logistics Emissions Accounting and Reporting,
+    Smart Freight Centre, v3.0 (2023).
+  publication_frequency: triennial
+  cadence: on_release
+  watch:
+    mechanism: http_head
+    url: https://www.smartfreightcentre.org/en/our-programs/global-logistics-emissions-council/
+  approval_required_for_certified: true
+  legal_notes: Redistribution requires Smart Freight Buyer Group membership attribution;
+    values allowed via API only for non-members.
+  legal_signoff_artifact: null
+  licence_class: method_only
+  entitlement_rules:
+    model: public_no_entitlement
+    metadata_visibility: public
+  trust_tier: external_verified
+  release_milestone: v1.5
+  source_owner: climate-methodology-lead
+  legal_signoff:
+    status: pending_legal_review
+    reviewed_by: null
+    reviewed_at: null
+    evidence_uri: null
+  publication_url: https://www.smartfreightcentre.org/en/our-programs/global-logistics-emissions-council/
+  urn: urn:gl:source:glec-framework
+  latest_source_version: null
+  latest_ingestion_timestamp: null
+  parser:
+    module: tbd.placeholder
+    function: tbd_placeholder
+    version: 0.0.0
+- source_id: ec3_buildings_epd
+  display_name: Building Transparency EC3 EPD library
+  authority: Building Transparency
+  publisher: Building Transparency (non-profit)
+  jurisdiction:
+  - GLOBAL
+  connector_only: true
+  license_class: commercial_connector
+  redistribution_class: tenant_entitled_only
+  redistribution_allowed: false
+  attribution_required: true
+  verification_status: external_verified
+  citation_text: Embodied Carbon in Construction Calculator (EC3), Building Transparency.
+  publication_frequency: continuous
+  cadence: continuous
+  watch:
+    mechanism: api
+    url: https://buildingtransparency.org/api
+  approval_required_for_certified: true
+  legal_notes: EC3 API access is permissioned; customers must hold their own EC3 token
+    or consume via GreenLang Premium Construction/EPD pack.
+  legal_signoff_artifact: null
+  licence_class: connector_only
+  entitlement_rules:
+    model: connector_only_no_bulk
+    metadata_visibility: public
+  trust_tier: external_verified
+  release_milestone: v1.0
+  source_owner: climate-methodology-lead
+  legal_signoff:
+    status: pending_legal_review
+    reviewed_by: null
+    reviewed_at: null
+    evidence_uri: null
+  publication_url: https://buildingtransparency.org/api
+  urn: urn:gl:source:ec3-buildings-epd
+  latest_source_version: null
+  latest_ingestion_timestamp: null
+  parser:
+    module: tbd.placeholder
+    function: tbd_placeholder
+    version: 0.0.0
+- source_id: ipcc_2006_afolu_v2019
+  display_name: IPCC 2006 Guidelines Vol 4 — AFOLU (2019 Refinement)
+  authority: IPCC Task Force on National GHG Inventories
+  publisher: Intergovernmental Panel on Climate Change
+  jurisdiction:
+  - GLOBAL
+  connector_only: false
+  license_class: public_international
+  redistribution_class: redistribution_allowed
+  redistribution_allowed: true
+  attribution_required: true
+  verification_status: external_verified
+  citation_text: IPCC 2006 Guidelines Volume 4 — Agriculture, Forestry and Other Land
+    Use (AFOLU), 2019 Refinement.
+  publication_frequency: ad_hoc
+  cadence: ad_hoc
+  watch:
+    mechanism: html_diff
+    url: https://www.ipcc-nggip.iges.or.jp/public/2019rf/vol4.html
+  approval_required_for_certified: true
+  legal_signoff_artifact: null
+  licence_class: community_open
+  entitlement_rules:
+    model: public_no_entitlement
+    metadata_visibility: public
+  trust_tier: external_verified
+  release_milestone: v1.0
+  source_owner: climate-methodology-lead
+  legal_signoff:
+    status: pending_legal_review
+    reviewed_by: null
+    reviewed_at: null
+    evidence_uri: null
+  publication_url: https://www.ipcc-nggip.iges.or.jp/public/2019rf/vol4.html
+  urn: urn:gl:source:ipcc-2006-afolu-v2019
+  latest_source_version: null
+  latest_ingestion_timestamp: null
+  parser:
+    module: tbd.placeholder
+    function: tbd_placeholder
+    version: 0.0.0
+- source_id: pact_pathfinder
+  display_name: WBCSD PACT Pathfinder Framework v3
+  authority: WBCSD Partnership for Carbon Transparency
+  publisher: World Business Council for Sustainable Development
+  jurisdiction:
+  - GLOBAL
+  connector_only: false
+  license_class: wri_wbcsd_terms
+  redistribution_class: tenant_entitled_only
+  redistribution_allowed: false
+  attribution_required: true
+  verification_status: external_verified
+  citation_text: 'WBCSD, Pathfinder Framework: Guidance for the Accounting and Exchange
+    of Product Life Cycle Emissions, v3.0.'
+  publication_frequency: biennial
+  cadence: on_release
+  watch:
+    mechanism: http_head
+    url: https://www.carbon-transparency.com/
+  approval_required_for_certified: true
+  legal_notes: Framework is public; Pathfinder data objects exchanged between customers
+    require PACT network membership per §6 of the framework.
+  legal_signoff_artifact: null
+  licence_class: method_only
+  entitlement_rules:
+    model: public_no_entitlement
+    metadata_visibility: public
+  trust_tier: external_verified
+  release_milestone: v1.5
+  source_owner: climate-methodology-lead
+  legal_signoff:
+    status: pending_legal_review
+    reviewed_by: null
+    reviewed_at: null
+    evidence_uri: null
+  publication_url: https://www.carbon-transparency.com/
+  urn: urn:gl:source:pact-pathfinder
+  latest_source_version: null
+  latest_ingestion_timestamp: null
+  parser:
+    module: tbd.placeholder
+    function: tbd_placeholder
+    version: 0.0.0
+- source_id: ef_3_1_secondary
+  display_name: EU JRC Environmental Footprint 3.1 Secondary Datasets
+  authority: European Commission Joint Research Centre
+  publisher: European Commission Joint Research Centre (JRC)
+  jurisdiction:
+  - EU
+  connector_only: false
+  license_class: eu_publication
+  redistribution_class: redistribution_allowed
+  redistribution_allowed: true
+  attribution_required: true
+  verification_status: external_verified
+  citation_text: European Commission JRC, Environmental Footprint (EF) 3.1 reference
+    package.
+  publication_frequency: ad_hoc
+  cadence: on_release
+  watch:
+    mechanism: http_head
+    url: https://eplca.jrc.ec.europa.eu/LCDN/developerEF.xhtml
+  approval_required_for_certified: true
+  legal_signoff_artifact: null
+  licence_class: community_open
+  entitlement_rules:
+    model: public_no_entitlement
+    metadata_visibility: public
+  trust_tier: external_verified
+  release_milestone: v1.0
+  source_owner: climate-methodology-lead
+  legal_signoff:
+    status: pending_legal_review
+    reviewed_by: null
+    reviewed_at: null
+    evidence_uri: null
+  publication_url: https://eplca.jrc.ec.europa.eu/LCDN/developerEF.xhtml
+  urn: urn:gl:source:ef-3-1-secondary
+  latest_source_version: null
+  latest_ingestion_timestamp: null
+  parser:
+    module: tbd.placeholder
+    function: tbd_placeholder
+    version: 0.0.0
+- source_id: pcaf_global_std_v2
+  display_name: PCAF Global GHG Accounting & Reporting Standard v2 (Parts A + B)
+  authority: Partnership for Carbon Accounting Financials
+  publisher: PCAF (Platform Carbon Accounting Financials)
+  jurisdiction:
+  - GLOBAL
+  connector_only: false
+  license_class: pcaf_attribution
+  redistribution_class: tenant_entitled_only
+  redistribution_allowed: false
+  attribution_required: true
+  verification_status: external_verified
+  citation_text: PCAF, The Global GHG Accounting and Reporting Standard for the Financial
+    Industry, Part A (v2.0) & Part B.
+  publication_frequency: biennial
+  cadence: on_release
+  watch:
+    mechanism: http_head
+    url: https://carbonaccountingfinancials.com/standard
+  approval_required_for_certified: true
+  legal_notes: Methodology text is public; derived proxy factors redistributable via
+    GreenLang Premium Finance pack only.
+  legal_signoff_artifact: null
+  licence_class: method_only
+  entitlement_rules:
+    model: public_no_entitlement
+    metadata_visibility: public
+  trust_tier: external_verified
+  release_milestone: v2.0
+  source_owner: climate-methodology-lead
+  legal_signoff:
+    status: pending_legal_review
+    reviewed_by: null
+    reviewed_at: null
+    evidence_uri: null
+  publication_url: https://carbonaccountingfinancials.com/standard
+  urn: urn:gl:source:pcaf-global-std-v2
+  latest_source_version: null
+  latest_ingestion_timestamp: null
+  parser:
+    module: tbd.placeholder
+    function: tbd_placeholder
+    version: 0.0.0
+- source_id: us_epa_suseeio
+  display_name: US EPA SUSEEIO v2
+  authority: US EPA National Risk Management Research Laboratory
+  publisher: US Environmental Protection Agency
+  jurisdiction:
+  - US
+  connector_only: false
+  license_class: public_us_government
+  redistribution_class: redistribution_allowed
+  redistribution_allowed: true
+  attribution_required: true
+  verification_status: regulator_approved
+  citation_text: US EPA, Supply Chain GHG Emission Factors for US Industries and Commodities
+    (SUSEEIO), v2.
+  publication_frequency: ad_hoc
+  cadence: ad_hoc
+  watch:
+    mechanism: http_head
+    url: https://catalog.data.gov/dataset/supply-chain-greenhouse-gas-emission-factors
+  approval_required_for_certified: true
+  legal_signoff_artifact: null
+  licence_class: community_open
+  entitlement_rules:
+    model: public_no_entitlement
+    metadata_visibility: public
+  trust_tier: regulator_approved
+  release_milestone: v1.0
+  source_owner: climate-methodology-lead
+  legal_signoff:
+    status: pending_legal_review
+    reviewed_by: null
+    reviewed_at: null
+    evidence_uri: null
+  publication_url: https://catalog.data.gov/dataset/supply-chain-greenhouse-gas-emission-factors
+  urn: urn:gl:source:us-epa-suseeio
+  latest_source_version: null
+  latest_ingestion_timestamp: null
+  parser:
+    module: tbd.placeholder
+    function: tbd_placeholder
+    version: 0.0.0
+- source_id: exiobase_v3
+  display_name: EXIOBASE v3 multi-regional environmentally extended IO
+  authority: EXIOBASE Consortium (TU Wien / NTNU / UTwente)
+  publisher: EXIOBASE Consortium
+  jurisdiction:
+  - GLOBAL
+  connector_only: true
+  license_class: academic_research
+  redistribution_class: tenant_entitled_only
+  redistribution_allowed: false
+  attribution_required: true
+  verification_status: external_verified
+  citation_text: EXIOBASE v3, EXIOBASE Consortium (2024).
+  publication_frequency: annual
+  cadence: annual
+  watch:
+    mechanism: manual
+    url: https://www.exiobase.eu/
+  approval_required_for_certified: true
+  legal_notes: Research access is free; commercial redistribution requires EXIOBASE
+    Consortium license.
+  legal_signoff_artifact: null
+  licence_class: commercial_licensed
+  entitlement_rules:
+    model: tenant_entitlement_required
+    metadata_visibility: public
+  trust_tier: external_verified
+  release_milestone: v2.0
+  source_owner: climate-methodology-lead
+  legal_signoff:
+    status: pending_legal_review
+    reviewed_by: null
+    reviewed_at: null
+    evidence_uri: null
+  publication_url: https://www.exiobase.eu/
+  urn: urn:gl:source:exiobase-v3
+  latest_source_version: null
+  latest_ingestion_timestamp: null
+  parser:
+    module: tbd.placeholder
+    function: tbd_placeholder
+    version: 0.0.0
+- source_id: ceda_pbe
+  display_name: Profundo CEDA / PBE (Comprehensive Environmental Data Archive)
+  authority: Profundo Research BV
+  publisher: Profundo Research BV
+  jurisdiction:
+  - GLOBAL
+  connector_only: true
+  license_class: commercial_connector
+  redistribution_class: tenant_entitled_only
+  redistribution_allowed: false
+  attribution_required: true
+  verification_status: external_verified
+  citation_text: CEDA environmentally extended IO database, Profundo Research BV.
+  publication_frequency: annual
+  cadence: annual
+  watch:
+    mechanism: manual
+    url: https://www.profundo.nl/
+  approval_required_for_certified: true
+  legal_notes: Customer must present own CEDA license or subscribe to GreenLang Premium
+    Finance pack (OEM redistribution rights negotiated).
+  legal_signoff_artifact: null
+  licence_class: connector_only
+  entitlement_rules:
+    model: connector_only_no_bulk
+    metadata_visibility: public
+  trust_tier: external_verified
+  release_milestone: v1.0
+  source_owner: climate-methodology-lead
+  legal_signoff:
+    status: pending_legal_review
+    reviewed_by: null
+    reviewed_at: null
+    evidence_uri: null
+  publication_url: https://www.profundo.nl/
+  urn: urn:gl:source:ceda-pbe
+  latest_source_version: null
+  latest_ingestion_timestamp: null
+  parser:
+    module: tbd.placeholder
+    function: tbd_placeholder
+    version: 0.0.0
+- source_id: india_ccts_baselines
+  display_name: India Carbon Credit Trading Scheme (CCTS) sectoral baselines
+  authority: Bureau of Energy Efficiency (BEE) under MoEFCC
+  publisher: Bureau of Energy Efficiency, Government of India
+  jurisdiction:
+  - IN
+  connector_only: false
+  license_class: public_in_government
+  redistribution_class: redistribution_allowed
+  redistribution_allowed: true
+  attribution_required: true
+  verification_status: regulator_approved
+  citation_text: Carbon Credit Trading Scheme baseline emission intensities, Bureau
+    of Energy Efficiency, Ministry of Environment, Forest and Climate Change (MoEFCC),
+    Government of India, notified under G.S.R. 443(E) dated 28 June 2023 and subsequent
+    BEE sector notifications.
+  publication_frequency: triennial
+  cadence: annual
+  watch:
+    mechanism: http_head
+    url: https://beeindia.gov.in/en/programmes/carbon-credit-trading-scheme
+  approval_required_for_certified: true
+  legal_notes: Government of India notifications are public documents with attribution
+    required; sectoral baselines revised triennially per BEE.
+  legal_signoff_artifact: null
+  licence_class: community_open
+  entitlement_rules:
+    model: public_no_entitlement
+    metadata_visibility: public
+  trust_tier: regulator_approved
+  release_milestone: v1.0
+  source_owner: climate-methodology-lead
+  legal_signoff:
+    status: pending_legal_review
+    reviewed_by: null
+    reviewed_at: null
+    evidence_uri: null
+  publication_url: https://beeindia.gov.in/en/programmes/carbon-credit-trading-scheme
+  urn: urn:gl:source:india-ccts-baselines
+  latest_source_version: null
+  latest_ingestion_timestamp: null
+  parser:
+    module: tbd.placeholder
+    function: tbd_placeholder
+    version: 0.0.0
+- source_id: cer_canada_residual
+  display_name: Canada Energy Regulator — Provincial Electricity Residual Mix
+  authority: Canada Energy Regulator (CER)
+  publisher: Canada Energy Regulator
+  jurisdiction:
+  - CA
+  connector_only: false
+  license_class: open
+  redistribution_class: redistribution_allowed
+  redistribution_allowed: true
+  attribution_required: true
+  verification_status: regulator_approved
+  citation_text: Provincial Electricity Intensity Factors, Canada Energy Regulator;
+    with residual-mix adjustment per ECCC National Inventory Report surrendered-instrument
+    accounting.
+  publication_frequency: annual
+  cadence: annual
+  watch:
+    mechanism: http_head
+    url: https://www.cer-rec.gc.ca/en/data-analysis/energy-commodities/electricity/
+  approval_required_for_certified: true
+  legal_notes: Open Government Licence - Canada 2.0 (OGL-CA-2.0); attribution required.
+  legal_signoff_artifact: null
+  licence_class: community_open
+  entitlement_rules:
+    model: public_no_entitlement
+    metadata_visibility: public
+  trust_tier: regulator_approved
+  release_milestone: v1.0
+  source_owner: climate-methodology-lead
+  legal_signoff:
+    status: pending_legal_review
+    reviewed_by: null
+    reviewed_at: null
+    evidence_uri: null
+  publication_url: https://www.cer-rec.gc.ca/en/data-analysis/energy-commodities/electricity/
+  urn: urn:gl:source:cer-canada-residual
+  latest_source_version: null
+  latest_ingestion_timestamp: null
+  parser:
+    module: tbd.placeholder
+    function: tbd_placeholder
+    version: 0.0.0
+- source_id: beis_uk_residual
+  display_name: UK DESNZ (formerly BEIS) national electricity residual mix
+  authority: UK Department for Energy Security and Net Zero
+  publisher: UK Department for Energy Security and Net Zero (DESNZ)
+  jurisdiction:
+  - UK
+  - GB
+  connector_only: false
+  license_class: uk_open_government
+  redistribution_class: redistribution_allowed
+  redistribution_allowed: true
+  attribution_required: true
+  verification_status: regulator_approved
+  citation_text: UK national residual-mix factor, UK Department for Energy Security
+    and Net Zero (DESNZ); derived from the UK GHG conversion factors + Ofgem REGO
+    surrender data.
+  publication_frequency: annual
+  cadence: annual
+  watch:
+    mechanism: http_head
+    url: https://www.gov.uk/government/collections/government-conversion-factors-for-company-reporting-of-greenhouse-gas-emissions
+  approval_required_for_certified: true
+  legal_notes: UK Open Government Licence v3.0; attribution required.
+  legal_signoff_artifact: null
+  licence_class: community_open
+  entitlement_rules:
+    model: public_no_entitlement
+    metadata_visibility: public
+  trust_tier: regulator_approved
+  release_milestone: v1.0
+  source_owner: climate-methodology-lead
+  legal_signoff:
+    status: pending_legal_review
+    reviewed_by: null
+    reviewed_at: null
+    evidence_uri: null
+  publication_url: https://www.gov.uk/government/collections/government-conversion-factors-for-company-reporting-of-greenhouse-gas-emissions
+  urn: urn:gl:source:beis-uk-residual
+  latest_source_version: null
+  latest_ingestion_timestamp: null
+  parser:
+    module: tbd.placeholder
+    function: tbd_placeholder
+    version: 0.0.0
+- source_id: nger_au_state_residual
+  display_name: Australian NGER state-level residual mix (DCCEEW)
+  authority: Australian Clean Energy Regulator / DCCEEW
+  publisher: Department of Climate Change, Energy, the Environment and Water
+  jurisdiction:
+  - AU
+  connector_only: false
+  license_class: open
+  redistribution_class: redistribution_allowed
+  redistribution_allowed: true
+  attribution_required: true
+  verification_status: regulator_approved
+  citation_text: NGER (National Greenhouse and Energy Reporting) state-level residual
+    emission factors, Australian Clean Energy Regulator and DCCEEW, derived from NGA
+    factors with Large-scale Generation Certificate (LGC) surrender netting.
+  publication_frequency: annual
+  cadence: annual
+  watch:
+    mechanism: http_head
+    url: https://www.cleanenergyregulator.gov.au/NGER
+  approval_required_for_certified: true
+  legal_notes: Australian Government Creative Commons Attribution 4.0 licence.
+  legal_signoff_artifact: null
+  licence_class: community_open
+  entitlement_rules:
+    model: public_no_entitlement
+    metadata_visibility: public
+  trust_tier: regulator_approved
+  release_milestone: v1.0
+  source_owner: climate-methodology-lead
+  legal_signoff:
+    status: pending_legal_review
+    reviewed_by: null
+    reviewed_at: null
+    evidence_uri: null
+  publication_url: https://www.cleanenergyregulator.gov.au/NGER
+  urn: urn:gl:source:nger-au-state-residual
+  latest_source_version: null
+  latest_ingestion_timestamp: null
+  parser:
+    module: tbd.placeholder
+    function: tbd_placeholder
+    version: 0.0.0
+- source_id: kemco_korea_residual
+  display_name: Korea KEMCO electricity residual mix
+  authority: Korea Energy Management Corporation (KEMCO)
+  publisher: Korea Energy Agency / Ministry of Environment (Republic of Korea)
+  jurisdiction:
+  - KR
+  connector_only: false
+  license_class: open
+  redistribution_class: redistribution_allowed
+  redistribution_allowed: true
+  attribution_required: true
+  verification_status: regulator_approved
+  citation_text: Republic of Korea national electricity residual mix factor, Korea
+    Energy Management Corporation (KEMCO) / Korea Energy Agency; derived from the
+    Greenhouse Gas Inventory and Research Center (GIR) national inventory with KEC
+    (Korea Energy Certificate) surrender netting.
+  publication_frequency: annual
+  cadence: annual
+  watch:
+    mechanism: http_head
+    url: https://www.gir.go.kr/eng/
+  approval_required_for_certified: true
+  legal_notes: Republic of Korea public information - Act on Disclosure of Information
+    by Public Agencies; attribution required.
+  legal_signoff_artifact: null
+  licence_class: community_open
+  entitlement_rules:
+    model: public_no_entitlement
+    metadata_visibility: public
+  trust_tier: regulator_approved
+  release_milestone: v1.0
+  source_owner: climate-methodology-lead
+  legal_signoff:
+    status: pending_legal_review
+    reviewed_by: null
+    reviewed_at: null
+    evidence_uri: null
+  publication_url: https://www.gir.go.kr/eng/
+  urn: urn:gl:source:kemco-korea-residual
+  latest_source_version: null
+  latest_ingestion_timestamp: null
+  parser:
+    module: tbd.placeholder
+    function: tbd_placeholder
+    version: 0.0.0
+- source_id: cbam_default_values
+  display_name: EU CBAM Annex IV default embedded-emission values (flat sector rollup)
+  authority: European Commission DG TAXUD
+  publisher: European Commission
+  jurisdiction:
+  - EU
+  connector_only: false
+  license_class: public_eu
+  redistribution_class: redistribution_allowed
+  redistribution_allowed: true
+  attribution_required: true
+  verification_status: regulator_approved
+  citation_text: EU Commission Implementing Regulation (EU) 2023/1773 Annex IV, default
+    embedded-emission values for CBAM goods.
+  publication_frequency: event_driven
+  cadence: event_driven
+  watch:
+    mechanism: http_head
+    url: https://taxation-customs.ec.europa.eu/carbon-border-adjustment-mechanism_en
+  approval_required_for_certified: true
+  legal_notes: EU publication (Decision 2011/833/EU); factual regulatory defaults
+    — redistributable with attribution to the European Commission.
+  legal_signoff_artifact: null
+  urn: urn:gl:source:cbam-default-values
+  source_owner: climate-methodology-lead
+  parser_module: greenlang.factors.ingestion.parsers.cbam_default_values
+  parser_function: parse_cbam_default_values
+  parser_version: 0.1.0
+  source_version: '2024.1'
+  latest_ingestion_at: '2026-04-24T07:12:23+00:00'
+  publication_url: https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R1773
+  provenance_completeness_score: 0.95
+  alpha_v0_1: true
+  alpha_v0_1_status: locked
+  alpha_v0_1_vintage_target: '2024'
+  alpha_v0_1_methodology_exception: null
+  licence_class: community_open
+  licence: EU-COMMISSION-CBAM-DEFAULTS
+  entitlement_rules:
+    model: public_no_entitlement
+    metadata_visibility: public
+  trust_tier: regulator_approved
+  release_milestone: v0.1
+  parser:
+    module: greenlang.factors.ingestion.parsers.cbam_default_values
+    function: parse_cbam_default_values
+    version: 0.1.0
+  legal_signoff:
+    status: approved
+    reviewed_by: human:cto-delegated@greenlang.io
+    reviewed_at: '2026-04-26T00:00:00+00:00'
+    evidence_uri: docs/factors/source-rights/legal-notes/cbam_default_values.md
+    rationale: EU publication per Decision 2011/833/EU. Regulatory default values;
+      redistributable with attribution to the European Commission.
+  latest_source_version: '2024.1'
+  latest_ingestion_timestamp: '2026-04-24T07:12:23+00:00'
+- source_id: defra_uk_env_accounts
+  display_name: UK ONS/DEFRA Environmental Accounts — atmospheric emissions by industry
+    (SIC 2007)
+  authority: UK Office for National Statistics / DEFRA
+  publisher: UK Office for National Statistics
+  jurisdiction:
+  - UK
+  - GB
+  connector_only: false
+  license_class: uk_open_government
+  redistribution_class: redistribution_allowed
+  redistribution_allowed: true
+  attribution_required: true
+  verification_status: regulator_approved
+  citation_text: 'ONS UK Environmental Accounts — atmospheric emissions: greenhouse
+    gas emissions by SIC industry and gas, Office for National Statistics / DEFRA.'
+  publication_frequency: annual
+  cadence: annual
+  watch:
+    mechanism: http_head
+    url: https://www.ons.gov.uk/economy/environmentalaccounts
+  approval_required_for_certified: true
+  legal_notes: Open Government Licence v3.0 (UK); attribution required.
+  legal_signoff_artifact: null
+  licence_class: community_open
+  entitlement_rules:
+    model: public_no_entitlement
+    metadata_visibility: public
+  trust_tier: regulator_approved
+  release_milestone: v1.0
+  source_owner: climate-methodology-lead
+  legal_signoff:
+    status: pending_legal_review
+    reviewed_by: null
+    reviewed_at: null
+    evidence_uri: null
+  publication_url: https://www.ons.gov.uk/economy/environmentalaccounts
+  urn: urn:gl:source:defra-uk-env-accounts
+  latest_source_version: null
+  latest_ingestion_timestamp: null
+  parser:
+    module: tbd.placeholder
+    function: tbd_placeholder
+    version: 0.0.0
+- source_id: eea_waste_stats
+  display_name: European Environment Agency — European waste statistics GHG intensities
+  authority: European Environment Agency
+  publisher: European Environment Agency (EEA)
+  jurisdiction:
+  - EU
+  - EEA
+  connector_only: false
+  license_class: public_eu
+  redistribution_class: redistribution_allowed
+  redistribution_allowed: true
+  attribution_required: true
+  verification_status: regulator_approved
+  citation_text: European Environment Agency, European waste statistics — per-treatment
+    GHG intensity series (annual).
+  publication_frequency: annual
+  cadence: annual
+  watch:
+    mechanism: http_head
+    url: https://www.eea.europa.eu/en/topics/in-depth/waste-and-recycling
+  approval_required_for_certified: true
+  legal_notes: EU publication (Decision 2011/833/EU); redistribution allowed with
+    attribution to the EEA.
+  legal_signoff_artifact: null
+  licence_class: community_open
+  entitlement_rules:
+    model: public_no_entitlement
+    metadata_visibility: public
+  trust_tier: regulator_approved
+  release_milestone: v1.0
+  source_owner: climate-methodology-lead
+  legal_signoff:
+    status: pending_legal_review
+    reviewed_by: null
+    reviewed_at: null
+    evidence_uri: null
+  publication_url: https://www.eea.europa.eu/en/topics/in-depth/waste-and-recycling
+  urn: urn:gl:source:eea-waste-stats
+  latest_source_version: null
+  latest_ingestion_timestamp: null
+  parser:
+    module: tbd.placeholder
+    function: tbd_placeholder
+    version: 0.0.0
+- source_id: ipcc_waste_vol5_in
+  display_name: IPCC 2006 Vol 5 (Waste) — India-parameterised default factors
+  authority: IPCC Task Force on National GHG Inventories
+  publisher: Intergovernmental Panel on Climate Change
+  jurisdiction:
+  - IN
+  connector_only: false
+  license_class: ipcc_reference
+  redistribution_class: redistribution_allowed
+  redistribution_allowed: true
+  attribution_required: true
+  verification_status: external_verified
+  citation_text: IPCC 2006 Guidelines for National GHG Inventories, Volume 5 (Waste),
+    default values parameterised for India (tropical-wet climate zone).
+  publication_frequency: ad_hoc
+  cadence: ad_hoc
+  watch:
+    mechanism: html_diff
+    url: https://www.ipcc-nggip.iges.or.jp/public/2006gl/vol5.html
+  approval_required_for_certified: true
+  legal_notes: IPCC guidelines are public international publications; numerical default
+    values carry no copyright restriction and are redistributable with attribution.
+  legal_signoff_artifact: null
+  licence_class: community_open
+  entitlement_rules:
+    model: public_no_entitlement
+    metadata_visibility: public
+  trust_tier: external_verified
+  release_milestone: v1.0
+  source_owner: climate-methodology-lead
+  legal_signoff:
+    status: pending_legal_review
+    reviewed_by: null
+    reviewed_at: null
+    evidence_uri: null
+  publication_url: https://www.ipcc-nggip.iges.or.jp/public/2006gl/vol5.html
+  urn: urn:gl:source:ipcc-waste-vol5-in
+  latest_source_version: null
+  latest_ingestion_timestamp: null
+  parser:
+    module: tbd.placeholder
+    function: tbd_placeholder
+    version: 0.0.0
+- source_id: ema_singapore_residual
+  display_name: Singapore EMA Grid Emission Factor
+  authority: Singapore Energy Market Authority (EMA)
+  publisher: Singapore Energy Market Authority
+  jurisdiction:
+  - SG
+  connector_only: false
+  license_class: open
+  redistribution_class: redistribution_allowed
+  redistribution_allowed: true
+  attribution_required: true
+  verification_status: regulator_approved
+  citation_text: Grid Emission Factor, Singapore Energy Market Authority (EMA); published
+    alongside the Singapore Energy Statistics (SES) annual report with REC surrender
+    netting for residual-mix derivation.
+  publication_frequency: annual
+  cadence: annual
+  watch:
+    mechanism: http_head
+    url: https://www.ema.gov.sg/singapore-energy-statistics
+  approval_required_for_certified: true
+  legal_notes: Singapore Open Data Licence v1.0; attribution required.
+  legal_signoff_artifact: null
+  licence_class: community_open
+  entitlement_rules:
+    model: public_no_entitlement
+    metadata_visibility: public
+  trust_tier: regulator_approved
+  release_milestone: v1.0
+  source_owner: climate-methodology-lead
+  legal_signoff:
+    status: pending_legal_review
+    reviewed_by: null
+    reviewed_at: null
+    evidence_uri: null
+  publication_url: https://www.ema.gov.sg/singapore-energy-statistics
+  urn: urn:gl:source:ema-singapore-residual
+  latest_source_version: null
+  latest_ingestion_timestamp: null
+  parser:
+    module: tbd.placeholder
+    function: tbd_placeholder
+    version: 0.0.0
+- source_id: iea_emission_factors
+  urn: urn:gl:source:iea-emission-factors
+  display_name: IEA Emissions Factors (Statistics + Greenhouse Gas Emissions)
+  authority: International Energy Agency
+  publisher: International Energy Agency
+  jurisdiction:
+  - GLOBAL
+  licence_class: commercial_licensed
+  redistribution_class: tenant_entitled_only
+  cadence: annual
+  source_owner: compliance-security-lead
+  parser:
+    module: tbd.placeholder
+    function: tbd_placeholder
+    version: 0.0.0
+  trust_tier: external_verified
+  legal_signoff:
+    status: pending_legal_review
+    reviewed_by: null
+    reviewed_at: null
+    evidence_uri: null
+  publication_url: https://www.iea.org/data-and-statistics/data-product/emissions-factors-2024
+  citation_text: International Energy Agency, Emissions Factors database (annual).
+    Commercial licence required.
+  entitlement_rules:
+    model: tenant_entitlement_required
+    metadata_visibility: public
+    required_pack_sku: null
+  release_milestone: v0.5
+  latest_source_version: null
+  latest_ingestion_timestamp: null
+- source_id: india_bee_pat
+  urn: urn:gl:source:india-bee-pat
+  display_name: India BEE PAT (Perform Achieve Trade) sectoral baselines
+  authority: Bureau of Energy Efficiency, Government of India
+  publisher: Bureau of Energy Efficiency
+  jurisdiction:
+  - IN
+  licence_class: community_open
+  redistribution_class: attribution_required
+  cadence: triennial
+  source_owner: climate-methodology-lead
+  parser:
+    module: tbd.placeholder
+    function: tbd_placeholder
+    version: 0.0.0
+  trust_tier: regulator_approved
+  legal_signoff:
+    status: pending_legal_review
+    reviewed_by: null
+    reviewed_at: null
+    evidence_uri: null
+  publication_url: https://beeindia.gov.in/en/programmes/perform-achieve-trade-pat
+  citation_text: PAT Scheme sectoral specific energy consumption baselines, BEE /
+    MoEFCC, Government of India.
+  entitlement_rules:
+    model: public_no_entitlement
+    metadata_visibility: public
+  release_milestone: v0.5
+  latest_source_version: null
+  latest_ingestion_timestamp: null
+- source_id: edgar
+  urn: urn:gl:source:edgar
+  display_name: EDGAR — Emissions Database for Global Atmospheric Research
+  authority: European Commission Joint Research Centre
+  publisher: European Commission JRC
+  jurisdiction:
+  - GLOBAL
+  licence_class: community_open
+  redistribution_class: attribution_required
+  cadence: annual
+  source_owner: climate-methodology-lead
+  parser:
+    module: tbd.placeholder
+    function: tbd_placeholder
+    version: 0.0.0
+  trust_tier: external_verified
+  legal_signoff:
+    status: pending_legal_review
+    reviewed_by: null
+    reviewed_at: null
+    evidence_uri: null
+  publication_url: https://edgar.jrc.ec.europa.eu/
+  citation_text: EDGAR (Emissions Database for Global Atmospheric Research), European
+    Commission JRC, latest annual edition.
+  entitlement_rules:
+    model: public_no_entitlement
+    metadata_visibility: public
+  release_milestone: v0.9
+  latest_source_version: null
+  latest_ingestion_timestamp: null
+- source_id: unfccc_nir_bur_btr
+  urn: urn:gl:source:unfccc-nir-bur-btr
+  display_name: UNFCCC National Inventory Reports / Biennial Update / Transparency
+    Reports
+  authority: UNFCCC Secretariat
+  publisher: United Nations Framework Convention on Climate Change
+  jurisdiction:
+  - GLOBAL
+  licence_class: community_open
+  redistribution_class: attribution_required
+  cadence: biennial
+  source_owner: climate-methodology-lead
+  parser:
+    module: tbd.placeholder
+    function: tbd_placeholder
+    version: 0.0.0
+  trust_tier: regulator_approved
+  legal_signoff:
+    status: pending_legal_review
+    reviewed_by: null
+    reviewed_at: null
+    evidence_uri: null
+  publication_url: https://unfccc.int/process-and-meetings/transparency-and-reporting
+  citation_text: UNFCCC National Inventory Reports / BUR / BTR submissions (per Party).
+  entitlement_rules:
+    model: public_no_entitlement
+    metadata_visibility: public
+  release_milestone: v0.9
+  latest_source_version: null
+  latest_ingestion_timestamp: null
+- source_id: ademe_base_carbone
+  urn: urn:gl:source:ademe-base-carbone
+  display_name: ADEME Base Carbone (France)
+  authority: ADEME — Agence de la transition écologique
+  publisher: ADEME
+  jurisdiction:
+  - FR
+  licence_class: community_open
+  redistribution_class: attribution_required
+  cadence: annual
+  source_owner: climate-methodology-lead
+  parser:
+    module: tbd.placeholder
+    function: tbd_placeholder
+    version: 0.0.0
+  trust_tier: regulator_approved
+  legal_signoff:
+    status: pending_legal_review
+    reviewed_by: null
+    reviewed_at: null
+    evidence_uri: null
+  publication_url: https://base-carbone.ademe.fr/
+  citation_text: ADEME Base Carbone, latest published edition. Etalab open licence
+    (with attribution).
+  entitlement_rules:
+    model: public_no_entitlement
+    metadata_visibility: public
+  release_milestone: v1.5
+  latest_source_version: null
+  latest_ingestion_timestamp: null
+- source_id: iso_14083
+  urn: urn:gl:source:iso-14083
+  display_name: ISO 14083:2023 — Quantification and reporting of greenhouse gas emissions
+    arising from transport chain operations
+  authority: International Organization for Standardization
+  publisher: ISO
+  jurisdiction:
+  - GLOBAL
+  licence_class: method_only
+  redistribution_class: metadata_only
+  cadence: ad_hoc
+  source_owner: climate-methodology-lead
+  parser:
+    module: tbd.placeholder
+    function: tbd_placeholder
+    version: 0.0.0
+  trust_tier: external_verified
+  legal_signoff:
+    status: pending_legal_review
+    reviewed_by: null
+    reviewed_at: null
+    evidence_uri: null
+  publication_url: https://www.iso.org/standard/78864.html
+  citation_text: ISO 14083:2023 transport-chain GHG quantification methodology. ISO
+    copyright; method references only.
+  entitlement_rules:
+    model: public_no_entitlement
+    metadata_visibility: public
+  release_milestone: v1.5
+  latest_source_version: null
+  latest_ingestion_timestamp: null
+- source_id: ashrae_ahri
+  urn: urn:gl:source:ashrae-ahri
+  display_name: ASHRAE / AHRI HVAC and refrigerant performance standards
+  authority: ASHRAE / AHRI
+  publisher: ASHRAE / AHRI
+  jurisdiction:
+  - US
+  - GLOBAL
+  licence_class: method_only
+  redistribution_class: metadata_only
+  cadence: ad_hoc
+  source_owner: climate-methodology-lead
+  parser:
+    module: tbd.placeholder
+    function: tbd_placeholder
+    version: 0.0.0
+  trust_tier: external_verified
+  legal_signoff:
+    status: pending_legal_review
+    reviewed_by: null
+    reviewed_at: null
+    evidence_uri: null
+  publication_url: https://www.ashrae.org/technical-resources
+  citation_text: ASHRAE / AHRI standards, per latest published edition. Method references
+    only.
+  entitlement_rules:
+    model: public_no_entitlement
+    metadata_visibility: public
+  release_milestone: v1.5
+  latest_source_version: null
+  latest_ingestion_timestamp: null
+- source_id: climate_trace
+  urn: urn:gl:source:climate-trace
+  display_name: Climate TRACE — global emissions inventory
+  authority: Climate TRACE Coalition
+  publisher: Climate TRACE
+  jurisdiction:
+  - GLOBAL
+  licence_class: community_open
+  redistribution_class: attribution_required
+  cadence: annual
+  source_owner: climate-methodology-lead
+  parser:
+    module: tbd.placeholder
+    function: tbd_placeholder
+    version: 0.0.0
+  trust_tier: external_verified
+  legal_signoff:
+    status: pending_legal_review
+    reviewed_by: null
+    reviewed_at: null
+    evidence_uri: null
+  publication_url: https://climatetrace.org/
+  citation_text: Climate TRACE global emissions inventory, latest annual release.
+    CC-BY-4.0.
+  entitlement_rules:
+    model: public_no_entitlement
+    metadata_visibility: public
+  release_milestone: v1.5
+  latest_source_version: null
+  latest_ingestion_timestamp: null
+- source_id: nies_japan
+  urn: urn:gl:source:nies-japan
+  display_name: NIES — National Institute for Environmental Studies (Japan)
+  authority: NIES Japan
+  publisher: National Institute for Environmental Studies (Japan)
+  jurisdiction:
+  - JP
+  licence_class: commercial_licensed
+  redistribution_class: tenant_entitled_only
+  cadence: annual
+  source_owner: climate-methodology-lead
+  parser:
+    module: tbd.placeholder
+    function: tbd_placeholder
+    version: 0.0.0
+  trust_tier: external_verified
+  legal_signoff:
+    status: pending_legal_review
+    reviewed_by: null
+    reviewed_at: null
+    evidence_uri: null
+  publication_url: https://www.nies.go.jp/db/
+  citation_text: NIES IDEA / national LCA database. Commercial licence terms apply.
+  entitlement_rules:
+    model: tenant_entitlement_required
+    metadata_visibility: public
+  release_milestone: v2.0
+  latest_source_version: null
+  latest_ingestion_timestamp: null
+- source_id: wri_aqueduct
+  urn: urn:gl:source:wri-aqueduct
+  display_name: WRI Aqueduct Water Risk Atlas
+  authority: World Resources Institute
+  publisher: World Resources Institute
+  jurisdiction:
+  - GLOBAL
+  licence_class: community_open
+  redistribution_class: attribution_required
+  cadence: ad_hoc
+  source_owner: climate-methodology-lead
+  parser:
+    module: tbd.placeholder
+    function: tbd_placeholder
+    version: 0.0.0
+  trust_tier: external_verified
+  legal_signoff:
+    status: pending_legal_review
+    reviewed_by: null
+    reviewed_at: null
+    evidence_uri: null
+  publication_url: https://www.wri.org/aqueduct
+  citation_text: WRI Aqueduct Water Risk Atlas, latest release. CC-BY-4.0.
+  entitlement_rules:
+    model: public_no_entitlement
+    metadata_visibility: public
+  release_milestone: v2.0
+  latest_source_version: null
+  latest_ingestion_timestamp: null
+- source_id: entsoe_realtime
+  urn: urn:gl:source:entsoe-realtime
+  display_name: ENTSO-E Transparency Platform — real-time grid generation mix
+  authority: European Network of Transmission System Operators for Electricity
+  publisher: ENTSO-E
+  jurisdiction:
+  - EU
+  - EEA
+  - UK
+  licence_class: connector_only
+  redistribution_class: metadata_only
+  cadence: hourly
+  source_owner: data-engineering-lead
+  parser:
+    module: tbd.placeholder
+    function: tbd_placeholder
+    version: 0.0.0
+  trust_tier: regulator_approved
+  legal_signoff:
+    status: pending_legal_review
+    reviewed_by: null
+    reviewed_at: null
+    evidence_uri: null
+  publication_url: https://transparency.entsoe.eu/
+  citation_text: ENTSO-E Transparency Platform, real-time generation mix.
+  entitlement_rules:
+    model: connector_only_no_bulk
+    metadata_visibility: public
+  release_milestone: v2.5
+  latest_source_version: null
+  latest_ingestion_timestamp: null
+- source_id: watttime
+  urn: urn:gl:source:watttime
+  display_name: WattTime — real-time and forecasted marginal grid intensity
+  authority: WattTime
+  publisher: WattTime
+  jurisdiction:
+  - GLOBAL
+  licence_class: connector_only
+  redistribution_class: metadata_only
+  cadence: continuous
+  source_owner: data-engineering-lead
+  parser:
+    module: tbd.placeholder
+    function: tbd_placeholder
+    version: 0.0.0
+  trust_tier: external_verified
+  legal_signoff:
+    status: pending_legal_review
+    reviewed_by: null
+    reviewed_at: null
+    evidence_uri: null
+  publication_url: https://www.watttime.org/
+  citation_text: WattTime real-time grid emissions API. Connector-only — bulk redistribution
+    forbidden.
+  entitlement_rules:
+    model: connector_only_no_bulk
+    metadata_visibility: public
+  release_milestone: v2.5
+  latest_source_version: null
+  latest_ingestion_timestamp: null
+- source_id: us_iso_rto
+  urn: urn:gl:source:us-iso-rto
+  display_name: US ISO/RTO real-time grid (CAISO, ERCOT, MISO, NYISO, PJM, SPP, ISONE)
+  authority: US ISOs / RTOs (CAISO, ERCOT, MISO, NYISO, PJM, SPP, ISONE)
+  publisher: US ISOs / RTOs (multi)
+  jurisdiction:
+  - US
+  licence_class: connector_only
+  redistribution_class: metadata_only
+  cadence: hourly
+  source_owner: data-engineering-lead
+  parser:
+    module: tbd.placeholder
+    function: tbd_placeholder
+    version: 0.0.0
+  trust_tier: regulator_approved
+  legal_signoff:
+    status: pending_legal_review
+    reviewed_by: null
+    reviewed_at: null
+    evidence_uri: null
+  publication_url: https://www.caiso.com/, https://www.ercot.com/, https://www.misoenergy.org/
+  citation_text: US ISO/RTO real-time grid generation mix, per-RTO official feed.
+  entitlement_rules:
+    model: connector_only_no_bulk
+    metadata_visibility: public
+  release_milestone: v2.5
+  latest_source_version: null
+  latest_ingestion_timestamp: null
+- source_id: grid_india_realtime
+  urn: urn:gl:source:grid-india-realtime
+  display_name: Grid-India real-time generation mix
+  authority: Grid Controller of India Limited (Grid-India)
+  publisher: Grid-India
+  jurisdiction:
+  - IN
+  licence_class: connector_only
+  redistribution_class: metadata_only
+  cadence: hourly
+  source_owner: data-engineering-lead
+  parser:
+    module: tbd.placeholder
+    function: tbd_placeholder
+    version: 0.0.0
+  trust_tier: regulator_approved
+  legal_signoff:
+    status: pending_legal_review
+    reviewed_by: null
+    reviewed_at: null
+    evidence_uri: null
+  publication_url: https://posoco.in/reports/daily-reports/
+  citation_text: Grid-India real-time generation mix, daily / hourly reports.
+  entitlement_rules:
+    model: connector_only_no_bulk
+    metadata_visibility: public
+  release_milestone: v2.5
+  latest_source_version: null
+  latest_ingestion_timestamp: null
+- source_id: agribalyse
+  urn: urn:gl:source:agribalyse
+  display_name: AGRIBALYSE — French agri-food LCA database
+  authority: ADEME / INRAE
+  publisher: ADEME / INRAE
+  jurisdiction:
+  - FR
+  licence_class: community_open
+  redistribution_class: attribution_required
+  cadence: ad_hoc
+  source_owner: climate-methodology-lead
+  parser:
+    module: tbd.placeholder
+    function: tbd_placeholder
+    version: 0.0.0
+  trust_tier: external_verified
+  legal_signoff:
+    status: pending_legal_review
+    reviewed_by: null
+    reviewed_at: null
+    evidence_uri: null
+  publication_url: https://agribalyse.ademe.fr/
+  citation_text: AGRIBALYSE, ADEME / INRAE. Etalab open licence (with attribution).
+  entitlement_rules:
+    model: public_no_entitlement
+    metadata_visibility: public
+  release_milestone: v2.5
+  latest_source_version: null
+  latest_ingestion_timestamp: null
+- source_id: faostat
+  urn: urn:gl:source:faostat
+  display_name: FAOSTAT — FAO Statistical Database (food and agriculture)
+  authority: Food and Agriculture Organization of the United Nations
+  publisher: FAO
+  jurisdiction:
+  - GLOBAL
+  licence_class: community_open
+  redistribution_class: attribution_required
+  cadence: annual
+  source_owner: climate-methodology-lead
+  parser:
+    module: tbd.placeholder
+    function: tbd_placeholder
+    version: 0.0.0
+  trust_tier: external_verified
+  legal_signoff:
+    status: pending_legal_review
+    reviewed_by: null
+    reviewed_at: null
+    evidence_uri: null
+  publication_url: https://www.fao.org/faostat/
+  citation_text: FAOSTAT, FAO of the UN. CC-BY-NC-SA-3.0-IGO (non-commercial; attribution).
+  entitlement_rules:
+    model: public_no_entitlement
+    metadata_visibility: public
+  release_milestone: v2.5
+  latest_source_version: null
+  latest_ingestion_timestamp: null
+- source_id: defra_wtt
+  urn: urn:gl:source:defra-wtt
+  display_name: UK DEFRA / DESNZ — Well-To-Tank (WTT) and indirect emissions companion
+  authority: UK Department for Energy Security and Net Zero (DESNZ)
+  publisher: UK Department for Energy Security and Net Zero (DESNZ)
+  jurisdiction:
+  - UK
+  - GB
+  licence_class: community_open
+  licence: OGL-UK-3.0
+  redistribution_class: attribution_required
+  cadence: annual
+  source_owner: climate-methodology-lead
+  parser:
+    module: tbd.placeholder
+    function: tbd_placeholder
+    version: 0.0.0
+  trust_tier: regulator_approved
+  legal_signoff:
+    status: pending_legal_review
+    reviewed_by: null
+    reviewed_at: null
+    evidence_uri: null
+  publication_url: https://www.gov.uk/government/collections/government-conversion-factors-for-company-reporting-of-greenhouse-gas-emissions
+  citation_text: UK DESNZ Well-To-Tank (WTT) and indirect GHG conversion factors,
+    latest annual edition. Open Government Licence v3.0.
+  entitlement_rules:
+    model: public_no_entitlement
+    metadata_visibility: public
+  release_milestone: v0.5
+  latest_source_version: null
+  latest_ingestion_timestamp: null
+  notes: CTO Phase-1 plan listed DEFRA WTT/indirect under v0.1 with the qualifier
+    'if included'. The v0.1 alpha catalog seed does NOT include WTT records (alpha
+    pilot uses direct-combustion factors only via desnz_ghg_conversion). This row
+    is registered at v0.5 release_milestone — the next eligible release window — so
+    a WTT ingestion pass landing post-alpha validates against a known licence baseline
+    (OGL-3.0). To promote to v0.1 retroactively, Compliance/Security must promote
+    legal_signoff.status to approved AND populate latest_source_version + latest_ingestion_timestamp.
+- source_id: community_contributions
+  urn: urn:gl:source:community-contributions
+  display_name: GreenLang Community Contributions — curated 3rd-party submissions
+  authority: GreenLang Community Contributors (CLA-bound)
+  publisher: GreenLang
+  jurisdiction:
+  - GLOBAL
+  licence_class: community_open
+  redistribution_class: attribution_required
+  cadence: continuous
+  source_owner: climate-methodology-lead
+  parser:
+    module: tbd.placeholder
+    function: tbd_placeholder
+    version: 0.0.0
+  trust_tier: community_curated
+  legal_signoff:
+    status: pending_legal_review
+    reviewed_by: null
+    reviewed_at: null
+    evidence_uri: null
+  publication_url: https://greenlang.io/docs/factors/community-contributions
+  citation_text: GreenLang Community Contributions, per-factor contributor + CLA on
+    file.
+  entitlement_rules:
+    model: public_no_entitlement
+    metadata_visibility: public
+  release_milestone: v1.5
+  latest_source_version: null
+  latest_ingestion_timestamp: null
+  notes: Container row for community-submitted factors gated by a CLA + methodology
+    review. Each contribution carries its own provenance subrow under this source
+    URN. Activated when the v1.5 marketplace lands.
+- source_id: nies_idea
+  urn: urn:gl:source:nies-idea
+  display_name: NIES IDEA — Inventory Database for Environmental Analysis (Japan)
+  authority: NIES Japan (National Institute for Environmental Studies)
+  publisher: National Institute for Environmental Studies (Japan) / IDEA Consortium
+  jurisdiction:
+  - JP
+  licence_class: commercial_licensed
+  redistribution_class: tenant_entitled_only
+  cadence: annual
+  source_owner: climate-methodology-lead
+  parser:
+    module: tbd.placeholder
+    function: tbd_placeholder
+    version: 0.0.0
+  trust_tier: external_verified
+  legal_signoff:
+    status: pending_legal_review
+    reviewed_by: null
+    reviewed_at: null
+    evidence_uri: null
+  publication_url: https://idea-lca.com/en/
+  citation_text: NIES IDEA — Inventory Database for Environmental Analysis (Japan),
+    latest annual release. Commercial licence required (separate from the broader
+    NIES Japan national LCA database).
+  entitlement_rules:
+    model: tenant_entitlement_required
+    metadata_visibility: public
+  release_milestone: v2.5
+  latest_source_version: null
+  latest_ingestion_timestamp: null
+  notes: Distinct from the broader nies_japan (v2.0) national LCA database. NIES IDEA
+    is the IDEA-Consortium-distributed hourly LCI / IO dataset commonly used for Japanese
+    product-carbon calculations; it ships under a separate commercial licence and
+    at a different release cadence.
