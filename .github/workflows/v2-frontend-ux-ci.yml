@@ -1,34 +1,9 @@
 name: V2 Frontend UX CI
 
 on:
-  push:
-    branches:
-      - main
-      - master
-      - "release/**"
-    paths:
-      - "frontend/**"
-      - "cbam-pack-mvp/src/cbam_pack/web/**"
-      - "cbam-pack-mvp/tests/test_web_*.py"
-      - "applications/GL-VCCI-Carbon-APP/VCCI-Scope3-Platform/frontend/**"
-      - "frontend/e2e/**"
-      - "frontend/playwright.config.ts"
-      - ".github/workflows/v2-frontend-ux-ci.yml"
-      - ".github/workflows/v2-shell-visual-snapshots.yml"
-      - "docs/v2/UX_ENTERPRISE_SHELL.md"
-      - "docs/v2/WCAG_SHELL_CHECKLIST.md"
-  pull_request:
-    paths:
-      - "frontend/**"
-      - "cbam-pack-mvp/src/cbam_pack/web/**"
-      - "cbam-pack-mvp/tests/test_web_*.py"
-      - "applications/GL-VCCI-Carbon-APP/VCCI-Scope3-Platform/frontend/**"
-      - "frontend/e2e/**"
-      - "frontend/playwright.config.ts"
-      - ".github/workflows/v2-frontend-ux-ci.yml"
-      - ".github/workflows/v2-shell-visual-snapshots.yml"
-      - "docs/v2/UX_ENTERPRISE_SHELL.md"
-      - "docs/v2/WCAG_SHELL_CHECKLIST.md"
+  # Future V2 shell/app quality gate. Keep manual until the V2 shell is release-promoted;
+  # the default branch gates currently cover the Factors alpha release surface.
+  workflow_dispatch:
 
 jobs:
   v2-shell-e2e-visual:
