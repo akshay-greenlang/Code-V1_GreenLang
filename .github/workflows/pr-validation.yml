@@ -105,7 +105,7 @@ jobs:
             -m "unit and fuel_analyzer"
 
       - name: Upload coverage report
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v6
         with:
           files: coverage-fuel-analyzer.xml
           flags: fuel-analyzer
@@ -152,7 +152,7 @@ jobs:
             -m "unit and cbam_agent"
 
       - name: Upload coverage report
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v6
         with:
           files: coverage-cbam.xml
           flags: cbam-agent
@@ -199,7 +199,7 @@ jobs:
             -m "unit and building_energy"
 
       - name: Upload coverage report
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v6
         with:
           files: coverage-building-energy.xml
           flags: building-energy
@@ -248,7 +248,7 @@ jobs:
             -m "unit and core_library"
 
       - name: Upload coverage report
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v6
         with:
           files: coverage-core.xml
           flags: core-libraries
@@ -301,7 +301,7 @@ jobs:
             --junitxml=test-results-combined.xml
 
       - name: Upload combined coverage report
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v6
         with:
           files: coverage-combined.xml
           flags: combined
