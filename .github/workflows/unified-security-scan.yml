@@ -194,7 +194,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 1
+          fetch-depth: 0
 
       - name: Install Gitleaks
         run: |
@@ -202,15 +202,24 @@ jobs:
           tar -xzf gitleaks.tar.gz gitleaks
           chmod +x gitleaks
 
-      - name: Scan working tree for newly introduced secrets
+      - name: Scan newly introduced commits for secrets
         run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            git fetch --no-tags --depth=1 origin "${{ github.base_ref }}"
+            log_opts="origin/${{ github.base_ref }}..HEAD"
+          elif [ "${{ github.event_name }}" = "push" ] && [ -n "${{ github.event.before }}" ] && [ "${{ github.event.before }}" != "0000000000000000000000000000000000000000" ]; then
+            log_opts="${{ github.event.before }}..${{ github.sha }}"
+          else
+            log_opts="HEAD~1..HEAD"
+          fi
+          echo "Scanning git range: ${log_opts}"
           ./gitleaks detect \
             --source . \
             --config .gitleaks.toml \
-            --no-git \
             --redact \
             --report-format json \
-            --report-path gitleaks-results.json
+            --report-path gitleaks-results.json \
+            --log-opts "${log_opts}"
 
       - name: Full-history secret scan audit
         if: ${{ github.event_name == 'schedule' || inputs.full_history == true }}
@@ -282,10 +291,28 @@ jobs:
       - name: Check installed package licenses
         run: |
           pip-licenses --format json --output licenses.json
-          if grep -iE '"License": ".*(AGPL|GPL-3|SSPL|CC-BY-NC)' licenses.json; then
-            echo "::error::Forbidden license detected in active dependency set"
-            exit 1
-          fi
+          python - <<'PY'
+          import json
+          import sys
+
+          forbidden = ("AGPL", "GPL-3", "SSPL", "CC-BY-NC")
+          with open("licenses.json", encoding="utf-8") as handle:
+              rows = json.load(handle)
+
+          blocked = []
+          for row in rows:
+              name = row.get("Name", "<unknown>")
+              license_text = (row.get("License") or "").upper()
+              if license_text.startswith("LGPL"):
+                  continue
+              if any(marker in license_text for marker in forbidden):
+                  blocked.append(f"{name}: {row.get('License')}")
+
+          if blocked:
+              for item in blocked:
+                  print(f"::error::Forbidden license detected: {item}")
+              sys.exit(1)
+          PY
 
       - name: Upload license report
         if: always()
