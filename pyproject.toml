@@ -317,7 +317,7 @@ factors-test = [
   "starlette==0.50.0",
   "pydantic==2.12.5",
   # --- Datastore drivers (real PG via Docker, fakeredis fallback) ---------
-  "psycopg[binary,pool]>=3.1",
+  "psycopg[binary,pool]>=3.3.3",
   "redis>=5.0.1",
   "pgvector>=0.2",
   "fakeredis>=2.20",
