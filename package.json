@@ -1,18 +1,12 @@
 {
   "name": "greenlang-monorepo",
-  "version": "1.0.0",
-  "description": "GreenLang Platform - Monorepo for all GreenLang applications and services",
+  "version": "0.3.0",
+  "description": "GreenLang Climate OS: auditable climate data foundation and compliance applications, with Factors as the current hardened foundation",
   "private": true,
   "workspaces": [
-    "greenlang/frontend",
-    "GL-VCCI-Carbon-APP/VCCI-Scope3-Platform/frontend",
-    "GL-CBAM-APP/CBAM-Importer-Copilot/frontend",
-    "GL-CSRD-APP/CSRD-Reporting-Platform/frontend",
-    "GL-EUDR-APP/EUDR-Deforestation-Platform/frontend",
-    "GL-SB253-APP/SB253-Climate-Disclosure/frontend",
-    "GL-Taxonomy-APP/EU-Taxonomy-Alignment/frontend",
-    "frontend/packages/factors-explorer",
-    "frontend/packages/factors-ops-console"
+    "frontend",
+    "frontend/packages/*",
+    "greenlang/factors/sdk/ts"
   ],
   "scripts": {
     "build": "turbo run build",
@@ -46,7 +40,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/greenlang-ai/greenlang-platform.git"
+    "url": "https://github.com/akshay-greenlang/Code-V1_GreenLang.git"
   },
   "keywords": [
     "greenlang",
@@ -57,5 +51,5 @@
     "turborepo"
   ],
   "author": "GreenLang Team <support@greenlang.ai>",
-  "license": "MIT"
+  "license": "Apache-2.0"
 }

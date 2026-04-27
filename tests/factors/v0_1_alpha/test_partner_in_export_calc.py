@@ -40,6 +40,7 @@ reporting period. (The Indian fiscal-year naming convention treats
 """
 from __future__ import annotations
 
+import json
 from datetime import date, datetime
 from typing import Any, Dict, List
 from urllib.parse import quote
@@ -84,6 +85,27 @@ def _fetch_alpha_factor_via_testclient(
     )
     assert resp.status_code == 200, resp.text
     return AlphaFactor.model_validate(resp.json())
+
+
+def _fetch_alpha_factor_response(app: Any, urn: str, partner_slug: str) -> Any:
+    """Return the raw TestClient response for receipt/header assertions."""
+    from fastapi.testclient import TestClient
+
+    test_client = TestClient(app)
+    encoded = quote(urn, safe="")
+    resp = test_client.get(
+        f"/v1/factors/{encoded}",
+        headers={"X-API-Key": PARTNER_API_KEYS[partner_slug]},
+    )
+    assert resp.status_code == 200, resp.text
+    return resp
+
+
+def _immutable_factor_payload(factor: AlphaFactor) -> str:
+    """Serialize immutable factor fields, excluding response receipts."""
+    payload = factor.model_dump(mode="json")
+    payload.pop("signed_receipt", None)
+    return json.dumps(payload, sort_keys=True, separators=(",", ":"))
 
 
 PARTNER_SLUG = "IN-EXPORT-01"
@@ -413,7 +435,7 @@ def test_in_export_audit_trail_complete(
 def test_in_export_calc_byte_reproducible(
     partner_factors: List[Dict[str, Any]], partner_app: Any
 ) -> None:
-    """Two consecutive fetches return byte-identical records.
+    """Two consecutive fetches return byte-identical immutable records.
 
     v0.1 immutability invariant: a published factor is content-addressed
     and never mutates — the same URN MUST serialise to the same bytes
@@ -422,19 +444,18 @@ def test_in_export_calc_byte_reproducible(
     """
     factor_urn = _resolve_in_grid_factor_urn(partner_factors)
 
-    # Pydantic v2 preserves field order, so two ``model_dump_json()``
-    # results should be byte-identical when the underlying record is
-    # immutable. We bypass the SDK's client-side URN parser via the
-    # TestClient route (see helper docstring for why).
+    # Compare the immutable record body, not the dynamic audit receipt.
+    # We bypass the SDK's client-side URN parser via the TestClient route
+    # (see helper docstring for why).
     f1 = _fetch_alpha_factor_via_testclient(
         partner_app, factor_urn, PARTNER_SLUG
     )
     f2 = _fetch_alpha_factor_via_testclient(
         partner_app, factor_urn, PARTNER_SLUG
     )
-    assert f1.model_dump_json() == f2.model_dump_json(), (
+    assert _immutable_factor_payload(f1) == _immutable_factor_payload(f2), (
         "IN-EXPORT-01 partner factor failed immutability invariant: "
-        "two consecutive fetches produced different payloads."
+        "two consecutive fetches produced different immutable payloads."
     )
 
     # The numeric value MUST be identical to the last bit (no float drift).
@@ -443,3 +464,38 @@ def test_in_export_calc_byte_reproducible(
         f1.extraction.raw_artifact_sha256
         == f2.extraction.raw_artifact_sha256
     )
+
+
+@pytest.mark.alpha_v0_1_acceptance
+def test_in_export_signed_receipts_are_present_and_verifiable(
+    partner_factors: List[Dict[str, Any]], partner_app: Any
+) -> None:
+    """Signed receipts are dynamic audit envelopes, not factor mutations."""
+    from greenlang.factors.sdk.python import verify_receipt
+
+    factor_urn = _resolve_in_grid_factor_urn(partner_factors)
+    r1 = _fetch_alpha_factor_response(partner_app, factor_urn, PARTNER_SLUG)
+    r2 = _fetch_alpha_factor_response(partner_app, factor_urn, PARTNER_SLUG)
+
+    body1 = r1.json()
+    body2 = r2.json()
+    receipt1 = body1.get("signed_receipt")
+    receipt2 = body2.get("signed_receipt")
+    assert isinstance(receipt1, dict)
+    assert isinstance(receipt2, dict)
+
+    for response, body, receipt in ((r1, body1, receipt1), (r2, body2, receipt2)):
+        assert receipt.get("receipt_id")
+        assert receipt.get("signed_at")
+        assert receipt.get("signature")
+        assert receipt.get("payload_hash")
+        assert response.headers.get("X-GL-Signature")
+        assert response.headers.get("X-GL-Signature-Algorithm") == "sha256-hmac"
+        summary = verify_receipt(
+            body,
+            secret="test-signing-secret-for-partner-alpha-receipts-32chars",
+        )
+        assert summary["verified"] is True
+        assert summary["algorithm"] == "sha256-hmac"
+
+    assert receipt1["receipt_id"] != receipt2["receipt_id"]

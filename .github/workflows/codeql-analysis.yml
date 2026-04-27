@@ -13,16 +13,26 @@ on:
   push:
     branches: [main, master]
     paths:
-      - '**.py'
-      - '**.js'
-      - '**.ts'
+      - 'greenlang/factors/**'
+      - 'greenlang/cli/**'
+      - 'greenlang/integration/**'
+      - 'deployment/**'
+      - 'scripts/**'
+      - 'tests/factors/v0_1_alpha/**'
+      - '.github/codeql/**'
+      - '.github/workflows/codeql-analysis.yml'
 
   pull_request:
     branches: [main, master, develop]
     paths:
-      - '**.py'
-      - '**.js'
-      - '**.ts'
+      - 'greenlang/factors/**'
+      - 'greenlang/cli/**'
+      - 'greenlang/integration/**'
+      - 'deployment/**'
+      - 'scripts/**'
+      - 'tests/factors/v0_1_alpha/**'
+      - '.github/codeql/**'
+      - '.github/workflows/codeql-analysis.yml'
 
   schedule:
     # Weekly deep scan: Sunday at 2 AM UTC

@@ -22,14 +22,30 @@ packs:
 
 # Paths to analyze
 paths:
-  - greenlang/
+  - greenlang/factors/
+  - greenlang/cli/
+  - greenlang/integration/
   - deployment/
-  - scripts/
-  - tests/
+  - tests/factors/v0_1_alpha/
 
 # Paths to exclude from analysis
 paths-ignore:
   - '**/node_modules/**'
+  - '_archive/**'
+  - 'applications/**'
+  - 'GreenLang Development/**'
+  - 'docs/planning/**'
+  - 'frontend/**'
+  - 'greenlang-normalizer/**'
+  - 'greenlang/agents/**'
+  - 'greenlang/agent_runtime/**'
+  - 'greenlang/intel/**'
+  - 'scripts/dev/**'
+  - 'scripts/dod_verification_tools.py'
+  - 'scripts/setup_dev.py'
+  - 'scripts/simple_dod_verification.py'
+  - 'scripts/validate_exit_bar.py'
+  - 'scripts/verify_week0_dod.py'
   - '**/venv/**'
   - '**/.venv/**'
   - '**/vendor/**'

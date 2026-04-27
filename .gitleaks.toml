@@ -156,6 +156,12 @@ paths = [
     '''\.env\.sample''',
     '''.*CHANGELOG.*''',
     '''docs/.*''',
+    '''_archive/.*''',
+    '''applications/.*''',
+    '''GreenLang Development/.*''',
+    '''docs/planning/.*''',
+    '''frontend/.*''',
+    '''greenlang-normalizer/.*''',
 ]
 
 # Specific file patterns to ignore

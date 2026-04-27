@@ -46,7 +46,6 @@ Note on the "allow-listed sources" partner-profile contract:
 from __future__ import annotations
 
 import json
-import os
 from pathlib import Path
 from typing import Any, Dict, List, Mapping
 
@@ -185,6 +184,10 @@ def boot_alpha_app_for_partner(
     # ---- Force alpha profile + clean env. -------------------------------
     monkeypatch.setenv("GL_FACTORS_RELEASE_PROFILE", "alpha-v0.1")
     monkeypatch.setenv("GL_ENV", "test")
+    monkeypatch.setenv(
+        "GL_FACTORS_SIGNING_SECRET",
+        "test-signing-secret-for-partner-alpha-receipts-32chars",
+    )
     monkeypatch.delenv("APP_ENV", raising=False)
     monkeypatch.delenv("ENVIRONMENT", raising=False)
 

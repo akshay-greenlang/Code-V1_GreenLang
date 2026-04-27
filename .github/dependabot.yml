@@ -1,28 +1,12 @@
-# Dependabot Configuration for GreenLang
+# Dependabot configuration scoped to supported release surfaces.
 #
-# Automated dependency updates for security and maintenance.
-# Enables: pip, docker, github-actions
-# Schedule: Weekly (pip/docker), Daily (github-actions)
-# Auto-merge: Minor/patch updates after CI passes
-#
-# Security Compliance: SOC 2 CC7.1, ISO 27001 A.12.6.1
-# Author: GL-SecScan Security Team
-# Version: 2.0.0
+# Archive, planning, and future application folders are deliberately not listed.
+# They are retained for reference until promoted by a release profile and should
+# not create default-branch dependency-noise PRs.
 
 version: 2
 
-registries:
-  # Private PyPI registry (if needed)
-  # greenlang-pypi:
-  #   type: python-index
-  #   url: https://pypi.greenlang.ai/simple
-  #   username: ${{ secrets.PYPI_USERNAME }}
-  #   password: ${{ secrets.PYPI_PASSWORD }}
-
 updates:
-  # =============================================================================
-  # Python Dependencies (pip)
-  # =============================================================================
   - package-ecosystem: "pip"
     directory: "/"
     schedule:
@@ -30,184 +14,125 @@ updates:
       day: "monday"
       time: "06:00"
       timezone: "UTC"
-    open-pull-requests-limit: 10
-    labels:
-      - "dependencies"
-      - "python"
-      - "security"
+    open-pull-requests-limit: 8
+    labels: ["dependencies", "python", "active-surface"]
     commit-message:
       prefix: "chore(deps)"
       include: "scope"
-    reviewers:
-      - "greenlang/security-team"
-    assignees:
-      - "greenlang/security-team"
-    # Group minor and patch updates together
     groups:
-      production-dependencies:
+      python-root:
         patterns:
           - "*"
-        exclude-patterns:
-          - "pytest*"
-          - "mypy*"
-          - "black"
-          - "ruff"
-          - "flake8*"
         update-types:
           - "minor"
           - "patch"
-      development-dependencies:
-        patterns:
-          - "pytest*"
-          - "mypy*"
-          - "black"
-          - "ruff"
-          - "flake8*"
-        update-types:
-          - "minor"
-          - "patch"
-    # Security updates always get priority
     ignore:
-      # Ignore major version updates (require manual review)
       - dependency-name: "*"
         update-types: ["version-update:semver-major"]
 
-  # =============================================================================
-  # Docker Dependencies
-  # =============================================================================
-  - package-ecosystem: "docker"
-    directory: "/"
+  - package-ecosystem: "pip"
+    directory: "/config"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:15"
+      timezone: "UTC"
+    open-pull-requests-limit: 4
+    labels: ["dependencies", "python", "config"]
+    commit-message:
+      prefix: "chore(deps-config)"
+      include: "scope"
+    groups:
+      python-config:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+
+  - package-ecosystem: "npm"
+    directory: "/frontend"
     schedule:
       interval: "weekly"
       day: "tuesday"
       time: "06:00"
       timezone: "UTC"
-    open-pull-requests-limit: 5
-    labels:
-      - "dependencies"
-      - "docker"
-      - "security"
+    open-pull-requests-limit: 4
+    labels: ["dependencies", "frontend", "active-surface"]
     commit-message:
-      prefix: "build(docker)"
+      prefix: "chore(frontend-deps)"
       include: "scope"
-    reviewers:
-      - "greenlang/security-team"
     groups:
-      docker-base-images:
+      frontend-root:
         patterns:
-          - "python"
-          - "node"
-          - "alpine"
-          - "debian"
-          - "ubuntu"
+          - "*"
         update-types:
           - "minor"
           - "patch"
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
 
-  # =============================================================================
-  # GitHub Actions
-  # =============================================================================
-  - package-ecosystem: "github-actions"
+  - package-ecosystem: "npm"
+    directory: "/greenlang/factors/sdk/ts"
+    schedule:
+      interval: "weekly"
+      day: "tuesday"
+      time: "06:20"
+      timezone: "UTC"
+    open-pull-requests-limit: 2
+    labels: ["dependencies", "factors", "typescript-sdk"]
+    commit-message:
+      prefix: "chore(factors-ts-deps)"
+      include: "scope"
+    groups:
+      factors-ts-sdk:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+
+  - package-ecosystem: "docker"
     directory: "/"
     schedule:
       interval: "weekly"
       day: "wednesday"
       time: "06:00"
       timezone: "UTC"
-    open-pull-requests-limit: 10
-    labels:
-      - "dependencies"
-      - "github-actions"
-      - "ci"
+    open-pull-requests-limit: 2
+    labels: ["dependencies", "docker", "active-surface"]
     commit-message:
-      prefix: "ci(actions)"
+      prefix: "build(docker)"
       include: "scope"
-    reviewers:
-      - "greenlang/security-team"
     groups:
-      github-actions:
+      docker-base-images:
         patterns:
           - "*"
         update-types:
           - "minor"
           - "patch"
 
-  # =============================================================================
-  # SDK Python Dependencies
-  # =============================================================================
-  - package-ecosystem: "pip"
-    directory: "/sdks/python/greenlang_sdk"
-    schedule:
-      interval: "weekly"
-      day: "thursday"
-      time: "06:00"
-      timezone: "UTC"
-    open-pull-requests-limit: 5
-    labels:
-      - "dependencies"
-      - "python"
-      - "sdk"
-    commit-message:
-      prefix: "chore(sdk-deps)"
-      include: "scope"
-    groups:
-      sdk-dependencies:
-        patterns:
-          - "*"
-        update-types:
-          - "minor"
-          - "patch"
-
-  # =============================================================================
-  # Agent Factory Dependencies
-  # =============================================================================
-  - package-ecosystem: "pip"
-    directory: "/GL-Agent-Factory"
-    schedule:
-      interval: "weekly"
-      day: "friday"
-      time: "06:00"
-      timezone: "UTC"
-    open-pull-requests-limit: 5
-    labels:
-      - "dependencies"
-      - "python"
-      - "agent-factory"
-    commit-message:
-      prefix: "chore(factory-deps)"
-      include: "scope"
-    groups:
-      factory-dependencies:
-        patterns:
-          - "*"
-        update-types:
-          - "minor"
-          - "patch"
-
-  # =============================================================================
-  # npm Dependencies (if applicable)
-  # =============================================================================
-  - package-ecosystem: "npm"
+  - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
-      day: "saturday"
-      time: "06:00"
+      day: "wednesday"
+      time: "06:30"
       timezone: "UTC"
-    open-pull-requests-limit: 5
-    labels:
-      - "dependencies"
-      - "npm"
-      - "javascript"
+    open-pull-requests-limit: 4
+    labels: ["dependencies", "github-actions", "ci"]
     commit-message:
-      prefix: "chore(npm)"
+      prefix: "ci(actions)"
       include: "scope"
-    # Only update if package.json exists
-    ignore:
-      - dependency-name: "*"
-        update-types: ["version-update:semver-major"]
     groups:
-      npm-dependencies:
+      github-actions:
         patterns:
           - "*"
         update-types:

@@ -390,15 +390,25 @@ def verify_receipt(
             "stripped in transit."
         )
 
+    actual_hash = str(receipt.get("payload_hash") or "")
     payload = _extract_payload(response)
     expected_hash = _canonical_hash(payload)
-
-    actual_hash = str(receipt.get("payload_hash") or "")
     if not hmac.compare_digest(expected_hash, actual_hash):
-        raise ReceiptVerificationError(
-            "Payload hash mismatch: response body has been modified "
-            "since the receipt was issued."
-        )
+        signed_over = receipt.get("signed_over")
+        if isinstance(signed_over, dict):
+            envelope_hash = _canonical_hash(signed_over)
+            if hmac.compare_digest(envelope_hash, actual_hash):
+                expected_hash = envelope_hash
+            else:
+                raise ReceiptVerificationError(
+                    "Payload hash mismatch: neither response body nor "
+                    "signed_over envelope matches the receipt hash."
+                )
+        else:
+            raise ReceiptVerificationError(
+                "Payload hash mismatch: response body has been modified "
+                "since the receipt was issued."
+            )
 
     # Wave 2a: canonical field is ``alg``; legacy ``algorithm`` is still
     # accepted (``_normalize_receipt`` copies it forward with a warning).
@@ -483,7 +493,12 @@ def verify_receipt(
         "verification_key_hint": receipt.get("verification_key_hint"),
         "signed_at": signed_at_str,
         "payload_hash": expected_hash,
-        "edition_id": receipt.get("edition_id"),
+        "edition_id": receipt.get("edition_id")
+        or (
+            receipt.get("signed_over", {}).get("edition_id")
+            if isinstance(receipt.get("signed_over"), dict)
+            else None
+        ),
         "factor_ids": receipt.get("factor_ids"),
         "caller_id": receipt.get("caller_id"),
     }

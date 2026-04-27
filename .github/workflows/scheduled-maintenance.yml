@@ -41,8 +41,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Run security scan
-        uses: ./.github/workflows/unified-security-scan.yml
+      - name: Security scan delegated
+        run: |
+          echo "The Unified Security Scan workflow owns the daily active-surface security gate."
+          echo "This scheduled-maintenance job records delegation only; it does not invoke workflow YAML as a local action."
 
   daily-dependencies:
     name: Dependency Updates Check
@@ -58,8 +60,10 @@ jobs:
 
       - name: Check for dependency updates
         run: |
-          pip install pip-audit pip-check-updates
-          pip-audit --format json --output dependency-audit.json || true
+          python -m pip install -U pip
+          python -m pip install -e ".[factors-test]"
+          python -m pip install pip-audit
+          python -m pip_audit --format json --output dependency-audit.json || true
           pip list --outdated --format json > outdated-deps.json
 
       - name: Upload dependency reports
@@ -86,17 +90,28 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install -U pip
-          pip install -e .[test,dev] pytest-benchmark
+          pip install -e ".[factors-test]"
 
-      - name: Run performance benchmarks
+      - name: Run Factors alpha performance budget
+        env:
+          GL_RUN_PERF: "1"
+          GL_FACTORS_RELEASE_PROFILE: "alpha-v0.1"
+          GL_ENV: test
         run: |
-          pytest tests/benchmarks/ --benchmark-only --benchmark-json=daily-benchmark.json
+          python -m pytest -m perf tests/factors/v0_1_alpha/test_perf_p95_lookup.py \
+            -q \
+            --tb=short \
+            -o addopts= \
+            --junitxml=daily-factors-perf.xml
 
       - name: Upload benchmark results
         uses: actions/upload-artifact@v4
         with:
           name: daily-benchmark-${{ github.run_number }}
-          path: daily-benchmark.json
+          path: |
+            daily-factors-perf.xml
+            out/factors/v0_1_alpha/perf_*.json
+            out/factors/v0_1_alpha/perf_p95_report.json
           retention-days: 90
 
   weekly-metrics:
@@ -121,7 +136,7 @@ jobs:
 
       - name: Generate coverage trends
         run: |
-          pytest --cov=greenlang --cov-report=json --cov-report=html
+          pytest tests/factors/v0_1_alpha --cov=greenlang.factors --cov-report=json --cov-report=html
           python -m coverage json -o coverage-weekly.json
 
       - name: Collect code metrics

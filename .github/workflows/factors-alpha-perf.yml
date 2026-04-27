@@ -77,16 +77,8 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install -e ".[dev]" 2>/dev/null || pip install \
-            pytest \
-            pytest-asyncio \
-            pydantic \
-            fastapi \
-            httpx \
-            psycopg \
-            redis \
-            pyyaml \
-            jsonschema
+          python -m pip install -U pip
+          python -m pip install -e ".[factors-test]"
 
       - name: Show runner perf profile
         # Dump runner CPU + load + memory so a noisy-neighbour failure
@@ -103,7 +95,7 @@ jobs:
 
       - name: Run alpha perf suite
         run: |
-          pytest -m perf tests/factors/v0_1_alpha/ \
+          python -m pytest -m perf tests/factors/v0_1_alpha/ \
             -v \
             --tb=short \
             --no-header \
